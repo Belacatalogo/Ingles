@@ -2,16 +2,23 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
 <title>Fluency · Inglês com IA</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<style>*{margin:0;padding:0;box-sizing:border-box}body{background:#F1E9DB;-webkit-text-size-adjust:100%}#root{min-height:100vh}</style>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{background:#F1E9DB;color:#1C1914;font-family:-apple-system,system-ui,sans-serif;-webkit-text-size-adjust:100%}
+#root{min-height:100vh}
+#loading{display:flex;align-items:center;justify-content:center;min-height:100vh;background:#F1E9DB}
+#loading p{color:#8A7E6B;font-size:14px;font-family:sans-serif}
+</style>
 </head>
 <body>
-<div id="root"><div style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:#F1E9DB"><p style="font-family:sans-serif;color:#8A7E6B">Carregando…</p></div></div>
+<div id="root"><div id="loading"><p>Carregando Fluency…</p></div></div>
+
 <script>
+/* React 18 */
 /**
  * @license React
  * react.production.min.js
@@ -46,6 +53,7 @@ c.useSyncExternalStore=function(a,b,c){return g.current.useSyncExternalStore(a,b
 
 </script>
 <script>
+/* ReactDOM 18 */
 /**
  * @license React
  * react-dom.production.min.js
@@ -316,6 +324,7 @@ function(a,b,c){if(!Vd(b))throw Error(n(200));return Wd(null,a,b,!1,c)};Q.unmoun
 
 </script>
 <script>
+/* Lucide icons */
 /**
  * @license lucide v0.383.0 - ISC
  *
@@ -331,41 +340,107 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
 
 </script>
 <script>
-function localGet(key){try{var v=localStorage.getItem("fluency_"+key);if(v===null)return null;try{return JSON.parse(v)}catch{return v}}catch{return null}}
-function localSet(key,value){try{localStorage.setItem("fluency_"+key,typeof value==="string"?value:JSON.stringify(value));return true}catch{return false}}
-const BookOpen = ({size=16,className="",style={}}={}) => { const ic = lucide["BookOpen"]; if(!ic) return null; const el = lucide.createElement(ic,{size}); return React.createElement("span",{className,style:{display:"inline-flex",alignItems:"center",lineHeight:1,...style},dangerouslySetInnerHTML:{__html:el?el.outerHTML:""}}) };
-const Pencil = ({size=16,className="",style={}}={}) => { const ic = lucide["Pencil"]; if(!ic) return null; const el = lucide.createElement(ic,{size}); return React.createElement("span",{className,style:{display:"inline-flex",alignItems:"center",lineHeight:1,...style},dangerouslySetInnerHTML:{__html:el?el.outerHTML:""}}) };
-const Headphones = ({size=16,className="",style={}}={}) => { const ic = lucide["Headphones"]; if(!ic) return null; const el = lucide.createElement(ic,{size}); return React.createElement("span",{className,style:{display:"inline-flex",alignItems:"center",lineHeight:1,...style},dangerouslySetInnerHTML:{__html:el?el.outerHTML:""}}) };
-const Feather = ({size=16,className="",style={}}={}) => { const ic = lucide["Feather"]; if(!ic) return null; const el = lucide.createElement(ic,{size}); return React.createElement("span",{className,style:{display:"inline-flex",alignItems:"center",lineHeight:1,...style},dangerouslySetInnerHTML:{__html:el?el.outerHTML:""}}) };
-const Flame = ({size=16,className="",style={}}={}) => { const ic = lucide["Flame"]; if(!ic) return null; const el = lucide.createElement(ic,{size}); return React.createElement("span",{className,style:{display:"inline-flex",alignItems:"center",lineHeight:1,...style},dangerouslySetInnerHTML:{__html:el?el.outerHTML:""}}) };
-const Trophy = ({size=16,className="",style={}}={}) => { const ic = lucide["Trophy"]; if(!ic) return null; const el = lucide.createElement(ic,{size}); return React.createElement("span",{className,style:{display:"inline-flex",alignItems:"center",lineHeight:1,...style},dangerouslySetInnerHTML:{__html:el?el.outerHTML:""}}) };
-const RotateCw = ({size=16,className="",style={}}={}) => { const ic = lucide["RotateCw"]; if(!ic) return null; const el = lucide.createElement(ic,{size}); return React.createElement("span",{className,style:{display:"inline-flex",alignItems:"center",lineHeight:1,...style},dangerouslySetInnerHTML:{__html:el?el.outerHTML:""}}) };
-const Check = ({size=16,className="",style={}}={}) => { const ic = lucide["Check"]; if(!ic) return null; const el = lucide.createElement(ic,{size}); return React.createElement("span",{className,style:{display:"inline-flex",alignItems:"center",lineHeight:1,...style},dangerouslySetInnerHTML:{__html:el?el.outerHTML:""}}) };
-const X = ({size=16,className="",style={}}={}) => { const ic = lucide["X"]; if(!ic) return null; const el = lucide.createElement(ic,{size}); return React.createElement("span",{className,style:{display:"inline-flex",alignItems:"center",lineHeight:1,...style},dangerouslySetInnerHTML:{__html:el?el.outerHTML:""}}) };
-const ChevronRight = ({size=16,className="",style={}}={}) => { const ic = lucide["ChevronRight"]; if(!ic) return null; const el = lucide.createElement(ic,{size}); return React.createElement("span",{className,style:{display:"inline-flex",alignItems:"center",lineHeight:1,...style},dangerouslySetInnerHTML:{__html:el?el.outerHTML:""}}) };
-const ChevronLeft = ({size=16,className="",style={}}={}) => { const ic = lucide["ChevronLeft"]; if(!ic) return null; const el = lucide.createElement(ic,{size}); return React.createElement("span",{className,style:{display:"inline-flex",alignItems:"center",lineHeight:1,...style},dangerouslySetInnerHTML:{__html:el?el.outerHTML:""}}) };
-const Volume2 = ({size=16,className="",style={}}={}) => { const ic = lucide["Volume2"]; if(!ic) return null; const el = lucide.createElement(ic,{size}); return React.createElement("span",{className,style:{display:"inline-flex",alignItems:"center",lineHeight:1,...style},dangerouslySetInnerHTML:{__html:el?el.outerHTML:""}}) };
-const Sparkles = ({size=16,className="",style={}}={}) => { const ic = lucide["Sparkles"]; if(!ic) return null; const el = lucide.createElement(ic,{size}); return React.createElement("span",{className,style:{display:"inline-flex",alignItems:"center",lineHeight:1,...style},dangerouslySetInnerHTML:{__html:el?el.outerHTML:""}}) };
-const Calendar = ({size=16,className="",style={}}={}) => { const ic = lucide["Calendar"]; if(!ic) return null; const el = lucide.createElement(ic,{size}); return React.createElement("span",{className,style:{display:"inline-flex",alignItems:"center",lineHeight:1,...style},dangerouslySetInnerHTML:{__html:el?el.outerHTML:""}}) };
-const Home = ({size=16,className="",style={}}={}) => { const ic = lucide["Home"]; if(!ic) return null; const el = lucide.createElement(ic,{size}); return React.createElement("span",{className,style:{display:"inline-flex",alignItems:"center",lineHeight:1,...style},dangerouslySetInnerHTML:{__html:el?el.outerHTML:""}}) };
-const Layers = ({size=16,className="",style={}}={}) => { const ic = lucide["Layers"]; if(!ic) return null; const el = lucide.createElement(ic,{size}); return React.createElement("span",{className,style:{display:"inline-flex",alignItems:"center",lineHeight:1,...style},dangerouslySetInnerHTML:{__html:el?el.outerHTML:""}}) };
-const TrendingUp = ({size=16,className="",style={}}={}) => { const ic = lucide["TrendingUp"]; if(!ic) return null; const el = lucide.createElement(ic,{size}); return React.createElement("span",{className,style:{display:"inline-flex",alignItems:"center",lineHeight:1,...style},dangerouslySetInnerHTML:{__html:el?el.outerHTML:""}}) };
-const Loader2 = ({size=16,className="",style={}}={}) => { const ic = lucide["Loader2"]; if(!ic) return null; const el = lucide.createElement(ic,{size}); return React.createElement("span",{className,style:{display:"inline-flex",alignItems:"center",lineHeight:1,...style},dangerouslySetInnerHTML:{__html:el?el.outerHTML:""}}) };
-const Lightbulb = ({size=16,className="",style={}}={}) => { const ic = lucide["Lightbulb"]; if(!ic) return null; const el = lucide.createElement(ic,{size}); return React.createElement("span",{className,style:{display:"inline-flex",alignItems:"center",lineHeight:1,...style},dangerouslySetInnerHTML:{__html:el?el.outerHTML:""}}) };
-const GraduationCap = ({size=16,className="",style={}}={}) => { const ic = lucide["GraduationCap"]; if(!ic) return null; const el = lucide.createElement(ic,{size}); return React.createElement("span",{className,style:{display:"inline-flex",alignItems:"center",lineHeight:1,...style},dangerouslySetInnerHTML:{__html:el?el.outerHTML:""}}) };
-const Award = ({size=16,className="",style={}}={}) => { const ic = lucide["Award"]; if(!ic) return null; const el = lucide.createElement(ic,{size}); return React.createElement("span",{className,style:{display:"inline-flex",alignItems:"center",lineHeight:1,...style},dangerouslySetInnerHTML:{__html:el?el.outerHTML:""}}) };
-const Cloud = ({size=16,className="",style={}}={}) => { const ic = lucide["Cloud"]; if(!ic) return null; const el = lucide.createElement(ic,{size}); return React.createElement("span",{className,style:{display:"inline-flex",alignItems:"center",lineHeight:1,...style},dangerouslySetInnerHTML:{__html:el?el.outerHTML:""}}) };
-const ArrowRight = ({size=16,className="",style={}}={}) => { const ic = lucide["ArrowRight"]; if(!ic) return null; const el = lucide.createElement(ic,{size}); return React.createElement("span",{className,style:{display:"inline-flex",alignItems:"center",lineHeight:1,...style},dangerouslySetInnerHTML:{__html:el?el.outerHTML:""}}) };
-const Pause = ({size=16,className="",style={}}={}) => { const ic = lucide["Pause"]; if(!ic) return null; const el = lucide.createElement(ic,{size}); return React.createElement("span",{className,style:{display:"inline-flex",alignItems:"center",lineHeight:1,...style},dangerouslySetInnerHTML:{__html:el?el.outerHTML:""}}) };
-const CheckCircle2 = ({size=16,className="",style={}}={}) => { const ic = lucide["CheckCircle2"]; if(!ic) return null; const el = lucide.createElement(ic,{size}); return React.createElement("span",{className,style:{display:"inline-flex",alignItems:"center",lineHeight:1,...style},dangerouslySetInnerHTML:{__html:el?el.outerHTML:""}}) };
-const Star = ({size=16,className="",style={}}={}) => { const ic = lucide["Star"]; if(!ic) return null; const el = lucide.createElement(ic,{size}); return React.createElement("span",{className,style:{display:"inline-flex",alignItems:"center",lineHeight:1,...style},dangerouslySetInnerHTML:{__html:el?el.outerHTML:""}}) };
-const Moon = ({size=16,className="",style={}}={}) => { const ic = lucide["Moon"]; if(!ic) return null; const el = lucide.createElement(ic,{size}); return React.createElement("span",{className,style:{display:"inline-flex",alignItems:"center",lineHeight:1,...style},dangerouslySetInnerHTML:{__html:el?el.outerHTML:""}}) };
-const Sunrise = ({size=16,className="",style={}}={}) => { const ic = lucide["Sunrise"]; if(!ic) return null; const el = lucide.createElement(ic,{size}); return React.createElement("span",{className,style:{display:"inline-flex",alignItems:"center",lineHeight:1,...style},dangerouslySetInnerHTML:{__html:el?el.outerHTML:""}}) };
-const Eye = ({size=16,className="",style={}}={}) => { const ic = lucide["Eye"]; if(!ic) return null; const el = lucide.createElement(ic,{size}); return React.createElement("span",{className,style:{display:"inline-flex",alignItems:"center",lineHeight:1,...style},dangerouslySetInnerHTML:{__html:el?el.outerHTML:""}}) };
-const EyeOff = ({size=16,className="",style={}}={}) => { const ic = lucide["EyeOff"]; if(!ic) return null; const el = lucide.createElement(ic,{size}); return React.createElement("span",{className,style:{display:"inline-flex",alignItems:"center",lineHeight:1,...style},dangerouslySetInnerHTML:{__html:el?el.outerHTML:""}}) };
-const Play = ({size=16,className="",style={}}={}) => { const ic = lucide["Play"]; if(!ic) return null; const el = lucide.createElement(ic,{size}); return React.createElement("span",{className,style:{display:"inline-flex",alignItems:"center",lineHeight:1,...style},dangerouslySetInnerHTML:{__html:el?el.outerHTML:""}}) };
-const Shuffle = ({size=16,className="",style={}}={}) => { const ic = lucide["Shuffle"]; if(!ic) return null; const el = lucide.createElement(ic,{size}); return React.createElement("span",{className,style:{display:"inline-flex",alignItems:"center",lineHeight:1,...style},dangerouslySetInnerHTML:{__html:el?el.outerHTML:""}}) };
-const RefreshCw = ({size=16,className="",style={}}={}) => { const ic = lucide["RefreshCw"]; if(!ic) return null; const el = lucide.createElement(ic,{size}); return React.createElement("span",{className,style:{display:"inline-flex",alignItems:"center",lineHeight:1,...style},dangerouslySetInnerHTML:{__html:el?el.outerHTML:""}}) };
+/* Tailwind CSS - carrega do CDN */
+(function(){
+  var s = document.createElement('script');
+  s.src = 'https://cdn.tailwindcss.com';
+  s.onload = function(){ startApp(); };
+  s.onerror = function(){ startApp(); };
+  document.head.appendChild(s);
+  // fallback: start after 5s even if tailwind fails
+  setTimeout(startApp, 5000);
+  var started = false;
+  window.startApp = function(){
+    if(started) return;
+    started = true;
+    mountApp();
+  };
+})();
+</script>
+<script>
+/* localStorage helpers */
+function localGet(key) {
+  try {
+    var v = localStorage.getItem('fluency_' + key);
+    if (v === null) return null;
+    try { return JSON.parse(v); } catch(e) { return v; }
+  } catch(e) { return null; }
+}
+function localSet(key, value) {
+  try {
+    localStorage.setItem('fluency_' + key, typeof value === 'string' ? value : JSON.stringify(value));
+    return true;
+  } catch(e) { return false; }
+}
+
+/* Icon factory */
+
+function makeIcon(name) {
+  return function(props) {
+    props = props || {};
+    var size = props.size || 16;
+    var className = props.className || '';
+    var style = props.style || {};
+    var data = lucide[name];
+    if (!data) return null;
+    function toReactAttrs(obj) {
+      var out = {};
+      Object.keys(obj).forEach(function(k) {
+        var rk = k.replace(/-([a-z])/g, function(_, c) { return c.toUpperCase(); });
+        out[rk] = obj[k];
+      });
+      return out;
+    }
+    function build(node) {
+      if (!node) return null;
+      var tag = node[0], attrs = toReactAttrs(node[1] || {}), kids = (node[2] || []).map(build);
+      return React.createElement(tag, attrs, kids.length ? kids : null);
+    }
+    var svgAttrs = toReactAttrs(data[1] || {});
+    svgAttrs.width = size;
+    svgAttrs.height = size;
+    svgAttrs.className = className;
+    svgAttrs.style = style;
+    var kids = (data[2] || []).map(build);
+    return React.createElement('svg', svgAttrs, kids.length ? kids : null);
+  };
+}
+
+var BookOpen = makeIcon("BookOpen");
+var Pencil = makeIcon("Pencil");
+var Headphones = makeIcon("Headphones");
+var Feather = makeIcon("Feather");
+var Flame = makeIcon("Flame");
+var Trophy = makeIcon("Trophy");
+var RotateCw = makeIcon("RotateCw");
+var Check = makeIcon("Check");
+var X = makeIcon("X");
+var ChevronRight = makeIcon("ChevronRight");
+var ChevronLeft = makeIcon("ChevronLeft");
+var Volume2 = makeIcon("Volume2");
+var Sparkles = makeIcon("Sparkles");
+var Calendar = makeIcon("Calendar");
+var Home = makeIcon("Home");
+var Layers = makeIcon("Layers");
+var TrendingUp = makeIcon("TrendingUp");
+var Loader2 = makeIcon("Loader2");
+var Lightbulb = makeIcon("Lightbulb");
+var GraduationCap = makeIcon("GraduationCap");
+var Award = makeIcon("Award");
+var Cloud = makeIcon("Cloud");
+var ArrowRight = makeIcon("ArrowRight");
+var Pause = makeIcon("Pause");
+var CheckCircle2 = makeIcon("CheckCircle2");
+var Star = makeIcon("Star");
+var Moon = makeIcon("Moon");
+var Sunrise = makeIcon("Sunrise");
+var Eye = makeIcon("Eye");
+var EyeOff = makeIcon("EyeOff");
+var Play = makeIcon("Play");
+var Shuffle = makeIcon("Shuffle");
+var RefreshCw = makeIcon("RefreshCw");
+
+/* App */
 import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
 
 // ============================================================
@@ -1040,7 +1115,8 @@ const getTopicForLesson = (level, focus, lessonIndex) => {
 const getLessonIndexByFocus = (completedLessons, level, focus) => {
   return completedLessons.filter(l => l.level === level && l.skill === focus).length;
 };
-const buildPrompt = (level, focus, completedAtLevel, completedLessons = []) => {
+const buildPrompt = function (level, focus, completedAtLevel) {
+  let completedLessons = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : [];
   const lessonIndex = getLessonIndexByFocus(completedLessons, level, focus);
   const topic = getTopicForLesson(level, focus, lessonIndex);
   const focusGuidance = {
@@ -1258,9 +1334,10 @@ const GlobalStyles = () => /*#__PURE__*/React.createElement("style", null, `
 // Onboarding
 // -----------------------------------------------------------
 
-const Onboarding = ({
-  onDone
-}) => {
+const Onboarding = _ref => {
+  let {
+    onDone
+  } = _ref;
   const [step, setStep] = useState(0);
   const [name, setName] = useState("");
   const [level, setLevel] = useState("A1");
@@ -1457,12 +1534,13 @@ const Onboarding = ({
 // Header
 // -----------------------------------------------------------
 
-const Header = ({
-  profile,
-  streak,
-  tab,
-  setTab
-}) => {
+const Header = _ref2 => {
+  let {
+    profile,
+    streak,
+    tab,
+    setTab
+  } = _ref2;
   const tabs = [{
     id: "today",
     label: "Hoje",
@@ -1522,40 +1600,44 @@ const Header = ({
     }
   }, profile.level)))), /*#__PURE__*/React.createElement("nav", {
     className: "mt-3 -mx-4 md:-mx-6 px-4 md:px-6 flex gap-1 overflow-x-auto scroll-hide"
-  }, tabs.map(({
-    id,
-    label,
-    Icon
-  }) => /*#__PURE__*/React.createElement("button", {
-    key: id,
-    onClick: () => setTab(id),
-    className: `flex items-center gap-1.5 px-3 py-2 fx-body text-sm whitespace-nowrap transition relative`,
-    style: {
-      color: tab === id ? "var(--ink)" : "var(--muted)"
-    }
-  }, /*#__PURE__*/React.createElement(Icon, {
-    size: 14
-  }), /*#__PURE__*/React.createElement("span", null, label), tab === id && /*#__PURE__*/React.createElement("span", {
-    className: "absolute left-2 right-2 -bottom-px h-[2px]",
-    style: {
-      background: "var(--ink)"
-    }
-  }))))));
+  }, tabs.map(_ref3 => {
+    let {
+      id,
+      label,
+      Icon
+    } = _ref3;
+    return /*#__PURE__*/React.createElement("button", {
+      key: id,
+      onClick: () => setTab(id),
+      className: `flex items-center gap-1.5 px-3 py-2 fx-body text-sm whitespace-nowrap transition relative`,
+      style: {
+        color: tab === id ? "var(--ink)" : "var(--muted)"
+      }
+    }, /*#__PURE__*/React.createElement(Icon, {
+      size: 14
+    }), /*#__PURE__*/React.createElement("span", null, label), tab === id && /*#__PURE__*/React.createElement("span", {
+      className: "absolute left-2 right-2 -bottom-px h-[2px]",
+      style: {
+        background: "var(--ink)"
+      }
+    }));
+  }))));
 };
 
 // -----------------------------------------------------------
 // Today view
 // -----------------------------------------------------------
 
-const TodayView = ({
-  profile,
-  completedAtLevel,
-  lessonToday,
-  openLesson,
-  setTab,
-  allCompleted,
-  weekProgress
-}) => {
+const TodayView = _ref4 => {
+  let {
+    profile,
+    completedAtLevel,
+    lessonToday,
+    openLesson,
+    setTab,
+    allCompleted,
+    weekProgress
+  } = _ref4;
   const dow = currentDay();
   const isWeekend = dow === 0 || dow === 6;
   const focus = DAY_FOCUS[dow];
@@ -1781,29 +1863,32 @@ const TodayView = ({
     icon: Headphones,
     title: "Escuta",
     desc: "O ouvido afinado."
-  }].map(({
-    icon: Ic,
-    title,
-    desc
-  }, i) => /*#__PURE__*/React.createElement("div", {
-    key: title,
-    className: "card-paper rounded-sm p-4"
-  }, /*#__PURE__*/React.createElement(Ic, {
-    size: 16,
-    style: {
-      color: "var(--accent)"
-    }
-  }), /*#__PURE__*/React.createElement("div", {
-    className: "fx-display text-base mt-2",
-    style: {
-      fontWeight: 600
-    }
-  }, title), /*#__PURE__*/React.createElement("div", {
-    className: "fx-serif-italic text-sm",
-    style: {
-      color: "var(--ink-soft)"
-    }
-  }, desc))))), /*#__PURE__*/React.createElement("div", {
+  }].map((_ref5, i) => {
+    let {
+      icon: Ic,
+      title,
+      desc
+    } = _ref5;
+    return /*#__PURE__*/React.createElement("div", {
+      key: title,
+      className: "card-paper rounded-sm p-4"
+    }, /*#__PURE__*/React.createElement(Ic, {
+      size: 16,
+      style: {
+        color: "var(--accent)"
+      }
+    }), /*#__PURE__*/React.createElement("div", {
+      className: "fx-display text-base mt-2",
+      style: {
+        fontWeight: 600
+      }
+    }, title), /*#__PURE__*/React.createElement("div", {
+      className: "fx-serif-italic text-sm",
+      style: {
+        color: "var(--ink-soft)"
+      }
+    }, desc));
+  }))), /*#__PURE__*/React.createElement("div", {
     className: "mt-8 text-center fx-body text-xs flex items-center justify-center gap-1.5",
     style: {
       color: "var(--muted)"
@@ -1817,17 +1902,18 @@ const TodayView = ({
 // Lesson view
 // -----------------------------------------------------------
 
-const LessonView = ({
-  profile,
-  lessonData,
-  loading,
-  error,
-  onRegenerate,
-  onComplete,
-  isCompleted,
-  focusKey
-}) => {
+const LessonView = _ref6 => {
   var _lessonData$exercises, _lessonData$sections, _lessonData$vocabular, _lessonData$exercises2, _lessonData$tips;
+  let {
+    profile,
+    lessonData,
+    loading,
+    error,
+    onRegenerate,
+    onComplete,
+    isCompleted,
+    focusKey
+  } = _ref6;
   const [answers, setAnswers] = useState({});
   const [revealed, setRevealed] = useState({});
   const speakingIndexRef = useRef(null);
@@ -1836,7 +1922,8 @@ const LessonView = ({
     setAnswers({});
     setRevealed({});
   }, [lessonData === null || lessonData === void 0 ? void 0 : lessonData.title]);
-  const speak = (text, index = 0) => {
+  const speak = function (text) {
+    let index = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
     if (!window.speechSynthesis) return;
     window.speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
@@ -2316,10 +2403,11 @@ const LessonView = ({
 // Flashcards
 // -----------------------------------------------------------
 
-const FlashcardsView = ({
-  flashcards,
-  setFlashcards
-}) => {
+const FlashcardsView = _ref7 => {
+  let {
+    flashcards,
+    setFlashcards
+  } = _ref7;
   const [deck, setDeck] = useState([]);
   const [i, setI] = useState(0);
   const [flipped, setFlipped] = useState(false);
@@ -2637,15 +2725,16 @@ const FlashcardsView = ({
 // Progress view
 // -----------------------------------------------------------
 
-const ProgressView = ({
-  profile,
-  completedLessons,
-  flashcards,
-  setProfile,
-  apiKey,
-  setApiKey
-}) => {
+const ProgressView = _ref8 => {
   var _profile$createdAt;
+  let {
+    profile,
+    completedLessons,
+    flashcards,
+    setProfile,
+    apiKey,
+    setApiKey
+  } = _ref8;
   const total = completedLessons.length;
   const atLevel = completedLessons.filter(l => l.level === profile.level).length;
   const pct = Math.min(100, Math.round(atLevel / LESSONS_TO_ADVANCE * 100));
@@ -2848,20 +2937,23 @@ const ProgressView = ({
     style: {
       gridTemplateColumns: "repeat(14, 1fr)"
     }
-  }, days28.map(({
-    key,
-    studied,
-    weekday
-  }) => /*#__PURE__*/React.createElement("div", {
-    key: key,
-    title: key,
-    className: "aspect-square rounded-sm",
-    style: {
-      background: studied ? "var(--accent)" : weekday === 0 || weekday === 6 ? "var(--line-soft)" : "var(--bg-2)",
-      opacity: studied ? 1 : 0.6,
-      border: "1px solid var(--line)"
-    }
-  }))), /*#__PURE__*/React.createElement("div", {
+  }, days28.map(_ref9 => {
+    let {
+      key,
+      studied,
+      weekday
+    } = _ref9;
+    return /*#__PURE__*/React.createElement("div", {
+      key: key,
+      title: key,
+      className: "aspect-square rounded-sm",
+      style: {
+        background: studied ? "var(--accent)" : weekday === 0 || weekday === 6 ? "var(--line-soft)" : "var(--bg-2)",
+        opacity: studied ? 1 : 0.6,
+        border: "1px solid var(--line)"
+      }
+    });
+  })), /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-3 mt-3 fx-body text-[10px]",
     style: {
       color: "var(--muted)"
@@ -3053,7 +3145,8 @@ function App() {
     }
     return base;
   }, [completedLessons]);
-  const loadLesson = useCallback(async (force = false) => {
+  const loadLesson = useCallback(async function () {
+    let force = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
     if (!profile) return;
     setLoadingLesson(true);
     setLessonError(false);
@@ -3229,8 +3322,19 @@ function App() {
     setApiKey: setApiKey
   })));
 }
-var _root=ReactDOM.createRoot(document.getElementById("root"));
-_root.render(React.createElement(App));
+
+/* Mount */
+function mountApp() {
+  try {
+    var container = document.getElementById('root');
+    var root = ReactDOM.createRoot(container);
+    root.render(React.createElement(App));
+  } catch(e) {
+    document.getElementById('root').innerHTML = 
+      '<div style="padding:20px;font-family:sans-serif;color:#B53F1F">' +
+      '<h2>Erro ao carregar</h2><p style="margin-top:8px;font-size:13px">' + e.message + '</p></div>';
+  }
+}
 </script>
 </body>
 </html>
