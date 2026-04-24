@@ -1,0 +1,2872 @@
+function localGet(k){try{var v=localStorage.getItem('fluency_'+k);if(v===null)return null;try{return JSON.parse(v)}catch(e){return v}}catch(e){return null}}
+function localSet(k,v){try{localStorage.setItem('fluency_'+k,typeof v==='string'?v:JSON.stringify(v));return true}catch(e){return false}}
+function makeIcon(name){return function(p){p=p||{};var s=p.size||16,cn=p.className||'',st=p.style||{},d=lucide[name];if(!d)return null;function ra(o){var r={};Object.keys(o).forEach(function(k){r[k.replace(/-([a-z])/g,function(_,c){return c.toUpperCase()})]=o[k]});return r}function bld(n){if(!n)return null;var t=n[0],a=ra(n[1]||{}),k=(n[2]||[]).map(bld);return React.createElement(t,a,k.length?k:null)}var sa=ra(d[1]||{});sa.width=s;sa.height=s;sa.className=cn;sa.style=st;var k=(d[2]||[]).map(bld);return React.createElement('svg',sa,k.length?k:null)}}
+var BookOpen=makeIcon("BookOpen");var Pencil=makeIcon("Pencil");var Headphones=makeIcon("Headphones");var Feather=makeIcon("Feather");var Flame=makeIcon("Flame");var Trophy=makeIcon("Trophy");var RotateCw=makeIcon("RotateCw");var Check=makeIcon("Check");var X=makeIcon("X");var ChevronRight=makeIcon("ChevronRight");var ChevronLeft=makeIcon("ChevronLeft");var Volume2=makeIcon("Volume2");var Sparkles=makeIcon("Sparkles");var Calendar=makeIcon("Calendar");var Home=makeIcon("Home");var Layers=makeIcon("Layers");var TrendingUp=makeIcon("TrendingUp");var Loader2=makeIcon("Loader2");var Lightbulb=makeIcon("Lightbulb");var GraduationCap=makeIcon("GraduationCap");var Award=makeIcon("Award");var Cloud=makeIcon("Cloud");var ArrowRight=makeIcon("ArrowRight");var Pause=makeIcon("Pause");var CheckCircle2=makeIcon("CheckCircle2");var Star=makeIcon("Star");var Moon=makeIcon("Moon");var Sunrise=makeIcon("Sunrise");var Eye=makeIcon("Eye");var EyeOff=makeIcon("EyeOff");var Play=makeIcon("Play");var Shuffle=makeIcon("Shuffle");var RefreshCw=makeIcon("RefreshCw");
+import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
+
+// ============================================================
+//   FLUENCY · Aprenda inglês com IA, do A1 ao C2
+// ============================================================
+
+const LEVELS = ["A1", "A2", "B1", "B2", "C1", "C2"];
+const LEVEL_NAMES = {
+  A1: "Iniciante",
+  A2: "Básico",
+  B1: "Intermediário",
+  B2: "Intermediário Alto",
+  C1: "Avançado",
+  C2: "Proficiente"
+};
+const LEVEL_DESC = {
+  A1: "Você está começando. Aprende palavras e frases do dia a dia.",
+  A2: "Conversa sobre assuntos simples e familiares.",
+  B1: "Se vira em viagens, trabalho básico, conversas do cotidiano.",
+  B2: "Discute ideias complexas, lê notícias, entende filmes.",
+  C1: "Fala com fluência, escreve com precisão, entende nuances.",
+  C2: "Domínio quase nativo. Humor, sarcasmo, literatura."
+};
+const LESSONS_TO_ADVANCE = 20;
+const DAY_FOCUS = {
+  1: {
+    key: "grammar",
+    label: "Gramática",
+    icon: Feather,
+    pt: "Segunda-feira",
+    hint: "Estruturas e regras"
+  },
+  2: {
+    key: "reading",
+    label: "Leitura",
+    icon: BookOpen,
+    pt: "Terça-feira",
+    hint: "Textos e interpretação"
+  },
+  3: {
+    key: "writing",
+    label: "Escrita",
+    icon: Pencil,
+    pt: "Quarta-feira",
+    hint: "Produção de texto"
+  },
+  4: {
+    key: "listening",
+    label: "Escuta",
+    icon: Headphones,
+    pt: "Quinta-feira",
+    hint: "Compreensão oral"
+  },
+  5: {
+    key: "review",
+    label: "Revisão",
+    icon: RotateCw,
+    pt: "Sexta-feira",
+    hint: "Mistura da semana"
+  }
+};
+const FOCUS_LABEL = {
+  grammar: "Gramática",
+  reading: "Leitura",
+  writing: "Escrita",
+  listening: "Escuta",
+  review: "Revisão"
+};
+
+// -----------------------------------------------------------
+// Fallback lessons (used when AI call fails)
+// Curated quality content so the user can always study.
+// -----------------------------------------------------------
+
+const FALLBACK_LESSONS = {
+  grammar: {
+    A1: {
+      title: "O verbo 'to be' — sua primeira chave",
+      subtitle: "I am, you are, she is…",
+      estimatedMinutes: 15,
+      intro: "O verbo 'to be' é a palavra mais importante do inglês. Ele significa 'ser' e 'estar' ao mesmo tempo. Hoje você domina suas formas.",
+      sections: [{
+        heading: "As formas do verbo",
+        content: "Em inglês, 'to be' muda conforme o pronome:\n\n• I am (eu sou/estou)\n• You are (você é/está)\n• He / She / It is (ele, ela, isto é/está)\n• We are (nós somos/estamos)\n• They are (eles são/estão)\n\nNa fala do dia a dia usamos formas curtas: I'm, you're, he's, she's, we're, they're.",
+        examples: [{
+          en: "I am a student.",
+          pt: "Eu sou estudante."
+        }, {
+          en: "She is happy today.",
+          pt: "Ela está feliz hoje."
+        }, {
+          en: "They are my friends.",
+          pt: "Eles são meus amigos."
+        }]
+      }, {
+        heading: "Negativa e pergunta",
+        content: "Para negar, coloque 'not' depois do verbo: I am not, she is not (isn't), we are not (aren't).\n\nPara perguntar, inverta: Am I…? Are you…? Is he…?",
+        examples: [{
+          en: "I am not tired.",
+          pt: "Eu não estou cansado."
+        }, {
+          en: "Are you Brazilian?",
+          pt: "Você é brasileiro?"
+        }, {
+          en: "Is she at home?",
+          pt: "Ela está em casa?"
+        }]
+      }],
+      exercises: [{
+        type: "choice",
+        question: "Complete: 'She ___ my sister.'",
+        options: ["am", "is", "are"],
+        answer: "is",
+        explanation: "He/she/it sempre usa 'is'."
+      }, {
+        type: "choice",
+        question: "Complete: 'We ___ at school.'",
+        options: ["am", "is", "are"],
+        answer: "are",
+        explanation: "Plural (we/you/they) sempre usa 'are'."
+      }, {
+        type: "choice",
+        question: "Qual a negativa de 'I am hungry'?",
+        options: ["I not am hungry", "I am not hungry", "I don't am hungry"],
+        answer: "I am not hungry",
+        explanation: "Basta adicionar 'not' depois do verbo."
+      }, {
+        type: "translate",
+        question: "Traduza: 'Ele é médico.'",
+        options: [],
+        answer: "He is a doctor",
+        explanation: "Profissões em inglês levam artigo: 'a doctor'."
+      }],
+      vocabulary: [{
+        word: "happy",
+        pos: "adj",
+        translation: "feliz",
+        example: "I am happy today."
+      }, {
+        word: "tired",
+        pos: "adj",
+        translation: "cansado",
+        example: "She is tired."
+      }, {
+        word: "hungry",
+        pos: "adj",
+        translation: "com fome",
+        example: "Are you hungry?"
+      }, {
+        word: "friend",
+        pos: "noun",
+        translation: "amigo(a)",
+        example: "He is my friend."
+      }, {
+        word: "student",
+        pos: "noun",
+        translation: "estudante",
+        example: "We are students."
+      }],
+      tips: ["Na fala, use sempre as formas curtas (I'm, she's) — soam naturais.", "'To be' cobre 'ser' e 'estar'. O contexto diz qual sentido."],
+      finalTip: "Com 'to be' dominado, você já forma centenas de frases em inglês."
+    }
+  },
+  reading: {
+    A1: {
+      title: "A manhã de Anna",
+      subtitle: "A simple daily routine",
+      estimatedMinutes: 12,
+      intro: "Ler textos curtos é o caminho mais rápido para sentir a língua. Leia devagar, tente entender sem traduzir tudo.",
+      readingText: "Anna wakes up at seven o'clock. She drinks a cup of coffee and eats some bread with butter. At eight, she walks to work. Anna is a teacher. She loves her job because she loves children. After work, she goes to the park with her dog, Max. In the evening, she reads a book and goes to bed early.",
+      sections: [{
+        heading: "Estratégia de leitura",
+        content: "Na primeira leitura, NÃO pare em cada palavra. Leia tudo para pegar a ideia geral. Depois leia de novo, mais devagar, prestando atenção em palavras que você não conhece.",
+        examples: [{
+          en: "wakes up",
+          pt: "acorda"
+        }, {
+          en: "goes to bed",
+          pt: "vai dormir"
+        }]
+      }],
+      exercises: [{
+        type: "choice",
+        question: "A que horas Anna acorda?",
+        options: ["Às 6h", "Às 7h", "Às 8h"],
+        answer: "Às 7h",
+        explanation: "'She wakes up at seven o'clock' = ela acorda às sete."
+      }, {
+        type: "choice",
+        question: "Qual é a profissão de Anna?",
+        options: ["Médica", "Professora", "Engenheira"],
+        answer: "Professora",
+        explanation: "'Anna is a teacher' = Anna é professora."
+      }, {
+        type: "choice",
+        question: "Por que Anna ama o trabalho dela?",
+        options: ["Porque é perto de casa", "Porque ganha bem", "Porque ama crianças"],
+        answer: "Porque ama crianças",
+        explanation: "'She loves her job because she loves children.'"
+      }, {
+        type: "translate",
+        question: "Traduza: 'She reads a book.'",
+        options: [],
+        answer: "Ela lê um livro",
+        explanation: "read = ler. No presente: she reads (adiciona -s na 3ª pessoa)."
+      }],
+      vocabulary: [{
+        word: "wake up",
+        pos: "phrase",
+        translation: "acordar",
+        example: "I wake up at 7."
+      }, {
+        word: "bread",
+        pos: "noun",
+        translation: "pão",
+        example: "I eat bread every morning."
+      }, {
+        word: "work",
+        pos: "noun/verb",
+        translation: "trabalho/trabalhar",
+        example: "She goes to work."
+      }, {
+        word: "dog",
+        pos: "noun",
+        translation: "cachorro",
+        example: "My dog is big."
+      }, {
+        word: "evening",
+        pos: "noun",
+        translation: "noite (até dormir)",
+        example: "In the evening, I read."
+      }],
+      tips: ["Leia o texto duas vezes — a segunda leitura rende muito mais.", "Use o contexto para adivinhar palavras novas antes de traduzir."],
+      finalTip: "Cada texto que você lê em inglês é um tijolo na sua fluência."
+    }
+  },
+  writing: {
+    A1: {
+      title: "Se apresentar em inglês",
+      subtitle: "Hello, my name is…",
+      estimatedMinutes: 15,
+      intro: "Se apresentar é a primeira coisa que você vai fazer ao conhecer alguém. Hoje você vai aprender uma estrutura simples que funciona sempre.",
+      sections: [{
+        heading: "A estrutura básica",
+        content: "Uma boa apresentação tem 4 partes:\n\n1. Cumprimento: Hello / Hi / Nice to meet you.\n2. Nome: My name is… / I'm…\n3. Origem: I am from… / I live in…\n4. Ocupação ou interesse: I am a… / I work as… / I like…",
+        examples: [{
+          en: "Hi, my name is Luis.",
+          pt: "Oi, meu nome é Luis."
+        }, {
+          en: "I am from Brazil.",
+          pt: "Eu sou do Brasil."
+        }, {
+          en: "I work in an office.",
+          pt: "Eu trabalho num escritório."
+        }]
+      }, {
+        heading: "Conectando as frases",
+        content: "Para soar menos robótico, junte frases com 'and':\n\n'My name is Luis AND I am from Brazil.'\n\nE encerre com algo simpático: 'Nice to meet you!'",
+        examples: [{
+          en: "I am Ana and I live in São Paulo.",
+          pt: "Eu sou a Ana e moro em São Paulo."
+        }, {
+          en: "Nice to meet you!",
+          pt: "Prazer em conhecer você!"
+        }]
+      }],
+      exercises: [{
+        type: "choice",
+        question: "Qual é a forma correta de começar uma apresentação?",
+        options: ["My is name Luis", "My name is Luis", "I name is Luis"],
+        answer: "My name is Luis",
+        explanation: "A estrutura é: My name + is + nome."
+      }, {
+        type: "choice",
+        question: "Como dizer 'Eu sou do Brasil'?",
+        options: ["I from Brazil", "I am of Brazil", "I am from Brazil"],
+        answer: "I am from Brazil",
+        explanation: "Usamos 'from' para origem. 'I am from + país'."
+      }, {
+        type: "translate",
+        question: "Traduza: 'Eu moro no Rio.'",
+        options: [],
+        answer: "I live in Rio",
+        explanation: "live in + cidade. 'Live' é morar."
+      }, {
+        type: "choice",
+        question: "Qual fecha bem uma apresentação?",
+        options: ["Goodbye forever", "Nice to meet you", "See you never"],
+        answer: "Nice to meet you",
+        explanation: "É a forma padrão: 'Prazer em conhecer você'."
+      }],
+      vocabulary: [{
+        word: "name",
+        pos: "noun",
+        translation: "nome",
+        example: "My name is Ana."
+      }, {
+        word: "from",
+        pos: "prep",
+        translation: "de (origem)",
+        example: "I am from Brazil."
+      }, {
+        word: "live",
+        pos: "verb",
+        translation: "morar/viver",
+        example: "I live in a small city."
+      }, {
+        word: "work",
+        pos: "verb",
+        translation: "trabalhar",
+        example: "I work in a bank."
+      }, {
+        word: "meet",
+        pos: "verb",
+        translation: "conhecer/encontrar",
+        example: "Nice to meet you."
+      }],
+      tips: ["Pratique sua apresentação em voz alta algumas vezes.", "Decore uma apresentação 'pronta' de 3 frases — ela te salva em muitas situações."],
+      finalTip: "Escreva sua própria apresentação agora e guarde — você vai usar muito."
+    }
+  },
+  listening: {
+    A1: {
+      title: "Cumprimentos do dia a dia",
+      subtitle: "Hi! How are you?",
+      estimatedMinutes: 12,
+      intro: "Treinar o ouvido é prática pura. Toque o áudio várias vezes. Primeiro, tente entender SEM ler. Depois confira a transcrição.",
+      listeningText: "Hi Tom! How are you today? I am very well, thanks. And you? I am good. Are you busy tonight? No, I am free. Let's have dinner together. Great idea! See you at seven.",
+      sections: [{
+        heading: "Expressões úteis da fala",
+        content: "Esses são os 'tijolos' de quase toda conversa em inglês:\n\n• How are you? (Como você está?)\n• I am well / I am good. (Estou bem.)\n• And you? (E você?)\n• See you! (Até mais!)",
+        examples: [{
+          en: "How are you?",
+          pt: "Como você está?"
+        }, {
+          en: "I'm fine, thanks.",
+          pt: "Estou bem, obrigado."
+        }]
+      }],
+      exercises: [{
+        type: "choice",
+        question: "No diálogo, o que Tom responde para 'How are you?'",
+        options: ["I am busy", "I am very well, thanks", "I am tired"],
+        answer: "I am very well, thanks",
+        explanation: "Tom diz que está bem e agradece."
+      }, {
+        type: "choice",
+        question: "O que eles combinam de fazer à noite?",
+        options: ["Almoçar juntos", "Ir ao cinema", "Jantar juntos"],
+        answer: "Jantar juntos",
+        explanation: "'Let's have dinner together' = vamos jantar juntos."
+      }, {
+        type: "choice",
+        question: "A que horas eles vão se ver?",
+        options: ["Às 6", "Às 7", "Às 8"],
+        answer: "Às 7",
+        explanation: "'See you at seven' = até as sete."
+      }, {
+        type: "translate",
+        question: "Traduza: 'I am free tonight.'",
+        options: [],
+        answer: "Eu estou livre hoje à noite",
+        explanation: "free = livre. tonight = hoje à noite."
+      }],
+      vocabulary: [{
+        word: "well",
+        pos: "adj/adv",
+        translation: "bem",
+        example: "I am well."
+      }, {
+        word: "busy",
+        pos: "adj",
+        translation: "ocupado",
+        example: "Are you busy?"
+      }, {
+        word: "free",
+        pos: "adj",
+        translation: "livre",
+        example: "I am free tonight."
+      }, {
+        word: "tonight",
+        pos: "adv",
+        translation: "hoje à noite",
+        example: "See you tonight."
+      }, {
+        word: "together",
+        pos: "adv",
+        translation: "juntos",
+        example: "Let's go together."
+      }],
+      tips: ["Ouça primeiro sem ler. É desconfortável, mas é assim que o ouvido se forma.", "Repita as frases em voz alta. Ouvir + falar = fixação dupla."],
+      finalTip: "Não existe fluência sem ouvido treinado. Cinco minutos por dia já faz diferença."
+    }
+  },
+  review: {
+    A1: {
+      title: "Revisão: o essencial do A1",
+      subtitle: "Putting it all together",
+      estimatedMinutes: 15,
+      intro: "Hoje é dia de juntar as peças: verbo 'to be', vocabulário do cotidiano e apresentação pessoal. Quando uma aula de revisão fica fácil, é sinal que você está pronto para avançar.",
+      sections: [{
+        heading: "O que você já sabe",
+        content: "Você já viu muita coisa:\n\n• Verbo to be: I am, you are, he/she/it is, we/they are\n• Perguntas: Are you…? Is she…?\n• Vocabulário básico: happy, tired, hungry, friend, student…\n• Apresentação: My name is…, I am from…, I live in…",
+        examples: [{
+          en: "I am Luis and I am from Brazil.",
+          pt: "Eu sou Luis e sou do Brasil."
+        }, {
+          en: "Are you a student?",
+          pt: "Você é estudante?"
+        }]
+      }, {
+        heading: "Uma dica valiosa",
+        content: "Se você já consegue entender esta frase sem tradutor, está pronto para ir além:\n\n'My friend Ana is from Portugal. She is very happy today because she is not busy.'",
+        examples: [{
+          en: "She is not busy.",
+          pt: "Ela não está ocupada."
+        }]
+      }],
+      exercises: [{
+        type: "choice",
+        question: "Complete: 'My friends ___ from Argentina.'",
+        options: ["is", "are", "am"],
+        answer: "are",
+        explanation: "Friends = plural, então 'are'."
+      }, {
+        type: "translate",
+        question: "Traduza: 'Meu nome é Carlos e eu sou do Brasil.'",
+        options: [],
+        answer: "My name is Carlos and I am from Brazil",
+        explanation: "Junte: My name is + nome + and + I am from + país."
+      }, {
+        type: "choice",
+        question: "Qual é a pergunta correta?",
+        options: ["You are tired?", "Are you tired?", "Is you tired?"],
+        answer: "Are you tired?",
+        explanation: "Para perguntar, o verbo 'are' vem antes: Are you…?"
+      }, {
+        type: "choice",
+        question: "O que significa 'She is not a student'?",
+        options: ["Ela é estudante", "Ela não é estudante", "Ela será estudante"],
+        answer: "Ela não é estudante",
+        explanation: "'Is not' = negativa no presente."
+      }],
+      vocabulary: [{
+        word: "also",
+        pos: "adv",
+        translation: "também",
+        example: "I am a student. I am also a worker."
+      }, {
+        word: "very",
+        pos: "adv",
+        translation: "muito",
+        example: "She is very happy."
+      }, {
+        word: "today",
+        pos: "adv",
+        translation: "hoje",
+        example: "Today is a good day."
+      }, {
+        word: "because",
+        pos: "conj",
+        translation: "porque",
+        example: "I am happy because it is Friday."
+      }, {
+        word: "but",
+        pos: "conj",
+        translation: "mas",
+        example: "I am tired but happy."
+      }],
+      tips: ["Revisão não é repetição. É hora de ligar tudo o que você já viu.", "Tente escrever 3 frases sobre você usando tudo de hoje. É o melhor exercício."],
+      finalTip: "Boa semana! Segunda tem gramática nova."
+    }
+  }
+};
+const getFallbackLesson = (level, focus) => {
+  const bank = FALLBACK_LESSONS[focus] || FALLBACK_LESSONS.grammar;
+  return bank[level] || bank.A1;
+};
+
+// -----------------------------------------------------------
+// Storage helpers
+// -----------------------------------------------------------
+
+const sGet = async key => {
+  try {
+    const r = localGet(key);
+    if (!r) return null;
+    try {
+      return JSON.parse(r.value);
+    } catch {
+      return r.value;
+    }
+  } catch {
+    return null;
+  }
+};
+const sSet = async (key, value) => {
+  try {
+    const v = typeof value === "string" ? value : JSON.stringify(value);
+    localSet(key, v);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+// -----------------------------------------------------------
+// Dates
+// -----------------------------------------------------------
+
+const pad = n => String(n).padStart(2, "0");
+const todayKey = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+};
+const daysBetween = (a, b) => {
+  const d1 = new Date(a + "T00:00:00");
+  const d2 = new Date(b + "T00:00:00");
+  return Math.round((d2 - d1) / 86400000);
+};
+const currentDay = () => new Date().getDay();
+const prettyDate = () => {
+  const d = new Date();
+  const dias = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"];
+  const meses = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
+  return `${dias[d.getDay()]}, ${d.getDate()} de ${meses[d.getMonth()]}`;
+};
+
+// -----------------------------------------------------------
+// AI lesson generation
+// -----------------------------------------------------------
+
+// -----------------------------------------------------------
+// Full curriculum map A1→C2
+// -----------------------------------------------------------
+const CURRICULUM = {
+  A1: {
+    grammar: [
+    // Ser e estar
+    "Verbo 'to be' – afirmativa: I am, you are, he/she/it is", "Verbo 'to be' – negativa: I am not, she isn't", "Verbo 'to be' – perguntas: Are you? Is he? What is it?", "Verbo 'to be' – contrações e usos no cotidiano",
+    // Pronomes e artigos
+    "Pronomes pessoais sujeito: I, you, he, she, it, we, they", "Artigos indefinidos: a / an – quando usar cada um", "Artigo definido: the – quando usar e quando omitir", "Adjetivos possessivos: my, your, his, her, its, our, their",
+    // Substantivos
+    "Plural dos substantivos: regras com -s e -es", "Plural irregular: man/men, child/children, tooth/teeth", "Substantivos contáveis e incontáveis (introdução)",
+    // Present Simple
+    "Present Simple – afirmativa: I work, she works", "Present Simple – negativa: don't e doesn't", "Present Simple – perguntas com do e does", "Present Simple – respostas curtas: Yes, I do / No, she doesn't", "Advérbios de frequência: always, usually, often, sometimes, never",
+    // Presente Contínuo
+    "Present Continuous – I am eating, she is working", "Present Continuous – negativa e perguntas", "Diferença Present Simple vs Present Continuous",
+    // Modais básicos
+    "Can / Can't – habilidade e possibilidade", "Can / Could – pedidos educados", "Would like – fazer pedidos e expressar desejo",
+    // Preposições e lugar
+    "Preposições de lugar: in, on, at, under, next to, between", "Preposições de tempo: at (horas), on (dias), in (meses/anos)", "There is / There are – afirmativa, negativa e pergunta",
+    // Números e quantidades
+    "Números cardinais 1–100 e ordinais 1st–20th", "Horas: What time is it? It's half past three.", "Dias da semana, meses e estações do ano",
+    // Imperativo e mais
+    "Imperativo: Open the door! Don't run!", "Adjetivos descritivos: big/small, old/new, happy/sad", "Adjetivos de cor e forma",
+    // Revisão
+    "Revisão: to be + pronomes + artigos", "Revisão: present simple – rotina e hábitos", "Revisão: present continuous – ações em curso", "Revisão: can, would like, preposições", "Revisão: números, horas, datas", "Revisão geral A1 – parte 1", "Revisão geral A1 – parte 2", "Revisão geral A1 – parte 3"],
+    reading: ["Texto: rotina matinal de Ana – vocabulário do dia a dia", "Texto: apresentação de família – pronomes e adjetivos", "Texto: cardápio de restaurante – números e alimentos", "Texto: anúncio de emprego simples – present simple", "Texto: e-mail de apresentação entre amigos", "Texto: descrição de uma cidade pequena", "Texto: lista de compras – contáveis e incontáveis", "Texto: diálogo numa loja – can/would like", "Texto: post de rede social sobre fim de semana", "Texto: horário de ônibus – preposições de tempo", "Texto: descrição de casa – there is/are + preposições", "Texto: agenda semanal – dias e horas", "Texto: perfil de personagem – adjetivos descritivos", "Texto: notinha de recado – imperativo e present simple", "Texto: diálogo sobre rotina – revisão geral A1"],
+    writing: ["Se apresentar: My name is… I am from… I am… years old.", "Descrever sua rotina diária com present simple", "Escrever um e-mail simples de apresentação", "Descrever sua família com adjetivos", "Escrever um bilhete curto com imperativo", "Preencher um formulário básico (nome, idade, país)", "Escrever sobre o que você gosta e não gosta", "Descrever sua casa com there is/are", "Escrever sobre seu trabalho ou escola", "Cartão de aniversário simples", "Descrever sua cidade natal", "Lista de objetivos pessoais com would like", "Post de rede social sobre sua semana", "E-mail pedindo informações simples", "Parágrafo de revisão: sobre você mesmo"],
+    listening: ["Diálogo: cumprimentos e apresentações – Hi, how are you?", "Diálogo: pedindo informações na rua", "Diálogo: no restaurante – fazer pedido", "Diálogo: comprar algo numa loja com can/would like", "Diálogo: perguntar e dizer horas", "Diálogo: falar sobre família e adjetivos", "Diálogo: planos para o fim de semana", "Diálogo: reservar um quarto de hotel", "Diálogo: no médico – sintomas básicos", "Diálogo: despedida e agradecimento", "Diálogo: falar sobre a rotina diária", "Diálogo: descrever onde você mora", "Diálogo: o que você pode/não pode fazer", "Diálogo: convidar alguém para fazer algo", "Diálogo de revisão A1: situação completa no cotidiano"],
+    review: ["Revisão semana 1: to be + pronomes + artigos + adjetivos", "Revisão semana 2: present simple – hábitos e rotina", "Revisão semana 3: present continuous + can + would like", "Revisão semana 4: preposições + there is/are + números", "Revisão semana 5: plurais + contáveis/incontáveis + horas", "Revisão semana 6: imperativo + adjetivos descritivos", "Revisão semana 7: vocabulário temático A1", "Revisão final A1"]
+  },
+  A2: {
+    grammar: [
+    // Past Simple
+    "Past Simple – verbos regulares: walked, played, watched", "Past Simple – verbos irregulares grupo 1: go/went, eat/ate, see/saw", "Past Simple – verbos irregulares grupo 2: have/had, do/did, come/came", "Past Simple – negativa: didn't + infinitivo", "Past Simple – perguntas: Did you? Where did she?", "Past Simple – respostas curtas e uso com expressões de tempo",
+    // Futuro
+    "Futuro com going to – planos e intenções", "Futuro com will – decisões no momento e previsões", "Diferença going to vs will", "Futuro com present continuous – planos confirmados",
+    // Comparação
+    "Comparativos de adjetivos: bigger, more beautiful", "Superlativos: the biggest, the most expensive", "Comparativo de igualdade: as… as",
+    // Presente Perfeito
+    "Present Perfect – have/has + particípio (introdução e formação)", "Present Perfect – ever / never / already / yet", "Present Perfect – for / since (duração)", "Present Perfect vs Past Simple – diferença fundamental",
+    // Modais
+    "Should / shouldn't – conselho e recomendação", "Must / mustn't – obrigação e proibição", "Have to / don't have to – necessidade e ausência", "May / might – possibilidade no presente/futuro",
+    // Condicionais
+    "Condicional tipo 0: If water reaches 100°C, it boils.", "Condicional tipo 1: If it rains, I will stay home.",
+    // Quantificadores
+    "Some / any – afirmativa, negativa e pergunta", "Much / many / a lot of / a few / a little", "Too / enough: too hot, not big enough",
+    // Phrasal Verbs e Preposições
+    "Phrasal verbs básicos: get up, turn on/off, look for, put on", "Preposições de movimento: to, from, along, past, across", "Adjetivos + preposição: good at, afraid of, interested in",
+    // Conectivos
+    "Conectivos básicos: and, but, or, so, because", "Conectivos de contraste: although, however", "Pronomes objeto: me, him, her, us, them",
+    // Revisão
+    "Revisão: past simple regular e irregular", "Revisão: futuro going to e will", "Revisão: present perfect – ever, never, already, yet", "Revisão: modais – should, must, have to, might", "Revisão: comparativos e superlativos", "Revisão: condicionais tipo 0 e 1", "Revisão: quantificadores e conectivos", "Revisão geral A2 – parte 1", "Revisão geral A2 – parte 2"],
+    reading: ["Texto: relato de uma viagem passada – past simple", "Texto: notícia simples de jornal – passado e presente", "Texto: resenha de filme em linguagem simples", "Texto: receita culinária – imperativo e vocabulário", "Texto: post de blog sobre hobby", "Texto: e-mail de reclamação a hotel", "Texto: entrevista curta com celebridade", "Texto: guia turístico de cidade – present perfect", "Texto: descrição de rotina profissional", "Texto: folheto de evento cultural", "Texto: comparação entre duas cidades", "Texto: planos de férias – going to", "Texto: e-mail de resposta sobre emprego", "Texto: artigo simples sobre saúde e hábitos", "Texto de revisão A2: situação cotidiana completa"],
+    writing: ["Escrever sobre um fim de semana passado", "E-mail informal para um amigo sobre novidades", "Descrever planos futuros com going to e will", "Comparar duas cidades ou países", "Escrever uma resenha curta de filme ou série", "Carta de agradecimento", "Escrever instruções: como chegar a algum lugar", "Descrever um problema e sugerir solução", "Diário de viagem – 1 dia", "E-mail solicitando informações sobre um curso", "Escrever sobre experiências: have you ever…?", "Post de blog sobre algo que você aprendeu", "E-mail de reclamação simples", "Descrição de pessoa famosa com comparativos", "Parágrafo de revisão A2: planos e experiências"],
+    listening: ["Diálogo: contar como foi o fim de semana – past simple", "Diálogo: fazer planos com going to e will", "Diálogo: pedir e dar direções na cidade", "Diálogo: reclamação num hotel", "Diálogo: entrevista de emprego simples", "Diálogo: comparar produtos numa loja", "Diálogo: marcar uma consulta médica", "Diálogo: discutir planos de viagem", "Diálogo: experiências passadas – ever/never", "Diálogo: expressar opiniões sobre filmes", "Diálogo: conselhos – should/shouldn't", "Diálogo: obrigações e regras – must/have to", "Diálogo: possibilidades – might/may", "Diálogo: compras e comparativos", "Diálogo de revisão A2: conversa variada completa"],
+    review: ["Revisão semana 1: past simple regular e irregular", "Revisão semana 2: futuro going to, will e present continuous", "Revisão semana 3: present perfect – ever/never/already/yet/for/since", "Revisão semana 4: modais – should, must, have to, might", "Revisão semana 5: comparativos, superlativos, as…as", "Revisão semana 6: condicionais 0 e 1", "Revisão semana 7: quantificadores, phrasal verbs, conectivos", "Revisão semana 8: vocabulário temático A2", "Revisão final A2"]
+  },
+  B1: {
+    grammar: [
+    // Tempos do passado
+    "Past Continuous – I was sleeping when the phone rang.", "Past Continuous vs Past Simple – interação entre ações", "Past Perfect – I had already eaten when she arrived.", "Past Perfect vs Past Simple – sequência de eventos", "Past Perfect Continuous – I had been waiting for an hour.",
+    // Present Perfect avançado
+    "Present Perfect Continuous – I have been studying.", "Present Perfect: escolha entre Simple e Continuous",
+    // Futuros
+    "Futuro contínuo: I will be working at 9pm.", "Futuro perfeito: I will have finished by Friday.", "Futuro com present perfect: By 2030, we will have solved…",
+    // Voz passiva
+    "Voz passiva: presente e passado simples", "Voz passiva: present perfect e futuro", "Agente na voz passiva: by + agente",
+    // Reported Speech
+    "Reported speech – afirmativa: She said she was tired.", "Reported speech – perguntas: He asked where I lived.", "Reported speech – imperativo e modal", "Mudança de tempo verbal no reported speech",
+    // Condicionais
+    "Condicional tipo 2: If I had money, I would travel.", "Condicional tipo 3: If I had studied, I would have passed.", "Mixed conditional: If I had studied, I would be a doctor.",
+    // Orações relativas
+    "Orações relativas: who, which, that, where, whose", "Orações relativas restritivas vs não-restritivas",
+    // Gerúndio e infinitivo
+    "Gerúndio como sujeito: Swimming is good for you.", "Gerúndio após preposição: I'm good at cooking.", "Verbos + gerúndio: enjoy, avoid, suggest, keep", "Verbos + infinitivo: want, hope, decide, agree", "Verbos + gerúndio ou infinitivo com mudança de sentido",
+    // Modais avançados
+    "Modais de dedução no presente: must be, can't be, might be", "Modais de dedução no passado: must have, can't have, might have",
+    // Conectivos avançados
+    "Conectivos de contraste: however, nevertheless, despite, in spite of", "Conectivos de resultado: therefore, as a result, consequently", "Conectivos de adição: moreover, furthermore, in addition",
+    // Phrasal verbs intermediários
+    "Phrasal verbs intermediários – grupo 1: put off, carry out, bring up", "Phrasal verbs intermediários – grupo 2: take up, give up, look into", "Phrasal verbs intermediários – grupo 3: run out of, come across, set up",
+    // Revisão
+    "Revisão: tempos do passado – simple, continuous, perfect", "Revisão: voz passiva em todos os tempos", "Revisão: reported speech completo", "Revisão: condicionais 2, 3 e misto", "Revisão: orações relativas e conectivos avançados", "Revisão: modais de dedução", "Revisão: gerúndio e infinitivo", "Revisão geral B1 – parte 1", "Revisão geral B1 – parte 2"],
+    reading: ["Artigo: tendências de trabalho remoto no mundo atual", "Artigo: mudanças climáticas – causas e soluções", "Entrevista: empreendedor jovem de sucesso", "Texto: análise de um problema social contemporâneo", "Conto curto em inglês com vocabulário B1", "Artigo de opinião sobre redes sociais e juventude", "Texto: benefícios de aprender idiomas para o cérebro", "Reportagem: estilo de vida sustentável na prática", "Texto: história de vida inspiradora com superação", "Artigo: saúde mental e hábitos na era digital", "Texto: futuro das cidades inteligentes", "Reportagem: diversidade cultural no ambiente de trabalho", "Artigo: impacto da IA no mercado de trabalho", "Texto narrativo: dilema moral de um personagem", "Leitura de revisão B1: artigo complexo com inferência"],
+    writing: ["Ensaio de opinião: estrutura – tese, desenvolvimento, conclusão", "Parágrafo de opinião com argumentos e exemplos", "Ensaio: vantagens e desvantagens de um tema", "E-mail formal de solicitação", "E-mail formal de reclamação com pedido de resolução", "E-mail formal de resposta profissional", "Relatório simples: descrever dados de gráfico", "Texto narrativo: contar uma história pessoal com detalhes", "Review: avaliar produto/serviço com argumentação", "Carta de motivação: introdução e perfil pessoal", "Carta de motivação: habilidades e objetivos", "Texto: descrever um problema e propor soluções", "Blog post: experiência pessoal com reflexão", "Texto argumentativo: contra-argumento e refutação", "Parágrafo de revisão B1: escrita coerente e conectada"],
+    listening: ["Diálogo: debate de opinião entre amigos sobre tema atual", "Diálogo: negociação simples no trabalho", "Podcast curto: notícia do dia explicada", "Diálogo: entrevista de emprego completa", "Diálogo: resolver um conflito profissional educadamente", "Apresentação informal sobre um tema de interesse", "Diálogo: discutir prós e contras de uma decisão importante", "Podcast: dicas de produtividade e organização", "Diálogo: relato de experiência de viagem com detalhes", "Reunião de trabalho informal – planejamento", "Diálogo: conselhos sobre saúde e bem-estar", "Podcast: tendências tecnológicas explicadas", "Diálogo: discussão sobre dilema ético cotidiano", "Entrevista: especialista explica tema de interesse geral", "Áudio de revisão B1: situação profissional e pessoal"],
+    review: ["Revisão semana 1: past continuous e past perfect", "Revisão semana 2: present perfect continuous e futuros avançados", "Revisão semana 3: voz passiva completa", "Revisão semana 4: reported speech completo", "Revisão semana 5: condicionais 2, 3 e misto", "Revisão semana 6: orações relativas", "Revisão semana 7: gerúndio e infinitivo avançados", "Revisão semana 8: modais de dedução", "Revisão semana 9: conectivos e coesão textual", "Revisão semana 10: phrasal verbs intermediários", "Revisão final B1"]
+  },
+  B2: {
+    grammar: [
+    // Estruturas avançadas
+    "Subjuntivo em inglês: I suggest that he be / It's vital that she attend", "Inversão para ênfase: Never have I seen such dedication.", "Inversão com condicionais: Were I to leave / Had I known", "Cleft sentences para ênfase: It was John who broke it.", "Pseudo-cleft: What I need is rest. What surprised me was…",
+    // Voz passiva avançada
+    "Voz passiva com modais: It must be done / should have been told", "Voz passiva com verbos de percepção: It is said that… / He is believed to…", "Get passive: She got promoted. The car got stolen.",
+    // Reported Speech avançado
+    "Reported speech com verbos de reporte variados: admit, deny, warn, insist", "Reported speech de perguntas indiretas em contextos formais",
+    // Estruturas nominais
+    "Orações nominais: The fact that… / What matters is…", "Nominalização básica: decide → decision, fail → failure", "Frases nominais complexas: a rapidly growing economy",
+    // Particípios
+    "Particípio presente como adjunto: Walking down the street, she saw…", "Particípio passado como adjunto: Exhausted by the trip, he slept.", "Cláusulas absolutas: The work done, they left.",
+    // Verbos e colocações
+    "Verbos de percepção + -ing vs infinitivo: I saw her running / run", "Estruturas de desejo: I wish + past simple / I wish + would", "I'd rather, I'd sooner, I'd prefer – preferência e hipótese", "Colocações avançadas grupo 1: make a decision, take action, do research", "Colocações avançadas grupo 2: reach a conclusion, draw attention, raise awareness",
+    // Phrasal verbs avançados
+    "Phrasal verbs avançados separáveis – grupo 1: bring about, carry out, rule out", "Phrasal verbs avançados inseparáveis – grupo 2: come across, look into, go through",
+    // Registro e discurso
+    "Registro formal vs informal: escolhas gramaticais e lexicais", "Hedging language: tend to, seem to, appear to, be likely to", "Discourse markers na fala: well, actually, you know, I mean, right", "Discourse markers na escrita: in contrast, on the other hand, to illustrate", "Conectivos avançados: notwithstanding, whereas, albeit, inasmuch as",
+    // Artigos
+    "Artigos avançados: uso com nomes próprios, instituições, refeições", "Omissão de artigos: contextos e padrões",
+    // Revisão
+    "Revisão: inversão e ênfase – estruturas avançadas", "Revisão: voz passiva avançada e get passive", "Revisão: reported speech com verbos de reporte variados", "Revisão: nominalização e frases nominais", "Revisão: particípios e cláusulas absolutas", "Revisão: colocações e phrasal verbs avançados", "Revisão: hedging, discourse markers, registro", "Revisão geral B2 – parte 1", "Revisão geral B2 – parte 2"],
+    reading: ["Artigo acadêmico simplificado: impacto social da tecnologia", "Editorial de jornal: argumento político com subentendidos", "Ensaio literário sobre conto clássico de autor anglófono", "Reportagem investigativa: exploração de dados e causas", "Artigo: psicologia do comportamento humano em grupos", "Texto filosófico acessível: ética e dilemas modernos", "Crítica cultural: cinema contemporâneo e mensagens", "Texto: economia para não-economistas – desigualdade", "Artigo: inovação biotecnológica e questões éticas", "Entrevista longa com personalidade relevante do mundo das artes", "Artigo de opinião com argumento e contra-argumento", "Reportagem: crise climática – dados e soluções", "Texto: sociologia da identidade na era das redes sociais", "Análise de discurso: como líderes usam a linguagem", "Leitura de revisão B2: texto denso com inferência avançada"],
+    writing: ["Ensaio argumentativo: estrutura acadêmica completa", "Proposta formal de projeto com objetivos e metodologia", "Relatório com análise de dados e gráficos", "Artigo de opinião para jornal: tom jornalístico", "Resumo executivo de documento complexo", "Carta de apresentação profissional completa e persuasiva", "Texto persuasivo: pitch de ideia ou proposta", "Análise crítica de texto jornalístico ou literário", "Texto comparativo: dois pontos de vista com síntese", "Resposta profissional a e-mail complexo com tom formal", "Ensaio: problema + análise + solução + conclusão", "Review acadêmica de artigo ou livro", "Texto de divulgação para público geral", "White paper: posição sobre tema controverso", "Parágrafo de revisão B2: coesão e sofisticação lexical"],
+    listening: ["Palestra simplificada TED: inovação e mudança social", "Debate: globalização – prós e contras com argumentos complexos", "Podcast: tendências culturais e comportamentais", "Reunião de trabalho formal com decisões e ações", "Entrevista jornalística com especialista", "Diálogo: negociação comercial com linguagem de negócios", "Palestra universitária: trecho introdutório de aula", "Documentário: narração densa com vocabulário específico", "Podcast: história contemporânea e análise cultural", "Debate: ética em IA e tecnologia", "Apresentação de dados – relatório oral", "Conferência: discurso de abertura motivacional", "Podcast: saúde mental no ambiente corporativo", "Entrevista: empreendedor narra desafios e aprendizados", "Áudio de revisão B2: contexto profissional e acadêmico"],
+    review: ["Revisão semana 1: estruturas de ênfase, inversão, cleft", "Revisão semana 2: voz passiva avançada + get passive", "Revisão semana 3: reported speech avançado", "Revisão semana 4: nominalização e frases nominais", "Revisão semana 5: particípios e cláusulas absolutas", "Revisão semana 6: colocações avançadas grupo 1 e 2", "Revisão semana 7: phrasal verbs avançados", "Revisão semana 8: hedging, discourse markers, registro", "Revisão semana 9: artigos avançados e omissão", "Revisão semana 10: desejo, preferência e hipótese", "Revisão final B2"]
+  },
+  C1: {
+    grammar: ["Nominalização avançada: transform verb phrases into nouns in academic writing", "Fronting para ênfase: Rarely do we see such clarity.", "Inversão com advérbios negativos: No sooner had… than…, Hardly had…", "Inversão com condicionais formais: Should you require / Were this to happen", "Aspectos verbais: perfect vs continuous – nuances de significado", "Modalidade epistêmica: must, can't, may, might, could – graus de certeza", "Modalidade deôntica em contexto formal: shall, ought to, be supposed to", "Cláusulas absolutas avançadas: The negotiations completed, both parties signed.", "Orações reduzidas: Having arrived late, he missed the introduction.", "Adjetivos predicativos vs atributivos – distinções e colocações específicas", "Auxiliares para ênfase e contraste: I do believe / It is important / They did warn us.", "Voz passiva com get em contextos formais e informais", "Reported speech: estruturas ambíguas e verbos de reporte sofisticados", "Subjuntivo formal avançado em contextos jurídicos e acadêmicos", "Coesão textual: referência, substituição, elipse e conjunção", "Colocações acadêmicas: conduct research, challenge assumptions, shed light on", "Colocações profissionais: streamline processes, leverage strengths, foster innovation", "Phrasal verbs em registro formal: carry out → execute, put off → postpone", "Pontuação avançada: ponto e vírgula, travessão, dois-pontos em prosa formal", "Estruturas de hipótese: Suppose / Assuming that / Given that…", "Discourse markers em escrita acadêmica: as previously mentioned, it follows that", "Metáfora gramatical: transformar processos em coisas (análise de linguagem)", "Quantificadores em contexto formal: a proportion of, the majority of, a fraction of", "Orações relativas apositivas em prosa acadêmica", "Estruturas de preferência avançadas em contexto formal", "Revisão C1: nominalização + inversão + aspectos verbais", "Revisão C1: modalidade epistêmica e deôntica", "Revisão C1: coesão e coerência em textos longos", "Revisão C1: colocações acadêmicas e profissionais", "Revisão geral C1"],
+    reading: ["Ensaio filosófico: ética, liberdade e determinismo", "Artigo científico: leitura de abstract e análise crítica", "Trecho de romance clássico anglófono com análise estilística", "Artigo de política internacional: análise de subentendidos", "Ensaio sociológico: identidade, raça e cultura", "Texto jurídico simplificado: estrutura e linguagem", "Artigo econômico com dados e posição argumentativa", "Crítica literária de obra contemporânea", "Discurso político para análise retórica", "Ensaio sobre linguagem, poder e construção da realidade", "Artigo: neurociência e aprendizagem humana", "Ensaio: globalização e erosão cultural", "Texto: bioética – dilemas da medicina moderna", "Artigo de mídia: como a imprensa constrói narrativas", "Leitura de revisão C1: texto acadêmico com análise completa"],
+    writing: ["Ensaio acadêmico: tese + argumento + evidência + refutação + conclusão", "Abstract de artigo de pesquisa – estrutura e linguagem", "Proposta acadêmica formal: objetivos, método, impacto", "Crítica de livro ou artigo com posição sustentada", "Relatório de análise de mercado ou política", "Editorial com argumento forte e nuançado", "Texto de divulgação científica para público geral", "Carta de motivação para programa internacional de alto nível", "White paper: posição sobre tema complexo com dados", "Resenha acadêmica com análise crítica aprofundada", "Ensaio de contraste: duas visões opostas com síntese", "Texto formal: resposta a proposta ou relatório externo", "Análise de discurso: identificar estratégias retóricas", "Ensaio especulativo: e se… análise de cenário hipotético", "Parágrafo de revisão C1: precisão lexical e coesão sofisticada"],
+    listening: ["Palestra acadêmica: sociologia urbana com vocabulário denso", "Debate formal com múltiplos pontos de vista conflitantes", "Podcast de jornalismo investigativo aprofundado", "Conferência: discurso de abertura com retórica elaborada", "Entrevista aprofundada com especialista em área técnica", "Audiência formal: testemunho, argumento e contra-argumento", "Documentário: narração com vocabulário especializado", "Seminário universitário: discussão em grupo com divergência", "Podcast: filosofia aplicada ao cotidiano", "Palestra: linguística e poder da comunicação", "Debate: inteligência artificial e futuro da humanidade", "Palestra: economia comportamental – vieses e decisões", "Podcast: saúde pública e políticas sociais", "Entrevista: artista ou escritor fala sobre processo criativo", "Áudio de revisão C1: contexto acadêmico e profissional avançado"],
+    review: ["Revisão semana 1: nominalização e estruturas de ênfase avançadas", "Revisão semana 2: aspectos verbais e modalidade avançada", "Revisão semana 3: coesão, coerência e pontuação acadêmica", "Revisão semana 4: colocações acadêmicas e profissionais", "Revisão semana 5: orações reduzidas e cláusulas absolutas", "Revisão semana 6: discourse markers em escrita e fala", "Revisão semana 7: registro – formal, neutro, informal avançado", "Revisão semana 8: retórica – persuasão e argumentação", "Revisão semana 9: análise crítica de texto", "Revisão semana 10: produção escrita de alto nível", "Revisão final C1"]
+  },
+  C2: {
+    grammar: ["Variação estilística: arcaísmos, formalidade extrema e linguagem literária", "Retórica avançada: anáfora, antítese, paralelismo, quiasmo", "Ambiguidade intencional em textos literários e poéticos", "Ironia, sarcasmo, understatement britânico e litotes", "Dialetos do inglês: britânico, americano, australiano, indiano – diferenças", "Linguagem figurada: metáfora morta, metonímia, sinédoque", "Intertextualidade: referências, alusões e paródia", "Sintaxe de longa distância e construções raras em prosa literária", "Inglês jurídico: shall, herein, whereas, notwithstanding, pursuant to", "Inglês científico: passiva, impessoalidade, hedging extremo", "Inglês de negócios de alto nível: due diligence, leverage, synergy", "Humor em inglês: puns, wordplay, wit e double entendre", "Estruturas poéticas: metro iâmbico, aliteração, enjambment", "Prosa literária: análise de ritmo, voz narrativa e ponto de vista", "Linguagem de mídia: manchetes, clickbait, eufemismo político", "Análise de discurso político: estratégias de persuasão e manipulação", "Pragmática: implicatura conversacional e pressuposição", "Deixis e referência anafórica em textos complexos", "Registro extremo: linguagem de luto, diplomacia e cerimônia", "Identidade linguística: code-switching, bilinguismo e hibridismo", "Revisão C2: retórica e estilo literário", "Revisão C2: pragmática e análise de discurso", "Revisão C2: variação de registro em contextos extremos", "Revisão C2: humor, ironia e subversão da linguagem", "Revisão final C2"],
+    reading: ["Trecho de romance literário moderno com análise de voz e estilo", "Ensaio de David Foster Wallace: ironia e metaficção", "Artigo do The Economist: análise econômica e política completa", "Poema moderno: interpretação, análise métrica e semântica", "Trecho de peça teatral: Harold Pinter – subtexto e silêncio", "Artigo filosófico denso: argumentação e contra-argumentação", "Conto de autor canônico: Carver, Flannery O'Connor – análise", "Discurso histórico: Churchill ou MLK – análise retórica completa", "Artigo de crítica cultural: ironia, subversão e intertextualidade", "Texto experimental: stream of consciousness – Joyce ou Woolf", "Artigo de The New Yorker: longform journalism com análise", "Ensaio pessoal: voz íntima e construção de ethos", "Trecho de romance distópico: análise política e linguística", "Crônica jornalística: estilo, tom e construção da persona", "Leitura de revisão C2: texto nativo complexo com análise total"],
+    writing: ["Ensaio literário de alto nível com análise estilística", "Artigo de opinião com ironia, sofisticação e voz própria", "Proposta acadêmica para banca internacional de alto nível", "Análise retórica completa de discurso famoso", "Texto criativo: conto curto com voz própria e densidade literária", "Crítica de arte ou música com linguagem especializada", "Texto de diplomacia: comunicado formal e carta aberta", "Manifesto cultural ou político com argumentação densa", "Análise de poema com argumentação crítica e evidência textual", "Ensaio pessoal estilo The New Yorker: narrativa + reflexão + análise", "Parodia ou pastiche de estilo literário reconhecível", "Texto especulativo de ficção científica curta", "Proposta de pesquisa interdisciplinar", "Texto de divulgação para audiência especializada", "Parágrafo de revisão C2: domínio de estilo e voz nativa"],
+    listening: ["Palestra de filosofia com ritmo e vocabulário nativo denso", "Podcast britânico: cultura, humor e sátira social", "Debate político ao vivo com múltiplos sotaques e velocidade nativa", "Entrevista literária com escritor anglófono sobre processo criativo", "Stand-up comedy em inglês: análise cultural e linguística", "Documentário BBC: narração literária densa", "Discussão acadêmica informal em inglês nativo – vários sotaques", "This American Life: podcast de jornalismo narrativo americano", "Diálogo de filme de autor: subtexto, implicatura e não-dito", "Conferência TED avançada sem simplificação vocabular", "Podcast de comédia de ideias: wit e argumentação rápida", "Entrevista jornalística adversarial: estratégias de evasão e pressão", "Programa de rádio britânico: humor intelectual e referências culturais", "Audiolivro: trecho de romance contemporâneo lido pelo autor", "Áudio de revisão C2: variedade de estilos e sotaques nativos"],
+    review: ["Revisão semana 1: retórica, figuras de linguagem e estilo literário", "Revisão semana 2: dialetos, variação e identidade linguística", "Revisão semana 3: pragmática, implicatura e análise de discurso", "Revisão semana 4: inglês técnico – jurídico, científico, corporativo", "Revisão semana 5: ironia, humor e subversão na linguagem", "Revisão semana 6: análise crítica de texto literário", "Revisão semana 7: produção escrita de nível literário", "Revisão semana 8: compreensão oral de falantes nativos", "Revisão semana 9: síntese de domínio C2", "Revisão final C2: proficiência de nível nativo"]
+  }
+};
+const getTopicForLesson = (level, focus, lessonIndex) => {
+  const topics = CURRICULUM[level]?.[focus] || [];
+  if (topics.length === 0) return null;
+  return topics[lessonIndex % topics.length];
+};
+
+// Count lessons per focus at this level
+const getLessonIndexByFocus = (completedLessons, level, focus) => {
+  return completedLessons.filter(l => l.level === level && l.skill === focus).length;
+};
+const buildPrompt = function (level, focus, completedAtLevel) {
+  let completedLessons = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : [];
+  const lessonIndex = getLessonIndexByFocus(completedLessons, level, focus);
+  const topic = getTopicForLesson(level, focus, lessonIndex);
+  const focusGuidance = {
+    grammar: `Ensine o seguinte tópico gramatical: "${topic}". Explique com clareza, regras, exceções e exemplos progressivos. Seja preciso e completo para o nível ${level}.`,
+    reading: `Crie um texto em inglês sobre o tema: "${topic}". Tamanho: 80 palavras (A1), 130 palavras (A2), 200 palavras (B1/B2), 280 palavras (C1/C2). Coloque o texto em 'readingText'. Depois explique vocabulário e estratégias de leitura.`,
+    writing: `Ensine a habilidade de escrita: "${topic}". Mostre estrutura, exemplos e modelos de texto. Dê instruções claras para o aluno escrever sua própria versão.`,
+    listening: `Gere um diálogo ou texto falado sobre: "${topic}". Coloque em 'listeningText'. Complexidade e tamanho compatíveis com o nível ${level}. Depois explique vocabulário e expressões-chave.`,
+    review: `Faça uma revisão do tema: "${topic}". Recapitule os pontos essenciais vistos no nível ${level} até agora, com exercícios variados para consolidar o aprendizado.`
+  };
+  const extraField = focus === "listening" ? `\n  "listeningText": "Texto/diálogo em inglês natural aqui.",` : focus === "reading" ? `\n  "readingText": "Texto completo em inglês aqui.",` : "";
+  const exerciseCount = ["B2", "C1", "C2"].includes(level) ? 6 : 5;
+  const vocabCount = ["B2", "C1", "C2"].includes(level) ? 8 : 6;
+  return `Você é professor de inglês para brasileiros. Aluno nível ${level} (${LEVEL_NAMES[level]}). Foco: ${FOCUS_LABEL[focus]}. Aula ${lessonIndex + 1} de ${focus} neste nível.
+
+TÓPICO DESTA AULA: ${topic}
+
+${focusGuidance[focus]}
+
+Responda SÓ com JSON válido (sem backticks, sem texto fora do JSON). Estrutura:
+
+{
+  "title": "título direto referente ao tópico (máx 50 chars)",
+  "subtitle": "short English phrase (máx 45 chars)",
+  "estimatedMinutes": 20,
+  "intro": "1-2 frases contextualizando o tópico em português.",
+  "sections": [
+    {
+      "heading": "Nome da seção",
+      "content": "Explicação clara e completa em português. Use \\n\\n para separar parágrafos. Inclua regras, exceções e dicas práticas.",
+      "examples": [
+        {"en": "English example sentence.", "pt": "Tradução em português."},
+        {"en": "Another example.", "pt": "Outra tradução."},
+        {"en": "Third example.", "pt": "Terceira tradução."}
+      ]
+    }
+  ],
+  "exercises": [
+    {"type": "choice", "question": "Pergunta clara em português com frase em inglês se necessário.", "options": ["opção a","opção b","opção c"], "answer": "opção b", "explanation": "Explicação do porquê em português."},
+    {"type": "fill", "question": "Complete a frase: 'She ___ (go) to school every day.'", "options": ["go","goes","going"], "answer": "goes", "explanation": "3ª pessoa do singular adiciona -s."},
+    {"type": "translate", "question": "Traduza para o inglês: 'Frase em português aqui.'", "options": [], "answer": "English answer here", "explanation": "Explicação da tradução."}
+  ],
+  "vocabulary": [
+    {"word": "palavra", "pos": "noun/verb/adj/adv/phrase", "translation": "tradução", "example": "Example sentence using the word."}
+  ],
+  "tips": [
+    "Dica prática número 1 sobre como usar o conteúdo no dia a dia.",
+    "Dica número 2 sobre erros comuns ou diferenças do português."
+  ],${extraField}
+  "finalTip": "Frase de encorajamento relacionada ao tópico."
+}
+
+REGRAS OBRIGATÓRIAS:
+- EXATAMENTE 3 seções, cada uma com EXATAMENTE 3 examples
+- EXATAMENTE ${exerciseCount} exercícios: mínimo 2 choice, 1 fill, 1 translate, resto choice ou fill
+- EXATAMENTE ${vocabCount} itens de vocabulário relevantes ao tópico
+- EXATAMENTE 2 tips
+- Exercícios de choice têm SEMPRE 3 options
+- JSON 100% válido: sem vírgula final, aspas duplas escapadas corretamente
+- Conteúdo totalmente adequado ao nível ${level} — nem fácil demais, nem difícil demais
+- Todo texto explicativo em PORTUGUÊS, exemplos e frases em INGLÊS`;
+};
+const extractJSON = text => {
+  // Remove code fences if present
+  let t = text.replace(/```json\s*/gi, "").replace(/```\s*/g, "").trim();
+  // Find outermost { ... }
+  const start = t.indexOf("{");
+  const end = t.lastIndexOf("}");
+  if (start === -1 || end === -1 || end <= start) throw new Error("No JSON object found");
+  t = t.slice(start, end + 1);
+  // Try parsing; if it fails, try to repair common issues
+  try {
+    return JSON.parse(t);
+  } catch (e) {
+    // Remove trailing commas before } or ]
+    const repaired = t.replace(/,(\s*[}\]])/g, "$1");
+    return JSON.parse(repaired);
+  }
+};
+const callGeminiOnce = async (prompt, apiKey) => {
+  const systemInstruction = "Você é um gerador de aulas de inglês. Responda APENAS com JSON válido, sem texto antes ou depois, sem blocos de código markdown.";
+  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      system_instruction: {
+        parts: [{
+          text: systemInstruction
+        }]
+      },
+      contents: [{
+        parts: [{
+          text: prompt
+        }]
+      }],
+      generationConfig: {
+        maxOutputTokens: 3000,
+        temperature: 0.7
+      }
+    })
+  });
+  if (!res.ok) {
+    const errBody = await res.text().catch(() => "");
+    throw new Error(`Gemini API ${res.status}: ${errBody}`);
+  }
+  const data = await res.json();
+  if (data.error) throw new Error(data.error.message);
+  const text = data.candidates?.[0]?.content?.parts?.map(p => p.text || "").join("") || "";
+  if (!text) throw new Error("Resposta vazia da IA.");
+  return extractJSON(text);
+};
+const callAI = async (prompt, apiKey) => {
+  let lastErr;
+  for (let i = 0; i < 3; i++) {
+    try {
+      return await callGeminiOnce(prompt, apiKey);
+    } catch (e) {
+      lastErr = e;
+      console.warn(`Tentativa ${i + 1} falhou:`, e?.message);
+    }
+  }
+  throw lastErr;
+};
+
+// -----------------------------------------------------------
+// Global styles
+// -----------------------------------------------------------
+
+const GlobalStyles = () => /*#__PURE__*/React.createElement("style", null, `
+    @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,400;1,9..144,600&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap');
+
+    :root {
+      --bg: #F1E9DB;
+      --bg-2: #E8DDC9;
+      --paper: #FBF6EC;
+      --ink: #1C1914;
+      --ink-soft: #3D362C;
+      --accent: #B53F1F;
+      --accent-dark: #8A2E12;
+      --accent-soft: #E9BDA7;
+      --sage: #5C6B44;
+      --gold: #B88A3E;
+      --muted: #8A7E6B;
+      --line: #CDBFA8;
+      --line-soft: #DFD3BC;
+    }
+    html, body, #root { background: var(--bg); color: var(--ink); }
+    .fx-display { font-family: 'Fraunces', 'Times New Roman', serif; font-optical-sizing: auto; font-variation-settings: "SOFT" 50, "WONK" 0; letter-spacing: -0.01em; }
+    .fx-body { font-family: 'Instrument Sans', -apple-system, system-ui, sans-serif; }
+    .fx-serif-italic { font-family: 'Fraunces', serif; font-style: italic; }
+
+    .paper-grain {
+      background-image:
+        radial-gradient(circle at 25% 10%, rgba(181,63,31,0.04) 0, transparent 40%),
+        radial-gradient(circle at 75% 80%, rgba(92,107,68,0.04) 0, transparent 40%),
+        repeating-linear-gradient(0deg, rgba(28,25,20,0.012) 0, rgba(28,25,20,0.012) 1px, transparent 1px, transparent 3px);
+    }
+    .card-paper {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      box-shadow: 0 1px 0 rgba(28,25,20,0.04), 0 8px 24px -12px rgba(28,25,20,0.12);
+    }
+    .btn-primary {
+      background: var(--ink); color: var(--paper);
+      border: 1px solid var(--ink);
+      transition: all .2s ease;
+    }
+    .btn-primary:hover { background: var(--accent-dark); border-color: var(--accent-dark); }
+    .btn-ghost {
+      background: transparent; color: var(--ink);
+      border: 1px solid var(--line);
+    }
+    .btn-ghost:hover { background: var(--bg-2); }
+    .chip {
+      background: var(--bg-2); border: 1px solid var(--line);
+      color: var(--ink-soft);
+    }
+    .divider-deco::before, .divider-deco::after {
+      content: ""; flex: 1; height: 1px; background: var(--line);
+    }
+    .underline-wavy {
+      text-decoration-line: underline;
+      text-decoration-style: wavy;
+      text-decoration-color: var(--accent);
+      text-underline-offset: 4px;
+      text-decoration-thickness: 1.5px;
+    }
+    .ink-border { border: 1px solid var(--ink); }
+    .input-paper {
+      background: var(--paper); border: 1px solid var(--line);
+      padding: 10px 14px; border-radius: 2px;
+      font-family: inherit; color: var(--ink);
+      outline: none; transition: border-color .15s;
+    }
+    .input-paper:focus { border-color: var(--ink); }
+    @keyframes inkRise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .anim-rise { animation: inkRise .5s ease both; }
+    @keyframes pulseRing { 0% { box-shadow: 0 0 0 0 rgba(181,63,31,0.35); } 70% { box-shadow: 0 0 0 14px rgba(181,63,31,0); } 100% { box-shadow: 0 0 0 0 rgba(181,63,31,0); } }
+    .pulse-ring { animation: pulseRing 2s infinite; }
+    .flip-card { perspective: 1200px; }
+    .flip-inner { position: relative; width: 100%; height: 100%; transition: transform .6s cubic-bezier(.4,.8,.3,1); transform-style: preserve-3d; }
+    .flip-inner.flipped { transform: rotateY(180deg); }
+    .flip-face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+    .flip-back { transform: rotateY(180deg); }
+    .scroll-hide::-webkit-scrollbar { display: none; }
+    .scroll-hide { scrollbar-width: none; }
+
+    /* Decorative serif flourish */
+    .flourish { color: var(--accent); font-family: 'Fraunces', serif; font-style: italic; }
+  `);
+
+// -----------------------------------------------------------
+// Onboarding
+// -----------------------------------------------------------
+
+const Onboarding = _ref => {
+  let {
+    onDone
+  } = _ref;
+  const [step, setStep] = useState(0);
+  const [name, setName] = useState("");
+  const [level, setLevel] = useState("A1");
+  const [apiKey, setApiKey] = useState("");
+  const testAndFinish = async () => {
+    const key = apiKey.trim();
+    if (!key) {
+      setKeyError("Cole sua chave do Gemini para continuar.");
+      return;
+    }
+    await sSet("geminiKey", key);
+    const profile = {
+      name: name.trim() || "Aluno",
+      level,
+      createdAt: todayKey(),
+      lastStudyDate: null,
+      streak: 0
+    };
+    await sSet("profile", profile);
+    onDone(profile, key);
+  };
+  const finish = async () => {
+    const profile = {
+      name: name.trim() || "Aluno",
+      level,
+      createdAt: todayKey(),
+      lastStudyDate: null,
+      streak: 0
+    };
+    await sSet("profile", profile);
+    onDone(profile, "");
+  };
+  return /*#__PURE__*/React.createElement("div", {
+    className: "min-h-screen paper-grain flex flex-col items-center justify-center px-6 py-12"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "w-full max-w-lg anim-rise"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center justify-center gap-2 mb-2",
+    style: {
+      color: "var(--accent)"
+    }
+  }, /*#__PURE__*/React.createElement(Sparkles, {
+    size: 16
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "fx-body uppercase text-xs tracking-[0.3em]"
+  }, "Fluency"), /*#__PURE__*/React.createElement(Sparkles, {
+    size: 16
+  })), /*#__PURE__*/React.createElement("h1", {
+    className: "fx-display text-5xl md:text-6xl text-center leading-[0.95]",
+    style: {
+      fontWeight: 600
+    }
+  }, "Aprenda ingl\xEAs ", /*#__PURE__*/React.createElement("span", {
+    className: "fx-serif-italic",
+    style: {
+      color: "var(--accent)"
+    }
+  }, "com prop\xF3sito"), "."), /*#__PURE__*/React.createElement("p", {
+    className: "fx-body text-center mt-5 text-base",
+    style: {
+      color: "var(--ink-soft)"
+    }
+  }, "Uma aula por dia, de segunda a sexta. Quatro pilares. Seu ritmo."), /*#__PURE__*/React.createElement("div", {
+    className: "card-paper mt-10 p-7 rounded-sm"
+  }, step === 0 && /*#__PURE__*/React.createElement("div", {
+    className: "anim-rise"
+  }, /*#__PURE__*/React.createElement("label", {
+    className: "fx-body text-xs uppercase tracking-[0.22em]",
+    style: {
+      color: "var(--muted)"
+    }
+  }, "Como devo te chamar?"), /*#__PURE__*/React.createElement("input", {
+    autoFocus: true,
+    className: "input-paper w-full mt-3 fx-display text-2xl",
+    placeholder: "Seu primeiro nome",
+    value: name,
+    onChange: e => setName(e.target.value),
+    onKeyDown: e => e.key === "Enter" && setStep(1)
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "flex justify-end mt-6"
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "btn-primary px-5 py-2.5 rounded-sm fx-body text-sm flex items-center gap-2",
+    onClick: () => setStep(1)
+  }, "Pr\xF3ximo ", /*#__PURE__*/React.createElement(ArrowRight, {
+    size: 15
+  })))), step === 1 && /*#__PURE__*/React.createElement("div", {
+    className: "anim-rise"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "fx-body text-xs uppercase tracking-[0.22em] mb-1",
+    style: {
+      color: "var(--muted)"
+    }
+  }, "Seu n\xEDvel atual"), /*#__PURE__*/React.createElement("p", {
+    className: "fx-serif-italic text-sm mb-4",
+    style: {
+      color: "var(--ink-soft)"
+    }
+  }, "Sem press\xE3o \u2014 voc\xEA pode subir ou descer depois."), /*#__PURE__*/React.createElement("div", {
+    className: "space-y-2"
+  }, LEVELS.map(L => /*#__PURE__*/React.createElement("button", {
+    key: L,
+    onClick: () => setLevel(L),
+    className: `w-full text-left px-4 py-3 rounded-sm transition border ${level === L ? "ink-border" : ""}`,
+    style: {
+      background: level === L ? "var(--bg-2)" : "var(--paper)",
+      borderColor: level === L ? "var(--ink)" : "var(--line)"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-baseline justify-between"
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("span", {
+    className: "fx-display text-lg",
+    style: {
+      fontWeight: 600
+    }
+  }, L), /*#__PURE__*/React.createElement("span", {
+    className: "fx-body ml-3 text-sm",
+    style: {
+      color: "var(--ink-soft)"
+    }
+  }, LEVEL_NAMES[L])), level === L && /*#__PURE__*/React.createElement(Check, {
+    size: 16,
+    style: {
+      color: "var(--accent)"
+    }
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "fx-body text-xs mt-1",
+    style: {
+      color: "var(--muted)"
+    }
+  }, LEVEL_DESC[L])))), /*#__PURE__*/React.createElement("div", {
+    className: "flex justify-between mt-6"
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "btn-ghost px-4 py-2 rounded-sm fx-body text-sm",
+    onClick: () => setStep(0)
+  }, "Voltar"), /*#__PURE__*/React.createElement("button", {
+    className: "btn-primary px-5 py-2.5 rounded-sm fx-body text-sm flex items-center gap-2",
+    onClick: () => setStep(2)
+  }, "Pr\xF3ximo ", /*#__PURE__*/React.createElement(ArrowRight, {
+    size: 15
+  })))), step === 2 && /*#__PURE__*/React.createElement("div", {
+    className: "anim-rise"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "fx-body text-xs uppercase tracking-[0.22em] mb-1",
+    style: {
+      color: "var(--muted)"
+    }
+  }, "Chave da IA (Gemini)"), /*#__PURE__*/React.createElement("p", {
+    className: "fx-body text-sm mb-1",
+    style: {
+      color: "var(--ink-soft)"
+    }
+  }, "As aulas s\xE3o geradas pelo Google Gemini. \xC9 gr\xE1tis \u2014 crie sua chave em:"), /*#__PURE__*/React.createElement("a", {
+    href: "https://aistudio.google.com/apikey",
+    target: "_blank",
+    className: "fx-body text-xs underline",
+    style: {
+      color: "var(--accent)"
+    }
+  }, "aistudio.google.com/apikey"), /*#__PURE__*/React.createElement("input", {
+    className: "input-paper w-full mt-4 fx-body text-sm",
+    placeholder: "Cole aqui: AIza...",
+    value: apiKey,
+    onChange: e => {
+      setApiKey(e.target.value);
+      setKeyError("");
+    },
+    onKeyDown: e => e.key === "Enter" && testAndFinish()
+  }), /*#__PURE__*/React.createElement("p", {
+    className: "fx-body text-xs mt-3",
+    style: {
+      color: "var(--muted)"
+    }
+  }, "A chave fica salva s\xF3 no seu navegador. N\xE3o compartilhamos com ningu\xE9m."), /*#__PURE__*/React.createElement("div", {
+    className: "flex justify-between mt-6"
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "btn-ghost px-4 py-2 rounded-sm fx-body text-sm",
+    onClick: () => setStep(1)
+  }, "Voltar"), /*#__PURE__*/React.createElement("button", {
+    className: "btn-primary px-5 py-2.5 rounded-sm fx-body text-sm flex items-center gap-2",
+    onClick: testAndFinish
+  }, "Come\xE7ar ", /*#__PURE__*/React.createElement(ArrowRight, {
+    size: 15
+  }))))), /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center justify-center gap-2 mt-6 fx-body text-xs",
+    style: {
+      color: "var(--muted)"
+    }
+  }, /*#__PURE__*/React.createElement(Cloud, {
+    size: 12
+  }), /*#__PURE__*/React.createElement("span", null, "Seu progresso fica salvo na nuvem automaticamente."))));
+};
+
+// -----------------------------------------------------------
+// Header
+// -----------------------------------------------------------
+
+const Header = _ref2 => {
+  let {
+    profile,
+    streak,
+    tab,
+    setTab
+  } = _ref2;
+  const tabs = [{
+    id: "today",
+    label: "Hoje",
+    Icon: Home
+  }, {
+    id: "lesson",
+    label: "Aula",
+    Icon: GraduationCap
+  }, {
+    id: "flashcards",
+    label: "Flashcards",
+    Icon: Layers
+  }, {
+    id: "progress",
+    label: "Progresso",
+    Icon: TrendingUp
+  }];
+  return /*#__PURE__*/React.createElement("header", {
+    className: "sticky top-0 z-30 paper-grain",
+    style: {
+      background: "var(--bg)",
+      borderBottom: "1px solid var(--line)"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "max-w-3xl mx-auto px-4 md:px-6 pt-3 pb-0"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center justify-between"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-2"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-baseline gap-1"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "fx-display text-2xl",
+    style: {
+      fontWeight: 800,
+      letterSpacing: "-0.02em"
+    }
+  }, "Fluency"), /*#__PURE__*/React.createElement("span", {
+    className: "flourish text-xl"
+  }, "\xB7"))), /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-3"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-1.5 chip px-2.5 py-1 rounded-full"
+  }, /*#__PURE__*/React.createElement(Flame, {
+    size: 13,
+    style: {
+      color: "var(--accent)"
+    }
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "fx-body text-xs font-semibold"
+  }, streak)), /*#__PURE__*/React.createElement("div", {
+    className: "chip px-2.5 py-1 rounded-full"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "fx-display text-xs",
+    style: {
+      fontWeight: 600
+    }
+  }, profile.level)))), /*#__PURE__*/React.createElement("nav", {
+    className: "mt-3 -mx-4 md:-mx-6 px-4 md:px-6 flex gap-1 overflow-x-auto scroll-hide"
+  }, tabs.map(_ref3 => {
+    let {
+      id,
+      label,
+      Icon
+    } = _ref3;
+    return /*#__PURE__*/React.createElement("button", {
+      key: id,
+      onClick: () => setTab(id),
+      className: `flex items-center gap-1.5 px-3 py-2 fx-body text-sm whitespace-nowrap transition relative`,
+      style: {
+        color: tab === id ? "var(--ink)" : "var(--muted)"
+      }
+    }, /*#__PURE__*/React.createElement(Icon, {
+      size: 14
+    }), /*#__PURE__*/React.createElement("span", null, label), tab === id && /*#__PURE__*/React.createElement("span", {
+      className: "absolute left-2 right-2 -bottom-px h-[2px]",
+      style: {
+        background: "var(--ink)"
+      }
+    }));
+  }))));
+};
+
+// -----------------------------------------------------------
+// Today view
+// -----------------------------------------------------------
+
+const TodayView = _ref4 => {
+  let {
+    profile,
+    completedAtLevel,
+    lessonToday,
+    openLesson,
+    setTab,
+    allCompleted,
+    weekProgress
+  } = _ref4;
+  const dow = currentDay();
+  const isWeekend = dow === 0 || dow === 6;
+  const focus = DAY_FOCUS[dow];
+  const FocusIcon = focus?.icon || Moon;
+  const doneToday = !!lessonToday;
+  const progressToNext = Math.min(100, Math.round(completedAtLevel / LESSONS_TO_ADVANCE * 100));
+  return /*#__PURE__*/React.createElement("div", {
+    className: "max-w-3xl mx-auto px-4 md:px-6 py-6"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "anim-rise"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "fx-body text-xs uppercase tracking-[0.28em]",
+    style: {
+      color: "var(--muted)"
+    }
+  }, prettyDate()), /*#__PURE__*/React.createElement("h1", {
+    className: "fx-display text-4xl md:text-5xl mt-2",
+    style: {
+      fontWeight: 600,
+      lineHeight: 1.05
+    }
+  }, isWeekend ? /*#__PURE__*/React.createElement(React.Fragment, null, "Um bom ", /*#__PURE__*/React.createElement("span", {
+    className: "fx-serif-italic",
+    style: {
+      color: "var(--accent)"
+    }
+  }, "descanso"), ", ", profile.name, ".") : /*#__PURE__*/React.createElement(React.Fragment, null, "Ol\xE1, ", profile.name, ". ", /*#__PURE__*/React.createElement("span", {
+    className: "fx-serif-italic",
+    style: {
+      color: "var(--accent)"
+    }
+  }, "Hora de estudar.")))), /*#__PURE__*/React.createElement("div", {
+    className: "mt-7 card-paper rounded-sm anim-rise",
+    style: {
+      animationDelay: ".08s"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "p-6 md:p-7"
+  }, isWeekend ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-2",
+    style: {
+      color: "var(--muted)"
+    }
+  }, /*#__PURE__*/React.createElement(Moon, {
+    size: 14
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "fx-body text-xs uppercase tracking-[0.22em]"
+  }, "Fim de semana")), /*#__PURE__*/React.createElement("h2", {
+    className: "fx-display text-2xl md:text-3xl mt-2",
+    style: {
+      fontWeight: 600
+    }
+  }, "As aulas voltam na segunda."), /*#__PURE__*/React.createElement("p", {
+    className: "fx-body mt-3",
+    style: {
+      color: "var(--ink-soft)"
+    }
+  }, "Aproveite para revisar seus ", /*#__PURE__*/React.createElement("strong", null, "flashcards"), " \u2014 manter o contato com o ingl\xEAs no fim de semana ajuda a fixar."), /*#__PURE__*/React.createElement("div", {
+    className: "flex gap-2 mt-5"
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => setTab("flashcards"),
+    className: "btn-primary px-4 py-2 rounded-sm fx-body text-sm flex items-center gap-2"
+  }, /*#__PURE__*/React.createElement(Layers, {
+    size: 14
+  }), " Revisar flashcards"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => setTab("progress"),
+    className: "btn-ghost px-4 py-2 rounded-sm fx-body text-sm"
+  }, "Ver progresso"))) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-2",
+    style: {
+      color: "var(--accent)"
+    }
+  }, /*#__PURE__*/React.createElement(FocusIcon, {
+    size: 14
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "fx-body text-xs uppercase tracking-[0.22em]"
+  }, focus.pt, " \xB7 Foco em ", focus.label)), /*#__PURE__*/React.createElement("h2", {
+    className: "fx-display text-3xl md:text-4xl mt-2",
+    style: {
+      fontWeight: 600,
+      lineHeight: 1.05
+    }
+  }, doneToday ? /*#__PURE__*/React.createElement(React.Fragment, null, "Aula conclu\xEDda. ", /*#__PURE__*/React.createElement("span", {
+    className: "fx-serif-italic"
+  }, "Belo trabalho.")) : /*#__PURE__*/React.createElement(React.Fragment, null, "Sua aula de ", /*#__PURE__*/React.createElement("span", {
+    className: "underline-wavy"
+  }, focus.label.toLowerCase()), " est\xE1 pronta.")), /*#__PURE__*/React.createElement("p", {
+    className: "fx-body mt-3",
+    style: {
+      color: "var(--ink-soft)"
+    }
+  }, doneToday ? `Você já fez a aula de hoje (${lessonToday.title}). Quer revisar ou seguir para os flashcards?` : `Uma aula personalizada para o seu nível ${profile.level}, focada em ${focus.hint.toLowerCase()}.`), /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap gap-2 mt-5"
+  }, !doneToday && /*#__PURE__*/React.createElement("button", {
+    onClick: openLesson,
+    className: "btn-primary px-5 py-2.5 rounded-sm fx-body text-sm flex items-center gap-2 pulse-ring"
+  }, /*#__PURE__*/React.createElement(Play, {
+    size: 14
+  }), " Come\xE7ar aula"), doneToday && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
+    onClick: openLesson,
+    className: "btn-ghost px-4 py-2 rounded-sm fx-body text-sm flex items-center gap-2"
+  }, /*#__PURE__*/React.createElement(Eye, {
+    size: 14
+  }), " Rever aula"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => setTab("flashcards"),
+    className: "btn-primary px-4 py-2 rounded-sm fx-body text-sm flex items-center gap-2"
+  }, /*#__PURE__*/React.createElement(Layers, {
+    size: 14
+  }), " Ir para flashcards"))))), !isWeekend && /*#__PURE__*/React.createElement("div", {
+    className: "border-t px-6 md:px-7 py-4 flex items-center justify-between",
+    style: {
+      borderColor: "var(--line-soft)",
+      background: "rgba(232,221,201,0.4)"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "fx-body text-xs",
+    style: {
+      color: "var(--muted)"
+    }
+  }, "Progresso no n\xEDvel ", profile.level), /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-3"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "w-36 h-1.5 rounded-full overflow-hidden",
+    style: {
+      background: "var(--line-soft)"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "h-full",
+    style: {
+      width: `${progressToNext}%`,
+      background: "var(--accent)"
+    }
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "fx-body text-xs",
+    style: {
+      color: "var(--ink-soft)"
+    }
+  }, completedAtLevel, "/", LESSONS_TO_ADVANCE)))), /*#__PURE__*/React.createElement("div", {
+    className: "mt-7 anim-rise",
+    style: {
+      animationDelay: ".16s"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-3 mb-3"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "fx-body text-xs uppercase tracking-[0.28em]",
+    style: {
+      color: "var(--muted)"
+    }
+  }, "Esta semana"), /*#__PURE__*/React.createElement("div", {
+    className: "flex-1 h-px",
+    style: {
+      background: "var(--line)"
+    }
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "grid grid-cols-5 gap-2"
+  }, [1, 2, 3, 4, 5].map(d => {
+    const f = DAY_FOCUS[d];
+    const Ic = f.icon;
+    const done = weekProgress[d];
+    const isToday = d === dow;
+    return /*#__PURE__*/React.createElement("div", {
+      key: d,
+      className: `card-paper rounded-sm p-3 flex flex-col items-center text-center relative ${isToday ? "ink-border" : ""}`,
+      style: {
+        opacity: done ? 1 : 0.92,
+        borderColor: isToday ? "var(--ink)" : undefined
+      }
+    }, done && /*#__PURE__*/React.createElement(CheckCircle2, {
+      size: 14,
+      className: "absolute top-1.5 right-1.5",
+      style: {
+        color: "var(--sage)"
+      }
+    }), /*#__PURE__*/React.createElement(Ic, {
+      size: 18,
+      style: {
+        color: done ? "var(--sage)" : "var(--ink-soft)"
+      }
+    }), /*#__PURE__*/React.createElement("div", {
+      className: "fx-display text-xs mt-1.5",
+      style: {
+        fontWeight: 600
+      }
+    }, ["SEG", "TER", "QUA", "QUI", "SEX"][d - 1]), /*#__PURE__*/React.createElement("div", {
+      className: "fx-body text-[10px] mt-0.5",
+      style: {
+        color: "var(--muted)"
+      }
+    }, f.label));
+  }))), /*#__PURE__*/React.createElement("div", {
+    className: "mt-8 anim-rise",
+    style: {
+      animationDelay: ".24s"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-3 mb-3"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "fx-body text-xs uppercase tracking-[0.28em]",
+    style: {
+      color: "var(--muted)"
+    }
+  }, "Os quatro pilares"), /*#__PURE__*/React.createElement("div", {
+    className: "flex-1 h-px",
+    style: {
+      background: "var(--line)"
+    }
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "grid grid-cols-2 gap-2"
+  }, [{
+    icon: Feather,
+    title: "Gramática",
+    desc: "A estrutura."
+  }, {
+    icon: BookOpen,
+    title: "Leitura",
+    desc: "A exposição."
+  }, {
+    icon: Pencil,
+    title: "Escrita",
+    desc: "O domínio ativo."
+  }, {
+    icon: Headphones,
+    title: "Escuta",
+    desc: "O ouvido afinado."
+  }].map((_ref5, i) => {
+    let {
+      icon: Ic,
+      title,
+      desc
+    } = _ref5;
+    return /*#__PURE__*/React.createElement("div", {
+      key: title,
+      className: "card-paper rounded-sm p-4"
+    }, /*#__PURE__*/React.createElement(Ic, {
+      size: 16,
+      style: {
+        color: "var(--accent)"
+      }
+    }), /*#__PURE__*/React.createElement("div", {
+      className: "fx-display text-base mt-2",
+      style: {
+        fontWeight: 600
+      }
+    }, title), /*#__PURE__*/React.createElement("div", {
+      className: "fx-serif-italic text-sm",
+      style: {
+        color: "var(--ink-soft)"
+      }
+    }, desc));
+  }))), /*#__PURE__*/React.createElement("div", {
+    className: "mt-8 text-center fx-body text-xs flex items-center justify-center gap-1.5",
+    style: {
+      color: "var(--muted)"
+    }
+  }, /*#__PURE__*/React.createElement(Cloud, {
+    size: 11
+  }), " Progresso sincronizado"));
+};
+
+// -----------------------------------------------------------
+// Lesson view
+// -----------------------------------------------------------
+
+const LessonView = _ref6 => {
+  let {
+    profile,
+    lessonData,
+    loading,
+    error,
+    onRegenerate,
+    onComplete,
+    isCompleted,
+    focusKey
+  } = _ref6;
+  const [answers, setAnswers] = useState({});
+  const [revealed, setRevealed] = useState({});
+  const speakingIndexRef = useRef(null);
+  const [speakingIndex, setSpeakingIndex] = useState(null);
+  useEffect(() => {
+    setAnswers({});
+    setRevealed({});
+  }, [lessonData?.title]);
+  const speak = function (text) {
+    let index = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
+    if (!window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = "en-US";
+    u.rate = 0.9;
+    u.onstart = () => {
+      setSpeakingIndex(index);
+      speakingIndexRef.current = index;
+    };
+    u.onend = () => {
+      setSpeakingIndex(null);
+      speakingIndexRef.current = null;
+    };
+    u.onerror = () => {
+      setSpeakingIndex(null);
+      speakingIndexRef.current = null;
+    };
+    window.speechSynthesis.speak(u);
+  };
+  const stopSpeak = () => {
+    window.speechSynthesis?.cancel();
+    setSpeakingIndex(null);
+  };
+  useEffect(() => {
+    return () => window.speechSynthesis?.cancel();
+  }, []);
+  if (loading) {
+    return /*#__PURE__*/React.createElement("div", {
+      className: "max-w-3xl mx-auto px-4 md:px-6 py-16 text-center"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "inline-flex items-center gap-2 chip px-3 py-1.5 rounded-full"
+    }, /*#__PURE__*/React.createElement(Loader2, {
+      className: "animate-spin",
+      size: 14,
+      style: {
+        color: "var(--accent)"
+      }
+    }), /*#__PURE__*/React.createElement("span", {
+      className: "fx-body text-xs uppercase tracking-[0.2em]",
+      style: {
+        color: "var(--ink-soft)"
+      }
+    }, "Preparando sua aula")), /*#__PURE__*/React.createElement("h2", {
+      className: "fx-display text-3xl mt-6",
+      style: {
+        fontWeight: 600
+      }
+    }, "A tinta est\xE1 secando na p\xE1gina", /*#__PURE__*/React.createElement("span", {
+      style: {
+        color: "var(--accent)"
+      }
+    }, ".")), /*#__PURE__*/React.createElement("p", {
+      className: "fx-serif-italic mt-2",
+      style: {
+        color: "var(--ink-soft)"
+      }
+    }, "Isso leva alguns segundos."));
+  }
+  if (error) {
+    return /*#__PURE__*/React.createElement("div", {
+      className: "max-w-3xl mx-auto px-4 md:px-6 py-12"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "card-paper rounded-sm p-6"
+    }, /*#__PURE__*/React.createElement("h3", {
+      className: "fx-display text-xl",
+      style: {
+        fontWeight: 600
+      }
+    }, "Tivemos um trope\xE7o."), /*#__PURE__*/React.createElement("p", {
+      className: "fx-body mt-2 text-sm",
+      style: {
+        color: "var(--ink-soft)"
+      }
+    }, "N\xE3o consegui gerar sua aula agora. Tente novamente \u2014 costuma funcionar na segunda."), /*#__PURE__*/React.createElement("button", {
+      onClick: onRegenerate,
+      className: "btn-primary mt-4 px-4 py-2 rounded-sm fx-body text-sm flex items-center gap-2"
+    }, /*#__PURE__*/React.createElement(RefreshCw, {
+      size: 14
+    }), " Tentar outra vez")));
+  }
+  if (!lessonData) return null;
+  const focusMeta = DAY_FOCUS[currentDay()] || {
+    label: FOCUS_LABEL[focusKey] || "Aula",
+    icon: BookOpen
+  };
+  const FocusIcon = focusMeta.icon;
+  const check = (i, val) => setAnswers(a => ({
+    ...a,
+    [i]: val
+  }));
+  const toggleReveal = i => setRevealed(r => ({
+    ...r,
+    [i]: !r[i]
+  }));
+  const allRevealed = lessonData.exercises?.every((_, i) => revealed[i]);
+  return /*#__PURE__*/React.createElement("div", {
+    className: "max-w-3xl mx-auto px-4 md:px-6 py-6 pb-24"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "anim-rise"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-2 flex-wrap",
+    style: {
+      color: "var(--accent)"
+    }
+  }, /*#__PURE__*/React.createElement(FocusIcon, {
+    size: 14
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "fx-body text-xs uppercase tracking-[0.22em]"
+  }, FOCUS_LABEL[focusKey], " \xB7 n\xEDvel ", profile.level, " \xB7 \u2248 ", lessonData.estimatedMinutes || 15, " min"), lessonData._fallback ? /*#__PURE__*/React.createElement("span", {
+    className: "fx-body text-[11px] px-2.5 py-0.5 rounded-full flex items-center gap-1",
+    style: {
+      background: "#FEF3C7",
+      border: "1px solid #F59E0B",
+      color: "#92400E"
+    }
+  }, /*#__PURE__*/React.createElement("span", null, "\u26A0"), " Aula padr\xE3o (IA indispon\xEDvel)") : /*#__PURE__*/React.createElement("span", {
+    className: "fx-body text-[11px] px-2.5 py-0.5 rounded-full flex items-center gap-1",
+    style: {
+      background: "#D1FAE5",
+      border: "1px solid #34D399",
+      color: "#065F46"
+    }
+  }, /*#__PURE__*/React.createElement(Sparkles, {
+    size: 10
+  }), " Gerada por IA")), /*#__PURE__*/React.createElement("h1", {
+    className: "fx-display text-3xl md:text-4xl mt-2",
+    style: {
+      fontWeight: 600,
+      lineHeight: 1.1
+    }
+  }, lessonData.title), lessonData.subtitle && /*#__PURE__*/React.createElement("div", {
+    className: "fx-serif-italic mt-1",
+    style: {
+      color: "var(--ink-soft)"
+    }
+  }, lessonData.subtitle), lessonData.intro && /*#__PURE__*/React.createElement("p", {
+    className: "fx-body mt-4 text-[15px] leading-relaxed",
+    style: {
+      color: "var(--ink-soft)"
+    }
+  }, lessonData.intro)), lessonData.readingText && /*#__PURE__*/React.createElement("div", {
+    className: "mt-7 card-paper rounded-sm p-6 anim-rise"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center justify-between mb-3"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "fx-body text-xs uppercase tracking-[0.22em]",
+    style: {
+      color: "var(--muted)"
+    }
+  }, "Texto para leitura"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => speakingIndex === -99 ? stopSpeak() : speak(lessonData.readingText, -99),
+    className: "flex items-center gap-1.5 fx-body text-xs chip px-2.5 py-1 rounded-full"
+  }, speakingIndex === -99 ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Pause, {
+    size: 11
+  }), " Parar") : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Volume2, {
+    size: 11
+  }), " Ouvir"))), /*#__PURE__*/React.createElement("p", {
+    className: "fx-display text-lg leading-[1.7]",
+    style: {
+      fontWeight: 400
+    }
+  }, lessonData.readingText)), lessonData.listeningText && /*#__PURE__*/React.createElement("div", {
+    className: "mt-7 card-paper rounded-sm p-6 anim-rise",
+    style: {
+      background: "linear-gradient(180deg, var(--paper), #F6EEDB)"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "fx-body text-xs uppercase tracking-[0.22em] mb-3",
+    style: {
+      color: "var(--muted)"
+    }
+  }, "Primeiro, escute"), /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-3"
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => speakingIndex === -100 ? stopSpeak() : speak(lessonData.listeningText, -100),
+    className: "btn-primary rounded-full w-14 h-14 flex items-center justify-center flex-shrink-0"
+  }, speakingIndex === -100 ? /*#__PURE__*/React.createElement(Pause, {
+    size: 20
+  }) : /*#__PURE__*/React.createElement(Play, {
+    size: 20,
+    className: "translate-x-[1px]"
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "flex-1"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "fx-display text-lg",
+    style: {
+      fontWeight: 600
+    }
+  }, "\xC1udio da aula"), /*#__PURE__*/React.createElement("div", {
+    className: "fx-body text-xs",
+    style: {
+      color: "var(--muted)"
+    }
+  }, "Toque para ouvir. Pode repetir quantas vezes quiser."))), /*#__PURE__*/React.createElement("details", {
+    className: "mt-4"
+  }, /*#__PURE__*/React.createElement("summary", {
+    className: "fx-body text-xs cursor-pointer flex items-center gap-1.5",
+    style: {
+      color: "var(--ink-soft)"
+    }
+  }, /*#__PURE__*/React.createElement(Eye, {
+    size: 12
+  }), " Ver transcri\xE7\xE3o (tente ouvir antes)"), /*#__PURE__*/React.createElement("p", {
+    className: "fx-display text-[15px] leading-relaxed mt-3 pl-4 border-l-2",
+    style: {
+      borderColor: "var(--accent)"
+    }
+  }, lessonData.listeningText))), lessonData.sections?.map((sec, idx) => /*#__PURE__*/React.createElement("section", {
+    key: idx,
+    className: "mt-8 anim-rise"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-3 mb-3"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "fx-display text-lg",
+    style: {
+      fontWeight: 600
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: "var(--accent)"
+    }
+  }, "\xA7"), " ", sec.heading), /*#__PURE__*/React.createElement("div", {
+    className: "flex-1 h-px",
+    style: {
+      background: "var(--line)"
+    }
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "fx-body text-[15px] leading-relaxed whitespace-pre-wrap",
+    style: {
+      color: "var(--ink-soft)"
+    }
+  }, sec.content), sec.examples?.length > 0 && /*#__PURE__*/React.createElement("div", {
+    className: "mt-4 space-y-2"
+  }, sec.examples.map((ex, j) => {
+    const exId = `${idx}-${j}`;
+    const active = speakingIndex === exId;
+    return /*#__PURE__*/React.createElement("div", {
+      key: j,
+      className: "card-paper rounded-sm p-3 flex items-start gap-3"
+    }, /*#__PURE__*/React.createElement("button", {
+      onClick: () => active ? stopSpeak() : speak(ex.en, exId),
+      className: "mt-0.5 flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center border",
+      style: {
+        borderColor: active ? "var(--accent)" : "var(--line)",
+        background: active ? "var(--accent)" : "transparent",
+        color: active ? "var(--paper)" : "var(--ink)"
+      }
+    }, active ? /*#__PURE__*/React.createElement(Pause, {
+      size: 12
+    }) : /*#__PURE__*/React.createElement(Volume2, {
+      size: 12
+    })), /*#__PURE__*/React.createElement("div", {
+      className: "flex-1 min-w-0"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "fx-display text-base",
+      style: {
+        fontWeight: 500
+      }
+    }, ex.en), /*#__PURE__*/React.createElement("div", {
+      className: "fx-serif-italic text-sm mt-0.5",
+      style: {
+        color: "var(--muted)"
+      }
+    }, ex.pt)));
+  })))), lessonData.vocabulary?.length > 0 && /*#__PURE__*/React.createElement("section", {
+    className: "mt-10 anim-rise"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-3 mb-3"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "fx-body text-xs uppercase tracking-[0.28em]",
+    style: {
+      color: "var(--muted)"
+    }
+  }, "Vocabul\xE1rio de hoje"), /*#__PURE__*/React.createElement("div", {
+    className: "flex-1 h-px",
+    style: {
+      background: "var(--line)"
+    }
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "fx-body text-xs chip px-2 py-0.5 rounded-full"
+  }, lessonData.vocabulary.length)), /*#__PURE__*/React.createElement("div", {
+    className: "grid sm:grid-cols-2 gap-2"
+  }, lessonData.vocabulary.map((v, i) => {
+    const vId = `v-${i}`;
+    const active = speakingIndex === vId;
+    return /*#__PURE__*/React.createElement("div", {
+      key: i,
+      className: "card-paper rounded-sm p-3"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex items-start justify-between gap-2"
+    }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+      className: "fx-display text-base",
+      style: {
+        fontWeight: 600
+      }
+    }, v.word), /*#__PURE__*/React.createElement("div", {
+      className: "fx-body text-xs",
+      style: {
+        color: "var(--muted)"
+      }
+    }, v.pos, " \xB7 ", v.translation)), /*#__PURE__*/React.createElement("button", {
+      onClick: () => active ? stopSpeak() : speak(v.word, vId),
+      className: "flex-shrink-0",
+      style: {
+        color: active ? "var(--accent)" : "var(--ink-soft)"
+      }
+    }, /*#__PURE__*/React.createElement(Volume2, {
+      size: 14
+    }))), v.example && /*#__PURE__*/React.createElement("div", {
+      className: "fx-serif-italic text-xs mt-2",
+      style: {
+        color: "var(--ink-soft)"
+      }
+    }, "\"", v.example, "\""));
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "fx-body text-xs mt-2 flex items-center gap-1.5",
+    style: {
+      color: "var(--muted)"
+    }
+  }, /*#__PURE__*/React.createElement(Sparkles, {
+    size: 11
+  }), " Estas palavras viram flashcards automaticamente.")), lessonData.exercises?.length > 0 && /*#__PURE__*/React.createElement("section", {
+    className: "mt-10 anim-rise"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-3 mb-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "fx-body text-xs uppercase tracking-[0.28em]",
+    style: {
+      color: "var(--muted)"
+    }
+  }, "Exerc\xEDcios"), /*#__PURE__*/React.createElement("div", {
+    className: "flex-1 h-px",
+    style: {
+      background: "var(--line)"
+    }
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "space-y-3"
+  }, lessonData.exercises.map((ex, i) => {
+    const ans = answers[i];
+    const rev = revealed[i];
+    const isCorrect = ans && String(ans).trim().toLowerCase() === String(ex.answer).trim().toLowerCase();
+    return /*#__PURE__*/React.createElement("div", {
+      key: i,
+      className: "card-paper rounded-sm p-4"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex items-start gap-3"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "fx-display text-lg flex-shrink-0",
+      style: {
+        fontWeight: 600,
+        color: "var(--accent)"
+      }
+    }, i + 1, "."), /*#__PURE__*/React.createElement("div", {
+      className: "flex-1 min-w-0"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "fx-body text-[15px]",
+      style: {
+        color: "var(--ink)"
+      }
+    }, ex.question), ex.type === "translate" || !ex.options?.length ? /*#__PURE__*/React.createElement("input", {
+      className: "input-paper w-full mt-3 fx-body text-[15px]",
+      placeholder: "Sua resposta\u2026",
+      value: ans || "",
+      onChange: e => check(i, e.target.value)
+    }) : /*#__PURE__*/React.createElement("div", {
+      className: "mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2"
+    }, ex.options.map((opt, j) => {
+      const selected = ans === opt;
+      const showCorrect = rev && String(opt).trim().toLowerCase() === String(ex.answer).trim().toLowerCase();
+      const showWrong = rev && selected && !showCorrect;
+      return /*#__PURE__*/React.createElement("button", {
+        key: j,
+        onClick: () => check(i, opt),
+        className: `text-left fx-body text-sm rounded-sm px-3 py-2 border transition`,
+        style: {
+          background: showCorrect ? "rgba(92,107,68,0.1)" : showWrong ? "rgba(181,63,31,0.1)" : selected ? "var(--bg-2)" : "var(--paper)",
+          borderColor: showCorrect ? "var(--sage)" : showWrong ? "var(--accent)" : selected ? "var(--ink)" : "var(--line)",
+          color: "var(--ink)"
+        }
+      }, opt);
+    })), /*#__PURE__*/React.createElement("div", {
+      className: "flex items-center gap-2 mt-3"
+    }, /*#__PURE__*/React.createElement("button", {
+      onClick: () => toggleReveal(i),
+      className: "btn-ghost px-3 py-1.5 rounded-sm fx-body text-xs flex items-center gap-1.5"
+    }, rev ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(EyeOff, {
+      size: 11
+    }), " Ocultar") : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Eye, {
+      size: 11
+    }), " Ver resposta")), ans && rev && (isCorrect ? /*#__PURE__*/React.createElement("span", {
+      className: "fx-body text-xs flex items-center gap-1",
+      style: {
+        color: "var(--sage)"
+      }
+    }, /*#__PURE__*/React.createElement(Check, {
+      size: 12
+    }), " Correto") : /*#__PURE__*/React.createElement("span", {
+      className: "fx-body text-xs flex items-center gap-1",
+      style: {
+        color: "var(--accent)"
+      }
+    }, /*#__PURE__*/React.createElement(X, {
+      size: 12
+    }), " Resposta: ", /*#__PURE__*/React.createElement("strong", null, ex.answer)))), rev && ex.explanation && /*#__PURE__*/React.createElement("div", {
+      className: "mt-3 fx-serif-italic text-sm pl-3 border-l-2",
+      style: {
+        color: "var(--ink-soft)",
+        borderColor: "var(--gold)"
+      }
+    }, ex.explanation))));
+  }))), lessonData.tips?.length > 0 && /*#__PURE__*/React.createElement("section", {
+    className: "mt-10 anim-rise"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-2 mb-3"
+  }, /*#__PURE__*/React.createElement(Lightbulb, {
+    size: 14,
+    style: {
+      color: "var(--gold)"
+    }
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "fx-body text-xs uppercase tracking-[0.28em]",
+    style: {
+      color: "var(--muted)"
+    }
+  }, "Dicas")), /*#__PURE__*/React.createElement("ul", {
+    className: "space-y-2"
+  }, lessonData.tips.map((t, i) => /*#__PURE__*/React.createElement("li", {
+    key: i,
+    className: "card-paper rounded-sm p-3 flex items-start gap-3"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "fx-display flex-shrink-0",
+    style: {
+      fontWeight: 700,
+      color: "var(--gold)"
+    }
+  }, "\xB7"), /*#__PURE__*/React.createElement("span", {
+    className: "fx-body text-[14px]",
+    style: {
+      color: "var(--ink-soft)"
+    }
+  }, t))))), /*#__PURE__*/React.createElement("div", {
+    className: "mt-10 card-paper rounded-sm p-6 text-center anim-rise"
+  }, lessonData.finalTip && /*#__PURE__*/React.createElement("div", {
+    className: "fx-serif-italic text-lg mb-4",
+    style: {
+      color: "var(--ink-soft)"
+    }
+  }, "\"", lessonData.finalTip, "\""), !isCompleted ? /*#__PURE__*/React.createElement("button", {
+    onClick: onComplete,
+    className: "btn-primary px-6 py-3 rounded-sm fx-body text-sm flex items-center gap-2 mx-auto"
+  }, /*#__PURE__*/React.createElement(CheckCircle2, {
+    size: 15
+  }), " Concluir aula de hoje") : /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center justify-center gap-2 fx-body text-sm",
+    style: {
+      color: "var(--sage)"
+    }
+  }, /*#__PURE__*/React.createElement(CheckCircle2, {
+    size: 16
+  }), " Aula conclu\xEDda"), !allRevealed && /*#__PURE__*/React.createElement("div", {
+    className: "fx-body text-xs mt-3",
+    style: {
+      color: "var(--muted)"
+    }
+  }, "Dica: tente os exerc\xEDcios antes de revelar as respostas.")));
+};
+
+// -----------------------------------------------------------
+// Flashcards
+// -----------------------------------------------------------
+
+const FlashcardsView = _ref7 => {
+  let {
+    flashcards,
+    setFlashcards
+  } = _ref7;
+  const [deck, setDeck] = useState([]);
+  const [i, setI] = useState(0);
+  const [flipped, setFlipped] = useState(false);
+  const [session, setSession] = useState({
+    easy: 0,
+    good: 0,
+    hard: 0
+  });
+  const [finished, setFinished] = useState(false);
+  const speak = t => {
+    if (!window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(t);
+    u.lang = "en-US";
+    u.rate = 0.9;
+    window.speechSynthesis.speak(u);
+  };
+  useEffect(() => {
+    // Build deck: due cards first, then least-seen
+    const now = Date.now();
+    const due = flashcards.filter(c => !c.nextReview || c.nextReview <= now);
+    const rest = flashcards.filter(c => c.nextReview && c.nextReview > now).sort((a, b) => (a.seen || 0) - (b.seen || 0));
+    const d = [...due, ...rest].slice(0, 25);
+    // shuffle due portion
+    for (let x = d.length - 1; x > 0; x--) {
+      const j = Math.floor(Math.random() * (x + 1));
+      [d[x], d[j]] = [d[j], d[x]];
+    }
+    setDeck(d);
+    setI(0);
+    setFlipped(false);
+    setFinished(false);
+    setSession({
+      easy: 0,
+      good: 0,
+      hard: 0
+    });
+  }, [flashcards.length]);
+  const current = deck[i];
+  const mark = async level => {
+    if (!current) return;
+    const now = Date.now();
+    const multipliers = {
+      hard: 0.5,
+      good: 2,
+      easy: 4
+    };
+    const base = current.intervalDays || 1;
+    const next = Math.max(1, Math.round(base * multipliers[level]));
+    const updated = flashcards.map(c => c.id === current.id ? {
+      ...c,
+      intervalDays: next,
+      nextReview: now + next * 86400000,
+      seen: (c.seen || 0) + 1,
+      lastLevel: level
+    } : c);
+    setFlashcards(updated);
+    await sSet("flashcards", updated);
+    setSession(s => ({
+      ...s,
+      [level]: s[level] + 1
+    }));
+    if (i + 1 >= deck.length) {
+      setFinished(true);
+    } else {
+      setI(i + 1);
+      setFlipped(false);
+    }
+  };
+  const restart = () => {
+    setI(0);
+    setFlipped(false);
+    setFinished(false);
+    setSession({
+      easy: 0,
+      good: 0,
+      hard: 0
+    });
+  };
+  if (flashcards.length === 0) {
+    return /*#__PURE__*/React.createElement("div", {
+      className: "max-w-3xl mx-auto px-4 md:px-6 py-16 text-center"
+    }, /*#__PURE__*/React.createElement(Layers, {
+      size: 32,
+      className: "mx-auto",
+      style: {
+        color: "var(--muted)"
+      }
+    }), /*#__PURE__*/React.createElement("h2", {
+      className: "fx-display text-3xl mt-4",
+      style: {
+        fontWeight: 600
+      }
+    }, "Seus flashcards v\xE3o aparecer aqui."), /*#__PURE__*/React.createElement("p", {
+      className: "fx-body mt-2",
+      style: {
+        color: "var(--ink-soft)"
+      }
+    }, "A cada aula, o vocabul\xE1rio novo vira um flashcard automaticamente."));
+  }
+  if (finished) {
+    const total = session.easy + session.good + session.hard;
+    return /*#__PURE__*/React.createElement("div", {
+      className: "max-w-3xl mx-auto px-4 md:px-6 py-12 text-center anim-rise"
+    }, /*#__PURE__*/React.createElement(Trophy, {
+      size: 32,
+      className: "mx-auto",
+      style: {
+        color: "var(--gold)"
+      }
+    }), /*#__PURE__*/React.createElement("h2", {
+      className: "fx-display text-4xl mt-4",
+      style: {
+        fontWeight: 600
+      }
+    }, "Sess\xE3o completa", /*#__PURE__*/React.createElement("span", {
+      style: {
+        color: "var(--accent)"
+      }
+    }, ".")), /*#__PURE__*/React.createElement("p", {
+      className: "fx-serif-italic mt-2",
+      style: {
+        color: "var(--ink-soft)"
+      }
+    }, "Voc\xEA revisou ", total, " ", total === 1 ? "carta" : "cartas", "."), /*#__PURE__*/React.createElement("div", {
+      className: "mt-6 grid grid-cols-3 gap-2 max-w-md mx-auto"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "card-paper rounded-sm p-4"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "fx-display text-2xl",
+      style: {
+        fontWeight: 600,
+        color: "var(--sage)"
+      }
+    }, session.easy), /*#__PURE__*/React.createElement("div", {
+      className: "fx-body text-xs",
+      style: {
+        color: "var(--muted)"
+      }
+    }, "F\xE1cil")), /*#__PURE__*/React.createElement("div", {
+      className: "card-paper rounded-sm p-4"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "fx-display text-2xl",
+      style: {
+        fontWeight: 600
+      }
+    }, session.good), /*#__PURE__*/React.createElement("div", {
+      className: "fx-body text-xs",
+      style: {
+        color: "var(--muted)"
+      }
+    }, "Sabia")), /*#__PURE__*/React.createElement("div", {
+      className: "card-paper rounded-sm p-4"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "fx-display text-2xl",
+      style: {
+        fontWeight: 600,
+        color: "var(--accent)"
+      }
+    }, session.hard), /*#__PURE__*/React.createElement("div", {
+      className: "fx-body text-xs",
+      style: {
+        color: "var(--muted)"
+      }
+    }, "Dif\xEDcil"))), /*#__PURE__*/React.createElement("button", {
+      onClick: restart,
+      className: "btn-primary mt-6 px-5 py-2.5 rounded-sm fx-body text-sm flex items-center gap-2 mx-auto"
+    }, /*#__PURE__*/React.createElement(RotateCw, {
+      size: 14
+    }), " Revisar de novo"));
+  }
+  if (!current) return null;
+  const progress = i / deck.length * 100;
+  return /*#__PURE__*/React.createElement("div", {
+    className: "max-w-xl mx-auto px-4 md:px-6 py-6"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-3 mb-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "fx-body text-xs uppercase tracking-[0.22em]",
+    style: {
+      color: "var(--muted)"
+    }
+  }, "Flashcard ", i + 1, " de ", deck.length), /*#__PURE__*/React.createElement("div", {
+    className: "flex-1 h-1 rounded-full overflow-hidden",
+    style: {
+      background: "var(--line-soft)"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "h-full transition-all",
+    style: {
+      width: `${progress}%`,
+      background: "var(--ink)"
+    }
+  }))), /*#__PURE__*/React.createElement("div", {
+    className: "flip-card h-80 cursor-pointer",
+    onClick: () => setFlipped(!flipped)
+  }, /*#__PURE__*/React.createElement("div", {
+    className: `flip-inner ${flipped ? "flipped" : ""}`
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flip-face card-paper rounded-sm p-6 flex flex-col justify-between"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center justify-between"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "fx-body text-xs uppercase tracking-[0.22em]",
+    style: {
+      color: "var(--muted)"
+    }
+  }, "Ingl\xEAs"), /*#__PURE__*/React.createElement("button", {
+    onClick: e => {
+      e.stopPropagation();
+      speak(current.word);
+    },
+    style: {
+      color: "var(--ink-soft)"
+    }
+  }, /*#__PURE__*/React.createElement(Volume2, {
+    size: 16
+  }))), /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-col items-center justify-center flex-1 text-center -mt-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "fx-display text-4xl md:text-5xl",
+    style: {
+      fontWeight: 600
+    }
+  }, current.word), current.pos && /*#__PURE__*/React.createElement("div", {
+    className: "fx-serif-italic mt-2 text-sm",
+    style: {
+      color: "var(--muted)"
+    }
+  }, current.pos)), /*#__PURE__*/React.createElement("div", {
+    className: "fx-body text-xs text-center",
+    style: {
+      color: "var(--muted)"
+    }
+  }, "Toque para ver a tradu\xE7\xE3o")), /*#__PURE__*/React.createElement("div", {
+    className: "flip-face flip-back card-paper rounded-sm p-6 flex flex-col justify-between",
+    style: {
+      background: "linear-gradient(180deg, var(--paper), #F4E9D2)"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "fx-body text-xs uppercase tracking-[0.22em]",
+    style: {
+      color: "var(--muted)"
+    }
+  }, "Portugu\xEAs"), /*#__PURE__*/React.createElement("div", {
+    className: "text-center flex-1 flex flex-col justify-center"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "fx-display text-3xl md:text-4xl",
+    style: {
+      fontWeight: 600,
+      color: "var(--accent)"
+    }
+  }, current.translation), current.example && /*#__PURE__*/React.createElement("div", {
+    className: "fx-serif-italic mt-4 text-sm px-2",
+    style: {
+      color: "var(--ink-soft)"
+    }
+  }, "\"", current.example, "\"")), /*#__PURE__*/React.createElement("div", {
+    className: "fx-body text-xs text-center",
+    style: {
+      color: "var(--muted)"
+    }
+  }, "Como foi?")))), /*#__PURE__*/React.createElement("div", {
+    className: "grid grid-cols-3 gap-2 mt-5"
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => mark("hard"),
+    className: "card-paper rounded-sm py-3 fx-body text-sm transition hover:scale-[1.02]"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "fx-display text-lg",
+    style: {
+      fontWeight: 600,
+      color: "var(--accent)"
+    }
+  }, "Dif\xEDcil"), /*#__PURE__*/React.createElement("div", {
+    className: "fx-body text-xs",
+    style: {
+      color: "var(--muted)"
+    }
+  }, "ver logo")), /*#__PURE__*/React.createElement("button", {
+    onClick: () => mark("good"),
+    className: "card-paper rounded-sm py-3 fx-body text-sm transition hover:scale-[1.02]"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "fx-display text-lg",
+    style: {
+      fontWeight: 600
+    }
+  }, "Sabia"), /*#__PURE__*/React.createElement("div", {
+    className: "fx-body text-xs",
+    style: {
+      color: "var(--muted)"
+    }
+  }, "2 dias")), /*#__PURE__*/React.createElement("button", {
+    onClick: () => mark("easy"),
+    className: "card-paper rounded-sm py-3 fx-body text-sm transition hover:scale-[1.02]"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "fx-display text-lg",
+    style: {
+      fontWeight: 600,
+      color: "var(--sage)"
+    }
+  }, "F\xE1cil"), /*#__PURE__*/React.createElement("div", {
+    className: "fx-body text-xs",
+    style: {
+      color: "var(--muted)"
+    }
+  }, "4+ dias"))), /*#__PURE__*/React.createElement("div", {
+    className: "text-center mt-4 fx-body text-xs",
+    style: {
+      color: "var(--muted)"
+    }
+  }, flashcards.length, " flashcards no total \xB7 revis\xE3o espa\xE7ada"));
+};
+
+// -----------------------------------------------------------
+// Progress view
+// -----------------------------------------------------------
+
+const ProgressView = _ref8 => {
+  let {
+    profile,
+    completedLessons,
+    flashcards,
+    setProfile,
+    apiKey,
+    setApiKey
+  } = _ref8;
+  const total = completedLessons.length;
+  const atLevel = completedLessons.filter(l => l.level === profile.level).length;
+  const pct = Math.min(100, Math.round(atLevel / LESSONS_TO_ADVANCE * 100));
+  const countsBySkill = completedLessons.reduce((a, l) => {
+    a[l.skill] = (a[l.skill] || 0) + 1;
+    return a;
+  }, {});
+  const masteredCards = flashcards.filter(c => (c.seen || 0) >= 3 && c.lastLevel !== "hard").length;
+  const changeLevel = async L => {
+    const next = {
+      ...profile,
+      level: L
+    };
+    await sSet("profile", next);
+    setProfile(next);
+  };
+  const levelIdx = LEVELS.indexOf(profile.level);
+  const nextLevel = LEVELS[Math.min(LEVELS.length - 1, levelIdx + 1)];
+
+  // Activity by date (last 28 days)
+  const days28 = [];
+  for (let k = 27; k >= 0; k--) {
+    const d = new Date();
+    d.setDate(d.getDate() - k);
+    const key = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    days28.push({
+      key,
+      studied: completedLessons.some(l => l.date === key),
+      weekday: d.getDay()
+    });
+  }
+  return /*#__PURE__*/React.createElement("div", {
+    className: "max-w-3xl mx-auto px-4 md:px-6 py-6 pb-24"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "anim-rise"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "fx-body text-xs uppercase tracking-[0.28em]",
+    style: {
+      color: "var(--muted)"
+    }
+  }, "Seu progresso"), /*#__PURE__*/React.createElement("h1", {
+    className: "fx-display text-4xl md:text-5xl mt-1",
+    style: {
+      fontWeight: 600
+    }
+  }, "Voc\xEA est\xE1 ", /*#__PURE__*/React.createElement("span", {
+    className: "fx-serif-italic",
+    style: {
+      color: "var(--accent)"
+    }
+  }, "indo longe"), ".")), /*#__PURE__*/React.createElement("div", {
+    className: "mt-7 card-paper rounded-sm p-6 anim-rise"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-baseline justify-between"
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    className: "fx-body text-xs uppercase tracking-[0.22em]",
+    style: {
+      color: "var(--muted)"
+    }
+  }, "N\xEDvel atual"), /*#__PURE__*/React.createElement("div", {
+    className: "flex items-baseline gap-3 mt-1"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "fx-display text-5xl",
+    style: {
+      fontWeight: 700
+    }
+  }, profile.level), /*#__PURE__*/React.createElement("div", {
+    className: "fx-serif-italic text-lg",
+    style: {
+      color: "var(--ink-soft)"
+    }
+  }, LEVEL_NAMES[profile.level]))), /*#__PURE__*/React.createElement(Award, {
+    size: 32,
+    style: {
+      color: "var(--gold)"
+    }
+  })), /*#__PURE__*/React.createElement("p", {
+    className: "fx-body text-sm mt-3",
+    style: {
+      color: "var(--ink-soft)"
+    }
+  }, LEVEL_DESC[profile.level]), /*#__PURE__*/React.createElement("div", {
+    className: "mt-5"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center justify-between fx-body text-xs mb-1.5",
+    style: {
+      color: "var(--muted)"
+    }
+  }, /*#__PURE__*/React.createElement("span", null, "At\xE9 ", nextLevel), /*#__PURE__*/React.createElement("span", null, atLevel, "/", LESSONS_TO_ADVANCE, " aulas")), /*#__PURE__*/React.createElement("div", {
+    className: "h-2 rounded-full overflow-hidden",
+    style: {
+      background: "var(--line-soft)"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "h-full transition-all",
+    style: {
+      width: `${pct}%`,
+      background: "linear-gradient(90deg, var(--accent), var(--gold))"
+    }
+  }))), atLevel >= LESSONS_TO_ADVANCE && profile.level !== "C2" && /*#__PURE__*/React.createElement("button", {
+    onClick: () => changeLevel(nextLevel),
+    className: "btn-primary mt-4 px-4 py-2 rounded-sm fx-body text-sm flex items-center gap-2"
+  }, /*#__PURE__*/React.createElement(Sparkles, {
+    size: 13
+  }), " Avan\xE7ar para ", nextLevel)), /*#__PURE__*/React.createElement("div", {
+    className: "grid grid-cols-2 md:grid-cols-4 gap-2 mt-4 anim-rise"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "card-paper rounded-sm p-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-1.5",
+    style: {
+      color: "var(--accent)"
+    }
+  }, /*#__PURE__*/React.createElement(Flame, {
+    size: 13
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "fx-body text-xs uppercase tracking-[0.2em]"
+  }, "Ofensiva")), /*#__PURE__*/React.createElement("div", {
+    className: "fx-display text-3xl mt-1",
+    style: {
+      fontWeight: 700
+    }
+  }, profile.streak || 0), /*#__PURE__*/React.createElement("div", {
+    className: "fx-body text-xs",
+    style: {
+      color: "var(--muted)"
+    }
+  }, "dias seguidos")), /*#__PURE__*/React.createElement("div", {
+    className: "card-paper rounded-sm p-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-1.5",
+    style: {
+      color: "var(--ink-soft)"
+    }
+  }, /*#__PURE__*/React.createElement(GraduationCap, {
+    size: 13
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "fx-body text-xs uppercase tracking-[0.2em]"
+  }, "Aulas")), /*#__PURE__*/React.createElement("div", {
+    className: "fx-display text-3xl mt-1",
+    style: {
+      fontWeight: 700
+    }
+  }, total), /*#__PURE__*/React.createElement("div", {
+    className: "fx-body text-xs",
+    style: {
+      color: "var(--muted)"
+    }
+  }, "no total")), /*#__PURE__*/React.createElement("div", {
+    className: "card-paper rounded-sm p-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-1.5",
+    style: {
+      color: "var(--sage)"
+    }
+  }, /*#__PURE__*/React.createElement(Layers, {
+    size: 13
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "fx-body text-xs uppercase tracking-[0.2em]"
+  }, "Cartas")), /*#__PURE__*/React.createElement("div", {
+    className: "fx-display text-3xl mt-1",
+    style: {
+      fontWeight: 700
+    }
+  }, flashcards.length), /*#__PURE__*/React.createElement("div", {
+    className: "fx-body text-xs",
+    style: {
+      color: "var(--muted)"
+    }
+  }, masteredCards, " dominadas")), /*#__PURE__*/React.createElement("div", {
+    className: "card-paper rounded-sm p-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-1.5",
+    style: {
+      color: "var(--gold)"
+    }
+  }, /*#__PURE__*/React.createElement(Star, {
+    size: 13
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "fx-body text-xs uppercase tracking-[0.2em]"
+  }, "Desde")), /*#__PURE__*/React.createElement("div", {
+    className: "fx-display text-lg mt-1",
+    style: {
+      fontWeight: 700
+    }
+  }, profile.createdAt?.slice(5).replace("-", "/") || "—"), /*#__PURE__*/React.createElement("div", {
+    className: "fx-body text-xs",
+    style: {
+      color: "var(--muted)"
+    }
+  }, "voc\xEA come\xE7ou"))), /*#__PURE__*/React.createElement("div", {
+    className: "mt-6 card-paper rounded-sm p-5 anim-rise"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "fx-body text-xs uppercase tracking-[0.22em] mb-3",
+    style: {
+      color: "var(--muted)"
+    }
+  }, "\xDAltimos 28 dias"), /*#__PURE__*/React.createElement("div", {
+    className: "grid grid-cols-14 gap-1",
+    style: {
+      gridTemplateColumns: "repeat(14, 1fr)"
+    }
+  }, days28.map(_ref9 => {
+    let {
+      key,
+      studied,
+      weekday
+    } = _ref9;
+    return /*#__PURE__*/React.createElement("div", {
+      key: key,
+      title: key,
+      className: "aspect-square rounded-sm",
+      style: {
+        background: studied ? "var(--accent)" : weekday === 0 || weekday === 6 ? "var(--line-soft)" : "var(--bg-2)",
+        opacity: studied ? 1 : 0.6,
+        border: "1px solid var(--line)"
+      }
+    });
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-3 mt-3 fx-body text-[10px]",
+    style: {
+      color: "var(--muted)"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-1"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "w-2.5 h-2.5 rounded-sm",
+    style: {
+      background: "var(--accent)"
+    }
+  }), " estudou"), /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-1"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "w-2.5 h-2.5 rounded-sm",
+    style: {
+      background: "var(--bg-2)",
+      border: "1px solid var(--line)"
+    }
+  }), " dia \xFAtil"), /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-1"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "w-2.5 h-2.5 rounded-sm",
+    style: {
+      background: "var(--line-soft)"
+    }
+  }), " fim de semana"))), /*#__PURE__*/React.createElement("div", {
+    className: "mt-6 card-paper rounded-sm p-5 anim-rise"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "fx-body text-xs uppercase tracking-[0.22em] mb-3",
+    style: {
+      color: "var(--muted)"
+    }
+  }, "Por pilar"), /*#__PURE__*/React.createElement("div", {
+    className: "space-y-3"
+  }, ["grammar", "reading", "writing", "listening", "review"].map(s => {
+    const c = countsBySkill[s] || 0;
+    const max = Math.max(1, ...Object.values(countsBySkill));
+    const p = c / max * 100;
+    const Icon = {
+      grammar: Feather,
+      reading: BookOpen,
+      writing: Pencil,
+      listening: Headphones,
+      review: RotateCw
+    }[s];
+    return /*#__PURE__*/React.createElement("div", {
+      key: s,
+      className: "flex items-center gap-3"
+    }, /*#__PURE__*/React.createElement(Icon, {
+      size: 14,
+      style: {
+        color: "var(--ink-soft)"
+      }
+    }), /*#__PURE__*/React.createElement("div", {
+      className: "fx-body text-sm w-24",
+      style: {
+        color: "var(--ink)"
+      }
+    }, FOCUS_LABEL[s]), /*#__PURE__*/React.createElement("div", {
+      className: "flex-1 h-2 rounded-full overflow-hidden",
+      style: {
+        background: "var(--line-soft)"
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "h-full",
+      style: {
+        width: `${p}%`,
+        background: "var(--ink-soft)"
+      }
+    })), /*#__PURE__*/React.createElement("div", {
+      className: "fx-body text-xs w-8 text-right",
+      style: {
+        color: "var(--muted)"
+      }
+    }, c));
+  }))), /*#__PURE__*/React.createElement("div", {
+    className: "mt-6 card-paper rounded-sm p-5 anim-rise"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "fx-body text-xs uppercase tracking-[0.22em] mb-3",
+    style: {
+      color: "var(--muted)"
+    }
+  }, "Ajustar n\xEDvel"), /*#__PURE__*/React.createElement("p", {
+    className: "fx-body text-sm mb-3",
+    style: {
+      color: "var(--ink-soft)"
+    }
+  }, "Sentindo que as aulas est\xE3o f\xE1ceis ou dif\xEDceis? Mude seu n\xEDvel a qualquer momento."), /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap gap-1.5"
+  }, LEVELS.map(L => /*#__PURE__*/React.createElement("button", {
+    key: L,
+    onClick: () => changeLevel(L),
+    className: `px-3 py-1.5 rounded-sm fx-display text-sm border transition`,
+    style: {
+      fontWeight: 600,
+      background: profile.level === L ? "var(--ink)" : "var(--paper)",
+      color: profile.level === L ? "var(--paper)" : "var(--ink)",
+      borderColor: profile.level === L ? "var(--ink)" : "var(--line)"
+    }
+  }, L)))), /*#__PURE__*/React.createElement("div", {
+    className: "mt-6 card-paper rounded-sm p-5 anim-rise"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "fx-body text-xs uppercase tracking-[0.22em] mb-1",
+    style: {
+      color: "var(--muted)"
+    }
+  }, "Chave da IA (Gemini)"), /*#__PURE__*/React.createElement("p", {
+    className: "fx-body text-sm mb-3",
+    style: {
+      color: "var(--ink-soft)"
+    }
+  }, apiKey ? "✅ Chave configurada. A IA gera suas aulas." : "⚠️ Sem chave — usando aulas padrão."), /*#__PURE__*/React.createElement("input", {
+    className: "input-paper w-full fx-body text-sm",
+    placeholder: "Cole aqui: AIza...",
+    defaultValue: apiKey,
+    onChange: e => setApiKey(e.target.value)
+  }), /*#__PURE__*/React.createElement("button", {
+    className: "btn-primary mt-3 px-4 py-2 rounded-sm fx-body text-sm flex items-center gap-2",
+    onClick: async () => {
+      await sSet("geminiKey", apiKey);
+      alert("Chave salva!");
+    }
+  }, /*#__PURE__*/React.createElement(Check, {
+    size: 14
+  }), " Salvar chave")), /*#__PURE__*/React.createElement("div", {
+    className: "mt-8 text-center fx-body text-xs flex items-center justify-center gap-1.5",
+    style: {
+      color: "var(--muted)"
+    }
+  }, /*#__PURE__*/React.createElement(Cloud, {
+    size: 11
+  }), " Tudo salvo automaticamente \xB7 ol\xE1, ", profile.name));
+};
+
+// -----------------------------------------------------------
+// Root App
+// -----------------------------------------------------------
+
+function App() {
+  const [ready, setReady] = useState(false);
+  const [profile, setProfile] = useState(null);
+  const [apiKey, setApiKey] = useState("");
+  const [completedLessons, setCompletedLessons] = useState([]);
+  const [flashcards, setFlashcards] = useState([]);
+  const [tab, setTab] = useState("today");
+  const [lessonData, setLessonData] = useState(null);
+  const [loadingLesson, setLoadingLesson] = useState(false);
+  const [lessonError, setLessonError] = useState(false);
+
+  // Load state
+  useEffect(() => {
+    (async () => {
+      const p = await sGet("profile");
+      if (p) setProfile(p);
+      const k = await sGet("geminiKey");
+      if (k) setApiKey(k);
+      const cl = await sGet("completedLessons");
+      if (Array.isArray(cl)) setCompletedLessons(cl);
+      const fc = await sGet("flashcards");
+      if (Array.isArray(fc)) setFlashcards(fc);
+      setReady(true);
+    })();
+  }, []);
+  const focusKey = DAY_FOCUS[currentDay()]?.key || "grammar";
+  const tKey = todayKey();
+  const lessonToday = completedLessons.find(l => l.date === tKey);
+  const completedAtLevel = completedLessons.filter(l => l.level === profile?.level).length;
+  const weekProgress = useMemo(() => {
+    const base = {
+      1: false,
+      2: false,
+      3: false,
+      4: false,
+      5: false
+    };
+    const today = new Date();
+    const day = today.getDay();
+    // Monday of this week
+    const diff = day === 0 ? -6 : 1 - day;
+    const monday = new Date(today);
+    monday.setDate(today.getDate() + diff);
+    for (let i = 0; i < 5; i++) {
+      const d = new Date(monday);
+      d.setDate(monday.getDate() + i);
+      const key = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+      if (completedLessons.some(l => l.date === key)) base[i + 1] = true;
+    }
+    return base;
+  }, [completedLessons]);
+  const loadLesson = useCallback(async function () {
+    let force = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+    if (!profile) return;
+    setLoadingLesson(true);
+    setLessonError(false);
+    try {
+      const lessonIdx = getLessonIndexByFocus(completedLessons, profile.level, focusKey);
+      const topicSlug = (getTopicForLesson(profile.level, focusKey, lessonIdx) || "").slice(0, 40).replace(/[^a-zA-Z0-9]/g, "-");
+      const cacheKey = `lesson_${profile.level}_${focusKey}_${lessonIdx}_${topicSlug}`;
+      if (!force) {
+        const cached = await sGet(cacheKey);
+        if (cached) {
+          setLessonData(cached);
+          setLoadingLesson(false);
+          return;
+        }
+      }
+      const prompt = buildPrompt(profile.level, focusKey, completedAtLevel, completedLessons);
+      if (apiKey) {
+        try {
+          const data = await callAI(prompt, apiKey);
+          setLessonData(data);
+          await sSet(cacheKey, data);
+          return;
+        } catch (aiErr) {
+          console.warn("Gemini falhou, usando aula padrão:", aiErr?.message);
+        }
+      }
+      // No apiKey or AI failed — use curated fallback
+      const fb = getFallbackLesson(profile.level, focusKey);
+      const fallback = {
+        ...fb,
+        _fallback: true
+      };
+      setLessonData(fallback);
+      await sSet(cacheKey, fallback);
+    } catch (e) {
+      console.error(e);
+      setLessonError(true);
+    } finally {
+      setLoadingLesson(false);
+    }
+  }, [profile, focusKey, tKey, completedAtLevel, apiKey]);
+  const openLesson = async () => {
+    setTab("lesson");
+    if (!lessonData || lessonData._stale) await loadLesson();
+  };
+  const completeLesson = async () => {
+    if (!lessonData || !profile) return;
+    const id = `${tKey}_${focusKey}`;
+    if (completedLessons.some(l => l.id === id)) {
+      setTab("today");
+      return;
+    }
+    const newEntry = {
+      id,
+      date: tKey,
+      skill: focusKey,
+      level: profile.level,
+      title: lessonData.title
+    };
+    const updatedLessons = [...completedLessons, newEntry];
+    setCompletedLessons(updatedLessons);
+    await sSet("completedLessons", updatedLessons);
+
+    // Add vocabulary to flashcards
+    const existingWords = new Set(flashcards.map(f => f.word.toLowerCase()));
+    const newCards = (lessonData.vocabulary || []).filter(v => v.word && !existingWords.has(v.word.toLowerCase())).map(v => ({
+      id: `fc_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+      word: v.word,
+      translation: v.translation,
+      pos: v.pos,
+      example: v.example,
+      skill: focusKey,
+      level: profile.level,
+      createdAt: Date.now(),
+      intervalDays: 1,
+      nextReview: Date.now(),
+      seen: 0
+    }));
+    const updatedCards = [...flashcards, ...newCards];
+    setFlashcards(updatedCards);
+    await sSet("flashcards", updatedCards);
+
+    // Streak
+    let streak = profile.streak || 0;
+    if (profile.lastStudyDate) {
+      const diff = daysBetween(profile.lastStudyDate, tKey);
+      if (diff === 0) {/* same day, keep */} else if (diff === 1) streak += 1;else streak = 1;
+    } else streak = 1;
+    const nextProfile = {
+      ...profile,
+      streak,
+      lastStudyDate: tKey
+    };
+    setProfile(nextProfile);
+    await sSet("profile", nextProfile);
+    setTab("today");
+  };
+  if (!ready) {
+    return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(GlobalStyles, null), /*#__PURE__*/React.createElement("div", {
+      className: "min-h-screen flex items-center justify-center paper-grain"
+    }, /*#__PURE__*/React.createElement(Loader2, {
+      className: "animate-spin",
+      size: 24,
+      style: {
+        color: "var(--accent)"
+      }
+    })));
+  }
+  if (!profile) {
+    return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(GlobalStyles, null), /*#__PURE__*/React.createElement(Onboarding, {
+      onDone: (p, k) => {
+        setProfile(p);
+        if (k) setApiKey(k);
+      }
+    }));
+  }
+  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(GlobalStyles, null), /*#__PURE__*/React.createElement("div", {
+    className: "min-h-screen paper-grain"
+  }, /*#__PURE__*/React.createElement(Header, {
+    profile: profile,
+    streak: profile.streak || 0,
+    tab: tab,
+    setTab: setTab
+  }), tab === "today" && /*#__PURE__*/React.createElement(TodayView, {
+    profile: profile,
+    completedAtLevel: completedAtLevel,
+    lessonToday: lessonToday,
+    openLesson: openLesson,
+    setTab: setTab,
+    allCompleted: false,
+    weekProgress: weekProgress
+  }), tab === "lesson" && (!lessonData && !loadingLesson && !lessonError ? /*#__PURE__*/React.createElement("div", {
+    className: "max-w-3xl mx-auto px-4 md:px-6 py-16 text-center"
+  }, /*#__PURE__*/React.createElement(BookOpen, {
+    size: 28,
+    className: "mx-auto",
+    style: {
+      color: "var(--muted)"
+    }
+  }), /*#__PURE__*/React.createElement("h2", {
+    className: "fx-display text-3xl mt-3",
+    style: {
+      fontWeight: 600
+    }
+  }, "Gere sua aula de hoje."), /*#__PURE__*/React.createElement("p", {
+    className: "fx-body mt-2",
+    style: {
+      color: "var(--ink-soft)"
+    }
+  }, "A IA vai preparar uma aula de ", FOCUS_LABEL[focusKey], " para o seu n\xEDvel ", profile.level, "."), /*#__PURE__*/React.createElement("button", {
+    onClick: () => loadLesson(),
+    className: "btn-primary mt-5 px-5 py-2.5 rounded-sm fx-body text-sm mx-auto flex items-center gap-2"
+  }, /*#__PURE__*/React.createElement(Sparkles, {
+    size: 14
+  }), " Gerar aula")) : /*#__PURE__*/React.createElement(LessonView, {
+    profile: profile,
+    lessonData: lessonData,
+    loading: loadingLesson,
+    error: lessonError,
+    onRegenerate: () => loadLesson(true),
+    onComplete: completeLesson,
+    isCompleted: !!lessonToday,
+    focusKey: focusKey
+  })), tab === "flashcards" && /*#__PURE__*/React.createElement(FlashcardsView, {
+    flashcards: flashcards,
+    setFlashcards: setFlashcards
+  }), tab === "progress" && /*#__PURE__*/React.createElement(ProgressView, {
+    profile: profile,
+    completedLessons: completedLessons,
+    flashcards: flashcards,
+    setProfile: setProfile,
+    apiKey: apiKey,
+    setApiKey: setApiKey
+  })));
+}
