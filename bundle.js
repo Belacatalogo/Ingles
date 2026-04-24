@@ -1077,7 +1077,7 @@ const extractJSON = text => {
 const callGeminiOnce = async (prompt, apiKey) => {
   var _data$candidates;
   const systemInstruction = "Você é um gerador de aulas de inglês. Responda APENAS com JSON válido, sem texto antes ou depois, sem blocos de código markdown.";
-  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
+  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
