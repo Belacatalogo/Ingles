@@ -1931,7 +1931,23 @@ const LessonView = _ref6 => {
     }
   }, /*#__PURE__*/React.createElement(Sparkles, {
     size: 10
-  }), " Gerada por IA")), /*#__PURE__*/React.createElement("h1", {
+  }), " Gerada por IA")), lessonData._fallback && lessonData._fallbackReason && /*#__PURE__*/React.createElement("div", {
+    className: "mt-3 p-3 rounded-sm fx-body text-xs",
+    style: {
+      background: "#FEF3C7",
+      border: "1px solid #F59E0B",
+      color: "#92400E"
+    }
+  }, /*#__PURE__*/React.createElement("strong", null, "Por que a IA n\xE3o gerou esta aula?"), /*#__PURE__*/React.createElement("br", null), /*#__PURE__*/React.createElement("span", null, lessonData._fallbackReason), onRegenerate && /*#__PURE__*/React.createElement("button", {
+    onClick: onRegenerate,
+    className: "mt-2 px-3 py-1 rounded-sm fx-body text-[11px] flex items-center gap-1",
+    style: {
+      background: "#92400E",
+      color: "#FEF3C7"
+    }
+  }, /*#__PURE__*/React.createElement(RotateCw, {
+    size: 11
+  }), " Tentar com IA novamente")), /*#__PURE__*/React.createElement("h1", {
     className: "fx-display text-3xl md:text-4xl mt-2",
     style: {
       fontWeight: 600,
@@ -3042,21 +3058,42 @@ function App() {
         }
       }
       const prompt = buildPrompt(profile.level, focusKey, completedAtLevel, completedLessons);
-      if (apiKey) {
+      let aiErrorMsg = null;
+      if (!apiKey) {
+        aiErrorMsg = "Chave do Gemini não foi configurada. Vá em Progresso → Chave da IA para adicionar.";
+      } else {
         try {
           const data = await callAI(prompt, apiKey);
           setLessonData(data);
           await sSet(cacheKey, data);
           return;
         } catch (aiErr) {
-          console.warn("Gemini falhou, usando aula padrão:", aiErr === null || aiErr === void 0 ? void 0 : aiErr.message);
+          console.warn("Gemini falhou:", aiErr === null || aiErr === void 0 ? void 0 : aiErr.message);
+          // Parse the error to give friendly message
+          const msg = (aiErr === null || aiErr === void 0 ? void 0 : aiErr.message) || "erro desconhecido";
+          if (msg.includes("API_KEY_INVALID") || msg.includes("API key not valid")) {
+            aiErrorMsg = "Chave do Gemini inválida. Verifique se copiou corretamente em Progresso → Chave da IA.";
+          } else if (msg.includes("quota") || msg.includes("429")) {
+            aiErrorMsg = "Limite de uso da API do Gemini atingido. Tente novamente em alguns minutos.";
+          } else if (msg.includes("PERMISSION_DENIED")) {
+            aiErrorMsg = "Permissão negada pelo Gemini. Verifique se a chave tem acesso à API generativelanguage.";
+          } else if (msg.includes("Failed to fetch") || msg.includes("NetworkError")) {
+            aiErrorMsg = "Sem conexão com a internet ou Gemini bloqueado pela rede.";
+          } else if (msg.includes("Resposta vazia")) {
+            aiErrorMsg = "Gemini retornou resposta vazia. Pode ser conteúdo bloqueado — tente recarregar.";
+          } else if (msg.includes("JSON")) {
+            aiErrorMsg = "Gemini retornou resposta malformada. Tente recarregar a aula.";
+          } else {
+            aiErrorMsg = "Erro da IA: " + msg.slice(0, 150);
+          }
         }
       }
-      // No apiKey or AI failed — use curated fallback
+      // AI failed — use curated fallback
       const fb = getFallbackLesson(profile.level, focusKey);
       const fallback = {
         ...fb,
-        _fallback: true
+        _fallback: true,
+        _fallbackReason: aiErrorMsg
       };
       setLessonData(fallback);
       await sSet(cacheKey, fallback);
