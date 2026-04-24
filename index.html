@@ -10,36 +10,22 @@
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{background:#F1E9DB;-webkit-text-size-adjust:100%}
 #root{min-height:100vh}
-#splash{
-  display:flex;align-items:center;justify-content:center;
-  min-height:100vh;flex-direction:column;gap:16px;
-  background:#F1E9DB;font-family:-apple-system,sans-serif;
-}
+#splash{display:flex;align-items:center;justify-content:center;min-height:100vh;flex-direction:column;gap:16px;background:#F1E9DB;font-family:-apple-system,sans-serif;}
 #splash-title{color:#1C1914;font-size:22px;font-weight:800;letter-spacing:-.5px}
 #splash-title span{color:#B53F1F}
-#progress-bar-wrap{
-  width:200px;height:4px;background:#E0D5C5;border-radius:4px;overflow:hidden;
-}
-#progress-bar{
-  height:4px;background:#B53F1F;border-radius:4px;
-  width:0%;transition:width 0.3s ease;
-}
-#splash-steps{
-  display:flex;flex-direction:column;gap:6px;width:220px;
-}
-.step{
-  display:flex;align-items:center;gap:8px;
-  font-size:12px;color:#8A7E6B;transition:color .2s;
-}
+#progress-bar-wrap{width:200px;height:4px;background:#E0D5C5;border-radius:4px;overflow:hidden}
+#progress-bar{height:4px;background:#B53F1F;border-radius:4px;width:0%;transition:width 0.4s ease}
+#splash-steps{display:flex;flex-direction:column;gap:6px;width:220px}
+.step{display:flex;align-items:center;gap:8px;font-size:12px;color:#8A7E6B;transition:color .2s}
 .step.done{color:#2D6A4F;font-weight:600}
 .step.active{color:#B53F1F;font-weight:600}
-.step-dot{
-  width:7px;height:7px;border-radius:50%;
-  background:#D5C9B8;flex-shrink:0;transition:background .2s;
-}
+.step.error{color:#B53F1F;font-weight:600}
+.step-dot{width:7px;height:7px;border-radius:50%;background:#D5C9B8;flex-shrink:0;transition:background .2s}
 .step.done .step-dot{background:#2D6A4F}
 .step.active .step-dot{background:#B53F1F}
-#splash-err{color:#B53F1F;font-size:12px;max-width:260px;text-align:center;display:none}
+.step.error .step-dot{background:#B53F1F}
+#splash-err{color:#B53F1F;font-size:11px;max-width:260px;text-align:center;display:none;padding:0 20px;line-height:1.5}
+#retry-btn{display:none;margin-top:4px;padding:8px 20px;background:#B53F1F;color:white;border:none;border-radius:6px;font-size:13px;font-family:-apple-system,sans-serif;cursor:pointer}
 </style>
 </head>
 <body>
@@ -54,19 +40,17 @@ html,body{background:#F1E9DB;-webkit-text-size-adjust:100%}
       <div class="step" id="step-app"><span class="step-dot"></span> Iniciando app…</div>
     </div>
     <p id="splash-err"></p>
+    <button id="retry-btn" onclick="location.reload()">Tentar novamente</button>
   </div>
 </div>
 
 <script>
-var _progress = 0;
 function setStep(id, state) {
-  var els = document.querySelectorAll('.step');
-  els.forEach(function(el) { if(el.classList.contains('active')) el.classList.remove('active'); });
+  document.querySelectorAll('.step').forEach(function(el) { el.classList.remove('active'); });
   var el = document.getElementById(id);
   if (!el) return;
-  if (state === 'done') { el.classList.add('done'); el.classList.remove('active'); }
-  else if (state === 'active') { el.classList.add('active'); }
-  else if (state === 'error') { el.style.color='#B53F1F'; el.querySelector('.step-dot').style.background='#B53F1F'; }
+  el.classList.remove('active','done','error');
+  el.classList.add(state);
 }
 function setProgress(pct) {
   var bar = document.getElementById('progress-bar');
@@ -74,15 +58,33 @@ function setProgress(pct) {
 }
 function showError(msg) {
   var el = document.getElementById('splash-err');
+  var btn = document.getElementById('retry-btn');
   if (el) { el.style.display='block'; el.textContent='Erro: '+msg; }
+  if (btn) btn.style.display='block';
 }
 
-function loadScript(src, cb) {
+// Load script with timeout
+function loadScript(src, timeoutMs, cb) {
+  var done = false;
+  var timer = setTimeout(function() {
+    if (!done) { done=true; cb(new Error('timeout: '+src)); }
+  }, timeoutMs);
   var s = document.createElement('script');
   s.src = src;
-  s.onload = function() { cb(null); };
-  s.onerror = function() { cb(new Error(src)); };
+  s.onload = function() { if(!done){ done=true; clearTimeout(timer); cb(null); } };
+  s.onerror = function() { if(!done){ done=true; clearTimeout(timer); cb(new Error('error: '+src)); } };
   document.head.appendChild(s);
+}
+
+// Try multiple CDNs in sequence
+function tryScripts(urls, timeoutMs, cb) {
+  if (!urls.length) { cb(new Error('all CDNs failed')); return; }
+  var url = urls[0];
+  var rest = urls.slice(1);
+  loadScript(url, timeoutMs, function(err) {
+    if (!err) { cb(null, url); }
+    else { tryScripts(rest, timeoutMs, cb); }
+  });
 }
 
 function localGet(k){try{var v=localStorage.getItem('fluency_'+k);if(v===null)return null;try{return JSON.parse(v)}catch(e){return v}}catch(e){return null}}
@@ -2969,48 +2971,39 @@ function App() {
       showError(e.message);
       console.error(e);
     }
-  }, 50);
+  }, 100);
 }
 
-// Step 1: React
-setStep('step-react','active'); setProgress(5);
-loadScript('https://unpkg.com/react@18/umd/react.production.min.js', function(e) {
-  if (e) {
-    loadScript('https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js', function(e2) {
-      if (e2) { setStep('step-react','error'); showError('React não carregou'); return; }
-      step2();
-    });
-  } else { step2(); }
-});
-
-function step2() {
+// Step 1: React - try jsdelivr first (fastest in Brazil), then unpkg, then cdnjs
+setProgress(5);
+tryScripts([
+  'https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js',
+  'https://unpkg.com/react@18.2.0/umd/react.production.min.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js'
+], 10000, function(err) {
+  if (err) { setStep('step-react','error'); showError('React: '+err.message); return; }
   setStep('step-react','done'); setStep('step-reactdom','active'); setProgress(30);
-  loadScript('https://unpkg.com/react-dom@18/umd/react-dom.production.min.js', function(e) {
-    if (e) {
-      loadScript('https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js', function(e2) {
-        if (e2) { setStep('step-reactdom','error'); showError('ReactDOM não carregou'); return; }
-        step3();
-      });
-    } else { step3(); }
-  });
-}
 
-function step3() {
-  setStep('step-reactdom','done'); setStep('step-lucide','active'); setProgress(60);
-  loadScript('https://unpkg.com/lucide@0.383.0/dist/umd/lucide.min.js', function(e) {
-    if (e) {
-      loadScript('https://cdn.jsdelivr.net/npm/lucide@0.383.0/dist/umd/lucide.min.js', function(e2) {
-        if (e2) { setStep('step-lucide','error'); showError('Lucide não carregou'); return; }
-        step4();
-      });
-    } else { step4(); }
-  });
-}
+  // Step 2: ReactDOM
+  tryScripts([
+    'https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js',
+    'https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js',
+    'https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js'
+  ], 15000, function(err) {
+    if (err) { setStep('step-reactdom','error'); showError('ReactDOM: '+err.message); return; }
+    setStep('step-reactdom','done'); setStep('step-lucide','active'); setProgress(60);
 
-function step4() {
-  setStep('step-lucide','done'); setProgress(80);
-  mountApp();
-}
+    // Step 3: Lucide
+    tryScripts([
+      'https://cdn.jsdelivr.net/npm/lucide@0.383.0/dist/umd/lucide.min.js',
+      'https://unpkg.com/lucide@0.383.0/dist/umd/lucide.min.js'
+    ], 10000, function(err) {
+      if (err) { setStep('step-lucide','error'); showError('Lucide: '+err.message); return; }
+      setStep('step-lucide','done'); setProgress(80);
+      mountApp();
+    });
+  });
+});
 </script>
 </body>
 </html>
