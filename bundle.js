@@ -1074,10 +1074,77 @@ const extractJSON = text => {
     return JSON.parse(repaired);
   }
 };
-const callGeminiOnce = async (prompt, apiKey) => {
+
+// List of Gemini models to try in order (newest first)
+// If one becomes unavailable, automatically tries the next
+const GEMINI_MODELS = ["gemini-2.5-flash",
+// Current stable (recommended)
+"gemini-2.5-flash-lite",
+// Cheaper fallback
+"gemini-flash-latest",
+// Latest alias
+"gemini-2.0-flash-001",
+// Older fallback
+"gemini-1.5-flash" // Legacy fallback
+];
+
+// Discover available models via Gemini API (cached in localStorage)
+const discoverAvailableModels = async apiKey => {
+  try {
+    const cached = localGet("availableModels");
+    const cachedAt = localGet("availableModelsAt");
+    // Cache for 24h
+    if (cached && cachedAt && Date.now() - cachedAt < 86400000) {
+      return cached;
+    }
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (!data.models) return null;
+    // Filter only models that support generateContent
+    const available = data.models.filter(m => {
+      var _m$supportedGeneratio;
+      return (_m$supportedGeneratio = m.supportedGenerationMethods) === null || _m$supportedGeneratio === void 0 ? void 0 : _m$supportedGeneratio.includes("generateContent");
+    }).map(m => m.name.replace("models/", ""))
+    // Prefer flash models, exclude audio/image/embedding
+    .filter(n => n.includes("flash") && !n.includes("audio") && !n.includes("image") && !n.includes("thinking") && !n.includes("tts") && !n.includes("embed"));
+    localSet("availableModels", available);
+    localSet("availableModelsAt", Date.now());
+    return available;
+  } catch (e) {
+    console.warn("Não foi possível descobrir modelos:", e.message);
+    return null;
+  }
+};
+
+// Get the ordered list of models to try
+const getModelsToTry = async apiKey => {
+  // First: try to get the real list from Gemini
+  const discovered = await discoverAvailableModels(apiKey);
+  if (discovered && discovered.length > 0) {
+    // Sort: prefer 2.5 > 2.0 > 1.5, prefer flash over flash-lite
+    const scored = discovered.map(m => {
+      let score = 0;
+      if (m.includes("2.5")) score += 100;else if (m.includes("2.0")) score += 50;else if (m.includes("1.5")) score += 20;
+      if (m.includes("flash-latest")) score += 30;
+      if (m.includes("flash-lite")) score += 5;else if (m.endsWith("flash")) score += 10;
+      if (m.includes("preview")) score -= 5;
+      if (m.includes("exp")) score -= 10;
+      return {
+        model: m,
+        score
+      };
+    });
+    scored.sort((a, b) => b.score - a.score);
+    return scored.map(s => s.model);
+  }
+  // Fallback: hardcoded list
+  return GEMINI_MODELS;
+};
+const callGeminiOnce = async (prompt, apiKey, modelName) => {
   var _data$candidates;
   const systemInstruction = "Você é um gerador de aulas de inglês. Responda APENAS com JSON válido, sem texto antes ou depois, sem blocos de código markdown.";
-  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
@@ -1101,25 +1168,67 @@ const callGeminiOnce = async (prompt, apiKey) => {
   });
   if (!res.ok) {
     const errBody = await res.text().catch(() => "");
-    throw new Error(`Gemini API ${res.status}: ${errBody}`);
+    // Detect model-not-found to allow fallback
+    const is404 = res.status === 404;
+    const isUnavailable = errBody.includes("no longer available") || errBody.includes("not found");
+    const err = new Error(`Gemini API ${res.status}: ${errBody}`);
+    err.isModelError = is404 || isUnavailable;
+    err.status = res.status;
+    throw err;
   }
   const data = await res.json();
-  if (data.error) throw new Error(data.error.message);
+  if (data.error) {
+    const err = new Error(data.error.message);
+    err.isModelError = data.error.code === 404 || (data.error.message || "").includes("not found");
+    throw err;
+  }
   const text = ((_data$candidates = data.candidates) === null || _data$candidates === void 0 || (_data$candidates = _data$candidates[0]) === null || _data$candidates === void 0 || (_data$candidates = _data$candidates.content) === null || _data$candidates === void 0 || (_data$candidates = _data$candidates.parts) === null || _data$candidates === void 0 ? void 0 : _data$candidates.map(p => p.text || "").join("")) || "";
   if (!text) throw new Error("Resposta vazia da IA.");
   return extractJSON(text);
 };
 const callAI = async (prompt, apiKey) => {
+  // Get models to try (with smart ordering)
+  const models = await getModelsToTry(apiKey);
+  // Check if we have a previously-working model cached
+  const workingModel = localGet("workingGeminiModel");
+  if (workingModel && models.includes(workingModel)) {
+    // Move the working model to the front
+    const idx = models.indexOf(workingModel);
+    models.splice(idx, 1);
+    models.unshift(workingModel);
+  }
   let lastErr;
-  for (let i = 0; i < 3; i++) {
-    try {
-      return await callGeminiOnce(prompt, apiKey);
-    } catch (e) {
-      lastErr = e;
-      console.warn(`Tentativa ${i + 1} falhou:`, e === null || e === void 0 ? void 0 : e.message);
+  for (let modelIdx = 0; modelIdx < models.length; modelIdx++) {
+    const model = models[modelIdx];
+    // Retry each model up to 2 times for transient errors
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const result = await callGeminiOnce(prompt, apiKey, model);
+        // Success — remember this model works
+        localSet("workingGeminiModel", model);
+        return result;
+      } catch (e) {
+        lastErr = e;
+        console.warn(`Modelo ${model} tentativa ${attempt + 1}: ${e.message}`);
+        // If it's a model error (404 / not found), skip remaining attempts and try next model
+        if (e.isModelError) {
+          // Clear cached working model if it failed
+          if (localGet("workingGeminiModel") === model) {
+            localSet("workingGeminiModel", null);
+          }
+          // Also invalidate the models discovery cache so next run rediscovers
+          localSet("availableModelsAt", null);
+          break;
+        }
+        // For other errors (rate limit, network), small delay then retry
+        if (attempt === 0) {
+          await new Promise(r => setTimeout(r, 800));
+        }
+      }
     }
   }
-  throw lastErr;
+  // All models failed
+  throw lastErr || new Error("Todos os modelos Gemini falharam.");
 };
 
 // -----------------------------------------------------------
@@ -2966,15 +3075,49 @@ const ProgressView = _ref8 => {
     placeholder: "Cole aqui: AIza...",
     defaultValue: apiKey,
     onChange: e => setApiKey(e.target.value)
-  }), /*#__PURE__*/React.createElement("button", {
-    className: "btn-primary mt-3 px-4 py-2 rounded-sm fx-body text-sm flex items-center gap-2",
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "flex gap-2 flex-wrap mt-3"
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "btn-primary px-4 py-2 rounded-sm fx-body text-sm flex items-center gap-2",
     onClick: async () => {
       await sSet("geminiKey", apiKey);
       alert("Chave salva!");
     }
   }, /*#__PURE__*/React.createElement(Check, {
     size: 14
-  }), " Salvar chave")), /*#__PURE__*/React.createElement("div", {
+  }), " Salvar chave"), /*#__PURE__*/React.createElement("button", {
+    className: "btn-ghost px-4 py-2 rounded-sm fx-body text-sm flex items-center gap-2",
+    onClick: async () => {
+      if (!apiKey) {
+        alert("Configure a chave primeiro.");
+        return;
+      }
+      // Clear caches to force re-discovery
+      await sSet("availableModels", null);
+      await sSet("availableModelsAt", null);
+      await sSet("workingGeminiModel", null);
+      try {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+        if (!res.ok) {
+          alert("❌ Chave inválida ou sem acesso: " + res.status);
+          return;
+        }
+        const data = await res.json();
+        const flash = (data.models || []).filter(m => {
+          var _m$supportedGeneratio2;
+          return (_m$supportedGeneratio2 = m.supportedGenerationMethods) === null || _m$supportedGeneratio2 === void 0 ? void 0 : _m$supportedGeneratio2.includes("generateContent");
+        }).map(m => m.name.replace("models/", "")).filter(n => n.includes("flash") && !n.includes("audio") && !n.includes("image"));
+        alert("✅ Chave OK!\n\nModelos disponíveis para você:\n" + flash.slice(0, 8).join("\n"));
+      } catch (e) {
+        alert("❌ Erro: " + e.message);
+      }
+    }
+  }, "Testar chave")), localGet("workingGeminiModel") && /*#__PURE__*/React.createElement("p", {
+    className: "fx-body text-xs mt-3",
+    style: {
+      color: "var(--muted)"
+    }
+  }, "Modelo em uso: ", /*#__PURE__*/React.createElement("strong", null, localGet("workingGeminiModel")))), /*#__PURE__*/React.createElement("div", {
     className: "mt-8 text-center fx-body text-xs flex items-center justify-center gap-1.5",
     style: {
       color: "var(--muted)"
@@ -3071,20 +3214,24 @@ function App() {
           console.warn("Gemini falhou:", aiErr === null || aiErr === void 0 ? void 0 : aiErr.message);
           // Parse the error to give friendly message
           const msg = (aiErr === null || aiErr === void 0 ? void 0 : aiErr.message) || "erro desconhecido";
-          if (msg.includes("API_KEY_INVALID") || msg.includes("API key not valid")) {
-            aiErrorMsg = "Chave do Gemini inválida. Verifique se copiou corretamente em Progresso → Chave da IA.";
-          } else if (msg.includes("quota") || msg.includes("429")) {
-            aiErrorMsg = "Limite de uso da API do Gemini atingido. Tente novamente em alguns minutos.";
-          } else if (msg.includes("PERMISSION_DENIED")) {
-            aiErrorMsg = "Permissão negada pelo Gemini. Verifique se a chave tem acesso à API generativelanguage.";
-          } else if (msg.includes("Failed to fetch") || msg.includes("NetworkError")) {
-            aiErrorMsg = "Sem conexão com a internet ou Gemini bloqueado pela rede.";
+          if (msg.includes("API_KEY_INVALID") || msg.includes("API key not valid") || msg.includes("INVALID_ARGUMENT")) {
+            aiErrorMsg = "Chave do Gemini inválida. Vá em Progresso → Chave da IA e verifique se colou corretamente, ou gere uma nova em aistudio.google.com/apikey";
+          } else if (msg.includes("quota") || msg.includes("RESOURCE_EXHAUSTED") || msg.includes("429")) {
+            aiErrorMsg = "Limite diário da API gratuita do Gemini atingido. Aguarde algumas horas ou crie outra chave em aistudio.google.com/apikey";
+          } else if (msg.includes("PERMISSION_DENIED") || msg.includes("403")) {
+            aiErrorMsg = "Permissão negada. Sua chave pode estar bloqueada. Tente gerar uma nova em aistudio.google.com/apikey";
+          } else if (msg.includes("Failed to fetch") || msg.includes("NetworkError") || msg.includes("network")) {
+            aiErrorMsg = "Sem conexão com a internet. Verifique sua rede e tente novamente.";
           } else if (msg.includes("Resposta vazia")) {
-            aiErrorMsg = "Gemini retornou resposta vazia. Pode ser conteúdo bloqueado — tente recarregar.";
+            aiErrorMsg = "IA retornou resposta vazia. Pode ser conteúdo bloqueado por segurança — clique em Tentar novamente.";
           } else if (msg.includes("JSON")) {
-            aiErrorMsg = "Gemini retornou resposta malformada. Tente recarregar a aula.";
+            aiErrorMsg = "IA retornou resposta malformada. Clique em Tentar novamente.";
+          } else if (msg.includes("Todos os modelos")) {
+            aiErrorMsg = "Todos os modelos Gemini falharam. Verifique sua chave em Progresso → Chave da IA.";
+          } else if (msg.includes("no longer available") || msg.includes("404")) {
+            aiErrorMsg = "Modelo Gemini foi descontinuado. O app tentou alternativas automáticas mas nenhuma funcionou. Verifique se sua chave tem acesso aos modelos mais recentes.";
           } else {
-            aiErrorMsg = "Erro da IA: " + msg.slice(0, 150);
+            aiErrorMsg = "Erro da IA: " + msg.slice(0, 200);
           }
         }
       }
