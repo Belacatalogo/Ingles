@@ -1,4 +1,3 @@
-// React - runs at global scope, sets window.React automatically
 /**
  * @license React
  * react.production.min.js
@@ -32,7 +31,6 @@ c.useSyncExternalStore=function(a,b,c){return g.current.useSyncExternalStore(a,b
 })();
 
 
-// ReactDOM - runs at global scope, reads window.React, sets window.ReactDOM
 /**
  * @license React
  * react-dom.production.min.js
@@ -302,7 +300,6 @@ function(a,b,c){if(!Vd(b))throw Error(n(200));return Wd(null,a,b,!1,c)};Q.unmoun
 })();
 
 
-// Lucide - runs at global scope  
 /**
  * @license lucide v0.383.0 - ISC
  *
@@ -317,16 +314,13 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
 //# sourceMappingURL=lucide.min.js.map
 
 
-// Helpers
 function localGet(k){try{var v=localStorage.getItem('fluency_'+k);if(v===null)return null;try{return JSON.parse(v)}catch(e){return v}}catch(e){return null}}
 function localSet(k,v){try{localStorage.setItem('fluency_'+k,typeof v==='string'?v:JSON.stringify(v));return true}catch(e){return false}}
 
-// Icons
 function makeIcon(name){return function(p){p=p||{};var s=p.size||16,cn=p.className||'',st=p.style||{},d=window.lucide[name];if(!d)return null;function ra(o){var r={};Object.keys(o).forEach(function(k){r[k.replace(/-([a-z])/g,function(_,c){return c.toUpperCase()})]=o[k]});return r}function bld(n){if(!n)return null;var t=n[0],a=ra(n[1]||{}),k=(n[2]||[]).map(bld);return React.createElement(t,a,k.length?k:null)}var sa=ra(d[1]||{});sa.width=s;sa.height=s;sa.className=cn;sa.style=st;var k=(d[2]||[]).map(bld);return React.createElement('svg',sa,k.length?k:null)}}
 var BookOpen=makeIcon("BookOpen");var Pencil=makeIcon("Pencil");var Headphones=makeIcon("Headphones");var Feather=makeIcon("Feather");var Flame=makeIcon("Flame");var Trophy=makeIcon("Trophy");var RotateCw=makeIcon("RotateCw");var Check=makeIcon("Check");var X=makeIcon("X");var ChevronRight=makeIcon("ChevronRight");var ChevronLeft=makeIcon("ChevronLeft");var Volume2=makeIcon("Volume2");var Sparkles=makeIcon("Sparkles");var Calendar=makeIcon("Calendar");var Home=makeIcon("Home");var Layers=makeIcon("Layers");var TrendingUp=makeIcon("TrendingUp");var Loader2=makeIcon("Loader2");var Lightbulb=makeIcon("Lightbulb");var GraduationCap=makeIcon("GraduationCap");var Award=makeIcon("Award");var Cloud=makeIcon("Cloud");var ArrowRight=makeIcon("ArrowRight");var Pause=makeIcon("Pause");var CheckCircle2=makeIcon("CheckCircle2");var Star=makeIcon("Star");var Moon=makeIcon("Moon");var Sunrise=makeIcon("Sunrise");var Eye=makeIcon("Eye");var EyeOff=makeIcon("EyeOff");var Play=makeIcon("Play");var Shuffle=makeIcon("Shuffle");var RefreshCw=makeIcon("RefreshCw");
 
-// App
-import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
+var { useState, useEffect, useMemo, useCallback, useRef } = React;
 
 // ============================================================
 //   FLUENCY · Aprenda inglês com IA, do A1 ao C2
@@ -990,7 +984,8 @@ const CURRICULUM = {
   }
 };
 const getTopicForLesson = (level, focus, lessonIndex) => {
-  const topics = CURRICULUM[level]?.[focus] || [];
+  var _CURRICULUM$level;
+  const topics = ((_CURRICULUM$level = CURRICULUM[level]) === null || _CURRICULUM$level === void 0 ? void 0 : _CURRICULUM$level[focus]) || [];
   if (topics.length === 0) return null;
   return topics[lessonIndex % topics.length];
 };
@@ -1080,6 +1075,7 @@ const extractJSON = text => {
   }
 };
 const callGeminiOnce = async (prompt, apiKey) => {
+  var _data$candidates;
   const systemInstruction = "Você é um gerador de aulas de inglês. Responda APENAS com JSON válido, sem texto antes ou depois, sem blocos de código markdown.";
   const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
     method: "POST",
@@ -1109,7 +1105,7 @@ const callGeminiOnce = async (prompt, apiKey) => {
   }
   const data = await res.json();
   if (data.error) throw new Error(data.error.message);
-  const text = data.candidates?.[0]?.content?.parts?.map(p => p.text || "").join("") || "";
+  const text = ((_data$candidates = data.candidates) === null || _data$candidates === void 0 || (_data$candidates = _data$candidates[0]) === null || _data$candidates === void 0 || (_data$candidates = _data$candidates.content) === null || _data$candidates === void 0 || (_data$candidates = _data$candidates.parts) === null || _data$candidates === void 0 ? void 0 : _data$candidates.map(p => p.text || "").join("")) || "";
   if (!text) throw new Error("Resposta vazia da IA.");
   return extractJSON(text);
 };
@@ -1120,7 +1116,7 @@ const callAI = async (prompt, apiKey) => {
       return await callGeminiOnce(prompt, apiKey);
     } catch (e) {
       lastErr = e;
-      console.warn(`Tentativa ${i + 1} falhou:`, e?.message);
+      console.warn(`Tentativa ${i + 1} falhou:`, e === null || e === void 0 ? void 0 : e.message);
     }
   }
   throw lastErr;
@@ -1524,7 +1520,7 @@ const TodayView = _ref4 => {
   const dow = currentDay();
   const isWeekend = dow === 0 || dow === 6;
   const focus = DAY_FOCUS[dow];
-  const FocusIcon = focus?.icon || Moon;
+  const FocusIcon = (focus === null || focus === void 0 ? void 0 : focus.icon) || Moon;
   const doneToday = !!lessonToday;
   const progressToNext = Math.min(100, Math.round(completedAtLevel / LESSONS_TO_ADVANCE * 100));
   return /*#__PURE__*/React.createElement("div", {
@@ -1786,6 +1782,7 @@ const TodayView = _ref4 => {
 // -----------------------------------------------------------
 
 const LessonView = _ref6 => {
+  var _lessonData$exercises, _lessonData$sections, _lessonData$vocabular, _lessonData$exercises2, _lessonData$tips;
   let {
     profile,
     lessonData,
@@ -1803,7 +1800,7 @@ const LessonView = _ref6 => {
   useEffect(() => {
     setAnswers({});
     setRevealed({});
-  }, [lessonData?.title]);
+  }, [lessonData === null || lessonData === void 0 ? void 0 : lessonData.title]);
   const speak = function (text) {
     let index = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
     if (!window.speechSynthesis) return;
@@ -1826,11 +1823,15 @@ const LessonView = _ref6 => {
     window.speechSynthesis.speak(u);
   };
   const stopSpeak = () => {
-    window.speechSynthesis?.cancel();
+    var _window$speechSynthes;
+    (_window$speechSynthes = window.speechSynthesis) === null || _window$speechSynthes === void 0 || _window$speechSynthes.cancel();
     setSpeakingIndex(null);
   };
   useEffect(() => {
-    return () => window.speechSynthesis?.cancel();
+    return () => {
+      var _window$speechSynthes2;
+      return (_window$speechSynthes2 = window.speechSynthesis) === null || _window$speechSynthes2 === void 0 ? void 0 : _window$speechSynthes2.cancel();
+    };
   }, []);
   if (loading) {
     return /*#__PURE__*/React.createElement("div", {
@@ -1900,7 +1901,7 @@ const LessonView = _ref6 => {
     ...r,
     [i]: !r[i]
   }));
-  const allRevealed = lessonData.exercises?.every((_, i) => revealed[i]);
+  const allRevealed = (_lessonData$exercises = lessonData.exercises) === null || _lessonData$exercises === void 0 ? void 0 : _lessonData$exercises.every((_, i) => revealed[i]);
   return /*#__PURE__*/React.createElement("div", {
     className: "max-w-3xl mx-auto px-4 md:px-6 py-6 pb-24"
   }, /*#__PURE__*/React.createElement("div", {
@@ -2013,64 +2014,67 @@ const LessonView = _ref6 => {
     style: {
       borderColor: "var(--accent)"
     }
-  }, lessonData.listeningText))), lessonData.sections?.map((sec, idx) => /*#__PURE__*/React.createElement("section", {
-    key: idx,
-    className: "mt-8 anim-rise"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center gap-3 mb-3"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "fx-display text-lg",
-    style: {
-      fontWeight: 600
-    }
-  }, /*#__PURE__*/React.createElement("span", {
-    style: {
-      color: "var(--accent)"
-    }
-  }, "\xA7"), " ", sec.heading), /*#__PURE__*/React.createElement("div", {
-    className: "flex-1 h-px",
-    style: {
-      background: "var(--line)"
-    }
-  })), /*#__PURE__*/React.createElement("div", {
-    className: "fx-body text-[15px] leading-relaxed whitespace-pre-wrap",
-    style: {
-      color: "var(--ink-soft)"
-    }
-  }, sec.content), sec.examples?.length > 0 && /*#__PURE__*/React.createElement("div", {
-    className: "mt-4 space-y-2"
-  }, sec.examples.map((ex, j) => {
-    const exId = `${idx}-${j}`;
-    const active = speakingIndex === exId;
-    return /*#__PURE__*/React.createElement("div", {
-      key: j,
-      className: "card-paper rounded-sm p-3 flex items-start gap-3"
-    }, /*#__PURE__*/React.createElement("button", {
-      onClick: () => active ? stopSpeak() : speak(ex.en, exId),
-      className: "mt-0.5 flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center border",
-      style: {
-        borderColor: active ? "var(--accent)" : "var(--line)",
-        background: active ? "var(--accent)" : "transparent",
-        color: active ? "var(--paper)" : "var(--ink)"
-      }
-    }, active ? /*#__PURE__*/React.createElement(Pause, {
-      size: 12
-    }) : /*#__PURE__*/React.createElement(Volume2, {
-      size: 12
-    })), /*#__PURE__*/React.createElement("div", {
-      className: "flex-1 min-w-0"
+  }, lessonData.listeningText))), (_lessonData$sections = lessonData.sections) === null || _lessonData$sections === void 0 ? void 0 : _lessonData$sections.map((sec, idx) => {
+    var _sec$examples;
+    return /*#__PURE__*/React.createElement("section", {
+      key: idx,
+      className: "mt-8 anim-rise"
     }, /*#__PURE__*/React.createElement("div", {
-      className: "fx-display text-base",
+      className: "flex items-center gap-3 mb-3"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "fx-display text-lg",
       style: {
-        fontWeight: 500
+        fontWeight: 600
       }
-    }, ex.en), /*#__PURE__*/React.createElement("div", {
-      className: "fx-serif-italic text-sm mt-0.5",
+    }, /*#__PURE__*/React.createElement("span", {
       style: {
-        color: "var(--muted)"
+        color: "var(--accent)"
       }
-    }, ex.pt)));
-  })))), lessonData.vocabulary?.length > 0 && /*#__PURE__*/React.createElement("section", {
+    }, "\xA7"), " ", sec.heading), /*#__PURE__*/React.createElement("div", {
+      className: "flex-1 h-px",
+      style: {
+        background: "var(--line)"
+      }
+    })), /*#__PURE__*/React.createElement("div", {
+      className: "fx-body text-[15px] leading-relaxed whitespace-pre-wrap",
+      style: {
+        color: "var(--ink-soft)"
+      }
+    }, sec.content), ((_sec$examples = sec.examples) === null || _sec$examples === void 0 ? void 0 : _sec$examples.length) > 0 && /*#__PURE__*/React.createElement("div", {
+      className: "mt-4 space-y-2"
+    }, sec.examples.map((ex, j) => {
+      const exId = `${idx}-${j}`;
+      const active = speakingIndex === exId;
+      return /*#__PURE__*/React.createElement("div", {
+        key: j,
+        className: "card-paper rounded-sm p-3 flex items-start gap-3"
+      }, /*#__PURE__*/React.createElement("button", {
+        onClick: () => active ? stopSpeak() : speak(ex.en, exId),
+        className: "mt-0.5 flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center border",
+        style: {
+          borderColor: active ? "var(--accent)" : "var(--line)",
+          background: active ? "var(--accent)" : "transparent",
+          color: active ? "var(--paper)" : "var(--ink)"
+        }
+      }, active ? /*#__PURE__*/React.createElement(Pause, {
+        size: 12
+      }) : /*#__PURE__*/React.createElement(Volume2, {
+        size: 12
+      })), /*#__PURE__*/React.createElement("div", {
+        className: "flex-1 min-w-0"
+      }, /*#__PURE__*/React.createElement("div", {
+        className: "fx-display text-base",
+        style: {
+          fontWeight: 500
+        }
+      }, ex.en), /*#__PURE__*/React.createElement("div", {
+        className: "fx-serif-italic text-sm mt-0.5",
+        style: {
+          color: "var(--muted)"
+        }
+      }, ex.pt)));
+    })));
+  }), ((_lessonData$vocabular = lessonData.vocabulary) === null || _lessonData$vocabular === void 0 ? void 0 : _lessonData$vocabular.length) > 0 && /*#__PURE__*/React.createElement("section", {
     className: "mt-10 anim-rise"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-3 mb-3"
@@ -2127,7 +2131,7 @@ const LessonView = _ref6 => {
     }
   }, /*#__PURE__*/React.createElement(Sparkles, {
     size: 11
-  }), " Estas palavras viram flashcards automaticamente.")), lessonData.exercises?.length > 0 && /*#__PURE__*/React.createElement("section", {
+  }), " Estas palavras viram flashcards automaticamente.")), ((_lessonData$exercises2 = lessonData.exercises) === null || _lessonData$exercises2 === void 0 ? void 0 : _lessonData$exercises2.length) > 0 && /*#__PURE__*/React.createElement("section", {
     className: "mt-10 anim-rise"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-3 mb-4"
@@ -2144,6 +2148,7 @@ const LessonView = _ref6 => {
   })), /*#__PURE__*/React.createElement("div", {
     className: "space-y-3"
   }, lessonData.exercises.map((ex, i) => {
+    var _ex$options;
     const ans = answers[i];
     const rev = revealed[i];
     const isCorrect = ans && String(ans).trim().toLowerCase() === String(ex.answer).trim().toLowerCase();
@@ -2165,7 +2170,7 @@ const LessonView = _ref6 => {
       style: {
         color: "var(--ink)"
       }
-    }, ex.question), ex.type === "translate" || !ex.options?.length ? /*#__PURE__*/React.createElement("input", {
+    }, ex.question), ex.type === "translate" || !((_ex$options = ex.options) !== null && _ex$options !== void 0 && _ex$options.length) ? /*#__PURE__*/React.createElement("input", {
       className: "input-paper w-full mt-3 fx-body text-[15px]",
       placeholder: "Sua resposta\u2026",
       value: ans || "",
@@ -2216,7 +2221,7 @@ const LessonView = _ref6 => {
         borderColor: "var(--gold)"
       }
     }, ex.explanation))));
-  }))), lessonData.tips?.length > 0 && /*#__PURE__*/React.createElement("section", {
+  }))), ((_lessonData$tips = lessonData.tips) === null || _lessonData$tips === void 0 ? void 0 : _lessonData$tips.length) > 0 && /*#__PURE__*/React.createElement("section", {
     className: "mt-10 anim-rise"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-2 mb-3"
@@ -2600,6 +2605,7 @@ const FlashcardsView = _ref7 => {
 // -----------------------------------------------------------
 
 const ProgressView = _ref8 => {
+  var _profile$createdAt;
   let {
     profile,
     completedLessons,
@@ -2793,7 +2799,7 @@ const ProgressView = _ref8 => {
     style: {
       fontWeight: 700
     }
-  }, profile.createdAt?.slice(5).replace("-", "/") || "—"), /*#__PURE__*/React.createElement("div", {
+  }, ((_profile$createdAt = profile.createdAt) === null || _profile$createdAt === void 0 ? void 0 : _profile$createdAt.slice(5).replace("-", "/")) || "—"), /*#__PURE__*/React.createElement("div", {
     className: "fx-body text-xs",
     style: {
       color: "var(--muted)"
@@ -2967,6 +2973,7 @@ const ProgressView = _ref8 => {
 // -----------------------------------------------------------
 
 function App() {
+  var _DAY_FOCUS$currentDay;
   const [ready, setReady] = useState(false);
   const [profile, setProfile] = useState(null);
   const [apiKey, setApiKey] = useState("");
@@ -2991,10 +2998,10 @@ function App() {
       setReady(true);
     })();
   }, []);
-  const focusKey = DAY_FOCUS[currentDay()]?.key || "grammar";
+  const focusKey = ((_DAY_FOCUS$currentDay = DAY_FOCUS[currentDay()]) === null || _DAY_FOCUS$currentDay === void 0 ? void 0 : _DAY_FOCUS$currentDay.key) || "grammar";
   const tKey = todayKey();
   const lessonToday = completedLessons.find(l => l.date === tKey);
-  const completedAtLevel = completedLessons.filter(l => l.level === profile?.level).length;
+  const completedAtLevel = completedLessons.filter(l => l.level === (profile === null || profile === void 0 ? void 0 : profile.level)).length;
   const weekProgress = useMemo(() => {
     const base = {
       1: false,
@@ -3042,7 +3049,7 @@ function App() {
           await sSet(cacheKey, data);
           return;
         } catch (aiErr) {
-          console.warn("Gemini falhou, usando aula padrão:", aiErr?.message);
+          console.warn("Gemini falhou, usando aula padrão:", aiErr === null || aiErr === void 0 ? void 0 : aiErr.message);
         }
       }
       // No apiKey or AI failed — use curated fallback
@@ -3195,5 +3202,4 @@ function App() {
   })));
 }
 
-// Export for index.html
 window.__AppComponent = App;
