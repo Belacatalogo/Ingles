@@ -92,34 +92,53 @@ if ('serviceWorker' in navigator) {
   });
 }
 </script>
-<script src="bundle.js"
-  onload="
-    document.getElementById('bar').style.width='90%';
-    document.getElementById('splash-msg').textContent='Iniciando…';
+
+<!-- bundle.js define window.React, window.ReactDOM e window.__AppComponent -->
+<script src="bundle.js"></script>
+
+<!-- Renderização em script separado, garantindo execução após bundle.js -->
+<script>
+(function() {
+  function mountApp() {
     try {
-      window.ReactDOM.createRoot(document.getElementById('root')).render(window.React.createElement(window.__AppComponent));
+      document.getElementById('bar').style.width = '90%';
+      document.getElementById('splash-msg').textContent = 'Iniciando…';
+
+      if (!window.ReactDOM || typeof window.ReactDOM.createRoot !== 'function') {
+        throw new Error('ReactDOM.createRoot não está disponível. bundle.js pode não ter carregado.');
+      }
+      if (!window.__AppComponent) {
+        throw new Error('__AppComponent não definido. bundle.js pode não ter carregado corretamente.');
+      }
+
+      window.ReactDOM.createRoot(document.getElementById('root')).render(
+        window.React.createElement(window.__AppComponent)
+      );
     } catch(e) {
-      document.getElementById('bar').style.width='100%';
-      document.getElementById('splash-msg').textContent='';
-      var em=document.getElementById('errmsg');
-      em.style.display='block';
-      em.textContent='Erro: '+e.message;
+      document.getElementById('bar').style.width = '100%';
+      document.getElementById('splash-msg').textContent = '';
+      var em = document.getElementById('errmsg');
+      em.style.display = 'block';
+      em.textContent = 'Erro: ' + e.message;
+      console.error('[Fluency] Erro ao montar app:', e);
     }
-  "
-  onerror="
-    document.getElementById('splash-msg').textContent='';
-    var em=document.getElementById('errmsg');
-    em.style.display='block';
-    em.textContent='Erro: bundle.js não carregou. Verifique se o arquivo existe no repositório.';
-  "
-></script>
+  }
+
+  // bundle.js é síncrono — executa imediatamente após o parse.
+  // Mas em alguns browsers móveis o DOMContentLoaded ainda não disparou.
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', mountApp);
+  } else {
+    mountApp();
+  }
+})();
+</script>
 
 <!-- Efeito LED azul nos botões de ouvir durante geração de áudio TTS -->
 <script>
 (function() {
   var _activeBtn = null;
 
-  // Rastreia o último botão clicado antes do evento ttsstate
   document.addEventListener('click', function(e) {
     var btn = e.target;
     while (btn && btn !== document.body) {
