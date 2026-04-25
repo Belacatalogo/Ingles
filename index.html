@@ -91,6 +91,60 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./sw.js').catch(function(e) { console.warn('SW:', e); });
   });
 }
+
+// iOS unlock: speechSynthesis e AudioContext só funcionam após primeira interação do usuário.
+// Disparamos um speak silencioso e abrimos AudioContext no primeiro toque para "destravar" o áudio.
+(function() {
+  var unlocked = false;
+  function unlockAudio() {
+    if (unlocked) return;
+    unlocked = true;
+    try {
+      // Destrava SpeechSynthesis com utterance silenciosa
+      if (window.speechSynthesis) {
+        var u = new SpeechSynthesisUtterance('');
+        u.volume = 0;
+        window.speechSynthesis.speak(u);
+        // Pré-carrega vozes (iOS lazy-carrega)
+        window.speechSynthesis.getVoices();
+      }
+      // Destrava AudioContext
+      var Ctx = window.AudioContext || window.webkitAudioContext;
+      if (Ctx) {
+        var ctx = new Ctx();
+        if (ctx.state === 'suspended') ctx.resume();
+        // Toca um buffer mudo
+        var buf = ctx.createBuffer(1, 1, 22050);
+        var src = ctx.createBufferSource();
+        src.buffer = buf;
+        src.connect(ctx.destination);
+        src.start(0);
+      }
+    } catch(e) { console.warn('[Fluency] unlock audio:', e); }
+  }
+  ['touchstart','touchend','mousedown','keydown','click'].forEach(function(ev) {
+    window.addEventListener(ev, unlockAudio, { capture: true });
+  });
+  // iOS: precisa repopular vozes quando carregam
+  if (window.speechSynthesis) {
+    window.speechSynthesis.onvoiceschanged = function() {
+      window.speechSynthesis.getVoices();
+    };
+  }
+
+  // iOS Safari pausa speechSynthesis após ~15s de inatividade.
+  // Esse "ping" silencioso a cada 10s mantém vivo.
+  if (window.speechSynthesis) {
+    setInterval(function() {
+      if (!unlocked) return;
+      try {
+        if (window.speechSynthesis.paused) {
+          window.speechSynthesis.resume();
+        }
+      } catch(e) {}
+    }, 10000);
+  }
+})();
 </script>
 
 <!-- bundle.js define window.React, window.ReactDOM e window.__AppComponent -->
@@ -134,11 +188,56 @@ if ('serviceWorker' in navigator) {
 })();
 </script>
 
-<!-- Efeito LED azul nos botões de ouvir durante geração de áudio TTS -->
+<!-- Efeito LED azul nos botões de ouvir + feedback visual imediato -->
 <script>
 (function() {
   var _activeBtn = null;
+  var _ledShownAt = 0;
+  var _minLedDuration = 500; // mostrar LED por pelo menos 500ms
 
+  // Heurística: detectar se um botão é de "ouvir áudio".
+  // Procura pelo ícone Volume2/Play/Pause (lucide) ou texto contendo "Ouvir/Parar"
+  function isAudioButton(btn) {
+    if (!btn) return false;
+    var txt = (btn.textContent || '').toLowerCase();
+    if (txt.includes('ouvir') || txt.includes('parar') || txt.includes('gerando')) return true;
+    // Lucide Volume2: <svg class="lucide-volume-2">
+    var svg = btn.querySelector('svg');
+    if (svg) {
+      var cls = (svg.getAttribute('class') || '').toLowerCase();
+      // ícones de áudio: volume, play, pause, square (parar)
+      if (/volume|play|pause|square/.test(cls)) return true;
+      // sem classe lucide explícita mas tem path com d específico do volume
+      var paths = svg.querySelectorAll('path');
+      for (var i = 0; i < paths.length; i++) {
+        var d = paths[i].getAttribute('d') || '';
+        if (d.indexOf('M11 5L6 9') === 0) return true; // volume2 lucide
+      }
+    }
+    return false;
+  }
+
+  function addLed(btn) {
+    if (!btn) return;
+    removeLed();
+    _activeBtn = btn;
+    _ledShownAt = Date.now();
+    btn.classList.add('__tts_led__');
+  }
+
+  function removeLed(force) {
+    if (!_activeBtn) return;
+    var elapsed = Date.now() - _ledShownAt;
+    if (!force && elapsed < _minLedDuration) {
+      // Aguarda atingir duração mínima
+      setTimeout(function() { removeLed(true); }, _minLedDuration - elapsed);
+      return;
+    }
+    _activeBtn.classList.remove('__tts_led__');
+    _activeBtn = null;
+  }
+
+  // Capturamos o clique e, se for botão de áudio, mostramos LED imediatamente
   document.addEventListener('click', function(e) {
     var btn = e.target;
     while (btn && btn !== document.body) {
@@ -147,33 +246,29 @@ if ('serviceWorker' in navigator) {
     }
     if (btn && btn.tagName === 'BUTTON') {
       window.__tts_last_clicked_btn__ = btn;
+      if (isAudioButton(btn)) {
+        addLed(btn);
+        // Auto-remove depois de 8s caso nada mais aconteça (fail-safe)
+        setTimeout(function() {
+          if (_activeBtn === btn) removeLed(true);
+        }, 8000);
+      }
     }
   }, true);
 
-  function addLed(btn) {
-    if (!btn) return;
-    removeLed();
-    _activeBtn = btn;
-    btn.classList.add('__tts_led__');
-  }
-
-  function removeLed() {
-    if (_activeBtn) {
-      _activeBtn.classList.remove('__tts_led__');
-      _activeBtn = null;
-    }
-  }
-
+  // O bundle dispara 'ttsstate' quando começa/termina geração de áudio Gemini.
+  // Mantemos compatibilidade: se loading=true, garante LED no último botão clicado.
   window.addEventListener('ttsstate', function(ev) {
     if (ev.detail && ev.detail.loading) {
-      setTimeout(function() {
-        addLed(window.__tts_last_clicked_btn__ || null);
-      }, 10);
+      if (!_activeBtn && window.__tts_last_clicked_btn__) {
+        addLed(window.__tts_last_clicked_btn__);
+      }
     } else {
       removeLed();
     }
   });
 })();
+</script>
 </script>
 </body>
 </html>
