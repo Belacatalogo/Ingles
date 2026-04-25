@@ -39,39 +39,25 @@ html,body{background:#060D1F;-webkit-text-size-adjust:100%}
 #errmsg{color:#F87171;font-size:11px;max-width:280px;text-align:center;display:none;padding:0 20px;line-height:1.6;word-break:break-all}
 
 /* LED azul nos botões de ouvir durante geração de áudio */
-@keyframes __led_spin__ {
-  0%   { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
 @keyframes __led_pulse__ {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(91,156,246,0.7), 0 0 0 4px rgba(91,156,246,0.3); }
-  50%       { box-shadow: 0 0 0 6px rgba(91,156,246,0.0), 0 0 0 10px rgba(91,156,246,0.0); }
+  0%, 100% {
+    box-shadow:
+      inset 0 0 0 2px rgba(91,156,246,0.95),
+      0 0 12px rgba(91,156,246,0.6);
+  }
+  50% {
+    box-shadow:
+      inset 0 0 0 2px rgba(167,139,250,0.95),
+      0 0 18px rgba(167,139,250,0.6);
+  }
 }
 .__tts_led__ {
   position: relative;
-  overflow: visible !important;
+  animation: __led_pulse__ 1.0s ease-in-out infinite;
+  transition: transform 0.15s ease;
 }
-.__tts_led__::before {
-  content: '';
-  position: absolute;
-  inset: -3px;
-  border-radius: inherit;
-  border: 2px solid transparent;
-  border-top-color: #5B9CF6;
-  border-right-color: rgba(91,156,246,0.4);
-  animation: __led_spin__ 0.8s linear infinite;
-  pointer-events: none;
-  z-index: 10;
-}
-.__tts_led__::after {
-  content: '';
-  position: absolute;
-  inset: -3px;
-  border-radius: inherit;
-  box-shadow: 0 0 12px 2px rgba(91,156,246,0.5), 0 0 24px 4px rgba(91,156,246,0.2);
-  pointer-events: none;
-  z-index: 9;
-  animation: __led_pulse__ 1.2s ease-in-out infinite;
+.__tts_led__:active {
+  transform: scale(0.97);
 }
 </style>
 </head>
@@ -92,48 +78,66 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-// iOS unlock: speechSynthesis e AudioContext só funcionam após primeira interação do usuário.
-// Disparamos um speak silencioso e abrimos AudioContext no primeiro toque para "destravar" o áudio.
+// iOS unlock: speechSynthesis e AudioContext só funcionam após interação do usuário.
+// Estratégia: a cada toque, garantir que speechSynthesis e AudioContext estão "vivos".
 (function() {
   var unlocked = false;
+  var sharedAudioCtx = null;
+
+  function getOrCreateAudioCtx() {
+    var Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!Ctx) return null;
+    if (!sharedAudioCtx || sharedAudioCtx.state === 'closed') {
+      try { sharedAudioCtx = new Ctx(); } catch(e) { return null; }
+    }
+    if (sharedAudioCtx.state === 'suspended') {
+      try { sharedAudioCtx.resume(); } catch(e) {}
+    }
+    return sharedAudioCtx;
+  }
+  // Expõe para o bundle reutilizar (Er() no bundle)
+  window.__sharedAudioCtx = getOrCreateAudioCtx;
+
   function unlockAudio() {
-    if (unlocked) return;
-    unlocked = true;
     try {
-      // Destrava SpeechSynthesis com utterance silenciosa
-      if (window.speechSynthesis) {
-        var u = new SpeechSynthesisUtterance('');
-        u.volume = 0;
-        window.speechSynthesis.speak(u);
-        // Pré-carrega vozes (iOS lazy-carrega)
+      // Toda vez: garantir AudioContext ativo
+      getOrCreateAudioCtx();
+
+      // Primeira vez: destravar speechSynthesis com utterance silenciosa
+      if (!unlocked && window.speechSynthesis) {
+        unlocked = true;
+        // Alguns iOS precisam de speak inicial vazio para destravar
+        try {
+          var u = new SpeechSynthesisUtterance(' ');
+          u.volume = 0;
+          u.rate = 10;
+          window.speechSynthesis.speak(u);
+        } catch(e) {}
+        // Pré-carrega vozes
         window.speechSynthesis.getVoices();
       }
-      // Destrava AudioContext
-      var Ctx = window.AudioContext || window.webkitAudioContext;
-      if (Ctx) {
-        var ctx = new Ctx();
-        if (ctx.state === 'suspended') ctx.resume();
-        // Toca um buffer mudo
-        var buf = ctx.createBuffer(1, 1, 22050);
-        var src = ctx.createBufferSource();
-        src.buffer = buf;
-        src.connect(ctx.destination);
-        src.start(0);
+
+      // iOS Safari: se está pausado, retoma
+      if (window.speechSynthesis && window.speechSynthesis.paused) {
+        try { window.speechSynthesis.resume(); } catch(e) {}
       }
     } catch(e) { console.warn('[Fluency] unlock audio:', e); }
   }
-  ['touchstart','touchend','mousedown','keydown','click'].forEach(function(ev) {
+
+  ['touchstart','touchend','mousedown','click','keydown'].forEach(function(ev) {
     window.addEventListener(ev, unlockAudio, { capture: true });
   });
-  // iOS: precisa repopular vozes quando carregam
+
+  // iOS lazy-carrega vozes
   if (window.speechSynthesis) {
     window.speechSynthesis.onvoiceschanged = function() {
       window.speechSynthesis.getVoices();
     };
+    // Chamada inicial para começar a carregar
+    window.speechSynthesis.getVoices();
   }
 
-  // iOS Safari pausa speechSynthesis após ~15s de inatividade.
-  // Esse "ping" silencioso a cada 10s mantém vivo.
+  // iOS pausa speechSynthesis após ~15s de inatividade
   if (window.speechSynthesis) {
     setInterval(function() {
       if (!unlocked) return;
@@ -142,7 +146,7 @@ if ('serviceWorker' in navigator) {
           window.speechSynthesis.resume();
         }
       } catch(e) {}
-    }, 10000);
+    }, 8000);
   }
 })();
 </script>
@@ -248,13 +252,27 @@ if ('serviceWorker' in navigator) {
       window.__tts_last_clicked_btn__ = btn;
       if (isAudioButton(btn)) {
         addLed(btn);
-        // Auto-remove depois de 8s caso nada mais aconteça (fail-safe)
+        // Sincroniza LED com fim da fala via evento speechSynthesis
+        // Fail-safe: 5s máximo
         setTimeout(function() {
           if (_activeBtn === btn) removeLed(true);
-        }, 8000);
+        }, 5000);
       }
     }
   }, true);
+
+  // Se o speechSynthesis terminar de falar, removemos o LED imediatamente
+  if (window.speechSynthesis) {
+    var checkInterval = setInterval(function() {
+      if (_activeBtn && !window.speechSynthesis.speaking && !window.speechSynthesis.pending) {
+        // Fala terminou
+        var elapsed = Date.now() - _ledShownAt;
+        if (elapsed > 300) { // não remove imediatamente se acabou de iniciar
+          removeLed(true);
+        }
+      }
+    }, 200);
+  }
 
   // O bundle dispara 'ttsstate' quando começa/termina geração de áudio Gemini.
   // Mantemos compatibilidade: se loading=true, garante LED no último botão clicado.
@@ -269,6 +287,287 @@ if ('serviceWorker' in navigator) {
   });
 })();
 </script>
+
+<!-- Painel de diagnóstico de áudio (canto superior direito) -->
+<style>
+#__audio_diag__ {
+  position: fixed;
+  top: 8px;
+  right: 8px;
+  z-index: 99999;
+  max-width: 280px;
+  background: rgba(6, 13, 31, 0.95);
+  border: 1px solid rgba(91, 156, 246, 0.4);
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-family: -apple-system, sans-serif;
+  font-size: 11px;
+  color: #E8EFF8;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: opacity 0.3s, transform 0.3s;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+}
+#__audio_diag__.collapsed {
+  max-width: 44px;
+  padding: 8px;
+  text-align: center;
+}
+#__audio_diag__.collapsed .__diag_body__ {
+  display: none;
+}
+#__audio_diag__ .__diag_header__ {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+#__audio_diag__.collapsed .__diag_header__ {
+  margin-bottom: 0;
+}
+#__audio_diag__ .__diag_dot__ {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #34D399;
+  flex-shrink: 0;
+}
+#__audio_diag__ .__diag_dot__.warn { background: #F59E0B; }
+#__audio_diag__ .__diag_dot__.error { background: #F87171; }
+#__audio_diag__ .__diag_dot__.idle { background: #6B7280; }
+#__audio_diag__ .__diag_row__ {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 2px 0;
+  opacity: 0.85;
+  font-size: 10px;
+}
+#__audio_diag__ .__diag_row__ b {
+  color: #5B9CF6;
+  font-weight: 500;
+}
+#__audio_diag__ .__diag_log__ {
+  max-height: 140px;
+  overflow-y: auto;
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 10px;
+  line-height: 1.4;
+}
+#__audio_diag__ .__diag_log__ div {
+  margin: 2px 0;
+  word-break: break-word;
+}
+#__audio_diag__ .__diag_log__ .__err__ { color: #F87171; }
+#__audio_diag__ .__diag_log__ .__warn__ { color: #F59E0B; }
+#__audio_diag__ .__diag_log__ .__ok__ { color: #34D399; }
+#__audio_diag__ .__diag_log__ .__info__ { color: #93C5FD; }
+</style>
+<div id="__audio_diag__">
+  <div class="__diag_header__">
+    <span class="__diag_dot__ idle" id="__diag_dot__"></span>
+    <span id="__diag_title__">Áudio</span>
+    <span id="__diag_toggle__" style="opacity:0.5;font-size:14px;">▾</span>
+  </div>
+  <div class="__diag_body__">
+    <div class="__diag_row__"><span>Status</span><b id="__diag_status__">aguardando…</b></div>
+    <div class="__diag_row__"><span>Vozes carregadas</span><b id="__diag_voices__">?</b></div>
+    <div class="__diag_row__"><span>Speech destravado</span><b id="__diag_unlocked__">não</b></div>
+    <div class="__diag_row__"><span>Última voz usada</span><b id="__diag_last_voice__">—</b></div>
+    <div class="__diag_log__" id="__diag_log__"></div>
+  </div>
+</div>
+
+<script>
+(function() {
+  var panel = document.getElementById('__audio_diag__');
+  var dot = document.getElementById('__diag_dot__');
+  var statusEl = document.getElementById('__diag_status__');
+  var voicesEl = document.getElementById('__diag_voices__');
+  var unlockedEl = document.getElementById('__diag_unlocked__');
+  var lastVoiceEl = document.getElementById('__diag_last_voice__');
+  var logEl = document.getElementById('__diag_log__');
+  var titleEl = document.getElementById('__diag_title__');
+
+  var collapsed = false;
+  panel.addEventListener('click', function(e) {
+    collapsed = !collapsed;
+    panel.classList.toggle('collapsed', collapsed);
+    document.getElementById('__diag_toggle__').textContent = collapsed ? '▸' : '▾';
+  });
+
+  function logMsg(type, msg) {
+    var line = document.createElement('div');
+    line.className = '__' + type + '__';
+    var time = new Date().toLocaleTimeString('pt-BR', {hour12: false}).slice(0,8);
+    line.textContent = time + ' ' + msg;
+    logEl.insertBefore(line, logEl.firstChild);
+    while (logEl.children.length > 30) logEl.removeChild(logEl.lastChild);
+  }
+  window.__diag_log = logMsg;
+
+  function setStatus(text, level) {
+    statusEl.textContent = text;
+    dot.className = '__diag_dot__ ' + (level || 'idle');
+    titleEl.textContent = text;
+  }
+
+  // Atualiza vozes
+  function updateVoices() {
+    if (!window.speechSynthesis) {
+      voicesEl.textContent = 'API indisponível';
+      logMsg('err', 'speechSynthesis não suportado neste navegador');
+      return;
+    }
+    var v = window.speechSynthesis.getVoices() || [];
+    voicesEl.textContent = v.length;
+    if (v.length > 0) {
+      var enVoices = v.filter(function(x) { return x.lang && x.lang.startsWith('en'); });
+      logMsg('ok', 'Vozes: ' + v.length + ' (en: ' + enVoices.length + ')');
+    }
+  }
+  updateVoices();
+  if (window.speechSynthesis) {
+    window.speechSynthesis.addEventListener('voiceschanged', updateVoices);
+    setTimeout(updateVoices, 500);
+    setTimeout(updateVoices, 1500);
+  }
+
+  // Detectar destravamento (primeiro toque)
+  var firstClickLogged = false;
+  document.addEventListener('click', function() {
+    if (!firstClickLogged) {
+      firstClickLogged = true;
+      unlockedEl.textContent = 'sim';
+      logMsg('ok', 'Áudio destravado (primeiro toque)');
+      setTimeout(updateVoices, 100);
+    }
+  }, true);
+
+  // Monitorar speechSynthesis a cada 300ms
+  setInterval(function() {
+    if (!window.speechSynthesis) return;
+    var ss = window.speechSynthesis;
+    if (ss.speaking) {
+      setStatus('falando…', 'warn');
+    } else if (ss.pending) {
+      setStatus('na fila…', 'warn');
+    } else if (ss.paused) {
+      setStatus('pausado!', 'error');
+      logMsg('warn', 'speechSynthesis está pausado, retomando…');
+      try { ss.resume(); } catch(e) {}
+    } else {
+      if (statusEl.textContent === 'falando…' || statusEl.textContent === 'na fila…') {
+        setStatus('pronto', 'idle');
+      }
+    }
+    // Atualiza última fala
+    if (window.__ttsLastSpeak) {
+      lastVoiceEl.textContent = window.__ttsLastSpeak.voice || '(padrão)';
+    }
+  }, 300);
+
+  // Hook em SpeechSynthesisUtterance para capturar erros
+  if (window.SpeechSynthesisUtterance) {
+    var Original = window.SpeechSynthesisUtterance;
+    window.SpeechSynthesisUtterance = function(text) {
+      var inst = new Original(text);
+      var origOnEnd = null, origOnError = null, origOnStart = null;
+      Object.defineProperty(inst, 'onend', {
+        get: function() { return origOnEnd; },
+        set: function(fn) {
+          origOnEnd = function() {
+            logMsg('ok', 'Fala terminou ✓');
+            if (fn) fn.apply(this, arguments);
+          };
+        }
+      });
+      Object.defineProperty(inst, 'onerror', {
+        get: function() { return origOnError; },
+        set: function(fn) {
+          origOnError = function(ev) {
+            var errType = ev && ev.error ? ev.error : 'desconhecido';
+            logMsg('err', 'Erro fala: ' + errType);
+            if (fn) fn.apply(this, arguments);
+          };
+        }
+      });
+      Object.defineProperty(inst, 'onstart', {
+        get: function() { return origOnStart; },
+        set: function(fn) {
+          origOnStart = function() {
+            logMsg('info', 'Fala iniciou ▶');
+            if (fn) fn.apply(this, arguments);
+          };
+        }
+      });
+      // Quando criada
+      var snippet = (text || '').slice(0, 30);
+      logMsg('info', 'Utterance: "' + snippet + '"');
+      return inst;
+    };
+  }
+
+  // Hook em fetch para detectar chamadas Gemini TTS
+  var origFetch = window.fetch;
+  window.fetch = function(url, opts) {
+    var u = (typeof url === 'string') ? url : (url && url.url) || '';
+    if (u.includes('generativelanguage') && opts && opts.body) {
+      var body = opts.body;
+      if (typeof body === 'string' && body.includes('AUDIO')) {
+        logMsg('info', 'Gemini TTS request →');
+        return origFetch.apply(this, arguments).then(function(resp) {
+          if (resp.ok) {
+            logMsg('ok', 'Gemini TTS ' + resp.status);
+          } else {
+            logMsg('err', 'Gemini TTS ' + resp.status);
+          }
+          return resp;
+        }).catch(function(err) {
+          logMsg('err', 'Gemini fetch: ' + err.message);
+          throw err;
+        });
+      }
+    }
+    return origFetch.apply(this, arguments);
+  };
+
+  // Erros globais não capturados
+  window.addEventListener('error', function(ev) {
+    if (ev.error) logMsg('err', 'JS: ' + ev.message);
+  });
+  window.addEventListener('unhandledrejection', function(ev) {
+    var msg = ev.reason && ev.reason.message ? ev.reason.message : String(ev.reason);
+    logMsg('err', 'Promise: ' + msg.slice(0, 80));
+  });
+
+  // Estado TTS do bundle
+  window.addEventListener('ttsstate', function(ev) {
+    if (ev.detail) {
+      if (ev.detail.loading) {
+        logMsg('info', 'TTS state: loading');
+      } else if (ev.detail.error) {
+        logMsg('err', 'TTS error: ' + ev.detail.error.slice(0, 60));
+      } else {
+        logMsg('ok', 'TTS state: idle');
+      }
+    }
+  });
+
+  setStatus('pronto', 'idle');
+  logMsg('info', 'Diagnóstico iniciado');
+
+  // Pode ser desativado via window.__diag_off()
+  window.__diag_off = function() { panel.style.display = 'none'; };
+})();
 </script>
 </body>
 </html>
