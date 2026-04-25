@@ -3,31 +3,59 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.json"/>
+<meta name="theme-color" content="#060D1F"/>
+
+<!-- iOS PWA -->
 <meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Fluency"/>
+<link rel="apple-touch-icon" href="apple-touch-icon.png"/>
+
+<!-- Android / general -->
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="application-name" content="Fluency"/>
+
+<!-- SEO / share -->
+<meta name="description" content="Aprenda inglês do A1 ao C2 com IA, flashcards e prática de speaking."/>
+<meta property="og:title" content="Fluency — Aprenda Inglês com IA"/>
+<meta property="og:description" content="Uma aula por dia, de segunda a sexta. Gramática, leitura, escrita, escuta e speaking."/>
+<meta property="og:type" content="website"/>
+
 <title>Fluency</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{background:#F1E9DB;-webkit-text-size-adjust:100%}
+html,body{background:#060D1F;-webkit-text-size-adjust:100%}
 #root{min-height:100vh}
-#splash{display:flex;align-items:center;justify-content:center;min-height:100vh;flex-direction:column;gap:16px;background:#F1E9DB;font-family:-apple-system,sans-serif}
-#splash-title{color:#1C1914;font-size:22px;font-weight:800}
-#splash-title span{color:#B53F1F}
-#bar-wrap{width:200px;height:4px;background:#E0D5C5;border-radius:4px;overflow:hidden}
-#bar{height:4px;background:#B53F1F;border-radius:4px;width:10%;transition:width 0.5s ease}
-#splash-msg{color:#8A7E6B;font-size:13px;font-family:-apple-system,sans-serif}
-#errmsg{color:#B53F1F;font-size:11px;max-width:260px;text-align:center;display:none;padding:0 20px;line-height:1.5;word-break:break-all}
+#splash{display:flex;align-items:center;justify-content:center;min-height:100vh;flex-direction:column;gap:16px;background:linear-gradient(135deg,#060D1F 0%,#0A1428 50%,#0F1E40 100%);font-family:-apple-system,sans-serif}
+#splash-logo{font-size:28px;font-weight:800;color:#E8EFF8;letter-spacing:-0.02em}
+#splash-logo span{background:linear-gradient(135deg,#5B9CF6,#A78BFA);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+#bar-wrap{width:180px;height:3px;background:rgba(255,255,255,0.1);border-radius:4px;overflow:hidden}
+#bar{height:3px;background:linear-gradient(90deg,#5B9CF6,#A78BFA);border-radius:4px;width:10%;transition:width 0.5s ease}
+#splash-msg{color:rgba(255,255,255,0.4);font-size:12px}
+#errmsg{color:#F87171;font-size:11px;max-width:280px;text-align:center;display:none;padding:0 20px;line-height:1.6;word-break:break-all}
 </style>
 </head>
 <body>
 <div id="root">
   <div id="splash">
-    <p id="splash-title">Fluency<span>.</span></p>
+    <p id="splash-logo">Fluency<span>.</span></p>
     <div id="bar-wrap"><div id="bar"></div></div>
     <p id="splash-msg">Carregando…</p>
     <p id="errmsg"></p>
   </div>
 </div>
+<script>
+// Register service worker for PWA / offline
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(e => console.warn('SW:', e));
+  });
+}
+</script>
 <script src="bundle.js"
   onload="
     document.getElementById('bar').style.width='90%';
