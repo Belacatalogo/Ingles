@@ -307,7 +307,6 @@ if ('serviceWorker' in navigator) {
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   transition: opacity 0.3s, transform 0.3s;
-  cursor: pointer;
   user-select: none;
   -webkit-user-select: none;
 }
@@ -315,20 +314,26 @@ if ('serviceWorker' in navigator) {
   max-width: 44px;
   padding: 8px;
   text-align: center;
+  cursor: pointer;
 }
-#__audio_diag__.collapsed .__diag_body__ {
+#__audio_diag__.collapsed .__diag_body__,
+#__audio_diag__.collapsed .__diag_close__ {
+  display: none;
+}
+#__audio_diag__.hidden {
   display: none;
 }
 #__audio_diag__ .__diag_header__ {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 6px;
   font-weight: 600;
   margin-bottom: 6px;
+  cursor: pointer;
 }
 #__audio_diag__.collapsed .__diag_header__ {
   margin-bottom: 0;
+  justify-content: center;
 }
 #__audio_diag__ .__diag_dot__ {
   display: inline-block;
@@ -341,6 +346,35 @@ if ('serviceWorker' in navigator) {
 #__audio_diag__ .__diag_dot__.warn { background: #F59E0B; }
 #__audio_diag__ .__diag_dot__.error { background: #F87171; }
 #__audio_diag__ .__diag_dot__.idle { background: #6B7280; }
+#__audio_diag__ .__diag_title__ {
+  flex: 1;
+}
+#__audio_diag__ .__diag_close__ {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  color: #F87171;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+#__audio_diag__ .__diag_close__:active {
+  background: rgba(248, 113, 113, 0.25);
+}
+#__audio_diag__ .__diag_toggle__ {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  font-size: 14px;
+  opacity: 0.6;
+}
 #__audio_diag__ .__diag_row__ {
   display: flex;
   justify-content: space-between;
@@ -370,12 +404,46 @@ if ('serviceWorker' in navigator) {
 #__audio_diag__ .__diag_log__ .__warn__ { color: #F59E0B; }
 #__audio_diag__ .__diag_log__ .__ok__ { color: #34D399; }
 #__audio_diag__ .__diag_log__ .__info__ { color: #93C5FD; }
+
+/* Botão flutuante para reabrir o painel quando escondido */
+#__diag_reopen__ {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  z-index: 99999;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(6, 13, 31, 0.85);
+  border: 1px solid rgba(91, 156, 246, 0.4);
+  color: #5B9CF6;
+  font-size: 16px;
+  font-weight: 700;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  user-select: none;
+  -webkit-user-select: none;
+  opacity: 0.4;
+  transition: opacity 0.2s;
+}
+#__diag_reopen__:active {
+  opacity: 1;
+}
+#__diag_reopen__.visible {
+  display: flex;
+}
 </style>
 <div id="__audio_diag__">
-  <div class="__diag_header__">
+  <div class="__diag_header__" id="__diag_header__">
     <span class="__diag_dot__ idle" id="__diag_dot__"></span>
-    <span id="__diag_title__">Áudio</span>
-    <span id="__diag_toggle__" style="opacity:0.5;font-size:14px;">▾</span>
+    <span class="__diag_title__" id="__diag_title__">Áudio</span>
+    <span class="__diag_toggle__" id="__diag_toggle__">▾</span>
+    <span class="__diag_close__" id="__diag_close__">×</span>
   </div>
   <div class="__diag_body__">
     <div class="__diag_row__"><span>Status</span><b id="__diag_status__">aguardando…</b></div>
@@ -385,10 +453,12 @@ if ('serviceWorker' in navigator) {
     <div class="__diag_log__" id="__diag_log__"></div>
   </div>
 </div>
+<div id="__diag_reopen__" title="Mostrar diagnóstico">🔧</div>
 
 <script>
 (function() {
   var panel = document.getElementById('__audio_diag__');
+  var reopenBtn = document.getElementById('__diag_reopen__');
   var dot = document.getElementById('__diag_dot__');
   var statusEl = document.getElementById('__diag_status__');
   var voicesEl = document.getElementById('__diag_voices__');
@@ -396,12 +466,62 @@ if ('serviceWorker' in navigator) {
   var lastVoiceEl = document.getElementById('__diag_last_voice__');
   var logEl = document.getElementById('__diag_log__');
   var titleEl = document.getElementById('__diag_title__');
+  var toggleEl = document.getElementById('__diag_toggle__');
+  var closeEl = document.getElementById('__diag_close__');
+  var headerEl = document.getElementById('__diag_header__');
 
-  var collapsed = false;
+  // Estado persistido no localStorage
+  var STORAGE_KEY = '__fluency_diag_state__';
+  function loadState() {
+    try {
+      var s = localStorage.getItem(STORAGE_KEY);
+      return s ? JSON.parse(s) : { hidden: false, collapsed: false };
+    } catch(e) { return { hidden: false, collapsed: false }; }
+  }
+  function saveState(state) {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
+  }
+  var state = loadState();
+
+  function applyState() {
+    panel.classList.toggle('hidden', state.hidden);
+    panel.classList.toggle('collapsed', state.collapsed);
+    reopenBtn.classList.toggle('visible', state.hidden);
+    toggleEl.textContent = state.collapsed ? '▸' : '▾';
+  }
+  applyState();
+
+  // Header: clicar minimiza/expande
+  headerEl.addEventListener('click', function(e) {
+    if (e.target === closeEl) return; // botão de fechar tem handler próprio
+    state.collapsed = !state.collapsed;
+    saveState(state);
+    applyState();
+  });
+
+  // Botão X: esconde completamente
+  closeEl.addEventListener('click', function(e) {
+    e.stopPropagation();
+    state.hidden = true;
+    saveState(state);
+    applyState();
+  });
+
+  // Botão flutuante: reabre o painel
+  reopenBtn.addEventListener('click', function() {
+    state.hidden = false;
+    state.collapsed = false;
+    saveState(state);
+    applyState();
+  });
+
+  // Quando o painel está colapsado, o clique no painel inteiro expande
   panel.addEventListener('click', function(e) {
-    collapsed = !collapsed;
-    panel.classList.toggle('collapsed', collapsed);
-    document.getElementById('__diag_toggle__').textContent = collapsed ? '▸' : '▾';
+    if (state.collapsed && !state.hidden) {
+      state.collapsed = false;
+      saveState(state);
+      applyState();
+    }
   });
 
   function logMsg(type, msg) {
@@ -429,10 +549,6 @@ if ('serviceWorker' in navigator) {
     }
     var v = window.speechSynthesis.getVoices() || [];
     voicesEl.textContent = v.length;
-    if (v.length > 0) {
-      var enVoices = v.filter(function(x) { return x.lang && x.lang.startsWith('en'); });
-      logMsg('ok', 'Vozes: ' + v.length + ' (en: ' + enVoices.length + ')');
-    }
   }
   updateVoices();
   if (window.speechSynthesis) {
@@ -469,7 +585,6 @@ if ('serviceWorker' in navigator) {
         setStatus('pronto', 'idle');
       }
     }
-    // Atualiza última fala
     if (window.__ttsLastSpeak) {
       lastVoiceEl.textContent = window.__ttsLastSpeak.voice || '(padrão)';
     }
@@ -509,7 +624,6 @@ if ('serviceWorker' in navigator) {
           };
         }
       });
-      // Quando criada
       var snippet = (text || '').slice(0, 30);
       logMsg('info', 'Utterance: "' + snippet + '"');
       return inst;
@@ -565,8 +679,26 @@ if ('serviceWorker' in navigator) {
   setStatus('pronto', 'idle');
   logMsg('info', 'Diagnóstico iniciado');
 
-  // Pode ser desativado via window.__diag_off()
-  window.__diag_off = function() { panel.style.display = 'none'; };
+  // API pública para controlar via console:
+  // window.__diag.show()  → mostra painel
+  // window.__diag.hide()  → esconde tudo (incluindo botão flutuante)
+  // window.__diag.toggle() → alterna
+  window.__diag = {
+    show: function() {
+      state.hidden = false; state.collapsed = false;
+      saveState(state); applyState();
+    },
+    hide: function() {
+      state.hidden = true;
+      saveState(state); applyState();
+      reopenBtn.classList.remove('visible');
+    },
+    toggle: function() {
+      state.hidden = !state.hidden;
+      saveState(state); applyState();
+    },
+    log: logMsg
+  };
 })();
 </script>
 </body>
