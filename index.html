@@ -30,6 +30,30 @@
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{background:#060D1F;-webkit-text-size-adjust:100%}
 #root{min-height:100vh}
+
+/* Remove o retângulo azul de foco em todos os elementos clicáveis (iOS Safari, Android, desktop) */
+*,
+*::before,
+*::after {
+  -webkit-tap-highlight-color: transparent;
+}
+button, a, [role="button"], input, select, textarea {
+  outline: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+}
+button:focus, a:focus, [role="button"]:focus,
+button:focus-visible, a:focus-visible, [role="button"]:focus-visible,
+button:active, a:active, [role="button"]:active {
+  outline: none !important;
+  -webkit-focus-ring-color: transparent !important;
+}
+/* Remove a borda de seleção que aparece em alguns iOS quando o botão está ativo */
+button {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
 #splash{display:flex;align-items:center;justify-content:center;min-height:100vh;flex-direction:column;gap:16px;background:linear-gradient(135deg,#060D1F 0%,#0A1428 50%,#0F1E40 100%);font-family:-apple-system,sans-serif}
 #splash-logo{font-size:28px;font-weight:800;color:#E8EFF8;letter-spacing:-0.02em}
 #splash-logo span{background:linear-gradient(135deg,#5B9CF6,#A78BFA);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
@@ -73,7 +97,7 @@ html,body{background:#060D1F;-webkit-text-size-adjust:100%}
 <script>
 // Register service worker for PWA / offline
 // Versão atual: APP_VERSION é checada e se mudar, força reload + cache clear
-var APP_VERSION = 'v8';
+var APP_VERSION = 'v10';
 var savedVersion = null;
 try { savedVersion = localStorage.getItem('__app_version__'); } catch(e) {}
 
@@ -82,6 +106,13 @@ if (savedVersion && savedVersion !== APP_VERSION && 'caches' in window) {
   caches.keys().then(function(names) {
     return Promise.all(names.map(function(n) { return caches.delete(n); }));
   });
+}
+// Também limpar blacklist de modelos TTS quando a versão muda
+if (savedVersion && savedVersion !== APP_VERSION) {
+  try {
+    localStorage.removeItem('__tts_dead_models__');
+    localStorage.removeItem('__tts_working_model__');
+  } catch(e) {}
 }
 try { localStorage.setItem('__app_version__', APP_VERSION); } catch(e) {}
 
@@ -208,7 +239,7 @@ window.__ttsState = window.__ttsState || {
 </script>
 
 <!-- bundle.js define window.React, window.ReactDOM e window.__AppComponent -->
-<script src="bundle.js?v=8"></script>
+<script src="bundle.js?v=9"></script>
 
 <!-- Renderização em script separado, garantindo execução após bundle.js -->
 <script>
