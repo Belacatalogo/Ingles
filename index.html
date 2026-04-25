@@ -72,9 +72,48 @@ html,body{background:#060D1F;-webkit-text-size-adjust:100%}
 </div>
 <script>
 // Register service worker for PWA / offline
+// Versão atual: APP_VERSION é checada e se mudar, força reload + cache clear
+var APP_VERSION = 'v6';
+var savedVersion = null;
+try { savedVersion = localStorage.getItem('__app_version__'); } catch(e) {}
+
+// Se a versão mudou, limpar todos os caches antes de prosseguir
+if (savedVersion && savedVersion !== APP_VERSION && 'caches' in window) {
+  caches.keys().then(function(names) {
+    return Promise.all(names.map(function(n) { return caches.delete(n); }));
+  });
+}
+try { localStorage.setItem('__app_version__', APP_VERSION); } catch(e) {}
+
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function() {
-    navigator.serviceWorker.register('./sw.js').catch(function(e) { console.warn('SW:', e); });
+    navigator.serviceWorker.register('./sw.js').then(function(reg) {
+      // Força verificação de update toda vez que a página abre
+      reg.update();
+      // Se já há um SW ativo aguardando, ativa imediatamente
+      if (reg.waiting) {
+        reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+      }
+      // Detecta novo SW instalando
+      reg.addEventListener('updatefound', function() {
+        var newSW = reg.installing;
+        if (!newSW) return;
+        newSW.addEventListener('statechange', function() {
+          if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
+            // Nova versão instalada - reload depois de skipWaiting
+            newSW.postMessage({ type: 'SKIP_WAITING' });
+          }
+        });
+      });
+    }).catch(function(e) { console.warn('SW:', e); });
+
+    // Reload quando SW novo assume controle (1x apenas)
+    var refreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', function() {
+      if (refreshing) return;
+      refreshing = true;
+      window.location.reload();
+    });
   });
 }
 
@@ -151,8 +190,25 @@ if ('serviceWorker' in navigator) {
 })();
 </script>
 
+<!-- Stub global: garante que window.__ttsState existe ANTES do bundle carregar -->
+<script>
+window.__ttsState = window.__ttsState || {
+  loading: false,
+  error: null,
+  set: function(loading, error) {
+    this.loading = loading;
+    this.error = error;
+    try {
+      window.dispatchEvent(new CustomEvent('ttsstate', {
+        detail: { loading: loading, error: error }
+      }));
+    } catch(e) {}
+  }
+};
+</script>
+
 <!-- bundle.js define window.React, window.ReactDOM e window.__AppComponent -->
-<script src="bundle.js"></script>
+<script src="bundle.js?v=6"></script>
 
 <!-- Renderização em script separado, garantindo execução após bundle.js -->
 <script>
