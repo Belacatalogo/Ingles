@@ -97,7 +97,7 @@ button {
 <script>
 // Register service worker for PWA / offline
 // Versão atual: APP_VERSION é checada e se mudar, força reload + cache clear
-var APP_VERSION = 'v10';
+var APP_VERSION = 'v12';
 var savedVersion = null;
 try { savedVersion = localStorage.getItem('__app_version__'); } catch(e) {}
 
@@ -239,7 +239,7 @@ window.__ttsState = window.__ttsState || {
 </script>
 
 <!-- bundle.js define window.React, window.ReactDOM e window.__AppComponent -->
-<script src="bundle.js?v=9"></script>
+<script src="bundle.js?v=12"></script>
 
 <!-- Renderização em script separado, garantindo execução após bundle.js -->
 <script>
@@ -339,7 +339,21 @@ window.__ttsState = window.__ttsState || {
       window.__tts_last_clicked_btn__ = btn;
       if (isAudioButton(btn)) {
         addLed(btn);
-        // Sincroniza LED com fim da fala via evento speechSynthesis
+
+        // iOS Safari precisa de uma chamada SÍNCRONA a speechSynthesis.speak()
+        // dentro do gesture handler para "destravar" futuras chamadas durante essa
+        // sessão. Disparamos uma utterance silenciosa que termina rápido.
+        try {
+          if (window.speechSynthesis) {
+            // Resume se estiver pausado (iOS pausa após 15s)
+            if (window.speechSynthesis.paused) window.speechSynthesis.resume();
+            var primer = new SpeechSynthesisUtterance('.');
+            primer.volume = 0;
+            primer.rate = 10;
+            window.speechSynthesis.speak(primer);
+          }
+        } catch(e) {}
+
         // Fail-safe: 5s máximo
         setTimeout(function() {
           if (_activeBtn === btn) removeLed(true);
@@ -728,6 +742,18 @@ window.__ttsState = window.__ttsState || {
         return origFetch.apply(this, arguments).then(function(resp) {
           if (resp.ok) {
             logMsg('ok', 'Gemini TTS ' + resp.status);
+            // Inspeciona resposta para logar mimeType
+            var cloned = resp.clone();
+            cloned.json().then(function(json) {
+              try {
+                var mt = json.candidates && json.candidates[0] &&
+                         json.candidates[0].content && json.candidates[0].content.parts &&
+                         json.candidates[0].content.parts[0] &&
+                         json.candidates[0].content.parts[0].inlineData &&
+                         json.candidates[0].content.parts[0].inlineData.mimeType;
+                if (mt) logMsg('info', 'Gemini mime: ' + mt);
+              } catch(e) {}
+            }).catch(function(){});
           } else {
             logMsg('err', 'Gemini TTS ' + resp.status);
           }
