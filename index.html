@@ -37,100 +37,9 @@ html,body{background:#060D1F;-webkit-text-size-adjust:100%}
 #bar{height:3px;background:linear-gradient(90deg,#5B9CF6,#A78BFA);border-radius:4px;width:10%;transition:width 0.5s ease}
 #splash-msg{color:rgba(255,255,255,0.4);font-size:12px}
 #errmsg{color:#F87171;font-size:11px;max-width:280px;text-align:center;display:none;padding:0 20px;line-height:1.6;word-break:break-all}
-
-/* ── Estilos adicionais do patch ───────────────────────── */
-
-/* Botão de áudio desativado com feedback visual */
-button[data-audio-blocked="true"] {
-  opacity: 0.5 !important;
-  cursor: not-allowed !important;
-}
-
-/* Banner de aviso de popup bloqueado — melhoria sobre o texto simples */
-#fluency-popup-guide {
-  display: none;
-  position: fixed;
-  inset: 0;
-  z-index: 10000;
-  background: rgba(0,0,0,0.7);
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-}
-#fluency-popup-guide.visible {
-  display: flex;
-}
-#fluency-popup-guide .card {
-  background: #0F1E40;
-  border: 1px solid rgba(91,156,246,0.3);
-  border-radius: 20px;
-  padding: 28px 24px;
-  max-width: 360px;
-  width: 100%;
-  font-family: -apple-system, sans-serif;
-  color: #E8EFF8;
-}
-#fluency-popup-guide h2 {
-  font-size: 18px;
-  font-weight: 700;
-  margin-bottom: 12px;
-}
-#fluency-popup-guide p {
-  font-size: 14px;
-  line-height: 1.6;
-  color: rgba(232,239,248,0.75);
-  margin-bottom: 8px;
-}
-#fluency-popup-guide ol {
-  font-size: 13px;
-  line-height: 1.7;
-  color: rgba(232,239,248,0.8);
-  padding-left: 20px;
-  margin: 12px 0;
-}
-#fluency-popup-guide .btn-close {
-  width: 100%;
-  margin-top: 16px;
-  padding: 12px;
-  border-radius: 12px;
-  border: none;
-  background: linear-gradient(135deg, #4F8EF0, #6366F1);
-  color: #fff;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-}
-#fluency-popup-guide .btn-alt {
-  width: 100%;
-  margin-top: 8px;
-  padding: 10px;
-  border-radius: 12px;
-  border: 1px solid rgba(255,255,255,0.15);
-  background: transparent;
-  color: rgba(255,255,255,0.7);
-  font-size: 13px;
-  cursor: pointer;
-}
 </style>
 </head>
 <body>
-
-<!-- ── Modal de ajuda para popup bloqueado ───────────────── -->
-<div id="fluency-popup-guide">
-  <div class="card">
-    <h2>🚫 Popup bloqueado</h2>
-    <p>O seu browser bloqueou a janela de login do Google. Veja como resolver:</p>
-    <ol>
-      <li><strong>Chrome/Android:</strong> Toque no ícone de cadeado 🔒 na barra de endereço → Permissões → Popups → Permitir</li>
-      <li><strong>Safari/iOS:</strong> Configurações → Safari → Bloqueador de pop-ups → desativar para este site</li>
-      <li><strong>Alternativa:</strong> Acesse o app pelo Chrome no computador — o login funciona sem popup</li>
-    </ol>
-    <p style="margin-top:8px;font-size:12px;color:rgba(255,255,255,0.4)">Após permitir popups, toque em "Entrar com Google" novamente.</p>
-    <button class="btn-close" onclick="document.getElementById('fluency-popup-guide').classList.remove('visible')">Entendi, vou tentar de novo</button>
-    <button class="btn-alt" onclick="document.getElementById('fluency-popup-guide').classList.remove('visible')">Fechar</button>
-  </div>
-</div>
-
 <div id="root">
   <div id="splash">
     <p id="splash-logo">Fluency<span>.</span></p>
@@ -139,103 +48,14 @@ button[data-audio-blocked="true"] {
     <p id="errmsg"></p>
   </div>
 </div>
-
-<!-- ── Service Worker ────────────────────────────────────── -->
 <script>
+// Register service worker for PWA / offline
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', function() {
-    navigator.serviceWorker.register('./sw.js').catch(function(e) {
-      console.warn('SW:', e);
-    });
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(e => console.warn('SW:', e));
   });
 }
 </script>
-
-<!-- ── Patch: áudio + login Google (carrega ANTES do bundle) ─ -->
-<script src="audio-fix.js"
-  onerror="console.warn('[Fluency] audio-fix.js não encontrado — rode sem patch')">
-</script>
-
-<!-- ── Interceptor de erros de auth do Firebase ──────────── -->
-<script>
-/**
- * Observa mudanças no DOM para detectar quando o erro de popup aparece
- * e exibe o modal de ajuda com instruções detalhadas.
- */
-(function() {
-  var popupErrorPhrases = [
-    'popup bloqueado',
-    'popup blocked',
-    'popups para este site',
-    'auth/popup-blocked'
-  ];
-
-  function checkForPopupError(text) {
-    var lower = (text || '').toLowerCase();
-    return popupErrorPhrases.some(function(p) { return lower.includes(p); });
-  }
-
-  // MutationObserver para detectar quando o app renderiza o erro de popup
-  if (window.MutationObserver) {
-    var observer = new MutationObserver(function(mutations) {
-      mutations.forEach(function(mutation) {
-        mutation.addedNodes.forEach(function(node) {
-          if (node.nodeType === 1) {
-            var text = node.textContent || '';
-            if (checkForPopupError(text)) {
-              // Mostrar modal de ajuda
-              setTimeout(function() {
-                var guide = document.getElementById('fluency-popup-guide');
-                if (guide) guide.classList.add('visible');
-              }, 200);
-            }
-          }
-        });
-      });
-    });
-
-    document.addEventListener('DOMContentLoaded', function() {
-      observer.observe(document.body, { childList: true, subtree: true });
-    });
-  }
-
-  // Também checar erros salvos no localStorage ao carregar
-  window.addEventListener('load', function() {
-    try {
-      var lastErr = localStorage.getItem('fluency_lastAuthError') || '';
-      var lastRedirectErr = localStorage.getItem('fluency_lastRedirectError') || '';
-      if (checkForPopupError(lastErr) || checkForPopupError(lastRedirectErr)) {
-        // Limpar erros antigos para não mostrar modal sempre
-        var errDate = localStorage.getItem('fluency_lastAuthErrorAt');
-        var now = Date.now();
-        if (!errDate || (now - parseInt(errDate)) < 5 * 60 * 1000) {
-          // Erro recente (menos de 5 min): mostrar guia
-          // não mostrar automaticamente para não incomodar em visitas futuras
-        }
-      }
-    } catch(e) {}
-  });
-
-  /**
-   * Melhoria: após signInWithRedirect falhar no retorno,
-   * verificar o parâmetro hash/search para detectar callback OAuth.
-   */
-  window.addEventListener('load', function() {
-    // Se voltou de um redirect de auth Google, mostrar feedback
-    var hash = window.location.hash || '';
-    var search = window.location.search || '';
-    if (hash.includes('state=') && hash.includes('code=') ||
-        search.includes('state=') && (search.includes('code=') || search.includes('error='))) {
-      console.log('[Fluency] Detectado retorno de OAuth redirect');
-      // O bundle já trata getRedirectResult — apenas garantir feedback visual
-      var splash = document.getElementById('splash-msg');
-      if (splash) splash.textContent = 'Finalizando login com Google…';
-    }
-  });
-})();
-</script>
-
-<!-- ── Bundle principal ───────────────────────────────────── -->
 <script src="bundle.js"
   onload="
     document.getElementById('bar').style.width='90%';
@@ -257,6 +77,5 @@ if ('serviceWorker' in navigator) {
     em.textContent='Erro: bundle.js não carregou. Verifique se o arquivo existe no repositório.';
   "
 ></script>
-
 </body>
 </html>
