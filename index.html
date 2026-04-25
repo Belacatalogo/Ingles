@@ -97,7 +97,7 @@ button {
 <script>
 // Register service worker for PWA / offline
 // Versão atual: APP_VERSION é checada e se mudar, força reload + cache clear
-var APP_VERSION = 'v24';
+var APP_VERSION = 'v26';
 var savedVersion = null;
 try { savedVersion = localStorage.getItem('__app_version__'); } catch(e) {}
 
@@ -237,6 +237,49 @@ if ('serviceWorker' in navigator) {
       } catch(e) {}
     }, 8000);
   }
+
+  // Bug fix: quando o usuário sai do app (PWA iOS), o iOS mantém o último áudio
+  // tocado como "Now Playing" na tela de bloqueio / Central de Controle.
+  // Limpamos o elemento <audio> compartilhado e os metadados de mídia para liberar.
+  function releaseNowPlaying() {
+    try {
+      var au = window.__sharedHTMLAudio;
+      if (au) {
+        try { au.pause(); } catch(e) {}
+        try { au.removeAttribute('src'); } catch(e) {}
+        try { au.src = ''; } catch(e) {}
+        try { au.load(); } catch(e) {}
+      }
+    } catch(e) {}
+    try {
+      if ('mediaSession' in navigator) {
+        try { navigator.mediaSession.metadata = null; } catch(e) {}
+        try { navigator.mediaSession.playbackState = 'none'; } catch(e) {}
+      }
+    } catch(e) {}
+    try {
+      if (window.speechSynthesis && (window.speechSynthesis.speaking || window.speechSynthesis.pending)) {
+        window.speechSynthesis.cancel();
+      }
+    } catch(e) {}
+    try { if (typeof window.__stopHTMLAudio === 'function') window.__stopHTMLAudio(); } catch(e) {}
+  }
+  // Quando a aba vira invisível (usuário foi ao home screen, trocou de app etc),
+  // liberar imediatamente o "Now Playing".
+  document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'hidden') releaseNowPlaying();
+  });
+  // pagehide é disparado quando a página é descarregada (também em iOS PWA)
+  window.addEventListener('pagehide', releaseNowPlaying);
+  // blur extra (alguns iOS): quando o app perde o foco
+  window.addEventListener('blur', function() {
+    // Pequeno delay: blur dispara em interações internas; só limpa se a aba virou hidden
+    setTimeout(function() {
+      if (document.visibilityState === 'hidden') releaseNowPlaying();
+    }, 50);
+  });
+  // Expor para uso externo (debug/console)
+  window.__releaseNowPlaying = releaseNowPlaying;
 })();
 </script>
 
@@ -258,7 +301,7 @@ window.__ttsState = window.__ttsState || {
 </script>
 
 <!-- bundle.js define window.React, window.ReactDOM e window.__AppComponent -->
-<script src="bundle.js?v=24"></script>
+<script src="bundle.js?v=26"></script>
 
 <!-- Renderização em script separado, garantindo execução após bundle.js -->
 <script>
