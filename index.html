@@ -97,7 +97,7 @@ button {
 <script>
 // Register service worker for PWA / offline
 // Versão atual: APP_VERSION é checada e se mudar, força reload + cache clear
-var APP_VERSION = 'v27';
+var APP_VERSION = 'v28';
 var savedVersion = null;
 try { savedVersion = localStorage.getItem('__app_version__'); } catch(e) {}
 
@@ -321,7 +321,7 @@ window.__ttsState = window.__ttsState || {
 </script>
 
 <!-- bundle.js define window.React, window.ReactDOM e window.__AppComponent -->
-<script src="bundle.js?v=27"></script>
+<script src="bundle.js?v=28"></script>
 
 <!-- Renderização em script separado, garantindo execução após bundle.js -->
 <script>
