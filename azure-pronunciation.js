@@ -545,5 +545,6 @@ Inclua tip para CADA palavra listada. Tips devem ser frases CURTAS e ACIONÁVEIS
     setTimeout(() => { loadAzureSDK().catch(() => {}); }, 3000);
   }
 
+  window.__azurePronReady = true;
   console.log('[Azure-Pron] módulo carregado. URL token =', window.__AZURE_TOKEN_URL);
 })();
