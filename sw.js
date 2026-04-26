@@ -1,6 +1,6 @@
 // Fluency Service Worker — offline cache
-const CACHE = "fluency-v28";
-const STATIC = ["./", "./index.html", "./bundle.js", "./manifest.json", "./icon-192.png", "./icon-512.png", "./apple-touch-icon.png"];
+const CACHE = "fluency-v29";
+const STATIC = ["./", "./index.html", "./bundle.js", "./manifest.json", "./icon-192.png", "./icon-512.png", "./apple-touch-icon.png", "./azure-pronunciation.js"];
 
 self.addEventListener("install", e => {
   e.waitUntil(
