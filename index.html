@@ -633,12 +633,6 @@ window.__ttsState = window.__ttsState || {
     <div class="__diag_row__"><span>Vozes carregadas</span><b id="__diag_voices__">?</b></div>
     <div class="__diag_row__"><span>Speech destravado</span><b id="__diag_unlocked__">não</b></div>
     <div class="__diag_row__"><span>Última voz usada</span><b id="__diag_last_voice__">—</b></div>
-    <div style="border-top:1px solid rgba(255,255,255,0.08);margin:6px 0;"></div>
-    <div class="__diag_row__"><span>🎤 Modo análise pron.</span><b id="__diag_pron_mode__">—</b></div>
-    <div class="__diag_row__"><span>🎙️ Áudio capturado</span><b id="__diag_pron_audio__">—</b></div>
-    <div class="__diag_row__"><span>🤖 IA usada</span><b id="__diag_pron_ai__">—</b></div>
-    <div class="__diag_row__"><span>📊 Último score</span><b id="__diag_pron_score__">—</b></div>
-    <div class="__diag_row__"><span>⚠️ Motivo fallback</span><b id="__diag_pron_reason__" style="color:#F59E0B;font-size:9px;max-width:140px;word-break:break-word;">—</b></div>
     <div class="__diag_log__" id="__diag_log__"></div>
   </div>
 </div>
@@ -900,107 +894,6 @@ window.__ttsState = window.__ttsState || {
     },
     log: logMsg
   };
-})();
-</script>
-<!-- Diagnóstico de Pronúncia — atualiza os novos campos do painel -->
-<script>
-(function() {
-  function safeEl(id) { return document.getElementById(id); }
-
-  // Expõe API pública para o bundle atualizar o painel
-  window.__diagPron = {
-    setMode: function(mode) {
-      // mode: 'gemini-audio' | 'gemini-stt' | 'fallback-local'
-      var el = safeEl('__diag_pron_mode__');
-      if (!el) return;
-      el.textContent = mode;
-      el.style.color = mode === 'gemini-audio' ? '#34D399'
-                     : mode === 'gemini-stt'   ? '#F59E0B'
-                     : '#F87171';
-    },
-    setAudio: function(hasMp, sizeKb) {
-      var el = safeEl('__diag_pron_audio__');
-      if (!el) return;
-      if (hasMp) {
-        el.textContent = 'sim (' + (sizeKb|0) + ' KB)';
-        el.style.color = '#34D399';
-      } else {
-        el.textContent = 'não capturado';
-        el.style.color = '#F87171';
-      }
-    },
-    setAI: function(model) {
-      var el = safeEl('__diag_pron_ai__');
-      if (!el) return;
-      el.textContent = model || '—';
-      el.style.color = model ? '#34D399' : '#F87171';
-    },
-    setScore: function(score, source) {
-      var el = safeEl('__diag_pron_score__');
-      if (!el) return;
-      el.textContent = (score !== null && score !== undefined) ? score + '% (' + (source||'?') + ')' : '—';
-      el.style.color = score >= 80 ? '#34D399' : score >= 60 ? '#F59E0B' : '#F87171';
-    },
-    setReason: function(reason) {
-      var el = safeEl('__diag_pron_reason__');
-      if (!el) return;
-      if (reason) {
-        el.textContent = reason;
-        el.style.color = '#F59E0B';
-        // também loga no painel de log
-        if (window.__diag_log) window.__diag_log('warn', '🎤 Pron fallback: ' + reason.slice(0, 70));
-      } else {
-        el.textContent = 'nenhum';
-        el.style.color = '#34D399';
-      }
-    },
-    reset: function() {
-      window.__diagPron.setMode('—');
-      safeEl('__diag_pron_mode__') && (safeEl('__diag_pron_mode__').style.color = '');
-      safeEl('__diag_pron_audio__') && (safeEl('__diag_pron_audio__').textContent = '—');
-      safeEl('__diag_pron_ai__') && (safeEl('__diag_pron_ai__').textContent = '—');
-      safeEl('__diag_pron_score__') && (safeEl('__diag_pron_score__').textContent = '—');
-      safeEl('__diag_pron_reason__') && (safeEl('__diag_pron_reason__').textContent = '—');
-    }
-  };
-
-  // Intercepta chamadas à API Gemini de pronúncia para logar no painel
-  var origFetch = window.fetch;
-  if (origFetch && !window.__pronDiagHooked) {
-    window.__pronDiagHooked = true;
-    window.fetch = function(url, opts) {
-      var u = (typeof url === 'string') ? url : (url && url.url) || '';
-      var isPronReq = u.includes('generativelanguage') && opts && opts.body &&
-                      typeof opts.body === 'string' &&
-                      (opts.body.includes('pronúncia') || opts.body.includes('pronunciation') ||
-                       opts.body.includes('pronuncia') || opts.body.includes('EXIGENTE') ||
-                       opts.body.includes('score') || opts.body.includes('sotaque'));
-      if (isPronReq) {
-        var hasAudio = opts.body.includes('"inlineData"') || opts.body.includes('base64');
-        var modelMatch = u.match(/models\/([^:]+):/);
-        var model = modelMatch ? modelMatch[1] : 'desconhecido';
-        if (window.__diag_log) window.__diag_log('info', '🎤 Pron API: ' + model + (hasAudio ? ' + áudio' : ' só STT'));
-        if (window.__diagPron) {
-          window.__diagPron.setAI(model);
-          window.__diagPron.setMode(hasAudio ? 'gemini-audio' : 'gemini-stt');
-        }
-        return origFetch.apply(this, arguments).then(function(resp) {
-          if (!resp.ok) {
-            if (window.__diag_log) window.__diag_log('err', '🎤 Pron API erro ' + resp.status);
-            if (window.__diagPron) window.__diagPron.setReason('HTTP ' + resp.status + ' da API Gemini');
-          } else {
-            if (window.__diag_log) window.__diag_log('ok', '🎤 Pron API OK ' + resp.status);
-          }
-          return resp;
-        }).catch(function(err) {
-          if (window.__diag_log) window.__diag_log('err', '🎤 Pron fetch: ' + err.message);
-          if (window.__diagPron) window.__diagPron.setReason('Fetch error: ' + err.message.slice(0, 50));
-          throw err;
-        });
-      }
-      return origFetch.apply(this, arguments);
-    };
-  }
 })();
 </script>
 </body>
