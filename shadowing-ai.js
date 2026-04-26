@@ -1,12 +1,12 @@
 /* ============================================================================
  * Fluency – Shadowing AI Enhancer
- * Adiciona um painel seguro na aba Shadowing para gerar frases por nível.
+ * Painel seguro apenas na subaba Shadowing + preenchimento automático da caixa.
  * Não altera bundle.js.
  * ========================================================================== */
 (function(){
   'use strict';
-  if (window.__fluencyShadowingAI) return;
-  window.__fluencyShadowingAI = true;
+  if (window.__fluencyShadowingAI_v2) return;
+  window.__fluencyShadowingAI_v2 = true;
 
   var STORAGE_LAST = '__shadowing_ai_last_sentence__';
 
@@ -15,10 +15,7 @@
   }
 
   function getUserLevel(){
-    var candidates = [
-      'fluency_level','fluency_user_level','userLevel','level','currentLevel',
-      '__fluency_level__','fluency_cefr_level'
-    ];
+    var candidates = ['fluency_level','fluency_user_level','userLevel','level','currentLevel','__fluency_level__','fluency_cefr_level'];
     for (var i=0;i<candidates.length;i++) {
       try {
         var v = localStorage.getItem(candidates[i]);
@@ -36,9 +33,17 @@
     return 'A2';
   }
 
-  function isShadowingScreen(){
-    var txt = (document.body && document.body.innerText || '').toLowerCase();
-    return txt.indexOf('shadowing') !== -1 || txt.indexOf('sombra') !== -1;
+  function norm(s){ return String(s || '').replace(/\s+/g,' ').trim().toLowerCase(); }
+
+  function isActuallyShadowingScreen(){
+    var txt = norm(document.body && document.body.innerText || '');
+    // Não basta haver o botão "Shadowing". Exigimos texto exclusivo do conteúdo da subaba.
+    return txt.indexOf('shadowing / repetição imediata') !== -1 ||
+           txt.indexOf('shadowing / repeticao imediata') !== -1 ||
+           txt.indexOf('escolha uma frase ou parágrafo curto') !== -1 ||
+           txt.indexOf('escolha uma frase ou paragrafo curto') !== -1 ||
+           txt.indexOf('primeiro ouça o áudio, depois repita imediatamente') !== -1 ||
+           txt.indexOf('primeiro ouca o audio, depois repita imediatamente') !== -1;
   }
 
   function toast(msg){
@@ -115,14 +120,78 @@
         var si = text.indexOf('{'), ei = text.lastIndexOf('}');
         if (si >= 0 && ei >= 0) {
           var obj = JSON.parse(text.slice(si, ei+1));
-          if (obj && obj.sentence) {
-            obj.level = level;
-            return obj;
-          }
+          if (obj && obj.sentence) { obj.level = level; return obj; }
         }
       } catch(e) {}
     }
     return { sentence: fallbackSentence(level), pt: 'Use esta frase para treinar repetição.', focus: 'Copie o ritmo, as pausas e a entonação.', level: level, offline: true };
+  }
+
+  function isVisible(el){
+    if (!el || el.id === '__shadowing_ai_panel__' || (el.closest && el.closest('#__shadowing_ai_panel__'))) return false;
+    var r = el.getBoundingClientRect();
+    var st = window.getComputedStyle(el);
+    return r.width > 40 && r.height > 20 && st.display !== 'none' && st.visibility !== 'hidden' && r.bottom > 0 && r.top < window.innerHeight;
+  }
+
+  function setNativeValue(el, value){
+    try {
+      var proto = el.tagName === 'TEXTAREA' ? window.HTMLTextAreaElement.prototype : window.HTMLInputElement.prototype;
+      var desc = Object.getOwnPropertyDescriptor(proto, 'value');
+      if (desc && desc.set) desc.set.call(el, value);
+      else el.value = value;
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+      el.dispatchEvent(new Event('change', { bubbles: true }));
+      return true;
+    } catch(e) {
+      try { el.value = value; el.dispatchEvent(new Event('input', { bubbles:true })); return true; } catch(_) {}
+    }
+    return false;
+  }
+
+  function fillShadowingOriginalBox(sentence){
+    try {
+      if (!sentence) return false;
+      var fields = Array.prototype.slice.call(document.querySelectorAll('textarea, input[type="text"], input:not([type]), [contenteditable="true"]'))
+        .filter(isVisible)
+        .sort(function(a,b){
+          var ra = a.getBoundingClientRect(), rb = b.getBoundingClientRect();
+          return (rb.width * rb.height) - (ra.width * ra.height);
+        });
+
+      for (var i=0;i<fields.length;i++) {
+        var el = fields[i];
+        if (el.isContentEditable) {
+          el.focus();
+          el.textContent = sentence;
+          el.dispatchEvent(new InputEvent('input', { bubbles:true, inputType:'insertText', data:sentence }));
+          el.dispatchEvent(new Event('change', { bubbles:true }));
+          return true;
+        }
+        if (setNativeValue(el, sentence)) {
+          el.focus();
+          return true;
+        }
+      }
+
+      // Fallback para alguns componentes React: tenta clicar no texto atual e simular colagem.
+      var all = Array.prototype.slice.call(document.querySelectorAll('div, p, span'))
+        .filter(isVisible)
+        .filter(function(el){
+          var t = norm(el.innerText || el.textContent || '');
+          return t.length > 10 && /i need to|figure out|make this sound|more natural|shadowing/i.test(t);
+        })
+        .sort(function(a,b){ return (b.getBoundingClientRect().width*b.getBoundingClientRect().height) - (a.getBoundingClientRect().width*a.getBoundingClientRect().height); });
+      if (all[0]) {
+        all[0].click();
+        setTimeout(function(){
+          var active = document.activeElement;
+          if (active && (active.tagName === 'TEXTAREA' || active.tagName === 'INPUT')) setNativeValue(active, sentence);
+        }, 60);
+        return true;
+      }
+    } catch(e) {}
+    return false;
   }
 
   function makePanel(){
@@ -150,6 +219,9 @@
       document.getElementById('__shadowing_ai_focus__').textContent = obj.focus ? ('Foco: ' + obj.focus) : '';
       document.getElementById('__shadowing_ai_result__').style.display = 'block';
       try { localStorage.setItem(STORAGE_LAST, JSON.stringify(obj)); } catch(e) {}
+      setTimeout(function(){
+        if (!fillShadowingOriginalBox(currentSentence)) toast('Frase gerada. Não consegui preencher a caixa automaticamente neste carregamento.');
+      }, 80);
     }
 
     document.getElementById('__shadowing_ai_generate__').onclick = async function(){
@@ -161,7 +233,9 @@
       } catch(e) {
         toast('Não consegui gerar agora. Usei uma frase local.');
         var lvl = getUserLevel();
-        render({ sentence: fallbackSentence(lvl), pt: '', focus: 'Repita 3 vezes: devagar, normal e com ritmo.', level: lvl });
+        var obj2 = { sentence: fallbackSentence(lvl), pt: '', focus: 'Repita 3 vezes: devagar, normal e com ritmo.', level: lvl };
+        render(obj2);
+        speak(obj2.sentence);
       } finally { setLoading(false); }
     };
     document.getElementById('__shadowing_ai_listen__').onclick = function(){ if (currentSentence) speak(currentSentence); };
@@ -173,7 +247,10 @@
 
     try {
       var last = JSON.parse(localStorage.getItem(STORAGE_LAST) || 'null');
-      if (last && last.sentence) render(last);
+      if (last && last.sentence && isActuallyShadowingScreen()) {
+        currentSentence = last.sentence;
+        document.getElementById('__shadowing_ai_level__').textContent = 'nível ' + (last.level || getUserLevel());
+      }
     } catch(e) {}
     return panel;
   }
@@ -181,7 +258,7 @@
   function ensurePanel(){
     if (!document.body) return;
     var p = document.getElementById('__shadowing_ai_panel__');
-    if (isShadowingScreen()) {
+    if (isActuallyShadowingScreen()) {
       p = makePanel();
       p.style.display = 'block';
       var lvl = document.getElementById('__shadowing_ai_level__');
@@ -195,11 +272,11 @@
   function schedule(){
     if (scheduled) return;
     scheduled = true;
-    setTimeout(function(){ scheduled = false; ensurePanel(); }, 500);
+    setTimeout(function(){ scheduled = false; ensurePanel(); }, 350);
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ensurePanel);
   else ensurePanel();
-  setInterval(ensurePanel, 1800);
-  try { new MutationObserver(schedule).observe(document.documentElement, { childList:true, subtree:true }); } catch(e) {}
+  setInterval(ensurePanel, 1200);
+  try { new MutationObserver(schedule).observe(document.documentElement, { childList:true, subtree:true, characterData:true }); } catch(e) {}
 })();
