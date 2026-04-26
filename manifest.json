@@ -1,23 +1,12 @@
 {
-  "name": "Fluency — Aprenda Inglês com IA",
+  "name": "Fluency",
   "short_name": "Fluency",
-  "description": "Aprenda inglês do A1 ao C2 com aulas geradas por IA, flashcards e prática de speaking.",
+  "description": "Aprenda inglês do A1 ao C2 com IA, flashcards e prática de speaking.",
   "start_url": "./",
-  "scope": "./",
   "display": "standalone",
-  "orientation": "portrait-primary",
   "background_color": "#060D1F",
   "theme_color": "#060D1F",
-  "lang": "pt-BR",
-  "categories": ["education", "productivity"],
   "icons": [
-    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" },
     { "src": "apple-touch-icon.png", "sizes": "180x180", "type": "image/png" }
-  ],
-  "screenshots": [],
-  "shortcuts": [
-    { "name": "Aula de hoje", "url": "./?tab=lesson", "description": "Abrir aula do dia" },
-    { "name": "Flashcards", "url": "./?tab=flashcards", "description": "Revisar vocabulário" }
   ]
 }
