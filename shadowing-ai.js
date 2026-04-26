@@ -1,31 +1,28 @@
 /* ============================================================================
- * Fluency – Shadowing AI Enhancer
- * Adiciona um painel seguro na aba Shadowing para gerar frases por nível.
- * Não altera bundle.js.
+ * Fluency – Shadowing AI Inline Enhancer
+ * Adiciona apenas o botão Gerar frase dentro da subaba Shadowing.
+ * Ao gerar, coloca a frase direto na caixa principal do Shadowing.
+ * Não toca áudio automaticamente e não adiciona botão de ouvir extra.
  * ========================================================================== */
 (function(){
   'use strict';
-  if (window.__fluencyShadowingAI) return;
-  window.__fluencyShadowingAI = true;
+  if (window.__fluencyShadowingAI_inline_v3) return;
+  window.__fluencyShadowingAI_inline_v3 = true;
 
-  var STORAGE_LAST = '__shadowing_ai_last_sentence__';
+  var BTN_ID = '__shadowing_ai_inline_btn__';
+  var WRAP_ID = '__shadowing_ai_inline_wrap__';
+  var lastSentence = '';
 
-  function getGeminiKey(){
-    try { return localStorage.getItem('fluency_geminiKey') || ''; } catch(e) { return ''; }
-  }
+  function norm(s){ return String(s || '').replace(/\s+/g,' ').trim().toLowerCase(); }
+  function getGeminiKey(){ try { return localStorage.getItem('fluency_geminiKey') || ''; } catch(e) { return ''; } }
 
   function getUserLevel(){
-    var candidates = [
-      'fluency_level','fluency_user_level','userLevel','level','currentLevel',
-      '__fluency_level__','fluency_cefr_level'
-    ];
-    for (var i=0;i<candidates.length;i++) {
+    var keys = ['fluency_level','fluency_user_level','userLevel','level','currentLevel','__fluency_level__','fluency_cefr_level'];
+    for (var i=0;i<keys.length;i++) {
       try {
-        var v = localStorage.getItem(candidates[i]);
-        if (v && /A1|A2|B1|B2|C1|C2/i.test(v)) {
-          var m = v.match(/A1|A2|B1|B2|C1|C2/i);
-          if (m) return m[0].toUpperCase();
-        }
+        var v = localStorage.getItem(keys[i]);
+        var m = v && String(v).match(/A1|A2|B1|B2|C1|C2/i);
+        if (m) return m[0].toUpperCase();
       } catch(e) {}
     }
     try {
@@ -37,8 +34,13 @@
   }
 
   function isShadowingScreen(){
-    var txt = (document.body && document.body.innerText || '').toLowerCase();
-    return txt.indexOf('shadowing') !== -1 || txt.indexOf('sombra') !== -1;
+    var txt = norm(document.body && document.body.innerText || '');
+    return txt.indexOf('shadowing / repetição imediata') !== -1 ||
+           txt.indexOf('shadowing / repeticao imediata') !== -1 ||
+           txt.indexOf('escolha uma frase ou parágrafo curto') !== -1 ||
+           txt.indexOf('escolha uma frase ou paragrafo curto') !== -1 ||
+           txt.indexOf('primeiro ouça o áudio, depois repita imediatamente') !== -1 ||
+           txt.indexOf('primeiro ouca o audio, depois repita imediatamente') !== -1;
   }
 
   function toast(msg){
@@ -54,25 +56,8 @@
       el.textContent = msg;
       el.style.opacity = '1';
       clearTimeout(el.__t);
-      el.__t = setTimeout(function(){ el.style.opacity = '0'; }, 3000);
+      el.__t = setTimeout(function(){ el.style.opacity = '0'; }, 2200);
     } catch(e) {}
-  }
-
-  function speak(text){
-    try {
-      if (!window.speechSynthesis) return toast('Seu navegador não liberou voz ainda. Toque na tela e tente de novo.');
-      window.speechSynthesis.cancel();
-      var u = new SpeechSynthesisUtterance(text);
-      u.lang = 'en-US';
-      u.rate = 0.86;
-      u.pitch = 1;
-      var voices = window.speechSynthesis.getVoices() || [];
-      var preferred = voices.find(function(v){ return /en-US/i.test(v.lang) && /Samantha|Google|Microsoft|Natural|Jenny|Aria/i.test(v.name); }) ||
-                      voices.find(function(v){ return /en-US/i.test(v.lang); }) ||
-                      voices.find(function(v){ return /^en/i.test(v.lang); });
-      if (preferred) u.voice = preferred;
-      window.speechSynthesis.speak(u);
-    } catch(e) { toast('Não consegui tocar o áudio agora.'); }
   }
 
   function fallbackSentence(level){
@@ -91,22 +76,15 @@
   async function generateSentence(){
     var level = getUserLevel();
     var key = getGeminiKey();
-    var prompt = 'Você é um professor de inglês para brasileiro. Gere UMA frase em inglês para treino de shadowing no nível ' + level + '. Regras: responda somente JSON válido, sem markdown. Formato: {"sentence":"...","pt":"...","focus":"..."}. A frase deve ser natural, útil, curta o bastante para repetir, e adequada ao nível. O campo focus deve explicar em PT-BR qual som/ritmo treinar.';
+    if (!key) return { sentence: fallbackSentence(level), level: level, offline: true };
 
-    if (!key) {
-      return { sentence: fallbackSentence(level), pt: 'Frase gerada localmente porque a chave Gemini não foi encontrada.', focus: 'Repita devagar primeiro, depois tente copiar o ritmo natural.', level: level, offline: true };
-    }
-
+    var prompt = 'Você é professor de inglês para brasileiro. Gere UMA frase em inglês para treino de shadowing no nível ' + level + '. Responda somente JSON válido: {"sentence":"..."}. A frase deve ser natural, útil, curta para repetir e adequada ao nível.';
     var models = ['gemini-2.0-flash','gemini-2.5-flash','gemini-1.5-flash-latest'];
     for (var i=0;i<models.length;i++) {
       try {
         var res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + models[i] + ':generateContent?key=' + encodeURIComponent(key), {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: { temperature: 0.7, maxOutputTokens: 220, responseMimeType: 'application/json' }
-          })
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature: 0.7, maxOutputTokens: 160, responseMimeType: 'application/json' } })
         });
         if (!res.ok) continue;
         var j = await res.json();
@@ -114,92 +92,131 @@
         text = text.map(function(p){ return p.text || ''; }).join('').trim();
         var si = text.indexOf('{'), ei = text.lastIndexOf('}');
         if (si >= 0 && ei >= 0) {
-          var obj = JSON.parse(text.slice(si, ei+1));
-          if (obj && obj.sentence) {
-            obj.level = level;
-            return obj;
-          }
+          var obj = JSON.parse(text.slice(si, ei + 1));
+          if (obj && obj.sentence) { obj.level = level; return obj; }
         }
       } catch(e) {}
     }
-    return { sentence: fallbackSentence(level), pt: 'Use esta frase para treinar repetição.', focus: 'Copie o ritmo, as pausas e a entonação.', level: level, offline: true };
+    return { sentence: fallbackSentence(level), level: level, offline: true };
   }
 
-  function makePanel(){
-    var panel = document.getElementById('__shadowing_ai_panel__');
-    if (panel) return panel;
-    panel = document.createElement('div');
-    panel.id = '__shadowing_ai_panel__';
-    panel.style.cssText = 'position:fixed;left:12px;right:12px;bottom:14px;z-index:99998;background:linear-gradient(135deg,rgba(6,13,31,.97),rgba(10,20,40,.97));border:1px solid rgba(91,156,246,.35);border-radius:18px;padding:14px;box-shadow:0 10px 30px rgba(0,0,0,.45);color:#E8EFF8;font-family:-apple-system,BlinkMacSystemFont,sans-serif;max-width:560px;margin:0 auto;';
-    panel.innerHTML = '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><b style="font-size:14px;flex:1">Shadowing IA</b><span id="__shadowing_ai_level__" style="font-size:11px;color:#93C5FD;border:1px solid rgba(147,197,253,.25);border-radius:999px;padding:3px 8px">nível A2</span><button id="__shadowing_ai_hide__" style="background:rgba(255,255,255,.08);color:#E8EFF8;border:0;border-radius:999px;width:28px;height:28px;font-size:16px">×</button></div><button id="__shadowing_ai_generate__" style="width:100%;background:linear-gradient(135deg,#5B9CF6,#A78BFA);color:white;border:0;border-radius:14px;padding:12px 14px;font-weight:700;font-size:14px">Gerar frase para meu nível</button><div id="__shadowing_ai_result__" style="display:none;margin-top:10px;border-top:1px solid rgba(255,255,255,.1);padding-top:10px"><div id="__shadowing_ai_sentence__" style="font-size:17px;line-height:1.45;font-weight:700;margin-bottom:6px"></div><div id="__shadowing_ai_pt__" style="font-size:12px;color:rgba(232,239,248,.72);line-height:1.45;margin-bottom:6px"></div><div id="__shadowing_ai_focus__" style="font-size:12px;color:#93C5FD;line-height:1.45;margin-bottom:10px"></div><div style="display:flex;gap:8px"><button id="__shadowing_ai_listen__" style="flex:1;background:rgba(91,156,246,.18);color:#E8EFF8;border:1px solid rgba(91,156,246,.35);border-radius:12px;padding:10px;font-weight:700">Ouvir</button><button id="__shadowing_ai_copy__" style="flex:1;background:rgba(255,255,255,.08);color:#E8EFF8;border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:10px;font-weight:700">Copiar</button></div></div>';
-    document.body.appendChild(panel);
+  function visible(el){
+    if (!el || (el.closest && el.closest('#' + WRAP_ID))) return false;
+    var r = el.getBoundingClientRect();
+    var st = window.getComputedStyle(el);
+    return r.width > 60 && r.height > 22 && st.display !== 'none' && st.visibility !== 'hidden' && r.bottom > 0 && r.top < window.innerHeight;
+  }
 
-    var currentSentence = '';
-    function setLoading(on){
-      var b = document.getElementById('__shadowing_ai_generate__');
-      if (!b) return;
-      b.disabled = !!on;
-      b.textContent = on ? 'Gerando frase…' : 'Gerar frase para meu nível';
-      b.style.opacity = on ? '.7' : '1';
+  function setNativeValue(el, value){
+    try {
+      var proto = el.tagName === 'TEXTAREA' ? window.HTMLTextAreaElement.prototype : window.HTMLInputElement.prototype;
+      var desc = Object.getOwnPropertyDescriptor(proto, 'value');
+      if (desc && desc.set) desc.set.call(el, value); else el.value = value;
+      el.dispatchEvent(new Event('input', { bubbles:true }));
+      el.dispatchEvent(new Event('change', { bubbles:true }));
+      return true;
+    } catch(e) {
+      try { el.value = value; el.dispatchEvent(new Event('input', { bubbles:true })); return true; } catch(_) {}
     }
-    function render(obj){
-      currentSentence = obj.sentence || '';
-      document.getElementById('__shadowing_ai_level__').textContent = 'nível ' + (obj.level || getUserLevel());
-      document.getElementById('__shadowing_ai_sentence__').textContent = currentSentence;
-      document.getElementById('__shadowing_ai_pt__').textContent = obj.pt || '';
-      document.getElementById('__shadowing_ai_focus__').textContent = obj.focus ? ('Foco: ' + obj.focus) : '';
-      document.getElementById('__shadowing_ai_result__').style.display = 'block';
-      try { localStorage.setItem(STORAGE_LAST, JSON.stringify(obj)); } catch(e) {}
-    }
+    return false;
+  }
 
-    document.getElementById('__shadowing_ai_generate__').onclick = async function(){
-      setLoading(true);
+  function findShadowingField(){
+    var fields = Array.prototype.slice.call(document.querySelectorAll('textarea, input[type="text"], input:not([type]), [contenteditable="true"]')).filter(visible);
+    if (!fields.length) return null;
+    fields.sort(function(a,b){
+      var ra = a.getBoundingClientRect(), rb = b.getBoundingClientRect();
+      var scoreA = ra.width * ra.height;
+      var scoreB = rb.width * rb.height;
+      var textA = norm(a.value || a.textContent || a.getAttribute('placeholder') || '');
+      var textB = norm(b.value || b.textContent || b.getAttribute('placeholder') || '');
+      if (/i need|figure out|frase|shadowing|parágrafo|paragrafo/.test(textA)) scoreA += 100000;
+      if (/i need|figure out|frase|shadowing|parágrafo|paragrafo/.test(textB)) scoreB += 100000;
+      return scoreB - scoreA;
+    });
+    return fields[0];
+  }
+
+  function fillMainBox(sentence){
+    var field = findShadowingField();
+    if (!field) return false;
+    if (field.isContentEditable) {
+      field.focus();
+      field.textContent = sentence;
+      field.dispatchEvent(new InputEvent('input', { bubbles:true, inputType:'insertText', data:sentence }));
+      field.dispatchEvent(new Event('change', { bubbles:true }));
+      return true;
+    }
+    field.focus();
+    return setNativeValue(field, sentence);
+  }
+
+  function findShadowingCard(){
+    var field = findShadowingField();
+    if (!field) return null;
+    var el = field;
+    for (var i=0; i<5 && el && el.parentElement; i++) {
+      el = el.parentElement;
+      var txt = norm(el.innerText || '');
+      if (txt.indexOf('shadowing') !== -1 || txt.indexOf('escolha uma frase') !== -1 || txt.indexOf('primeiro ouça') !== -1 || txt.indexOf('primeiro ouca') !== -1) return el;
+    }
+    return field.parentElement || null;
+  }
+
+  function ensureButton(){
+    var existing = document.getElementById(WRAP_ID);
+    if (!isShadowingScreen()) {
+      if (existing) existing.remove();
+      return;
+    }
+    if (existing) return;
+
+    var card = findShadowingCard();
+    var field = findShadowingField();
+    if (!card || !field) return;
+
+    var wrap = document.createElement('div');
+    wrap.id = WRAP_ID;
+    wrap.style.cssText = 'margin:10px 0 12px 0;display:flex;gap:8px;align-items:center;';
+    wrap.innerHTML = '<button id="' + BTN_ID + '" style="width:100%;background:linear-gradient(135deg,#5B9CF6,#A78BFA);color:white;border:0;border-radius:14px;padding:12px 10px;font-weight:800;font-size:14px;box-shadow:0 8px 22px rgba(91,156,246,.22);">Gerar frase</button>';
+
+    try { field.parentElement.insertBefore(wrap, field); }
+    catch(e) { try { card.appendChild(wrap); } catch(_) { return; } }
+
+    var btn = document.getElementById(BTN_ID);
+    btn.onclick = async function(){
+      var old = btn.textContent;
+      btn.disabled = true;
+      btn.style.opacity = '.72';
+      btn.textContent = 'Gerando…';
       try {
         var obj = await generateSentence();
-        render(obj);
-        speak(obj.sentence);
+        lastSentence = obj.sentence || '';
+        var ok = fillMainBox(lastSentence);
+        if (ok) toast('Frase colocada na caixa do Shadowing. Use o botão Ouvir primeiro para escutar.');
+        else toast('Gerei a frase, mas não consegui preencher a caixa automaticamente.');
       } catch(e) {
-        toast('Não consegui gerar agora. Usei uma frase local.');
-        var lvl = getUserLevel();
-        render({ sentence: fallbackSentence(lvl), pt: '', focus: 'Repita 3 vezes: devagar, normal e com ritmo.', level: lvl });
-      } finally { setLoading(false); }
+        var level = getUserLevel();
+        lastSentence = fallbackSentence(level);
+        fillMainBox(lastSentence);
+        toast('Frase colocada na caixa. Use o botão Ouvir primeiro para escutar.');
+      } finally {
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        btn.textContent = old;
+      }
     };
-    document.getElementById('__shadowing_ai_listen__').onclick = function(){ if (currentSentence) speak(currentSentence); };
-    document.getElementById('__shadowing_ai_copy__').onclick = function(){
-      if (!currentSentence) return;
-      try { navigator.clipboard.writeText(currentSentence); toast('Frase copiada.'); } catch(e) { toast('Não consegui copiar automaticamente.'); }
-    };
-    document.getElementById('__shadowing_ai_hide__').onclick = function(){ panel.style.display = 'none'; };
-
-    try {
-      var last = JSON.parse(localStorage.getItem(STORAGE_LAST) || 'null');
-      if (last && last.sentence) render(last);
-    } catch(e) {}
-    return panel;
-  }
-
-  function ensurePanel(){
-    if (!document.body) return;
-    var p = document.getElementById('__shadowing_ai_panel__');
-    if (isShadowingScreen()) {
-      p = makePanel();
-      p.style.display = 'block';
-      var lvl = document.getElementById('__shadowing_ai_level__');
-      if (lvl) lvl.textContent = 'nível ' + getUserLevel();
-    } else if (p) {
-      p.style.display = 'none';
-    }
   }
 
   var scheduled = false;
   function schedule(){
     if (scheduled) return;
     scheduled = true;
-    setTimeout(function(){ scheduled = false; ensurePanel(); }, 500);
+    setTimeout(function(){ scheduled = false; ensureButton(); }, 350);
   }
 
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ensurePanel);
-  else ensurePanel();
-  setInterval(ensurePanel, 1800);
-  try { new MutationObserver(schedule).observe(document.documentElement, { childList:true, subtree:true }); } catch(e) {}
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ensureButton);
+  else ensureButton();
+  setInterval(ensureButton, 1200);
+  try { new MutationObserver(schedule).observe(document.documentElement, { childList:true, subtree:true, characterData:true }); } catch(e) {}
 })();

@@ -1,5 +1,5 @@
 // Fluency Service Worker — offline cache
-const CACHE = "fluency-v35-shadowing-ai";
+const CACHE = "fluency-v35-shadowing-ai-audiofix2";
 const STATIC = [
   "./",
   "./index.html",
@@ -10,7 +10,8 @@ const STATIC = [
   "./apple-touch-icon.png",
   "./azure-pronunciation.js",
   "./azure-pronunciation-core.js",
-  "./shadowing-ai.js"
+  "./shadowing-ai.js",
+  "./audio-volume-guard.js"
 ];
 
 self.addEventListener("install", e => {
@@ -32,19 +33,15 @@ self.addEventListener("activate", e => {
 });
 
 self.addEventListener("message", e => {
-  if (e.data && e.data.type === "SKIP_WAITING") {
-    self.skipWaiting();
-  }
+  if (e.data && e.data.type === "SKIP_WAITING") self.skipWaiting();
 });
 
 self.addEventListener("fetch", e => {
   const url = new URL(e.request.url);
-
   const isAppAsset = url.pathname.endsWith('.html') ||
                      url.pathname.endsWith('.js') ||
                      url.pathname.endsWith('.css') ||
                      url.pathname.endsWith('/');
-
   if (isAppAsset) {
     e.respondWith(
       fetch(e.request).then(res => {
@@ -57,12 +54,10 @@ self.addEventListener("fetch", e => {
     );
     return;
   }
-
   if (url.hostname.includes("googleapis") || url.hostname.includes("gstatic") || url.hostname.includes("fonts")) {
     e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
     return;
   }
-
   e.respondWith(
     caches.match(e.request).then(cached => {
       const network = fetch(e.request).then(res => {
