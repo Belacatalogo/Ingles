@@ -1,5 +1,5 @@
 // Fluency Service Worker — offline cache
-const CACHE = "fluency-v35-shadowing-ai";
+const CACHE = "fluency-v35-shadowing-ai-fix1";
 const STATIC = [
   "./",
   "./index.html",
