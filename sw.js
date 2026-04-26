@@ -1,5 +1,5 @@
 // Fluency Service Worker — offline cache
-const CACHE = "fluency-v35-shadowing-ai-inline1";
+const CACHE = "fluency-v35-shadowing-ai-audiofix1";
 const STATIC = [
   "./",
   "./index.html",
@@ -10,7 +10,8 @@ const STATIC = [
   "./apple-touch-icon.png",
   "./azure-pronunciation.js",
   "./azure-pronunciation-core.js",
-  "./shadowing-ai.js"
+  "./shadowing-ai.js",
+  "./audio-volume-guard.js"
 ];
 
 self.addEventListener("install", e => {
