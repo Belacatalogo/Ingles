@@ -1,16 +1,18 @@
 /* ============================================================================
  * Fluency – Shadowing AI Inline Enhancer
- * Adiciona apenas um botão dentro da subaba Shadowing.
+ * Adiciona apenas botões dentro da subaba Shadowing.
  * Ao gerar, coloca a frase direto na caixa principal do Shadowing.
- * Não exibe painel/caixa flutuante.
+ * O áudio só toca quando o usuário clicar em Ouvir.
  * ========================================================================== */
 (function(){
   'use strict';
-  if (window.__fluencyShadowingAI_inline_v1) return;
-  window.__fluencyShadowingAI_inline_v1 = true;
+  if (window.__fluencyShadowingAI_inline_v2) return;
+  window.__fluencyShadowingAI_inline_v2 = true;
 
   var BTN_ID = '__shadowing_ai_inline_btn__';
+  var LISTEN_ID = '__shadowing_ai_listen_btn__';
   var WRAP_ID = '__shadowing_ai_inline_wrap__';
+  var lastSentence = '';
 
   function norm(s){ return String(s || '').replace(/\s+/g,' ').trim().toLowerCase(); }
   function getGeminiKey(){ try { return localStorage.getItem('fluency_geminiKey') || ''; } catch(e) { return ''; } }
@@ -55,24 +57,25 @@
       el.textContent = msg;
       el.style.opacity = '1';
       clearTimeout(el.__t);
-      el.__t = setTimeout(function(){ el.style.opacity = '0'; }, 2600);
+      el.__t = setTimeout(function(){ el.style.opacity = '0'; }, 2200);
     } catch(e) {}
   }
 
   function speak(text){
     try {
-      if (!window.speechSynthesis) return;
+      if (!window.speechSynthesis) return toast('Voz indisponível agora. Toque na tela e tente de novo.');
       window.speechSynthesis.cancel();
       var u = new SpeechSynthesisUtterance(text);
       u.lang = 'en-US';
       u.rate = 0.86;
+      u.volume = 1;
       var voices = window.speechSynthesis.getVoices() || [];
       var v = voices.find(function(x){ return /en-US/i.test(x.lang) && /Samantha|Google|Microsoft|Natural|Jenny|Aria/i.test(x.name); }) ||
               voices.find(function(x){ return /en-US/i.test(x.lang); }) ||
               voices.find(function(x){ return /^en/i.test(x.lang); });
       if (v) u.voice = v;
       window.speechSynthesis.speak(u);
-    } catch(e) {}
+    } catch(e) { toast('Não consegui tocar agora.'); }
   }
 
   function fallbackSentence(level){
@@ -166,6 +169,12 @@
     return setNativeValue(field, sentence);
   }
 
+  function readMainBox(){
+    var field = findShadowingField();
+    if (!field) return '';
+    return String(field.isContentEditable ? field.textContent : field.value || '').trim();
+  }
+
   function findShadowingCard(){
     var field = findShadowingField();
     if (!field) return null;
@@ -193,31 +202,36 @@
     var wrap = document.createElement('div');
     wrap.id = WRAP_ID;
     wrap.style.cssText = 'margin:10px 0 12px 0;display:flex;gap:8px;align-items:center;';
-    wrap.innerHTML = '<button id="' + BTN_ID + '" style="width:100%;background:linear-gradient(135deg,#5B9CF6,#A78BFA);color:white;border:0;border-radius:14px;padding:12px 14px;font-weight:800;font-size:14px;box-shadow:0 8px 22px rgba(91,156,246,.22);">Gerar frase para meu nível</button>';
+    wrap.innerHTML = '<button id="' + BTN_ID + '" style="flex:1;background:linear-gradient(135deg,#5B9CF6,#A78BFA);color:white;border:0;border-radius:14px;padding:12px 10px;font-weight:800;font-size:14px;box-shadow:0 8px 22px rgba(91,156,246,.22);">Gerar frase</button><button id="' + LISTEN_ID + '" style="min-width:96px;background:rgba(91,156,246,.18);color:#E8EFF8;border:1px solid rgba(91,156,246,.35);border-radius:14px;padding:12px 10px;font-weight:800;font-size:14px;">Ouvir</button>';
 
     try { field.parentElement.insertBefore(wrap, field); }
     catch(e) { try { card.appendChild(wrap); } catch(_) { return; } }
 
     var btn = document.getElementById(BTN_ID);
+    var listen = document.getElementById(LISTEN_ID);
+
+    listen.onclick = function(){
+      var text = readMainBox() || lastSentence;
+      if (!text) return toast('Gere ou escreva uma frase primeiro.');
+      speak(text);
+    };
+
     btn.onclick = async function(){
       var old = btn.textContent;
       btn.disabled = true;
       btn.style.opacity = '.72';
-      btn.textContent = 'Gerando frase…';
+      btn.textContent = 'Gerando…';
       try {
         var obj = await generateSentence();
-        var ok = fillMainBox(obj.sentence);
-        if (ok) {
-          toast('Frase colocada na caixa do Shadowing.');
-          speak(obj.sentence);
-        } else {
-          toast('Gerei a frase, mas não consegui preencher a caixa automaticamente.');
-        }
+        lastSentence = obj.sentence || '';
+        var ok = fillMainBox(lastSentence);
+        if (ok) toast('Frase colocada na caixa do Shadowing. Toque em Ouvir para escutar.');
+        else toast('Gerei a frase, mas não consegui preencher a caixa automaticamente.');
       } catch(e) {
         var level = getUserLevel();
-        var sentence = fallbackSentence(level);
-        fillMainBox(sentence);
-        speak(sentence);
+        lastSentence = fallbackSentence(level);
+        fillMainBox(lastSentence);
+        toast('Frase colocada na caixa. Toque em Ouvir para escutar.');
       } finally {
         btn.disabled = false;
         btn.style.opacity = '1';
