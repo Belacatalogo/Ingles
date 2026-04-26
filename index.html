@@ -97,7 +97,7 @@ button {
 <script>
 // Register service worker for PWA / offline
 // Versão atual: APP_VERSION é checada e se mudar, força reload + cache clear
-var APP_VERSION = 'v34';
+var APP_VERSION = 'v35';
 var savedVersion = null;
 try { savedVersion = localStorage.getItem('__app_version__'); } catch(e) {}
 
@@ -321,7 +321,7 @@ window.__ttsState = window.__ttsState || {
 </script>
 
 <!-- Avaliação real de pronúncia via Azure Speech (deve carregar antes do bundle) -->
-<script src="azure-pronunciation.js?v=4"></script>
+<script src="azure-pronunciation.js?v=5"></script>
 
 <!-- bundle.js define window.React, window.ReactDOM e window.__AppComponent -->
 <script src="bundle.js?v=33"></script>
@@ -640,6 +640,8 @@ window.__ttsState = window.__ttsState || {
     <div class="__diag_row__"><span>🎤 Modo análise pron.</span><b id="__diag_pron_mode__">—</b></div>
     <div class="__diag_row__"><span>🎙️ Áudio capturado</span><b id="__diag_pron_audio__">—</b></div>
     <div class="__diag_row__"><span>🤖 IA usada</span><b id="__diag_pron_ai__">—</b></div>
+    <div class="__diag_row__"><span>🔑 Azure key ativa</span><b id="__diag_azure_key__">—</b></div>
+    <div class="__diag_row__"><span>🩺 Saúde Azure</span><b id="__diag_azure_health__" style="font-size:9px;max-width:145px;word-break:break-word;">—</b></div>
     <div class="__diag_row__"><span>📊 Último score</span><b id="__diag_pron_score__">—</b></div>
     <div class="__diag_row__"><span>⚠️ Motivo fallback</span><b id="__diag_pron_reason__" style="color:#F59E0B;font-size:9px;max-width:140px;word-break:break-word;">—</b></div>
     <div class="__diag_log__" id="__diag_log__"></div>
@@ -917,7 +919,8 @@ window.__ttsState = window.__ttsState || {
       var el = safeEl('__diag_pron_mode__');
       if (!el) return;
       el.textContent = mode;
-      el.style.color = mode === 'gemini-audio' ? '#34D399'
+      el.style.color = mode === 'azure' ? '#34D399'
+                     : mode === 'gemini-audio' ? '#34D399'
                      : mode === 'gemini-stt'   ? '#F59E0B'
                      : '#F87171';
     },
@@ -944,6 +947,35 @@ window.__ttsState = window.__ttsState || {
       el.textContent = (score !== null && score !== undefined) ? score + '% (' + (source||'?') + ')' : '—';
       el.style.color = score >= 80 ? '#34D399' : score >= 60 ? '#F59E0B' : '#F87171';
     },
+    setAzureKey: function(meta) {
+      var el = safeEl('__diag_azure_key__');
+      if (!el) return;
+      if (!meta) { el.textContent = '—'; el.style.color = ''; return; }
+      var key = meta.keyIndex || meta.activeKeyIndex || '?';
+      var total = meta.resourceCount || '?';
+      var blocked = meta.blockedKeyCount;
+      if (blocked === undefined && Array.isArray(meta.blockedKeys)) blocked = meta.blockedKeys.length;
+      el.textContent = 'key ' + key + '/' + total + (blocked ? ' · ' + blocked + ' pausada(s)' : '');
+      el.style.color = blocked ? '#F59E0B' : '#34D399';
+    },
+    setAzureHealth: function(status) {
+      var el = safeEl('__diag_azure_health__');
+      if (!el) return;
+      if (!status) { el.textContent = '—'; el.style.color = ''; return; }
+      if (status.error) {
+        el.textContent = 'erro: ' + String(status.error).slice(0, 45);
+        el.style.color = '#F87171';
+        return;
+      }
+      var active = status.activeKeyIndex || status.keyIndex || '?';
+      var total = status.resourceCount || '?';
+      var blocked = status.blockedKeyCount;
+      if (blocked === undefined && Array.isArray(status.blockedKeys)) blocked = status.blockedKeys.length;
+      var available = status.availableKeyCount;
+      if (available === undefined && total !== '?' && blocked !== undefined) available = Math.max(0, total - blocked);
+      el.textContent = 'ativa ' + active + '/' + total + ' · disp. ' + (available === undefined ? '?' : available);
+      el.style.color = blocked ? '#F59E0B' : '#34D399';
+    },
     setReason: function(reason) {
       var el = safeEl('__diag_pron_reason__');
       if (!el) return;
@@ -962,6 +994,8 @@ window.__ttsState = window.__ttsState || {
       safeEl('__diag_pron_mode__') && (safeEl('__diag_pron_mode__').style.color = '');
       safeEl('__diag_pron_audio__') && (safeEl('__diag_pron_audio__').textContent = '—');
       safeEl('__diag_pron_ai__') && (safeEl('__diag_pron_ai__').textContent = '—');
+      safeEl('__diag_azure_key__') && (safeEl('__diag_azure_key__').textContent = '—');
+      safeEl('__diag_azure_health__') && (safeEl('__diag_azure_health__').textContent = '—');
       safeEl('__diag_pron_score__') && (safeEl('__diag_pron_score__').textContent = '—');
       safeEl('__diag_pron_reason__') && (safeEl('__diag_pron_reason__').textContent = '—');
     }

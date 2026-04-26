@@ -62,12 +62,105 @@
   // ==========================================================================
   // 2. Token cache (9 min) ===================================================
   // ==========================================================================
-  let _tokenCache = null;          // { token, region, expiresAt }
+  let _tokenCache = null;          // { token, region, keyIndex, resourceCount, blockedKeys, status, expiresAt }
+  let _lastTokenInfo = null;
+  let _lastHealthRefresh = 0;
   const TOKEN_TTL_MS = 9 * 60 * 1000;
+
+  function tokenBaseUrl() {
+    return String(window.__AZURE_TOKEN_URL || '').replace(/\/token(?:[?#].*)?$/, '');
+  }
+
+  function normalizeTokenData(data, now) {
+    const meta = {
+      token: data.token,
+      region: data.region,
+      keyIndex: data.keyIndex || data.activeKeyIndex || 1,
+      activeKeyIndex: data.activeKeyIndex || data.keyIndex || 1,
+      resourceCount: data.resourceCount || 1,
+      blockedKeyCount: data.blockedKeyCount || (Array.isArray(data.blockedKeys) ? data.blockedKeys.length : 0),
+      availableKeyCount: data.availableKeyCount || Math.max(0, (data.resourceCount || 1) - (Array.isArray(data.blockedKeys) ? data.blockedKeys.length : 0)),
+      blockedKeys: Array.isArray(data.blockedKeys) ? data.blockedKeys : [],
+      month: data.month,
+      status: data.status || null,
+      expiresAt: now + TOKEN_TTL_MS,
+    };
+    return meta;
+  }
+
+  function updateAzureDiag(meta, fromCache) {
+    try {
+      if (!meta) return;
+      const label = 'key ' + (meta.keyIndex || meta.activeKeyIndex || '?') + '/' + (meta.resourceCount || '?');
+      if (window.__diagPron && typeof window.__diagPron.setAzureKey === 'function') {
+        window.__diagPron.setAzureKey(meta);
+      }
+      if (window.__diagPron && typeof window.__diagPron.setAzureHealth === 'function') {
+        window.__diagPron.setAzureHealth(meta.status || meta);
+      }
+      if (window.__diag_log) {
+        const paused = meta.blockedKeyCount ? ' · ' + meta.blockedKeyCount + ' pausada(s)' : '';
+        window.__diag_log(fromCache ? 'info' : 'ok', '🔑 Azure token: ' + label + paused + (fromCache ? ' (cache)' : ''));
+      }
+    } catch (_) {}
+  }
+
+  async function refreshAzureHealth(force) {
+    try {
+      const now = Date.now();
+      if (!force && now - _lastHealthRefresh < 30000) return null;
+      _lastHealthRefresh = now;
+      const base = tokenBaseUrl();
+      if (!base) return null;
+      const resp = await fetch(base + '/health', { method: 'GET' });
+      if (!resp.ok) throw new Error('health HTTP ' + resp.status);
+      const status = await resp.json();
+      if (window.__diagPron && typeof window.__diagPron.setAzureHealth === 'function') window.__diagPron.setAzureHealth(status);
+      if (window.__diagPron && typeof window.__diagPron.setAzureKey === 'function') window.__diagPron.setAzureKey(status);
+      if (window.__diag_log) window.__diag_log('info', '🩺 Azure health: ' + (status.activeKeyIndex || '?') + '/' + (status.resourceCount || '?') + ', pausadas=' + (status.blockedKeyCount || 0));
+      return status;
+    } catch (e) {
+      if (window.__diagPron && typeof window.__diagPron.setAzureHealth === 'function') window.__diagPron.setAzureHealth({ error: e.message });
+      if (window.__diag_log) window.__diag_log('warn', '🩺 Azure health falhou: ' + String(e.message || e).slice(0, 70));
+      return null;
+    }
+  }
+  window.__refreshAzureHealth = refreshAzureHealth;
+
+  function shouldReportAzureFailure(reason) {
+    const msg = String(reason || '').toLowerCase();
+    return msg.includes('429') || msg.includes('403') || msg.includes('401') ||
+      msg.includes('quota') || msg.includes('limit') || msg.includes('exceed') ||
+      msg.includes('forbidden') || msg.includes('unauthorized') || msg.includes('subscription') ||
+      msg.includes('billing') || msg.includes('cancelou');
+  }
+
+  async function reportAzureFailure(meta, reason) {
+    try {
+      if (!meta) return null;
+      const base = tokenBaseUrl();
+      if (!base) return null;
+      const resp = await fetch(base + '/azure-failure', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ keyIndex: meta.keyIndex || meta.activeKeyIndex, reason: String(reason || 'azure_failure').slice(0, 200) }),
+      });
+      const data = await resp.json().catch(() => null);
+      if (data && data.status) {
+        if (window.__diagPron && typeof window.__diagPron.setAzureHealth === 'function') window.__diagPron.setAzureHealth(data.status);
+        if (window.__diag_log) window.__diag_log('warn', '🔁 Azure marcou key #' + (meta.keyIndex || '?') + ' e tentou fallback');
+      }
+      return data;
+    } catch (e) {
+      if (window.__diag_log) window.__diag_log('warn', '🔁 Azure fallback falhou: ' + String(e.message || e).slice(0, 70));
+      return null;
+    }
+  }
 
   async function getAzureToken() {
     const now = Date.now();
     if (_tokenCache && _tokenCache.expiresAt > now) {
+      updateAzureDiag(_tokenCache, true);
       return _tokenCache;
     }
     const url = window.__AZURE_TOKEN_URL;
@@ -80,11 +173,9 @@
     if (!data || !data.token || !data.region) {
       throw new Error('Resposta de token inválida: ' + JSON.stringify(data).slice(0, 100));
     }
-    _tokenCache = {
-      token: data.token,
-      region: data.region,
-      expiresAt: now + TOKEN_TTL_MS,
-    };
+    _tokenCache = normalizeTokenData(data, now);
+    _lastTokenInfo = _tokenCache;
+    updateAzureDiag(_tokenCache, false);
     return _tokenCache;
   }
 
@@ -303,7 +394,8 @@
   // 7. Núcleo: avaliar com SDK ==============================================
   // ==========================================================================
   async function runAzureAssessment(SDK, audioConfig, expectedText) {
-    const { token, region } = await getAzureToken();
+    const azureMeta = await getAzureToken();
+    const { token, region } = azureMeta;
     const speechConfig = SDK.SpeechConfig.fromAuthorizationToken(token, region);
     speechConfig.speechRecognitionLanguage = 'en-US';
 
@@ -337,10 +429,33 @@
         SDK.PropertyId.SpeechServiceResponse_JsonResult
       );
       const parsed = JSON.parse(raw);
-      return buildResultFromAzureJSON(parsed, expectedText);
+      const built = buildResultFromAzureJSON(parsed, expectedText);
+      built._azureMeta = azureMeta;
+      return built;
     } finally {
       try { recognizer.close(); } catch (_) {}
     }
+  }
+
+  async function runAzureAssessmentWithRetry(SDK, makeAudioConfig, expectedText) {
+    let lastErr = null;
+    let attempts = Math.max(1, (_lastTokenInfo && _lastTokenInfo.resourceCount) || 2);
+    for (let i = 0; i < attempts; i++) {
+      try {
+        const audioConfig = makeAudioConfig();
+        const result = await runAzureAssessment(SDK, audioConfig, expectedText);
+        if (result && result._azureMeta) updateAzureDiag(result._azureMeta, false);
+        return result;
+      } catch (err) {
+        lastErr = err;
+        const reason = err && err.message ? err.message : String(err);
+        if (!shouldReportAzureFailure(reason)) throw err;
+        await reportAzureFailure(_lastTokenInfo, reason);
+        _tokenCache = null;
+        await refreshAzureHealth(true);
+      }
+    }
+    throw lastErr || new Error('Azure falhou em todas as keys');
   }
 
   // ==========================================================================
@@ -366,8 +481,7 @@
       try { stream.getTracks().forEach(t => t.stop()); } catch (_) {}
       stream = null;
 
-      const audioConfig = SDK.AudioConfig.fromDefaultMicrophoneInput();
-      const result = await runAzureAssessment(SDK, audioConfig, fraseEsperada);
+      const result = await runAzureAssessmentWithRetry(SDK, () => SDK.AudioConfig.fromDefaultMicrophoneInput(), fraseEsperada);
 
       // Enriquecer com Gemini (se chave disponível)
       try {
@@ -400,18 +514,14 @@
       // 1) decode + resample
       const pcm16 = await decodeToPCM16k(audioBase64, audioMime || 'audio/webm');
 
-      // 2) push stream PCM 16k 16bit mono
-      const fmt = SDK.AudioStreamFormat.getWaveFormatPCM(16000, 16, 1);
-      const pushStream = SDK.AudioInputStream.createPushStream(fmt);
-
-      // pushStream.write aceita ArrayBuffer
-      pushStream.write(pcm16.buffer);
-      pushStream.close();
-
-      const audioConfig = SDK.AudioConfig.fromStreamInput(pushStream);
-
-      // 3) recognize + assess
-      const result = await runAzureAssessment(SDK, audioConfig, fraseEsperada);
+      // 2) recognize + assess com retry entre keys Azure
+      const result = await runAzureAssessmentWithRetry(SDK, () => {
+        const fmt = SDK.AudioStreamFormat.getWaveFormatPCM(16000, 16, 1);
+        const pushStream = SDK.AudioInputStream.createPushStream(fmt);
+        pushStream.write(pcm16.buffer.slice(0));
+        pushStream.close();
+        return SDK.AudioConfig.fromStreamInput(pushStream);
+      }, fraseEsperada);
 
       // 4) enriquecer com Gemini
       try {
@@ -428,6 +538,7 @@
           window.__diagPron.setAI('azure-speech');
           window.__diagPron.setScore(result.score, 'azure');
           window.__diagPron.setReason(null);
+          if (typeof window.__diagPron.setAzureKey === 'function' && result._azureMeta) window.__diagPron.setAzureKey(result._azureMeta);
         }
       } catch (_) {}
 
@@ -544,6 +655,8 @@ Inclua tip para CADA palavra listada. Tips devem ser frases CURTAS e ACIONÁVEIS
   } else {
     setTimeout(() => { loadAzureSDK().catch(() => {}); }, 3000);
   }
+
+  setTimeout(() => refreshAzureHealth(true), 800);
 
   console.log('[Azure-Pron] módulo carregado. URL token =', window.__AZURE_TOKEN_URL);
 })();
