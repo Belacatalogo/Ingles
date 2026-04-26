@@ -1,6 +1,17 @@
 // Fluency Service Worker — offline cache
-const CACHE = "fluency-v29";
-const STATIC = ["./", "./index.html", "./bundle.js", "./manifest.json", "./icon-192.png", "./icon-512.png", "./apple-touch-icon.png", "./azure-pronunciation.js"];
+const CACHE = "fluency-v35-shadowing-ai";
+const STATIC = [
+  "./",
+  "./index.html",
+  "./bundle.js",
+  "./manifest.json",
+  "./icon-192.png",
+  "./icon-512.png",
+  "./apple-touch-icon.png",
+  "./azure-pronunciation.js",
+  "./azure-pronunciation-core.js",
+  "./shadowing-ai.js"
+];
 
 self.addEventListener("install", e => {
   e.waitUntil(
@@ -20,7 +31,6 @@ self.addEventListener("activate", e => {
   );
 });
 
-// Permitir que o cliente force ativação imediata
 self.addEventListener("message", e => {
   if (e.data && e.data.type === "SKIP_WAITING") {
     self.skipWaiting();
@@ -30,7 +40,6 @@ self.addEventListener("message", e => {
 self.addEventListener("fetch", e => {
   const url = new URL(e.request.url);
 
-  // Para HTML, JS e CSS: SEMPRE network-first (evita servir versão velha do bundle)
   const isAppAsset = url.pathname.endsWith('.html') ||
                      url.pathname.endsWith('.js') ||
                      url.pathname.endsWith('.css') ||
