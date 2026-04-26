@@ -3,9 +3,9 @@
   'use strict';
   if (window.__fluencyAzureLoaderLoaded) return;
   window.__fluencyAzureLoaderLoaded = true;
-  var guard = 'audio-volume-guard.js?v=1';
+  var guard = 'audio-volume-guard.js?v=2';
   var core = 'azure-pronunciation-core.js?v=5';
-  var shadow = 'shadowing-ai.js?v=2';
+  var shadow = 'shadowing-ai.js?v=3';
   if (document.readyState === 'loading') {
     document.write('<script src="' + guard + '"><\/script><script src="' + core + '"><\/script><script src="' + shadow + '"><\/script>');
   } else {
