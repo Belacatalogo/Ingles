@@ -1356,7 +1356,7 @@ lucide-react/dist/esm/lucide-react.mjs:
     if(window.__fluencyGeminiLessonKeyV11Schema) return;
     window.__fluencyGeminiLessonKeyV11Schema = true;
 
-    var VERSION = "V11-GEMINI-SCHEMA";
+    var VERSION = "V11.1-PROFUNDO";
     var LESSON_KEY_STORAGE = "fluency_lessonGeminiApiKey";
     var LESSON_MODEL_STORAGE = "fluency_lessonGeminiModel";
     var DIAG_KEY = "fluency_lessonGenerationDiag";
@@ -1384,7 +1384,7 @@ lucide-react/dist/esm/lucide-react.mjs:
           root = document.createElement("div");
           root.id = "__fluency_lesson_key_v11_panel__";
           root.style.cssText = "margin-top:10px;padding-top:10px;border-top:1px solid rgba(148,163,184,.25);font-size:13px;line-height:1.38;color:#dbeafe;max-height:310px;overflow:auto;";
-          root.innerHTML = "<div style='font-weight:900;color:#86efac;margin-bottom:6px'>Aulas IA — GEMINI KEY DE AULAS V11 SCHEMA ATIVO</div>";
+          root.innerHTML = "<div style='font-weight:900;color:#86efac;margin-bottom:6px'>Aulas IA — V11.1 PROFUNDO ATIVO</div>";
           p.appendChild(root);
         }
         var color = "#dbeafe";
@@ -1534,54 +1534,95 @@ lucide-react/dist/esm/lucide-react.mjs:
 
     var QUALITY_INSTRUCTION =
       "\n\n" +
-      "GERE A AULA EXATAMENTE NO JSON DO SCHEMA.\n" +
-      "Atenção: o app só mostra a aula completa se sections, vocabulary e exercises forem ARRAYS reais.\n" +
-      "Não coloque conteúdo de seções dentro da introdução. Não coloque exercícios em texto corrido.\n" +
-      "Quantidades obrigatórias:\n" +
-      "- sections: exatamente 4 objetos.\n" +
-      "- cada section: content com 450 a 900 caracteres e examples com exatamente 4 objetos {en, pt}.\n" +
-      "- vocabulary: exatamente 10 objetos.\n" +
-      "- exercises: exatamente 10 objetos.\n" +
-      "- tips: exatamente 5 strings.\n" +
-      "- intro: 500 a 900 caracteres.\n" +
-      "- finalTip: 350 a 700 caracteres.\n" +
-      "Responda só JSON. Sem markdown. Sem comentários fora do JSON.\n" +
-      "Use português brasileiro nas explicações e exemplos em inglês com tradução.\n";
+      "===== INSTRUÇÕES DE PROFUNDIDADE OBRIGATÓRIAS V11.1 =====\n" +
+      "Esta é uma aula PAGA para um aluno brasileiro. Conteúdo raso é INACEITÁVEL.\n" +
+      "O aluno precisa SAIR DESTA AULA TENDO APRENDIDO de verdade — não apenas vendo um resumo motivacional.\n" +
+      "\n" +
+      "ESTRUTURA OBRIGATÓRIA (cumpra TODOS os mínimos):\n" +
+      "- title: específico e descritivo (mínimo 15 caracteres).\n" +
+      "- subtitle: curto, em inglês ou português (10 a 60 caracteres).\n" +
+      "- estimatedMinutes: número entre 20 e 35.\n" +
+      "- intro: ENTRE 700 E 1100 CARACTERES. Mínimo 5 frases. Deve apresentar o tópico, explicar POR QUE é importante na vida real do aluno, dar contexto cultural quando relevante, e antecipar o que será aprendido. NUNCA use frases motivacionais genéricas como ponto principal.\n" +
+      "- sections: EXATAMENTE 4 objetos. Cada section deve ENSINAR ALGO REAL com profundidade:\n" +
+      "    * heading: título descritivo e específico (mínimo 8 caracteres). Não use 'Introdução' ou 'Conclusão'.\n" +
+      "    * content: ENTRE 800 E 1400 CARACTERES. Mínimo 6 frases completas. Deve incluir: regra/conceito principal explicado em detalhe, exceções ou casos especiais, comparação com o português quando útil, contextos de uso real, e armadilhas comuns para brasileiros. PROIBIDO escrever parágrafos genéricos.\n" +
+      "    * examples: EXATAMENTE 4 objetos {en, pt}. Cada exemplo deve ser uma frase REAL e CONTEMPORÂNEA (não 'The cat is on the mat'). Use situações cotidianas: trabalho, viagem, conversas, redes sociais.\n" +
+      "- vocabulary: EXATAMENTE 10 objetos. Cada um com:\n" +
+      "    * word: palavra ou expressão útil (não pode repetir).\n" +
+      "    * pos: parte do discurso (noun, verb, adj, adv, phrase, idiom).\n" +
+      "    * translation: tradução natural em PT-BR.\n" +
+      "    * example: frase EM INGLÊS de exemplo (mínimo 25 caracteres) mostrando uso real e contextual.\n" +
+      "- exercises: EXATAMENTE 10 objetos. VARIEDADE OBRIGATÓRIA: pelo menos 4 do tipo 'choice' (com 4 options), 2 do tipo 'fill', 2 do tipo 'translate', 2 livres. Cada exercício:\n" +
+      "    * question: enunciado em PT-BR explicando o que fazer (mínimo 25 caracteres). Pode citar frase em inglês entre aspas.\n" +
+      "    * options: array de 4 strings (apenas para 'choice'). Para outros tipos, array vazio.\n" +
+      "    * answer: resposta correta exata.\n" +
+      "    * explanation: ENTRE 80 E 250 CARACTERES explicando POR QUÊ a resposta está correta, qual a regra aplicada, e o erro comum a evitar. PROIBIDO explicações de uma linha.\n" +
+      "- tips: EXATAMENTE 5 strings. Cada uma entre 60 e 200 caracteres. Devem ser DICAS PRÁTICAS E CONCRETAS, não generalidades. Ex: 'Em inglês falado, americanos contraem >to be< quase sempre — diga >I''m< e não >I am<, exceto para ênfase.' NÃO use dicas vazias como 'pratique todo dia'.\n" +
+      "- finalTip: ENTRE 80 E 180 CARACTERES. Curto, encorajador, ESPECÍFICO ao tópico aprendido. NUNCA texto motivacional genérico longo.\n" +
+      "\n" +
+      "REGRAS ANTI-RASA (violação = aula rejeitada):\n" +
+      "1. NÃO use frases motivacionais como recheio. Substitua por explicação técnica + exemplo.\n" +
+      "2. NÃO repita o mesmo exemplo em campos diferentes.\n" +
+      "3. CADA section.content precisa ter no mínimo 6 frases REAIS sobre o tópico — não 3 frases longas com vírgulas.\n" +
+      "4. As explicações dos exercícios são ONDE o aluno aprende mais — escreva-as como um professor explicaria, com clareza e contexto.\n" +
+      "5. Use português brasileiro NATURAL (não traduzido literalmente do inglês).\n" +
+      "6. Os exemplos em inglês devem refletir o inglês como é falado HOJE (americano ou britânico moderno).\n" +
+      "\n" +
+      "FORMATO DE RESPOSTA: Responda APENAS o JSON da aula. Sem markdown, sem ```json, sem comentários, sem texto antes ou depois. Comece com { e termine com }.\n" +
+      "===============================================\n";
 
     function enhanceBody(raw, attempt){
       try{
         var obj = JSON.parse(raw || "{}");
-        var added = false;
 
-        function walk(x){
-          if(!x || added) return;
-          if(Array.isArray(x)){ for(var i=0;i<x.length;i++) walk(x[i]); return; }
-          if(typeof x === "object"){
-            if(typeof x.text === "string" && /aula|li[cç][aã]o|lesson|grammar|gram[áa]tica|exerc|vocabul|sections/i.test(x.text)){
-              x.text += QUALITY_INSTRUCTION;
-              if(attempt > 1){
-                x.text += "\nA tentativa anterior foi rejeitada por falta de arrays ou poucos exemplos. Corrija: 4 sections, 4 examples por section, 10 exercises, 10 vocabulary.\n";
+        // Em vez de SUBSTITUIR o prompt original com walk(), ACRESCENTAMOS
+        // a instrução de profundidade ao final do último parts[].text.
+        // Isso preserva todo o prompt rico do Jp (ANTI-RASA, contexto, histórico).
+        var instruction = QUALITY_INSTRUCTION;
+        if(attempt > 1){
+          instruction += "\n\n=== ATENÇÃO: TENTATIVA " + attempt + " ===\n" +
+            "A tentativa anterior FALHOU porque o conteúdo veio raso ou incompleto.\n" +
+            "Os campos content, intro, explanation e tips ESTAVAM CURTOS demais.\n" +
+            "Agora EXPANDA cada seção: pelo menos 6 frases por content, intro com 5+ frases reais, explicações de exercício com pelo menos 80 caracteres cada.\n" +
+            "Não escreva texto motivacional como recheio. Encha com EXPLICAÇÃO TÉCNICA e EXEMPLOS REAIS.\n";
+        }
+        if(attempt >= 3){
+          instruction += "\n\n=== ÚLTIMA CHANCE ===\n" +
+            "Esta é a tentativa " + attempt + " de 5. Aulas rasas serão rejeitadas e você não receberá nova chance.\n" +
+            "Triplique a profundidade dos campos content em cada section. Cada explanation de exercício deve ser um pequeno parágrafo explicando A REGRA + O ERRO COMUM.\n";
+        }
+
+        // Acrescenta ao último text de contents (preserva system_instruction e prompt original).
+        var appended = false;
+        if(Array.isArray(obj.contents) && obj.contents.length){
+          for(var ci = obj.contents.length - 1; ci >= 0 && !appended; ci--){
+            var c = obj.contents[ci];
+            if(c && Array.isArray(c.parts) && c.parts.length){
+              for(var pi = c.parts.length - 1; pi >= 0 && !appended; pi--){
+                if(typeof c.parts[pi].text === "string"){
+                  c.parts[pi].text += instruction;
+                  appended = true;
+                }
               }
-              added = true;
-              return;
             }
-            Object.keys(x).forEach(function(k){walk(x[k])});
           }
         }
-
-        walk(obj);
-        if(!added){
+        if(!appended){
           obj.contents = obj.contents || [];
-          obj.contents.push({role:"user", parts:[{text:QUALITY_INSTRUCTION}]});
+          obj.contents.push({role:"user", parts:[{text:instruction}]});
         }
 
+        // generationConfig ajustado: temperatura mais alta para prosa rica,
+        // sem responseSchema rígido (estava forçando o Gemini a "preencher buracos"
+        // em vez de escrever conteúdo profundo).
         obj.generationConfig = obj.generationConfig || {};
-        obj.generationConfig.temperature = 0.55;
-        obj.generationConfig.maxOutputTokens = Math.max(Number(obj.generationConfig.maxOutputTokens || 0), 12000);
+        obj.generationConfig.temperature = attempt === 1 ? 0.85 : 0.75;
+        obj.generationConfig.topP = 0.95;
+        obj.generationConfig.maxOutputTokens = Math.max(Number(obj.generationConfig.maxOutputTokens || 0), 24000);
         obj.generationConfig.responseMimeType = "application/json";
-        obj.generationConfig.responseSchema = lessonSchema;
 
-        // Remove configs que podem conflitar com JSON schema
+        // REMOVE responseSchema — schema rígido estava limitando profundidade.
+        try{ delete obj.generationConfig.responseSchema; }catch(_){}
         try{ delete obj.generationConfig.stopSequences; }catch(_){}
 
         return JSON.stringify(obj);
@@ -1709,24 +1750,51 @@ lucide-react/dist/esm/lucide-react.mjs:
       var all = "";
       try{all = JSON.stringify(lesson)}catch(_){}
 
-      if(!lesson.title || String(lesson.title).trim().length < 8) errors.push("title curto");
-      if(!lesson.intro || String(lesson.intro).trim().length < 450) errors.push("intro curta");
-      if(!Array.isArray(lesson.sections) || lesson.sections.length < 4) errors.push("sections precisa ter 4+ itens");
-      lesson.sections.slice(0,4).forEach(function(s,i){
-        if(!s.heading || String(s.heading).trim().length < 4) errors.push("section "+(i+1)+" sem heading");
-        if(!s.content || String(s.content).trim().length < 350) errors.push("section "+(i+1)+" content curto");
-        if(!Array.isArray(s.examples) || s.examples.length < 4) errors.push("section "+(i+1)+" com poucos exemplos");
-        (s.examples||[]).slice(0,4).forEach(function(ex,j){
-          if(!ex || !ex.en || !ex.pt) errors.push("section "+(i+1)+" example "+(j+1)+" incompleto");
+      if(!lesson.title || String(lesson.title).trim().length < 12) errors.push("title curto (<12)");
+      if(!lesson.intro || String(lesson.intro).trim().length < 600) errors.push("intro rasa (<600 chars)");
+
+      if(!Array.isArray(lesson.sections) || lesson.sections.length < 4) errors.push("sections precisa ter exatamente 4 itens");
+      var sectionsToCheck = (lesson.sections || []).slice(0, 4);
+      sectionsToCheck.forEach(function(s, i){
+        if(!s.heading || String(s.heading).trim().length < 6) errors.push("section " + (i+1) + " sem heading válido");
+        // EXIGÊNCIA REAL: content precisa ter no mínimo 600 chars (era 350, que aceitava lixo).
+        if(!s.content || String(s.content).trim().length < 600) errors.push("section " + (i+1) + " content raso (<600 chars)");
+        if(!Array.isArray(s.examples) || s.examples.length < 4) errors.push("section " + (i+1) + " com poucos exemplos (<4)");
+        (s.examples || []).slice(0, 4).forEach(function(ex, j){
+          if(!ex || !ex.en || !ex.pt) errors.push("section " + (i+1) + " example " + (j+1) + " incompleto");
+          else if(String(ex.en).trim().length < 8 || String(ex.pt).trim().length < 8) errors.push("section " + (i+1) + " example " + (j+1) + " curto demais");
         });
       });
-      if(!Array.isArray(lesson.vocabulary) || lesson.vocabulary.length < 8) errors.push("vocabulary precisa ter 8+ itens");
-      if(!Array.isArray(lesson.exercises) || lesson.exercises.length < 8) errors.push("exercises precisa ter 8+ itens");
-      if(!Array.isArray(lesson.tips) || lesson.tips.length < 3) errors.push("tips precisa ter 3+ itens");
-      if(!lesson.finalTip || String(lesson.finalTip).trim().length < 250) errors.push("finalTip curto");
-      if(all.length < 4500) errors.push("JSON total menor que 4500 caracteres");
 
-      return {ok:errors.length === 0, errors:errors, length:all.length, lesson:lesson};
+      if(!Array.isArray(lesson.vocabulary) || lesson.vocabulary.length < 10) errors.push("vocabulary precisa ter 10 itens");
+      (lesson.vocabulary || []).forEach(function(v, i){
+        if(!v || !v.word || !v.translation || !v.example) errors.push("vocabulary " + (i+1) + " incompleto");
+        else if(String(v.example).trim().length < 15) errors.push("vocabulary " + (i+1) + " example curto");
+      });
+
+      if(!Array.isArray(lesson.exercises) || lesson.exercises.length < 10) errors.push("exercises precisa ter 10 itens");
+      (lesson.exercises || []).forEach(function(ex, i){
+        if(!ex || !ex.question || !ex.answer || !ex.explanation) errors.push("exercise " + (i+1) + " incompleto");
+        else {
+          if(String(ex.question).trim().length < 15) errors.push("exercise " + (i+1) + " question curta");
+          // ESSENCIAL: explicação rica é onde o aluno aprende.
+          if(String(ex.explanation).trim().length < 60) errors.push("exercise " + (i+1) + " explanation rasa (<60 chars)");
+        }
+      });
+
+      if(!Array.isArray(lesson.tips) || lesson.tips.length < 5) errors.push("tips precisa ter 5 itens");
+      (lesson.tips || []).forEach(function(t, i){
+        if(!t || String(t).trim().length < 50) errors.push("tip " + (i+1) + " rasa (<50 chars)");
+      });
+
+      // finalTip CURTA — antes era 350-700, agora 60-220 para parar de roubar a tela.
+      if(!lesson.finalTip || String(lesson.finalTip).trim().length < 60) errors.push("finalTip curta");
+      if(lesson.finalTip && String(lesson.finalTip).trim().length > 250) errors.push("finalTip longa demais (>250) — deve ser concisa");
+
+      // Tamanho total mínimo: aulas profundas ficam em ~12000+ chars.
+      if(all.length < 9000) errors.push("JSON total muito pequeno (<9000) — aula rasa");
+
+      return {ok: errors.length === 0, errors: errors, length: all.length, lesson: lesson};
     }
 
     function replaceGeminiResponseWithLesson(originalApiText, lesson){
@@ -1753,21 +1821,39 @@ lucide-react/dist/esm/lucide-react.mjs:
     function purgeShortLessons(){
       try{
         var removed = 0;
-        for(var i=localStorage.length-1;i>=0;i--){
+        for(var i = localStorage.length - 1; i >= 0; i--){
           var k = localStorage.key(i);
           if(!k || (k.indexOf("fluency_lesson_") !== 0 && k.indexOf("fluency_lesson_v") !== 0)) continue;
           try{
             var v = JSON.parse(localStorage.getItem(k) || "null");
-            var bad = !v || v._fallback || !v.title || !v.intro || String(v.intro).length < 100 ||
-              !Array.isArray(v.sections) || v.sections.length < 3 ||
-              !Array.isArray(v.exercises) || v.exercises.length < 5 ||
-              !Array.isArray(v.vocabulary) || v.vocabulary.length < 5;
-            if(bad){localStorage.removeItem(k); removed++}
-          }catch(_){}
+            // Critérios MUITO mais rigorosos: alinhados com a nova validação V11.1.
+            var bad = !v || v._fallback ||
+              !v.title || String(v.title).length < 10 ||
+              !v.intro || String(v.intro).length < 500 ||
+              !Array.isArray(v.sections) || v.sections.length < 4 ||
+              !v.sections.every(function(s){
+                return s && s.heading && s.content &&
+                  String(s.content).length >= 500 &&
+                  Array.isArray(s.examples) && s.examples.length >= 3;
+              }) ||
+              !Array.isArray(v.exercises) || v.exercises.length < 8 ||
+              !v.exercises.every(function(e){
+                return e && e.question && e.answer && e.explanation &&
+                  String(e.explanation).length >= 50;
+              }) ||
+              !Array.isArray(v.vocabulary) || v.vocabulary.length < 8 ||
+              !Array.isArray(v.tips) || v.tips.length < 4 ||
+              JSON.stringify(v).length < 8000;
+            if(bad){ localStorage.removeItem(k); removed++; }
+          }catch(_){
+            try{ localStorage.removeItem(k); removed++; }catch(__){}
+          }
         }
-        if(removed) diag("cache_limpo", "Removi " + removed + " aula(s) curtas/incompletas salvas no cache.");
+        if(removed) diag("cache_limpo", "V11.1: removi " + removed + " aula(s) rasa(s) do cache. Próxima geração será profunda.");
       }catch(_){}
     }
+    // Expor globalmente para outros patches usarem.
+    try{ window.__fluencyPurgeIncompleteLessons = purgeShortLessons; }catch(_){}
 
     purgeShortLessons();
 
@@ -1801,9 +1887,9 @@ lucide-react/dist/esm/lucide-react.mjs:
         diag("inicio", "Gerando aula com responseSchema e modelo forçado " + model + ". Flash-lite foi desativado para aulas.", {model:model});
 
         var last = "";
-        for(var attempt=1; attempt<=4; attempt++){
+        for(var attempt=1; attempt<=5; attempt++){
           try{
-            diag("tentativa", "Tentativa " + attempt + "/4 com JSON schema. Pode demorar até 4 minutos.", {attempt:attempt, model:model});
+            diag("tentativa", "Tentativa " + attempt + "/5 (V11.1 modo profundo). Pode levar até 4 minutos por tentativa.", {attempt:attempt, model:model});
             var clean = cleanInit(init, body, attempt);
             var res = await fetchWithLongTimeout(realFetch, lessonUrl, clean, 240000);
 
@@ -1815,22 +1901,22 @@ lucide-react/dist/esm/lucide-react.mjs:
 
               if(validation.ok){
                 var fixedApiText = replaceGeminiResponseWithLesson(txt, validation.lesson);
-                diag("ok", "Aula aprovada com schema. Sections: " + validation.lesson.sections.length + ", exercícios: " + validation.lesson.exercises.length + ", vocabulário: " + validation.lesson.vocabulary.length + ", tamanho: " + validation.length + ".", {length:validation.length, model:model});
+                diag("ok", "Aula APROVADA com profundidade. Sections: " + validation.lesson.sections.length + ", exercícios: " + validation.lesson.exercises.length + ", vocabulário: " + validation.lesson.vocabulary.length + ", tamanho: " + validation.length + " chars (mín 9000).", {length:validation.length, model:model});
                 return makeResponseFromText(fixedApiText, 200);
               }
 
               last = validation.errors.slice(0,5).join("; ");
-              diag("aula_rejeitada", "Resposta rejeitada mesmo com schema: " + last + ". Tentarei novamente.", {attempt:attempt, length:validation.length});
-              if(attempt < 4){ await sleep(1600); continue; }
-              return makeErrorResponse(422, "A Gemini respondeu, mas a estrutura ainda veio incompleta: " + last);
+              diag("aula_rejeitada", "Aula rasa rejeitada (tentativa " + attempt + "/5): " + last + ". Pedindo expansão.", {attempt:attempt, length:validation.length});
+              if(attempt < 5){ await sleep(1600); continue; }
+              return makeErrorResponse(422, "A IA não conseguiu gerar uma aula profunda após 5 tentativas: " + last);
             }
 
             var raw = await responseText(res);
             var c = classify(res && res.status, raw);
             last = c.msg;
-            diag("erro_api", "Erro na Gemini key de aulas: " + c.msg + ". " + (attempt < 4 ? "Vou tentar novamente." : "Sem mais tentativas."), {attempt:attempt, statusCode:res && res.status});
+            diag("erro_api", "Erro na Gemini key de aulas: " + c.msg + ". " + (attempt < 5 ? "Vou tentar novamente." : "Sem mais tentativas."), {attempt:attempt, statusCode:res && res.status});
 
-            if((c.type === "unavailable" || c.type === "timeout" || c.type === "network") && attempt < 4){
+            if((c.type === "unavailable" || c.type === "timeout" || c.type === "network") && attempt < 5){
               await sleep(2500 * attempt);
               continue;
             }
@@ -1838,17 +1924,28 @@ lucide-react/dist/esm/lucide-react.mjs:
           }catch(e){
             var c2 = classify(0, "", e);
             last = c2.msg;
-            diag("erro_rede", "Falha/timeout na geração da aula: " + c2.msg + ". " + (attempt < 4 ? "Vou tentar novamente." : "Sem mais tentativas."), {attempt:attempt});
-            if(attempt < 4){ await sleep(2500 * attempt); continue; }
+            diag("erro_rede", "Falha/timeout na geração da aula: " + c2.msg + ". " + (attempt < 5 ? "Vou tentar novamente." : "Sem mais tentativas."), {attempt:attempt});
+            if(attempt < 5){ await sleep(2500 * attempt); continue; }
           }
         }
-        return makeErrorResponse(500, "Não consegui gerar aula completa com schema. Último erro: " + (last || "sem detalhe"));
+        return makeErrorResponse(500, "Não consegui gerar aula profunda após 5 tentativas. Último erro: " + (last || "sem detalhe"));
       };
     }
 
+    // Expor validador global para que __LQ (no fluxo principal) também rejeite aulas rasas
+    // — assim o app não exibe aula com sections curtas mesmo se o cache for de outro fluxo.
+    try{
+      window.__fluencyLessonIsComplete = function(lesson){
+        try{
+          var v = validateLessonObject(lesson);
+          return !!(v && v.ok);
+        }catch(_){ return false; }
+      };
+    }catch(_){}
+
     setTimeout(function(){
       var hasKey = !!getLessonKey();
-      diag("patch_v11_ativo", "PATCH V11 ativo. Key de aulas: " + (hasKey ? "configurada" : "não configurada") + ". Modelo forçado: gemini-2.5-flash. Agora usa responseSchema.", {hasLessonKey:hasKey, model:getLessonModel()});
+      diag("patch_v11_1_ativo", "PATCH V11.1 PROFUNDO ativo. Key de aulas: " + (hasKey ? "configurada" : "não configurada") + ". Modelo: gemini-2.5-flash. Sem schema rígido (gera prosa rica). Validação: content ≥600, intro ≥600, explanations ≥60, finalTip ≤250.", {hasLessonKey:hasKey, model:getLessonModel()});
     }, 1200);
 
   }catch(e){
