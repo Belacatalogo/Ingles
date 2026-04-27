@@ -1,3 +1,28 @@
+/* === FLUENCY PATCH V19.2 - RELAY DEFINITIVO DA KEY EXCLUSIVA PARA AULAS === */
+;(function(){
+  try{
+    if(window.__fluencyLessonKeyRelayV192) return;
+    window.__fluencyLessonKeyRelayV192 = true;
+    var VERSION='V19.2-LESSON-KEY-RELAY';
+    var ALIASES=['fluency_lessonGeminiApiKey','fluency_lessonGeminiKey','lessonGeminiApiKey','lessonGeminiKey','fluency_geminiLessonKey','fluency_proLessonGeminiApiKey','fluency_aulasGeminiKey','fluency_lesson_key','fluency_lesson_api_key'];
+    function isAlias(k){return ALIASES.indexOf(String(k||''))!==-1;}
+    function clean(v){v=String(v||'').trim();if(!v)return '';try{if((v[0]==='"'&&v[v.length-1]==='"')||v[0]==='{'||v[0]==='['){var p=JSON.parse(v);if(typeof p==='string')v=p;else if(p&&typeof p.key==='string')v=p.key;else if(p&&typeof p.apiKey==='string')v=p.apiKey;}}catch(_){}return String(v||'').replace(/\s+/g,'').trim();}
+    function valid(k){k=clean(k);return /^AIza[0-9A-Za-z_\-]{20,}$/.test(k);}
+    function mask(k){k=clean(k);return k?k.slice(0,8)+'...'+k.slice(-4):'';}
+    var nativeGet=Storage.prototype.getItem,nativeSet=Storage.prototype.setItem;
+    function scan(storage){try{for(var i=0;i<ALIASES.length;i++){var v=clean(nativeGet.call(storage,ALIASES[i]));if(valid(v))return v;}}catch(_){}return '';}
+    function getKey(){var k='';try{k=scan(localStorage)||scan(sessionStorage);}catch(_){}return valid(k)?k:'';}
+    function sync(k){k=clean(k||getKey());if(!valid(k))return '';try{for(var i=0;i<ALIASES.length;i++)nativeSet.call(localStorage,ALIASES[i],k);}catch(_){}try{for(var j=0;j<ALIASES.length;j++)nativeSet.call(sessionStorage,ALIASES[j],k);}catch(_){}try{nativeSet.call(localStorage,'fluency___lessonKeySavedAt',String(Date.now()));}catch(_){}return k;}
+    if(getKey())sync(getKey());
+    window.__fluencyGetLessonKeyV192=function(){return getKey();};
+    window.__fluencySetLessonKeyV192=function(k){return sync(k);};
+    window.__fluencyLessonKeyStatusV192=function(){var k=getKey();return {configured:!!k,masked:mask(k),aliases:ALIASES.slice()};};
+    if(nativeGet&&!Storage.prototype.getItem.__fluencyLessonKeyRelayV192){Storage.prototype.getItem=function(k){var v=nativeGet.apply(this,arguments);try{if(isAlias(k)){var c=clean(v);if(valid(c))return c;var r=getKey();if(valid(r))return r;}}catch(_){}return v;};Storage.prototype.getItem.__fluencyLessonKeyRelayV192=true;}
+    if(nativeSet&&!Storage.prototype.setItem.__fluencyLessonKeyRelayV192){Storage.prototype.setItem=function(k,v){try{if(isAlias(k)){var c=clean(v);if(valid(c)){var r=nativeSet.apply(this,[k,c]);sync(c);return r;}}}catch(_){}return nativeSet.apply(this,arguments);};Storage.prototype.setItem.__fluencyLessonKeyRelayV192=true;}
+    function diag(msg,kind){try{var els=[].slice.call(document.querySelectorAll('div'));var p=els.find(function(el){var t=el.innerText||'';return t.indexOf('Vozes carregadas')!==-1&&t.indexOf('Saúde Azure')!==-1;});if(!p)return;var root=document.getElementById('__fluency_lesson_key_v192_diag__');if(!root){root=document.createElement('div');root.id='__fluency_lesson_key_v192_diag__';root.style.cssText='margin-top:10px;padding-top:10px;border-top:1px solid rgba(148,163,184,.25);font-size:13px;line-height:1.35;color:#dbeafe;';root.innerHTML="<div style='font-weight:900;color:#86efac;margin-bottom:6px'>Chave de Aulas — V19.2 RELAY ATIVO</div>";p.appendChild(root);}var row=document.createElement('div');row.style.color=kind==='ok'?'#86efac':kind==='warn'?'#fbbf24':'#93c5fd';row.textContent=new Date().toLocaleTimeString()+' '+VERSION+': '+msg;root.insertBefore(row,root.children[1]||null);while(root.children.length>12)root.removeChild(root.lastChild);}catch(_){} }
+    setTimeout(function(){var k=sync();diag(k?'key detectada e entregue para V15: '+mask(k):'nenhuma key de aulas encontrada nos aliases.',k?'ok':'warn');},1000);
+  }catch(e){try{console.warn('Fluency V19.2 lesson key relay failed',e)}catch(_){}}
+})();
 /* === FLUENCY PATCH V18 - RENDERIZAÇÃO COMPLETA DA AULA NA ABA AULA === */
 ;(function(){
   try{
@@ -2450,7 +2475,7 @@ lucide-react/dist/esm/lucide-react.mjs:
     function ntime(){try{return new Date().toLocaleTimeString()}catch(_){return String(Date.now())}}
     function panel(){try{var els=[].slice.call(document.querySelectorAll('div'));var p=els.find(function(el){var t=el.innerText||'';return t.indexOf('Vozes carregadas')!==-1&&t.indexOf('Saúde Azure')!==-1});if(!p)return null;var root=document.getElementById('__fluency_pro_lesson_v15_panel__');if(!root){var old=document.getElementById('__fluency_pro_lesson_v12_panel__');if(old)old.style.display='none';root=document.createElement('div');root.id='__fluency_pro_lesson_v15_panel__';root.style.cssText='margin-top:10px;padding-top:10px;border-top:1px solid rgba(148,163,184,.25);font-size:13px;line-height:1.38;color:#dbeafe;max-height:350px;overflow:auto;';root.innerHTML="<div style='font-weight:900;color:#86efac;margin-bottom:6px'>Aulas IA — GEMINI PRO V15 ATIVO</div>";p.appendChild(root)}return root}catch(_){return null}}
     function log(msg,kind){try{var r=panel();if(!r)return;var c='#dbeafe';if(kind==='ok')c='#86efac';if(kind==='err')c='#fca5a5';if(kind==='warn')c='#fbbf24';if(kind==='pro')c='#c4b5fd';var row=document.createElement('div');row.style.color=c;row.textContent=ntime()+' Aula IA '+VERSION+': '+String(msg||'');r.insertBefore(row,r.children[1]||null);while(r.children.length>36)r.removeChild(r.lastChild)}catch(_){}}
-    function key(){try{return String(localStorage.getItem(LK)||localStorage.getItem('geminiKey')||'').trim()}catch(_){return ''}}
+    function key(){try{var k=(window.__fluencyGetLessonKeyV192&&window.__fluencyGetLessonKeyV192())||(window.__fluencyGetLessonKeyV191&&window.__fluencyGetLessonKeyV191())||localStorage.getItem(LK)||localStorage.getItem('fluency_lessonGeminiKey')||localStorage.getItem('lessonGeminiApiKey')||localStorage.getItem('lessonGeminiKey')||localStorage.getItem('fluency_geminiLessonKey')||localStorage.getItem('geminiKey')||'';return String(k||'').replace(/\\s+/g,'').trim()}catch(_){return ''}}
     function isGemini(url){return /generativelanguage\.googleapis\.com/.test(String(url||''))&&/generateContent/.test(String(url||''))}
     function bodyOf(init){try{return init&&typeof init.body==='string'?init.body:''}catch(_){return ''}}
     function isRealLesson(body){var b=String(body||'');return /Voce e professor experiente de ingles para brasileiros|Aluno:\s*nivel|REGRAS ABSOLUTAS DE PROFUNDIDADE|TOPICO GRAMATICAL|TOPICO DE LEITURA|TOPICO DE ESCRITA|TOPICO DE ESCUTA|TOPICO DE FALA|TOPICO DE SPEAKING|TOPICO DE REVISAO/i.test(b)}
