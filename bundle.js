@@ -79,7 +79,7 @@
         // O painel real contém estes textos.
         var candidates = els.filter(function(el){
           var t=safeText(el);
-          return t.indexOf('Vozes carregadas')!==-1 && (t.indexOf('Saúde Azure')!==-1 || t.indexOf('Aulas IA')!==-1 || t.indexOf('Motivo fallback')!==-1);
+          return t.indexOf('Vozes carregadas')!==-1 && (t.indexOf('Saúde Azure')!==-1 || t.indexOf('Motivo fallback')!==-1);
         }).filter(visible);
         if(!candidates.length) return null;
         // Preferir o menor container que ainda contém o conteúdo do diagnóstico.
@@ -95,46 +95,50 @@
       var p = findDiagnosticPanel();
       if(!p) return false;
       try{
+        // Inject a global CSS rule so the panel and its scroll wrapper work on iOS Safari
+        if(!document.getElementById('__fluency_scroll_css__')){
+          var st = document.createElement('style');
+          st.id = '__fluency_scroll_css__';
+          st.textContent = [
+            '[data-fluency-v195-scroll="1"]{',
+            '  max-height:72vh!important;',
+            '  overflow-y:auto!important;',
+            '  overflow-x:hidden!important;',
+            '  -webkit-overflow-scrolling:touch!important;',
+            '  touch-action:pan-y!important;',
+            '  overscroll-behavior:contain!important;',
+            '  padding-bottom:80px!important;',
+            '}',
+            '[data-fluency-v195-scroll="1"] *{',
+            '  -webkit-overflow-scrolling:touch;',
+            '}'
+          ].join('');
+          document.head.appendChild(st);
+        }
         p.style.maxHeight = '72vh';
         p.style.overflowY = 'auto';
         p.style.overflowX = 'hidden';
         p.style.webkitOverflowScrolling = 'touch';
         p.style.touchAction = 'pan-y';
         p.style.overscrollBehavior = 'contain';
-        p.style.paddingBottom = '96px';
+        p.style.paddingBottom = '80px';
         p.setAttribute('data-fluency-v195-scroll','1');
-        // Em alguns iPhones, o container externo bloqueia scroll. Liberar no pai direto também.
+        // Libera também os 4 ancestrais que possam ter overflow:hidden
         var parent = p.parentElement;
-        for(var i=0;i<3 && parent;i++,parent=parent.parentElement){
-          var txt = safeText(parent);
-          if(txt.indexOf('Vozes carregadas')!==-1){
-            parent.style.overflowY = 'auto';
-            parent.style.webkitOverflowScrolling = 'touch';
-            parent.style.touchAction = 'pan-y';
+        for(var i=0;i<4 && parent && parent !== document.body;i++,parent=parent.parentElement){
+          var cs = window.getComputedStyle(parent);
+          if(cs.overflow === 'hidden' || cs.overflowY === 'hidden'){
+            parent.style.overflow = 'visible';
+            parent.style.overflowY = 'visible';
           }
+          parent.style.webkitOverflowScrolling = 'touch';
         }
         return true;
       }catch(_){ return false; }
     }
 
     function diag(msg,kind){
-      try{
-        var p = findDiagnosticPanel();
-        if(!p) return;
-        var root = document.getElementById('__fluency_v195_diag__');
-        if(!root){
-          root = document.createElement('div');
-          root.id = '__fluency_v195_diag__';
-          root.style.cssText = 'margin-top:10px;padding-top:10px;border-top:1px solid rgba(148,163,184,.25);font-size:13px;line-height:1.35;color:#dbeafe;';
-          root.innerHTML = "<div style='font-weight:900;color:#86efac;margin-bottom:6px'>Diagnóstico — V19.5 SCROLL + MODELO ATIVO</div>";
-          p.appendChild(root);
-        }
-        var row = document.createElement('div');
-        row.style.color = kind === 'ok' ? '#86efac' : kind === 'warn' ? '#fbbf24' : '#93c5fd';
-        row.textContent = now() + ' ' + VERSION + ': ' + String(msg||'');
-        root.insertBefore(row, root.children[1] || null);
-        while(root.children.length > 12) root.removeChild(root.lastChild);
-      }catch(_){ }
+      // painel V19.5 desativado — sem output visual
     }
 
     function isAulaActive(){
@@ -237,7 +241,7 @@
     window.__fluencyLessonKeyStatusV192=function(){var k=getKey();return {configured:!!k,masked:mask(k),aliases:ALIASES.slice()};};
     if(nativeGet&&!Storage.prototype.getItem.__fluencyLessonKeyRelayV192){Storage.prototype.getItem=function(k){var v=nativeGet.apply(this,arguments);try{if(isAlias(k)){var c=clean(v);if(valid(c))return c;var r=getKey();if(valid(r))return r;}}catch(_){}return v;};Storage.prototype.getItem.__fluencyLessonKeyRelayV192=true;}
     if(nativeSet&&!Storage.prototype.setItem.__fluencyLessonKeyRelayV192){Storage.prototype.setItem=function(k,v){try{if(isAlias(k)){var c=clean(v);if(valid(c)){var r=nativeSet.apply(this,[k,c]);sync(c);return r;}}}catch(_){}return nativeSet.apply(this,arguments);};Storage.prototype.setItem.__fluencyLessonKeyRelayV192=true;}
-    function diag(msg,kind){try{var els=[].slice.call(document.querySelectorAll('div'));var p=els.find(function(el){var t=el.innerText||'';return t.indexOf('Vozes carregadas')!==-1&&t.indexOf('Saúde Azure')!==-1;});if(!p)return;var root=document.getElementById('__fluency_lesson_key_v192_diag__');if(!root){root=document.createElement('div');root.id='__fluency_lesson_key_v192_diag__';root.style.cssText='margin-top:10px;padding-top:10px;border-top:1px solid rgba(148,163,184,.25);font-size:13px;line-height:1.35;color:#dbeafe;';root.innerHTML="<div style='font-weight:900;color:#86efac;margin-bottom:6px'>Chave de Aulas — V19.2 RELAY ATIVO</div>";p.appendChild(root);}var row=document.createElement('div');row.style.color=kind==='ok'?'#86efac':kind==='warn'?'#fbbf24':'#93c5fd';row.textContent=new Date().toLocaleTimeString()+' '+VERSION+': '+msg;root.insertBefore(row,root.children[1]||null);while(root.children.length>12)root.removeChild(root.lastChild);}catch(_){} }
+    function diag(msg,kind){/* Chave de Aulas V19.2 painel desativado */}
     setTimeout(function(){var k=sync();diag(k?'key detectada e entregue para V15: '+mask(k):'nenhuma key de aulas encontrada nos aliases.',k?'ok':'warn');},1000);
   }catch(e){try{console.warn('Fluency V19.2 lesson key relay failed',e)}catch(_){}}
 })();
@@ -1847,7 +1851,7 @@ function _Diary({profile:e,apiKey:a,flashcards:t,setFlashcards:o}){
 function Cs(){var N;let[e,a]=(0,s.useState)(!1),[t,o]=(0,s.useState)(null),[r,l]=(0,s.useState)(""),[n,u]=(0,s.useState)([]),[i,c]=(0,s.useState)([]),[g,m]=(0,s.useState)("today"),[x,h]=(0,s.useState)(null),[L,I]=(0,s.useState)(!1),[y,f]=(0,s.useState)(!1);(0,s.useEffect)(()=>{(async()=>{let b=He("firebaseConfig");try{let __fp=await So("profile");if(__fp){o(__fp);let __fl=await So("completedLessons");Array.isArray(__fl)&&u(__fl);let __fc=await So("flashcards");Array.isArray(__fc)&&c(__fc);a(!0)}}catch(__e){console.warn("fast local boot failed",__e)}if(b)try{await Promise.race([ci(b),new Promise((_,rj)=>setTimeout(()=>rj(new Error("Firebase boot timeout (5s)")),5000))]),_dlFromCloud().catch(__e=>console.warn("cloud sync background failed",__e))}catch(V){console.warn("Firebase load failed:",V)}let D=await So("profile");D&&o(D);let F=await So("geminiKeys");Array.isArray(F)&&F.length?(l(F.join("\n")),xi(F[0])):(F=await So("geminiKey"),F&&(l(F),xi(F)));let j=await So("completedLessons");if(!Array.isArray(j))j=[];let __cleanupFlag=He("_weekendBugFixed_v21");if(!__cleanupFlag){let __filtered=j.filter(les=>{if(!les||!les.date)return true;let __dt=new Date(les.date+"T00:00:00"),__wd=__dt.getDay();return __wd!==0});if(__filtered.length!==j.length){console.warn("[fluency] Cleanup: removidas",j.length-__filtered.length,"aula(s) registrada(s) em fim de semana.");j=__filtered;await we("completedLessons",j);let __profileNow=await So("profile");if(__profileNow){let __dates=[...new Set(j.map(l=>l.date))].filter(Boolean).sort(),__newStreak=0,__newLast=null;if(__dates.length){__newLast=__dates[__dates.length-1];__newStreak=1;for(let __k=__dates.length-2;__k>=0;__k--){let __diff=$p(__dates[__k],__dates[__k+1]);if(__diff===1){__newStreak++;continue}if(__diff>1){let __d=new Date(__dates[__k]+"T00:00:00"),__only=true;for(let __kk=1;__kk<__diff;__kk++){let __nd=new Date(__d);__nd.setDate(__d.getDate()+__kk);let __wdd=__nd.getDay();if(__wdd!==0&&__wdd!==6){__only=false;break}}if(__only){__newStreak++;continue}}break}}let __fixedProfile=Se(ne({},__profileNow),{streak:__newStreak,lastStudyDate:__newLast});await we("profile",__fixedProfile);o(__fixedProfile)}}pa("_weekendBugFixed_v21",1)}u(j);let _=await So("flashcards");Array.isArray(_)&&c(_);try{if(!He("weekendBugFixed_v21")){let __today=xs(),__profCur=await So("profile"),__lessonsCur=Array.isArray(j)?j:[],__cleaned=__lessonsCur.filter(L=>{if(!L||!L.date)return true;let dt=new Date(L.date+"T00:00:00"),wd=dt.getDay();return wd!==0});if(__cleaned.length!==__lessonsCur.length){u(__cleaned);await we("completedLessons",__cleaned);if(__profCur){let __validDates=__cleaned.map(L=>L.date).sort(),__lastValid=__validDates.length?__validDates[__validDates.length-1]:null,__newStreak=0;if(__lastValid){__newStreak=1;for(let k=__validDates.length-2;k>=0;k--){let diff=$p(__validDates[k],__validDates[k+1]);if(diff===1)__newStreak+=1;else if(diff>1){let dStart=new Date(__validDates[k]+"T00:00:00"),onlyWk=true;for(let z=1;z<diff;z++){let nd=new Date(dStart);nd.setDate(dStart.getDate()+z);let wd=nd.getDay();if(wd!==0){onlyWk=false;break}}if(onlyWk)__newStreak+=1;else break}else break}}let __fixed=Se(ne({},__profCur),{streak:__newStreak,lastStudyDate:__lastValid});await we("profile",__fixed);o(__fixed)}}pa("weekendBugFixed_v21",1)}}catch(__e){console.warn("weekend cleanup failed:",__e)}a(!0)})()},[]);let d=((N=Tr[Is()])==null?void 0:N.key)||"grammar",p=xs();(0,s.useEffect)(()=>{let __wd=Is();if(__wd===0)return;g==="lesson"&&t&&!x&&!L&&k()},[g,t]);let v=n.find(b=>b.date===p),w=n.filter(b=>b.level===(t==null?void 0:t.level)).length,P=(0,s.useMemo)(()=>{let b={1:!1,2:!1,3:!1,4:!1,5:!1},D=new Date,F=D.getDay(),j=F===0?-6:1-F,_=new Date(D);_.setDate(D.getDate()+j);let __sd=Array.isArray(t==null?void 0:t.studyDays)?t.studyDays:[];for(let V=0;V<5;V++){let J=new Date(_);J.setDate(_.getDate()+V);let Q=`${J.getFullYear()}-${Bt(J.getMonth()+1)}-${Bt(J.getDate())}`;if(n.some(B=>B.date===Q)||__sd.includes(Q))b[V+1]=!0}return b},[n,t]),k=(0,s.useCallback)(async(b=!1)=>{if(t){I(!0),f(!1);try{let D=gi(n,t.level,d),F=(mi(t.level,d,D)||"").slice(0,40).replace(/[^a-zA-Z0-9]/g,"-"),j=`lesson_v4_${t.level}_${d}_${D}_${F}`;if(!b){let B=await So(j);B=window.__fluencyNormalizeLessonV17?window.__fluencyNormalizeLessonV17(B):B;if(B&&__LQ(B)&&!B._fallback){h(B),I(!1);return}if(B){try{localStorage.removeItem("fluency_"+j)}catch(__e){}}}let _=Jp(t.level,d,w,n,i),V=null;if(!r)V="Chave do Gemini n\xE3o foi configurada. V\xE1 em Progresso \u2192 Chave da IA para adicionar.";else try{let B=await rm(_,r);let __retryCount=0;while(!__LQ(B)&&__retryCount<1){__retryCount++;let __retryPrompt=_+`\n\nA TENTATIVA ANTERIOR FICOU INCOMPLETA. Esta é uma nova tentativa. Gere uma aula COMPLETA e DETALHADA. Regras OBRIGATÓRIAS:\n- intro: mínimo 3 frases, mínimo 110 caracteres\n- EXATAMENTE 3 seções com heading, content de pelo menos 250 caracteres (5+ frases) e EXATAMENTE 3 examples (en + pt) cada\n- Pelo menos 5 exercícios variados (2 choice, 1 fill, 1 translate + 1 extra), TODOS com explanation de pelo menos 25 caracteres\n- Pelo menos 5 itens de vocabulário com word, pos, translation e example real\n- 2 tips com pelo menos 30 caracteres cada\n- finalTip com pelo menos 35 caracteres\nNÃO resuma. NÃO pule seções. Responda APENAS JSON válido.`;B=await rm(__retryPrompt,r)}if(!__LQ(B))throw new Error("Aula incompleta após "+(__retryCount+1)+" tentativas. Tente novamente.");if(He("validateLessons")!==!1){B=await _VL(B,t.level,r);if((B._validation||{}).severity==="major"){let E=await rm(_+"\n\nA validação apontou problema importante. Gere uma nova versão corrigida, mantendo exatamente o mesmo schema JSON.",r);if(__LQ(E))B=await _VL(E,t.level,r)}}B=window.__fluencyNormalizeLessonV17?window.__fluencyNormalizeLessonV17(B):B;h(B),await we(j,B);return}catch(B){console.warn("Gemini falhou:",B==null?void 0:B.message);let E=(B==null?void 0:B.message)||"erro desconhecido";E.includes("API_KEY_INVALID")||E.includes("API key not valid")||E.includes("INVALID_ARGUMENT")?V="Chave do Gemini inv\xE1lida. V\xE1 em Progresso \u2192 Chave da IA e verifique se colou corretamente, ou gere uma nova em aistudio.google.com/apikey":E.includes("quota")||E.includes("RESOURCE_EXHAUSTED")||E.includes("429")?V="Limite di\xE1rio da API gratuita do Gemini atingido. Aguarde algumas horas ou crie outra chave em aistudio.google.com/apikey":E.includes("PERMISSION_DENIED")||E.includes("403")?V="Permiss\xE3o negada. Sua chave pode estar bloqueada. Tente gerar uma nova em aistudio.google.com/apikey":E.includes("Failed to fetch")||E.includes("NetworkError")||E.includes("network")?V="Sem conex\xE3o com a internet. Verifique sua rede e tente novamente.":E.includes("Resposta vazia")?V="IA retornou resposta vazia. Pode ser conte\xFAdo bloqueado por seguran\xE7a \u2014 clique em Tentar novamente.":E.includes("JSON")?V="IA retornou resposta malformada. Clique em Tentar novamente.":E.includes("Todos os modelos")?V="Todos os modelos Gemini falharam. Verifique sua chave em Progresso \u2192 Chave da IA.":E.includes("no longer available")||E.includes("404")?V="Modelo Gemini foi descontinuado. O app tentou alternativas autom\xE1ticas mas nenhuma funcionou. Verifique se sua chave tem acesso aos modelos mais recentes.":V="Erro da IA: "+E.slice(0,200)}let J=(window.__fluencyLocalCompleteLessonV17&&window.__fluencyLocalCompleteLessonV17(t.level,d,V))||Gp(t.level,d),Q=Se(ne({},J),{_fallback:!0,_fallbackReason:V});h(Q)}catch(D){console.error(D),f(!0)}finally{I(!1)}}},[t,d,p,w,r]),T=async()=>{m("lesson");let __bad=x&&!__LQ(x);if(__bad){alert("Esta aula salva veio incompleta. Vou gerar uma aula nova e completa agora.");try{window.__fluencyPurgeIncompleteLessons&&window.__fluencyPurgeIncompleteLessons()}catch(__e){}h(null);await k(!0);return}(!x||x._stale)&&await k()},R=async()=>{if(!x||!t)return;let __wd=Is();if(__wd===0){alert("Domingo é dia de descanso. O sábado agora está liberado para revisão.");m("today");return}if(n.some(B=>B.date===p)){m("today");return}let b=`${p}_${d}`,D={id:b,date:p,skill:d,level:t.level,title:x.title},F=[...n,D];u(F),await we("completedLessons",F);let j=new Set(i.map(B=>B.word.toLowerCase())),_=(x.vocabulary||[]).filter(B=>B.word&&!j.has(B.word.toLowerCase())).map(B=>({id:`fc_${Date.now()}_${Math.random().toString(36).slice(2,8)}`,word:B.word,translation:B.translation,pos:B.pos,example:B.example,skill:d,level:t.level,createdAt:Date.now(),intervalDays:1,nextReview:Date.now(),seen:0,activeUsageCount:0,lastActiveUse:null,graduated:!1})),V=[...i,..._];c(V),await we("flashcards",V);let Q=await __markStudyDay(t,p);o(Q),m("today")};return e?t?s.default.createElement(s.default.Fragment,null,s.default.createElement(ms,null),s.default.createElement(ps,null),s.default.createElement("div",{className:"min-h-screen paper-grain",style:{position:"relative",zIndex:1}},s.default.createElement(xm,{profile:t,streak:t.streak||0,tab:g,setTab:m}),g==="today"&&s.default.createElement(hm,{profile:t,completedAtLevel:w,lessonToday:v,openLesson:T,setTab:m,allCompleted:!1,weekProgress:P,forceRegenerate:async()=>{try{window.__fluencyPurgeIncompleteLessons&&window.__fluencyPurgeIncompleteLessons()}catch(__e){}try{let __D=gi(n,t.level,d),__F=(mi(t.level,d,__D)||"").slice(0,40).replace(/[^a-zA-Z0-9]/g,"-"),__j=`lesson_v4_${t.level}_${d}_${__D}_${__F}`;localStorage.removeItem("fluency_"+__j)}catch(__e){}m("lesson");h(null);await k(!0)}}),g==="lesson"&&((Is()===0||Is()===6)?s.default.createElement("div",{className:"max-w-3xl mx-auto px-4 md:px-6 py-12"},s.default.createElement("div",{className:"card-paper rounded-2xl p-8 text-center anim-rise"},s.default.createElement("div",{className:"fx-body text-xs uppercase tracking-[0.28em] mb-2",style:{color:"var(--muted)"}},"Fim de semana"),s.default.createElement("h2",{className:"fx-display text-3xl mt-2",style:{fontWeight:600}},"Sem aula hoje."),s.default.createElement("p",{className:"fx-serif-italic mt-3 text-lg",style:{color:"var(--accent)"}},"As aulas voltam na segunda-feira."),s.default.createElement("p",{className:"fx-body mt-4 text-sm",style:{color:"var(--ink-soft)"}},"Aproveite para revisar flashcards ou praticar speaking — manter o contato com o inglês ajuda muito a fixar."),s.default.createElement("div",{className:"flex flex-wrap gap-2 justify-center mt-6"},s.default.createElement("button",{onClick:()=>m("flashcards"),className:"btn-primary px-4 py-2 rounded-xl fx-body text-sm flex items-center gap-2"},s.default.createElement(ze,{size:14})," Flashcards"),s.default.createElement("button",{onClick:()=>m("speaking"),className:"btn-ghost px-4 py-2 rounded-xl fx-body text-sm flex items-center gap-2"},s.default.createElement(at,{size:14})," Speaking")))):!x&&!L&&!y?s.default.createElement("div",{className:"max-w-3xl mx-auto px-4 md:px-6 py-16 text-center"},s.default.createElement(Te,{className:"animate-spin mx-auto",size:24,style:{color:"var(--accent)"}}),s.default.createElement("p",{className:"fx-body mt-4 text-sm",style:{color:"var(--ink-soft)"}},"Preparando sua aula\u2026")):x&&!__LQ(x)?s.default.createElement("div",{className:"max-w-3xl mx-auto px-4 md:px-6 py-12"},s.default.createElement("div",{className:"card-paper rounded-2xl p-8 text-center anim-rise"},s.default.createElement("div",{className:"fx-body text-xs uppercase tracking-[0.28em] mb-2",style:{color:"var(--muted)"}},"Aula incompleta detectada"),s.default.createElement("h2",{className:"fx-display text-3xl mt-2",style:{fontWeight:600}},"Vamos gerar uma aula completa."),s.default.createElement("p",{className:"fx-body mt-4 text-sm",style:{color:"var(--ink-soft)"}},"A aula salva não tem seções, exemplos e exercícios suficientes. Toque abaixo para substituir por uma aula completa."),s.default.createElement("button",{onClick:async()=>{try{window.__fluencyPurgeIncompleteLessons&&window.__fluencyPurgeIncompleteLessons()}catch(__e){}h(null);await k(!0)},className:"btn-primary px-5 py-3 rounded-xl fx-body text-sm flex items-center gap-2 mx-auto mt-6"},s.default.createElement(Te,{size:15})," Gerar aula completa"))):s.default.createElement(vm,{profile:t,lessonData:x,loading:L,error:y,onRegenerate:()=>k(!0),onComplete:R,isCompleted:!!v,focusKey:d})),g==="flashcards"&&s.default.createElement(Lm,{flashcards:i,setFlashcards:c,profile:t,setProfile:o,today:p}),g==="speaking"&&s.default.createElement(bm,{profile:t,apiKey:r,setProfile:o,flashcards:i,setFlashcards:c}),g==="immersion"&&s.default.createElement(_Immersion,{profile:t,apiKey:r,flashcards:i,setFlashcards:c}),g==="diary"&&s.default.createElement(_Diary,{profile:t,apiKey:r,flashcards:i,setFlashcards:c}),g==="progress"&&s.default.createElement(Cm,{profile:t,completedLessons:n,flashcards:i,setProfile:o,apiKey:r,setApiKey:l}))):s.default.createElement(s.default.Fragment,null,s.default.createElement(ms,null),s.default.createElement(ps,null),s.default.createElement(gm,{onDone:(b,D)=>{o(b),D&&l(D)}})):s.default.createElement(s.default.Fragment,null,s.default.createElement(ms,null),s.default.createElement(ps,null),s.default.createElement("div",{className:"min-h-screen flex items-center justify-center paper-grain",style:{position:"relative",zIndex:1}},s.default.createElement(Te,{className:"animate-spin",size:24,style:{color:"var(--accent)"}})))}
 
 
-(function(){try{if(window.__fluencyConvDiagPanelInstalled)return;window.__fluencyConvDiagPanelInstalled=true;var HIDE_KEY="fluency_hide_debug_panels";function hidden(){try{return localStorage.getItem(HIDE_KEY)==="1"}catch(e){return false}}function setHidden(v){try{localStorage.setItem(HIDE_KEY,v?"1":"0")}catch(e){}applyHide()}function applyHide(){var h=hidden();try{document.body&&document.body.classList.toggle("__fluency_hide_debug",h)}catch(e){}var css=document.getElementById("__fluency_hide_debug_css__");if(!css){css=document.createElement("style");css.id="__fluency_hide_debug_css__";css.textContent="body.__fluency_hide_debug #__audio_diag__,body.__fluency_hide_debug #__diag_reopen__,body.__fluency_hide_debug #__conv_diag_panel__{display:none!important}#__debug_show_btn__{position:fixed;right:12px;bottom:78px;z-index:99999;width:34px;height:34px;border-radius:50%;border:1px solid rgba(91,156,246,.35);background:rgba(6,13,31,.72);color:#93C5FD;font:16px -apple-system,BlinkMacSystemFont,sans-serif;display:none;align-items:center;justify-content:center;box-shadow:0 6px 18px rgba(0,0,0,.32);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}body.__fluency_hide_debug #__debug_show_btn__{display:flex!important}";document.head.appendChild(css)}var btn=document.getElementById("__debug_show_btn__");if(!btn){btn=document.createElement("button");btn.id="__debug_show_btn__";btn.textContent="🔧";btn.title="Mostrar diagnósticos";btn.onclick=function(){setHidden(false)};document.body.appendChild(btn)}}function rd(){try{return window.__fluencyConvDiag||JSON.parse(localStorage.getItem("fluency_conversation_diag")||"null")}catch(e){return null}}function esc(x){return String(x||"").replace(/[<>&]/g,function(c){return {"<":"&lt;",">":"&gt;","&":"&amp;"}[c]})}function ensure(){if(!document||!document.body)return;applyHide();if(hidden())return;var el=document.getElementById("__conv_diag_panel__");if(!el){el=document.createElement("div");el.id="__conv_diag_panel__";el.style.cssText="position:fixed;left:10px;top:104px;z-index:99999;max-width:260px;padding:9px 11px;border-radius:14px;background:rgba(6,13,31,.88);border:1px solid rgba(91,156,246,.32);box-shadow:0 8px 24px rgba(0,0,0,.35);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);font:11px -apple-system,BlinkMacSystemFont,sans-serif;color:#E8EFF8;line-height:1.35;opacity:.92";document.body.appendChild(el)}var d=rd();var ok=d&&d.status==="ok";var warn=d&&d.status&&d.status!=="ok";el.innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><b style="color:'+(ok?'#34D399':warn?'#F59E0B':'#93C5FD')+'">IA Conversa</b><button id="__conv_diag_hide__" style="border:0;background:rgba(255,255,255,.08);color:#E8EFF8;border-radius:9px;padding:2px 7px;font:12px -apple-system">×</button></div><span>'+(d?esc(d.status||'—'):'aguardando')+'</span><br><span style="color:rgba(232,239,248,.68)">'+(d&&d.detail?esc(d.detail):'envie uma mensagem para testar')+'</span><br><span style="color:rgba(232,239,248,.45)">'+(d&&d.time?esc(d.time):'')+'</span>';var x=document.getElementById("__conv_diag_hide__");if(x)x.onclick=function(ev){ev&&ev.stopPropagation&&ev.stopPropagation();setHidden(true)}}setInterval(ensure,1000);if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',ensure);else ensure();window.__fluencyHideDebugPanels=function(){setHidden(true)};window.__fluencyShowDebugPanels=function(){setHidden(false)}}catch(e){}})();
+(function(){try{if(window.__fluencyConvDiagPanelInstalled)return;window.__fluencyConvDiagPanelInstalled=true;/* IA Conversa panel disabled */}catch(e){}})();
 window.__AppComponent=Cs;window.React=Qa();window.ReactDOM=zc();})();
 
 ;(function(){
@@ -2104,9 +2108,9 @@ lucide-react/dist/esm/lucide-react.mjs:
         if(!root){
           root = document.createElement("div");
           root.id = "__fluency_pro_lesson_v12_panel__";
-          root.style.cssText = "margin-top:10px;padding-top:10px;border-top:1px solid rgba(148,163,184,.25);font-size:13px;line-height:1.38;color:#dbeafe;max-height:330px;overflow:auto;";
-          root.innerHTML = "<div style='font-weight:900;color:#86efac;margin-bottom:6px'>Aulas IA — GEMINI PRO V14 ATIVO</div>";
-          p.appendChild(root);
+          root.style.cssText = "display:none";
+          root.innerHTML = "";
+          // Aulas IA panel disabled
         }
         var color = "#dbeafe";
         if(kind === "ok") color = "#86efac";
@@ -2691,7 +2695,7 @@ lucide-react/dist/esm/lucide-react.mjs:
     var LK="fluency_lessonGeminiApiKey";
     var oldFetch = window.fetch ? window.fetch.bind(window) : null;
     function ntime(){try{return new Date().toLocaleTimeString()}catch(_){return String(Date.now())}}
-    function panel(){try{var els=[].slice.call(document.querySelectorAll('div'));var p=els.find(function(el){var t=el.innerText||'';return t.indexOf('Vozes carregadas')!==-1&&t.indexOf('Saúde Azure')!==-1});if(!p)return null;var root=document.getElementById('__fluency_pro_lesson_v15_panel__');if(!root){var old=document.getElementById('__fluency_pro_lesson_v12_panel__');if(old)old.style.display='none';root=document.createElement('div');root.id='__fluency_pro_lesson_v15_panel__';root.style.cssText='margin-top:10px;padding-top:10px;border-top:1px solid rgba(148,163,184,.25);font-size:13px;line-height:1.38;color:#dbeafe;max-height:350px;overflow:auto;';root.innerHTML="<div style='font-weight:900;color:#86efac;margin-bottom:6px'>Aulas IA — GEMINI PRO V15 ATIVO</div>";p.appendChild(root)}return root}catch(_){return null}}
+    function panel(){return null;}
     function log(msg,kind){try{var r=panel();if(!r)return;var c='#dbeafe';if(kind==='ok')c='#86efac';if(kind==='err')c='#fca5a5';if(kind==='warn')c='#fbbf24';if(kind==='pro')c='#c4b5fd';var row=document.createElement('div');row.style.color=c;row.textContent=ntime()+' Aula IA '+VERSION+': '+String(msg||'');r.insertBefore(row,r.children[1]||null);while(r.children.length>36)r.removeChild(r.lastChild)}catch(_){}}
     function key(){try{var k=(window.__fluencyGetLessonKeyV192&&window.__fluencyGetLessonKeyV192())||(window.__fluencyGetLessonKeyV191&&window.__fluencyGetLessonKeyV191())||localStorage.getItem(LK)||localStorage.getItem('fluency_lessonGeminiKey')||localStorage.getItem('lessonGeminiApiKey')||localStorage.getItem('lessonGeminiKey')||localStorage.getItem('fluency_geminiLessonKey')||localStorage.getItem('geminiKey')||'';return String(k||'').replace(/\\s+/g,'').trim()}catch(_){return ''}}
     function isGemini(url){return /generativelanguage\.googleapis\.com/.test(String(url||''))&&/generateContent/.test(String(url||''))}
@@ -2853,7 +2857,7 @@ lucide-react/dist/esm/lucide-react.mjs:
 
 
 /* === FLUENCY PATCH V19 - PILARES + SPEAKING + SÁBADO REVIEW === */
-;(function(){try{window.__fluencyPillarAwareV19=true;localStorage.setItem('fluency_pillar_v19','speaking-friday-saturday-review-40min');setTimeout(function(){try{var els=[].slice.call(document.querySelectorAll('div'));var p=els.find(function(el){var t=el.innerText||'';return t.indexOf('Vozes carregadas')!==-1&&t.indexOf('Saúde Azure')!==-1});if(p&&!document.getElementById('__fluency_v19_pillar_panel__')){var d=document.createElement('div');d.id='__fluency_v19_pillar_panel__';d.style.cssText='margin-top:10px;padding-top:10px;border-top:1px solid rgba(148,163,184,.25);font-size:13px;line-height:1.38;color:#dbeafe;';d.innerHTML="<div style='font-weight:900;color:#93c5fd;margin-bottom:6px'>Pilares — V19 ATIVO</div><div>Speaking na sexta, revisão liberada no sábado e prompt aprofundado de até 40 minutos.</div>";p.appendChild(d)}}catch(_){}} ,1200)}catch(e){try{console.warn('Patch V19 failed',e)}catch(_){}}})();
+;(function(){try{window.__fluencyPillarAwareV19=true;localStorage.setItem('fluency_pillar_v19','speaking-friday-saturday-review-40min');/* pillar panel in diagnostic disabled */}catch(e){try{console.warn('Patch V19 failed',e)}catch(_){}}})();
 
 /* === FLUENCY PATCH V19.1 - FIX CHAVE EXCLUSIVA DE AULAS NA ABA PROGRESSO === */
 ;(function(){
@@ -2953,9 +2957,8 @@ lucide-react/dist/esm/lucide-react.mjs:
         if(!root){
           root = document.createElement('div');
           root.id = '__fluency_lesson_key_v191_diag__';
-          root.style.cssText = 'margin-top:10px;padding-top:10px;border-top:1px solid rgba(148,163,184,.25);font-size:13px;line-height:1.35;color:#dbeafe;';
-          root.innerHTML = "<div style='font-weight:900;color:#86efac;margin-bottom:6px'>Chave de Aulas — V19.1 ATIVO</div>";
-          p.appendChild(root);
+          root.style.cssText = 'display:none';
+          // Chave de Aulas V19.1 painel desativado
         }
         var row = document.createElement('div');
         row.style.color = kind === 'ok' ? '#86efac' : kind === 'warn' ? '#fbbf24' : '#93c5fd';
@@ -3368,9 +3371,9 @@ lucide-react/dist/esm/lucide-react.mjs:
         if(!root){
           root = document.createElement('div');
           root.id = '__fluency_lesson_keys_v193_diag__';
-          root.style.cssText = 'margin-top:10px;padding-top:10px;border-top:1px solid rgba(148,163,184,.25);font-size:13px;line-height:1.35;color:#dbeafe;';
-          root.innerHTML = "<div style='font-weight:900;color:#86efac;margin-bottom:6px'>Aulas IA — V19.3 FLASH + PRO FALLBACK ATIVO</div>";
-          p.appendChild(root);
+          root.style.cssText = 'display:none';
+          root.innerHTML = "";
+          // Aulas IA panel disabled
         }
         var row = document.createElement('div');
         row.style.color = kind === 'ok' ? '#86efac' : kind === 'warn' ? '#fbbf24' : '#93c5fd';
