@@ -2833,3 +2833,455 @@ lucide-react/dist/esm/lucide-react.mjs:
     setTimeout(function(){ render(true); logDiag('patch ativo. Status da key: ' + (getLessonKey() ? 'configurada' : 'não configurada') + '.', getLessonKey() ? 'ok' : 'warn'); }, 800);
   }catch(e){ try{ console.warn('Fluency V19.1 lesson key fix failed', e); }catch(_){} }
 })();
+
+
+/* === FLUENCY PATCH V19.3 - AULAS COM FLASH 2.5 + FALLBACK PRO === */
+;(function(){
+  try{
+    if(window.__fluencyLessonDualModelKeysV193) return;
+    window.__fluencyLessonDualModelKeysV193 = true;
+
+    var VERSION = 'V19.3-DUAL-LESSON-KEYS-FLASH-PRO';
+    var FLASH_MODEL = 'gemini-2.5-flash';
+    var PRO_MODEL = 'gemini-2.5-pro';
+
+    var FLASH_ALIASES = [
+      'fluency_lessonFlashApiKey',
+      'fluency_lessonGeminiFlashKey',
+      'lessonGeminiFlashApiKey',
+      'lessonFlashKey',
+      'fluency_aulasFlashKey',
+      'fluency_freeLessonGeminiApiKey',
+      'fluency_lesson_free_key'
+    ];
+
+    var PRO_ALIASES = [
+      'fluency_lessonProApiKey',
+      'fluency_lessonGeminiProKey',
+      'lessonGeminiProApiKey',
+      'lessonProKey',
+      'fluency_aulasProKey',
+      'fluency_paidLessonGeminiApiKey',
+      'fluency_lesson_paid_key',
+      // aliases antigos para manter compatibilidade com V15/V19.1/V19.2
+      'fluency_lessonGeminiApiKey',
+      'fluency_lessonGeminiKey',
+      'lessonGeminiApiKey',
+      'lessonGeminiKey',
+      'fluency_geminiLessonKey',
+      'fluency_proLessonGeminiApiKey',
+      'fluency_aulasGeminiKey',
+      'fluency_lesson_key',
+      'fluency_lesson_api_key'
+    ];
+
+    var ALL_ALIASES = FLASH_ALIASES.concat(PRO_ALIASES);
+    var nativeGet = Storage.prototype.getItem;
+    var nativeSet = Storage.prototype.setItem;
+    var nativeRemove = Storage.prototype.removeItem;
+    var nativeFetch = window.fetch ? window.fetch.bind(window) : null;
+
+    function clean(v){
+      v = String(v || '').trim();
+      if(!v) return '';
+      try{
+        if((v[0] === '"' && v[v.length-1] === '"') || v[0] === '{' || v[0] === '['){
+          var p = JSON.parse(v);
+          if(typeof p === 'string') v = p;
+          else if(p && typeof p.key === 'string') v = p.key;
+          else if(p && typeof p.apiKey === 'string') v = p.apiKey;
+        }
+      }catch(_){}
+      return String(v || '').replace(/\s+/g,'').trim();
+    }
+    function valid(k){ k = clean(k); return /^AIza[0-9A-Za-z_\-]{20,}$/.test(k); }
+    function mask(k){ k = clean(k); return k ? k.slice(0,8) + '...' + k.slice(-4) : ''; }
+    function isFlashAlias(k){ return FLASH_ALIASES.indexOf(String(k || '')) !== -1; }
+    function isProAlias(k){ return PRO_ALIASES.indexOf(String(k || '')) !== -1; }
+    function isAnyAlias(k){ return ALL_ALIASES.indexOf(String(k || '')) !== -1; }
+
+    function readAliases(list){
+      try{
+        for(var s=0;s<2;s++){
+          var store = s === 0 ? localStorage : sessionStorage;
+          for(var i=0;i<list.length;i++){
+            var v = clean(nativeGet.call(store, list[i]));
+            if(valid(v)) return v;
+          }
+        }
+      }catch(_){}
+      return '';
+    }
+
+    function writeAliases(list, value){
+      value = clean(value);
+      try{
+        for(var s=0;s<2;s++){
+          var store = s === 0 ? localStorage : sessionStorage;
+          for(var i=0;i<list.length;i++){
+            if(valid(value)) nativeSet.call(store, list[i], value);
+            else nativeRemove.call(store, list[i]);
+          }
+        }
+      }catch(_){}
+      try{ nativeSet.call(localStorage, 'fluency___lessonDualKeysSavedAt', String(Date.now())); }catch(_){}
+      return valid(value) ? value : '';
+    }
+
+    function getFlashKey(){ return readAliases(FLASH_ALIASES); }
+    function getProKey(){ return readAliases(PRO_ALIASES); }
+    function setFlashKey(k){ return writeAliases(FLASH_ALIASES, k); }
+    function setProKey(k){ return writeAliases(PRO_ALIASES, k); }
+    function removeFlashKey(){ return writeAliases(FLASH_ALIASES, ''); }
+    function removeProKey(){ return writeAliases(PRO_ALIASES, ''); }
+
+    window.__fluencyGetLessonFlashKeyV193 = getFlashKey;
+    window.__fluencySetLessonFlashKeyV193 = setFlashKey;
+    window.__fluencyGetLessonProKeyV193 = getProKey;
+    window.__fluencySetLessonProKeyV193 = setProKey;
+    window.__fluencyLessonModelModeV193 = function(){
+      return {
+        version: VERSION,
+        flashModel: FLASH_MODEL,
+        proModel: PRO_MODEL,
+        flashConfigured: !!getFlashKey(),
+        flashMasked: mask(getFlashKey()),
+        proConfigured: !!getProKey(),
+        proMasked: mask(getProKey()),
+        strategy: 'Flash 2.5 primeiro; se quota/erro de API, fallback automático para Pro pago.'
+      };
+    };
+
+    // Compatibilidade: quando o código antigo pedir a key de aula, entrega Flash primeiro.
+    if(nativeGet && !Storage.prototype.getItem.__fluencyDualModelKeysV193){
+      Storage.prototype.getItem = function(k){
+        var v = nativeGet.apply(this, arguments);
+        try{
+          if(isFlashAlias(k)){
+            var f0 = clean(v) || getFlashKey();
+            return valid(f0) ? f0 : v;
+          }
+          if(isProAlias(k)){
+            var p0 = clean(v) || getProKey();
+            return valid(p0) ? p0 : v;
+          }
+          if(isAnyAlias(k)){
+            var f = getFlashKey();
+            if(valid(f)) return f;
+            var p = getProKey();
+            if(valid(p)) return p;
+          }
+        }catch(_){}
+        return v;
+      };
+      Storage.prototype.getItem.__fluencyDualModelKeysV193 = true;
+    }
+
+    if(nativeSet && !Storage.prototype.setItem.__fluencyDualModelKeysV193){
+      Storage.prototype.setItem = function(k,v){
+        try{
+          var c = clean(v);
+          if(valid(c)){
+            if(isFlashAlias(k)){ setFlashKey(c); return nativeSet.call(this,k,c); }
+            if(isProAlias(k)){ setProKey(c); return nativeSet.call(this,k,c); }
+          }
+        }catch(_){}
+        return nativeSet.apply(this, arguments);
+      };
+      Storage.prototype.setItem.__fluencyDualModelKeysV193 = true;
+    }
+
+    function looksLikeGeminiUrl(url){
+      return /generativelanguage\.googleapis\.com/i.test(String(url || '')) && /:generateContent|:streamGenerateContent/i.test(String(url || ''));
+    }
+    function looksLikeLessonBody(body){
+      try{
+        var s = typeof body === 'string' ? body : JSON.stringify(body || '');
+        return /aula|lesson|grammar|speaking|listening|reading|writing|review|sections|exercises|vocabulary|pilar|nivel|nível/i.test(s);
+      }catch(_){ return true; }
+    }
+    function urlWithKeyAndModel(url, key, model){
+      var out = String(url || '');
+      out = out.replace(/\/models\/[^/:?]+(:generateContent|:streamGenerateContent)/i, '/models/' + model + '$1');
+      if(/([?&])key=/.test(out)) out = out.replace(/([?&])key=[^&]*/,'$1key=' + encodeURIComponent(key));
+      else out += (out.indexOf('?') === -1 ? '?' : '&') + 'key=' + encodeURIComponent(key);
+      return out;
+    }
+    function cloneInit(init, body){
+      var out = {};
+      try{ for(var k in (init || {})) out[k] = init[k]; }catch(_){}
+      if(body !== undefined) out.body = body;
+      return out;
+    }
+    function shouldFallback(res){
+      try{
+        if(!res) return true;
+        if(res.status === 401 || res.status === 403 || res.status === 429 || res.status >= 500) return true;
+      }catch(_){}
+      return false;
+    }
+
+    if(nativeFetch && !window.fetch.__fluencyDualModelKeysV193){
+      window.fetch = async function(input, init){
+        var originalUrl = typeof input === 'string' ? input : (input && input.url) || '';
+        var body = init && init.body;
+        try{ if(!body && input && input.clone) body = await input.clone().text().catch(function(){return '';}); }catch(_){}
+
+        if(looksLikeGeminiUrl(originalUrl) && looksLikeLessonBody(body)){
+          var flashKey = getFlashKey();
+          var proKey = getProKey();
+
+          // 1) Flash 2.5 gratuito/econômico primeiro.
+          if(valid(flashKey)){
+            var flashUrl = urlWithKeyAndModel(originalUrl, flashKey, FLASH_MODEL);
+            try{
+              var flashRes = await nativeFetch(flashUrl, cloneInit(init, body));
+              window.__fluencyLastLessonModelV193 = {model: FLASH_MODEL, key: mask(flashKey), status: flashRes.status, at: Date.now()};
+              if(!shouldFallback(flashRes) || !valid(proKey)) return flashRes;
+              try{ console.warn('[Fluency '+VERSION+'] Flash falhou/status '+flashRes.status+'. Tentando Pro pago como fallback.'); }catch(_){}
+            }catch(errFlash){
+              window.__fluencyLastLessonModelV193 = {model: FLASH_MODEL, key: mask(flashKey), error: String((errFlash&&errFlash.message)||errFlash), at: Date.now()};
+              if(!valid(proKey)) throw errFlash;
+              try{ console.warn('[Fluency '+VERSION+'] Flash erro. Tentando Pro pago como fallback.', errFlash); }catch(_){}
+            }
+          }
+
+          // 2) Pro pago como reserva quando Flash não estiver configurado ou falhar.
+          if(valid(proKey)){
+            var proUrl = urlWithKeyAndModel(originalUrl, proKey, PRO_MODEL);
+            var proRes = await nativeFetch(proUrl, cloneInit(init, body));
+            window.__fluencyLastLessonModelV193 = {model: PRO_MODEL, key: mask(proKey), status: proRes.status, at: Date.now(), fallbackFromFlash: !!flashKey};
+            return proRes;
+          }
+        }
+        return nativeFetch(input, init);
+      };
+      window.fetch.__fluencyDualModelKeysV193 = true;
+    }
+
+    function findProgressCard(){
+      try{
+        var buttons = Array.prototype.slice.call(document.querySelectorAll('button'));
+        var saveBtn = buttons.find(function(b){ return /Salvar chaves/i.test((b.textContent || '').trim()); });
+        if(!saveBtn) return null;
+        var node = saveBtn.parentElement;
+        for(var i=0;i<6 && node && node.parentElement;i++){
+          var txt = node.innerText || '';
+          if(/Salvar chaves/i.test(txt) && /Testar chaves/i.test(txt)) return node;
+          node = node.parentElement;
+        }
+        return saveBtn.parentElement;
+      }catch(_){ return null; }
+    }
+
+    function styleButton(bg,border,color){
+      return 'padding:8px 14px;border-radius:10px;background:'+bg+';border:1px solid '+border+';color:'+color+';font-size:13px;cursor:pointer;font-family:inherit;font-weight:800';
+    }
+
+    function sectionHtml(){
+      var fk = getFlashKey(), pk = getProKey();
+      return ''+
+      '<div style="margin-top:20px;padding:16px;border-radius:14px;border:1px solid rgba(34,197,94,.28);background:linear-gradient(135deg,rgba(34,197,94,.08),rgba(59,130,246,.06));box-shadow:0 12px 32px rgba(0,0,0,.16)">'+
+        '<div style="font-size:10px;text-transform:uppercase;letter-spacing:.18em;color:rgba(180,190,220,.65);margin-bottom:5px">Chaves Exclusivas de Aulas — V19.3 TESTE</div>'+
+        '<div style="font-weight:950;color:#e8eff8;margin-bottom:8px;font-size:15px">Flash 2.5 primeiro + Pro pago como reserva</div>'+
+        '<p style="font-size:13px;color:#bfdbfe;margin:0 0 12px 0;line-height:1.55">A geração da aula tenta usar <b>gemini-2.5-flash</b>. Se o Flash falhar por cota/erro, o sistema tenta automaticamente <b>gemini-2.5-pro</b> com a key paga.</p>'+
+        '<div style="display:grid;grid-template-columns:1fr;gap:10px">'+
+          '<div style="padding:12px;border-radius:12px;background:rgba(15,23,42,.35);border:1px solid rgba(96,165,250,.24)">'+
+            '<div style="font-weight:900;color:#93c5fd;margin-bottom:5px">1) Key aulas Flash 2.5</div>'+
+            '<div id="__lk193_flash_status__" style="font-size:12px;color:'+(fk?'#86efac':'#fbbf24')+';margin-bottom:9px">'+(fk?'✅ Configurada — '+mask(fk)+' · modelo '+FLASH_MODEL:'⚠️ Não configurada · configure para tentar gerar grátis/econômico primeiro')+'</div>'+
+            '<button id="__lk193_set_flash__" style="'+styleButton('linear-gradient(135deg,rgba(59,130,246,.28),rgba(34,197,94,.18))','rgba(96,165,250,.45)','#e8eff8')+'">'+(fk?'✏️ Alterar Flash':'➕ Adicionar Flash')+'</button> '+
+            (fk?'<button id="__lk193_remove_flash__" style="'+styleButton('rgba(248,113,113,.08)','rgba(248,113,113,.32)','#fca5a5')+'">🗑 Remover</button>':'')+
+          '</div>'+
+          '<div style="padding:12px;border-radius:12px;background:rgba(15,23,42,.35);border:1px solid rgba(168,85,247,.24)">'+
+            '<div style="font-weight:900;color:#c4b5fd;margin-bottom:5px">2) Key aulas Pro pago reserva</div>'+
+            '<div id="__lk193_pro_status__" style="font-size:12px;color:'+(pk?'#86efac':'#fbbf24')+';margin-bottom:9px">'+(pk?'✅ Configurada — '+mask(pk)+' · modelo '+PRO_MODEL:'⚠️ Não configurada · se o Flash falhar, não haverá fallback pago')+'</div>'+
+            '<button id="__lk193_set_pro__" style="'+styleButton('linear-gradient(135deg,rgba(139,92,246,.28),rgba(59,130,246,.16))','rgba(168,85,247,.45)','#e8eff8')+'">'+(pk?'✏️ Alterar Pro':'➕ Adicionar Pro')+'</button> '+
+            (pk?'<button id="__lk193_remove_pro__" style="'+styleButton('rgba(248,113,113,.08)','rgba(248,113,113,.32)','#fca5a5')+'">🗑 Remover</button>':'')+
+          '</div>'+
+        '</div>'+
+        '<div style="margin-top:10px;font-size:12px;color:#a7f3d0;line-height:1.45">Status: '+(fk?'Flash pronto':'Flash ausente')+' · '+(pk?'Pro reserva pronto':'Pro reserva ausente')+'</div>'+
+      '</div>';
+    }
+
+    function promptKey(kind){
+      var current = kind === 'flash' ? getFlashKey() : getProKey();
+      var label = kind === 'flash' ? 'Flash 2.5 para aulas' : 'Pro pago reserva para aulas';
+      var input = prompt((current ? 'Key atual: '+mask(current)+'\n\n' : '') + 'Cole a Gemini API Key de '+label+' (AIza...):', current || '');
+      if(input === null) return;
+      input = clean(input);
+      if(!input) return;
+      if(!valid(input)){ alert('Essa key não parece válida. Ela normalmente começa com AIza.'); return; }
+      if(kind === 'flash') setFlashKey(input); else setProKey(input);
+      render(true);
+      diag(label + ' salva: ' + mask(input), 'ok');
+      alert('✅ Key '+label+' salva.');
+    }
+
+    function bindButtons(){
+      var b;
+      b = document.getElementById('__lk193_set_flash__'); if(b) b.onclick = function(e){ try{e.preventDefault();e.stopPropagation();}catch(_){} promptKey('flash'); };
+      b = document.getElementById('__lk193_set_pro__'); if(b) b.onclick = function(e){ try{e.preventDefault();e.stopPropagation();}catch(_){} promptKey('pro'); };
+      b = document.getElementById('__lk193_remove_flash__'); if(b) b.onclick = function(e){ try{e.preventDefault();e.stopPropagation();}catch(_){} if(confirm('Remover key Flash de aulas?')){ removeFlashKey(); render(true); diag('key Flash removida.', 'warn'); } };
+      b = document.getElementById('__lk193_remove_pro__'); if(b) b.onclick = function(e){ try{e.preventDefault();e.stopPropagation();}catch(_){} if(confirm('Remover key Pro reserva?')){ removeProKey(); render(true); diag('key Pro removida.', 'warn'); } };
+    }
+
+    function render(force){
+      try{
+        // Esconde o card antigo V19.1 para não confundir com "Pro exclusivamente".
+        var old = document.getElementById('__lk_prog_section__');
+        if(old) old.style.display = 'none';
+        var card = findProgressCard();
+        if(!card) return false;
+        var sec = document.getElementById('__lk193_dual_section__');
+        if(!sec){ sec = document.createElement('div'); sec.id = '__lk193_dual_section__'; card.appendChild(sec); }
+        var html = sectionHtml();
+        if(force || sec.__lastHtml !== html){ sec.innerHTML = html; sec.__lastHtml = html; }
+        bindButtons();
+        return true;
+      }catch(_){ return false; }
+    }
+
+    function diag(msg,kind){
+      try{
+        var els = Array.prototype.slice.call(document.querySelectorAll('div'));
+        var p = els.find(function(el){ var t = el.innerText || ''; return t.indexOf('Vozes carregadas') !== -1 && t.indexOf('Saúde Azure') !== -1; });
+        if(!p) return;
+        var root = document.getElementById('__fluency_lesson_keys_v193_diag__');
+        if(!root){
+          root = document.createElement('div');
+          root.id = '__fluency_lesson_keys_v193_diag__';
+          root.style.cssText = 'margin-top:10px;padding-top:10px;border-top:1px solid rgba(148,163,184,.25);font-size:13px;line-height:1.35;color:#dbeafe;';
+          root.innerHTML = "<div style='font-weight:900;color:#86efac;margin-bottom:6px'>Aulas IA — V19.3 FLASH + PRO FALLBACK ATIVO</div>";
+          p.appendChild(root);
+        }
+        var row = document.createElement('div');
+        row.style.color = kind === 'ok' ? '#86efac' : kind === 'warn' ? '#fbbf24' : '#93c5fd';
+        var last = window.__fluencyLastLessonModelV193;
+        var extra = last ? ' · último modelo: '+(last.model||'?')+' ('+(last.status||last.error||'')+')' : '';
+        row.textContent = new Date().toLocaleTimeString() + ' ' + VERSION + ': ' + msg + extra;
+        root.insertBefore(row, root.children[1] || null);
+        while(root.children.length > 14) root.removeChild(root.lastChild);
+      }catch(_){}
+    }
+
+    function tick(){ render(false); }
+    if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function(){ render(true); });
+    else setTimeout(function(){ render(true); }, 0);
+    try{ new MutationObserver(function(){ tick(); }).observe(document.documentElement || document.body, {childList:true, subtree:true}); }catch(_){}
+    setInterval(tick, 900);
+    setInterval(function(){
+      var st = window.__fluencyLessonModelModeV193();
+      diag('Flash: '+(st.flashConfigured?st.flashMasked:'não configurado')+' · Pro: '+(st.proConfigured?st.proMasked:'não configurado')+'.', st.flashConfigured || st.proConfigured ? 'ok' : 'warn');
+    }, 12000);
+    setTimeout(function(){ render(true); var st = window.__fluencyLessonModelModeV193(); diag('patch ativo. Estratégia: Flash primeiro, Pro reserva.', st.flashConfigured || st.proConfigured ? 'ok' : 'warn'); }, 1200);
+  }catch(e){ try{ console.warn('Fluency V19.3 dual lesson keys failed', e); }catch(_){} }
+})();
+
+/* === FLUENCY PATCH V19.4 - AULA FIXADA SOMENTE NA ABA AULA === */
+;(function(){
+  try{
+    if(window.__fluencyLessonTabScopeFixV194) return;
+    window.__fluencyLessonTabScopeFixV194 = true;
+    var VERSION = 'V19.4-LESSON-TAB-SCOPE-FIX';
+
+    function log(msg){
+      try{
+        console.warn('[Fluency '+VERSION+'] '+msg);
+        localStorage.setItem('fluency_v19_4_overlay_fix_last', String(msg||''));
+        var arr = JSON.parse(localStorage.getItem('fluency_diag_logs') || '[]');
+        arr.push({at:new Date().toLocaleTimeString(), section:'Aulas IA — V19.4 OVERLAY FIX ATIVO', message:String(msg||'')});
+        localStorage.setItem('fluency_diag_logs', JSON.stringify(arr.slice(-80)));
+      }catch(_){}
+    }
+
+    function visible(el){
+      try{
+        if(!el) return false;
+        var r = el.getBoundingClientRect();
+        var cs = getComputedStyle(el);
+        return r.width > 8 && r.height > 8 && cs.display !== 'none' && cs.visibility !== 'hidden' && Number(cs.opacity || 1) > 0.05;
+      }catch(_){ return false; }
+    }
+
+    function hasActiveUnderline(btn){
+      try{
+        var spans = btn.querySelectorAll('span');
+        for(var i=0;i<spans.length;i++){
+          var s = spans[i];
+          var st = String(s.getAttribute('style') || '');
+          var cls = String(s.className || '');
+          if(/linear-gradient|var\(--accent\)|var\(--purple\)/i.test(st) && /bottom|h-\[2px\]|rounded-full|absolute/i.test(cls + ' ' + st)) return true;
+          if(/-bottom-px|h-\[2px\]/i.test(cls)) return true;
+        }
+      }catch(_){}
+      return false;
+    }
+
+    function isAulaTabActive(){
+      try{
+        var buttons = document.querySelectorAll('button,a,[role="tab"]');
+        for(var i=0;i<buttons.length;i++){
+          var b = buttons[i];
+          if(!visible(b)) continue;
+          var text = String(b.innerText || b.textContent || '').replace(/\s+/g,' ').trim();
+          if(text === 'Aula' || /^Aula$/.test(text)){
+            if(b.getAttribute('aria-selected') === 'true') return true;
+            if(hasActiveUnderline(b)) return true;
+            var cs = getComputedStyle(b);
+            var fw = parseInt(cs.fontWeight || '0', 10);
+            // fallback: botão Aula azul/ativo normalmente fica mais forte; só usa se não houver outro botão ativo detectado.
+            if(fw >= 600 && /rgb\((91, 156, 246|96, 165, 250|147, 183, 255)/i.test(cs.color || '')) return true;
+          }
+        }
+      }catch(_){}
+      return false;
+    }
+
+    function removeOrHideInjectedLessons(){
+      try{
+        var active = isAulaTabActive();
+        var els = document.querySelectorAll('.fluency-v18-full-lesson-render');
+        for(var i=0;i<els.length;i++){
+          var el = els[i];
+          if(active){
+            el.style.display = '';
+            el.removeAttribute('aria-hidden');
+          }else{
+            // Remove em vez de só esconder, porque a aba Hoje/Flashcards não deve carregar a aula por baixo.
+            el.parentNode && el.parentNode.removeChild(el);
+          }
+        }
+        // Se algum wrapper vazio ficar sobrando, limpa também.
+        var wrappers = document.querySelectorAll('div');
+        for(var j=0;j<wrappers.length;j++){
+          var w = wrappers[j];
+          if(!active && w.children && w.children.length === 0 && /fluency-v18-full-lesson-render/i.test(w.innerHTML||'')){
+            w.parentNode && w.parentNode.removeChild(w);
+          }
+        }
+        return active;
+      }catch(_){ return false; }
+    }
+
+    function guard(){ removeOrHideInjectedLessons(); }
+
+    // Guarda após renderização, troca de aba, foco e navegação. O V18 tenta reinjetar por intervalo;
+    // este guard remove imediatamente quando a aba ativa não é Aula.
+    setTimeout(guard, 50);
+    setTimeout(guard, 300);
+    setTimeout(guard, 900);
+    setInterval(guard, 500);
+    ['click','touchend','pointerup','popstate','hashchange','focus'].forEach(function(ev){
+      window.addEventListener(ev, function(){ setTimeout(guard, 80); setTimeout(guard, 450); }, true);
+    });
+
+    // Observa mudanças do React no DOM.
+    try{
+      var mo = new MutationObserver(function(){ setTimeout(guard, 30); });
+      mo.observe(document.documentElement || document.body, {childList:true, subtree:true});
+    }catch(_){}
+
+    window.__fluencyFixLessonOverlayV194 = guard;
+    log('patch ativo. A aula completa agora só aparece quando a aba Aula está ativa.');
+  }catch(e){ try{console.warn('Patch V19.4 overlay fix failed', e)}catch(_){} }
+})();
