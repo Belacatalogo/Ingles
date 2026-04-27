@@ -1444,19 +1444,7 @@ lucide-react/dist/esm/lucide-react.mjs:
       }
     }
 
-    function addConfigButton(){
-      try{
-        if(document.getElementById("__lesson_gemini_key_v11_btn__")) return;
-        var btn = document.createElement("button");
-        btn.id = "__lesson_gemini_key_v11_btn__";
-        btn.textContent = "Configurar Key Gemini de Aulas";
-        btn.style.cssText = "position:fixed;right:14px;bottom:86px;z-index:999999;padding:10px 12px;border-radius:14px;border:1px solid rgba(134,239,172,.55);background:rgba(15,23,42,.94);color:#bbf7d0;font-weight:900;font-size:12px;box-shadow:0 10px 28px rgba(0,0,0,.32);";
-        btn.onclick = setLessonKeyFlow;
-        document.body.appendChild(btn);
-      }catch(_){}
-    }
-    setInterval(addConfigButton, 2500);
-    setTimeout(addConfigButton, 500);
+    function addConfigButton(){ /* disabled — key config moved to Progress tab */ }
 
     function isGeminiGenerate(url){
       return /generativelanguage\.googleapis\.com/.test(String(url||"")) && /generateContent/.test(String(url||""));
@@ -1466,11 +1454,12 @@ lucide-react/dist/esm/lucide-react.mjs:
       try{return init && typeof init.body === "string" ? init.body : ""}catch(_){return ""}
     }
 
-    function isLessonRequest(url, body){
+    function isLessonRequest(url, body, init){
       if(!isGeminiGenerate(url)) return false;
+      try{ var h=init&&init.headers; if(h&&(h["x-fluency-v12"]||h["X-Fluency-V12"])) return false; }catch(_){}
       var b = String(body || "");
       if(/pronuncia|pronúncia|speaking|speech|stt|transcri|utterance|audio|mimeType|inlineData|base64|wav|mp3|webm/i.test(b)) return false;
-      return /aula|li[cç][aã]o|lesson|grammar|gram[áa]tica|exercise|exerc|vocabulary|vocabul|sections|seções|secões/i.test(b);
+      return /aula|li[cç][aã]o|lesson|grammar|gramática|exercise|exerc|vocabulary|vocabul|sections|seções|secões/i.test(b);
     }
 
     var lessonSchema = {
@@ -2026,7 +2015,7 @@ lucide-react/dist/esm/lucide-react.mjs:
       try{
         var current = getLessonKey();
         var masked = current ? "Key atual termina com ..." + current.slice(-6) + "\n\n" : "";
-        var key = prompt(masked + "Cole aqui a Gemini API Key PAGA que será usada SOMENTE para gerar aulas.\n\nO modo híbrido usará Flash primeiro e Pro só se a qualidade falhar 2x.", current || "");
+        var key = prompt(masked + "Cole aqui a Gemini API Key PAGA que será usada SOMENTE para gerar aulas.\n\nModo Pro exclusivo — apenas gemini-2.5-pro.", current || "");
         if(key === null) return;
         key = String(key || "").trim();
         if(!key){
@@ -2043,7 +2032,7 @@ lucide-react/dist/esm/lucide-react.mjs:
         localStorage.setItem("fluency_lessonGeminiModel", MODEL_FLASH);
         localStorage.setItem("fluency_lessonModel", MODEL_FLASH);
         localStorage.setItem("fluency_preferredLessonModel", MODEL_FLASH);
-        diag("key_configurada", "Key de aulas configurada. Modo híbrido: Flash primeiro, Pro somente se Flash falhar na qualidade 2x.");
+        diag("key_configurada", "Key de aulas configurada. Modo Pro exclusivo ativo — alta qualidade.");
         alert("Key de aulas configurada. Modo: Flash → Pro se necessário.");
       }catch(e){
         alert("Erro ao salvar key de aulas: " + ((e && e.message) || e));
@@ -2320,12 +2309,12 @@ lucide-react/dist/esm/lucide-react.mjs:
           return makeErrorResponse(400, "Configure a Gemini key exclusiva para aulas.");
         }
 
-        diag("inicio", "Híbrido inteligente iniciado: Flash primeiro. Se a validação rejeitar 2x, escalo para Pro só nesta aula.", {model:MODEL_FLASH});
+        diag("inicio", "Modo Pro exclusivo ativo: todas as tentativas usam gemini-2.5-pro.", {model:MODEL_PRO});
 
         var last = "", qualityRejects = 0, networkErrors = 0;
         var attemptPlan = [
-          {model: MODEL_FLASH, n: 1},
-          {model: MODEL_FLASH, n: 2},
+          {model: MODEL_PRO, n: 1},
+          {model: MODEL_PRO, n: 2},
           {model: MODEL_PRO, n: 3},
           {model: MODEL_PRO, n: 4},
           {model: MODEL_PRO, n: 5}
@@ -2333,17 +2322,17 @@ lucide-react/dist/esm/lucide-react.mjs:
 
         for(var i=0; i<attemptPlan.length; i++){
           var plan = attemptPlan[i];
-          var model = plan.model;
+          var model = MODEL_PRO;
           var attempt = plan.n;
-          if(model === MODEL_PRO && qualityRejects < 2 && networkErrors < 2) model = MODEL_FLASH;
 
           try{
-            if(model === MODEL_PRO && qualityRejects >= 2) diag("escalando_pro", "Flash foi rejeitado por qualidade/estrutura 2x. Escalando para Pro somente nesta aula.", {attempt:attempt, qualityRejects:qualityRejects});
-            diag(model === MODEL_PRO ? "pro" : "tentativa", "Tentativa " + attempt + "/5 usando " + model + ". " + (model === MODEL_PRO ? "Modo Pro para corrigir estrutura." : "Modo Flash rápido/barato."), {attempt:attempt, model:model});
+            diag("pro", "Tentativa " + attempt + "/5 usando " + model + ". Modo Pro — alta qualidade.", {attempt:attempt, model:model});
 
             var lessonUrl = buildLessonUrl(url, lessonKey, model);
             var clean = cleanInit(init, body, attempt, model, qualityRejects);
-            var res = await fetchWithLongTimeout(realFetch, lessonUrl, clean, model === MODEL_PRO ? 300000 : 240000);
+            clean.headers = clean.headers || {};
+            clean.headers["x-fluency-v12"] = "1";
+            var res = await fetchWithLongTimeout(realFetch, lessonUrl, clean, 300000);
 
             if(res && res.ok){
               var txt = await responseText(res);
@@ -2389,7 +2378,7 @@ lucide-react/dist/esm/lucide-react.mjs:
 
     setTimeout(function(){
       var hasKey = !!getLessonKey();
-      diag("patch_v12_ativo", "PATCH V12 ativo. Key de aulas: " + (hasKey ? "configurada" : "não configurada") + ". Híbrido: Flash primeiro, Pro após 2 rejeições de validação.", {hasLessonKey:hasKey});
+      diag("patch_v12_ativo", "PATCH V12 ativo. Key de aulas: " + (hasKey ? "configurada" : "não configurada") + ". Modo: Pro exclusivo.", {hasLessonKey:hasKey});
     }, 1200);
   }catch(e){
     try{console.warn("Patch V12 hybrid failed", e)}catch(_){}
@@ -2442,7 +2431,7 @@ lucide-react/dist/esm/lucide-react.mjs:
         if(!k){return;}
         setLK(k);
         var s=document.getElementById("__lk_prog_section__");if(s)s.remove();
-        alert("✅ Key de aulas salva! Flash primeiro, escala para Pro se necessário.");
+        alert("✅ Key de aulas salva! Usando gemini-2.5-pro exclusivamente.");
       };
       var rb=document.getElementById("__lk_remove_btn__");
       if(rb)rb.onclick=function(){
