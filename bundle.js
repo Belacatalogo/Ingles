@@ -1350,13 +1350,13 @@ lucide-react/dist/esm/lucide-react.mjs:
 
 
 
-/* === FLUENCY PATCH V10 - GEMINI KEY AULAS + VALIDAÇÃO ESTRUTURAL ESTRITA === */
+/* === FLUENCY PATCH V11 - GEMINI LESSON KEY + RESPONSE SCHEMA + FORCE FLASH === */
 ;(function(){
   try{
-    if(window.__fluencyGeminiLessonKeyV10Strict) return;
-    window.__fluencyGeminiLessonKeyV10Strict = true;
+    if(window.__fluencyGeminiLessonKeyV11Schema) return;
+    window.__fluencyGeminiLessonKeyV11Schema = true;
 
-    var VERSION = "V10-GEMINI-LESSON-STRICT";
+    var VERSION = "V11-GEMINI-SCHEMA";
     var LESSON_KEY_STORAGE = "fluency_lessonGeminiApiKey";
     var LESSON_MODEL_STORAGE = "fluency_lessonGeminiModel";
     var DIAG_KEY = "fluency_lessonGenerationDiag";
@@ -1379,12 +1379,12 @@ lucide-react/dist/esm/lucide-react.mjs:
       try{
         var p = findDiagPanel();
         if(!p) return;
-        var root = document.getElementById("__fluency_lesson_key_v10_panel__");
+        var root = document.getElementById("__fluency_lesson_key_v11_panel__");
         if(!root){
           root = document.createElement("div");
-          root.id = "__fluency_lesson_key_v10_panel__";
-          root.style.cssText = "margin-top:10px;padding-top:10px;border-top:1px solid rgba(148,163,184,.25);font-size:13px;line-height:1.38;color:#dbeafe;max-height:300px;overflow:auto;";
-          root.innerHTML = "<div style='font-weight:900;color:#86efac;margin-bottom:6px'>Aulas IA — GEMINI KEY DE AULAS V10 STRICT ATIVO</div>";
+          root.id = "__fluency_lesson_key_v11_panel__";
+          root.style.cssText = "margin-top:10px;padding-top:10px;border-top:1px solid rgba(148,163,184,.25);font-size:13px;line-height:1.38;color:#dbeafe;max-height:310px;overflow:auto;";
+          root.innerHTML = "<div style='font-weight:900;color:#86efac;margin-bottom:6px'>Aulas IA — GEMINI KEY DE AULAS V11 SCHEMA ATIVO</div>";
           p.appendChild(root);
         }
         var color = "#dbeafe";
@@ -1395,22 +1395,16 @@ lucide-react/dist/esm/lucide-react.mjs:
         row.style.color = color;
         row.textContent = now() + " Aula IA " + VERSION + ": " + String(msg||"");
         root.insertBefore(row, root.children[1] || null);
-        while(root.children.length > 26) root.removeChild(root.lastChild);
+        while(root.children.length > 28) root.removeChild(root.lastChild);
       }catch(_){}
     }
 
     function diag(status, detail, extra){
       try{
-        var d = Object.assign({
-          version: VERSION,
-          status: status,
-          detail: String(detail || ""),
-          time: new Date().toLocaleString(),
-          ts: Date.now()
-        }, extra || {});
+        var d = Object.assign({version:VERSION,status:status,detail:String(detail||""),time:new Date().toLocaleString(),ts:Date.now()}, extra||{});
         window.__fluencyLessonDiag = d;
         localStorage.setItem(DIAG_KEY, JSON.stringify(d));
-        var kind = status === "ok" ? "ok" : (/erro|falha|curta|travado|sem_key|invalid|rejeitada|incompleta/i.test(status) ? "err" : (/aguardando|tentativa|tempo|demorar|429|503|quota/i.test(String(detail)) ? "warn" : ""));
+        var kind = status === "ok" ? "ok" : (/erro|falha|curta|travado|sem_key|invalid|rejeitada|incompleta/i.test(status) ? "err" : (/aguardando|tentativa|tempo|demorar|429|503|quota|schema/i.test(String(detail)) ? "warn" : ""));
         log(detail, kind);
       }catch(_){}
     }
@@ -1420,14 +1414,15 @@ lucide-react/dist/esm/lucide-react.mjs:
     }
 
     function getLessonModel(){
-      try{return String(localStorage.getItem(LESSON_MODEL_STORAGE) || "gemini-2.5-flash").trim() || "gemini-2.5-flash"}catch(_){return "gemini-2.5-flash"}
+      // Aulas completas precisam do Flash normal. Flash-lite ficou gerando estrutura incompleta.
+      return "gemini-2.5-flash";
     }
 
     function setLessonKeyFlow(){
       try{
         var current = getLessonKey();
         var masked = current ? "Key atual termina com ..." + current.slice(-6) + "\n\n" : "";
-        var key = prompt(masked + "Cole aqui a Gemini API Key PAGA que será usada SOMENTE para gerar aulas.\n\nEla ficará salva apenas neste navegador/localStorage.", current || "");
+        var key = prompt(masked + "Cole aqui a Gemini API Key PAGA que será usada SOMENTE para gerar aulas.", current || "");
         if(key === null) return;
         key = String(key || "").trim();
         if(!key){
@@ -1441,15 +1436,9 @@ lucide-react/dist/esm/lucide-react.mjs:
           return;
         }
         localStorage.setItem(LESSON_KEY_STORAGE, key);
-
-        var modelCurrent = getLessonModel();
-        var model = prompt("Modelo Gemini para aulas.\nRecomendado: gemini-2.5-flash\nMais barato: gemini-2.5-flash-lite", modelCurrent);
-        if(model !== null && String(model).trim()){
-          localStorage.setItem(LESSON_MODEL_STORAGE, String(model).trim());
-        }
-
-        diag("key_configurada", "Key Gemini exclusiva de aulas configurada. Modelo: " + getLessonModel() + ".");
-        alert("Key de aulas configurada com sucesso.");
+        localStorage.setItem(LESSON_MODEL_STORAGE, "gemini-2.5-flash");
+        diag("key_configurada", "Key de aulas configurada. A V11 força modelo gemini-2.5-flash, não flash-lite.");
+        alert("Key de aulas configurada. Modelo de aulas: gemini-2.5-flash.");
       }catch(e){
         alert("Erro ao salvar key de aulas: " + ((e && e.message) || e));
       }
@@ -1457,9 +1446,9 @@ lucide-react/dist/esm/lucide-react.mjs:
 
     function addConfigButton(){
       try{
-        if(document.getElementById("__lesson_gemini_key_v10_btn__")) return;
+        if(document.getElementById("__lesson_gemini_key_v11_btn__")) return;
         var btn = document.createElement("button");
-        btn.id = "__lesson_gemini_key_v10_btn__";
+        btn.id = "__lesson_gemini_key_v11_btn__";
         btn.textContent = "Configurar Key Gemini de Aulas";
         btn.style.cssText = "position:fixed;right:14px;bottom:86px;z-index:999999;padding:10px 12px;border-radius:14px;border:1px solid rgba(134,239,172,.55);background:rgba(15,23,42,.94);color:#bbf7d0;font-weight:900;font-size:12px;box-shadow:0 10px 28px rgba(0,0,0,.32);";
         btn.onclick = setLessonKeyFlow;
@@ -1484,37 +1473,80 @@ lucide-react/dist/esm/lucide-react.mjs:
       return /aula|li[cç][aã]o|lesson|grammar|gram[áa]tica|exercise|exerc|vocabulary|vocabul|sections|seções|secões/i.test(b);
     }
 
+    var lessonSchema = {
+      type: "OBJECT",
+      properties: {
+        title: {type:"STRING"},
+        subtitle: {type:"STRING"},
+        estimatedMinutes: {type:"NUMBER"},
+        intro: {type:"STRING"},
+        sections: {
+          type:"ARRAY",
+          items: {
+            type:"OBJECT",
+            properties: {
+              heading: {type:"STRING"},
+              content: {type:"STRING"},
+              examples: {
+                type:"ARRAY",
+                items: {
+                  type:"OBJECT",
+                  properties: {en:{type:"STRING"}, pt:{type:"STRING"}},
+                  required:["en","pt"]
+                }
+              }
+            },
+            required:["heading","content","examples"]
+          }
+        },
+        vocabulary: {
+          type:"ARRAY",
+          items: {
+            type:"OBJECT",
+            properties: {
+              word:{type:"STRING"},
+              pos:{type:"STRING"},
+              translation:{type:"STRING"},
+              example:{type:"STRING"}
+            },
+            required:["word","translation","example"]
+          }
+        },
+        exercises: {
+          type:"ARRAY",
+          items: {
+            type:"OBJECT",
+            properties: {
+              type:{type:"STRING"},
+              question:{type:"STRING"},
+              options:{type:"ARRAY", items:{type:"STRING"}},
+              answer:{type:"STRING"},
+              explanation:{type:"STRING"}
+            },
+            required:["type","question","answer","explanation"]
+          }
+        },
+        tips: {type:"ARRAY", items:{type:"STRING"}},
+        finalTip: {type:"STRING"}
+      },
+      required:["title","subtitle","estimatedMinutes","intro","sections","vocabulary","exercises","tips","finalTip"]
+    };
+
     var QUALITY_INSTRUCTION =
       "\n\n" +
-      "INSTRUÇÃO CRÍTICA — O APP SÓ RENDERIZA JSON ESTRUTURADO:\n" +
-      "Responda SOMENTE com JSON válido. Não use markdown, não use ```json, não escreva texto fora do JSON.\n" +
-      "O JSON precisa ter EXATAMENTE estes campos principais: title, subtitle, estimatedMinutes, intro, sections, vocabulary, exercises, tips, finalTip.\n" +
-      "Não coloque seções, vocabulário ou exercícios dentro do intro ou finalTip. Eles precisam estar em arrays reais.\n" +
-      "Formato obrigatório:\n" +
-      "{\n" +
-      '  "title": "string",\n' +
-      '  "subtitle": "string",\n' +
-      '  "estimatedMinutes": 20,\n' +
-      '  "intro": "string com explicação inicial longa",\n' +
-      '  "sections": [\n' +
-      '    {"heading":"string","content":"string longo","examples":[{"en":"English sentence","pt":"Tradução/explicação em português"}]}\n' +
-      "  ],\n" +
-      '  "vocabulary": [{"word":"string","pos":"noun/verb/adjective/etc","translation":"string","example":"string"}],\n' +
-      '  "exercises": [{"type":"multiple_choice","question":"string","options":["A","B","C","D"],"answer":"string exatamente igual a uma opção","explanation":"string"}],\n' +
-      '  "tips": ["string"],\n' +
-      '  "finalTip": "string"\n' +
-      "}\n" +
-      "Requisitos mínimos REAIS:\n" +
-      "- sections precisa ter pelo menos 4 objetos.\n" +
-      "- cada section.content precisa ter no mínimo 700 caracteres.\n" +
-      "- cada section.examples precisa ter pelo menos 4 exemplos com en e pt.\n" +
-      "- vocabulary precisa ter pelo menos 10 objetos.\n" +
-      "- exercises precisa ter pelo menos 10 objetos.\n" +
-      "- exercises de múltipla escolha precisam ter options com 4 opções e answer igual a uma opção.\n" +
-      "- tips precisa ter pelo menos 5 itens.\n" +
-      "- intro precisa ter no mínimo 600 caracteres.\n" +
-      "- finalTip precisa ter no mínimo 400 caracteres.\n" +
-      "A aula deve ser completa para 20 minutos. Não gere aula curta. Não gere resumo. Não use placeholders.\n";
+      "GERE A AULA EXATAMENTE NO JSON DO SCHEMA.\n" +
+      "Atenção: o app só mostra a aula completa se sections, vocabulary e exercises forem ARRAYS reais.\n" +
+      "Não coloque conteúdo de seções dentro da introdução. Não coloque exercícios em texto corrido.\n" +
+      "Quantidades obrigatórias:\n" +
+      "- sections: exatamente 4 objetos.\n" +
+      "- cada section: content com 450 a 900 caracteres e examples com exatamente 4 objetos {en, pt}.\n" +
+      "- vocabulary: exatamente 10 objetos.\n" +
+      "- exercises: exatamente 10 objetos.\n" +
+      "- tips: exatamente 5 strings.\n" +
+      "- intro: 500 a 900 caracteres.\n" +
+      "- finalTip: 350 a 700 caracteres.\n" +
+      "Responda só JSON. Sem markdown. Sem comentários fora do JSON.\n" +
+      "Use português brasileiro nas explicações e exemplos em inglês com tradução.\n";
 
     function enhanceBody(raw, attempt){
       try{
@@ -1523,15 +1555,12 @@ lucide-react/dist/esm/lucide-react.mjs:
 
         function walk(x){
           if(!x || added) return;
-          if(Array.isArray(x)){
-            for(var i=0;i<x.length;i++) walk(x[i]);
-            return;
-          }
+          if(Array.isArray(x)){ for(var i=0;i<x.length;i++) walk(x[i]); return; }
           if(typeof x === "object"){
             if(typeof x.text === "string" && /aula|li[cç][aã]o|lesson|grammar|gram[áa]tica|exerc|vocabul|sections/i.test(x.text)){
               x.text += QUALITY_INSTRUCTION;
               if(attempt > 1){
-                x.text += "\nA tentativa anterior foi REJEITADA porque o JSON não tinha arrays reais ou a aula estava curta. Refaça com JSON válido e arrays completos.\n";
+                x.text += "\nA tentativa anterior foi rejeitada por falta de arrays ou poucos exemplos. Corrija: 4 sections, 4 examples por section, 10 exercises, 10 vocabulary.\n";
               }
               added = true;
               return;
@@ -1547,9 +1576,13 @@ lucide-react/dist/esm/lucide-react.mjs:
         }
 
         obj.generationConfig = obj.generationConfig || {};
-        obj.generationConfig.temperature = 0.65;
+        obj.generationConfig.temperature = 0.55;
         obj.generationConfig.maxOutputTokens = Math.max(Number(obj.generationConfig.maxOutputTokens || 0), 12000);
         obj.generationConfig.responseMimeType = "application/json";
+        obj.generationConfig.responseSchema = lessonSchema;
+
+        // Remove configs que podem conflitar com JSON schema
+        try{ delete obj.generationConfig.stopSequences; }catch(_){}
 
         return JSON.stringify(obj);
       }catch(_){
@@ -1589,15 +1622,12 @@ lucide-react/dist/esm/lucide-react.mjs:
     function sleep(ms){return new Promise(function(resolve){setTimeout(resolve, ms)})}
 
     async function fetchWithLongTimeout(fetchFn, url, init, ms){
-      var controller = null;
-      var timer = null;
+      var controller = null, timer = null;
       try{
         if(typeof AbortController !== "undefined"){
           controller = new AbortController();
           init = Object.assign({}, init || {}, {signal: controller.signal});
-          timer = setTimeout(function(){
-            try{controller.abort()}catch(_){}
-          }, ms);
+          timer = setTimeout(function(){try{controller.abort()}catch(_){}}, ms);
         }
         return await fetchFn(url, init);
       }finally{
@@ -1605,9 +1635,7 @@ lucide-react/dist/esm/lucide-react.mjs:
       }
     }
 
-    async function responseText(res){
-      try{return await res.clone().text()}catch(_){return ""}
-    }
+    async function responseText(res){ try{return await res.clone().text()}catch(_){return ""} }
 
     function classify(status, txt, err){
       var t = String(txt || (err && err.message) || err || "");
@@ -1615,7 +1643,7 @@ lucide-react/dist/esm/lucide-react.mjs:
       if(status === 503 || /UNAVAILABLE|overload|temporarily unavailable|Service Unavailable/i.test(t)) return {type:"unavailable", msg:"HTTP 503/indisponível"};
       if(/abort|aborted|AbortError|operation was aborted/i.test(t)) return {type:"timeout", msg:"tempo limite atingido"};
       if(/network|Failed to fetch|Load failed/i.test(t)) return {type:"network", msg:"erro de rede"};
-      return {type:"other", msg: status ? "HTTP " + status : t.slice(0,160)};
+      return {type:"other", msg: status ? "HTTP " + status + " " + t.slice(0,120) : t.slice(0,160)};
     }
 
     function extractGeminiText(apiText){
@@ -1628,9 +1656,7 @@ lucide-react/dist/esm/lucide-react.mjs:
           });
         });
         return out.join("\n");
-      }catch(_){
-        return String(apiText || "");
-      }
+      }catch(_){ return String(apiText || ""); }
     }
 
     function stripDecor(s){
@@ -1649,18 +1675,13 @@ lucide-react/dist/esm/lucide-react.mjs:
 
     function normalizeExercise(ex){
       if(!ex || typeof ex !== "object") return ex;
-      if(!ex.type) ex.type = Array.isArray(ex.options) && ex.options.length ? "multiple_choice" : "translate";
-      if(ex.type === "multiple_choice" || Array.isArray(ex.options)){
-        if(!Array.isArray(ex.options)) ex.options = [];
+      if(!ex.type) ex.type = Array.isArray(ex.options) && ex.options.length ? "choice" : "translate";
+      if(Array.isArray(ex.options)){
         ex.options = ex.options.map(function(o){return String(o)});
-        if(ex.options.length < 4){
-          var ans = String(ex.answer || "").trim();
-          while(ex.options.length < 4) ex.options.push(ex.options.length === 0 && ans ? ans : "Opção " + (ex.options.length + 1));
-        }
-        if(ex.answer && ex.options.indexOf(String(ex.answer)) === -1){
-          ex.options[0] = String(ex.answer);
-        }
-        ex.type = "multiple_choice";
+        while(ex.options.length < 4) ex.options.push("Opção " + (ex.options.length + 1));
+        if(ex.answer && ex.options.indexOf(String(ex.answer)) === -1) ex.options[0] = String(ex.answer);
+      } else {
+        ex.options = [];
       }
       return ex;
     }
@@ -1683,49 +1704,27 @@ lucide-react/dist/esm/lucide-react.mjs:
 
     function validateLessonObject(lesson){
       var errors = [];
-      if(!lesson || typeof lesson !== "object"){
-        return {ok:false, errors:["não veio JSON de aula"], length:0};
-      }
-
+      if(!lesson || typeof lesson !== "object") return {ok:false, errors:["não veio JSON de aula"], length:0};
       lesson = normalizeLesson(lesson);
       var all = "";
-      try{ all = JSON.stringify(lesson); }catch(_){ all = ""; }
+      try{all = JSON.stringify(lesson)}catch(_){}
 
-      if(!lesson.title || String(lesson.title).trim().length < 8) errors.push("title ausente/curto");
-      if(!lesson.subtitle || String(lesson.subtitle).trim().length < 5) errors.push("subtitle ausente/curto");
-      if(!lesson.intro || String(lesson.intro).trim().length < 600) errors.push("intro curta");
+      if(!lesson.title || String(lesson.title).trim().length < 8) errors.push("title curto");
+      if(!lesson.intro || String(lesson.intro).trim().length < 450) errors.push("intro curta");
       if(!Array.isArray(lesson.sections) || lesson.sections.length < 4) errors.push("sections precisa ter 4+ itens");
-      if(Array.isArray(lesson.sections)){
-        lesson.sections.forEach(function(s, i){
-          if(!s || typeof s !== "object") errors.push("section " + (i+1) + " inválida");
-          else{
-            if(!s.heading || String(s.heading).trim().length < 5) errors.push("section " + (i+1) + " sem heading");
-            if(!s.content || String(s.content).trim().length < 700) errors.push("section " + (i+1) + " content curto");
-            if(!Array.isArray(s.examples) || s.examples.length < 4) errors.push("section " + (i+1) + " com poucos examples");
-            if(Array.isArray(s.examples)){
-              s.examples.slice(0,4).forEach(function(ex, j){
-                if(!ex || !ex.en || !ex.pt) errors.push("section " + (i+1) + " example " + (j+1) + " sem en/pt");
-              });
-            }
-          }
+      lesson.sections.slice(0,4).forEach(function(s,i){
+        if(!s.heading || String(s.heading).trim().length < 4) errors.push("section "+(i+1)+" sem heading");
+        if(!s.content || String(s.content).trim().length < 350) errors.push("section "+(i+1)+" content curto");
+        if(!Array.isArray(s.examples) || s.examples.length < 4) errors.push("section "+(i+1)+" com poucos exemplos");
+        (s.examples||[]).slice(0,4).forEach(function(ex,j){
+          if(!ex || !ex.en || !ex.pt) errors.push("section "+(i+1)+" example "+(j+1)+" incompleto");
         });
-      }
-      if(!Array.isArray(lesson.vocabulary) || lesson.vocabulary.length < 10) errors.push("vocabulary precisa ter 10+ itens");
-      if(Array.isArray(lesson.vocabulary)){
-        lesson.vocabulary.slice(0,10).forEach(function(v, i){
-          if(!v || !v.word || !v.translation || !v.example) errors.push("vocabulary " + (i+1) + " incompleto");
-        });
-      }
-      if(!Array.isArray(lesson.exercises) || lesson.exercises.length < 10) errors.push("exercises precisa ter 10+ itens");
-      if(Array.isArray(lesson.exercises)){
-        lesson.exercises.slice(0,10).forEach(function(e, i){
-          if(!e || !e.question || !e.answer || !e.explanation) errors.push("exercise " + (i+1) + " incompleto");
-          if(e && e.type === "multiple_choice" && (!Array.isArray(e.options) || e.options.length < 4)) errors.push("exercise " + (i+1) + " sem 4 opções");
-        });
-      }
-      if(!Array.isArray(lesson.tips) || lesson.tips.length < 5) errors.push("tips precisa ter 5+ itens");
-      if(!lesson.finalTip || String(lesson.finalTip).trim().length < 400) errors.push("finalTip curto");
-      if(all.length < 6500) errors.push("JSON total menor que 6500 caracteres");
+      });
+      if(!Array.isArray(lesson.vocabulary) || lesson.vocabulary.length < 8) errors.push("vocabulary precisa ter 8+ itens");
+      if(!Array.isArray(lesson.exercises) || lesson.exercises.length < 8) errors.push("exercises precisa ter 8+ itens");
+      if(!Array.isArray(lesson.tips) || lesson.tips.length < 3) errors.push("tips precisa ter 3+ itens");
+      if(!lesson.finalTip || String(lesson.finalTip).trim().length < 250) errors.push("finalTip curto");
+      if(all.length < 4500) errors.push("JSON total menor que 4500 caracteres");
 
       return {ok:errors.length === 0, errors:errors, length:all.length, lesson:lesson};
     }
@@ -1740,12 +1739,7 @@ lucide-react/dist/esm/lucide-react.mjs:
           return JSON.stringify(api);
         }
       }catch(_){}
-      return JSON.stringify({
-        candidates:[{
-          content:{role:"model", parts:[{text:lessonText}]},
-          finishReason:"STOP"
-        }]
-      });
+      return JSON.stringify({candidates:[{content:{role:"model",parts:[{text:lessonText}]},finishReason:"STOP"}]});
     }
 
     function makeResponseFromText(text, status){
@@ -1753,9 +1747,7 @@ lucide-react/dist/esm/lucide-react.mjs:
     }
 
     function makeErrorResponse(status, message){
-      return new Response(JSON.stringify({
-        error:{code:status,status:"LESSON_GENERATION_FAILED",message:message}
-      }), {status:status, headers:{"Content-Type":"application/json"}});
+      return new Response(JSON.stringify({error:{code:status,status:"LESSON_GENERATION_FAILED",message:message}}), {status:status, headers:{"Content-Type":"application/json"}});
     }
 
     function purgeShortLessons(){
@@ -1766,10 +1758,10 @@ lucide-react/dist/esm/lucide-react.mjs:
           if(!k || (k.indexOf("fluency_lesson_") !== 0 && k.indexOf("fluency_lesson_v") !== 0)) continue;
           try{
             var v = JSON.parse(localStorage.getItem(k) || "null");
-            var bad = !v || v._fallback || !v.title || !v.intro || String(v.intro).length < 120 ||
-              !Array.isArray(v.sections) || v.sections.length < 4 ||
-              !Array.isArray(v.exercises) || v.exercises.length < 8 ||
-              !Array.isArray(v.vocabulary) || v.vocabulary.length < 8;
+            var bad = !v || v._fallback || !v.title || !v.intro || String(v.intro).length < 100 ||
+              !Array.isArray(v.sections) || v.sections.length < 3 ||
+              !Array.isArray(v.exercises) || v.exercises.length < 5 ||
+              !Array.isArray(v.vocabulary) || v.vocabulary.length < 5;
             if(bad){localStorage.removeItem(k); removed++}
           }catch(_){}
         }
@@ -1780,13 +1772,14 @@ lucide-react/dist/esm/lucide-react.mjs:
     purgeShortLessons();
 
     try{
-      localStorage.setItem("fluency_lessonModel", getLessonModel());
-      localStorage.setItem("fluency_preferredLessonModel", getLessonModel());
+      localStorage.setItem(LESSON_MODEL_STORAGE, "gemini-2.5-flash");
+      localStorage.setItem("fluency_lessonModel", "gemini-2.5-flash");
+      localStorage.setItem("fluency_preferredLessonModel", "gemini-2.5-flash");
       localStorage.setItem("fluency_validateLessons", "false");
     }catch(_){}
 
-    if(typeof window.fetch === "function" && !window.__fluencyLessonKeyFetchV10Installed){
-      window.__fluencyLessonKeyFetchV10Installed = true;
+    if(typeof window.fetch === "function" && !window.__fluencyLessonKeyFetchV11Installed){
+      window.__fluencyLessonKeyFetchV11Installed = true;
       var realFetch = window.fetch.bind(window);
 
       window.fetch = async function(input, init){
@@ -1794,27 +1787,24 @@ lucide-react/dist/esm/lucide-react.mjs:
         try{url = typeof input === "string" ? input : (input && input.url) || ""}catch(_){}
         var body = getBody(init);
 
-        if(!isLessonRequest(url, body)){
-          return realFetch(input, init);
-        }
+        if(!isLessonRequest(url, body)) return realFetch(input, init);
 
         var lessonKey = getLessonKey();
         if(!lessonKey){
-          diag("sem_key_aulas", "Nenhuma key Gemini exclusiva de aulas configurada. Toque em 'Configurar Key Gemini de Aulas'.");
+          diag("sem_key_aulas", "Nenhuma key Gemini exclusiva de aulas configurada.");
           return makeErrorResponse(400, "Configure a Gemini key exclusiva para aulas.");
         }
 
         var lessonUrl = buildLessonUrl(url, lessonKey);
         var model = getLessonModel();
 
-        diag("inicio", "Gerando aula com validação ESTRUTURAL. Só aprovo se sections/exercises/vocabulary vierem como arrays reais. Modelo: " + model + ".", {model:model});
+        diag("inicio", "Gerando aula com responseSchema e modelo forçado " + model + ". Flash-lite foi desativado para aulas.", {model:model});
 
         var last = "";
         for(var attempt=1; attempt<=4; attempt++){
           try{
-            diag("tentativa", "Tentativa " + attempt + "/4. Aguardando aula completa… Pode demorar até 4 minutos.", {attempt:attempt, model:model});
+            diag("tentativa", "Tentativa " + attempt + "/4 com JSON schema. Pode demorar até 4 minutos.", {attempt:attempt, model:model});
             var clean = cleanInit(init, body, attempt);
-
             var res = await fetchWithLongTimeout(realFetch, lessonUrl, clean, 240000);
 
             if(res && res.ok){
@@ -1825,84 +1815,43 @@ lucide-react/dist/esm/lucide-react.mjs:
 
               if(validation.ok){
                 var fixedApiText = replaceGeminiResponseWithLesson(txt, validation.lesson);
-                diag("ok", "Aula estrutural aprovada. Sections: " + validation.lesson.sections.length + ", exercícios: " + validation.lesson.exercises.length + ", vocabulário: " + validation.lesson.vocabulary.length + ", tamanho: " + validation.length + ".", {length:validation.length, model:model});
+                diag("ok", "Aula aprovada com schema. Sections: " + validation.lesson.sections.length + ", exercícios: " + validation.lesson.exercises.length + ", vocabulário: " + validation.lesson.vocabulary.length + ", tamanho: " + validation.length + ".", {length:validation.length, model:model});
                 return makeResponseFromText(fixedApiText, 200);
               }
 
               last = validation.errors.slice(0,5).join("; ");
-              diag("aula_rejeitada", "Resposta rejeitada: " + last + ". Vou tentar novamente com prompt mais rígido.", {attempt:attempt, length:validation.length});
-              if(attempt < 4){
-                await sleep(1600);
-                continue;
-              }
-              return makeErrorResponse(422, "A Gemini respondeu, mas a estrutura da aula veio incompleta: " + last);
+              diag("aula_rejeitada", "Resposta rejeitada mesmo com schema: " + last + ". Tentarei novamente.", {attempt:attempt, length:validation.length});
+              if(attempt < 4){ await sleep(1600); continue; }
+              return makeErrorResponse(422, "A Gemini respondeu, mas a estrutura ainda veio incompleta: " + last);
             }
 
             var raw = await responseText(res);
             var c = classify(res && res.status, raw);
             last = c.msg;
-
             diag("erro_api", "Erro na Gemini key de aulas: " + c.msg + ". " + (attempt < 4 ? "Vou tentar novamente." : "Sem mais tentativas."), {attempt:attempt, statusCode:res && res.status});
 
             if((c.type === "unavailable" || c.type === "timeout" || c.type === "network") && attempt < 4){
               await sleep(2500 * attempt);
               continue;
             }
-
             return res;
-
           }catch(e){
             var c2 = classify(0, "", e);
             last = c2.msg;
             diag("erro_rede", "Falha/timeout na geração da aula: " + c2.msg + ". " + (attempt < 4 ? "Vou tentar novamente." : "Sem mais tentativas."), {attempt:attempt});
-            if(attempt < 4){
-              await sleep(2500 * attempt);
-              continue;
-            }
+            if(attempt < 4){ await sleep(2500 * attempt); continue; }
           }
         }
-
-        return makeErrorResponse(500, "Não consegui gerar aula estrutural completa com a key exclusiva. Último erro: " + (last || "sem detalhe"));
+        return makeErrorResponse(500, "Não consegui gerar aula completa com schema. Último erro: " + (last || "sem detalhe"));
       };
     }
 
-    var stuckAt = 0;
-    function watchStuck(){
-      try{
-        var t = document.body && document.body.innerText || "";
-        if(t.indexOf("Preparando sua aula") === -1 && t.indexOf("Preparando aula") === -1){
-          stuckAt = 0;
-          return;
-        }
-        if(!stuckAt) stuckAt = Date.now();
-        var sec = Math.round((Date.now() - stuckAt) / 1000);
-        if(sec < 60) return;
-
-        var d = window.__fluencyLessonDiag || safeJson(localStorage.getItem(DIAG_KEY) || "null") || {};
-        var detail = d.detail || "A geração está demorando. A V10 permite até 4 minutos por tentativa.";
-        diag("aguardando", "Tela em preparação há " + sec + "s. " + detail);
-
-        if(document.getElementById("__lesson_wait_v10__")) return;
-        var parent = (document.querySelector(".animate-spin") || {}).parentElement || document.body;
-        var box = document.createElement("div");
-        box.id = "__lesson_wait_v10__";
-        box.style.cssText = "margin:18px auto;max-width:560px;padding:14px;border-radius:16px;background:rgba(30,41,59,.78);border:1px solid rgba(147,197,253,.42);color:#dbeafe;font-family:-apple-system,BlinkMacSystemFont,sans-serif;text-align:left;font-size:13px;line-height:1.45;z-index:999999;position:relative;";
-        box.innerHTML = "<b>A aula ainda está sendo gerada.</b><br>" + esc(detail) + "<br><span style='color:#fbbf24'>A V10 rejeita aula sem seções/exercícios/vocabulário reais. Isso pode demorar mais, mas evita aula curta.</span><br><button id='__lesson_clear_v10__' style='margin-top:10px;padding:10px 12px;border-radius:12px;border:1px solid rgba(147,197,253,.55);background:rgba(15,23,42,.5);color:#fff;font-weight:800'>Limpar aula travada e recarregar</button>";
-        parent.appendChild(box);
-        document.getElementById("__lesson_clear_v10__").onclick = function(){
-          try{purgeShortLessons()}catch(_){}
-          location.reload();
-        };
-      }catch(_){}
-    }
-    setInterval(watchStuck, 3000);
-
     setTimeout(function(){
       var hasKey = !!getLessonKey();
-      diag("patch_v10_ativo", "PATCH V10 STRICT ativo. Key de aulas: " + (hasKey ? "configurada" : "não configurada") + ". Modelo: " + getLessonModel() + ". Agora aula só passa com sections/exercises/vocabulary reais.", {hasLessonKey:hasKey, model:getLessonModel()});
+      diag("patch_v11_ativo", "PATCH V11 ativo. Key de aulas: " + (hasKey ? "configurada" : "não configurada") + ". Modelo forçado: gemini-2.5-flash. Agora usa responseSchema.", {hasLessonKey:hasKey, model:getLessonModel()});
     }, 1200);
 
   }catch(e){
-    try{console.warn("Patch V10 strict lesson key failed", e)}catch(_){}
+    try{console.warn("Patch V11 schema failed", e)}catch(_){}
   }
 })();
