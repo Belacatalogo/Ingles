@@ -2611,3 +2611,200 @@ lucide-react/dist/esm/lucide-react.mjs:
 
 /* === FLUENCY PATCH V19 - PILARES + SPEAKING + SÁBADO REVIEW === */
 ;(function(){try{window.__fluencyPillarAwareV19=true;localStorage.setItem('fluency_pillar_v19','speaking-friday-saturday-review-40min');setTimeout(function(){try{var els=[].slice.call(document.querySelectorAll('div'));var p=els.find(function(el){var t=el.innerText||'';return t.indexOf('Vozes carregadas')!==-1&&t.indexOf('Saúde Azure')!==-1});if(p&&!document.getElementById('__fluency_v19_pillar_panel__')){var d=document.createElement('div');d.id='__fluency_v19_pillar_panel__';d.style.cssText='margin-top:10px;padding-top:10px;border-top:1px solid rgba(148,163,184,.25);font-size:13px;line-height:1.38;color:#dbeafe;';d.innerHTML="<div style='font-weight:900;color:#93c5fd;margin-bottom:6px'>Pilares — V19 ATIVO</div><div>Speaking na sexta, revisão liberada no sábado e prompt aprofundado de até 40 minutos.</div>";p.appendChild(d)}}catch(_){}} ,1200)}catch(e){try{console.warn('Patch V19 failed',e)}catch(_){}}})();
+
+/* === FLUENCY PATCH V19.1 - FIX CHAVE EXCLUSIVA DE AULAS NA ABA PROGRESSO === */
+;(function(){
+  try{
+    if(window.__fluencyLessonKeyProgressFixV191) return;
+    window.__fluencyLessonKeyProgressFixV191 = true;
+
+    var VERSION = 'V19.1-LESSON-KEY-FIX';
+    var PRIMARY = 'fluency_lessonGeminiApiKey';
+    var ALIASES = [
+      'fluency_lessonGeminiApiKey',
+      'fluency_lessonGeminiKey',
+      'lessonGeminiApiKey',
+      'lessonGeminiKey',
+      'fluency_geminiLessonKey'
+    ];
+
+    function clean(v){
+      v = String(v || '').trim();
+      if(!v) return '';
+      try{
+        if((v[0] === '"' && v[v.length-1] === '"') || (v[0] === '{' || v[0] === '[')){
+          var p = JSON.parse(v);
+          if(typeof p === 'string') v = p.trim();
+          else if(p && typeof p.key === 'string') v = p.key.trim();
+          else if(p && typeof p.apiKey === 'string') v = p.apiKey.trim();
+        }
+      }catch(_){}
+      return String(v || '').trim();
+    }
+
+    function valid(k){
+      k = clean(k);
+      return /^AIza[0-9A-Za-z_\-]{20,}$/.test(k);
+    }
+
+    function mask(k){
+      k = clean(k);
+      if(!k) return '';
+      if(k.length <= 14) return k.slice(0,4) + '...';
+      return k.slice(0,8) + '...' + k.slice(-4);
+    }
+
+    function getLessonKey(){
+      try{
+        for(var i=0;i<ALIASES.length;i++){
+          var v = clean(localStorage.getItem(ALIASES[i]));
+          if(valid(v)) return v;
+        }
+      }catch(_){}
+      return '';
+    }
+
+    function setLessonKey(k){
+      k = clean(k);
+      try{
+        if(!k){
+          for(var i=0;i<ALIASES.length;i++) localStorage.removeItem(ALIASES[i]);
+          return '';
+        }
+        for(var j=0;j<ALIASES.length;j++) localStorage.setItem(ALIASES[j], k);
+        try{ localStorage.setItem('fluency___lessonKeySavedAt', String(Date.now())); }catch(_){}
+        return k;
+      }catch(e){
+        alert('Erro ao salvar key de aulas: ' + ((e && e.message) || e));
+        return '';
+      }
+    }
+
+    window.__fluencyGetLessonKeyV191 = getLessonKey;
+    window.__fluencySetLessonKeyV191 = setLessonKey;
+
+    function findProgressCard(){
+      try{
+        var buttons = Array.prototype.slice.call(document.querySelectorAll('button'));
+        var saveBtn = buttons.find(function(b){ return /Salvar chaves/i.test((b.textContent || '').trim()); });
+        if(!saveBtn) return null;
+        var node = saveBtn.parentElement;
+        for(var i=0;i<5 && node && node.parentElement;i++){
+          var txt = node.innerText || '';
+          if(/Salvar chaves/i.test(txt) && /Testar chaves/i.test(txt)) return node;
+          node = node.parentElement;
+        }
+        return saveBtn.parentElement;
+      }catch(_){ return null; }
+    }
+
+    function logDiag(msg, kind){
+      try{
+        var els = Array.prototype.slice.call(document.querySelectorAll('div'));
+        var p = els.find(function(el){
+          var t = el.innerText || '';
+          return t.indexOf('Vozes carregadas') !== -1 && t.indexOf('Saúde Azure') !== -1;
+        });
+        if(!p) return;
+        var root = document.getElementById('__fluency_lesson_key_v191_diag__');
+        if(!root){
+          root = document.createElement('div');
+          root.id = '__fluency_lesson_key_v191_diag__';
+          root.style.cssText = 'margin-top:10px;padding-top:10px;border-top:1px solid rgba(148,163,184,.25);font-size:13px;line-height:1.35;color:#dbeafe;';
+          root.innerHTML = "<div style='font-weight:900;color:#86efac;margin-bottom:6px'>Chave de Aulas — V19.1 ATIVO</div>";
+          p.appendChild(root);
+        }
+        var row = document.createElement('div');
+        row.style.color = kind === 'ok' ? '#86efac' : kind === 'warn' ? '#fbbf24' : '#93c5fd';
+        row.textContent = new Date().toLocaleTimeString() + ' ' + VERSION + ': ' + msg;
+        root.insertBefore(row, root.children[1] || null);
+        while(root.children.length > 10) root.removeChild(root.lastChild);
+      }catch(_){}
+    }
+
+    function sectionHtml(k){
+      var has = valid(k);
+      var status = has
+        ? '✅ Configurada — ' + mask(k) + ' · usando gemini-2.5-pro exclusivamente'
+        : '⚠️ Não configurada (usa chave principal)';
+      var btn = has ? '✏️ Alterar key de aulas' : '➕ Configurar key de aulas';
+      var remove = has ? '<button id="__lk_remove_btn__" style="padding:8px 16px;border-radius:10px;background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.3);color:#fca5a5;font-size:13px;cursor:pointer;font-family:inherit">🗑 Remover</button>' : '';
+      return ''+
+        '<div style="margin-top:20px;padding:16px;border-radius:12px;border:1px solid rgba(91,156,246,.25);background:rgba(91,156,246,.06)">'+
+          '<div style="font-size:10px;text-transform:uppercase;letter-spacing:.18em;color:rgba(180,190,220,.6);margin-bottom:4px">Chave Exclusiva de Aulas (V19.1 Pro)</div>'+
+          '<p style="font-size:13px;color:#93C5FD;margin:0 0 6px 0;line-height:1.55">Key separada para geração de aulas. Prioridade sobre a chave principal — útil para isolar consumo do modelo Pro.</p>'+
+          '<p id="__lk_status_text__" style="font-size:12px;color:'+(has?'#86efac':'rgba(180,190,220,.72)')+';margin:0 0 10px 0">'+status+'</p>'+
+          '<div style="display:flex;gap:8px;flex-wrap:wrap">'+
+            '<button id="__lk_config_btn__" style="padding:8px 16px;border-radius:10px;background:linear-gradient(135deg,rgba(91,156,246,.28),rgba(139,92,246,.2));border:1px solid rgba(91,156,246,.45);color:#e8eff8;font-size:13px;cursor:pointer;font-family:inherit">'+btn+'</button>'+remove+
+          '</div>'+
+        '</div>';
+    }
+
+    function bindButtons(){
+      var k = getLessonKey();
+      var cb = document.getElementById('__lk_config_btn__');
+      if(cb){
+        cb.onclick = function(ev){
+          try{ ev.preventDefault(); ev.stopPropagation(); }catch(_){}
+          var current = getLessonKey();
+          var input = prompt((current ? 'Key atual: ' + mask(current) + '\n\n' : '') + 'Cole sua Gemini API Key para aulas (AIza...):', current || '');
+          if(input === null) return;
+          input = clean(input);
+          if(!input) return;
+          if(!valid(input)){
+            alert('Essa key não parece uma Gemini API Key válida. Ela normalmente começa com AIza.');
+            return;
+          }
+          setLessonKey(input);
+          render(true);
+          logDiag('key exclusiva salva e sincronizada em todos os aliases locais.', 'ok');
+          alert('✅ Key de aulas salva! Usando gemini-2.5-pro exclusivamente.');
+          setTimeout(function(){ render(true); }, 50);
+          setTimeout(function(){ render(true); }, 400);
+        };
+      }
+      var rb = document.getElementById('__lk_remove_btn__');
+      if(rb){
+        rb.onclick = function(ev){
+          try{ ev.preventDefault(); ev.stopPropagation(); }catch(_){}
+          if(!confirm('Remover key exclusiva? O app voltará a usar a chave principal.')) return;
+          setLessonKey('');
+          render(true);
+          logDiag('key exclusiva removida.', 'warn');
+          alert('Key de aulas removida.');
+        };
+      }
+    }
+
+    function render(force){
+      try{
+        var card = findProgressCard();
+        if(!card) return false;
+        var sec = document.getElementById('__lk_prog_section__');
+        if(!sec){
+          sec = document.createElement('div');
+          sec.id = '__lk_prog_section__';
+          card.appendChild(sec);
+        }
+        var k = getLessonKey();
+        var html = sectionHtml(k);
+        if(force || sec.__lastLessonKeyHtml !== html){
+          sec.innerHTML = html;
+          sec.__lastLessonKeyHtml = html;
+        }
+        bindButtons();
+        return true;
+      }catch(_){ return false; }
+    }
+
+    function tick(){ render(false); }
+    if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function(){ render(true); });
+    else setTimeout(function(){ render(true); }, 0);
+    try{
+      var obs = new MutationObserver(function(){ tick(); });
+      obs.observe(document.documentElement || document.body, {childList:true, subtree:true});
+    }catch(_){}
+    setInterval(tick, 700);
+    setTimeout(function(){ render(true); logDiag('patch ativo. Status da key: ' + (getLessonKey() ? 'configurada' : 'não configurada') + '.', getLessonKey() ? 'ok' : 'warn'); }, 800);
+  }catch(e){ try{ console.warn('Fluency V19.1 lesson key fix failed', e); }catch(_){} }
+})();
