@@ -4532,3 +4532,378 @@ lucide-react/dist/esm/lucide-react.mjs:
     try{console.warn("Patch V19.10 Lesson Keys Diagnostic failed", e);}catch(_){}
   }
 })();
+
+
+
+/* === FLUENCY PATCH V19.11B - DIAGNÓSTICO ANCORADO, SEM SOBREPOR A TELA === */
+;(function(){
+  try{
+    if(window.__fluencyDiagAnchorFixV1911B) return;
+    window.__fluencyDiagAnchorFixV1911B = true;
+
+    var VERSION = "V19.11B-DIAG-ANCHOR-FIX";
+    var BOX_ID = "__fluency_v1911b_diag_box__";
+    var OLD_IDS = [
+      "__fluency_v198_clean_diag__",
+      "__fluency_v198_scroll_spacer__",
+      "__fluency_v199_relevant_diag__",
+      "__fluency_v1910_lesson_keys_diag__",
+      "__fluency_v1911_diag_box__"
+    ];
+
+    function txt(el){
+      try{return String((el && (el.innerText || el.textContent)) || "");}catch(_){return "";}
+    }
+
+    function isVisible(el){
+      try{
+        var r = el.getBoundingClientRect();
+        var cs = getComputedStyle(el);
+        return r.width > 20 && r.height > 20 && cs.display !== "none" && cs.visibility !== "hidden" && Number(cs.opacity || 1) > 0.03;
+      }catch(_){return false;}
+    }
+
+    function esc(s){
+      return String(s == null ? "" : s)
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;")
+        .replace(/'/g,"&#39;");
+    }
+
+    function mask(k){
+      k = String(k || "").trim().replace(/\s+/g,"");
+      if(!k) return "não configurada";
+      if(k.length < 12) return "configurada";
+      return k.slice(0,8) + "..." + k.slice(-4);
+    }
+
+    function readKey(keys){
+      try{
+        for(var i=0;i<keys.length;i++){
+          var v = localStorage.getItem(keys[i]) || sessionStorage.getItem(keys[i]) || "";
+          if(v && String(v).trim()) return String(v).trim();
+        }
+      }catch(_){}
+      return "";
+    }
+
+    var FLASH_KEYS = [
+      "fluency_lessonFlashApiKey",
+      "fluency_lessonGeminiFlashKey",
+      "lessonGeminiFlashApiKey",
+      "lessonFlashKey",
+      "fluency_aulasFlashKey",
+      "fluency_freeLessonGeminiApiKey",
+      "fluency_lesson_free_key"
+    ];
+
+    var PRO_KEYS = [
+      "fluency_lessonProApiKey",
+      "fluency_lessonGeminiProKey",
+      "lessonGeminiProApiKey",
+      "lessonProKey",
+      "fluency_aulasProKey",
+      "fluency_paidLessonGeminiApiKey",
+      "fluency_lesson_paid_key",
+      "fluency_lessonGeminiApiKey",
+      "fluency_lessonGeminiKey",
+      "lessonGeminiApiKey",
+      "lessonGeminiKey",
+      "fluency_geminiLessonKey",
+      "fluency_proLessonGeminiApiKey",
+      "fluency_aulasGeminiKey",
+      "fluency_lesson_key",
+      "fluency_lesson_api_key"
+    ];
+
+    function getFlashKey(){ return readKey(FLASH_KEYS); }
+    function getProKey(){ return readKey(PRO_KEYS); }
+
+    function getLastModel(){
+      try{
+        var arr = [
+          window.__fluencyLastLessonModelV197,
+          window.__fluencyLastLessonModelV195,
+          window.__fluencyLastLessonModelV193
+        ];
+        try{ arr.push(JSON.parse(localStorage.getItem("fluency_last_lesson_model_v195") || "null")); }catch(_){}
+        for(var i=0;i<arr.length;i++){
+          if(arr[i]) return arr[i];
+        }
+      }catch(_){}
+      return null;
+    }
+
+    function latestLesson(){
+      try{
+        var best = null;
+        for(var i=localStorage.length-1;i>=0;i--){
+          var k = localStorage.key(i);
+          if(!/^fluency_lesson/i.test(String(k||""))) continue;
+          var raw = localStorage.getItem(k);
+          if(!raw) continue;
+          var o = JSON.parse(raw);
+          if(typeof o === "string") o = JSON.parse(o);
+          if(!o || typeof o !== "object") continue;
+          var size = JSON.stringify(o).length;
+          if(!best || size > best.size){
+            best = {
+              key:k,
+              title:o.title || o.heading || "aula salva",
+              skill:o.skill || o.pillar || o.type || o.category || "-",
+              level:o.level || o.cefr || "-",
+              sections:Array.isArray(o.sections) ? o.sections.length : 0,
+              exercises:Array.isArray(o.exercises) ? o.exercises.length : 0,
+              vocabulary:Array.isArray(o.vocabulary) ? o.vocabulary.length : 0,
+              modelUsed:o.modelUsed || o.model || o.generatedModel || "-",
+              generatedBy:o.generatedBy || o._generatedBy || "-",
+              size:size
+            };
+          }
+        }
+        return best;
+      }catch(_){return null;}
+    }
+
+    function removeIAConversa(){
+      try{
+        Array.prototype.slice.call(document.querySelectorAll("div,section,aside")).forEach(function(el){
+          var t = txt(el).trim();
+          if(!/IA Conversa/i.test(t)) return;
+          if(/Aulas IA|Chave de Aulas|Vozes carregadas|Saúde Azure|Diagnóstico|GEMINI/i.test(t)) return;
+          var r = el.getBoundingClientRect();
+          if(r.width <= 650 && r.height <= 340){
+            el.style.setProperty("display","none","important");
+            el.style.setProperty("visibility","hidden","important");
+            el.style.setProperty("pointer-events","none","important");
+          }
+        });
+      }catch(_){}
+    }
+
+    function findPanel(){
+      try{
+        var nodes = Array.prototype.slice.call(document.querySelectorAll("div,section,aside"));
+        var candidates = nodes.filter(function(el){
+          if(!isVisible(el)) return false;
+          var t = txt(el);
+          var r = el.getBoundingClientRect();
+          if(r.width < 230 || r.height < 260) return false;
+          if(r.left < window.innerWidth * 0.22) return false;
+          return /pronto|Vozes carregadas|Speech destravado|Saúde Azure|Aulas IA|Chave de Aulas|Motivo fallback|Diagnóstico/i.test(t);
+        });
+
+        if(!candidates.length){
+          candidates = nodes.filter(function(el){
+            if(!isVisible(el)) return false;
+            var r = el.getBoundingClientRect();
+            if(r.left < window.innerWidth * 0.42) return false;
+            if(r.top > window.innerHeight * 0.25) return false;
+            if(r.width < 230 || r.height < 300) return false;
+            return true;
+          });
+        }
+
+        if(!candidates.length) return null;
+
+        candidates.sort(function(a,b){
+          function score(el){
+            var r = el.getBoundingClientRect();
+            var t = txt(el);
+            var s = 0;
+            s += Math.abs(r.top - 70);
+            s += Math.abs(r.right - (window.innerWidth - 8));
+            s += Math.abs(r.height - window.innerHeight * 0.72);
+            if(/Vozes carregadas|Speech destravado|Aulas IA|Chave de Aulas/i.test(t)) s -= 250;
+            if(/pronto/i.test(t)) s -= 80;
+            return s;
+          }
+          return score(a) - score(b);
+        });
+
+        return candidates[0];
+      }catch(_){return null;}
+    }
+
+    function cleanup(panel){
+      try{
+        OLD_IDS.concat([BOX_ID]).forEach(function(id){
+          Array.prototype.slice.call(document.querySelectorAll("#"+id)).forEach(function(el){
+            if(!panel || !panel.contains(el)) el.remove();
+          });
+        });
+
+        Array.prototype.slice.call(document.querySelectorAll("[data-fluency-v198-hidden-old-diag]")).forEach(function(el){
+          el.removeAttribute("data-fluency-v198-hidden-old-diag");
+          el.style.removeProperty("display");
+          el.style.removeProperty("visibility");
+        });
+
+        Array.prototype.slice.call(document.querySelectorAll("div,section,aside")).forEach(function(el){
+          if(panel && panel.contains(el)) return;
+          var t = txt(el);
+          if(/Diagnóstico — V19\.9|Chave de Aulas — V19\.10|Diagnóstico — V19\.8|Chave de Aulas — V19\.11/i.test(t)){
+            var r = el.getBoundingClientRect();
+            if(r.width > 150 && r.height > 50) el.remove();
+          }
+        });
+      }catch(_){}
+    }
+
+    function importantLines(panel){
+      try{
+        var lines = txt(panel).split(/\n+/).map(function(x){return x.trim();}).filter(Boolean);
+        var keep = [];
+        var rx = /(Chave de Aulas|LESSON-KEY|key exclusiva|key de aulas|Aulas IA|GEMINI|gemini-2\.5|aula aprovada|tentativa|chamada direta|Patch V15|V19\.1|V19\.2|V19\.3|V19\.4|V19\.5|V19\.7|V19\.9|V19\.10|FLASH|PRO|Economy|Tamanho|seções|exercícios)/i;
+        lines.forEach(function(l){
+          if(rx.test(l) && keep.indexOf(l) === -1) keep.push(l);
+        });
+        return keep.slice(0,18);
+      }catch(_){return [];}
+    }
+
+    function modelLine(){
+      var last = getLastModel();
+      var l = latestLesson();
+      if(last && (last.model || last.source)){
+        return (last.model || "-") + (last.source ? " · " + last.source : "") + (last.blocks ? " · " + last.blocks + " blocos" : "");
+      }
+      if(l && l.modelUsed && l.modelUsed !== "-"){
+        return l.modelUsed + (l.generatedBy && l.generatedBy !== "-" ? " · " + l.generatedBy : "");
+      }
+      return "ainda não detectado";
+    }
+
+    function render(){
+      removeIAConversa();
+      var panel = findPanel();
+      cleanup(panel);
+      if(!panel) return;
+
+      panel.style.setProperty("position","fixed","important");
+      panel.style.setProperty("top","70px","important");
+      panel.style.setProperty("right","10px","important");
+      panel.style.setProperty("left","auto","important");
+      panel.style.setProperty("width","min(430px, calc(100vw - 20px))","important");
+      panel.style.setProperty("max-width","calc(100vw - 20px)","important");
+      panel.style.setProperty("height","72vh","important");
+      panel.style.setProperty("max-height","72vh","important");
+      panel.style.setProperty("overflow-y","auto","important");
+      panel.style.setProperty("overflow-x","hidden","important");
+      panel.style.setProperty("-webkit-overflow-scrolling","touch","important");
+      panel.style.setProperty("touch-action","pan-y","important");
+      panel.style.setProperty("overscroll-behavior","contain","important");
+      panel.style.setProperty("z-index","2147483000","important");
+      panel.style.setProperty("padding-bottom","120px","important");
+      panel.style.setProperty("contain","layout paint","important");
+
+      var box = panel.querySelector("#"+BOX_ID);
+      if(!box){
+        box = document.createElement("div");
+        box.id = BOX_ID;
+        box.style.cssText = [
+          "position:relative",
+          "z-index:1",
+          "display:block",
+          "width:100%",
+          "max-width:100%",
+          "margin:0 0 12px 0",
+          "padding:14px",
+          "box-sizing:border-box",
+          "border:1px solid rgba(96,165,250,.42)",
+          "border-radius:16px",
+          "background:rgba(15,23,42,.96)",
+          "box-shadow:0 8px 30px rgba(0,0,0,.28)",
+          "font-family:inherit",
+          "font-size:14px",
+          "line-height:1.45",
+          "color:#dbeafe",
+          "overflow:hidden"
+        ].join(";");
+        panel.insertBefore(box, panel.firstChild);
+      }
+
+      var flash = getFlashKey();
+      var pro = getProKey();
+      var l = latestLesson();
+      var lines = importantLines(panel);
+
+      var lessonHtml = l ? (
+        "<div style='margin-top:10px;padding:10px;border-radius:12px;background:rgba(30,41,59,.72);border:1px solid rgba(148,163,184,.18)'>" +
+        "<div style='font-weight:900;color:#93c5fd;margin-bottom:4px'>Última aula salva</div>" +
+        "<div><b>Título:</b> "+esc(String(l.title).slice(0,76))+"</div>" +
+        "<div><b>Pilar:</b> "+esc(l.skill)+" · <b>Nível:</b> "+esc(l.level)+"</div>" +
+        "<div><b>Conteúdo:</b> "+l.sections+" seções · "+l.exercises+" exercícios · "+l.vocabulary+" vocabulários</div>" +
+        "<div><b>Tamanho:</b> "+l.size+" caracteres</div>" +
+        "</div>"
+      ) : "<div style='margin-top:10px;color:#fbbf24'>Última aula salva: ainda não encontrada.</div>";
+
+      var logsHtml = lines.length ? (
+        "<div style='margin-top:10px;padding:10px;border-radius:12px;background:rgba(2,6,23,.50);border:1px solid rgba(148,163,184,.18)'>" +
+        "<div style='font-weight:900;color:#86efac;margin-bottom:6px'>Logs de chave de aulas</div>" +
+        lines.map(function(line){
+          var color = /sem key|erro|falh|HTTP|fallback/i.test(line) ? "#fca5a5" : /aprovada|configurada|ativo|Tamanho/i.test(line) ? "#86efac" : "#c4b5fd";
+          return "<div style='margin:4px 0;color:"+color+"'>"+esc(line)+"</div>";
+        }).join("") +
+        "</div>"
+      ) : "";
+
+      box.innerHTML =
+        "<div style='font-weight:900;color:#86efac;font-size:18px;margin-bottom:6px'>Chave de Aulas — V19.11B ATIVO</div>" +
+        "<div style='font-size:12px;color:#93c5fd;letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px'>Diagnóstico ancorado</div>" +
+        "<div><b>Key Flash aulas:</b> " + (flash ? "configurada · "+esc(mask(flash)) : "não configurada") + "</div>" +
+        "<div><b>Key Pro reserva:</b> " + (pro ? "configurada · "+esc(mask(pro)) : "não configurada") + "</div>" +
+        "<div><b>Modelo da última geração:</b> " + esc(modelLine()) + "</div>" +
+        lessonHtml +
+        logsHtml;
+
+      Array.prototype.slice.call(panel.children).forEach(function(child){
+        if(child.id === BOX_ID) return;
+        var t = txt(child);
+        if(/Vozes carregadas|Speech destravado|Última voz|Modo análise|Áudio capturado|Azure key ativa|Saúde Azure|Último score|Motivo fallback|Pron API|Pron fallback|Diagnóstico iniciado/i.test(t) &&
+           !/Chave de Aulas|Aulas IA|LESSON-KEY|GEMINI|aula aprovada|gemini-2\.5/i.test(t)){
+          child.style.setProperty("display","none","important");
+          child.style.setProperty("visibility","hidden","important");
+        }
+      });
+    }
+
+    function addCss(){
+      if(document.getElementById("__fluency_v1911b_css__")) return;
+      var st = document.createElement("style");
+      st.id = "__fluency_v1911b_css__";
+      st.textContent = [
+        "#"+BOX_ID+" *{box-sizing:border-box;max-width:100%;}",
+        "#"+BOX_ID+"{user-select:text;-webkit-user-select:text;}",
+        "body > #"+BOX_ID+", main > #"+BOX_ID+", #root > #"+BOX_ID+"{display:none!important;}"
+      ].join("\n");
+      document.head.appendChild(st);
+    }
+
+    function run(){
+      addCss();
+      render();
+    }
+
+    window.__fluencyV1911BAnchorFix = run;
+    window.__fluencyV1911BInfo = function(){
+      return {
+        version: VERSION,
+        flash: mask(getFlashKey()),
+        pro: mask(getProKey()),
+        lastModel: getLastModel(),
+        lesson: latestLesson()
+      };
+    };
+
+    run();
+    setInterval(run, 850);
+    ["click","touchstart","pointerdown","focus","scroll"].forEach(function(ev){
+      window.addEventListener(ev, function(){ setTimeout(run, 80); }, true);
+    });
+  }catch(e){
+    try{console.warn("Patch V19.11B Diagnostic Anchor Fix failed", e);}catch(_){}
+  }
+})();
