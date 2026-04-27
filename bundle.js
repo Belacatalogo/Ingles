@@ -1350,39 +1350,42 @@ lucide-react/dist/esm/lucide-react.mjs:
 
 
 
-/* === Fluency patch V5: corrige AbortSignal nos retries + rotação real das 5 Gemini keys para AULAS === */
+/* === FLUENCY PATCH V6 CLEAN - aula IA, rotação Gemini e diagnóstico visível === */
 ;(function(){
   try{
-    if(window.__fluencyLessonPatchV5) return;
-    window.__fluencyLessonPatchV5 = true;
+    if(window.__fluencyLessonPatchV6Clean) return;
+    window.__fluencyLessonPatchV6Clean = true;
 
+    var VERSION = "V6-CLEAN";
     var DIAG_KEY = "fluency_lessonGenerationDiag";
-    var BAD_KEY_TTL = 8 * 60 * 1000;
+    var BAD_KEY = "fluency_badGeminiKeysV6";
+    var BAD_TTL = 6 * 60 * 1000;
 
-    function safeJson(v){ try{return JSON.parse(v)}catch(_){return null} }
-    function esc(s){ return String(s||"").replace(/[<>&]/g,function(c){return {"<":"&lt;",">":"&gt;","&":"&amp;"}[c]}) }
-    function clock(){ try{return new Date().toLocaleTimeString()}catch(_){return String(Date.now())} }
+    function safeJson(v){try{return JSON.parse(v)}catch(_){return null}}
+    function time(){try{return new Date().toLocaleTimeString()}catch(_){return String(Date.now())}}
+    function html(s){return String(s||"").replace(/[<>&]/g,function(c){return {"<":"&lt;",">":"&gt;","&":"&amp;"}[c]})}
 
-    function findDiagPanel(){
+    function findPanel(){
       try{
-        var panels = Array.prototype.slice.call(document.querySelectorAll("div"));
-        return panels.find(function(el){
-          var tx = el.innerText || "";
-          return tx.indexOf("Vozes carregadas") !== -1 && tx.indexOf("Saúde Azure") !== -1;
+        var els = Array.prototype.slice.call(document.querySelectorAll("div"));
+        return els.find(function(el){
+          var t = el.innerText || "";
+          return t.indexOf("Vozes carregadas") !== -1 && t.indexOf("Saúde Azure") !== -1;
         });
-      }catch(_){ return null }
+      }catch(_){return null}
     }
 
-    function panelLog(text, kind){
+    function log(msg, kind){
       try{
-        var panel = findDiagPanel();
-        if(!panel) return;
-        var box = document.getElementById("__lesson_diag_v5__");
-        if(!box){
-          box = document.createElement("div");
-          box.id = "__lesson_diag_v5__";
-          box.style.cssText = "margin-top:10px;padding-top:10px;border-top:1px solid rgba(148,163,184,.25);font-size:13px;line-height:1.38;color:#dbeafe;max-height:240px;overflow:auto;";
-          panel.appendChild(box);
+        var p = findPanel();
+        if(!p) return;
+        var root = document.getElementById("__fluency_lesson_v6_panel__");
+        if(!root){
+          root = document.createElement("div");
+          root.id = "__fluency_lesson_v6_panel__";
+          root.style.cssText = "margin-top:10px;padding-top:10px;border-top:1px solid rgba(148,163,184,.25);font-size:13px;line-height:1.38;color:#dbeafe;max-height:260px;overflow:auto;";
+          root.innerHTML = "<div style='font-weight:900;color:#86efac;margin-bottom:6px'>Aulas IA — PATCH V6-CLEAN ATIVO</div>";
+          p.appendChild(root);
         }
         var color = "#dbeafe";
         if(kind === "ok") color = "#86efac";
@@ -1390,48 +1393,41 @@ lucide-react/dist/esm/lucide-react.mjs:
         if(kind === "err") color = "#fca5a5";
         var row = document.createElement("div");
         row.style.color = color;
-        row.textContent = clock() + " Aula IA: " + String(text||"");
-        box.insertBefore(row, box.firstChild);
-        while(box.children.length > 18) box.removeChild(box.lastChild);
+        row.textContent = time() + " Aula IA " + VERSION + ": " + String(msg||"");
+        root.insertBefore(row, root.children[1] || null);
+        while(root.children.length > 20) root.removeChild(root.lastChild);
       }catch(_){}
     }
 
-    function setDiag(status, detail, extra){
+    function diag(status, detail, extra){
       try{
-        var d = Object.assign({
-          status: status || "info",
-          detail: String(detail || ""),
-          time: new Date().toLocaleString(),
-          ts: Date.now()
-        }, extra || {});
+        var d = Object.assign({version:VERSION,status:status,detail:String(detail||""),time:new Date().toLocaleString(),ts:Date.now()}, extra||{});
         window.__fluencyLessonDiag = d;
         localStorage.setItem(DIAG_KEY, JSON.stringify(d));
-        panelLog(detail, status === "ok" ? "ok" : (/erro|travado|falharam/i.test(status) ? "err" : (/quota|limite|503|429|próxima|proxima|abort/i.test(String(detail)) ? "warn" : "")));
+        var kind = status === "ok" ? "ok" : (/erro|falha|travado|todas/i.test(status) ? "err" : (/429|503|quota|limite|abort|pulando/i.test(String(detail)) ? "warn" : ""));
+        log(detail, kind);
         return d;
-      }catch(_){ return null }
-    }
-
-    function addKey(keys, k){
-      try{
-        k = String(k || "").trim();
-        if(!k || k.length < 20) return;
-        if(keys.indexOf(k) === -1) keys.push(k);
       }catch(_){}
     }
 
-    function getGeminiKeys(){
-      var keys = [];
-      try{ addKey(keys, localStorage.getItem("geminiApiKey")); }catch(_){}
-      try{ addKey(keys, localStorage.getItem("fluency_gemini_api_key")); }catch(_){}
-      try{ addKey(keys, localStorage.getItem("fluency_geminiApiKey")); }catch(_){}
-      try{ addKey(keys, localStorage.getItem("GOOGLE_API_KEY")); }catch(_){}
+    function addKey(list,k){
+      k = String(k||"").trim();
+      if(k.length < 20) return;
+      if(list.indexOf(k) === -1) list.push(k);
+    }
+
+    function getKeys(){
+      var list = [];
+      try{addKey(list, localStorage.getItem("geminiApiKey"))}catch(_){}
+      try{addKey(list, localStorage.getItem("fluency_gemini_api_key"))}catch(_){}
+      try{addKey(list, localStorage.getItem("fluency_geminiApiKey"))}catch(_){}
       try{
-        var arr = safeJson(localStorage.getItem("geminiKeys") || "[]");
-        if(Array.isArray(arr)) arr.forEach(function(k){ addKey(keys,k) });
+        var a = safeJson(localStorage.getItem("geminiKeys") || "[]");
+        if(Array.isArray(a)) a.forEach(function(k){addKey(list,k)});
       }catch(_){}
       try{
-        var arr2 = safeJson(localStorage.getItem("fluency_geminiKeys") || "[]");
-        if(Array.isArray(arr2)) arr2.forEach(function(k){ addKey(keys,k) });
+        var b = safeJson(localStorage.getItem("fluency_geminiKeys") || "[]");
+        if(Array.isArray(b)) b.forEach(function(k){addKey(list,k)});
       }catch(_){}
       try{
         for(var i=0;i<localStorage.length;i++){
@@ -1439,96 +1435,79 @@ lucide-react/dist/esm/lucide-react.mjs:
           if(!name || !/gemini/i.test(name) || !/key/i.test(name)) continue;
           var val = localStorage.getItem(name);
           var parsed = safeJson(val);
-          if(Array.isArray(parsed)) parsed.forEach(function(k){ addKey(keys,k) });
-          else String(val || "").split(/[\s,;]+/).forEach(function(k){ addKey(keys,k) });
+          if(Array.isArray(parsed)) parsed.forEach(function(k){addKey(list,k)});
+          else String(val||"").split(/[\s,;]+/).forEach(function(k){addKey(list,k)});
         }
       }catch(_){}
-      return keys.slice(0,5);
+      return list.slice(0,5);
     }
 
-    function badMap(){ return safeJson(localStorage.getItem("fluency_badGeminiKeysV5") || "{}") || {} }
-    function markBad(key, reason){
+    function badMap(){return safeJson(localStorage.getItem(BAD_KEY)||"{}")||{}}
+    function markBad(k,reason){
       try{
         var m = badMap();
-        m[String(key).slice(-8)] = {ts:Date.now(), reason:String(reason||"erro")};
-        localStorage.setItem("fluency_badGeminiKeysV5", JSON.stringify(m));
+        m[String(k).slice(-8)] = {ts:Date.now(),reason:String(reason||"")};
+        localStorage.setItem(BAD_KEY, JSON.stringify(m));
       }catch(_){}
     }
-    function isBad(key){
+    function isBad(k){
       try{
-        var rec = badMap()[String(key).slice(-8)];
-        return !!(rec && Date.now() - rec.ts < BAD_KEY_TTL);
-      }catch(_){ return false }
+        var r = badMap()[String(k).slice(-8)];
+        return !!(r && Date.now()-r.ts < BAD_TTL);
+      }catch(_){return false}
     }
 
-    function keyNumber(key, keys){
-      var n = keys.indexOf(key);
-      return n < 0 ? 1 : n + 1;
-    }
-
-    function requestBodyText(input, init){
-      try{
-        if(init && typeof init.body === "string") return init.body;
-        if(input && typeof input === "object" && input.__fluencyBodyText) return input.__fluencyBodyText;
-      }catch(_){}
-      return "";
-    }
-
-    function isGeminiGenerate(url){
+    function isGemini(url){
       return /generativelanguage\.googleapis\.com/.test(String(url||"")) && /generateContent/.test(String(url||""));
     }
 
-    function isLessonRequest(url, body){
-      if(!isGeminiGenerate(url)) return false;
-      var b = String(body || "");
+    function getBody(init){
+      try{return init && typeof init.body === "string" ? init.body : ""}catch(_){return ""}
+    }
+
+    function isLesson(url, body){
+      if(!isGemini(url)) return false;
+      var b = String(body||"");
       if(/pronuncia|pronúncia|speaking|speech|stt|transcri|utterance|audio|mimeType|inlineData|base64/i.test(b)) return false;
-      return /lesson|li[cç][aã]o|aula|grammar|gram[áa]tica|exercises|exerc|vocabulary|vocabul/i.test(b);
+      return /aula|li[cç][aã]o|lesson|grammar|gram[áa]tica|exercise|exerc|vocabulary|vocabul/i.test(b);
     }
 
-    function forceLessonModel(url){
-      var s = String(url || "");
-      // Nunca usar Pro para aula.
-      s = s.replace(/\/models\/gemini-[^:\/]*pro[^:\/]*:generateContent/i, "/models/gemini-2.5-flash:generateContent");
+    function flashUrl(url,key){
+      var s = String(url||"");
+      s = s.replace(/\/models\/[^:\/]*pro[^:\/]*:generateContent/i, "/models/gemini-2.5-flash:generateContent");
       s = s.replace(/\/models\/gemini-pro[^:\/]*:generateContent/i, "/models/gemini-2.0-flash:generateContent");
-      // Se estiver em outro modelo, mantém; se vier vazio/estranho, tenta flash.
-      return s;
-    }
-
-    function withKey(url, key){
       try{
-        var u = new URL(String(url), location.href);
+        var u = new URL(s, location.href);
         u.searchParams.set("key", key);
         return u.toString();
       }catch(_){
-        var s = String(url);
-        return s.indexOf("key=") >= 0 ? s.replace(/([?&]key=)[^&]+/, "$1"+encodeURIComponent(key)) : s + (s.indexOf("?")>=0?"&":"?") + "key=" + encodeURIComponent(key);
+        return s.indexOf("key=")>=0 ? s.replace(/([?&]key=)[^&]+/,"$1"+encodeURIComponent(key)) : s+(s.indexOf("?")>=0?"&":"?")+"key="+encodeURIComponent(key);
       }
     }
 
-    function cleanInit(init){
+    function initClean(init){
       var out = {};
       try{
         init = init || {};
         Object.keys(init).forEach(function(k){
-          if(k === "signal") return; // correção principal: não reutilizar AbortSignal já abortado
+          if(k === "signal") return;
           out[k] = init[k];
         });
-        if(!out.method) out.method = init.method || "POST";
+        out.method = out.method || "POST";
       }catch(_){}
       return out;
     }
 
-    function delay(ms){ return new Promise(function(resolve){ setTimeout(resolve, ms) }) }
+    function sleep(ms){return new Promise(function(r){setTimeout(r,ms)})}
+    async function textOf(res){try{return await res.clone().text()}catch(_){return ""}}
 
-    async function readClone(res){ try{return await res.clone().text()}catch(_){return ""} }
-
-    function classify(status, text, err){
-      var t = String(text || (err && err.message) || err || "");
-      if(status === 429 || /RESOURCE_EXHAUSTED|quota|rate limit|Too Many Requests/i.test(t)) return {type:"quota", msg:"HTTP 429/quota da API Gemini"};
-      if(status === 503 || /UNAVAILABLE|overload|temporarily unavailable|Service Unavailable/i.test(t)) return {type:"unavailable", msg:"HTTP 503/indisponibilidade da API Gemini"};
-      if(/aborted|AbortError|operation was aborted/i.test(t)) return {type:"abort", msg:"requisição abortada pelo timeout antigo do app"};
-      if(/Failed to fetch|network|Load failed/i.test(t)) return {type:"network", msg:"erro de rede ao chamar Gemini"};
-      return {type:"other", msg: status ? "HTTP "+status+" da API Gemini" : t.slice(0,180)};
+    function classify(status, txt, err){
+      var t = String(txt || (err && err.message) || err || "");
+      if(status === 429 || /RESOURCE_EXHAUSTED|quota|rate limit|Too Many Requests/i.test(t)) return {type:"quota", msg:"HTTP 429/quota"};
+      if(status === 503 || /UNAVAILABLE|overload|temporarily unavailable|Service Unavailable/i.test(t)) return {type:"unavailable", msg:"HTTP 503/indisponível"};
+      if(/abort|aborted|AbortError|operation was aborted/i.test(t)) return {type:"abort", msg:"requisição abortada"};
+      if(/network|Failed to fetch|Load failed/i.test(t)) return {type:"network", msg:"erro de rede"};
+      return {type:"other", msg: status ? "HTTP "+status : t.slice(0,150)};
     }
 
     function purgeBadLessons(){
@@ -1536,162 +1515,157 @@ lucide-react/dist/esm/lucide-react.mjs:
         var removed = 0;
         for(var i=localStorage.length-1;i>=0;i--){
           var k = localStorage.key(i);
-          if(!k || (k.indexOf("fluency_lesson_") !== 0 && k.indexOf("fluency_lesson_v") !== 0)) continue;
+          if(!k || (k.indexOf("fluency_lesson_")!==0 && k.indexOf("fluency_lesson_v")!==0)) continue;
           try{
-            var v = JSON.parse(localStorage.getItem(k) || "null");
-            var bad = !v || v._fallback ||
-              !v.title ||
-              !v.intro || String(v.intro).trim().length < 80 ||
+            var v = JSON.parse(localStorage.getItem(k)||"null");
+            var bad = !v || v._fallback || !v.title || !v.intro || String(v.intro).length < 80 ||
               !Array.isArray(v.sections) || v.sections.length < 3 ||
               !Array.isArray(v.exercises) || v.exercises.length < 4 ||
               !Array.isArray(v.vocabulary) || v.vocabulary.length < 4;
-            if(bad){ localStorage.removeItem(k); removed++; }
+            if(bad){localStorage.removeItem(k); removed++}
           }catch(_){}
         }
-        if(removed) setDiag("cache_limpo", "Cache limpo: " + removed + " aula(s) curta(s)/incompleta(s) removida(s).");
+        if(removed) diag("cache_limpo", "Removi "+removed+" aula(s) curta(s)/incompleta(s) do cache.", {removed:removed});
       }catch(_){}
     }
 
     purgeBadLessons();
 
     try{
-      localStorage.setItem("fluency_validateLessons", "false");
-      localStorage.setItem("fluency_lessonModel", "gemini-2.5-flash");
-      localStorage.setItem("fluency_preferredLessonModel", "gemini-2.5-flash");
+      localStorage.setItem("fluency_validateLessons","false");
+      localStorage.setItem("fluency_lessonModel","gemini-2.5-flash");
+      localStorage.setItem("fluency_preferredLessonModel","gemini-2.5-flash");
+      localStorage.removeItem("fluency_badGeminiKeysV4");
+      localStorage.removeItem("fluency_badGeminiKeysV5");
       var wm = localStorage.getItem("fluency_workingGeminiModel");
       if(wm && /pro/i.test(wm)) localStorage.removeItem("fluency_workingGeminiModel");
     }catch(_){}
 
-    if(typeof window.fetch === "function" && !window.__fluencyLessonFetchV5Installed){
-      window.__fluencyLessonFetchV5Installed = true;
-      var nativeFetch = window.fetch.bind(window);
+    if(typeof window.fetch === "function" && !window.__fluencyFetchV6CleanInstalled){
+      window.__fluencyFetchV6CleanInstalled = true;
+      var realFetch = window.fetch.bind(window);
 
       window.fetch = async function(input, init){
         var url = "";
-        try{ url = typeof input === "string" ? input : (input && input.url) || ""; }catch(_){}
-        var body = requestBodyText(input, init);
+        try{url = typeof input === "string" ? input : (input && input.url) || ""}catch(_){}
+        var body = getBody(init);
 
-        if(!isLessonRequest(url, body)){
-          return nativeFetch(input, init);
+        if(!isLesson(url, body)){
+          return realFetch(input, init);
         }
 
-        var keys = getGeminiKeys();
+        var keys = getKeys();
         if(!keys.length){
-          setDiag("erro_sem_key", "Nenhuma Gemini key encontrada para gerar aula.");
-          return nativeFetch(input, init);
+          diag("erro_sem_key", "Nenhuma Gemini key encontrada para aulas.", {});
+          return realFetch(input, init);
         }
 
-        var usable = keys.filter(function(k){ return !isBad(k) });
+        var usable = keys.filter(function(k){return !isBad(k)});
         if(!usable.length) usable = keys;
 
-        var baseUrl = forceLessonModel(url);
-        var initBase = cleanInit(init);
+        var clean = initClean(init);
         var last = "";
-
-        setDiag("iniciando", "Geração de aula: " + keys.length + "/5 Gemini key(s) detectada(s). Timeout antigo removido dos retries.");
+        diag("inicio", "Detectei "+keys.length+"/5 Gemini key(s). Aula será gerada só com Flash e sem AbortSignal antigo.", {keysTotal:keys.length});
 
         for(var i=0;i<usable.length;i++){
           var key = usable[i];
-          var idx = keyNumber(key, keys);
-          var reqUrl = withKey(baseUrl, key);
+          var idx = keys.indexOf(key)+1;
+          var reqUrl = flashUrl(url,key);
 
-          // 2 tentativas por key para 503/abort/rede curta. 429 pula direto.
-          for(var attempt=1; attempt<=2; attempt++){
+          for(var attempt=1; attempt<=3; attempt++){
             try{
-              setDiag("chamando_api", "Tentando Gemini key " + idx + "/" + keys.length + " em gemini-2.5-flash. Tentativa " + attempt + "/2.", {keyIndex:idx, keysTotal:keys.length, attempt:attempt});
-
-              var res = await nativeFetch(reqUrl, initBase);
+              diag("chamando_api", "Key "+idx+"/"+keys.length+" tentativa "+attempt+"/3 em gemini-2.5-flash.", {keyIndex:idx,attempt:attempt});
+              var res = await realFetch(reqUrl, clean);
 
               if(res && res.ok){
-                setDiag("ok", "Aula gerada com sucesso usando Gemini key " + idx + "/" + keys.length + ".", {keyIndex:idx, keysTotal:keys.length});
+                diag("ok", "Aula gerada com sucesso na key "+idx+"/"+keys.length+".", {keyIndex:idx});
                 return res;
               }
 
-              var txt = await readClone(res);
+              var txt = await textOf(res);
               var c = classify(res && res.status, txt);
               last = c.msg;
 
               if(c.type === "quota"){
-                markBad(key, c.msg);
-                setDiag("quota", "Key " + idx + "/" + keys.length + " atingiu limite. Pulando para próxima.", {keyIndex:idx, keysTotal:keys.length});
+                markBad(key,c.msg);
+                diag("quota", "Key "+idx+"/"+keys.length+" deu 429/quota. Pulando para próxima.", {keyIndex:idx});
                 break;
               }
 
-              if(c.type === "unavailable"){
-                setDiag("instavel", "Key " + idx + "/" + keys.length + " recebeu 503. Aguardando e tentando " + (attempt === 1 ? "de novo" : "próxima key") + ".", {keyIndex:idx, keysTotal:keys.length});
-                if(attempt === 1){ await delay(1200); continue; }
-                markBad(key, c.msg);
+              if(c.type === "unavailable" || c.type === "abort" || c.type === "network"){
+                diag("instavel", "Key "+idx+"/"+keys.length+" falhou: "+c.msg+". "+(attempt<3?"Vou tentar novamente.":"Vou pular para próxima."), {keyIndex:idx,attempt:attempt});
+                if(attempt < 3){await sleep(1500 * attempt); continue}
+                markBad(key,c.msg);
                 break;
               }
 
-              setDiag("erro_api", "Key " + idx + "/" + keys.length + " falhou: " + c.msg + ". Pulando para próxima.", {keyIndex:idx, keysTotal:keys.length});
-              markBad(key, c.msg);
+              diag("erro_api", "Key "+idx+"/"+keys.length+" falhou: "+c.msg+". Pulando.", {keyIndex:idx});
+              markBad(key,c.msg);
               break;
 
-            }catch(err){
-              var c2 = classify(0, "", err);
-              last = c2.msg;
-              if(c2.type === "abort"){
-                setDiag("abort_corrigido", "O app abortou a chamada antiga. V5 removeu o AbortSignal e vai tentar novamente/key seguinte.", {keyIndex:idx, keysTotal:keys.length});
-                // tenta novamente na mesma key uma vez
-                if(attempt === 1){ await delay(500); continue; }
-              }else{
-                setDiag("erro_rede", "Key " + idx + "/" + keys.length + " falhou por rede: " + c2.msg + ". Pulando para próxima.", {keyIndex:idx, keysTotal:keys.length});
-              }
-              markBad(key, c2.msg);
+            }catch(e){
+              var ce = classify(0,"",e);
+              last = ce.msg;
+              diag("erro_rede", "Key "+idx+"/"+keys.length+" exceção: "+ce.msg+". "+(attempt<3?"Tentando de novo.":"Pulando."), {keyIndex:idx,attempt:attempt});
+              if(attempt < 3){await sleep(1200 * attempt); continue}
+              markBad(key,ce.msg);
               break;
             }
           }
         }
 
-        setDiag("todas_falharam", "Todas as " + keys.length + " Gemini keys falharam para gerar aula. Último erro: " + (last || "sem detalhe") + ".", {keysTotal:keys.length, raw:last});
+        diag("todas_falharam", "Todas as "+keys.length+" Gemini keys falharam. Último erro: "+(last||"sem detalhe")+".", {keysTotal:keys.length, raw:last});
         return new Response(JSON.stringify({
           error:{
             code:429,
             status:"RESOURCE_EXHAUSTED",
-            message:"Todas as Gemini keys falharam para gerar aula. Último erro: " + (last || "sem detalhe")
+            message:"Todas as Gemini keys falharam. Último erro: "+(last||"sem detalhe")
           }
         }), {status:429, headers:{"Content-Type":"application/json"}});
       };
     }
 
-    var stuckSince = 0;
-    function stuckWatch(){
+    var stuckAt = 0;
+    function watchStuck(){
       try{
-        var text = document.body && document.body.innerText || "";
-        if(text.indexOf("Preparando sua aula") === -1 && text.indexOf("Preparando aula") === -1){
-          stuckSince = 0;
+        var t = document.body && document.body.innerText || "";
+        if(t.indexOf("Preparando sua aula") === -1 && t.indexOf("Preparando aula") === -1){
+          stuckAt = 0;
           return;
         }
-        if(!stuckSince) stuckSince = Date.now();
-        var sec = Math.round((Date.now() - stuckSince)/1000);
+        if(!stuckAt) stuckAt = Date.now();
+        var sec = Math.round((Date.now()-stuckAt)/1000);
         if(sec < 25) return;
-        var d = window.__fluencyLessonDiag || safeJson(localStorage.getItem(DIAG_KEY) || "null") || {};
-        var detail = d.detail || "A geração demorou demais.";
-        setDiag("travado", "Tela presa em preparação há " + sec + "s. " + detail);
-        if(document.getElementById("__lesson_stuck_v5__")) return;
+
+        var d = window.__fluencyLessonDiag || safeJson(localStorage.getItem(DIAG_KEY)||"null") || {};
+        var detail = d.detail || "A geração está demorando demais.";
+        diag("travado", "Tela presa há "+sec+"s. "+detail);
+
+        if(document.getElementById("__lesson_stuck_v6__")) return;
         var parent = (document.querySelector(".animate-spin") || {}).parentElement || document.body;
         var box = document.createElement("div");
-        box.id = "__lesson_stuck_v5__";
+        box.id = "__lesson_stuck_v6__";
         box.style.cssText = "margin:18px auto;max-width:520px;padding:14px;border-radius:16px;background:rgba(127,29,29,.24);border:1px solid rgba(248,113,113,.5);color:#fecaca;font-family:-apple-system,BlinkMacSystemFont,sans-serif;text-align:left;font-size:13px;line-height:1.45;z-index:999999;position:relative;";
-        box.innerHTML = "<b>A geração da aula travou.</b><br>"+esc(detail)+"<br><button id='__lesson_clear_v5__' style='margin-top:10px;padding:10px 12px;border-radius:12px;border:1px solid rgba(252,165,165,.55);background:rgba(127,29,29,.35);color:#fff;font-weight:800'>Limpar aula travada e recarregar</button>";
+        box.innerHTML = "<b>A geração da aula travou.</b><br>"+html(detail)+"<br><button id='__lesson_clear_v6__' style='margin-top:10px;padding:10px 12px;border-radius:12px;border:1px solid rgba(252,165,165,.55);background:rgba(127,29,29,.35);color:#fff;font-weight:800'>Limpar cache de aulas e recarregar</button>";
         parent.appendChild(box);
-        document.getElementById("__lesson_clear_v5__").onclick = function(){
+        document.getElementById("__lesson_clear_v6__").onclick = function(){
           try{
             purgeBadLessons();
+            localStorage.removeItem(BAD_KEY);
             localStorage.removeItem("fluency_workingGeminiModel");
             localStorage.removeItem("fluency_availableModels");
             localStorage.removeItem("fluency_availableModelsAt");
-            localStorage.removeItem("fluency_badGeminiKeysV5");
           }catch(_){}
           location.reload();
         };
       }catch(_){}
     }
-    setInterval(stuckWatch, 3000);
+    setInterval(watchStuck,3000);
 
-    setDiag("patch_v5_ativo", "Patch V5 ativo: corrige erro 'operation was aborted', força aula em Flash e testa até " + getGeminiKeys().length + "/5 Gemini keys.");
+    setTimeout(function(){
+      diag("patch_v6_ativo", "PATCH V6-CLEAN ativo. Se você não vir este texto no painel, o site ainda está usando bundle antigo em cache.", {keysDetected:getKeys().length});
+    }, 1200);
   }catch(e){
-    try{ console.warn("Fluency V5 failed", e); }catch(_){}
+    try{console.warn("Patch V6 failed",e)}catch(_){}
   }
 })();
