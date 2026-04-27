@@ -1350,610 +1350,20 @@ lucide-react/dist/esm/lucide-react.mjs:
 
 
 
-/* === FLUENCY PATCH V11 - GEMINI LESSON KEY + RESPONSE SCHEMA + FORCE FLASH === */
+/* === FLUENCY PATCH V11 REMOVIDO ===
+   Removido para evitar dois interceptadores de fetch brigando entre si.
+   A geração de aulas agora fica somente no Patch V12 Pro exclusivo.
+*/
+
+/* === FLUENCY PATCH V12 - GEMINI PRO EXCLUSIVO PARA AULAS === */
 ;(function(){
   try{
-    if(window.__fluencyGeminiLessonKeyV11Schema) return;
-    window.__fluencyGeminiLessonKeyV11Schema = true;
+    if(window.__fluencyProLessonV12) return;
+    window.__fluencyProLessonV12 = true;
 
-    var VERSION = "V11.1-PROFUNDO";
-    var LESSON_KEY_STORAGE = "fluency_lessonGeminiApiKey";
-    var LESSON_MODEL_STORAGE = "fluency_lessonGeminiModel";
-    var DIAG_KEY = "fluency_lessonGenerationDiag";
-
-    function safeJson(v){try{return JSON.parse(v)}catch(_){return null}}
-    function now(){try{return new Date().toLocaleTimeString()}catch(_){return String(Date.now())}}
-    function esc(s){return String(s||"").replace(/[<>&]/g,function(c){return {"<":"&lt;",">":"&gt;","&":"&amp;"}[c]})}
-
-    function findDiagPanel(){
-      try{
-        var els = Array.prototype.slice.call(document.querySelectorAll("div"));
-        return els.find(function(el){
-          var t = el.innerText || "";
-          return t.indexOf("Vozes carregadas") !== -1 && t.indexOf("Saúde Azure") !== -1;
-        });
-      }catch(_){return null}
-    }
-
-    function log(msg, kind){
-      try{
-        var p = findDiagPanel();
-        if(!p) return;
-        var root = document.getElementById("__fluency_lesson_key_v11_panel__");
-        if(!root){
-          root = document.createElement("div");
-          root.id = "__fluency_lesson_key_v11_panel__";
-          root.style.cssText = "margin-top:10px;padding-top:10px;border-top:1px solid rgba(148,163,184,.25);font-size:13px;line-height:1.38;color:#dbeafe;max-height:310px;overflow:auto;";
-          root.innerHTML = "<div style='font-weight:900;color:#86efac;margin-bottom:6px'>Aulas IA — V11.1 PROFUNDO ATIVO</div>";
-          p.appendChild(root);
-        }
-        var color = "#dbeafe";
-        if(kind === "ok") color = "#86efac";
-        if(kind === "warn") color = "#fbbf24";
-        if(kind === "err") color = "#fca5a5";
-        var row = document.createElement("div");
-        row.style.color = color;
-        row.textContent = now() + " Aula IA " + VERSION + ": " + String(msg||"");
-        root.insertBefore(row, root.children[1] || null);
-        while(root.children.length > 28) root.removeChild(root.lastChild);
-      }catch(_){}
-    }
-
-    function diag(status, detail, extra){
-      try{
-        var d = Object.assign({version:VERSION,status:status,detail:String(detail||""),time:new Date().toLocaleString(),ts:Date.now()}, extra||{});
-        window.__fluencyLessonDiag = d;
-        localStorage.setItem(DIAG_KEY, JSON.stringify(d));
-        var kind = status === "ok" ? "ok" : (/erro|falha|curta|travado|sem_key|invalid|rejeitada|incompleta/i.test(status) ? "err" : (/aguardando|tentativa|tempo|demorar|429|503|quota|schema/i.test(String(detail)) ? "warn" : ""));
-        log(detail, kind);
-      }catch(_){}
-    }
-
-    function getLessonKey(){
-      try{return String(localStorage.getItem(LESSON_KEY_STORAGE) || "").trim()}catch(_){return ""}
-    }
-
-    function getLessonModel(){
-      // Aulas completas precisam do Flash normal. Flash-lite ficou gerando estrutura incompleta.
-      return "gemini-2.5-flash";
-    }
-
-    function setLessonKeyFlow(){
-      try{
-        var current = getLessonKey();
-        var masked = current ? "Key atual termina com ..." + current.slice(-6) + "\n\n" : "";
-        var key = prompt(masked + "Cole aqui a Gemini API Key PAGA que será usada SOMENTE para gerar aulas.", current || "");
-        if(key === null) return;
-        key = String(key || "").trim();
-        if(!key){
-          localStorage.removeItem(LESSON_KEY_STORAGE);
-          diag("key_removida", "Key Gemini exclusiva de aulas removida.");
-          alert("Key de aulas removida.");
-          return;
-        }
-        if(key.length < 20){
-          alert("Essa key parece curta demais. Confira e tente novamente.");
-          return;
-        }
-        localStorage.setItem(LESSON_KEY_STORAGE, key);
-        localStorage.setItem(LESSON_MODEL_STORAGE, "gemini-2.5-flash");
-        diag("key_configurada", "Key de aulas configurada. A V11 força modelo gemini-2.5-flash, não flash-lite.");
-        alert("Key de aulas configurada. Modelo de aulas: gemini-2.5-flash.");
-      }catch(e){
-        alert("Erro ao salvar key de aulas: " + ((e && e.message) || e));
-      }
-    }
-
-    function addConfigButton(){ /* disabled — key config moved to Progress tab */ }
-
-    function isGeminiGenerate(url){
-      return /generativelanguage\.googleapis\.com/.test(String(url||"")) && /generateContent/.test(String(url||""));
-    }
-
-    function getBody(init){
-      try{return init && typeof init.body === "string" ? init.body : ""}catch(_){return ""}
-    }
-
-    function isLessonRequest(url, body, init){
-      if(!isGeminiGenerate(url)) return false;
-      try{ var h=init&&init.headers; if(h&&(h["x-fluency-v12"]||h["X-Fluency-V12"])) return false; }catch(_){}
-      var b = String(body || "");
-      if(/pronuncia|pronúncia|speaking|speech|stt|transcri|utterance|audio|mimeType|inlineData|base64|wav|mp3|webm/i.test(b)) return false;
-      return /aula|li[cç][aã]o|lesson|grammar|gramática|exercise|exerc|vocabulary|vocabul|sections|seções|secões/i.test(b);
-    }
-
-    var lessonSchema = {
-      type: "OBJECT",
-      properties: {
-        title: {type:"STRING"},
-        subtitle: {type:"STRING"},
-        estimatedMinutes: {type:"NUMBER"},
-        intro: {type:"STRING"},
-        sections: {
-          type:"ARRAY",
-          items: {
-            type:"OBJECT",
-            properties: {
-              heading: {type:"STRING"},
-              content: {type:"STRING"},
-              examples: {
-                type:"ARRAY",
-                items: {
-                  type:"OBJECT",
-                  properties: {en:{type:"STRING"}, pt:{type:"STRING"}},
-                  required:["en","pt"]
-                }
-              }
-            },
-            required:["heading","content","examples"]
-          }
-        },
-        vocabulary: {
-          type:"ARRAY",
-          items: {
-            type:"OBJECT",
-            properties: {
-              word:{type:"STRING"},
-              pos:{type:"STRING"},
-              translation:{type:"STRING"},
-              example:{type:"STRING"}
-            },
-            required:["word","translation","example"]
-          }
-        },
-        exercises: {
-          type:"ARRAY",
-          items: {
-            type:"OBJECT",
-            properties: {
-              type:{type:"STRING"},
-              question:{type:"STRING"},
-              options:{type:"ARRAY", items:{type:"STRING"}},
-              answer:{type:"STRING"},
-              explanation:{type:"STRING"}
-            },
-            required:["type","question","answer","explanation"]
-          }
-        },
-        tips: {type:"ARRAY", items:{type:"STRING"}},
-        finalTip: {type:"STRING"}
-      },
-      required:["title","subtitle","estimatedMinutes","intro","sections","vocabulary","exercises","tips","finalTip"]
-    };
-
-    var QUALITY_INSTRUCTION =
-      "\n\n" +
-      "===== INSTRUÇÕES DE PROFUNDIDADE OBRIGATÓRIAS V11.1 =====\n" +
-      "Esta é uma aula PAGA para um aluno brasileiro. Conteúdo raso é INACEITÁVEL.\n" +
-      "O aluno precisa SAIR DESTA AULA TENDO APRENDIDO de verdade — não apenas vendo um resumo motivacional.\n" +
-      "\n" +
-      "ESTRUTURA OBRIGATÓRIA (cumpra TODOS os mínimos):\n" +
-      "- title: específico e descritivo (mínimo 15 caracteres).\n" +
-      "- subtitle: curto, em inglês ou português (10 a 60 caracteres).\n" +
-      "- estimatedMinutes: número entre 20 e 35.\n" +
-      "- intro: ENTRE 700 E 1100 CARACTERES. Mínimo 5 frases. Deve apresentar o tópico, explicar POR QUE é importante na vida real do aluno, dar contexto cultural quando relevante, e antecipar o que será aprendido. NUNCA use frases motivacionais genéricas como ponto principal.\n" +
-      "- sections: EXATAMENTE 4 objetos. Cada section deve ENSINAR ALGO REAL com profundidade:\n" +
-      "    * heading: título descritivo e específico (mínimo 8 caracteres). Não use 'Introdução' ou 'Conclusão'.\n" +
-      "    * content: ENTRE 800 E 1400 CARACTERES. Mínimo 6 frases completas. Deve incluir: regra/conceito principal explicado em detalhe, exceções ou casos especiais, comparação com o português quando útil, contextos de uso real, e armadilhas comuns para brasileiros. PROIBIDO escrever parágrafos genéricos.\n" +
-      "    * examples: EXATAMENTE 4 objetos {en, pt}. Cada exemplo deve ser uma frase REAL e CONTEMPORÂNEA (não 'The cat is on the mat'). Use situações cotidianas: trabalho, viagem, conversas, redes sociais.\n" +
-      "- vocabulary: EXATAMENTE 10 objetos. Cada um com:\n" +
-      "    * word: palavra ou expressão útil (não pode repetir).\n" +
-      "    * pos: parte do discurso (noun, verb, adj, adv, phrase, idiom).\n" +
-      "    * translation: tradução natural em PT-BR.\n" +
-      "    * example: frase EM INGLÊS de exemplo (mínimo 25 caracteres) mostrando uso real e contextual.\n" +
-      "- exercises: EXATAMENTE 10 objetos. VARIEDADE OBRIGATÓRIA: pelo menos 4 do tipo 'choice' (com 4 options), 2 do tipo 'fill', 2 do tipo 'translate', 2 livres. Cada exercício:\n" +
-      "    * question: enunciado em PT-BR explicando o que fazer (mínimo 25 caracteres). Pode citar frase em inglês entre aspas.\n" +
-      "    * options: array de 4 strings (apenas para 'choice'). Para outros tipos, array vazio.\n" +
-      "    * answer: resposta correta exata.\n" +
-      "    * explanation: ENTRE 80 E 250 CARACTERES explicando POR QUÊ a resposta está correta, qual a regra aplicada, e o erro comum a evitar. PROIBIDO explicações de uma linha.\n" +
-      "- tips: EXATAMENTE 5 strings. Cada uma entre 60 e 200 caracteres. Devem ser DICAS PRÁTICAS E CONCRETAS, não generalidades. Ex: 'Em inglês falado, americanos contraem >to be< quase sempre — diga >I''m< e não >I am<, exceto para ênfase.' NÃO use dicas vazias como 'pratique todo dia'.\n" +
-      "- finalTip: ENTRE 80 E 180 CARACTERES. Curto, encorajador, ESPECÍFICO ao tópico aprendido. NUNCA texto motivacional genérico longo.\n" +
-      "\n" +
-      "REGRAS ANTI-RASA (violação = aula rejeitada):\n" +
-      "1. NÃO use frases motivacionais como recheio. Substitua por explicação técnica + exemplo.\n" +
-      "2. NÃO repita o mesmo exemplo em campos diferentes.\n" +
-      "3. CADA section.content precisa ter no mínimo 6 frases REAIS sobre o tópico — não 3 frases longas com vírgulas.\n" +
-      "4. As explicações dos exercícios são ONDE o aluno aprende mais — escreva-as como um professor explicaria, com clareza e contexto.\n" +
-      "5. Use português brasileiro NATURAL (não traduzido literalmente do inglês).\n" +
-      "6. Os exemplos em inglês devem refletir o inglês como é falado HOJE (americano ou britânico moderno).\n" +
-      "\n" +
-      "FORMATO DE RESPOSTA: Responda APENAS o JSON da aula. Sem markdown, sem ```json, sem comentários, sem texto antes ou depois. Comece com { e termine com }.\n" +
-      "===============================================\n";
-
-    function enhanceBody(raw, attempt){
-      try{
-        var obj = JSON.parse(raw || "{}");
-
-        // Em vez de SUBSTITUIR o prompt original com walk(), ACRESCENTAMOS
-        // a instrução de profundidade ao final do último parts[].text.
-        // Isso preserva todo o prompt rico do Jp (ANTI-RASA, contexto, histórico).
-        var instruction = QUALITY_INSTRUCTION;
-        if(attempt > 1){
-          instruction += "\n\n=== ATENÇÃO: TENTATIVA " + attempt + " ===\n" +
-            "A tentativa anterior FALHOU porque o conteúdo veio raso ou incompleto.\n" +
-            "Os campos content, intro, explanation e tips ESTAVAM CURTOS demais.\n" +
-            "Agora EXPANDA cada seção: pelo menos 6 frases por content, intro com 5+ frases reais, explicações de exercício com pelo menos 80 caracteres cada.\n" +
-            "Não escreva texto motivacional como recheio. Encha com EXPLICAÇÃO TÉCNICA e EXEMPLOS REAIS.\n";
-        }
-        if(attempt >= 3){
-          instruction += "\n\n=== ÚLTIMA CHANCE ===\n" +
-            "Esta é a tentativa " + attempt + " de 5. Aulas rasas serão rejeitadas e você não receberá nova chance.\n" +
-            "Triplique a profundidade dos campos content em cada section. Cada explanation de exercício deve ser um pequeno parágrafo explicando A REGRA + O ERRO COMUM.\n";
-        }
-
-        // Acrescenta ao último text de contents (preserva system_instruction e prompt original).
-        var appended = false;
-        if(Array.isArray(obj.contents) && obj.contents.length){
-          for(var ci = obj.contents.length - 1; ci >= 0 && !appended; ci--){
-            var c = obj.contents[ci];
-            if(c && Array.isArray(c.parts) && c.parts.length){
-              for(var pi = c.parts.length - 1; pi >= 0 && !appended; pi--){
-                if(typeof c.parts[pi].text === "string"){
-                  c.parts[pi].text += instruction;
-                  appended = true;
-                }
-              }
-            }
-          }
-        }
-        if(!appended){
-          obj.contents = obj.contents || [];
-          obj.contents.push({role:"user", parts:[{text:instruction}]});
-        }
-
-        // generationConfig ajustado: temperatura mais alta para prosa rica,
-        // sem responseSchema rígido (estava forçando o Gemini a "preencher buracos"
-        // em vez de escrever conteúdo profundo).
-        obj.generationConfig = obj.generationConfig || {};
-        obj.generationConfig.temperature = attempt === 1 ? 0.85 : 0.75;
-        obj.generationConfig.topP = 0.95;
-        obj.generationConfig.maxOutputTokens = Math.max(Number(obj.generationConfig.maxOutputTokens || 0), 24000);
-        obj.generationConfig.responseMimeType = "application/json";
-
-        // REMOVE responseSchema — schema rígido estava limitando profundidade.
-        try{ delete obj.generationConfig.responseSchema; }catch(_){}
-        try{ delete obj.generationConfig.stopSequences; }catch(_){}
-
-        return JSON.stringify(obj);
-      }catch(_){
-        return String(raw || "") + QUALITY_INSTRUCTION;
-      }
-    }
-
-    function buildLessonUrl(originalUrl, lessonKey){
-      var model = getLessonModel();
-      var s = String(originalUrl || "");
-      s = s.replace(/\/models\/[^:\/]+:generateContent/i, "/models/" + model + ":generateContent");
-      try{
-        var u = new URL(s, location.href);
-        u.searchParams.set("key", lessonKey);
-        return u.toString();
-      }catch(_){
-        if(s.indexOf("key=") >= 0) return s.replace(/([?&]key=)[^&]+/, "$1" + encodeURIComponent(lessonKey));
-        return s + (s.indexOf("?") >= 0 ? "&" : "?") + "key=" + encodeURIComponent(lessonKey);
-      }
-    }
-
-    function cleanInit(init, body, attempt){
-      var out = {};
-      try{
-        init = init || {};
-        Object.keys(init).forEach(function(k){
-          if(k === "signal") return;
-          out[k] = init[k];
-        });
-        out.method = out.method || "POST";
-        out.headers = out.headers || {"Content-Type":"application/json"};
-        out.body = enhanceBody(body || out.body || "", attempt || 1);
-      }catch(_){}
-      return out;
-    }
-
-    function sleep(ms){return new Promise(function(resolve){setTimeout(resolve, ms)})}
-
-    async function fetchWithLongTimeout(fetchFn, url, init, ms){
-      var controller = null, timer = null;
-      try{
-        if(typeof AbortController !== "undefined"){
-          controller = new AbortController();
-          init = Object.assign({}, init || {}, {signal: controller.signal});
-          timer = setTimeout(function(){try{controller.abort()}catch(_){}}, ms);
-        }
-        return await fetchFn(url, init);
-      }finally{
-        if(timer) clearTimeout(timer);
-      }
-    }
-
-    async function responseText(res){ try{return await res.clone().text()}catch(_){return ""} }
-
-    function classify(status, txt, err){
-      var t = String(txt || (err && err.message) || err || "");
-      if(status === 429 || /RESOURCE_EXHAUSTED|quota|rate limit|Too Many Requests/i.test(t)) return {type:"quota", msg:"HTTP 429/quota"};
-      if(status === 503 || /UNAVAILABLE|overload|temporarily unavailable|Service Unavailable/i.test(t)) return {type:"unavailable", msg:"HTTP 503/indisponível"};
-      if(/abort|aborted|AbortError|operation was aborted/i.test(t)) return {type:"timeout", msg:"tempo limite atingido"};
-      if(/network|Failed to fetch|Load failed/i.test(t)) return {type:"network", msg:"erro de rede"};
-      return {type:"other", msg: status ? "HTTP " + status + " " + t.slice(0,120) : t.slice(0,160)};
-    }
-
-    function extractGeminiText(apiText){
-      try{
-        var j = JSON.parse(apiText);
-        var out = [];
-        (j.candidates || []).forEach(function(c){
-          (((c.content || {}).parts) || []).forEach(function(p){
-            if(typeof p.text === "string") out.push(p.text);
-          });
-        });
-        return out.join("\n");
-      }catch(_){ return String(apiText || ""); }
-    }
-
-    function stripDecor(s){
-      return String(s||"").trim().replace(/^```json\s*/i,"").replace(/^```\s*/i,"").replace(/```$/i,"").trim();
-    }
-
-    function findLessonJson(text){
-      text = stripDecor(text);
-      try{return JSON.parse(text)}catch(_){}
-      try{
-        var a = text.indexOf("{"), b = text.lastIndexOf("}");
-        if(a >= 0 && b > a) return JSON.parse(text.slice(a,b+1));
-      }catch(_){}
-      return null;
-    }
-
-    function normalizeExercise(ex){
-      if(!ex || typeof ex !== "object") return ex;
-      if(!ex.type) ex.type = Array.isArray(ex.options) && ex.options.length ? "choice" : "translate";
-      if(Array.isArray(ex.options)){
-        ex.options = ex.options.map(function(o){return String(o)});
-        while(ex.options.length < 4) ex.options.push("Opção " + (ex.options.length + 1));
-        if(ex.answer && ex.options.indexOf(String(ex.answer)) === -1) ex.options[0] = String(ex.answer);
-      } else {
-        ex.options = [];
-      }
-      return ex;
-    }
-
-    function normalizeLesson(lesson){
-      if(!lesson || typeof lesson !== "object") return lesson;
-      lesson.estimatedMinutes = Number(lesson.estimatedMinutes || 20);
-      if(!Array.isArray(lesson.sections)) lesson.sections = [];
-      if(!Array.isArray(lesson.vocabulary)) lesson.vocabulary = [];
-      if(!Array.isArray(lesson.exercises)) lesson.exercises = [];
-      if(!Array.isArray(lesson.tips)) lesson.tips = [];
-      lesson.sections = lesson.sections.map(function(s){
-        s = s || {};
-        if(!Array.isArray(s.examples)) s.examples = [];
-        return s;
-      });
-      lesson.exercises = lesson.exercises.map(normalizeExercise);
-      return lesson;
-    }
-
-    function validateLessonObject(lesson){
-      var errors = [];
-      if(!lesson || typeof lesson !== "object") return {ok:false, errors:["não veio JSON de aula"], length:0};
-      lesson = normalizeLesson(lesson);
-      var all = "";
-      try{all = JSON.stringify(lesson)}catch(_){}
-
-      if(!lesson.title || String(lesson.title).trim().length < 12) errors.push("title curto (<12)");
-      if(!lesson.intro || String(lesson.intro).trim().length < 600) errors.push("intro rasa (<600 chars)");
-
-      if(!Array.isArray(lesson.sections) || lesson.sections.length < 4) errors.push("sections precisa ter exatamente 4 itens");
-      var sectionsToCheck = (lesson.sections || []).slice(0, 4);
-      sectionsToCheck.forEach(function(s, i){
-        if(!s.heading || String(s.heading).trim().length < 6) errors.push("section " + (i+1) + " sem heading válido");
-        // EXIGÊNCIA REAL: content precisa ter no mínimo 600 chars (era 350, que aceitava lixo).
-        if(!s.content || String(s.content).trim().length < 600) errors.push("section " + (i+1) + " content raso (<600 chars)");
-        if(!Array.isArray(s.examples) || s.examples.length < 4) errors.push("section " + (i+1) + " com poucos exemplos (<4)");
-        (s.examples || []).slice(0, 4).forEach(function(ex, j){
-          if(!ex || !ex.en || !ex.pt) errors.push("section " + (i+1) + " example " + (j+1) + " incompleto");
-          else if(String(ex.en).trim().length < 8 || String(ex.pt).trim().length < 8) errors.push("section " + (i+1) + " example " + (j+1) + " curto demais");
-        });
-      });
-
-      if(!Array.isArray(lesson.vocabulary) || lesson.vocabulary.length < 10) errors.push("vocabulary precisa ter 10 itens");
-      (lesson.vocabulary || []).forEach(function(v, i){
-        if(!v || !v.word || !v.translation || !v.example) errors.push("vocabulary " + (i+1) + " incompleto");
-        else if(String(v.example).trim().length < 15) errors.push("vocabulary " + (i+1) + " example curto");
-      });
-
-      if(!Array.isArray(lesson.exercises) || lesson.exercises.length < 10) errors.push("exercises precisa ter 10 itens");
-      (lesson.exercises || []).forEach(function(ex, i){
-        if(!ex || !ex.question || !ex.answer || !ex.explanation) errors.push("exercise " + (i+1) + " incompleto");
-        else {
-          if(String(ex.question).trim().length < 15) errors.push("exercise " + (i+1) + " question curta");
-          // ESSENCIAL: explicação rica é onde o aluno aprende.
-          if(String(ex.explanation).trim().length < 60) errors.push("exercise " + (i+1) + " explanation rasa (<60 chars)");
-        }
-      });
-
-      if(!Array.isArray(lesson.tips) || lesson.tips.length < 5) errors.push("tips precisa ter 5 itens");
-      (lesson.tips || []).forEach(function(t, i){
-        if(!t || String(t).trim().length < 50) errors.push("tip " + (i+1) + " rasa (<50 chars)");
-      });
-
-      // finalTip CURTA — antes era 350-700, agora 60-220 para parar de roubar a tela.
-      if(!lesson.finalTip || String(lesson.finalTip).trim().length < 60) errors.push("finalTip curta");
-      if(lesson.finalTip && String(lesson.finalTip).trim().length > 250) errors.push("finalTip longa demais (>250) — deve ser concisa");
-
-      // Tamanho total mínimo: aulas profundas ficam em ~12000+ chars.
-      if(all.length < 9000) errors.push("JSON total muito pequeno (<9000) — aula rasa");
-
-      return {ok: errors.length === 0, errors: errors, length: all.length, lesson: lesson};
-    }
-
-    function replaceGeminiResponseWithLesson(originalApiText, lesson){
-      var cleanLesson = normalizeLesson(lesson);
-      var lessonText = JSON.stringify(cleanLesson);
-      try{
-        var api = JSON.parse(originalApiText);
-        if(api.candidates && api.candidates[0] && api.candidates[0].content && api.candidates[0].content.parts && api.candidates[0].content.parts[0]){
-          api.candidates[0].content.parts[0].text = lessonText;
-          return JSON.stringify(api);
-        }
-      }catch(_){}
-      return JSON.stringify({candidates:[{content:{role:"model",parts:[{text:lessonText}]},finishReason:"STOP"}]});
-    }
-
-    function makeResponseFromText(text, status){
-      return new Response(text, {status:status || 200, headers:{"Content-Type":"application/json"}});
-    }
-
-    function makeErrorResponse(status, message){
-      return new Response(JSON.stringify({error:{code:status,status:"LESSON_GENERATION_FAILED",message:message}}), {status:status, headers:{"Content-Type":"application/json"}});
-    }
-
-    function purgeShortLessons(){
-      try{
-        var removed = 0;
-        for(var i = localStorage.length - 1; i >= 0; i--){
-          var k = localStorage.key(i);
-          if(!k || (k.indexOf("fluency_lesson_") !== 0 && k.indexOf("fluency_lesson_v") !== 0)) continue;
-          try{
-            var v = JSON.parse(localStorage.getItem(k) || "null");
-            // Critérios MUITO mais rigorosos: alinhados com a nova validação V11.1.
-            var bad = !v || v._fallback ||
-              !v.title || String(v.title).length < 10 ||
-              !v.intro || String(v.intro).length < 500 ||
-              !Array.isArray(v.sections) || v.sections.length < 4 ||
-              !v.sections.every(function(s){
-                return s && s.heading && s.content &&
-                  String(s.content).length >= 500 &&
-                  Array.isArray(s.examples) && s.examples.length >= 3;
-              }) ||
-              !Array.isArray(v.exercises) || v.exercises.length < 8 ||
-              !v.exercises.every(function(e){
-                return e && e.question && e.answer && e.explanation &&
-                  String(e.explanation).length >= 50;
-              }) ||
-              !Array.isArray(v.vocabulary) || v.vocabulary.length < 8 ||
-              !Array.isArray(v.tips) || v.tips.length < 4 ||
-              JSON.stringify(v).length < 8000;
-            if(bad){ localStorage.removeItem(k); removed++; }
-          }catch(_){
-            try{ localStorage.removeItem(k); removed++; }catch(__){}
-          }
-        }
-        if(removed) diag("cache_limpo", "V11.1: removi " + removed + " aula(s) rasa(s) do cache. Próxima geração será profunda.");
-      }catch(_){}
-    }
-    // Expor globalmente para outros patches usarem.
-    try{ window.__fluencyPurgeIncompleteLessons = purgeShortLessons; }catch(_){}
-
-    purgeShortLessons();
-
-    try{
-      localStorage.setItem(LESSON_MODEL_STORAGE, "gemini-2.5-flash");
-      localStorage.setItem("fluency_lessonModel", "gemini-2.5-flash");
-      localStorage.setItem("fluency_preferredLessonModel", "gemini-2.5-flash");
-      localStorage.setItem("fluency_validateLessons", "false");
-    }catch(_){}
-
-    if(typeof window.fetch === "function" && !window.__fluencyLessonKeyFetchV11Installed){
-      window.__fluencyLessonKeyFetchV11Installed = true;
-      var realFetch = window.fetch.bind(window);
-
-      window.fetch = async function(input, init){
-        var url = "";
-        try{url = typeof input === "string" ? input : (input && input.url) || ""}catch(_){}
-        var body = getBody(init);
-
-        if(!isLessonRequest(url, body)) return realFetch(input, init);
-
-        var lessonKey = getLessonKey();
-        if(!lessonKey){
-          diag("sem_key_aulas", "Nenhuma key Gemini exclusiva de aulas configurada.");
-          return makeErrorResponse(400, "Configure a Gemini key exclusiva para aulas.");
-        }
-
-        var lessonUrl = buildLessonUrl(url, lessonKey);
-        var model = getLessonModel();
-
-        diag("inicio", "Gerando aula com responseSchema e modelo forçado " + model + ". Flash-lite foi desativado para aulas.", {model:model});
-
-        var last = "";
-        for(var attempt=1; attempt<=5; attempt++){
-          try{
-            diag("tentativa", "Tentativa " + attempt + "/5 (V11.1 modo profundo). Pode levar até 4 minutos por tentativa.", {attempt:attempt, model:model});
-            var clean = cleanInit(init, body, attempt);
-            var res = await fetchWithLongTimeout(realFetch, lessonUrl, clean, 240000);
-
-            if(res && res.ok){
-              var txt = await responseText(res);
-              var gemText = extractGeminiText(txt);
-              var lesson = findLessonJson(gemText);
-              var validation = validateLessonObject(lesson);
-
-              if(validation.ok){
-                var fixedApiText = replaceGeminiResponseWithLesson(txt, validation.lesson);
-                diag("ok", "Aula APROVADA com profundidade. Sections: " + validation.lesson.sections.length + ", exercícios: " + validation.lesson.exercises.length + ", vocabulário: " + validation.lesson.vocabulary.length + ", tamanho: " + validation.length + " chars (mín 9000).", {length:validation.length, model:model});
-                return makeResponseFromText(fixedApiText, 200);
-              }
-
-              last = validation.errors.slice(0,5).join("; ");
-              diag("aula_rejeitada", "Aula rasa rejeitada (tentativa " + attempt + "/5): " + last + ". Pedindo expansão.", {attempt:attempt, length:validation.length});
-              if(attempt < 5){ await sleep(1600); continue; }
-              return makeErrorResponse(422, "A IA não conseguiu gerar uma aula profunda após 5 tentativas: " + last);
-            }
-
-            var raw = await responseText(res);
-            var c = classify(res && res.status, raw);
-            last = c.msg;
-            diag("erro_api", "Erro na Gemini key de aulas: " + c.msg + ". " + (attempt < 5 ? "Vou tentar novamente." : "Sem mais tentativas."), {attempt:attempt, statusCode:res && res.status});
-
-            if((c.type === "unavailable" || c.type === "timeout" || c.type === "network") && attempt < 5){
-              await sleep(2500 * attempt);
-              continue;
-            }
-            return res;
-          }catch(e){
-            var c2 = classify(0, "", e);
-            last = c2.msg;
-            diag("erro_rede", "Falha/timeout na geração da aula: " + c2.msg + ". " + (attempt < 5 ? "Vou tentar novamente." : "Sem mais tentativas."), {attempt:attempt});
-            if(attempt < 5){ await sleep(2500 * attempt); continue; }
-          }
-        }
-        return makeErrorResponse(500, "Não consegui gerar aula profunda após 5 tentativas. Último erro: " + (last || "sem detalhe"));
-      };
-    }
-
-    // Expor validador global para que __LQ (no fluxo principal) também rejeite aulas rasas
-    // — assim o app não exibe aula com sections curtas mesmo se o cache for de outro fluxo.
-    try{
-      window.__fluencyLessonIsComplete = function(lesson){
-        try{
-          var v = validateLessonObject(lesson);
-          return !!(v && v.ok);
-        }catch(_){ return false; }
-      };
-    }catch(_){}
-
-    setTimeout(function(){
-      var hasKey = !!getLessonKey();
-      diag("patch_v11_1_ativo", "PATCH V11.1 PROFUNDO ativo. Key de aulas: " + (hasKey ? "configurada" : "não configurada") + ". Modelo: gemini-2.5-flash. Sem schema rígido (gera prosa rica). Validação: content ≥600, intro ≥600, explanations ≥60, finalTip ≤250.", {hasLessonKey:hasKey, model:getLessonModel()});
-    }, 1200);
-
-  }catch(e){
-    try{console.warn("Patch V11 schema failed", e)}catch(_){}
-  }
-})();
-
-
-
-/* === FLUENCY PATCH V12 - HÍBRIDO INTELIGENTE FLASH -> PRO PARA AULAS === */
-;(function(){
-  try{
-    if(window.__fluencyHybridLessonV12) return;
-    window.__fluencyHybridLessonV12 = true;
-
-    var VERSION = "V12-HYBRID-FLASH-PRO";
+    var VERSION = "V12-PRO-ONLY";
     var LESSON_KEY_STORAGE = "fluency_lessonGeminiApiKey";
     var DIAG_KEY = "fluency_lessonGenerationDiag";
-    var MODEL_FLASH = "gemini-2.5-flash";
     var MODEL_PRO = "gemini-2.5-pro";
 
     function safeJson(v){try{return JSON.parse(v)}catch(_){return null}}
@@ -1973,12 +1383,12 @@ lucide-react/dist/esm/lucide-react.mjs:
       try{
         var p = findDiagPanel();
         if(!p) return;
-        var root = document.getElementById("__fluency_hybrid_lesson_v12_panel__");
+        var root = document.getElementById("__fluency_pro_lesson_v12_panel__");
         if(!root){
           root = document.createElement("div");
-          root.id = "__fluency_hybrid_lesson_v12_panel__";
+          root.id = "__fluency_pro_lesson_v12_panel__";
           root.style.cssText = "margin-top:10px;padding-top:10px;border-top:1px solid rgba(148,163,184,.25);font-size:13px;line-height:1.38;color:#dbeafe;max-height:330px;overflow:auto;";
-          root.innerHTML = "<div style='font-weight:900;color:#86efac;margin-bottom:6px'>Aulas IA — HÍBRIDO FLASH → PRO V12 ATIVO</div>";
+          root.innerHTML = "<div style='font-weight:900;color:#86efac;margin-bottom:6px'>Aulas IA — GEMINI PRO V12 ATIVO</div>";
           p.appendChild(root);
         }
         var color = "#dbeafe";
@@ -2029,11 +1439,11 @@ lucide-react/dist/esm/lucide-react.mjs:
           return;
         }
         localStorage.setItem(LESSON_KEY_STORAGE, key);
-        localStorage.setItem("fluency_lessonGeminiModel", MODEL_FLASH);
-        localStorage.setItem("fluency_lessonModel", MODEL_FLASH);
-        localStorage.setItem("fluency_preferredLessonModel", MODEL_FLASH);
+        localStorage.setItem("fluency_lessonGeminiModel", MODEL_PRO);
+        localStorage.setItem("fluency_lessonModel", MODEL_PRO);
+        localStorage.setItem("fluency_preferredLessonModel", MODEL_PRO);
         diag("key_configurada", "Key de aulas configurada. Modo Pro exclusivo ativo — alta qualidade.");
-        alert("Key de aulas configurada. Modo: Flash → Pro se necessário.");
+        alert("Key de aulas configurada. Modo: Gemini 2.5 Pro exclusivo.");
       }catch(e){
         alert("Erro ao salvar key de aulas: " + ((e && e.message) || e));
       }
@@ -2041,9 +1451,9 @@ lucide-react/dist/esm/lucide-react.mjs:
 
     function addConfigButton(){
       try{
-        if(document.getElementById("__lesson_hybrid_key_v12_btn__")) return;
+        if(document.getElementById("__lesson_pro_key_v12_btn__")) return;
         var btn = document.createElement("button");
-        btn.id = "__lesson_hybrid_key_v12_btn__";
+        btn.id = "__lesson_pro_key_v12_btn__";
         btn.textContent = "Configurar Key Gemini de Aulas";
         btn.style.cssText = "position:fixed;right:14px;bottom:86px;z-index:999999;padding:10px 12px;border-radius:14px;border:1px solid rgba(196,181,253,.65);background:rgba(15,23,42,.94);color:#ddd6fe;font-weight:900;font-size:12px;box-shadow:0 10px 28px rgba(0,0,0,.32);";
         btn.onclick = setLessonKeyFlow;
@@ -2084,7 +1494,7 @@ lucide-react/dist/esm/lucide-react.mjs:
     };
 
     function qualityInstruction(modelName, attempt, rejectionCount){
-      var proText = modelName === MODEL_PRO ? "\nMODO PRO: corrija rigorosamente a estrutura, sem economizar conteúdo.\n" : "\nMODO FLASH: gere rápido, mas complete todos os arrays corretamente.\n";
+      var proText = "\nMODO PRO: corrija rigorosamente a estrutura, sem economizar conteúdo.\n";
       return "\n\n" +
         "GERE A AULA EXATAMENTE NO JSON DO SCHEMA.\n" +
         proText +
@@ -2126,8 +1536,8 @@ lucide-react/dist/esm/lucide-react.mjs:
           obj.contents.push({role:"user", parts:[{text:instruction}]});
         }
         obj.generationConfig = obj.generationConfig || {};
-        obj.generationConfig.temperature = modelName === MODEL_PRO ? 0.45 : 0.58;
-        obj.generationConfig.maxOutputTokens = Math.max(Number(obj.generationConfig.maxOutputTokens || 0), modelName === MODEL_PRO ? 16000 : 12000);
+        obj.generationConfig.temperature = 0.45;
+        obj.generationConfig.maxOutputTokens = Math.max(Number(obj.generationConfig.maxOutputTokens || 0), 16000);
         obj.generationConfig.responseMimeType = "application/json";
         obj.generationConfig.responseSchema = lessonSchema;
         try{ delete obj.generationConfig.stopSequences; }catch(_){}
@@ -2287,14 +1697,14 @@ lucide-react/dist/esm/lucide-react.mjs:
     purgeShortLessons();
 
     try{
-      localStorage.setItem("fluency_lessonGeminiModel", MODEL_FLASH);
-      localStorage.setItem("fluency_lessonModel", MODEL_FLASH);
-      localStorage.setItem("fluency_preferredLessonModel", MODEL_FLASH);
+      localStorage.setItem("fluency_lessonGeminiModel", MODEL_PRO);
+      localStorage.setItem("fluency_lessonModel", MODEL_PRO);
+      localStorage.setItem("fluency_preferredLessonModel", MODEL_PRO);
       localStorage.setItem("fluency_validateLessons", "false");
     }catch(_){}
 
-    if(typeof window.fetch === "function" && !window.__fluencyHybridLessonFetchV12Installed){
-      window.__fluencyHybridLessonFetchV12Installed = true;
+    if(typeof window.fetch === "function" && !window.__fluencyProLessonFetchV12Installed){
+      window.__fluencyProLessonFetchV12Installed = true;
       var realFetch = window.fetch.bind(window);
 
       window.fetch = async function(input, init){
@@ -2350,7 +1760,6 @@ lucide-react/dist/esm/lucide-react.mjs:
               last = validation.errors.slice(0,5).join("; ");
               diag("aula_rejeitada", model + " rejeitado por qualidade/estrutura (" + qualityRejects + "x): " + last + ".", {attempt:attempt, model:model, qualityRejects:qualityRejects, length:validation.length});
 
-              if(qualityRejects >= 2 && model !== MODEL_PRO) diag("escalando_pro", "Duas rejeições seguidas no Flash. Próxima tentativa será Pro só para esta aula.", {qualityRejects:qualityRejects});
               await sleep(1600);
               continue;
             }
@@ -2359,7 +1768,7 @@ lucide-react/dist/esm/lucide-react.mjs:
             var c = classify(res && res.status, raw);
             last = c.msg;
             if(c.type === "unavailable" || c.type === "timeout" || c.type === "network") networkErrors++;
-            diag("erro_api", "Erro usando " + model + ": " + c.msg + ". Vou tentar novamente conforme plano híbrido.", {attempt:attempt, model:model, statusCode:res && res.status, networkErrors:networkErrors});
+            diag("erro_api", "Erro usando " + model + ": " + c.msg + ". Vou tentar novamente no modo Pro exclusivo.", {attempt:attempt, model:model, statusCode:res && res.status, networkErrors:networkErrors});
             await sleep(2200 * Math.min(attempt, 3));
             continue;
 
@@ -2367,12 +1776,12 @@ lucide-react/dist/esm/lucide-react.mjs:
             var c2 = classify(0, "", e);
             last = c2.msg;
             networkErrors++;
-            diag("erro_rede", "Falha/timeout usando " + model + ": " + c2.msg + ". Vou tentar novamente conforme plano híbrido.", {attempt:attempt, model:model, networkErrors:networkErrors});
+            diag("erro_rede", "Falha/timeout usando " + model + ": " + c2.msg + ". Vou tentar novamente no modo Pro exclusivo.", {attempt:attempt, model:model, networkErrors:networkErrors});
             await sleep(2200 * Math.min(attempt, 3));
             continue;
           }
         }
-        return makeErrorResponse(500, "Não consegui gerar aula completa no modo híbrido. Último erro: " + (last || "sem detalhe"));
+        return makeErrorResponse(500, "Não consegui gerar aula completa no modo Pro exclusivo. Último erro: " + (last || "sem detalhe"));
       };
     }
 
@@ -2381,7 +1790,7 @@ lucide-react/dist/esm/lucide-react.mjs:
       diag("patch_v12_ativo", "PATCH V12 ativo. Key de aulas: " + (hasKey ? "configurada" : "não configurada") + ". Modo: Pro exclusivo.", {hasLessonKey:hasKey});
     }, 1200);
   }catch(e){
-    try{console.warn("Patch V12 hybrid failed", e)}catch(_){}
+    try{console.warn("Patch V12 Pro failed", e)}catch(_){}
   }
 })();
 
@@ -2413,7 +1822,7 @@ lucide-react/dist/esm/lucide-react.mjs:
       section.id="__lk_prog_section__";
       section.innerHTML=
         '<div style="margin-top:20px;padding:16px;border-radius:12px;border:1px solid rgba(91,156,246,.25);background:rgba(91,156,246,.06)">'+
-        '<div style="font-size:10px;text-transform:uppercase;letter-spacing:.18em;color:rgba(180,190,220,.6);margin-bottom:4px">Chave Exclusiva de Aulas (V11/V12)</div>'+
+        '<div style="font-size:10px;text-transform:uppercase;letter-spacing:.18em;color:rgba(180,190,220,.6);margin-bottom:4px">Chave Exclusiva de Aulas (V12 Pro)</div>'+
         '<p style="font-size:13px;color:#93C5FD;margin:0 0 6px 0;line-height:1.55">Key separada para geração de aulas. Prioridade sobre a chave principal — útil para isolar consumo do modelo Pro.</p>'+
         '<p style="font-size:12px;color:rgba(180,190,220,.7);margin:0 0 10px 0">'+masked+'</p>'+
         '<div style="display:flex;gap:8px;flex-wrap:wrap">'+
@@ -2442,10 +1851,12 @@ lucide-react/dist/esm/lucide-react.mjs:
       };
     }
 
-    // Hide old floating lesson key button injected by V11
+    // Hide old floating lesson key buttons injected by old patches
     function hideOldBtn(){
       var old=document.getElementById("__lesson_gemini_key_v11_btn__");
       if(old)old.style.cssText="display:none!important";
+      var old2=document.getElementById("__lesson_pro_key_v12_btn__");
+      if(old2)old2.style.cssText="display:none!important";
     }
 
     var obs=new MutationObserver(function(){try{injectSection();hideOldBtn();}catch(_){}});
