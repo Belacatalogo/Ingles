@@ -1469,3 +1469,542 @@ lucide-react/dist/esm/lucide-react.mjs:
     log("patch_v2_ativo","Correção reforçada ativa: cache antigo limpo, timeout Gemini reduzido e diagnóstico de aula integrado ao painel padrão");
   }catch(e){try{console.warn("lesson emergency patch failed",e)}catch(_){}}
 })();
+
+
+
+/* === Fluency emergency patch V3: lesson generation diagnostics + quota handling === */
+;(function(){
+  try{
+    if(window.__fluencyLessonPatchV3) return;
+    window.__fluencyLessonPatchV3 = true;
+
+    var LS = "fluency_lessonGenerationDiag";
+
+    function now(){
+      try{return new Date().toLocaleString()}catch(_){return String(Date.now())}
+    }
+
+    function saveDiag(status, detail, extra){
+      try{
+        var d = Object.assign({
+          status: status || "info",
+          detail: String(detail || ""),
+          time: now(),
+          ts: Date.now()
+        }, extra || {});
+        window.__fluencyLessonDiag = d;
+        localStorage.setItem(LS, JSON.stringify(d));
+        return d;
+      }catch(_){return null}
+    }
+
+    function addPanelLog(text, color){
+      try{
+        var panels = Array.prototype.slice.call(document.querySelectorAll("div"));
+        var panel = panels.find(function(el){
+          var tx = el.innerText || "";
+          return tx.indexOf("Vozes carregadas") !== -1 && tx.indexOf("Saúde Azure") !== -1;
+        });
+        if(!panel) return;
+
+        var list = document.getElementById("__lesson_diag_v3_log__");
+        if(!list){
+          list = document.createElement("div");
+          list.id = "__lesson_diag_v3_log__";
+          list.style.cssText = "margin-top:10px;padding-top:10px;border-top:1px solid rgba(148,163,184,.25);font-size:13px;line-height:1.38;color:#dbeafe;max-height:190px;overflow:auto;";
+          panel.appendChild(list);
+        }
+
+        var row = document.createElement("div");
+        row.style.color = color || "#dbeafe";
+        row.textContent = new Date().toLocaleTimeString() + " Aula IA: " + text;
+        list.insertBefore(row, list.firstChild);
+        while(list.children.length > 12) list.removeChild(list.lastChild);
+      }catch(_){}
+    }
+
+    function purgeBadLessons(){
+      try{
+        var removed = 0;
+        for(var i = localStorage.length - 1; i >= 0; i--){
+          var k = localStorage.key(i);
+          if(!k || k.indexOf("fluency_lesson_") !== 0 && k.indexOf("fluency_lesson_v") !== 0) continue;
+          try{
+            var v = JSON.parse(localStorage.getItem(k) || "null");
+            var bad = !v || v._fallback ||
+              !v.title ||
+              !v.intro || String(v.intro).trim().length < 80 ||
+              !Array.isArray(v.sections) || v.sections.length < 3 ||
+              !Array.isArray(v.exercises) || v.exercises.length < 4 ||
+              !Array.isArray(v.vocabulary) || v.vocabulary.length < 4;
+            if(bad){
+              localStorage.removeItem(k);
+              removed++;
+            }
+          }catch(_){}
+        }
+        if(removed){
+          saveDiag("cache_limpo", "Removi " + removed + " aula(s) curta(s)/incompleta(s) salvas no navegador.");
+          addPanelLog("cache antigo limpo: " + removed + " aula(s) removida(s)", "#86efac");
+        }
+      }catch(_){}
+    }
+
+    // Evita gastar chamadas com validação extra em modelos Pro. A aula continua sendo gerada por Flash.
+    try{
+      localStorage.setItem("fluency_validateLessons", "false");
+      var wm = localStorage.getItem("fluency_workingGeminiModel");
+      if(wm && /pro/i.test(wm)) localStorage.removeItem("fluency_workingGeminiModel");
+    }catch(_){}
+
+    purgeBadLessons();
+
+    // Diagnóstico real de HTTP da Gemini API. Agora 429/503 aparecem como erro de aula no painel.
+    try{
+      if(!window.__fluencyFetchLessonDiagV3 && typeof window.fetch === "function"){
+        window.__fluencyFetchLessonDiagV3 = true;
+        var nativeFetch = window.fetch;
+        window.fetch = function(input, init){
+          var url = "";
+          try{ url = typeof input === "string" ? input : (input && input.url) || ""; }catch(_){}
+          var isGemini = /generativelanguage\.googleapis\.com/.test(url) && /generateContent/.test(url);
+          var model = "";
+          try{ model = (url.match(/\/models\/([^:\/]+):generateContent/) || [])[1] || ""; }catch(_){}
+          if(isGemini){
+            saveDiag("chamando_api", "Chamando Gemini " + (model || "modelo desconhecido") + "…", {model:model});
+            addPanelLog("chamando Gemini " + (model || "modelo desconhecido") + "…", "#93c5fd");
+          }
+          return nativeFetch.apply(this, arguments).then(function(res){
+            try{
+              if(isGemini && !res.ok){
+                var status = res.status;
+                var msg = status === 429
+                  ? "HTTP 429: limite/quota da API Gemini atingido. Use outra key ou aguarde liberar."
+                  : status === 503
+                    ? "HTTP 503: Gemini indisponível/sobrecarregado no momento. Tente novamente depois."
+                    : "HTTP " + status + " da API Gemini.";
+                saveDiag("erro_api_gemini", msg, {raw: msg, model:model, statusCode:status});
+                addPanelLog(msg, status === 429 ? "#fbbf24" : "#fca5a5");
+              }else if(isGemini && res.ok){
+                saveDiag("api_ok", "Gemini respondeu com sucesso: " + (model || "modelo desconhecido"), {model:model});
+                addPanelLog("Gemini respondeu OK: " + (model || "modelo desconhecido"), "#86efac");
+              }
+            }catch(_){}
+            return res;
+          }).catch(function(err){
+            try{
+              if(isGemini){
+                var m = (err && err.message) || String(err || "");
+                saveDiag("erro_rede_gemini", "Falha de rede/timeout ao chamar Gemini: " + m.slice(0,180), {raw:m, model:model});
+                addPanelLog("falha Gemini: " + m.slice(0,120), "#fca5a5");
+              }
+            }catch(_){}
+            throw err;
+          });
+        };
+      }
+    }catch(_){}
+
+    // Se a tela ficar presa em "Preparando sua aula", mostra o erro dentro da própria tela.
+    var stuckSince = 0;
+    function ensureStuckMessage(){
+      try{
+        var txt = document.body && document.body.innerText || "";
+        if(txt.indexOf("Preparando sua aula") === -1){
+          stuckSince = 0;
+          return;
+        }
+        if(!stuckSince) stuckSince = Date.now();
+        var sec = Math.round((Date.now() - stuckSince) / 1000);
+        if(sec < 25) return;
+
+        var diag = null;
+        try{ diag = window.__fluencyLessonDiag || JSON.parse(localStorage.getItem(LS) || "null"); }catch(_){}
+        var detail = diag && diag.detail ? diag.detail : "A geração demorou demais. Possível limite da Gemini API, rede instável ou cache antigo.";
+        saveDiag("travado_preparando", "Preparando aula há " + sec + "s. " + detail, {raw: detail});
+
+        var spin = document.querySelector(".animate-spin");
+        var parent = spin && spin.parentElement;
+        if(!parent || document.getElementById("__lesson_stuck_v3__")) return;
+
+        var box = document.createElement("div");
+        box.id = "__lesson_stuck_v3__";
+        box.style.cssText = "margin:18px auto 0;max-width:520px;padding:14px;border-radius:16px;background:rgba(127,29,29,.22);border:1px solid rgba(248,113,113,.45);color:#fecaca;font-family:-apple-system,BlinkMacSystemFont,sans-serif;text-align:left;font-size:13px;line-height:1.45;";
+        box.innerHTML = "<b>A geração da aula travou.</b><br>" +
+          detail.replace(/[<>&]/g,function(c){return {'<':'&lt;','>':'&gt;','&':'&amp;'}[c]}) +
+          "<br><button id='__lesson_clear_v3__' style='margin-top:10px;padding:10px 12px;border-radius:12px;border:1px solid rgba(252,165,165,.55);background:rgba(127,29,29,.35);color:#fff;font-weight:800'>Limpar aula travada e recarregar</button>";
+        parent.appendChild(box);
+        document.getElementById("__lesson_clear_v3__").onclick = function(){
+          try{
+            purgeBadLessons();
+            localStorage.removeItem("fluency_workingGeminiModel");
+            localStorage.removeItem("fluency_availableModels");
+            localStorage.removeItem("fluency_availableModelsAt");
+          }catch(_){}
+          location.reload();
+        };
+      }catch(_){}
+    }
+
+    setInterval(ensureStuckMessage, 3000);
+    saveDiag("patch_v3_ativo", "Correção V3 ativa: validação Pro desligada, cache ruim removido e erros 429/503 da Gemini visíveis no diagnóstico.");
+    addPanelLog("patch V3 ativo", "#86efac");
+  }catch(e){
+    try{ console.warn("Fluency patch V3 failed", e); }catch(_){}
+  }
+})();
+
+
+
+/* === Fluency patch V4: geração de aula separada da pronúncia + rotação real das 5 Gemini keys === */
+;(function(){
+  try{
+    if(window.__fluencyLessonPatchV4) return;
+    window.__fluencyLessonPatchV4 = true;
+
+    var DIAG_KEY = "fluency_lessonGenerationDiag";
+    var BAD_KEY_TTL = 10 * 60 * 1000; // 10 min
+
+    function tnow(){
+      try{return new Date().toLocaleTimeString()}catch(_){return String(Date.now())}
+    }
+
+    function safeJson(v){
+      try{return JSON.parse(v)}catch(_){return null}
+    }
+
+    function diag(status, detail, extra){
+      try{
+        var d = Object.assign({
+          status: status || "info",
+          detail: String(detail || ""),
+          time: new Date().toLocaleString(),
+          ts: Date.now()
+        }, extra || {});
+        window.__fluencyLessonDiag = d;
+        localStorage.setItem(DIAG_KEY, JSON.stringify(d));
+        panelLog(String(detail || status), status);
+        return d;
+      }catch(_){return null}
+    }
+
+    function panelLog(text, status){
+      try{
+        var panels = Array.prototype.slice.call(document.querySelectorAll("div"));
+        var panel = panels.find(function(el){
+          var tx = el.innerText || "";
+          return tx.indexOf("Vozes carregadas") !== -1 && tx.indexOf("Saúde Azure") !== -1;
+        });
+        if(!panel) return;
+
+        var list = document.getElementById("__lesson_diag_v4_log__");
+        if(!list){
+          list = document.createElement("div");
+          list.id = "__lesson_diag_v4_log__";
+          list.style.cssText = "margin-top:10px;padding-top:10px;border-top:1px solid rgba(148,163,184,.25);font-size:13px;line-height:1.38;color:#dbeafe;max-height:220px;overflow:auto;";
+          panel.appendChild(list);
+        }
+
+        var color = "#dbeafe";
+        if(status === "ok" || status === "patch_v4_ativo" || status === "cache_limpo") color = "#86efac";
+        if(status === "quota" || status === "tentando_proxima_key") color = "#fbbf24";
+        if(status === "erro" || status === "erro_api_gemini" || status === "travado") color = "#fca5a5";
+
+        var row = document.createElement("div");
+        row.style.color = color;
+        row.textContent = tnow() + " Aula IA: " + text;
+        list.insertBefore(row, list.firstChild);
+        while(list.children.length > 16) list.removeChild(list.lastChild);
+      }catch(_){}
+    }
+
+    function getGeminiKeys(){
+      var keys = [];
+      function add(k){
+        try{
+          k = String(k || "").trim();
+          if(!k || k.length < 20) return;
+          if(keys.indexOf(k) === -1) keys.push(k);
+        }catch(_){}
+      }
+
+      try{ add(localStorage.getItem("geminiApiKey")); }catch(_){}
+      try{ add(localStorage.getItem("fluency_gemini_api_key")); }catch(_){}
+      try{ add(localStorage.getItem("fluency_geminiApiKey")); }catch(_){}
+      try{ add(localStorage.getItem("GOOGLE_API_KEY")); }catch(_){}
+
+      try{
+        var arr = safeJson(localStorage.getItem("geminiKeys") || "[]");
+        if(Array.isArray(arr)) arr.forEach(add);
+      }catch(_){}
+
+      try{
+        var arr2 = safeJson(localStorage.getItem("fluency_geminiKeys") || "[]");
+        if(Array.isArray(arr2)) arr2.forEach(add);
+      }catch(_){}
+
+      // Procura arrays/strings salvos com nomes parecidos, sem expor a key.
+      try{
+        for(var i=0;i<localStorage.length;i++){
+          var k = localStorage.key(i);
+          if(!k || !/gemini/i.test(k) || !/key/i.test(k)) continue;
+          var val = localStorage.getItem(k);
+          if(!val) continue;
+          var parsed = safeJson(val);
+          if(Array.isArray(parsed)) parsed.forEach(add);
+          else String(val).split(/[\n,; ]+/).forEach(add);
+        }
+      }catch(_){}
+
+      return keys.slice(0,5);
+    }
+
+    function badMap(){
+      return safeJson(localStorage.getItem("fluency_badGeminiKeysV4") || "{}") || {};
+    }
+
+    function setBad(key, reason){
+      try{
+        var m = badMap();
+        m[String(key).slice(-8)] = {ts:Date.now(), reason:String(reason||"erro")};
+        localStorage.setItem("fluency_badGeminiKeysV4", JSON.stringify(m));
+      }catch(_){}
+    }
+
+    function isBad(key){
+      try{
+        var m = badMap();
+        var rec = m[String(key).slice(-8)];
+        if(!rec) return false;
+        if(Date.now() - rec.ts > BAD_KEY_TTL) return false;
+        return true;
+      }catch(_){return false}
+    }
+
+    function keyIndex(key, keys){
+      try{return Math.max(1, keys.indexOf(key)+1)}catch(_){return 1}
+    }
+
+    function isLessonRequest(url, bodyText){
+      var u = String(url || "");
+      var b = String(bodyText || "");
+      if(!/generativelanguage\.googleapis\.com/.test(u) || !/generateContent/.test(u)) return false;
+      // Sinais fortes de geração de aula, sem confundir com pronúncia/STT.
+      if(/pronuncia|pronúncia|speaking|speech|stt|transcri|utterance|audio|mimeType|inlineData|base64/i.test(b)) return false;
+      return /lesson|li[cç][aã]o|aula|grammar|gram[áa]tica|exercises|exerc/i.test(b);
+    }
+
+    function forceFlashUrl(url){
+      try{
+        var u = String(url || "");
+        // Aula nunca deve usar Pro.
+        u = u.replace(/\/models\/gemini-[^:\/]*pro[^:\/]*:generateContent/i, "/models/gemini-2.5-flash:generateContent");
+        u = u.replace(/\/models\/gemini-pro[^:\/]*:generateContent/i, "/models/gemini-2.0-flash:generateContent");
+        return u;
+      }catch(_){return url}
+    }
+
+    function urlWithKey(url, key){
+      try{
+        var u = new URL(String(url), location.href);
+        u.searchParams.set("key", key);
+        return u.toString();
+      }catch(_){
+        var s = String(url);
+        return s.replace(/([?&]key=)[^&]+/, "$1" + encodeURIComponent(key));
+      }
+    }
+
+    async function responseTextClone(res){
+      try{return await res.clone().text()}catch(_){return ""}
+    }
+
+    function quotaMessage(status, txt){
+      txt = String(txt || "");
+      if(status === 429 || /RESOURCE_EXHAUSTED|quota|rate limit|Too Many Requests/i.test(txt)) return "HTTP 429/quota da API Gemini";
+      if(status === 503 || /UNAVAILABLE|overload|temporarily unavailable/i.test(txt)) return "HTTP 503/indisponibilidade da API Gemini";
+      return "";
+    }
+
+    // Remove aulas fallback/curtas antigas.
+    function purgeBadLessons(){
+      try{
+        var removed = 0;
+        for(var i=localStorage.length-1;i>=0;i--){
+          var k = localStorage.key(i);
+          if(!k || (k.indexOf("fluency_lesson_") !== 0 && k.indexOf("fluency_lesson_v") !== 0)) continue;
+          try{
+            var v = JSON.parse(localStorage.getItem(k) || "null");
+            var bad = !v || v._fallback ||
+              !v.title ||
+              !v.intro || String(v.intro).trim().length < 80 ||
+              !Array.isArray(v.sections) || v.sections.length < 3 ||
+              !Array.isArray(v.exercises) || v.exercises.length < 4 ||
+              !Array.isArray(v.vocabulary) || v.vocabulary.length < 4;
+            if(bad){ localStorage.removeItem(k); removed++; }
+          }catch(_){}
+        }
+        if(removed) diag("cache_limpo", "Cache limpo: " + removed + " aula(s) curta(s)/incompleta(s) removida(s).");
+      }catch(_){}
+    }
+
+    purgeBadLessons();
+
+    // Desliga validações extras com Pro; deixa Pro apenas para partes não-aula, caso o app use.
+    try{
+      localStorage.setItem("fluency_validateLessons", "false");
+      localStorage.setItem("fluency_lessonModel", "gemini-2.5-flash");
+      localStorage.setItem("fluency_preferredLessonModel", "gemini-2.5-flash");
+      var wm = localStorage.getItem("fluency_workingGeminiModel");
+      if(wm && /pro/i.test(wm)) localStorage.removeItem("fluency_workingGeminiModel");
+    }catch(_){}
+
+    // Rotação real de keys somente para GERAÇÃO DE AULA. Pronúncia/STT fica fora.
+    try{
+      if(!window.__fluencyLessonFetchRotatorV4 && typeof window.fetch === "function"){
+        window.__fluencyLessonFetchRotatorV4 = true;
+        var nativeFetch = window.fetch;
+        window.fetch = async function(input, init){
+          var url = "";
+          var method = "";
+          var bodyText = "";
+
+          try{ url = typeof input === "string" ? input : (input && input.url) || ""; }catch(_){}
+          try{ method = (init && init.method) || (input && input.method) || "GET"; }catch(_){}
+          try{
+            var b = init && init.body;
+            if(typeof b === "string") bodyText = b;
+          }catch(_){}
+
+          var isGemini = /generativelanguage\.googleapis\.com/.test(String(url)) && /generateContent/.test(String(url));
+          var lessonReq = isGemini && isLessonRequest(url, bodyText);
+
+          if(!lessonReq){
+            return nativeFetch.apply(this, arguments);
+          }
+
+          var keys = getGeminiKeys();
+          if(!keys.length){
+            diag("erro", "Nenhuma Gemini key encontrada para gerar aula.");
+            return nativeFetch.apply(this, arguments);
+          }
+
+          var usable = keys.filter(function(k){return !isBad(k)});
+          if(!usable.length) usable = keys; // depois do TTL ou se todas deram ruim, tenta novamente.
+
+          var baseUrl = forceFlashUrl(url);
+          var lastErrText = "";
+          diag("info", "Geração de aula: usando Flash e testando até " + keys.length + " Gemini key(s).", {keysTotal:keys.length});
+
+          for(var i=0;i<usable.length;i++){
+            var key = usable[i];
+            var idx = keyIndex(key, keys);
+            var reqUrl = urlWithKey(baseUrl, key);
+
+            try{
+              diag("info", "Tentando gerar aula com Gemini key " + idx + "/" + keys.length + " em gemini-2.5-flash.", {keyIndex:idx, keysTotal:keys.length, model:"gemini-2.5-flash"});
+
+              var nextInput = input;
+              if(typeof input === "string") nextInput = reqUrl;
+              else {
+                try{
+                  nextInput = new Request(reqUrl, input);
+                }catch(_){
+                  nextInput = reqUrl;
+                }
+              }
+
+              var res = await nativeFetch.call(this, nextInput, init);
+
+              if(res && res.ok){
+                diag("ok", "Aula gerada: Gemini key " + idx + "/" + keys.length + " respondeu com sucesso.", {keyIndex:idx, keysTotal:keys.length, model:"gemini-2.5-flash"});
+                return res;
+              }
+
+              var txt = await responseTextClone(res);
+              var qm = quotaMessage(res && res.status, txt);
+              lastErrText = qm || ("HTTP " + (res && res.status) + " da API Gemini");
+
+              if(qm){
+                setBad(key, qm);
+                diag("tentando_proxima_key", "Key " + idx + "/" + keys.length + " falhou por limite/instabilidade (" + qm + "). Pulando para a próxima.", {keyIndex:idx, keysTotal:keys.length, statusCode:res && res.status});
+                continue;
+              }
+
+              diag("erro_api_gemini", "Gemini key " + idx + "/" + keys.length + " falhou: " + lastErrText, {keyIndex:idx, keysTotal:keys.length, statusCode:res && res.status});
+              return res;
+
+            }catch(err){
+              lastErrText = (err && err.message) || String(err || "");
+              setBad(key, lastErrText);
+              diag("tentando_proxima_key", "Key " + idx + "/" + keys.length + " deu erro de rede. Pulando para próxima. " + lastErrText.slice(0,120), {keyIndex:idx, keysTotal:keys.length});
+              continue;
+            }
+          }
+
+          diag("erro", "Todas as " + keys.length + " Gemini keys falharam para gerar aula. Último erro: " + (lastErrText || "sem detalhe"), {keysTotal:keys.length, raw:lastErrText});
+
+          // Cria uma resposta JSON de erro controlado para o app parar de carregar infinito.
+          return new Response(JSON.stringify({
+            error:{
+              code:429,
+              message:"Todas as Gemini keys falharam para gerar aula. " + (lastErrText || ""),
+              status:"RESOURCE_EXHAUSTED"
+            }
+          }), {
+            status:429,
+            headers:{"Content-Type":"application/json"}
+          });
+        };
+      }
+    }catch(e){
+      diag("erro", "Falha ao instalar rotação de Gemini keys: " + ((e && e.message) || e));
+    }
+
+    // Mensagem visual quando ficar preso.
+    var stuckSince = 0;
+    function stuckWatch(){
+      try{
+        var txt = document.body && document.body.innerText || "";
+        if(txt.indexOf("Preparando sua aula") === -1 && txt.indexOf("Preparando aula") === -1){
+          stuckSince = 0;
+          return;
+        }
+        if(!stuckSince) stuckSince = Date.now();
+        var sec = Math.round((Date.now() - stuckSince) / 1000);
+        if(sec < 25) return;
+
+        var d = window.__fluencyLessonDiag || safeJson(localStorage.getItem(DIAG_KEY) || "null") || {};
+        var detail = d.detail || "A geração demorou demais. Verifique limite das Gemini keys.";
+        diag("travado", "Tela presa em preparação há " + sec + "s. " + detail);
+
+        if(document.getElementById("__lesson_stuck_v4__")) return;
+        var spin = document.querySelector(".animate-spin");
+        var parent = spin && spin.parentElement || document.body;
+        var box = document.createElement("div");
+        box.id = "__lesson_stuck_v4__";
+        box.style.cssText = "margin:18px auto;max-width:520px;padding:14px;border-radius:16px;background:rgba(127,29,29,.22);border:1px solid rgba(248,113,113,.45);color:#fecaca;font-family:-apple-system,BlinkMacSystemFont,sans-serif;text-align:left;font-size:13px;line-height:1.45;z-index:99999;position:relative;";
+        box.innerHTML = "<b>A geração da aula travou.</b><br>" +
+          String(detail).replace(/[<>&]/g,function(c){return {'<':'&lt;','>':'&gt;','&':'&amp;'}[c]}) +
+          "<br><button id='__lesson_clear_v4__' style='margin-top:10px;padding:10px 12px;border-radius:12px;border:1px solid rgba(252,165,165,.55);background:rgba(127,29,29,.35);color:#fff;font-weight:800'>Limpar aula travada e recarregar</button>";
+        parent.appendChild(box);
+        document.getElementById("__lesson_clear_v4__").onclick = function(){
+          try{
+            purgeBadLessons();
+            localStorage.removeItem("fluency_workingGeminiModel");
+            localStorage.removeItem("fluency_availableModels");
+            localStorage.removeItem("fluency_availableModelsAt");
+            localStorage.removeItem("fluency_badGeminiKeysV4");
+          }catch(_){}
+          location.reload();
+        };
+      }catch(_){}
+    }
+    setInterval(stuckWatch, 3000);
+
+    var found = getGeminiKeys().length;
+    diag("patch_v4_ativo", "Patch V4 ativo: aula separada da pronúncia, Pro bloqueado na aula, rotação detectou " + found + "/5 Gemini key(s).", {keysDetected:found});
+  }catch(e){
+    try{console.warn("Fluency patch V4 failed", e)}catch(_){}
+  }
+})();
