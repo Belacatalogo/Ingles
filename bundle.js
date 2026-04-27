@@ -3503,3 +3503,582 @@ lucide-react/dist/esm/lucide-react.mjs:
     log('patch ativo. A aula completa agora só aparece quando a aba Aula está ativa.');
   }catch(e){ try{console.warn('Patch V19.4 overlay fix failed', e)}catch(_){} }
 })();
+
+
+/* === FLUENCY PATCH V19.7 - ECONOMY DEEP MODE FLASH POR BLOCOS + PRO FALLBACK === */
+;(function(){
+  try{
+    if(window.__fluencyEconomyDeepModeV197) return;
+    window.__fluencyEconomyDeepModeV197 = true;
+
+    var VERSION = 'V19.7-ECONOMY-DEEP-FLASH-BLOCKS';
+    var FLASH_MODEL = 'gemini-2.5-flash';
+    var PRO_MODEL = 'gemini-2.5-pro';
+
+    var FLASH_ALIASES = [
+      'fluency_lessonFlashApiKey',
+      'fluency_lessonGeminiFlashKey',
+      'lessonGeminiFlashApiKey',
+      'lessonFlashKey',
+      'fluency_aulasFlashKey',
+      'fluency_freeLessonGeminiApiKey',
+      'fluency_lesson_free_key'
+    ];
+
+    var PRO_ALIASES = [
+      'fluency_lessonProApiKey',
+      'fluency_lessonGeminiProKey',
+      'lessonGeminiProApiKey',
+      'lessonProKey',
+      'fluency_aulasProKey',
+      'fluency_paidLessonGeminiApiKey',
+      'fluency_lesson_paid_key',
+      'fluency_lessonGeminiApiKey',
+      'fluency_lessonGeminiKey',
+      'lessonGeminiApiKey',
+      'lessonGeminiKey',
+      'fluency_geminiLessonKey',
+      'fluency_proLessonGeminiApiKey',
+      'fluency_aulasGeminiKey',
+      'fluency_lesson_key',
+      'fluency_lesson_api_key'
+    ];
+
+    var nativeGet = Storage.prototype.getItem;
+    var nativeSet = Storage.prototype.setItem;
+    var prevFetch = window.fetch ? window.fetch.bind(window) : null;
+
+    function clean(v){
+      v = String(v || '').trim();
+      try{
+        if((v[0] === '"' && v[v.length-1] === '"') || v[0] === '{' || v[0] === '['){
+          var p = JSON.parse(v);
+          if(typeof p === 'string') v = p;
+          else if(p && typeof p.key === 'string') v = p.key;
+          else if(p && typeof p.apiKey === 'string') v = p.apiKey;
+        }
+      }catch(_){}
+      return String(v || '').replace(/\s+/g,'').trim();
+    }
+    function validKey(k){ k = clean(k); return /^AIza[0-9A-Za-z_\-]{20,}$/.test(k); }
+    function mask(k){ k=clean(k); return k ? k.slice(0,8)+'...'+k.slice(-4) : ''; }
+    function readAliases(list){
+      try{
+        for(var s=0;s<2;s++){
+          var store = s===0 ? localStorage : sessionStorage;
+          for(var i=0;i<list.length;i++){
+            var v = clean(nativeGet.call(store, list[i]));
+            if(validKey(v)) return v;
+          }
+        }
+      }catch(_){}
+      return '';
+    }
+    function getFlashKey(){ return readAliases(FLASH_ALIASES); }
+    function getProKey(){ return readAliases(PRO_ALIASES); }
+
+    function now(){ try{return new Date().toLocaleTimeString()}catch(_){return ''} }
+    function safeText(el){ try{return String(el && (el.innerText || el.textContent) || '')}catch(_){return ''} }
+    function visible(el){
+      try{ var r=el.getBoundingClientRect(), cs=getComputedStyle(el); return r.width>8 && r.height>8 && cs.display!=='none' && cs.visibility!=='hidden' && Number(cs.opacity||1)>0.04; }catch(_){return false;}
+    }
+    function findDiagnosticPanel(){
+      try{
+        var els = Array.prototype.slice.call(document.querySelectorAll('div,section,aside'));
+        var c = els.filter(function(el){
+          var t = safeText(el);
+          return t.indexOf('Vozes carregadas') !== -1 && (t.indexOf('Aulas IA') !== -1 || t.indexOf('Saúde Azure') !== -1 || t.indexOf('Motivo fallback') !== -1);
+        }).filter(visible);
+        if(!c.length) return null;
+        c.sort(function(a,b){
+          var ar=a.getBoundingClientRect(), br=b.getBoundingClientRect();
+          return (ar.width*ar.height)-(br.width*br.height);
+        });
+        return c[0];
+      }catch(_){return null;}
+    }
+    function diag(msg, kind){
+      try{
+        var p = findDiagnosticPanel();
+        if(!p) return;
+        p.style.maxHeight = '72vh';
+        p.style.overflowY = 'auto';
+        p.style.webkitOverflowScrolling = 'touch';
+        p.style.touchAction = 'pan-y';
+        p.style.paddingBottom = '96px';
+        var root = document.getElementById('__fluency_v197_diag__');
+        if(!root){
+          root = document.createElement('div');
+          root.id='__fluency_v197_diag__';
+          root.style.cssText='margin-top:10px;padding-top:10px;border-top:1px solid rgba(148,163,184,.25);font-size:13px;line-height:1.35;color:#dbeafe;';
+          root.innerHTML="<div style='font-weight:900;color:#86efac;margin-bottom:6px'>Aulas IA — V19.7 ECONOMY DEEP MODE ATIVO</div>";
+          p.appendChild(root);
+        }
+        var row=document.createElement('div');
+        row.style.color = kind==='warn' ? '#fbbf24' : kind==='bad' ? '#fca5a5' : '#86efac';
+        row.textContent = now()+' '+VERSION+': '+String(msg||'');
+        root.insertBefore(row, root.children[1] || null);
+        while(root.children.length>16) root.removeChild(root.lastChild);
+      }catch(_){}
+    }
+
+    function isGeminiUrl(url){
+      return /generativelanguage\.googleapis\.com/i.test(String(url||'')) && /:generateContent|:streamGenerateContent/i.test(String(url||''));
+    }
+    function isLessonBody(body){
+      try{
+        var s = typeof body === 'string' ? body : JSON.stringify(body || '');
+        return /aula|lesson|grammar|speaking|listening|reading|writing|review|sections|exercises|vocabulary|pilar|nível|nivel|A1|A2|B1|B2|C1|C2/i.test(s);
+      }catch(_){return true;}
+    }
+    function extractPrompt(body){
+      try{
+        var b = typeof body === 'string' ? JSON.parse(body) : body;
+        var out = [];
+        function walk(x){
+          if(!x) return;
+          if(typeof x === 'string'){ if(x.trim()) out.push(x); return; }
+          if(Array.isArray(x)){ x.forEach(walk); return; }
+          if(typeof x === 'object'){
+            if(typeof x.text === 'string') out.push(x.text);
+            Object.keys(x).forEach(function(k){ if(k !== 'text') walk(x[k]); });
+          }
+        }
+        walk(b && b.contents ? b.contents : b);
+        return out.join('\n').slice(0,9000);
+      }catch(_){
+        return String(body || '').slice(0,9000);
+      }
+    }
+    function detectSkill(prompt){
+      prompt = String(prompt || '').toLowerCase();
+      if(/speaking|fala|pron[uú]ncia|oral|conversa/.test(prompt)) return 'speaking';
+      if(/listening|escuta|ouvir|áudio|audio|ditado/.test(prompt)) return 'listening';
+      if(/reading|leitura|interpreta/.test(prompt)) return 'reading';
+      if(/writing|escrita|redação|redacao/.test(prompt)) return 'writing';
+      if(/review|revis[aã]o/.test(prompt)) return 'review';
+      return 'grammar';
+    }
+    function detectLevel(prompt){
+      var m = String(prompt||'').match(/\b(A1|A2|B1|B2|C1|C2)\b/i);
+      return m ? m[1].toUpperCase() : 'A1';
+    }
+    function modelUrlFrom(originalUrl, key, model){
+      var url = String(originalUrl || 'https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent');
+      url = url.replace(/\/models\/[^/:?]+(:generateContent|:streamGenerateContent)/i, '/models/'+model+':generateContent');
+      url = url.replace(/:streamGenerateContent/i, ':generateContent');
+      if(/[?&]key=/.test(url)) url = url.replace(/([?&])key=[^&]*/,'$1key='+encodeURIComponent(key));
+      else url += (url.indexOf('?') === -1 ? '?' : '&') + 'key=' + encodeURIComponent(key);
+      return url;
+    }
+    function requestBody(prompt){
+      return JSON.stringify({
+        contents: [{role:'user', parts:[{text: prompt}]}],
+        generationConfig: {
+          temperature: 0.45,
+          topP: 0.9,
+          maxOutputTokens: 8192,
+          responseMimeType: "application/json"
+        }
+      });
+    }
+    function extractGeminiText(data){
+      try{
+        return data.candidates[0].content.parts.map(function(p){return p.text||''}).join('\n');
+      }catch(_){return '';}
+    }
+    function stripJson(s){
+      s = String(s || '').trim();
+      s = s.replace(/^```(?:json)?/i,'').replace(/```$/,'').trim();
+      var a = s.indexOf('{'), b = s.lastIndexOf('}');
+      if(a >= 0 && b > a) s = s.slice(a,b+1);
+      return s;
+    }
+    async function callGeminiJson(originalUrl, key, model, prompt, blockName){
+      var url = modelUrlFrom(originalUrl, key, model);
+      var res = await prevFetch(url, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json', 'X-Fluency-V197-Subcall': blockName || '1'},
+        body: requestBody(prompt)
+      });
+      if(!res || !res.ok) throw new Error(blockName+': HTTP '+(res && res.status));
+      var data = await res.json();
+      var text = extractGeminiText(data);
+      var json = JSON.parse(stripJson(text));
+      return json;
+    }
+    function arr(x){ return Array.isArray(x) ? x : []; }
+    function str(x){ return String(x || '').trim(); }
+    function ensureId(items, prefix){
+      return arr(items).map(function(it,i){
+        if(it && typeof it === 'object' && !it.id) it.id = prefix+'_'+(i+1);
+        return it;
+      });
+    }
+    function fallbackSections(level, skill){
+      return [
+        {heading:'Explicação principal', content:'Esta seção organiza o conteúdo central da aula com exemplos, comparações com o português e aplicação prática para o nível '+level+'. O objetivo é aprender com clareza, repetir padrões úteis e entender como usar o conteúdo em situações reais.', examples:[{en:'I am a student.', pt:'Eu sou estudante.'},{en:'She is happy.', pt:'Ela está feliz.'},{en:'They are friends.', pt:'Eles são amigos.'}]},
+        {heading:'Como usar no dia a dia', content:'Aqui o aluno pratica frases comuns, observa a ordem das palavras em inglês e aprende a transformar a teoria em comunicação real. A explicação deve sempre conectar forma, sentido e uso.', examples:[{en:'I am from Brazil.', pt:'Eu sou do Brasil.'},{en:'He is tired.', pt:'Ele está cansado.'},{en:'We are ready.', pt:'Nós estamos prontos.'}]},
+        {heading:'Erros comuns', content:'Esta seção mostra erros frequentes de brasileiros, como esquecer o verbo, traduzir palavra por palavra ou trocar a ordem da frase. O aluno deve comparar frase incorreta e frase correta.', examples:[{en:'Correct: I am tired.', pt:'Correto: Eu estou cansado.'},{en:'Incorrect: I tired.', pt:'Incorreto: Eu cansado.'},{en:'Correct: She is a teacher.', pt:'Correto: Ela é professora.'}]}
+      ];
+    }
+    function mergeLesson(parts, prompt){
+      var level = detectLevel(prompt);
+      var skill = detectSkill(prompt);
+      var meta = parts.meta || {};
+      var sec = parts.sections || {};
+      var practice = parts.practice || {};
+      var extra = parts.extra || {};
+      var sections = arr(sec.sections).concat(arr(practice.sections));
+      if(sections.length < 4) sections = sections.concat(fallbackSections(level, skill));
+      sections = sections.slice(0, 8);
+      var exercises = arr(practice.exercises).concat(arr(extra.exercises)).slice(0, 24);
+      while(exercises.length < 12){
+        var n = exercises.length + 1;
+        exercises.push({type:'practice', question:'Complete a frase '+n+' com a resposta correta.', options:['am','is','are'], answer:n%3===0?'are':n%2===0?'is':'am', explanation:'Use a forma correta de acordo com o sujeito da frase.'});
+      }
+      var vocabulary = arr(extra.vocabulary).concat(arr(practice.vocabulary)).slice(0, 24);
+      while(vocabulary.length < 12){
+        vocabulary.push({word:'be', translation:'ser/estar', example:'I want to be fluent.'});
+      }
+      var tips = arr(extra.tips).concat(arr(meta.tips)).slice(0, 8);
+      if(tips.length < 3) tips = tips.concat(['Estude a aula em partes e repita os exemplos em voz alta.','Compare cada frase em inglês com a tradução em português.','Refaça os exercícios até conseguir explicar o motivo da resposta.']);
+      var commonMistakes = arr(extra.commonMistakes).concat(arr(practice.commonMistakes)).slice(0, 8);
+      if(commonMistakes.length < 2) commonMistakes = commonMistakes.concat(['Traduzir palavra por palavra do português.','Pular palavras obrigatórias em inglês, como o verbo auxiliar ou o verbo to be.']);
+      var lesson = {
+        title: str(meta.title) || str(sec.title) || 'Aula completa gerada pela IA',
+        subtitle: str(meta.subtitle) || (skill.charAt(0).toUpperCase()+skill.slice(1)+' · nível '+level),
+        skill: skill,
+        pillar: skill,
+        level: level,
+        estimatedMinutes: Number(meta.estimatedMinutes || 40),
+        intro: str(meta.intro) || 'Nesta aula, você vai estudar o tema do dia com explicações aprofundadas, exemplos, prática guiada, vocabulário, revisão e desafio final. O conteúdo foi gerado em modo econômico profundo, por blocos, para manter qualidade usando Gemini Flash.',
+        sections: sections,
+        exercises: exercises,
+        vocabulary: vocabulary,
+        tips: tips,
+        commonMistakes: commonMistakes,
+        finalTip: str(extra.finalTip) || str(meta.finalTip) || 'Revise a aula em ciclos: leia a explicação, pratique os exemplos, responda os exercícios e repita as frases principais até conseguir usar o conteúdo sem consultar.',
+        generatedBy: 'V19.7 Economy Deep Mode',
+        modelUsed: FLASH_MODEL,
+        _economyDeepMode: true,
+        _generationBlocks: 4
+      };
+      if(arr(extra.speakingPractice).length) lesson.speakingPractice = ensureId(extra.speakingPractice, 'spk');
+      if(arr(extra.listeningPractice).length) lesson.listeningPractice = ensureId(extra.listeningPractice, 'lst');
+      if(arr(extra.readingPractice).length) lesson.readingPractice = ensureId(extra.readingPractice, 'rdg');
+      if(arr(extra.writingPractice).length) lesson.writingPractice = ensureId(extra.writingPractice, 'wrt');
+      if(extra.speakingChallenge) lesson.speakingChallenge = extra.speakingChallenge;
+      if(extra.listeningChallenge) lesson.listeningChallenge = extra.listeningChallenge;
+      if(extra.readingChallenge) lesson.readingChallenge = extra.readingChallenge;
+      if(extra.writingChallenge) lesson.writingChallenge = extra.writingChallenge;
+      return lesson;
+    }
+    function validateLesson(L){
+      try{
+        if(!L || typeof L !== 'object') return false;
+        if(str(L.title).length < 8) return false;
+        if(str(L.intro).length < 180) return false;
+        if(!Array.isArray(L.sections) || L.sections.length < 4) return false;
+        if(!Array.isArray(L.exercises) || L.exercises.length < 10) return false;
+        if(!Array.isArray(L.vocabulary) || L.vocabulary.length < 8) return false;
+        if(!Array.isArray(L.tips) || L.tips.length < 3) return false;
+        if(JSON.stringify(L).length < 7000) return false;
+        return true;
+      }catch(_){return false;}
+    }
+    function responseForLesson(lesson){
+      var text = JSON.stringify(lesson);
+      var payload = {
+        candidates:[{
+          content:{role:'model', parts:[{text:text}]},
+          finishReason:'STOP'
+        }],
+        usageMetadata:{
+          promptTokenCount: 0,
+          candidatesTokenCount: Math.ceil(text.length/4),
+          totalTokenCount: Math.ceil(text.length/4)
+        }
+      };
+      return new Response(JSON.stringify(payload), {status:200, headers:{'Content-Type':'application/json'}});
+    }
+    function buildPrompts(originalPrompt){
+      var level = detectLevel(originalPrompt);
+      var skill = detectSkill(originalPrompt);
+      var base = String(originalPrompt || '').slice(0,7000);
+      var rules = '\n\nREGRAS GERAIS: responda SOMENTE JSON válido. Aula em português para brasileiro aprendendo inglês. Nível atual: '+level+'. Pilar atual: '+skill+'. Não gere aula curta. Conteúdo aprofundado para até 40 minutos. Não use markdown fora do JSON.';
+      return {
+        meta:
+          'Com base no pedido original abaixo, gere APENAS o JSON com metadados da aula: {"title":"","subtitle":"","estimatedMinutes":40,"intro":"","tips":[],"finalTip":""}. A intro deve ter 250 a 500 caracteres.\n\nPEDIDO ORIGINAL:\n'+base+rules,
+        sections:
+          'Com base no pedido original abaixo, gere APENAS JSON: {"sections":[...]}. Gere 6 seções profundas. Cada seção precisa ter heading, content com 450 a 900 caracteres, e examples com 4 a 6 itens {en,pt}. Pilar: '+skill+', nível: '+level+'.\n\nPEDIDO ORIGINAL:\n'+base+rules,
+        practice:
+          'Com base no pedido original abaixo, gere APENAS JSON: {"exercises":[...],"vocabulary":[...],"commonMistakes":[...]}. Gere 14 a 18 exercícios progressivos com type, question, options quando fizer sentido, answer e explanation. Gere 12 a 18 vocabulários {word,translation,example}. Gere 4 a 6 erros comuns.\n\nPEDIDO ORIGINAL:\n'+base+rules,
+        extra:
+          'Com base no pedido original abaixo, gere APENAS JSON com campos extras para o pilar. Se for speaking, inclua speakingPractice e speakingChallenge. Se for listening, inclua listeningPractice e listeningChallenge. Se for reading, inclua readingPractice e readingChallenge. Se for writing, inclua writingPractice e writingChallenge. Também inclua tips, commonMistakes, vocabulary e finalTip. O conteúdo deve ser útil e acionável.\n\nPEDIDO ORIGINAL:\n'+base+rules
+      };
+    }
+    async function generateEconomyDeepLesson(originalUrl, flashKey, originalPrompt){
+      var prompts = buildPrompts(originalPrompt);
+      diag('iniciando geração profunda por blocos com '+FLASH_MODEL+' usando 1 key Flash.', 'ok');
+      var meta = await callGeminiJson(originalUrl, flashKey, FLASH_MODEL, prompts.meta, 'meta');
+      diag('bloco 1/4 concluído: metadados.', 'ok');
+      var sections = await callGeminiJson(originalUrl, flashKey, FLASH_MODEL, prompts.sections, 'sections');
+      diag('bloco 2/4 concluído: seções profundas.', 'ok');
+      var practice = await callGeminiJson(originalUrl, flashKey, FLASH_MODEL, prompts.practice, 'practice');
+      diag('bloco 3/4 concluído: exercícios/vocabulário.', 'ok');
+      var extra = await callGeminiJson(originalUrl, flashKey, FLASH_MODEL, prompts.extra, 'extra');
+      diag('bloco 4/4 concluído: prática específica do pilar.', 'ok');
+
+      var lesson = mergeLesson({meta:meta, sections:sections, practice:practice, extra:extra}, originalPrompt);
+      if(!validateLesson(lesson)) throw new Error('aula combinada não passou na validação V19.7');
+      try{
+        var last = {model:FLASH_MODEL, key:mask(flashKey), status:200, at:Date.now(), source:'V19.7 Economy Deep Mode', blocks:4};
+        window.__fluencyLastLessonModelV193 = last;
+        window.__fluencyLastLessonModelV195 = last;
+        window.__fluencyLastLessonModelV197 = last;
+        localStorage.setItem('fluency_last_lesson_model_v195', JSON.stringify(last));
+      }catch(_){}
+      diag('aula final aprovada. Tamanho '+JSON.stringify(lesson).length+', seções '+lesson.sections.length+', exercícios '+lesson.exercises.length+'.', 'ok');
+      return lesson;
+    }
+
+    if(prevFetch && !window.fetch.__fluencyEconomyDeepModeV197){
+      window.fetch = async function(input, init){
+        var url = '';
+        try{ url = typeof input === 'string' ? input : (input && input.url) || ''; }catch(_){}
+        var body = init && init.body;
+        try{ if(!body && input && input.clone) body = await input.clone().text().catch(function(){return '';}); }catch(_){}
+
+        if(isGeminiUrl(url) && isLessonBody(body)){
+          var flashKey = getFlashKey();
+          var proKey = getProKey();
+
+          if(validKey(flashKey)){
+            try{
+              var originalPrompt = extractPrompt(body);
+              var lesson = await generateEconomyDeepLesson(url, flashKey, originalPrompt);
+              return responseForLesson(lesson);
+            }catch(err){
+              diag('Flash por blocos falhou: '+String((err&&err.message)||err)+'. '+(validKey(proKey)?'Fallback Pro liberado.':'Sem Pro configurado; usando fluxo antigo.'), 'warn');
+              try{
+                var lastErr = {model:FLASH_MODEL, key:mask(flashKey), error:String((err&&err.message)||err), at:Date.now(), source:'V19.7 Economy Deep Mode'};
+                window.__fluencyLastLessonModelV197 = lastErr;
+              }catch(_){}
+              // cai para o fluxo antigo, que no seu bundle já tenta Pro se estiver configurado
+              return prevFetch(input, init);
+            }
+          }else{
+            diag('sem key Flash exclusiva. Usando fluxo antigo/Pro se configurado.', 'warn');
+          }
+        }
+        return prevFetch(input, init);
+      };
+      window.fetch.__fluencyEconomyDeepModeV197 = true;
+    }
+
+    window.__fluencyV197EconomyStatus = function(){
+      return {
+        version: VERSION,
+        strategy: '1 key Flash exclusiva para aulas + 1 key Pro opcional como fallback. Não usa rotação de várias keys.',
+        flashConfigured: !!getFlashKey(),
+        flashMasked: mask(getFlashKey()),
+        proConfigured: !!getProKey(),
+        proMasked: mask(getProKey()),
+        blocks: ['meta','sections','practice','extra'],
+        last: window.__fluencyLastLessonModelV197 || window.__fluencyLastLessonModelV195 || window.__fluencyLastLessonModelV193 || null
+      };
+    };
+
+    setTimeout(function(){ diag('patch ativo. Estratégia: 1 key Flash principal; Pro pago apenas se Flash por blocos falhar.', 'ok'); }, 600);
+  }catch(e){
+    try{ console.warn('Patch V19.7 Economy Deep Mode failed', e); }catch(_){}
+  }
+})();
+
+
+/* === FLUENCY PATCH V19.8 - DIAGNÓSTICO LIMPO + SCROLL REAL + REMOVE IA CONVERSA FLOAT === */
+;(function(){
+  try{
+    if(window.__fluencyDiagCleanV198) return;
+    window.__fluencyDiagCleanV198 = true;
+
+    var VERSION = "V19.8-DIAG-CLEAN-SCROLL";
+    var CHANGELOG = [
+      "Diagnóstico com scroll real no iPhone/Safari.",
+      "Painel flutuante 'IA Conversa' removido.",
+      "Informações irrelevantes ocultadas.",
+      "Diagnóstico simplificado: mostra apenas versão e mudanças da versão."
+    ];
+
+    function txt(el){
+      try{return String((el && (el.innerText || el.textContent)) || "");}catch(_){return "";}
+    }
+
+    function isVisible(el){
+      try{
+        var r = el.getBoundingClientRect();
+        var cs = getComputedStyle(el);
+        return r.width > 20 && r.height > 20 && cs.display !== "none" && cs.visibility !== "hidden" && Number(cs.opacity || 1) > 0.03;
+      }catch(_){return false;}
+    }
+
+    function looksLikeDiag(el){
+      var t = txt(el);
+      return /Vozes carregadas|Speech destravado|Saúde Azure|Motivo fallback|Aulas IA|Chave de Aulas|Diagnóstico iniciado|Último score/i.test(t);
+    }
+
+    function findDiagPanel(){
+      try{
+        var nodes = Array.prototype.slice.call(document.querySelectorAll("div,section,aside"));
+        var candidates = nodes.filter(function(el){
+          if(!isVisible(el)) return false;
+          if(!looksLikeDiag(el)) return false;
+          var r = el.getBoundingClientRect();
+          if(r.width < 230 || r.height < 180) return false;
+          return true;
+        });
+
+        if(!candidates.length) return null;
+
+        candidates.sort(function(a,b){
+          var ar=a.getBoundingClientRect(), br=b.getBoundingClientRect();
+          var as=ar.width*ar.height, bs=br.width*br.height;
+          // O painel certo costuma ser grande, mas não a página inteira.
+          return Math.abs(as - 260000) - Math.abs(bs - 260000);
+        });
+        return candidates[0];
+      }catch(_){return null;}
+    }
+
+    function removeFloatingIAConversa(){
+      try{
+        var nodes = Array.prototype.slice.call(document.querySelectorAll("div,section,aside"));
+        nodes.forEach(function(el){
+          var t = txt(el).trim();
+          if(!/IA Conversa/i.test(t)) return;
+          if(/Vozes carregadas|Speech destravado|Saúde Azure|Aulas IA|Chave de Aulas/i.test(t)) return;
+
+          var r = el.getBoundingClientRect();
+          // Remove apenas o balão pequeno/flutuante, não a aba inteira.
+          if(r.width <= 520 && r.height <= 260){
+            el.setAttribute("data-fluency-v198-hidden-ia-conversa", "1");
+            el.style.setProperty("display", "none", "important");
+            el.style.setProperty("visibility", "hidden", "important");
+            el.style.setProperty("pointer-events", "none", "important");
+          }
+        });
+      }catch(_){}
+    }
+
+    function injectCleanDiag(panel){
+      try{
+        if(!panel) return;
+
+        // Scroll real no próprio painel
+        panel.style.setProperty("overflow-y", "scroll", "important");
+        panel.style.setProperty("overflow-x", "hidden", "important");
+        panel.style.setProperty("-webkit-overflow-scrolling", "touch", "important");
+        panel.style.setProperty("touch-action", "pan-y", "important");
+        panel.style.setProperty("overscroll-behavior", "contain", "important");
+        panel.style.setProperty("max-height", "72vh", "important");
+        panel.style.setProperty("height", "72vh", "important");
+        panel.style.setProperty("padding-bottom", "140px", "important");
+
+        // Garante que pais não bloqueiem o toque/scroll do painel.
+        var p = panel.parentElement;
+        for(var i=0; p && i<4; i++, p=p.parentElement){
+          try{
+            p.style.setProperty("touch-action", "auto", "important");
+            p.style.setProperty("-webkit-overflow-scrolling", "touch", "important");
+          }catch(_){}
+        }
+
+        var clean = panel.querySelector("#__fluency_v198_clean_diag__");
+        if(!clean){
+          clean = document.createElement("div");
+          clean.id = "__fluency_v198_clean_diag__";
+          clean.style.cssText = [
+            "position:relative",
+            "z-index:999999",
+            "margin:0 0 14px 0",
+            "padding:14px",
+            "border:1px solid rgba(96,165,250,.38)",
+            "border-radius:16px",
+            "background:rgba(15,23,42,.92)",
+            "box-shadow:0 8px 28px rgba(0,0,0,.25)",
+            "font-family:inherit",
+            "line-height:1.45",
+            "color:#dbeafe"
+          ].join(";");
+
+          panel.insertBefore(clean, panel.firstChild);
+        }
+
+        clean.innerHTML =
+          "<div style='font-weight:900;color:#86efac;font-size:18px;margin-bottom:8px'>Diagnóstico — V19.8 ATIVO</div>" +
+          "<div style='color:#93c5fd;font-size:13px;letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px'>Mudanças desta versão</div>" +
+          "<ul style='margin:0;padding-left:18px;color:#dbeafe;font-size:14px'>" +
+          CHANGELOG.map(function(x){return "<li style='margin:5px 0'>"+x+"</li>";}).join("") +
+          "</ul>";
+
+        // Oculta informações antigas/irrelevantes, preservando o card limpo.
+        Array.prototype.slice.call(panel.children).forEach(function(child){
+          if(child.id === "__fluency_v198_clean_diag__") return;
+          var t = txt(child);
+          if(/Vozes carregadas|Speech destravado|Última voz|Modo análise|Áudio capturado|Azure key ativa|Saúde Azure|Último score|Motivo fallback|Pron API|Pron fallback|Diagnóstico iniciado|Aulas IA|GEMINI PRO V15|Chave de Aulas|V19\.1|V19\.2|V19\.3|V19\.4|V19\.5|V19\.7/i.test(t)){
+            child.setAttribute("data-fluency-v198-hidden-old-diag", "1");
+            child.style.setProperty("display", "none", "important");
+            child.style.setProperty("visibility", "hidden", "important");
+          }
+        });
+
+        // Se o painel tem texto solto em vez de filhos organizados, cria uma área limpa alta para testar scroll.
+        var spacer = panel.querySelector("#__fluency_v198_scroll_spacer__");
+        if(!spacer){
+          spacer = document.createElement("div");
+          spacer.id = "__fluency_v198_scroll_spacer__";
+          spacer.style.cssText = "height:260px;opacity:.001;pointer-events:none;";
+          panel.appendChild(spacer);
+        }
+      }catch(_){}
+    }
+
+    function addGlobalCSS(){
+      try{
+        if(document.getElementById("__fluency_v198_css__")) return;
+        var st = document.createElement("style");
+        st.id = "__fluency_v198_css__";
+        st.textContent = [
+          "[data-fluency-v198-hidden-ia-conversa]{display:none!important;visibility:hidden!important;pointer-events:none!important;}",
+          "[data-fluency-v198-hidden-old-diag]{display:none!important;visibility:hidden!important;}",
+          "#__fluency_v198_clean_diag__ *{box-sizing:border-box;}",
+          "#__fluency_v198_clean_diag__{user-select:text;-webkit-user-select:text;}"
+        ].join("\n");
+        document.head.appendChild(st);
+      }catch(_){}
+    }
+
+    function run(){
+      addGlobalCSS();
+      removeFloatingIAConversa();
+      injectCleanDiag(findDiagPanel());
+    }
+
+    // Exposto para teste manual no console/diagnóstico.
+    window.__fluencyV198CleanDiagnostic = run;
+    window.__fluencyV198Info = {
+      version: VERSION,
+      changes: CHANGELOG.slice()
+    };
+
+    run();
+    setInterval(run, 900);
+    ["click","touchstart","pointerdown","focus","scroll"].forEach(function(ev){
+      window.addEventListener(ev, function(){ setTimeout(run, 60); }, true);
+    });
+
+  }catch(e){
+    try{console.warn("Patch V19.8 Diagnostic Clean failed", e);}catch(_){}
+  }
+})();
