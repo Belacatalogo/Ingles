@@ -1,3 +1,263 @@
+/* === FLUENCY PATCH V18 - RENDERIZAÇÃO COMPLETA DA AULA NA ABA AULA === */
+;(function(){
+  try{
+    if(window.__fluencyLessonRenderFixV18) return;
+    window.__fluencyLessonRenderFixV18 = true;
+    var VERSION = 'V18-LESSON-FULL-RENDER';
+
+    function log(msg){ try{ console.warn('[Fluency '+VERSION+'] '+msg); localStorage.setItem('fluency_v18_render_last', String(msg||'')); }catch(_){} }
+    function txt(v){ return String(v == null ? '' : v).trim(); }
+    function esc(v){
+      return txt(v).replace(/[&<>"]/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; });
+    }
+    function parse(v){
+      try{
+        if(v == null) return null;
+        var x = typeof v === 'string' ? JSON.parse(v) : v;
+        if(typeof x === 'string') { try{x = JSON.parse(x)}catch(_){} }
+        return x;
+      }catch(_){ return null; }
+    }
+    function isLessonKey(k){
+      k = String(k||'');
+      return /^fluency_lesson/i.test(k) || /^fluency_lesson_v/i.test(k) || /lesson_v\d+_/i.test(k);
+    }
+    function arr(x){ return Array.isArray(x) ? x : []; }
+    function pick(o, keys){
+      if(!o || typeof o !== 'object') return '';
+      for(var i=0;i<keys.length;i++){
+        var v = o[keys[i]];
+        if(v != null && txt(v)) return v;
+      }
+      return '';
+    }
+    function normalizeExample(ex){
+      if(typeof ex === 'string') return {en:ex, pt:''};
+      ex = ex || {};
+      return {en: pick(ex,['en','english','sentence','phrase','example','text']), pt: pick(ex,['pt','portuguese','translation','traducao','tradução','meaning'])};
+    }
+    function normalizeLesson(L){
+      L = parse(L);
+      if(!L || typeof L !== 'object') return null;
+      // Aceita wrappers comuns caso a aula venha dentro de outro objeto.
+      if(L.lessonData && typeof L.lessonData === 'object') L = L.lessonData;
+      if(L.lesson && typeof L.lesson === 'object') L = L.lesson;
+      if(L.aula && typeof L.aula === 'object') L = L.aula;
+      if(L.data && L.data.lesson && typeof L.data.lesson === 'object') L = L.data.lesson;
+
+      var out = {};
+      out.title = pick(L,['title','titulo','título','name']) || 'Aula de inglês';
+      out.subtitle = pick(L,['subtitle','subtitulo','subtítulo']);
+      out.intro = pick(L,['intro','introduction','introducao','introdução','overview']);
+      out.estimatedMinutes = L.estimatedMinutes || L.minutes || L.duration || 20;
+      out.finalTip = pick(L,['finalTip','final_tip','conclusion','conclusao','conclusão','closing','resumoFinal']);
+
+      var secs = arr(L.sections && L.sections.length ? L.sections : (L.secoes || L.seções || L.parts || L.modules));
+      out.sections = secs.map(function(s,i){
+        s = s || {};
+        var examples = arr(s.examples && s.examples.length ? s.examples : (s.exemplos || s.sentences || s.frases));
+        return {
+          heading: pick(s,['heading','title','titulo','título','name']) || ('Seção '+(i+1)),
+          content: pick(s,['content','body','text','explicacao','explicação','explanation','description']) || '',
+          examples: examples.map(normalizeExample).filter(function(e){return txt(e.en) || txt(e.pt)})
+        };
+      }).filter(function(s){return txt(s.heading) || txt(s.content) || s.examples.length});
+
+      var voc = arr(L.vocabulary && L.vocabulary.length ? L.vocabulary : (L.vocabulario || L.vocabulário || L.words));
+      out.vocabulary = voc.map(function(v){ v = v || {}; return {
+        word: pick(v,['word','palavra','term','english']),
+        pos: pick(v,['pos','class','classe','type']) || '',
+        translation: pick(v,['translation','traducao','tradução','pt','meaning']),
+        example: pick(v,['example','exemplo','sentence','phrase'])
+      };}).filter(function(v){return txt(v.word) || txt(v.translation)});
+
+      var exs = arr(L.exercises && L.exercises.length ? L.exercises : (L.exercicios || L.exercícios || L.questions || L.quiz));
+      out.exercises = exs.map(function(e,i){ e = e || {}; return {
+        type: pick(e,['type','tipo']) || 'practice',
+        question: pick(e,['question','pergunta','prompt','instruction','enunciado']) || ('Exercício '+(i+1)),
+        answer: pick(e,['answer','resposta','correct','correctAnswer','expected']) || '',
+        explanation: pick(e,['explanation','explicacao','explicação','why','feedback']) || '',
+        options: arr(e.options || e.opcoes || e.opções || e.choices)
+      };}).filter(function(e){return txt(e.question) || txt(e.answer)});
+
+      out.tips = arr(L.tips && L.tips.length ? L.tips : (L.dicas || L.notes)).map(function(t){return typeof t === 'string' ? t : pick(t,['tip','text','content'])}).filter(txt);
+      out.commonMistakes = arr(L.commonMistakes || L.common_mistakes || L.errosComuns || L.mistakes).map(function(m){ m=m||{}; return {
+        mistake: pick(m,['mistake','erro','title']),
+        why: pick(m,['why','porque','porquê','reason']),
+        avoid: pick(m,['avoid','correction','comoEvitar','fix'])
+      };}).filter(function(m){return txt(m.mistake)||txt(m.why)||txt(m.avoid)});
+      return out;
+    }
+    function lessonScore(L){
+      L = normalizeLesson(L);
+      if(!L) return 0;
+      var s = 0;
+      s += txt(L.title).length;
+      s += txt(L.intro).length;
+      s += txt(L.finalTip).length;
+      s += L.sections.length * 800;
+      s += L.exercises.length * 120;
+      s += L.vocabulary.length * 80;
+      s += L.tips.length * 40;
+      try{s += JSON.stringify(L).length/20}catch(_){}
+      return s;
+    }
+    function bestStoredLesson(){
+      var best = null, bestScore = 0, bestKey = '';
+      try{
+        for(var i=0;i<localStorage.length;i++){
+          var k = localStorage.key(i);
+          if(!isLessonKey(k)) continue;
+          var raw = localStorage.getItem(k);
+          var L = normalizeLesson(raw);
+          var sc = lessonScore(L);
+          if(sc > bestScore && L && (L.sections.length || L.exercises.length || L.vocabulary.length)){
+            best = L; bestScore = sc; bestKey = k;
+          }
+        }
+      }catch(_){}
+      if(best) best.__key = bestKey;
+      return best;
+    }
+    function lessonLooksRendered(L){
+      try{
+        if(!L || !L.sections.length) return false;
+        var body = document.body ? document.body.innerText || '' : '';
+        var hits = 0;
+        L.sections.forEach(function(s){ if(s.heading && body.indexOf(s.heading) !== -1) hits++; });
+        var exHits = 0;
+        L.exercises.slice(0,3).forEach(function(e){ if(e.question && body.indexOf(e.question.slice(0,35)) !== -1) exHits++; });
+        return hits >= Math.min(2,L.sections.length) || exHits >= 2;
+      }catch(_){ return false; }
+    }
+    function renderLessonHtml(L){
+      var h = '';
+      h += '<section class="fluency-v18-full-lesson-render" style="margin-top:28px;border:1px solid rgba(91,156,246,.35);border-radius:18px;padding:18px;background:rgba(10,24,54,.72);box-shadow:0 12px 35px rgba(0,0,0,.18);">';
+      h += '<div style="font-family:inherit;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:#93B7FF;margin-bottom:10px;">Aula completa gerada pela IA</div>';
+      if(L.sections.length){
+        L.sections.forEach(function(sec,i){
+          h += '<article style="margin-top:'+(i?24:8)+'px;">';
+          h += '<h2 style="font-family:inherit;font-size:22px;line-height:1.25;margin:0 0 10px;color:#F1F6FF;font-weight:700;">§ '+esc(sec.heading)+'</h2>';
+          if(sec.content) h += '<p style="white-space:pre-wrap;font-size:15px;line-height:1.75;color:#70A6FF;margin:0 0 12px;">'+esc(sec.content)+'</p>';
+          if(sec.examples && sec.examples.length){
+            h += '<div style="display:grid;gap:10px;margin-top:14px;">';
+            sec.examples.forEach(function(ex){
+              h += '<div style="border:1px solid rgba(255,255,255,.10);border-radius:12px;padding:12px;background:rgba(255,255,255,.045);">';
+              if(ex.en) h += '<div style="font-size:16px;color:#F8FBFF;font-weight:650;line-height:1.45;">'+esc(ex.en)+'</div>';
+              if(ex.pt) h += '<div style="font-size:14px;color:#9EB8E8;font-style:italic;margin-top:4px;line-height:1.45;">'+esc(ex.pt)+'</div>';
+              h += '</div>';
+            });
+            h += '</div>';
+          }
+          h += '</article>';
+        });
+      }
+      if(L.vocabulary.length){
+        h += '<section style="margin-top:28px;"><h2 style="font-size:13px;letter-spacing:.22em;text-transform:uppercase;color:#9EB8E8;margin:0 0 12px;">Vocabulário</h2><div style="display:grid;gap:10px;">';
+        L.vocabulary.forEach(function(v){
+          h += '<div style="border:1px solid rgba(255,255,255,.10);border-radius:12px;padding:12px;background:rgba(255,255,255,.04);">';
+          h += '<div style="display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;"><strong style="color:#F8FBFF;font-size:16px;">'+esc(v.word)+'</strong>'+(v.pos?'<span style="color:#8BA4D8;font-size:12px;">'+esc(v.pos)+'</span>':'')+(v.translation?'<span style="color:#70A6FF;font-size:13px;">• '+esc(v.translation)+'</span>':'')+'</div>';
+          if(v.example) h += '<div style="color:#9EB8E8;font-size:13px;font-style:italic;margin-top:5px;">“'+esc(v.example)+'”</div>';
+          h += '</div>';
+        });
+        h += '</div></section>';
+      }
+      if(L.exercises.length){
+        h += '<section style="margin-top:28px;"><h2 style="font-size:13px;letter-spacing:.22em;text-transform:uppercase;color:#9EB8E8;margin:0 0 12px;">Exercícios</h2><div style="display:grid;gap:12px;">';
+        L.exercises.forEach(function(e,i){
+          h += '<div style="border:1px solid rgba(255,255,255,.10);border-radius:12px;padding:13px;background:rgba(255,255,255,.04);">';
+          h += '<div style="color:#F8FBFF;font-size:15px;line-height:1.55;"><strong style="color:#70A6FF;">'+(i+1)+'.</strong> '+esc(e.question)+'</div>';
+          if(e.options && e.options.length){ h += '<div style="margin-top:8px;color:#9EB8E8;font-size:13px;line-height:1.6;">Opções: '+e.options.map(esc).join(' • ')+'</div>'; }
+          if(e.answer) h += '<div style="margin-top:8px;color:#A7F3D0;font-size:13px;">Resposta: '+esc(e.answer)+'</div>';
+          if(e.explanation) h += '<div style="margin-top:6px;color:#9EB8E8;font-size:13px;line-height:1.55;">'+esc(e.explanation)+'</div>';
+          h += '</div>';
+        });
+        h += '</div></section>';
+      }
+      if(L.commonMistakes.length){
+        h += '<section style="margin-top:28px;"><h2 style="font-size:13px;letter-spacing:.22em;text-transform:uppercase;color:#9EB8E8;margin:0 0 12px;">Erros comuns</h2><div style="display:grid;gap:10px;">';
+        L.commonMistakes.forEach(function(m){
+          h += '<div style="border:1px solid rgba(245,158,11,.25);border-radius:12px;padding:12px;background:rgba(245,158,11,.06);color:#FDECC8;font-size:13px;line-height:1.55;">';
+          if(m.mistake) h += '<strong>'+esc(m.mistake)+'</strong>';
+          if(m.why) h += '<div>'+esc(m.why)+'</div>';
+          if(m.avoid) h += '<div style="color:#A7F3D0;margin-top:4px;">Como evitar: '+esc(m.avoid)+'</div>';
+          h += '</div>';
+        });
+        h += '</div></section>';
+      }
+      if(L.tips.length){
+        h += '<section style="margin-top:28px;"><h2 style="font-size:13px;letter-spacing:.22em;text-transform:uppercase;color:#9EB8E8;margin:0 0 12px;">Dicas</h2><ul style="padding-left:18px;margin:0;color:#70A6FF;font-size:14px;line-height:1.65;">';
+        L.tips.forEach(function(t){ h += '<li>'+esc(t)+'</li>'; });
+        h += '</ul></section>';
+      }
+      if(L.finalTip) h += '<div style="margin-top:28px;border-radius:14px;padding:16px;background:rgba(91,156,246,.12);border:1px solid rgba(91,156,246,.25);color:#70A6FF;font-style:italic;font-size:16px;line-height:1.65;text-align:center;">“'+esc(L.finalTip)+'”</div>';
+      h += '</section>';
+      return h;
+    }
+    function injectIfNeeded(){
+      try{
+        var L = bestStoredLesson();
+        if(!L) return;
+        if(document.querySelector('.fluency-v18-full-lesson-render')) return;
+        // Só injeta quando a aba/a tela de aula está aberta.
+        var bodyText = document.body ? document.body.innerText || '' : '';
+        if(bodyText.indexOf('Gerada por IA') === -1 && bodyText.indexOf('Aula padrão') === -1 && bodyText.indexOf('Exercícios') === -1) return;
+        if(lessonLooksRendered(L)) return;
+        var root = document.querySelector('.max-w-3xl.mx-auto') || document.querySelector('.max-w-3xl') || document.body;
+        if(!root) return;
+        var div = document.createElement('div');
+        div.innerHTML = renderLessonHtml(L);
+        // Tenta colocar logo após o bloco de introdução; se não der, coloca antes do bloco final.
+        var finalCards = root.querySelectorAll('.card-paper.rounded-sm.p-6, .card-paper.rounded-sm');
+        if(finalCards && finalCards.length) root.insertBefore(div.firstChild, finalCards[finalCards.length-1]);
+        else root.appendChild(div.firstChild);
+        log('renderização completa injetada para '+(L.title||'aula')+' usando '+(L.__key||'cache'));
+      }catch(e){ log('falha ao injetar aula completa: '+((e&&e.message)||e)); }
+    }
+
+    // Normaliza no armazenamento também, para o React receber campos renderizáveis nas próximas leituras.
+    try{
+      var rawGet = Storage.prototype.getItem;
+      var rawSet = Storage.prototype.setItem;
+      if(rawGet && !rawGet.__fluencyV18RenderPatched){
+        Storage.prototype.getItem = function(k){
+          var v = rawGet.apply(this, arguments);
+          try{
+            if(this === localStorage && isLessonKey(k) && v != null){
+              var L = normalizeLesson(v);
+              if(L && (L.sections.length || L.exercises.length || L.vocabulary.length)) return JSON.stringify(L);
+            }
+          }catch(_){}
+          return v;
+        };
+        Storage.prototype.getItem.__fluencyV18RenderPatched = true;
+      }
+      if(rawSet && !rawSet.__fluencyV18RenderPatched){
+        Storage.prototype.setItem = function(k,v){
+          try{
+            if(this === localStorage && isLessonKey(k)){
+              var L = normalizeLesson(v);
+              if(L && (L.sections.length || L.exercises.length || L.vocabulary.length)) v = JSON.stringify(L);
+            }
+          }catch(_){}
+          return rawSet.call(this,k,v);
+        };
+        Storage.prototype.setItem.__fluencyV18RenderPatched = true;
+      }
+    }catch(_){}
+
+    window.__fluencyRenderFullLessonV18 = injectIfNeeded;
+    setTimeout(injectIfNeeded, 800);
+    setTimeout(injectIfNeeded, 1800);
+    setTimeout(injectIfNeeded, 3500);
+    setInterval(injectIfNeeded, 2500);
+    window.addEventListener('focus', function(){ setTimeout(injectIfNeeded, 300); });
+    window.addEventListener('click', function(){ setTimeout(injectIfNeeded, 700); }, true);
+    log('patch ativo');
+  }catch(e){ try{console.warn('Patch V18 render fix failed',e)}catch(_){} }
+})();
+
+
 /* === FLUENCY PATCH V16 - LIMPEZA FIXA DE AULAS INCOMPLETAS/CACHE === */
 ;(function(){
   try{
@@ -1333,7 +1593,7 @@ function _Diary({profile:e,apiKey:a,flashcards:t,setFlashcards:o}){
   ]);
 }
 
-function Cs(){var N;let[e,a]=(0,s.useState)(!1),[t,o]=(0,s.useState)(null),[r,l]=(0,s.useState)(""),[n,u]=(0,s.useState)([]),[i,c]=(0,s.useState)([]),[g,m]=(0,s.useState)("today"),[x,h]=(0,s.useState)(null),[L,I]=(0,s.useState)(!1),[y,f]=(0,s.useState)(!1);(0,s.useEffect)(()=>{(async()=>{let b=He("firebaseConfig");try{let __fp=await So("profile");if(__fp){o(__fp);let __fl=await So("completedLessons");Array.isArray(__fl)&&u(__fl);let __fc=await So("flashcards");Array.isArray(__fc)&&c(__fc);a(!0)}}catch(__e){console.warn("fast local boot failed",__e)}if(b)try{await Promise.race([ci(b),new Promise((_,rj)=>setTimeout(()=>rj(new Error("Firebase boot timeout (5s)")),5000))]),_dlFromCloud().catch(__e=>console.warn("cloud sync background failed",__e))}catch(V){console.warn("Firebase load failed:",V)}let D=await So("profile");D&&o(D);let F=await So("geminiKeys");Array.isArray(F)&&F.length?(l(F.join("\n")),xi(F[0])):(F=await So("geminiKey"),F&&(l(F),xi(F)));let j=await So("completedLessons");if(!Array.isArray(j))j=[];let __cleanupFlag=He("_weekendBugFixed_v21");if(!__cleanupFlag){let __filtered=j.filter(les=>{if(!les||!les.date)return true;let __dt=new Date(les.date+"T00:00:00"),__wd=__dt.getDay();return __wd!==0&&__wd!==6});if(__filtered.length!==j.length){console.warn("[fluency] Cleanup: removidas",j.length-__filtered.length,"aula(s) registrada(s) em fim de semana.");j=__filtered;await we("completedLessons",j);let __profileNow=await So("profile");if(__profileNow){let __dates=[...new Set(j.map(l=>l.date))].filter(Boolean).sort(),__newStreak=0,__newLast=null;if(__dates.length){__newLast=__dates[__dates.length-1];__newStreak=1;for(let __k=__dates.length-2;__k>=0;__k--){let __diff=$p(__dates[__k],__dates[__k+1]);if(__diff===1){__newStreak++;continue}if(__diff>1){let __d=new Date(__dates[__k]+"T00:00:00"),__only=true;for(let __kk=1;__kk<__diff;__kk++){let __nd=new Date(__d);__nd.setDate(__d.getDate()+__kk);let __wdd=__nd.getDay();if(__wdd!==0&&__wdd!==6){__only=false;break}}if(__only){__newStreak++;continue}}break}}let __fixedProfile=Se(ne({},__profileNow),{streak:__newStreak,lastStudyDate:__newLast});await we("profile",__fixedProfile);o(__fixedProfile)}}pa("_weekendBugFixed_v21",1)}u(j);let _=await So("flashcards");Array.isArray(_)&&c(_);try{if(!He("weekendBugFixed_v21")){let __today=xs(),__profCur=await So("profile"),__lessonsCur=Array.isArray(j)?j:[],__cleaned=__lessonsCur.filter(L=>{if(!L||!L.date)return true;let dt=new Date(L.date+"T00:00:00"),wd=dt.getDay();return wd!==0&&wd!==6});if(__cleaned.length!==__lessonsCur.length){u(__cleaned);await we("completedLessons",__cleaned);if(__profCur){let __validDates=__cleaned.map(L=>L.date).sort(),__lastValid=__validDates.length?__validDates[__validDates.length-1]:null,__newStreak=0;if(__lastValid){__newStreak=1;for(let k=__validDates.length-2;k>=0;k--){let diff=$p(__validDates[k],__validDates[k+1]);if(diff===1)__newStreak+=1;else if(diff>1){let dStart=new Date(__validDates[k]+"T00:00:00"),onlyWk=true;for(let z=1;z<diff;z++){let nd=new Date(dStart);nd.setDate(dStart.getDate()+z);let wd=nd.getDay();if(wd!==0&&wd!==6){onlyWk=false;break}}if(onlyWk)__newStreak+=1;else break}else break}}let __fixed=Se(ne({},__profCur),{streak:__newStreak,lastStudyDate:__lastValid});await we("profile",__fixed);o(__fixed)}}pa("weekendBugFixed_v21",1)}}catch(__e){console.warn("weekend cleanup failed:",__e)}a(!0)})()},[]);let d=((N=Tr[Is()])==null?void 0:N.key)||"grammar",p=xs();(0,s.useEffect)(()=>{let __wd=Is();if(__wd===0||__wd===6)return;g==="lesson"&&t&&!x&&!L&&k()},[g,t]);let v=n.find(b=>b.date===p),w=n.filter(b=>b.level===(t==null?void 0:t.level)).length,P=(0,s.useMemo)(()=>{let b={1:!1,2:!1,3:!1,4:!1,5:!1},D=new Date,F=D.getDay(),j=F===0?-6:1-F,_=new Date(D);_.setDate(D.getDate()+j);let __sd=Array.isArray(t==null?void 0:t.studyDays)?t.studyDays:[];for(let V=0;V<5;V++){let J=new Date(_);J.setDate(_.getDate()+V);let Q=`${J.getFullYear()}-${Bt(J.getMonth()+1)}-${Bt(J.getDate())}`;if(n.some(B=>B.date===Q)||__sd.includes(Q))b[V+1]=!0}return b},[n,t]),k=(0,s.useCallback)(async(b=!1)=>{if(t){I(!0),f(!1);try{let D=gi(n,t.level,d),F=(mi(t.level,d,D)||"").slice(0,40).replace(/[^a-zA-Z0-9]/g,"-"),j=`lesson_v4_${t.level}_${d}_${D}_${F}`;if(!b){let B=await So(j);if(B&&__LQ(B)&&!B._fallback){h(B),I(!1);return}if(B){try{localStorage.removeItem("fluency_"+j)}catch(__e){}}}let _=Jp(t.level,d,w,n,i),V=null;if(!r)V="Chave do Gemini n\xE3o foi configurada. V\xE1 em Progresso \u2192 Chave da IA para adicionar.";else try{let B=await rm(_,r);let __retryCount=0;while(!__LQ(B)&&__retryCount<1){__retryCount++;let __retryPrompt=_+`\n\nA TENTATIVA ANTERIOR FICOU INCOMPLETA. Esta é uma nova tentativa. Gere uma aula COMPLETA e DETALHADA. Regras OBRIGATÓRIAS:\n- intro: mínimo 3 frases, mínimo 110 caracteres\n- EXATAMENTE 3 seções com heading, content de pelo menos 250 caracteres (5+ frases) e EXATAMENTE 3 examples (en + pt) cada\n- Pelo menos 5 exercícios variados (2 choice, 1 fill, 1 translate + 1 extra), TODOS com explanation de pelo menos 25 caracteres\n- Pelo menos 5 itens de vocabulário com word, pos, translation e example real\n- 2 tips com pelo menos 30 caracteres cada\n- finalTip com pelo menos 35 caracteres\nNÃO resuma. NÃO pule seções. Responda APENAS JSON válido.`;B=await rm(__retryPrompt,r)}if(!__LQ(B))throw new Error("Aula incompleta após "+(__retryCount+1)+" tentativas. Tente novamente.");if(He("validateLessons")!==!1){B=await _VL(B,t.level,r);if((B._validation||{}).severity==="major"){let E=await rm(_+"\n\nA validação apontou problema importante. Gere uma nova versão corrigida, mantendo exatamente o mesmo schema JSON.",r);if(__LQ(E))B=await _VL(E,t.level,r)}}h(B),await we(j,B);return}catch(B){console.warn("Gemini falhou:",B==null?void 0:B.message);let E=(B==null?void 0:B.message)||"erro desconhecido";E.includes("API_KEY_INVALID")||E.includes("API key not valid")||E.includes("INVALID_ARGUMENT")?V="Chave do Gemini inv\xE1lida. V\xE1 em Progresso \u2192 Chave da IA e verifique se colou corretamente, ou gere uma nova em aistudio.google.com/apikey":E.includes("quota")||E.includes("RESOURCE_EXHAUSTED")||E.includes("429")?V="Limite di\xE1rio da API gratuita do Gemini atingido. Aguarde algumas horas ou crie outra chave em aistudio.google.com/apikey":E.includes("PERMISSION_DENIED")||E.includes("403")?V="Permiss\xE3o negada. Sua chave pode estar bloqueada. Tente gerar uma nova em aistudio.google.com/apikey":E.includes("Failed to fetch")||E.includes("NetworkError")||E.includes("network")?V="Sem conex\xE3o com a internet. Verifique sua rede e tente novamente.":E.includes("Resposta vazia")?V="IA retornou resposta vazia. Pode ser conte\xFAdo bloqueado por seguran\xE7a \u2014 clique em Tentar novamente.":E.includes("JSON")?V="IA retornou resposta malformada. Clique em Tentar novamente.":E.includes("Todos os modelos")?V="Todos os modelos Gemini falharam. Verifique sua chave em Progresso \u2192 Chave da IA.":E.includes("no longer available")||E.includes("404")?V="Modelo Gemini foi descontinuado. O app tentou alternativas autom\xE1ticas mas nenhuma funcionou. Verifique se sua chave tem acesso aos modelos mais recentes.":V="Erro da IA: "+E.slice(0,200)}let J=Gp(t.level,d),Q=Se(ne({},J),{_fallback:!0,_fallbackReason:V});h(Q)}catch(D){console.error(D),f(!0)}finally{I(!1)}}},[t,d,p,w,r]),T=async()=>{m("lesson");let __bad=x&&!x._fallback&&!__LQ(x);if(__bad){alert("Esta aula salva veio incompleta. Vou gerar uma aula nova e completa agora.");try{window.__fluencyPurgeIncompleteLessons&&window.__fluencyPurgeIncompleteLessons()}catch(__e){}h(null);await k(!0);return}(!x||x._stale)&&await k()},R=async()=>{if(!x||!t)return;let __wd=Is();if(__wd===0||__wd===6){alert("Hoje é fim de semana — não há aula para concluir. Aproveite para revisar flashcards ou praticar speaking!");m("today");return}if(n.some(B=>B.date===p)){m("today");return}let b=`${p}_${d}`,D={id:b,date:p,skill:d,level:t.level,title:x.title},F=[...n,D];u(F),await we("completedLessons",F);let j=new Set(i.map(B=>B.word.toLowerCase())),_=(x.vocabulary||[]).filter(B=>B.word&&!j.has(B.word.toLowerCase())).map(B=>({id:`fc_${Date.now()}_${Math.random().toString(36).slice(2,8)}`,word:B.word,translation:B.translation,pos:B.pos,example:B.example,skill:d,level:t.level,createdAt:Date.now(),intervalDays:1,nextReview:Date.now(),seen:0,activeUsageCount:0,lastActiveUse:null,graduated:!1})),V=[...i,..._];c(V),await we("flashcards",V);let Q=await __markStudyDay(t,p);o(Q),m("today")};return e?t?s.default.createElement(s.default.Fragment,null,s.default.createElement(ms,null),s.default.createElement(ps,null),s.default.createElement("div",{className:"min-h-screen paper-grain",style:{position:"relative",zIndex:1}},s.default.createElement(xm,{profile:t,streak:t.streak||0,tab:g,setTab:m}),g==="today"&&s.default.createElement(hm,{profile:t,completedAtLevel:w,lessonToday:v,openLesson:T,setTab:m,allCompleted:!1,weekProgress:P,forceRegenerate:async()=>{try{window.__fluencyPurgeIncompleteLessons&&window.__fluencyPurgeIncompleteLessons()}catch(__e){}try{let __D=gi(n,t.level,d),__F=(mi(t.level,d,__D)||"").slice(0,40).replace(/[^a-zA-Z0-9]/g,"-"),__j=`lesson_v4_${t.level}_${d}_${__D}_${__F}`;localStorage.removeItem("fluency_"+__j)}catch(__e){}m("lesson");h(null);await k(!0)}}),g==="lesson"&&((Is()===0||Is()===6)?s.default.createElement("div",{className:"max-w-3xl mx-auto px-4 md:px-6 py-12"},s.default.createElement("div",{className:"card-paper rounded-2xl p-8 text-center anim-rise"},s.default.createElement("div",{className:"fx-body text-xs uppercase tracking-[0.28em] mb-2",style:{color:"var(--muted)"}},"Fim de semana"),s.default.createElement("h2",{className:"fx-display text-3xl mt-2",style:{fontWeight:600}},"Sem aula hoje."),s.default.createElement("p",{className:"fx-serif-italic mt-3 text-lg",style:{color:"var(--accent)"}},"As aulas voltam na segunda-feira."),s.default.createElement("p",{className:"fx-body mt-4 text-sm",style:{color:"var(--ink-soft)"}},"Aproveite para revisar flashcards ou praticar speaking — manter o contato com o inglês ajuda muito a fixar."),s.default.createElement("div",{className:"flex flex-wrap gap-2 justify-center mt-6"},s.default.createElement("button",{onClick:()=>m("flashcards"),className:"btn-primary px-4 py-2 rounded-xl fx-body text-sm flex items-center gap-2"},s.default.createElement(ze,{size:14})," Flashcards"),s.default.createElement("button",{onClick:()=>m("speaking"),className:"btn-ghost px-4 py-2 rounded-xl fx-body text-sm flex items-center gap-2"},s.default.createElement(at,{size:14})," Speaking")))):!x&&!L&&!y?s.default.createElement("div",{className:"max-w-3xl mx-auto px-4 md:px-6 py-16 text-center"},s.default.createElement(Te,{className:"animate-spin mx-auto",size:24,style:{color:"var(--accent)"}}),s.default.createElement("p",{className:"fx-body mt-4 text-sm",style:{color:"var(--ink-soft)"}},"Preparando sua aula\u2026")):x&&!x._fallback&&!__LQ(x)?s.default.createElement("div",{className:"max-w-3xl mx-auto px-4 md:px-6 py-12"},s.default.createElement("div",{className:"card-paper rounded-2xl p-8 text-center anim-rise"},s.default.createElement("div",{className:"fx-body text-xs uppercase tracking-[0.28em] mb-2",style:{color:"var(--muted)"}},"Aula incompleta detectada"),s.default.createElement("h2",{className:"fx-display text-3xl mt-2",style:{fontWeight:600}},"Vamos gerar uma aula completa."),s.default.createElement("p",{className:"fx-body mt-4 text-sm",style:{color:"var(--ink-soft)"}},"A aula salva não tem seções, exemplos e exercícios suficientes. Toque abaixo para substituir por uma aula completa."),s.default.createElement("button",{onClick:async()=>{try{window.__fluencyPurgeIncompleteLessons&&window.__fluencyPurgeIncompleteLessons()}catch(__e){}h(null);await k(!0)},className:"btn-primary px-5 py-3 rounded-xl fx-body text-sm flex items-center gap-2 mx-auto mt-6"},s.default.createElement(Te,{size:15})," Gerar aula completa"))):s.default.createElement(vm,{profile:t,lessonData:x,loading:L,error:y,onRegenerate:()=>k(!0),onComplete:R,isCompleted:!!v,focusKey:d})),g==="flashcards"&&s.default.createElement(Lm,{flashcards:i,setFlashcards:c,profile:t,setProfile:o,today:p}),g==="speaking"&&s.default.createElement(bm,{profile:t,apiKey:r,setProfile:o,flashcards:i,setFlashcards:c}),g==="immersion"&&s.default.createElement(_Immersion,{profile:t,apiKey:r,flashcards:i,setFlashcards:c}),g==="diary"&&s.default.createElement(_Diary,{profile:t,apiKey:r,flashcards:i,setFlashcards:c}),g==="progress"&&s.default.createElement(Cm,{profile:t,completedLessons:n,flashcards:i,setProfile:o,apiKey:r,setApiKey:l}))):s.default.createElement(s.default.Fragment,null,s.default.createElement(ms,null),s.default.createElement(ps,null),s.default.createElement(gm,{onDone:(b,D)=>{o(b),D&&l(D)}})):s.default.createElement(s.default.Fragment,null,s.default.createElement(ms,null),s.default.createElement(ps,null),s.default.createElement("div",{className:"min-h-screen flex items-center justify-center paper-grain",style:{position:"relative",zIndex:1}},s.default.createElement(Te,{className:"animate-spin",size:24,style:{color:"var(--accent)"}})))}
+function Cs(){var N;let[e,a]=(0,s.useState)(!1),[t,o]=(0,s.useState)(null),[r,l]=(0,s.useState)(""),[n,u]=(0,s.useState)([]),[i,c]=(0,s.useState)([]),[g,m]=(0,s.useState)("today"),[x,h]=(0,s.useState)(null),[L,I]=(0,s.useState)(!1),[y,f]=(0,s.useState)(!1);(0,s.useEffect)(()=>{(async()=>{let b=He("firebaseConfig");try{let __fp=await So("profile");if(__fp){o(__fp);let __fl=await So("completedLessons");Array.isArray(__fl)&&u(__fl);let __fc=await So("flashcards");Array.isArray(__fc)&&c(__fc);a(!0)}}catch(__e){console.warn("fast local boot failed",__e)}if(b)try{await Promise.race([ci(b),new Promise((_,rj)=>setTimeout(()=>rj(new Error("Firebase boot timeout (5s)")),5000))]),_dlFromCloud().catch(__e=>console.warn("cloud sync background failed",__e))}catch(V){console.warn("Firebase load failed:",V)}let D=await So("profile");D&&o(D);let F=await So("geminiKeys");Array.isArray(F)&&F.length?(l(F.join("\n")),xi(F[0])):(F=await So("geminiKey"),F&&(l(F),xi(F)));let j=await So("completedLessons");if(!Array.isArray(j))j=[];let __cleanupFlag=He("_weekendBugFixed_v21");if(!__cleanupFlag){let __filtered=j.filter(les=>{if(!les||!les.date)return true;let __dt=new Date(les.date+"T00:00:00"),__wd=__dt.getDay();return __wd!==0&&__wd!==6});if(__filtered.length!==j.length){console.warn("[fluency] Cleanup: removidas",j.length-__filtered.length,"aula(s) registrada(s) em fim de semana.");j=__filtered;await we("completedLessons",j);let __profileNow=await So("profile");if(__profileNow){let __dates=[...new Set(j.map(l=>l.date))].filter(Boolean).sort(),__newStreak=0,__newLast=null;if(__dates.length){__newLast=__dates[__dates.length-1];__newStreak=1;for(let __k=__dates.length-2;__k>=0;__k--){let __diff=$p(__dates[__k],__dates[__k+1]);if(__diff===1){__newStreak++;continue}if(__diff>1){let __d=new Date(__dates[__k]+"T00:00:00"),__only=true;for(let __kk=1;__kk<__diff;__kk++){let __nd=new Date(__d);__nd.setDate(__d.getDate()+__kk);let __wdd=__nd.getDay();if(__wdd!==0&&__wdd!==6){__only=false;break}}if(__only){__newStreak++;continue}}break}}let __fixedProfile=Se(ne({},__profileNow),{streak:__newStreak,lastStudyDate:__newLast});await we("profile",__fixedProfile);o(__fixedProfile)}}pa("_weekendBugFixed_v21",1)}u(j);let _=await So("flashcards");Array.isArray(_)&&c(_);try{if(!He("weekendBugFixed_v21")){let __today=xs(),__profCur=await So("profile"),__lessonsCur=Array.isArray(j)?j:[],__cleaned=__lessonsCur.filter(L=>{if(!L||!L.date)return true;let dt=new Date(L.date+"T00:00:00"),wd=dt.getDay();return wd!==0&&wd!==6});if(__cleaned.length!==__lessonsCur.length){u(__cleaned);await we("completedLessons",__cleaned);if(__profCur){let __validDates=__cleaned.map(L=>L.date).sort(),__lastValid=__validDates.length?__validDates[__validDates.length-1]:null,__newStreak=0;if(__lastValid){__newStreak=1;for(let k=__validDates.length-2;k>=0;k--){let diff=$p(__validDates[k],__validDates[k+1]);if(diff===1)__newStreak+=1;else if(diff>1){let dStart=new Date(__validDates[k]+"T00:00:00"),onlyWk=true;for(let z=1;z<diff;z++){let nd=new Date(dStart);nd.setDate(dStart.getDate()+z);let wd=nd.getDay();if(wd!==0&&wd!==6){onlyWk=false;break}}if(onlyWk)__newStreak+=1;else break}else break}}let __fixed=Se(ne({},__profCur),{streak:__newStreak,lastStudyDate:__lastValid});await we("profile",__fixed);o(__fixed)}}pa("weekendBugFixed_v21",1)}}catch(__e){console.warn("weekend cleanup failed:",__e)}a(!0)})()},[]);let d=((N=Tr[Is()])==null?void 0:N.key)||"grammar",p=xs();(0,s.useEffect)(()=>{let __wd=Is();if(__wd===0||__wd===6)return;g==="lesson"&&t&&!x&&!L&&k()},[g,t]);let v=n.find(b=>b.date===p),w=n.filter(b=>b.level===(t==null?void 0:t.level)).length,P=(0,s.useMemo)(()=>{let b={1:!1,2:!1,3:!1,4:!1,5:!1},D=new Date,F=D.getDay(),j=F===0?-6:1-F,_=new Date(D);_.setDate(D.getDate()+j);let __sd=Array.isArray(t==null?void 0:t.studyDays)?t.studyDays:[];for(let V=0;V<5;V++){let J=new Date(_);J.setDate(_.getDate()+V);let Q=`${J.getFullYear()}-${Bt(J.getMonth()+1)}-${Bt(J.getDate())}`;if(n.some(B=>B.date===Q)||__sd.includes(Q))b[V+1]=!0}return b},[n,t]),k=(0,s.useCallback)(async(b=!1)=>{if(t){I(!0),f(!1);try{let D=gi(n,t.level,d),F=(mi(t.level,d,D)||"").slice(0,40).replace(/[^a-zA-Z0-9]/g,"-"),j=`lesson_v4_${t.level}_${d}_${D}_${F}`;if(!b){let B=await So(j);B=window.__fluencyNormalizeLessonV17?window.__fluencyNormalizeLessonV17(B):B;if(B&&__LQ(B)&&!B._fallback){h(B),I(!1);return}if(B){try{localStorage.removeItem("fluency_"+j)}catch(__e){}}}let _=Jp(t.level,d,w,n,i),V=null;if(!r)V="Chave do Gemini n\xE3o foi configurada. V\xE1 em Progresso \u2192 Chave da IA para adicionar.";else try{let B=await rm(_,r);let __retryCount=0;while(!__LQ(B)&&__retryCount<1){__retryCount++;let __retryPrompt=_+`\n\nA TENTATIVA ANTERIOR FICOU INCOMPLETA. Esta é uma nova tentativa. Gere uma aula COMPLETA e DETALHADA. Regras OBRIGATÓRIAS:\n- intro: mínimo 3 frases, mínimo 110 caracteres\n- EXATAMENTE 3 seções com heading, content de pelo menos 250 caracteres (5+ frases) e EXATAMENTE 3 examples (en + pt) cada\n- Pelo menos 5 exercícios variados (2 choice, 1 fill, 1 translate + 1 extra), TODOS com explanation de pelo menos 25 caracteres\n- Pelo menos 5 itens de vocabulário com word, pos, translation e example real\n- 2 tips com pelo menos 30 caracteres cada\n- finalTip com pelo menos 35 caracteres\nNÃO resuma. NÃO pule seções. Responda APENAS JSON válido.`;B=await rm(__retryPrompt,r)}if(!__LQ(B))throw new Error("Aula incompleta após "+(__retryCount+1)+" tentativas. Tente novamente.");if(He("validateLessons")!==!1){B=await _VL(B,t.level,r);if((B._validation||{}).severity==="major"){let E=await rm(_+"\n\nA validação apontou problema importante. Gere uma nova versão corrigida, mantendo exatamente o mesmo schema JSON.",r);if(__LQ(E))B=await _VL(E,t.level,r)}}B=window.__fluencyNormalizeLessonV17?window.__fluencyNormalizeLessonV17(B):B;h(B),await we(j,B);return}catch(B){console.warn("Gemini falhou:",B==null?void 0:B.message);let E=(B==null?void 0:B.message)||"erro desconhecido";E.includes("API_KEY_INVALID")||E.includes("API key not valid")||E.includes("INVALID_ARGUMENT")?V="Chave do Gemini inv\xE1lida. V\xE1 em Progresso \u2192 Chave da IA e verifique se colou corretamente, ou gere uma nova em aistudio.google.com/apikey":E.includes("quota")||E.includes("RESOURCE_EXHAUSTED")||E.includes("429")?V="Limite di\xE1rio da API gratuita do Gemini atingido. Aguarde algumas horas ou crie outra chave em aistudio.google.com/apikey":E.includes("PERMISSION_DENIED")||E.includes("403")?V="Permiss\xE3o negada. Sua chave pode estar bloqueada. Tente gerar uma nova em aistudio.google.com/apikey":E.includes("Failed to fetch")||E.includes("NetworkError")||E.includes("network")?V="Sem conex\xE3o com a internet. Verifique sua rede e tente novamente.":E.includes("Resposta vazia")?V="IA retornou resposta vazia. Pode ser conte\xFAdo bloqueado por seguran\xE7a \u2014 clique em Tentar novamente.":E.includes("JSON")?V="IA retornou resposta malformada. Clique em Tentar novamente.":E.includes("Todos os modelos")?V="Todos os modelos Gemini falharam. Verifique sua chave em Progresso \u2192 Chave da IA.":E.includes("no longer available")||E.includes("404")?V="Modelo Gemini foi descontinuado. O app tentou alternativas autom\xE1ticas mas nenhuma funcionou. Verifique se sua chave tem acesso aos modelos mais recentes.":V="Erro da IA: "+E.slice(0,200)}let J=(window.__fluencyLocalCompleteLessonV17&&window.__fluencyLocalCompleteLessonV17(t.level,d,V))||Gp(t.level,d),Q=Se(ne({},J),{_fallback:!0,_fallbackReason:V});h(Q)}catch(D){console.error(D),f(!0)}finally{I(!1)}}},[t,d,p,w,r]),T=async()=>{m("lesson");let __bad=x&&!__LQ(x);if(__bad){alert("Esta aula salva veio incompleta. Vou gerar uma aula nova e completa agora.");try{window.__fluencyPurgeIncompleteLessons&&window.__fluencyPurgeIncompleteLessons()}catch(__e){}h(null);await k(!0);return}(!x||x._stale)&&await k()},R=async()=>{if(!x||!t)return;let __wd=Is();if(__wd===0||__wd===6){alert("Hoje é fim de semana — não há aula para concluir. Aproveite para revisar flashcards ou praticar speaking!");m("today");return}if(n.some(B=>B.date===p)){m("today");return}let b=`${p}_${d}`,D={id:b,date:p,skill:d,level:t.level,title:x.title},F=[...n,D];u(F),await we("completedLessons",F);let j=new Set(i.map(B=>B.word.toLowerCase())),_=(x.vocabulary||[]).filter(B=>B.word&&!j.has(B.word.toLowerCase())).map(B=>({id:`fc_${Date.now()}_${Math.random().toString(36).slice(2,8)}`,word:B.word,translation:B.translation,pos:B.pos,example:B.example,skill:d,level:t.level,createdAt:Date.now(),intervalDays:1,nextReview:Date.now(),seen:0,activeUsageCount:0,lastActiveUse:null,graduated:!1})),V=[...i,..._];c(V),await we("flashcards",V);let Q=await __markStudyDay(t,p);o(Q),m("today")};return e?t?s.default.createElement(s.default.Fragment,null,s.default.createElement(ms,null),s.default.createElement(ps,null),s.default.createElement("div",{className:"min-h-screen paper-grain",style:{position:"relative",zIndex:1}},s.default.createElement(xm,{profile:t,streak:t.streak||0,tab:g,setTab:m}),g==="today"&&s.default.createElement(hm,{profile:t,completedAtLevel:w,lessonToday:v,openLesson:T,setTab:m,allCompleted:!1,weekProgress:P,forceRegenerate:async()=>{try{window.__fluencyPurgeIncompleteLessons&&window.__fluencyPurgeIncompleteLessons()}catch(__e){}try{let __D=gi(n,t.level,d),__F=(mi(t.level,d,__D)||"").slice(0,40).replace(/[^a-zA-Z0-9]/g,"-"),__j=`lesson_v4_${t.level}_${d}_${__D}_${__F}`;localStorage.removeItem("fluency_"+__j)}catch(__e){}m("lesson");h(null);await k(!0)}}),g==="lesson"&&((Is()===0||Is()===6)?s.default.createElement("div",{className:"max-w-3xl mx-auto px-4 md:px-6 py-12"},s.default.createElement("div",{className:"card-paper rounded-2xl p-8 text-center anim-rise"},s.default.createElement("div",{className:"fx-body text-xs uppercase tracking-[0.28em] mb-2",style:{color:"var(--muted)"}},"Fim de semana"),s.default.createElement("h2",{className:"fx-display text-3xl mt-2",style:{fontWeight:600}},"Sem aula hoje."),s.default.createElement("p",{className:"fx-serif-italic mt-3 text-lg",style:{color:"var(--accent)"}},"As aulas voltam na segunda-feira."),s.default.createElement("p",{className:"fx-body mt-4 text-sm",style:{color:"var(--ink-soft)"}},"Aproveite para revisar flashcards ou praticar speaking — manter o contato com o inglês ajuda muito a fixar."),s.default.createElement("div",{className:"flex flex-wrap gap-2 justify-center mt-6"},s.default.createElement("button",{onClick:()=>m("flashcards"),className:"btn-primary px-4 py-2 rounded-xl fx-body text-sm flex items-center gap-2"},s.default.createElement(ze,{size:14})," Flashcards"),s.default.createElement("button",{onClick:()=>m("speaking"),className:"btn-ghost px-4 py-2 rounded-xl fx-body text-sm flex items-center gap-2"},s.default.createElement(at,{size:14})," Speaking")))):!x&&!L&&!y?s.default.createElement("div",{className:"max-w-3xl mx-auto px-4 md:px-6 py-16 text-center"},s.default.createElement(Te,{className:"animate-spin mx-auto",size:24,style:{color:"var(--accent)"}}),s.default.createElement("p",{className:"fx-body mt-4 text-sm",style:{color:"var(--ink-soft)"}},"Preparando sua aula\u2026")):x&&!__LQ(x)?s.default.createElement("div",{className:"max-w-3xl mx-auto px-4 md:px-6 py-12"},s.default.createElement("div",{className:"card-paper rounded-2xl p-8 text-center anim-rise"},s.default.createElement("div",{className:"fx-body text-xs uppercase tracking-[0.28em] mb-2",style:{color:"var(--muted)"}},"Aula incompleta detectada"),s.default.createElement("h2",{className:"fx-display text-3xl mt-2",style:{fontWeight:600}},"Vamos gerar uma aula completa."),s.default.createElement("p",{className:"fx-body mt-4 text-sm",style:{color:"var(--ink-soft)"}},"A aula salva não tem seções, exemplos e exercícios suficientes. Toque abaixo para substituir por uma aula completa."),s.default.createElement("button",{onClick:async()=>{try{window.__fluencyPurgeIncompleteLessons&&window.__fluencyPurgeIncompleteLessons()}catch(__e){}h(null);await k(!0)},className:"btn-primary px-5 py-3 rounded-xl fx-body text-sm flex items-center gap-2 mx-auto mt-6"},s.default.createElement(Te,{size:15})," Gerar aula completa"))):s.default.createElement(vm,{profile:t,lessonData:x,loading:L,error:y,onRegenerate:()=>k(!0),onComplete:R,isCompleted:!!v,focusKey:d})),g==="flashcards"&&s.default.createElement(Lm,{flashcards:i,setFlashcards:c,profile:t,setProfile:o,today:p}),g==="speaking"&&s.default.createElement(bm,{profile:t,apiKey:r,setProfile:o,flashcards:i,setFlashcards:c}),g==="immersion"&&s.default.createElement(_Immersion,{profile:t,apiKey:r,flashcards:i,setFlashcards:c}),g==="diary"&&s.default.createElement(_Diary,{profile:t,apiKey:r,flashcards:i,setFlashcards:c}),g==="progress"&&s.default.createElement(Cm,{profile:t,completedLessons:n,flashcards:i,setProfile:o,apiKey:r,setApiKey:l}))):s.default.createElement(s.default.Fragment,null,s.default.createElement(ms,null),s.default.createElement(ps,null),s.default.createElement(gm,{onDone:(b,D)=>{o(b),D&&l(D)}})):s.default.createElement(s.default.Fragment,null,s.default.createElement(ms,null),s.default.createElement(ps,null),s.default.createElement("div",{className:"min-h-screen flex items-center justify-center paper-grain",style:{position:"relative",zIndex:1}},s.default.createElement(Te,{className:"animate-spin",size:24,style:{color:"var(--accent)"}})))}
 
 
 (function(){try{if(window.__fluencyConvDiagPanelInstalled)return;window.__fluencyConvDiagPanelInstalled=true;var HIDE_KEY="fluency_hide_debug_panels";function hidden(){try{return localStorage.getItem(HIDE_KEY)==="1"}catch(e){return false}}function setHidden(v){try{localStorage.setItem(HIDE_KEY,v?"1":"0")}catch(e){}applyHide()}function applyHide(){var h=hidden();try{document.body&&document.body.classList.toggle("__fluency_hide_debug",h)}catch(e){}var css=document.getElementById("__fluency_hide_debug_css__");if(!css){css=document.createElement("style");css.id="__fluency_hide_debug_css__";css.textContent="body.__fluency_hide_debug #__audio_diag__,body.__fluency_hide_debug #__diag_reopen__,body.__fluency_hide_debug #__conv_diag_panel__{display:none!important}#__debug_show_btn__{position:fixed;right:12px;bottom:78px;z-index:99999;width:34px;height:34px;border-radius:50%;border:1px solid rgba(91,156,246,.35);background:rgba(6,13,31,.72);color:#93C5FD;font:16px -apple-system,BlinkMacSystemFont,sans-serif;display:none;align-items:center;justify-content:center;box-shadow:0 6px 18px rgba(0,0,0,.32);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}body.__fluency_hide_debug #__debug_show_btn__{display:flex!important}";document.head.appendChild(css)}var btn=document.getElementById("__debug_show_btn__");if(!btn){btn=document.createElement("button");btn.id="__debug_show_btn__";btn.textContent="🔧";btn.title="Mostrar diagnósticos";btn.onclick=function(){setHidden(false)};document.body.appendChild(btn)}}function rd(){try{return window.__fluencyConvDiag||JSON.parse(localStorage.getItem("fluency_conversation_diag")||"null")}catch(e){return null}}function esc(x){return String(x||"").replace(/[<>&]/g,function(c){return {"<":"&lt;",">":"&gt;","&":"&amp;"}[c]})}function ensure(){if(!document||!document.body)return;applyHide();if(hidden())return;var el=document.getElementById("__conv_diag_panel__");if(!el){el=document.createElement("div");el.id="__conv_diag_panel__";el.style.cssText="position:fixed;left:10px;top:104px;z-index:99999;max-width:260px;padding:9px 11px;border-radius:14px;background:rgba(6,13,31,.88);border:1px solid rgba(91,156,246,.32);box-shadow:0 8px 24px rgba(0,0,0,.35);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);font:11px -apple-system,BlinkMacSystemFont,sans-serif;color:#E8EFF8;line-height:1.35;opacity:.92";document.body.appendChild(el)}var d=rd();var ok=d&&d.status==="ok";var warn=d&&d.status&&d.status!=="ok";el.innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><b style="color:'+(ok?'#34D399':warn?'#F59E0B':'#93C5FD')+'">IA Conversa</b><button id="__conv_diag_hide__" style="border:0;background:rgba(255,255,255,.08);color:#E8EFF8;border-radius:9px;padding:2px 7px;font:12px -apple-system">×</button></div><span>'+(d?esc(d.status||'—'):'aguardando')+'</span><br><span style="color:rgba(232,239,248,.68)">'+(d&&d.detail?esc(d.detail):'envie uma mensagem para testar')+'</span><br><span style="color:rgba(232,239,248,.45)">'+(d&&d.time?esc(d.time):'')+'</span>';var x=document.getElementById("__conv_diag_hide__");if(x)x.onclick=function(ev){ev&&ev.stopPropagation&&ev.stopPropagation();setHidden(true)}}setInterval(ensure,1000);if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',ensure);else ensure();window.__fluencyHideDebugPanels=function(){setHidden(true)};window.__fluencyShowDebugPanels=function(){setHidden(false)}}catch(e){}})();
@@ -2206,4 +2466,114 @@ lucide-react/dist/esm/lucide-react.mjs:
       log('falhou após 4 tentativas. Último detalhe: '+lastErr,'err');return errResp(500,'Gemini Pro não devolveu aula JSON válida. Último detalhe: '+lastErr)};
     setTimeout(function(){try{localStorage.setItem('fluency_lessonGeminiModel',MODEL);localStorage.setItem('fluency_lessonModel',MODEL);localStorage.setItem('fluency_preferredLessonModel',MODEL)}catch(_){}log('Patch V15 ativo. Corrige o erro “não veio JSON de aula” fazendo chamada Pro direta e restrita à geração real de aula.','ok')},900);
   }catch(e){try{console.warn('Patch V15 failed',e)}catch(_){}}
+})();
+
+
+/* === FLUENCY PATCH V17 - AULAS COMPLETAS FIXAS + BLOQUEIO DE AULA CURTA === */
+;(function(){
+  try{
+    if(window.__fluencyLessonV17CompleteFix) return;
+    window.__fluencyLessonV17CompleteFix = true;
+    var VERSION='V17-COMPLETE-LESSON-FIX';
+    function txt(x){return String(x==null?'':x).trim()}
+    function len(x){return txt(x).length}
+    function arr(x){return Array.isArray(x)?x:[]}
+    function isLessonKey(k){k=String(k||'');return /^fluency_lesson_v\d+_/.test(k)||/^fluency_lesson_/.test(k)||/^lesson_v\d+_/.test(k)||/^fluency_lesson/.test(k)}
+    function parse(v){try{if(v==null)return null;var x=typeof v==='string'?JSON.parse(v):v;if(typeof x==='string'){try{x=JSON.parse(x)}catch(_){}}return x}catch(_){return null}}
+    function normalize(L){
+      try{
+        if(!L) return L;
+        if(typeof L==='string') L=parse(L)||L;
+        if(!L || typeof L!=='object') return L;
+        if(L.lesson && typeof L.lesson==='object') L=L.lesson;
+        if(L.data && L.data.lesson && typeof L.data.lesson==='object') L=L.data.lesson;
+        if(L.aula && typeof L.aula==='object') L=L.aula;
+        var out=Object.assign({},L);
+        out.title=txt(out.title||out.titulo||out.name||out.nome||'Aula de Inglês');
+        out.subtitle=txt(out.subtitle||out.subtitulo||out.subTitle||'');
+        out.estimatedMinutes=Number(out.estimatedMinutes||out.minutes||out.minutos||20)||20;
+        out.intro=txt(out.intro||out.introduction||out.introducao||out.apresentacao||'');
+        out.sections=arr(out.sections||out.secoes||out.seções||out.lessonSections).map(function(s,i){
+          if(typeof s==='string') s={heading:'Parte '+(i+1),content:s};
+          s=s||{};
+          var ex=arr(s.examples||s.exemplos||s.frases||s.sentences).map(function(e){
+            if(typeof e==='string') return {en:e,pt:''};
+            e=e||{}; return {en:txt(e.en||e.english||e.frase||e.sentence),pt:txt(e.pt||e.portuguese||e.traducao||e.translation)};
+          });
+          return {heading:txt(s.heading||s.title||s.titulo||('Parte '+(i+1))),content:txt(s.content||s.body||s.text||s.conteudo),examples:ex};
+        });
+        out.exercises=arr(out.exercises||out.exercicios||out.exercícios||out.questions).map(function(q){q=q||{};return {type:txt(q.type||q.tipo||'fill'),question:txt(q.question||q.pergunta||q.prompt),options:arr(q.options||q.opcoes||q.opções).map(txt),answer:txt(q.answer||q.resposta||q.correctAnswer),explanation:txt(q.explanation||q.explicacao||q.explicação||q.feedback)}});
+        out.vocabulary=arr(out.vocabulary||out.vocabulario||out.vocabulário||out.words).map(function(w){w=w||{};return {word:txt(w.word||w.palavra||w.term),pos:txt(w.pos||w.classe||''),translation:txt(w.translation||w.traducao||w.tradução||w.meaning),example:txt(w.example||w.exemplo)}});
+        out.tips=arr(out.tips||out.dicas).map(txt).filter(Boolean);
+        out.commonMistakes=arr(out.commonMistakes||out.errosComuns||out.common_errors).map(function(m){m=m||{};return {mistake:txt(m.mistake||m.erro),why:txt(m.why||m.porque||m.reason),avoid:txt(m.avoid||m.evitar||m.fix)}});
+        out.finalTip=txt(out.finalTip||out.final_tip||out.dicaFinal||out.conclusao||out.conclusion);
+        return out;
+      }catch(_){return L}
+    }
+    function complete(L){
+      try{
+        L=normalize(L);
+        if(!L||typeof L!=='object'||L._fallback && L._fallbackReason && !L.sections) return false;
+        if(len(L.title)<8||len(L.intro)<180) return false;
+        if(!Array.isArray(L.sections)||L.sections.length<3) return false;
+        for(var i=0;i<3;i++){var s=L.sections[i]||{};if(len(s.heading)<4||len(s.content)<220) return false;if(!Array.isArray(s.examples)||s.examples.length<3) return false;for(var j=0;j<3;j++){var e=s.examples[j]||{};if(len(e.en)<5||len(e.pt)<5)return false;}}
+        if(!Array.isArray(L.exercises)||L.exercises.length<5) return false;
+        for(var q=0;q<5;q++){var x=L.exercises[q]||{};if(len(x.question)<10||len(x.answer)<1||len(x.explanation)<20)return false;}
+        if(!Array.isArray(L.vocabulary)||L.vocabulary.length<5) return false;
+        for(var v=0;v<5;v++){var w=L.vocabulary[v]||{};if(len(w.word)<1||len(w.translation)<1||len(w.example)<8)return false;}
+        if(!Array.isArray(L.tips)||L.tips.length<2) return false;
+        if(len(L.finalTip)<35) return false;
+        try{if(JSON.stringify(L).length<3500)return false}catch(_){return false}
+        return true;
+      }catch(_){return false}
+    }
+    function localLesson(level,skill,reason){
+      level=txt(level||'A1').toUpperCase(); skill=txt(skill||'grammar');
+      var topic=skill==='grammar'?"Verbo 'to be': afirmativas, uso e prática":skill==='reading'?"Leitura guiada com frases essenciais":skill==='writing'?"Escrita de frases simples e corretas":skill==='listening'?"Escuta ativa de frases do dia a dia":"Revisão integrada de inglês";
+      var title=(skill==='grammar'?"Verbo 'to be': Afirmativas completas":"Aula completa de inglês")+' — '+level;
+      var intro="Nesta aula você vai estudar o conteúdo com explicação completa, exemplos traduzidos e exercícios práticos. A ideia não é apenas decorar frases, mas entender como a estrutura funciona, quando usar cada forma e como evitar erros comuns de brasileiros. Leia cada seção com calma, repita os exemplos em voz alta e responda os exercícios antes de concluir.";
+      var sections=[
+        {heading:"1. Entendendo a estrutura",content:"O verbo 'to be' é uma das bases do inglês porque ele pode significar 'ser' ou 'estar', dependendo do contexto. Em português nós separamos essas duas ideias, mas em inglês a mesma estrutura resolve as duas situações. Por isso, quando você diz 'I am a student', a ideia é 'eu sou estudante'; quando diz 'I am tired', a ideia é 'eu estou cansado'. O segredo é olhar para a palavra que vem depois do verbo: se for identidade, profissão ou característica, geralmente traduzimos como ser; se for estado, lugar ou sensação, geralmente traduzimos como estar. Dominar essa diferença ajuda você a formar frases naturais desde o nível A1.",examples:[{en:"I am a student.",pt:"Eu sou estudante."},{en:"You are tired today.",pt:"Você está cansado hoje."},{en:"She is my friend.",pt:"Ela é minha amiga."},{en:"It is very important.",pt:"Isso é muito importante."}]},
+        {heading:"2. Como formar frases afirmativas",content:"A forma afirmativa segue uma ordem simples: sujeito + verbo to be + complemento. Com 'I', usamos 'am'; com 'you', 'we' e 'they', usamos 'are'; com 'he', 'she' e 'it', usamos 'is'. Essa regra precisa ficar automática, porque ela aparece em apresentações, descrições, sentimentos, profissões e localização. Na fala natural, também usamos contrações: I am vira I'm, you are vira you're, he is vira he's, she is vira she's e it is vira it's. As contrações deixam a frase mais natural, mas a forma completa é útil para estudar e entender a gramática.",examples:[{en:"I am from Brazil.",pt:"Eu sou do Brasil."},{en:"You are very kind.",pt:"Você é muito gentil."},{en:"He is at home.",pt:"Ele está em casa."},{en:"It is a good idea.",pt:"É uma boa ideia."}]},
+        {heading:"3. Diferença entre pessoa, coisa e situação",content:"Use 'he' para homem ou menino, 'she' para mulher ou menina e 'it' para coisa, animal quando não sabemos o gênero, situação ou ideia. Muitos brasileiros tentam traduzir palavra por palavra e esquecem que o inglês sempre precisa de um sujeito explícito. Em português dizemos 'é importante', mas em inglês normalmente dizemos 'it is important'. Esse 'it' não significa exatamente 'isso' em todos os casos; às vezes ele só ocupa o lugar obrigatório do sujeito. Essa é uma diferença essencial para escrever e falar com clareza.",examples:[{en:"He is a teacher.",pt:"Ele é professor."},{en:"She is happy.",pt:"Ela está feliz."},{en:"It is cold today.",pt:"Está frio hoje."},{en:"It is easy.",pt:"É fácil."}]},
+        {heading:"4. Erros comuns e como evitar",content:"O erro mais comum é misturar 'am', 'is' e 'are'. Lembre-se: 'I am', 'you are', 'he is', 'she is' e 'it is'. Outro erro é esquecer o artigo antes de profissões: em inglês dizemos 'I am a teacher', não apenas 'I am teacher'. Também evite usar 'have' para idade; em inglês a idade usa o verbo 'to be': 'I am 20 years old'. Por fim, não tente omitir o sujeito como fazemos em português. Em inglês, frases completas precisam de sujeito, verbo e complemento para soarem naturais.",examples:[{en:"I am 20 years old.",pt:"Eu tenho 20 anos."},{en:"She is a doctor.",pt:"Ela é médica."},{en:"It is not difficult.",pt:"Não é difícil."},{en:"You are ready.",pt:"Você está pronto."}]}
+      ];
+      var exercises=[
+        {type:"choice",question:"Complete: I ___ from Brazil.",options:["am","is","are"],answer:"am",explanation:"Com o pronome I, a forma correta do verbo to be é am."},
+        {type:"choice",question:"Complete: She ___ very happy today.",options:["am","is","are"],answer:"is",explanation:"Com she, he e it usamos is nas frases afirmativas."},
+        {type:"choice",question:"Complete: You ___ my friend.",options:["am","is","are"],answer:"are",explanation:"Com you usamos are, tanto para singular quanto para plural."},
+        {type:"fill",question:"Escreva em inglês: Eu estou cansado.",options:[],answer:"I am tired",explanation:"A estrutura é sujeito + am + complemento: I am tired."},
+        {type:"translate",question:"Traduza: Ela é professora.",options:[],answer:"She is a teacher",explanation:"Profissões em inglês normalmente usam artigo: a teacher."},
+        {type:"fill",question:"Complete: It ___ important.",options:[],answer:"is",explanation:"Com it usamos is, mesmo quando traduzimos como 'é' ou 'está'."},
+        {type:"translate",question:"Traduza: Você está pronto.",options:[],answer:"You are ready",explanation:"Com you usamos are: You are ready."},
+        {type:"choice",question:"Qual frase está correta?",options:["I is happy","I am happy","I are happy"],answer:"I am happy",explanation:"A combinação correta é sempre I am."},
+        {type:"fill",question:"Corrija a frase: She are my sister.",options:[],answer:"She is my sister",explanation:"She combina com is, não com are."},
+        {type:"translate",question:"Traduza: Está frio hoje.",options:[],answer:"It is cold today",explanation:"Em inglês usamos it como sujeito para clima e situações."}
+      ];
+      var vocabulary=[
+        {word:"student",pos:"noun",translation:"estudante",example:"I am a student."},
+        {word:"teacher",pos:"noun",translation:"professor",example:"She is a teacher."},
+        {word:"happy",pos:"adjective",translation:"feliz",example:"He is happy today."},
+        {word:"tired",pos:"adjective",translation:"cansado",example:"I am tired now."},
+        {word:"ready",pos:"adjective",translation:"pronto",example:"You are ready."},
+        {word:"important",pos:"adjective",translation:"importante",example:"It is important."},
+        {word:"cold",pos:"adjective",translation:"frio",example:"It is cold today."},
+        {word:"friend",pos:"noun",translation:"amigo",example:"You are my friend."},
+        {word:"doctor",pos:"noun",translation:"médico",example:"She is a doctor."},
+        {word:"home",pos:"noun",translation:"casa/lar",example:"He is at home."}
+      ];
+      return {title:title,subtitle:topic,estimatedMinutes:25,intro:intro,sections:sections,exercises:exercises,vocabulary:vocabulary,tips:["Leia os exemplos em voz alta e troque apenas o sujeito para automatizar am, is e are.","Quando tiver dúvida entre ser e estar, observe o complemento: identidade, profissão, estado, lugar ou sensação.","Não pule os exercícios: eles mostram se a regra realmente ficou automática."],commonMistakes:[{mistake:"Usar I is",why:"Em inglês, I sempre combina com am.",avoid:"Repita a sequência I am, you are, he is, she is, it is."},{mistake:"Esquecer o sujeito it",why:"O inglês exige sujeito explícito em frases de clima, opinião e situação.",avoid:"Use it is para frases como 'é importante' e 'está frio'."}],finalTip:"Parabéns por estudar uma estrutura central do inglês. Use 'I am', 'you are', 'he is', 'she is' e 'it is' para criar frases sobre identidade, estado, profissão, lugar e opinião. Quanto mais você repetir frases simples corretamente, mais natural sua base ficará.",_fallback:true,_fallbackReason:reason||"Aula local completa usada porque a IA não devolveu uma aula válida."};
+    }
+    window.__fluencyNormalizeLessonV17=normalize;
+    window.__fluencyLessonIsComplete=complete;
+    window.__fluencyV17LessonIsComplete=complete;
+    window.__fluencyLocalCompleteLessonV17=localLesson;
+    window.__fluencyPurgeIncompleteLessonsV17=function(){var removed=0;try{for(var i=localStorage.length-1;i>=0;i--){var k=localStorage.key(i);if(isLessonKey(k)){var v=parse(localStorage.getItem(k));if(!complete(v)){localStorage.removeItem(k);removed++;}}}}catch(_){}return removed};
+    try{window.__fluencyPurgeIncompleteLessonsV17()}catch(_){}
+    var get0=Storage.prototype.getItem,set0=Storage.prototype.setItem;
+    Storage.prototype.getItem=function(k){var v=get0.apply(this,arguments);try{if(this===localStorage&&isLessonKey(k)&&v!=null){var L=parse(v);var N=normalize(L);if(!complete(N)){localStorage.removeItem(k);return null}if(JSON.stringify(N)!==JSON.stringify(L)){set0.call(this,k,JSON.stringify(N));return JSON.stringify(N)}}}catch(_){}return v};
+    Storage.prototype.setItem=function(k,v){try{if(this===localStorage&&isLessonKey(k)){var L=normalize(parse(v));if(!complete(L)){try{this.removeItem(k)}catch(_){};return}v=JSON.stringify(L)}}catch(_){}return set0.call(this,k,v)};
+    function log(m){try{console.warn('[Fluency '+VERSION+'] '+m)}catch(_){}}
+    log('ativo: aulas curtas são bloqueadas, cache incompleto é limpo e fallback local agora é completo.');
+  }catch(e){try{console.warn('Patch V17 failed',e)}catch(_){}}
 })();
