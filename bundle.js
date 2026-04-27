@@ -3897,25 +3897,25 @@ lucide-react/dist/esm/lucide-react.mjs:
 })();
 
 
-/* === FLUENCY PATCH V19.8 - DIAGNÓSTICO LIMPO + SCROLL REAL + REMOVE IA CONVERSA FLOAT === */
+/* === FLUENCY PATCH V19.9 - DIAGNÓSTICO RELEVANTE + SCROLL + SEM BALÃO IA CONVERSA === */
 ;(function(){
   try{
-    if(window.__fluencyDiagCleanV198) return;
-    window.__fluencyDiagCleanV198 = true;
+    if(window.__fluencyDiagRelevantV199) return;
+    window.__fluencyDiagRelevantV199 = true;
 
-    var VERSION = "V19.8-DIAG-CLEAN-SCROLL";
-    var CHANGELOG = [
-      "Diagnóstico com scroll real no iPhone/Safari.",
-      "Painel flutuante 'IA Conversa' removido.",
-      "Informações irrelevantes ocultadas.",
-      "Diagnóstico simplificado: mostra apenas versão e mudanças da versão."
+    var VERSION = "V19.9-DIAG-RELEVANT-SCROLL";
+    var CHANGES = [
+      "Restaurado diagnóstico útil, sem ficar vazio.",
+      "Removido apenas o balão flutuante 'IA Conversa'.",
+      "Painel de diagnóstico agora mostra versão, modelo usado, status das keys e geração da aula.",
+      "Scroll interno reforçado para iPhone/Safari."
     ];
 
-    function txt(el){
+    function text(el){
       try{return String((el && (el.innerText || el.textContent)) || "");}catch(_){return "";}
     }
 
-    function isVisible(el){
+    function visible(el){
       try{
         var r = el.getBoundingClientRect();
         var cs = getComputedStyle(el);
@@ -3923,162 +3923,612 @@ lucide-react/dist/esm/lucide-react.mjs:
       }catch(_){return false;}
     }
 
-    function looksLikeDiag(el){
-      var t = txt(el);
-      return /Vozes carregadas|Speech destravado|Saúde Azure|Motivo fallback|Aulas IA|Chave de Aulas|Diagnóstico iniciado|Último score/i.test(t);
+    function mask(k){
+      k = String(k || "").trim().replace(/\s+/g,"");
+      if(!k) return "não configurada";
+      if(k.length < 12) return "configurada";
+      return k.slice(0,8) + "..." + k.slice(-4);
+    }
+
+    function getLS(keys){
+      try{
+        for(var i=0;i<keys.length;i++){
+          var v = localStorage.getItem(keys[i]) || sessionStorage.getItem(keys[i]);
+          if(v && String(v).trim()) return String(v).trim();
+        }
+      }catch(_){}
+      return "";
+    }
+
+    function getFlashKey(){
+      return getLS([
+        "fluency_lessonFlashApiKey",
+        "fluency_lessonGeminiFlashKey",
+        "lessonGeminiFlashApiKey",
+        "lessonFlashKey",
+        "fluency_aulasFlashKey",
+        "fluency_freeLessonGeminiApiKey",
+        "fluency_lesson_free_key"
+      ]);
+    }
+
+    function getProKey(){
+      return getLS([
+        "fluency_lessonProApiKey",
+        "fluency_lessonGeminiProKey",
+        "lessonGeminiProApiKey",
+        "lessonProKey",
+        "fluency_aulasProKey",
+        "fluency_paidLessonGeminiApiKey",
+        "fluency_lesson_paid_key",
+        "fluency_lessonGeminiApiKey",
+        "fluency_lessonGeminiKey",
+        "lessonGeminiApiKey",
+        "lessonGeminiKey",
+        "fluency_geminiLessonKey",
+        "fluency_proLessonGeminiApiKey",
+        "fluency_aulasGeminiKey",
+        "fluency_lesson_key",
+        "fluency_lesson_api_key"
+      ]);
+    }
+
+    function getLastModel(){
+      try{
+        var candidates = [
+          window.__fluencyLastLessonModelV197,
+          window.__fluencyLastLessonModelV195,
+          window.__fluencyLastLessonModelV193,
+          JSON.parse(localStorage.getItem("fluency_last_lesson_model_v195") || "null")
+        ];
+        for(var i=0;i<candidates.length;i++){
+          if(candidates[i]) return candidates[i];
+        }
+      }catch(_){}
+      return null;
+    }
+
+    function findLessonInfoFromStorage(){
+      try{
+        var best = null;
+        for(var i=localStorage.length-1;i>=0;i--){
+          var k = localStorage.key(i);
+          if(!/^fluency_lesson/i.test(String(k||""))) continue;
+          var raw = localStorage.getItem(k);
+          if(!raw) continue;
+          var obj = JSON.parse(raw);
+          if(typeof obj === "string") obj = JSON.parse(obj);
+          if(!obj || typeof obj !== "object") continue;
+          var size = JSON.stringify(obj).length;
+          if(!best || size > best.size){
+            best = {
+              key:k,
+              title: obj.title || obj.heading || "aula salva",
+              skill: obj.skill || obj.pillar || obj.type || obj.category || "-",
+              level: obj.level || obj.cefr || "-",
+              sections: Array.isArray(obj.sections) ? obj.sections.length : 0,
+              exercises: Array.isArray(obj.exercises) ? obj.exercises.length : 0,
+              vocabulary: Array.isArray(obj.vocabulary) ? obj.vocabulary.length : 0,
+              modelUsed: obj.modelUsed || obj.model || obj.generatedModel || "-",
+              generatedBy: obj.generatedBy || obj._generatedBy || "-",
+              size:size
+            };
+          }
+        }
+        return best;
+      }catch(_){return null;}
     }
 
     function findDiagPanel(){
       try{
         var nodes = Array.prototype.slice.call(document.querySelectorAll("div,section,aside"));
         var candidates = nodes.filter(function(el){
-          if(!isVisible(el)) return false;
-          if(!looksLikeDiag(el)) return false;
+          if(!visible(el)) return false;
+          var t = text(el);
           var r = el.getBoundingClientRect();
-          if(r.width < 230 || r.height < 180) return false;
-          return true;
+          if(r.width < 230 || r.height < 220) return false;
+          return /pronto|Vozes carregadas|Speech destravado|Saúde Azure|Motivo fallback|Aulas IA|Chave de Aulas|Diagnóstico|Último score/i.test(t);
         });
 
-        if(!candidates.length) return null;
+        if(!candidates.length){
+          // fallback: painel alto à direita, como o diagnóstico flutuante
+          candidates = nodes.filter(function(el){
+            if(!visible(el)) return false;
+            var r = el.getBoundingClientRect();
+            return r.right > window.innerWidth * 0.55 && r.top < window.innerHeight * 0.25 && r.height > 300 && r.width > 220 && r.width < window.innerWidth * 0.75;
+          });
+        }
 
+        if(!candidates.length) return null;
         candidates.sort(function(a,b){
           var ar=a.getBoundingClientRect(), br=b.getBoundingClientRect();
-          var as=ar.width*ar.height, bs=br.width*br.height;
-          // O painel certo costuma ser grande, mas não a página inteira.
-          return Math.abs(as - 260000) - Math.abs(bs - 260000);
+          // prefere o painel estreito e alto
+          var ascore = Math.abs(ar.height - window.innerHeight*0.65) + Math.abs(ar.width - window.innerWidth*0.38);
+          var bscore = Math.abs(br.height - window.innerHeight*0.65) + Math.abs(br.width - window.innerWidth*0.38);
+          return ascore - bscore;
         });
         return candidates[0];
       }catch(_){return null;}
     }
 
-    function removeFloatingIAConversa(){
+    function removeIAConversaBubble(){
       try{
-        var nodes = Array.prototype.slice.call(document.querySelectorAll("div,section,aside"));
-        nodes.forEach(function(el){
-          var t = txt(el).trim();
+        Array.prototype.slice.call(document.querySelectorAll("div,section,aside")).forEach(function(el){
+          var t = text(el).trim();
           if(!/IA Conversa/i.test(t)) return;
-          if(/Vozes carregadas|Speech destravado|Saúde Azure|Aulas IA|Chave de Aulas/i.test(t)) return;
-
+          if(/Aulas IA|Chave de Aulas|Vozes carregadas|Saúde Azure|Diagnóstico/i.test(t)) return;
           var r = el.getBoundingClientRect();
-          // Remove apenas o balão pequeno/flutuante, não a aba inteira.
-          if(r.width <= 520 && r.height <= 260){
-            el.setAttribute("data-fluency-v198-hidden-ia-conversa", "1");
-            el.style.setProperty("display", "none", "important");
-            el.style.setProperty("visibility", "hidden", "important");
-            el.style.setProperty("pointer-events", "none", "important");
+          if(r.width <= 620 && r.height <= 280){
+            el.style.setProperty("display","none","important");
+            el.style.setProperty("visibility","hidden","important");
+            el.style.setProperty("pointer-events","none","important");
+            el.setAttribute("data-fluency-v199-hidden-ia-conversa","1");
           }
         });
       }catch(_){}
     }
 
-    function injectCleanDiag(panel){
+    function undoV198Hiding(panel){
       try{
-        if(!panel) return;
-
-        // Scroll real no próprio painel
-        panel.style.setProperty("overflow-y", "scroll", "important");
-        panel.style.setProperty("overflow-x", "hidden", "important");
-        panel.style.setProperty("-webkit-overflow-scrolling", "touch", "important");
-        panel.style.setProperty("touch-action", "pan-y", "important");
-        panel.style.setProperty("overscroll-behavior", "contain", "important");
-        panel.style.setProperty("max-height", "72vh", "important");
-        panel.style.setProperty("height", "72vh", "important");
-        panel.style.setProperty("padding-bottom", "140px", "important");
-
-        // Garante que pais não bloqueiem o toque/scroll do painel.
-        var p = panel.parentElement;
-        for(var i=0; p && i<4; i++, p=p.parentElement){
-          try{
-            p.style.setProperty("touch-action", "auto", "important");
-            p.style.setProperty("-webkit-overflow-scrolling", "touch", "important");
-          }catch(_){}
-        }
-
-        var clean = panel.querySelector("#__fluency_v198_clean_diag__");
-        if(!clean){
-          clean = document.createElement("div");
-          clean.id = "__fluency_v198_clean_diag__";
-          clean.style.cssText = [
-            "position:relative",
-            "z-index:999999",
-            "margin:0 0 14px 0",
-            "padding:14px",
-            "border:1px solid rgba(96,165,250,.38)",
-            "border-radius:16px",
-            "background:rgba(15,23,42,.92)",
-            "box-shadow:0 8px 28px rgba(0,0,0,.25)",
-            "font-family:inherit",
-            "line-height:1.45",
-            "color:#dbeafe"
-          ].join(";");
-
-          panel.insertBefore(clean, panel.firstChild);
-        }
-
-        clean.innerHTML =
-          "<div style='font-weight:900;color:#86efac;font-size:18px;margin-bottom:8px'>Diagnóstico — V19.8 ATIVO</div>" +
-          "<div style='color:#93c5fd;font-size:13px;letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px'>Mudanças desta versão</div>" +
-          "<ul style='margin:0;padding-left:18px;color:#dbeafe;font-size:14px'>" +
-          CHANGELOG.map(function(x){return "<li style='margin:5px 0'>"+x+"</li>";}).join("") +
-          "</ul>";
-
-        // Oculta informações antigas/irrelevantes, preservando o card limpo.
-        Array.prototype.slice.call(panel.children).forEach(function(child){
-          if(child.id === "__fluency_v198_clean_diag__") return;
-          var t = txt(child);
-          if(/Vozes carregadas|Speech destravado|Última voz|Modo análise|Áudio capturado|Azure key ativa|Saúde Azure|Último score|Motivo fallback|Pron API|Pron fallback|Diagnóstico iniciado|Aulas IA|GEMINI PRO V15|Chave de Aulas|V19\.1|V19\.2|V19\.3|V19\.4|V19\.5|V19\.7/i.test(t)){
-            child.setAttribute("data-fluency-v198-hidden-old-diag", "1");
-            child.style.setProperty("display", "none", "important");
-            child.style.setProperty("visibility", "hidden", "important");
-          }
+        // Desfaz o que a V19.8 ocultou demais.
+        Array.prototype.slice.call(document.querySelectorAll("[data-fluency-v198-hidden-old-diag]")).forEach(function(el){
+          el.removeAttribute("data-fluency-v198-hidden-old-diag");
+          el.style.removeProperty("display");
+          el.style.removeProperty("visibility");
         });
-
-        // Se o painel tem texto solto em vez de filhos organizados, cria uma área limpa alta para testar scroll.
-        var spacer = panel.querySelector("#__fluency_v198_scroll_spacer__");
-        if(!spacer){
-          spacer = document.createElement("div");
-          spacer.id = "__fluency_v198_scroll_spacer__";
-          spacer.style.cssText = "height:260px;opacity:.001;pointer-events:none;";
-          panel.appendChild(spacer);
-        }
+        var old = document.getElementById("__fluency_v198_clean_diag__");
+        if(old) old.remove();
+        var spacer = document.getElementById("__fluency_v198_scroll_spacer__");
+        if(spacer) spacer.remove();
       }catch(_){}
     }
 
-    function addGlobalCSS(){
+    function lastGenerationLine(){
       try{
-        if(document.getElementById("__fluency_v198_css__")) return;
+        var lm = getLastModel();
+        if(lm && (lm.model || lm.source)){
+          var label = lm.model || "-";
+          if(/flash/i.test(label)) label = "Gemini 2.5 Flash";
+          if(/pro/i.test(label)) label = "Gemini 2.5 Pro";
+          return label + (lm.source ? " · " + lm.source : "") + (lm.blocks ? " · " + lm.blocks + " blocos" : "");
+        }
+      }catch(_){}
+      return "Ainda não detectado nesta sessão";
+    }
+
+    function renderDiag(panel){
+      if(!panel) return;
+      undoV198Hiding(panel);
+
+      panel.style.setProperty("overflow-y","auto","important");
+      panel.style.setProperty("overflow-x","hidden","important");
+      panel.style.setProperty("-webkit-overflow-scrolling","touch","important");
+      panel.style.setProperty("touch-action","pan-y","important");
+      panel.style.setProperty("overscroll-behavior","contain","important");
+      panel.style.setProperty("max-height","72vh","important");
+      panel.style.setProperty("height","72vh","important");
+      panel.style.setProperty("padding-bottom","110px","important");
+
+      var box = panel.querySelector("#__fluency_v199_relevant_diag__");
+      if(!box){
+        box = document.createElement("div");
+        box.id = "__fluency_v199_relevant_diag__";
+        box.style.cssText = [
+          "position:relative",
+          "z-index:999999",
+          "margin:0 0 12px 0",
+          "padding:14px",
+          "border:1px solid rgba(96,165,250,.42)",
+          "border-radius:16px",
+          "background:rgba(15,23,42,.94)",
+          "box-shadow:0 8px 30px rgba(0,0,0,.28)",
+          "font-family:inherit",
+          "line-height:1.45",
+          "color:#dbeafe"
+        ].join(";");
+        panel.insertBefore(box, panel.firstChild);
+      }
+
+      var flash = getFlashKey();
+      var pro = getProKey();
+      var info = findLessonInfoFromStorage();
+
+      var lessonHtml = info ? (
+        "<div style='margin-top:10px;padding:10px;border-radius:12px;background:rgba(30,41,59,.72);border:1px solid rgba(148,163,184,.18)'>" +
+        "<div style='font-weight:800;color:#93c5fd;margin-bottom:4px'>Última aula salva</div>" +
+        "<div><b>Título:</b> "+escapeHtml(String(info.title).slice(0,80))+"</div>" +
+        "<div><b>Pilar:</b> "+escapeHtml(info.skill)+" · <b>Nível:</b> "+escapeHtml(info.level)+"</div>" +
+        "<div><b>Conteúdo:</b> "+info.sections+" seções · "+info.exercises+" exercícios · "+info.vocabulary+" vocabulários</div>" +
+        "<div><b>Tamanho:</b> "+info.size+" caracteres</div>" +
+        "</div>"
+      ) : (
+        "<div style='margin-top:10px;color:#fbbf24'>Última aula salva: ainda não encontrada no cache.</div>"
+      );
+
+      box.innerHTML =
+        "<div style='font-weight:900;color:#86efac;font-size:18px;margin-bottom:6px'>Diagnóstico — V19.9 ATIVO</div>" +
+        "<div style='font-size:13px;color:#93c5fd;letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px'>Resumo útil</div>" +
+        "<div><b>Modelo da última geração:</b> "+escapeHtml(lastGenerationLine())+"</div>" +
+        "<div><b>Key Flash aulas:</b> "+(flash ? "configurada · "+escapeHtml(mask(flash)) : "não configurada")+"</div>" +
+        "<div><b>Key Pro reserva:</b> "+(pro ? "configurada · "+escapeHtml(mask(pro)) : "não configurada")+"</div>" +
+        lessonHtml +
+        "<div style='margin-top:12px;font-size:13px;color:#93c5fd;letter-spacing:.12em;text-transform:uppercase'>Mudanças desta versão</div>" +
+        "<ul style='margin:6px 0 0 18px;padding:0'>"+CHANGES.map(function(c){return "<li style='margin:4px 0'>"+escapeHtml(c)+"</li>";}).join("")+"</ul>" +
+        "<div style='height:140px'></div>";
+    }
+
+    function escapeHtml(s){
+      return String(s == null ? "" : s)
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;")
+        .replace(/'/g,"&#39;");
+    }
+
+    function addCSS(){
+      try{
+        if(document.getElementById("__fluency_v199_css__")) return;
         var st = document.createElement("style");
-        st.id = "__fluency_v198_css__";
+        st.id = "__fluency_v199_css__";
         st.textContent = [
-          "[data-fluency-v198-hidden-ia-conversa]{display:none!important;visibility:hidden!important;pointer-events:none!important;}",
-          "[data-fluency-v198-hidden-old-diag]{display:none!important;visibility:hidden!important;}",
-          "#__fluency_v198_clean_diag__ *{box-sizing:border-box;}",
-          "#__fluency_v198_clean_diag__{user-select:text;-webkit-user-select:text;}"
+          "[data-fluency-v199-hidden-ia-conversa]{display:none!important;visibility:hidden!important;pointer-events:none!important;}",
+          "#__fluency_v199_relevant_diag__ *{box-sizing:border-box;}",
+          "#__fluency_v199_relevant_diag__{user-select:text;-webkit-user-select:text;}"
         ].join("\n");
         document.head.appendChild(st);
       }catch(_){}
     }
 
     function run(){
-      addGlobalCSS();
-      removeFloatingIAConversa();
-      injectCleanDiag(findDiagPanel());
+      addCSS();
+      removeIAConversaBubble();
+      renderDiag(findDiagPanel());
     }
 
-    // Exposto para teste manual no console/diagnóstico.
-    window.__fluencyV198CleanDiagnostic = run;
-    window.__fluencyV198Info = {
-      version: VERSION,
-      changes: CHANGELOG.slice()
+    window.__fluencyV199Diagnostic = run;
+    window.__fluencyV199Info = function(){
+      return {
+        version: VERSION,
+        changes: CHANGES.slice(),
+        flashConfigured: !!getFlashKey(),
+        proConfigured: !!getProKey(),
+        lastModel: getLastModel(),
+        lesson: findLessonInfoFromStorage()
+      };
     };
 
     run();
     setInterval(run, 900);
     ["click","touchstart","pointerdown","focus","scroll"].forEach(function(ev){
-      window.addEventListener(ev, function(){ setTimeout(run, 60); }, true);
+      window.addEventListener(ev, function(){ setTimeout(run, 80); }, true);
     });
 
   }catch(e){
-    try{console.warn("Patch V19.8 Diagnostic Clean failed", e);}catch(_){}
+    try{console.warn("Patch V19.9 Diagnostic Relevant failed", e);}catch(_){}
+  }
+})();
+
+
+/* === FLUENCY PATCH V19.10 - DIAGNÓSTICO FOCO EM CHAVE DE AULAS + GERAÇÃO === */
+;(function(){
+  try{
+    if(window.__fluencyDiagLessonKeysV1910) return;
+    window.__fluencyDiagLessonKeysV1910 = true;
+
+    var VERSION = "V19.10-DIAG-LESSON-KEYS";
+
+    function text(el){
+      try{return String((el && (el.innerText || el.textContent)) || "");}catch(_){return "";}
+    }
+    function visible(el){
+      try{
+        var r = el.getBoundingClientRect();
+        var cs = getComputedStyle(el);
+        return r.width > 20 && r.height > 20 && cs.display !== "none" && cs.visibility !== "hidden" && Number(cs.opacity || 1) > 0.03;
+      }catch(_){return false;}
+    }
+    function escapeHtml(s){
+      return String(s == null ? "" : s)
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;")
+        .replace(/'/g,"&#39;");
+    }
+    function mask(k){
+      k = String(k || "").trim().replace(/\s+/g,"");
+      if(!k) return "não configurada";
+      if(k.length < 12) return "configurada";
+      return k.slice(0,8) + "..." + k.slice(-4);
+    }
+    function readKey(keys){
+      try{
+        for(var i=0;i<keys.length;i++){
+          var a = localStorage.getItem(keys[i]);
+          var b = sessionStorage.getItem(keys[i]);
+          var v = a || b || "";
+          if(v && String(v).trim()) return String(v).trim();
+        }
+      }catch(_){}
+      return "";
+    }
+
+    var FLASH_KEYS = [
+      "fluency_lessonFlashApiKey",
+      "fluency_lessonGeminiFlashKey",
+      "lessonGeminiFlashApiKey",
+      "lessonFlashKey",
+      "fluency_aulasFlashKey",
+      "fluency_freeLessonGeminiApiKey",
+      "fluency_lesson_free_key"
+    ];
+    var PRO_KEYS = [
+      "fluency_lessonProApiKey",
+      "fluency_lessonGeminiProKey",
+      "lessonGeminiProApiKey",
+      "lessonProKey",
+      "fluency_aulasProKey",
+      "fluency_paidLessonGeminiApiKey",
+      "fluency_lesson_paid_key",
+      "fluency_lessonGeminiApiKey",
+      "fluency_lessonGeminiKey",
+      "lessonGeminiApiKey",
+      "lessonGeminiKey",
+      "fluency_geminiLessonKey",
+      "fluency_proLessonGeminiApiKey",
+      "fluency_aulasGeminiKey",
+      "fluency_lesson_key",
+      "fluency_lesson_api_key"
+    ];
+
+    function getFlashKey(){ return readKey(FLASH_KEYS); }
+    function getProKey(){ return readKey(PRO_KEYS); }
+
+    function getLastModel(){
+      try{
+        var arr = [
+          window.__fluencyLastLessonModelV197,
+          window.__fluencyLastLessonModelV195,
+          window.__fluencyLastLessonModelV193
+        ];
+        try{ arr.push(JSON.parse(localStorage.getItem("fluency_last_lesson_model_v195") || "null")); }catch(_){}
+        for(var i=0;i<arr.length;i++){
+          if(arr[i]) return arr[i];
+        }
+      }catch(_){}
+      return null;
+    }
+
+    function findLatestLesson(){
+      try{
+        var best = null;
+        for(var i=localStorage.length-1;i>=0;i--){
+          var k = localStorage.key(i);
+          if(!/^fluency_lesson/i.test(String(k||""))) continue;
+          var raw = localStorage.getItem(k);
+          if(!raw) continue;
+          var obj = JSON.parse(raw);
+          if(typeof obj === "string") obj = JSON.parse(obj);
+          if(!obj || typeof obj !== "object") continue;
+          var size = JSON.stringify(obj).length;
+          if(!best || size > best.size){
+            best = {
+              key:k,
+              title: obj.title || obj.heading || "aula salva",
+              skill: obj.skill || obj.pillar || obj.type || obj.category || "-",
+              level: obj.level || obj.cefr || "-",
+              sections: Array.isArray(obj.sections) ? obj.sections.length : 0,
+              exercises: Array.isArray(obj.exercises) ? obj.exercises.length : 0,
+              vocabulary: Array.isArray(obj.vocabulary) ? obj.vocabulary.length : 0,
+              modelUsed: obj.modelUsed || obj.model || obj.generatedModel || "-",
+              generatedBy: obj.generatedBy || obj._generatedBy || "-",
+              size:size
+            };
+          }
+        }
+        return best;
+      }catch(_){return null;}
+    }
+
+    function findDiagPanel(){
+      try{
+        var nodes = Array.prototype.slice.call(document.querySelectorAll("div,section,aside"));
+        var candidates = nodes.filter(function(el){
+          if(!visible(el)) return false;
+          var t = text(el);
+          var r = el.getBoundingClientRect();
+          if(r.width < 230 || r.height < 220) return false;
+          return /pronto|Vozes carregadas|Speech destravado|Saúde Azure|Motivo fallback|Aulas IA|Chave de Aulas|Diagnóstico|Último score|V19/i.test(t);
+        });
+        if(!candidates.length){
+          candidates = nodes.filter(function(el){
+            if(!visible(el)) return false;
+            var r = el.getBoundingClientRect();
+            return r.right > window.innerWidth * 0.50 && r.top < window.innerHeight * 0.30 && r.height > 300 && r.width > 220;
+          });
+        }
+        if(!candidates.length) return null;
+        candidates.sort(function(a,b){
+          var ar=a.getBoundingClientRect(), br=b.getBoundingClientRect();
+          var ascore = Math.abs(ar.height - window.innerHeight*0.70) + Math.abs(ar.width - window.innerWidth*0.45);
+          var bscore = Math.abs(br.height - window.innerHeight*0.70) + Math.abs(br.width - window.innerWidth*0.45);
+          return ascore - bscore;
+        });
+        return candidates[0];
+      }catch(_){return null;}
+    }
+
+    function collectImportantLines(panel){
+      try{
+        var t = text(panel);
+        var lines = t.split(/\n+/).map(function(x){return x.trim();}).filter(Boolean);
+        var keep = [];
+        var rx = /(Chave de Aulas|LESSON-KEY|key exclusiva|key de aulas|Aulas IA|GEMINI|gemini-2\.5|aula aprovada|tentativa|chamada direta|Patch V15|V19\.1|V19\.2|V19\.3|V19\.4|V19\.5|V19\.7|V19\.9|FLASH|PRO|Economy|Tamanho|seções|exercícios)/i;
+        lines.forEach(function(line){
+          if(rx.test(line) && keep.indexOf(line) === -1) keep.push(line);
+        });
+        return keep.slice(0, 28);
+      }catch(_){return [];}
+    }
+
+    function removeIAConversaBubble(){
+      try{
+        Array.prototype.slice.call(document.querySelectorAll("div,section,aside")).forEach(function(el){
+          var t = text(el).trim();
+          if(!/IA Conversa/i.test(t)) return;
+          if(/Aulas IA|Chave de Aulas|Vozes carregadas|Saúde Azure|Diagnóstico/i.test(t)) return;
+          var r = el.getBoundingClientRect();
+          if(r.width <= 640 && r.height <= 300){
+            el.style.setProperty("display","none","important");
+            el.style.setProperty("visibility","hidden","important");
+            el.style.setProperty("pointer-events","none","important");
+            el.setAttribute("data-fluency-v1910-hidden-ia-conversa","1");
+          }
+        });
+      }catch(_){}
+    }
+
+    function undoOverClean(){
+      try{
+        var ids = ["__fluency_v198_clean_diag__","__fluency_v198_scroll_spacer__"];
+        ids.forEach(function(id){ var el=document.getElementById(id); if(el) el.remove(); });
+        Array.prototype.slice.call(document.querySelectorAll("[data-fluency-v198-hidden-old-diag]")).forEach(function(el){
+          el.removeAttribute("data-fluency-v198-hidden-old-diag");
+          el.style.removeProperty("display");
+          el.style.removeProperty("visibility");
+        });
+      }catch(_){}
+    }
+
+    function render(panel){
+      if(!panel) return;
+      undoOverClean();
+
+      panel.style.setProperty("overflow-y","auto","important");
+      panel.style.setProperty("overflow-x","hidden","important");
+      panel.style.setProperty("-webkit-overflow-scrolling","touch","important");
+      panel.style.setProperty("touch-action","pan-y","important");
+      panel.style.setProperty("overscroll-behavior","contain","important");
+      panel.style.setProperty("max-height","74vh","important");
+      panel.style.setProperty("height","74vh","important");
+      panel.style.setProperty("padding-bottom","130px","important");
+
+      var flash = getFlashKey();
+      var pro = getProKey();
+      var last = getLastModel();
+      var lesson = findLatestLesson();
+      var lines = collectImportantLines(panel);
+
+      var modelLine = "ainda não detectado nesta sessão";
+      if(last && (last.model || last.source)){
+        modelLine = (last.model || "-") + (last.source ? " · " + last.source : "") + (last.blocks ? " · " + last.blocks + " blocos" : "");
+      }else if(lesson && lesson.modelUsed && lesson.modelUsed !== "-"){
+        modelLine = lesson.modelUsed + (lesson.generatedBy && lesson.generatedBy !== "-" ? " · " + lesson.generatedBy : "");
+      }
+
+      var box = panel.querySelector("#__fluency_v1910_lesson_keys_diag__");
+      if(!box){
+        box = document.createElement("div");
+        box.id = "__fluency_v1910_lesson_keys_diag__";
+        box.style.cssText = [
+          "position:relative",
+          "z-index:999999",
+          "margin:0 0 12px 0",
+          "padding:14px",
+          "border:1px solid rgba(96,165,250,.46)",
+          "border-radius:16px",
+          "background:rgba(15,23,42,.95)",
+          "box-shadow:0 8px 30px rgba(0,0,0,.30)",
+          "font-family:inherit",
+          "line-height:1.45",
+          "color:#dbeafe"
+        ].join(";");
+        panel.insertBefore(box, panel.firstChild);
+      }
+
+      var lessonHtml = lesson ? (
+        "<div style='margin-top:10px;padding:10px;border-radius:12px;background:rgba(30,41,59,.72);border:1px solid rgba(148,163,184,.18)'>" +
+        "<div style='font-weight:900;color:#93c5fd;margin-bottom:4px'>Última aula salva</div>" +
+        "<div><b>Título:</b> "+escapeHtml(String(lesson.title).slice(0,90))+"</div>" +
+        "<div><b>Pilar:</b> "+escapeHtml(lesson.skill)+" · <b>Nível:</b> "+escapeHtml(lesson.level)+"</div>" +
+        "<div><b>Conteúdo:</b> "+lesson.sections+" seções · "+lesson.exercises+" exercícios · "+lesson.vocabulary+" vocabulários</div>" +
+        "<div><b>Tamanho:</b> "+lesson.size+" caracteres</div>" +
+        "</div>"
+      ) : "<div style='margin-top:10px;color:#fbbf24'>Última aula salva: ainda não encontrada.</div>";
+
+      var logHtml = lines.length ? (
+        "<div style='margin-top:10px;padding:10px;border-radius:12px;background:rgba(2,6,23,.48);border:1px solid rgba(148,163,184,.18)'>" +
+        "<div style='font-weight:900;color:#86efac;margin-bottom:6px'>Logs importantes de aulas</div>" +
+        lines.map(function(l){
+          var color = /sem key|erro|falh|HTTP|fallback/i.test(l) ? "#fca5a5" : /aprovada|configurada|ativo|Tamanho/i.test(l) ? "#86efac" : "#c4b5fd";
+          return "<div style='margin:4px 0;color:"+color+"'>"+escapeHtml(l)+"</div>";
+        }).join("") +
+        "</div>"
+      ) : "<div style='margin-top:10px;color:#fbbf24'>Logs importantes: ainda não encontrados no painel.</div>";
+
+      box.innerHTML =
+        "<div style='font-weight:900;color:#86efac;font-size:18px;margin-bottom:6px'>Chave de Aulas — V19.10 ATIVO</div>" +
+        "<div style='font-size:13px;color:#93c5fd;letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px'>Somente informações de aulas</div>" +
+        "<div><b>Key Flash aulas:</b> "+(flash ? "configurada · "+escapeHtml(mask(flash)) : "não configurada")+"</div>" +
+        "<div><b>Key Pro reserva:</b> "+(pro ? "configurada · "+escapeHtml(mask(pro)) : "não configurada")+"</div>" +
+        "<div><b>Modelo da última geração:</b> "+escapeHtml(modelLine)+"</div>" +
+        lessonHtml +
+        logHtml +
+        "<div style='height:140px'></div>";
+
+      // Esconde ruído, mas mantém os blocos antigos de chave/aula visíveis se o usuário rolar.
+      Array.prototype.slice.call(panel.children).forEach(function(child){
+        if(child.id === "__fluency_v1910_lesson_keys_diag__") return;
+        var t = text(child);
+        if(/Vozes carregadas|Speech destravado|Última voz|Modo análise|Áudio capturado|Azure key ativa|Saúde Azure|Último score|Motivo fallback|Pron API|Pron fallback|Diagnóstico iniciado/i.test(t) &&
+           !/Chave de Aulas|Aulas IA|LESSON-KEY|GEMINI|aula aprovada|gemini-2\.5/i.test(t)){
+          child.style.setProperty("display","none","important");
+          child.style.setProperty("visibility","hidden","important");
+        }
+      });
+    }
+
+    function addCSS(){
+      try{
+        if(document.getElementById("__fluency_v1910_css__")) return;
+        var st = document.createElement("style");
+        st.id = "__fluency_v1910_css__";
+        st.textContent = [
+          "[data-fluency-v1910-hidden-ia-conversa]{display:none!important;visibility:hidden!important;pointer-events:none!important;}",
+          "#__fluency_v1910_lesson_keys_diag__ *{box-sizing:border-box;}",
+          "#__fluency_v1910_lesson_keys_diag__{user-select:text;-webkit-user-select:text;}"
+        ].join("\n");
+        document.head.appendChild(st);
+      }catch(_){}
+    }
+
+    function run(){
+      addCSS();
+      removeIAConversaBubble();
+      render(findDiagPanel());
+    }
+
+    window.__fluencyV1910LessonKeysDiagnostic = run;
+    window.__fluencyV1910LessonKeysInfo = function(){
+      return {
+        version: VERSION,
+        flashConfigured: !!getFlashKey(),
+        flashMasked: mask(getFlashKey()),
+        proConfigured: !!getProKey(),
+        proMasked: mask(getProKey()),
+        lastModel: getLastModel(),
+        lesson: findLatestLesson()
+      };
+    };
+
+    run();
+    setInterval(run, 850);
+    ["click","touchstart","pointerdown","focus","scroll"].forEach(function(ev){
+      window.addEventListener(ev, function(){ setTimeout(run, 70); }, true);
+    });
+
+  }catch(e){
+    try{console.warn("Patch V19.10 Lesson Keys Diagnostic failed", e);}catch(_){}
   }
 })();
