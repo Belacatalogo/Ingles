@@ -95,46 +95,50 @@
       var p = findDiagnosticPanel();
       if(!p) return false;
       try{
+        // Inject a global CSS rule so the panel and its scroll wrapper work on iOS Safari
+        if(!document.getElementById('__fluency_scroll_css__')){
+          var st = document.createElement('style');
+          st.id = '__fluency_scroll_css__';
+          st.textContent = [
+            '[data-fluency-v195-scroll="1"]{',
+            '  max-height:72vh!important;',
+            '  overflow-y:auto!important;',
+            '  overflow-x:hidden!important;',
+            '  -webkit-overflow-scrolling:touch!important;',
+            '  touch-action:pan-y!important;',
+            '  overscroll-behavior:contain!important;',
+            '  padding-bottom:80px!important;',
+            '}',
+            '[data-fluency-v195-scroll="1"] *{',
+            '  -webkit-overflow-scrolling:touch;',
+            '}'
+          ].join('');
+          document.head.appendChild(st);
+        }
         p.style.maxHeight = '72vh';
         p.style.overflowY = 'auto';
         p.style.overflowX = 'hidden';
         p.style.webkitOverflowScrolling = 'touch';
         p.style.touchAction = 'pan-y';
         p.style.overscrollBehavior = 'contain';
-        p.style.paddingBottom = '96px';
+        p.style.paddingBottom = '80px';
         p.setAttribute('data-fluency-v195-scroll','1');
-        // Em alguns iPhones, o container externo bloqueia scroll. Liberar no pai direto também.
+        // Libera também os 4 ancestrais que possam ter overflow:hidden
         var parent = p.parentElement;
-        for(var i=0;i<3 && parent;i++,parent=parent.parentElement){
-          var txt = safeText(parent);
-          if(txt.indexOf('Vozes carregadas')!==-1){
-            parent.style.overflowY = 'auto';
-            parent.style.webkitOverflowScrolling = 'touch';
-            parent.style.touchAction = 'pan-y';
+        for(var i=0;i<4 && parent && parent !== document.body;i++,parent=parent.parentElement){
+          var cs = window.getComputedStyle(parent);
+          if(cs.overflow === 'hidden' || cs.overflowY === 'hidden'){
+            parent.style.overflow = 'visible';
+            parent.style.overflowY = 'visible';
           }
+          parent.style.webkitOverflowScrolling = 'touch';
         }
         return true;
       }catch(_){ return false; }
     }
 
     function diag(msg,kind){
-      try{
-        var p = findDiagnosticPanel();
-        if(!p) return;
-        var root = document.getElementById('__fluency_v195_diag__');
-        if(!root){
-          root = document.createElement('div');
-          root.id = '__fluency_v195_diag__';
-          root.style.cssText = 'margin-top:10px;padding-top:10px;border-top:1px solid rgba(148,163,184,.25);font-size:13px;line-height:1.35;color:#dbeafe;';
-          root.innerHTML = "<div style='font-weight:900;color:#86efac;margin-bottom:6px'>Diagnóstico — V19.5 SCROLL + MODELO ATIVO</div>";
-          p.appendChild(root);
-        }
-        var row = document.createElement('div');
-        row.style.color = kind === 'ok' ? '#86efac' : kind === 'warn' ? '#fbbf24' : '#93c5fd';
-        row.textContent = now() + ' ' + VERSION + ': ' + String(msg||'');
-        root.insertBefore(row, root.children[1] || null);
-        while(root.children.length > 12) root.removeChild(root.lastChild);
-      }catch(_){ }
+      // painel V19.5 desativado — sem output visual
     }
 
     function isAulaActive(){
@@ -237,7 +241,7 @@
     window.__fluencyLessonKeyStatusV192=function(){var k=getKey();return {configured:!!k,masked:mask(k),aliases:ALIASES.slice()};};
     if(nativeGet&&!Storage.prototype.getItem.__fluencyLessonKeyRelayV192){Storage.prototype.getItem=function(k){var v=nativeGet.apply(this,arguments);try{if(isAlias(k)){var c=clean(v);if(valid(c))return c;var r=getKey();if(valid(r))return r;}}catch(_){}return v;};Storage.prototype.getItem.__fluencyLessonKeyRelayV192=true;}
     if(nativeSet&&!Storage.prototype.setItem.__fluencyLessonKeyRelayV192){Storage.prototype.setItem=function(k,v){try{if(isAlias(k)){var c=clean(v);if(valid(c)){var r=nativeSet.apply(this,[k,c]);sync(c);return r;}}}catch(_){}return nativeSet.apply(this,arguments);};Storage.prototype.setItem.__fluencyLessonKeyRelayV192=true;}
-    function diag(msg,kind){try{var els=[].slice.call(document.querySelectorAll('div'));var p=els.find(function(el){var t=el.innerText||'';return t.indexOf('Vozes carregadas')!==-1&&t.indexOf('Saúde Azure')!==-1;});if(!p)return;var root=document.getElementById('__fluency_lesson_key_v192_diag__');if(!root){root=document.createElement('div');root.id='__fluency_lesson_key_v192_diag__';root.style.cssText='margin-top:10px;padding-top:10px;border-top:1px solid rgba(148,163,184,.25);font-size:13px;line-height:1.35;color:#dbeafe;';root.innerHTML="<div style='font-weight:900;color:#86efac;margin-bottom:6px'>Chave de Aulas — V19.2 RELAY ATIVO</div>";p.appendChild(root);}var row=document.createElement('div');row.style.color=kind==='ok'?'#86efac':kind==='warn'?'#fbbf24':'#93c5fd';row.textContent=new Date().toLocaleTimeString()+' '+VERSION+': '+msg;root.insertBefore(row,root.children[1]||null);while(root.children.length>12)root.removeChild(root.lastChild);}catch(_){} }
+    function diag(msg,kind){/* Chave de Aulas V19.2 painel desativado */}
     setTimeout(function(){var k=sync();diag(k?'key detectada e entregue para V15: '+mask(k):'nenhuma key de aulas encontrada nos aliases.',k?'ok':'warn');},1000);
   }catch(e){try{console.warn('Fluency V19.2 lesson key relay failed',e)}catch(_){}}
 })();
@@ -2953,9 +2957,8 @@ lucide-react/dist/esm/lucide-react.mjs:
         if(!root){
           root = document.createElement('div');
           root.id = '__fluency_lesson_key_v191_diag__';
-          root.style.cssText = 'margin-top:10px;padding-top:10px;border-top:1px solid rgba(148,163,184,.25);font-size:13px;line-height:1.35;color:#dbeafe;';
-          root.innerHTML = "<div style='font-weight:900;color:#86efac;margin-bottom:6px'>Chave de Aulas — V19.1 ATIVO</div>";
-          p.appendChild(root);
+          root.style.cssText = 'display:none';
+          // Chave de Aulas V19.1 painel desativado
         }
         var row = document.createElement('div');
         row.style.color = kind === 'ok' ? '#86efac' : kind === 'warn' ? '#fbbf24' : '#93c5fd';
