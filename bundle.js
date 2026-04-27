@@ -1,3 +1,124 @@
+/* === FLUENCY PATCH V16 - LIMPEZA FIXA DE AULAS INCOMPLETAS/CACHE === */
+;(function(){
+  try{
+    if(window.__fluencyLessonCacheFixV16) return;
+    window.__fluencyLessonCacheFixV16 = true;
+    var VERSION = 'V16-CACHE-LESSON-FIX';
+    function isLessonKey(k){
+      k = String(k||'');
+      return /^fluency_lesson_v\d+_/.test(k) || /^fluency_lesson_/.test(k);
+    }
+    function parseStored(v){
+      try{
+        if(v == null) return null;
+        var x = typeof v === 'string' ? JSON.parse(v) : v;
+        // alguns valores antigos podem ter sido salvos como string JSON dentro de JSON
+        if(typeof x === 'string'){
+          try{x = JSON.parse(x)}catch(_){}
+        }
+        return x;
+      }catch(_){ return null; }
+    }
+    function textLen(x){ return String(x||'').trim().length; }
+    function isCompleteLesson(L){
+      try{
+        if(!L || typeof L !== 'object') return false;
+        if(L._fallback) return false;
+        if(textLen(L.title) < 8) return false;
+        if(textLen(L.intro) < 180) return false;
+        if(!Array.isArray(L.sections) || L.sections.length < 3) return false;
+        for(var i=0;i<Math.min(3,L.sections.length);i++){
+          var s = L.sections[i] || {};
+          if(textLen(s.heading) < 4) return false;
+          if(textLen(s.content) < 220) return false;
+          if(!Array.isArray(s.examples) || s.examples.length < 3) return false;
+          for(var j=0;j<3;j++){
+            var ex = s.examples[j] || {};
+            if(textLen(ex.en) < 5 || textLen(ex.pt) < 5) return false;
+          }
+        }
+        if(!Array.isArray(L.exercises) || L.exercises.length < 5) return false;
+        for(var e=0;e<Math.min(5,L.exercises.length);e++){
+          var q = L.exercises[e] || {};
+          if(textLen(q.question) < 10 || textLen(q.answer) < 1 || textLen(q.explanation) < 20) return false;
+        }
+        if(!Array.isArray(L.vocabulary) || L.vocabulary.length < 5) return false;
+        for(var v=0;v<Math.min(5,L.vocabulary.length);v++){
+          var w = L.vocabulary[v] || {};
+          if(textLen(w.word) < 1 || textLen(w.translation) < 1 || textLen(w.example) < 8) return false;
+        }
+        if(!Array.isArray(L.tips) || L.tips.length < 2) return false;
+        if(textLen(L.finalTip) < 35) return false;
+        try{ if(JSON.stringify(L).length < 2600) return false; }catch(_){}
+        return true;
+      }catch(_){ return false; }
+    }
+    window.__fluencyV16LessonIsComplete = isCompleteLesson;
+    function purgeBadLessons(){
+      var removed = 0;
+      try{
+        for(var i=localStorage.length-1;i>=0;i--){
+          var k = localStorage.key(i);
+          if(!isLessonKey(k)) continue;
+          var raw = localStorage.getItem(k);
+          var L = parseStored(raw);
+          if(!isCompleteLesson(L)){
+            localStorage.removeItem(k);
+            removed++;
+          }
+        }
+      }catch(_){}
+      if(removed){
+        try{ console.warn('[Fluency '+VERSION+'] removidas aulas incompletas do cache:', removed); }catch(_){}
+        try{ window.dispatchEvent(new CustomEvent('fluency-v16-cache-cleaned',{detail:{removed:removed}})); }catch(_){}
+      }
+      return removed;
+    }
+    window.__fluencyPurgeIncompleteLessonsV16 = purgeBadLessons;
+
+    var rawGet = Storage.prototype.getItem;
+    var rawSet = Storage.prototype.setItem;
+    var rawRemove = Storage.prototype.removeItem;
+    if(rawGet && !rawGet.__fluencyV16Patched){
+      Storage.prototype.getItem = function(k){
+        var v = rawGet.apply(this, arguments);
+        try{
+          if(this === localStorage && isLessonKey(k) && v != null){
+            var L = parseStored(v);
+            if(!isCompleteLesson(L)){
+              rawRemove.call(this, k);
+              return null;
+            }
+          }
+        }catch(_){}
+        return v;
+      };
+      Storage.prototype.getItem.__fluencyV16Patched = true;
+    }
+    if(rawSet && !rawSet.__fluencyV16Patched){
+      Storage.prototype.setItem = function(k,v){
+        try{
+          if(this === localStorage && isLessonKey(k)){
+            var L = parseStored(v);
+            if(!isCompleteLesson(L)){
+              rawRemove.call(this, k);
+              try{ console.warn('[Fluency '+VERSION+'] bloqueou salvamento de aula incompleta:', k); }catch(_){}
+              return;
+            }
+          }
+        }catch(_){}
+        return rawSet.apply(this, arguments);
+      };
+      Storage.prototype.setItem.__fluencyV16Patched = true;
+    }
+    purgeBadLessons();
+    setTimeout(purgeBadLessons, 400);
+    setTimeout(purgeBadLessons, 1600);
+    window.addEventListener('focus', purgeBadLessons);
+  }catch(e){try{console.warn('Patch V16 cache fix failed',e)}catch(_){} }
+})();
+
+
 (()=>{
 
 /* === FLUENCY FIX V13 - SERVICE WORKER BYPASS PARA GEMINI === */
