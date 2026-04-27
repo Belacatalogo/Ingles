@@ -1,3 +1,221 @@
+/* === FLUENCY PATCH V19.5 - DIAGNOSTICO COM SCROLL + MODELO DA AULA === */
+;(function(){
+  try{
+    if(window.__fluencyDiagScrollModelBadgeV195) return;
+    window.__fluencyDiagScrollModelBadgeV195 = true;
+    var VERSION = 'V19.5-DIAG-SCROLL-MODEL-BADGE';
+
+    function now(){ try{return new Date().toLocaleTimeString()}catch(_){return ''} }
+    function safeText(el){ try{return String(el && (el.innerText || el.textContent) || '')}catch(_){return ''} }
+    function visible(el){
+      try{ var r=el.getBoundingClientRect(), cs=getComputedStyle(el); return r.width>8 && r.height>8 && cs.display!=='none' && cs.visibility!=='hidden' && Number(cs.opacity||1)>0.04; }catch(_){ return false; }
+    }
+    function mask(k){ k=String(k||'').trim(); return k ? k.slice(0,8)+'...'+k.slice(-4) : ''; }
+    function readLastModel(){
+      try{
+        var last = window.__fluencyLastLessonModelV193 || null;
+        if(last && last.model) return last;
+        var raw = localStorage.getItem('fluency_last_lesson_model_v195') || localStorage.getItem('fluency_last_lesson_model') || '';
+        if(raw){ try{ last = JSON.parse(raw); }catch(_){ last = null; } }
+        if(last && last.model) return last;
+      }catch(_){ }
+      return null;
+    }
+    function writeLastModel(last){
+      try{ if(last && last.model) localStorage.setItem('fluency_last_lesson_model_v195', JSON.stringify(last)); }catch(_){ }
+    }
+    function modelLabel(last){
+      if(!last || !last.model) return 'Último modelo da aula: ainda não detectado';
+      var m = String(last.model || '');
+      var tipo = /flash/i.test(m) ? 'FLASH 2.5' : /pro/i.test(m) ? 'PRO PAGO' : m;
+      var detail = [];
+      if(last.status) detail.push('HTTP '+last.status);
+      if(last.error) detail.push('erro');
+      if(last.fallbackFromFlash) detail.push('fallback do Flash');
+      if(last.key) detail.push('key '+last.key);
+      return 'Última aula: '+tipo+' · '+m+(detail.length?' · '+detail.join(' · '):'');
+    }
+
+    // Captura qualquer chamada Gemini de aula e registra modelo real visto na URL.
+    var nativeFetch = window.fetch ? window.fetch.bind(window) : null;
+    if(nativeFetch && !window.fetch.__fluencyModelAuditV195){
+      var prevFetch = window.fetch;
+      window.fetch = async function(input, init){
+        var url = '';
+        try{ url = typeof input === 'string' ? input : (input && input.url) || ''; }catch(_){ }
+        var isGeminiLesson = /generativelanguage\.googleapis\.com/i.test(url) && /:generateContent|:streamGenerateContent/i.test(url);
+        var modelMatch = String(url||'').match(/\/models\/([^/:?]+)(?::generateContent|:streamGenerateContent)/i);
+        var keyMatch = String(url||'').match(/[?&]key=([^&]+)/i);
+        try{
+          var res = await prevFetch.apply(this, arguments);
+          if(isGeminiLesson && modelMatch){
+            var body = init && init.body;
+            var isLikelyLesson = true;
+            try{ isLikelyLesson = /aula|lesson|sections|exercises|vocabulary|pilar|speaking|listening|reading|writing|grammar/i.test(typeof body === 'string' ? body : JSON.stringify(body||'')); }catch(_){ }
+            if(isLikelyLesson){
+              var last = {model:modelMatch[1], key:keyMatch?mask(decodeURIComponent(keyMatch[1])):'', status:res && res.status, at:Date.now(), source:'V19.5 audit'};
+              window.__fluencyLastLessonModelV195 = last;
+              writeLastModel(last);
+              diag('modelo capturado pela chamada real: '+modelLabel(last), 'ok');
+            }
+          }
+          return res;
+        }catch(err){
+          if(isGeminiLesson && modelMatch){
+            var lastErr = {model:modelMatch[1], key:keyMatch?mask(decodeURIComponent(keyMatch[1])):'', error:String((err&&err.message)||err), at:Date.now(), source:'V19.5 audit'};
+            window.__fluencyLastLessonModelV195 = lastErr;
+            writeLastModel(lastErr);
+            diag('erro capturado na chamada real: '+modelLabel(lastErr), 'warn');
+          }
+          throw err;
+        }
+      };
+      window.fetch.__fluencyModelAuditV195 = true;
+    }
+
+    function findDiagnosticPanel(){
+      try{
+        var els = Array.prototype.slice.call(document.querySelectorAll('div,section,aside'));
+        // O painel real contém estes textos.
+        var candidates = els.filter(function(el){
+          var t=safeText(el);
+          return t.indexOf('Vozes carregadas')!==-1 && (t.indexOf('Saúde Azure')!==-1 || t.indexOf('Aulas IA')!==-1 || t.indexOf('Motivo fallback')!==-1);
+        }).filter(visible);
+        if(!candidates.length) return null;
+        // Preferir o menor container que ainda contém o conteúdo do diagnóstico.
+        candidates.sort(function(a,b){
+          var ar=a.getBoundingClientRect(), br=b.getBoundingClientRect();
+          return (ar.width*ar.height) - (br.width*br.height);
+        });
+        return candidates[0];
+      }catch(_){ return null; }
+    }
+
+    function applyScrollFix(){
+      var p = findDiagnosticPanel();
+      if(!p) return false;
+      try{
+        p.style.maxHeight = '72vh';
+        p.style.overflowY = 'auto';
+        p.style.overflowX = 'hidden';
+        p.style.webkitOverflowScrolling = 'touch';
+        p.style.touchAction = 'pan-y';
+        p.style.overscrollBehavior = 'contain';
+        p.style.paddingBottom = '96px';
+        p.setAttribute('data-fluency-v195-scroll','1');
+        // Em alguns iPhones, o container externo bloqueia scroll. Liberar no pai direto também.
+        var parent = p.parentElement;
+        for(var i=0;i<3 && parent;i++,parent=parent.parentElement){
+          var txt = safeText(parent);
+          if(txt.indexOf('Vozes carregadas')!==-1){
+            parent.style.overflowY = 'auto';
+            parent.style.webkitOverflowScrolling = 'touch';
+            parent.style.touchAction = 'pan-y';
+          }
+        }
+        return true;
+      }catch(_){ return false; }
+    }
+
+    function diag(msg,kind){
+      try{
+        var p = findDiagnosticPanel();
+        if(!p) return;
+        var root = document.getElementById('__fluency_v195_diag__');
+        if(!root){
+          root = document.createElement('div');
+          root.id = '__fluency_v195_diag__';
+          root.style.cssText = 'margin-top:10px;padding-top:10px;border-top:1px solid rgba(148,163,184,.25);font-size:13px;line-height:1.35;color:#dbeafe;';
+          root.innerHTML = "<div style='font-weight:900;color:#86efac;margin-bottom:6px'>Diagnóstico — V19.5 SCROLL + MODELO ATIVO</div>";
+          p.appendChild(root);
+        }
+        var row = document.createElement('div');
+        row.style.color = kind === 'ok' ? '#86efac' : kind === 'warn' ? '#fbbf24' : '#93c5fd';
+        row.textContent = now() + ' ' + VERSION + ': ' + String(msg||'');
+        root.insertBefore(row, root.children[1] || null);
+        while(root.children.length > 12) root.removeChild(root.lastChild);
+      }catch(_){ }
+    }
+
+    function isAulaActive(){
+      try{
+        var navs = Array.prototype.slice.call(document.querySelectorAll('button,a,[role="tab"]'));
+        for(var i=0;i<navs.length;i++){
+          var t=safeText(navs[i]).replace(/\s+/g,' ').trim();
+          if(t==='Aula'){
+            if(navs[i].getAttribute('aria-selected')==='true') return true;
+            var cs=getComputedStyle(navs[i]);
+            var fw=parseInt(cs.fontWeight||'0',10);
+            var color=String(cs.color||'');
+            if(fw>=600 && /rgb\((91, 156, 246|96, 165, 250|147, 183, 255)/i.test(color)) return true;
+            // procura underline visual perto do botão
+            var r=navs[i].getBoundingClientRect();
+            var spans = Array.prototype.slice.call(navs[i].querySelectorAll('*'));
+            if(spans.some(function(s){ var sr=s.getBoundingClientRect(); return sr.height<=4 && sr.width>20 && Math.abs(sr.bottom-r.bottom)<12; })) return true;
+          }
+        }
+      }catch(_){ }
+      return false;
+    }
+
+    function findLessonContainer(){
+      try{
+        var els = Array.prototype.slice.call(document.querySelectorAll('div,section'));
+        var candidates = els.filter(function(el){
+          var t=safeText(el);
+          return /AULA COMPLETA GERADA PELA IA|Gerada por IA|Aula completa/i.test(t) && /to be|verbo|aula|lesson|grammar|speaking|listening/i.test(t);
+        }).filter(visible);
+        if(!candidates.length) return null;
+        candidates.sort(function(a,b){
+          var ar=a.getBoundingClientRect(), br=b.getBoundingClientRect();
+          return (ar.width*ar.height)-(br.width*br.height);
+        });
+        return candidates[0];
+      }catch(_){ return null; }
+    }
+
+    function renderModelBadge(){
+      try{
+        var old = document.getElementById('__fluency_v195_model_badge__');
+        if(!isAulaActive()){
+          if(old) old.remove();
+          return false;
+        }
+        var box = findLessonContainer();
+        if(!box) return false;
+        var last = window.__fluencyLastLessonModelV195 || readLastModel() || window.__fluencyLastLessonModelV193 || null;
+        if(window.__fluencyLastLessonModelV193) writeLastModel(window.__fluencyLastLessonModelV193);
+        var label = modelLabel(last);
+        var isFlash = last && /flash/i.test(last.model||'');
+        var isPro = last && /pro/i.test(last.model||'');
+        if(!old){
+          old = document.createElement('div');
+          old.id = '__fluency_v195_model_badge__';
+          old.style.cssText = 'margin:10px 0 12px 0;padding:10px 12px;border-radius:14px;border:1px solid rgba(96,165,250,.28);background:linear-gradient(135deg,rgba(15,23,42,.72),rgba(37,99,235,.18));color:#dbeafe;font-size:12px;line-height:1.35;font-weight:800;box-shadow:0 10px 26px rgba(0,0,0,.18);';
+          var first = box.firstChild;
+          box.insertBefore(old, first && first.nextSibling ? first.nextSibling : first);
+        }
+        old.innerHTML = '<div style="color:'+(isFlash?'#86efac':isPro?'#c4b5fd':'#93c5fd')+'">🔎 '+label+'</div><div style="font-size:11px;color:#bfdbfe;font-weight:600;margin-top:3px">O log antigo V15 pode continuar escrito “Pro”, mas este badge mostra o modelo interceptado pela chamada real.</div>';
+        return true;
+      }catch(_){ return false; }
+    }
+
+    function tick(){
+      var ok = applyScrollFix();
+      renderModelBadge();
+      if(ok && !window.__fluencyV195LoggedScroll){ window.__fluencyV195LoggedScroll = true; diag('scroll do painel de diagnóstico liberado. Arraste dentro do painel para ver logs antigos.', 'ok'); }
+      var l = window.__fluencyLastLessonModelV193 || window.__fluencyLastLessonModelV195;
+      if(l && l.model){ window.__fluencyLastLessonModelV195 = l; writeLastModel(l); }
+    }
+
+    setTimeout(tick,80); setTimeout(tick,400); setTimeout(tick,1200);
+    setInterval(tick,700);
+    ['click','touchend','pointerup','focus','hashchange','popstate'].forEach(function(ev){ window.addEventListener(ev,function(){ setTimeout(tick,80); setTimeout(tick,350); }, true); });
+    try{ new MutationObserver(function(){ setTimeout(tick,60); }).observe(document.documentElement || document.body, {childList:true, subtree:true}); }catch(_){ }
+
+    window.__fluencyV195ModelStatus = function(){ return window.__fluencyLastLessonModelV195 || readLastModel() || window.__fluencyLastLessonModelV193 || null; };
+  }catch(e){ try{console.warn('Patch V19.5 diag/model failed',e)}catch(_){} }
+})();
 /* === FLUENCY PATCH V19.2 - RELAY DEFINITIVO DA KEY EXCLUSIVA PARA AULAS === */
 ;(function(){
   try{
