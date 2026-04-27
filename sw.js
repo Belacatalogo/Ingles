@@ -1,5 +1,5 @@
 // Fluency Service Worker — offline cache
-const CACHE = "fluency-v36-grammar-pro";
+const CACHE = "fluency-v37-speaking-conversation-pt";
 const STATIC = [
   "./",
   "./index.html",
@@ -12,6 +12,7 @@ const STATIC = [
   "./azure-pronunciation-core.js",
   "./shadowing-ai.js",
   "./grammar-pro.js",
+  "./speaking-conversation-rules.js",
   "./audio-volume-guard.js"
 ];
 
