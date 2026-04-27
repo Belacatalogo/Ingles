@@ -1440,13 +1440,13 @@ lucide-react/dist/esm/lucide-react.mjs:
    A geração de aulas agora fica somente no Patch V12 Pro exclusivo.
 */
 
-/* === FLUENCY PATCH V12 - GEMINI PRO EXCLUSIVO PARA AULAS === */
+/* === FLUENCY PATCH V14 - GEMINI PRO EXCLUSIVO PARA AULAS + BYPASS SERVICE WORKER === */
 ;(function(){
   try{
     if(window.__fluencyProLessonV12) return;
     window.__fluencyProLessonV12 = true;
 
-    var VERSION = "V12-PRO-ONLY";
+    var VERSION = "V14-PRO-SW-BYPASS";
     var LESSON_KEY_STORAGE = "fluency_lessonGeminiApiKey";
     var DIAG_KEY = "fluency_lessonGenerationDiag";
     var MODEL_PRO = "gemini-2.5-pro";
@@ -1473,7 +1473,7 @@ lucide-react/dist/esm/lucide-react.mjs:
           root = document.createElement("div");
           root.id = "__fluency_pro_lesson_v12_panel__";
           root.style.cssText = "margin-top:10px;padding-top:10px;border-top:1px solid rgba(148,163,184,.25);font-size:13px;line-height:1.38;color:#dbeafe;max-height:330px;overflow:auto;";
-          root.innerHTML = "<div style='font-weight:900;color:#86efac;margin-bottom:6px'>Aulas IA — GEMINI PRO V12 ATIVO</div>";
+          root.innerHTML = "<div style='font-weight:900;color:#86efac;margin-bottom:6px'>Aulas IA — GEMINI PRO V14 ATIVO</div>";
           p.appendChild(root);
         }
         var color = "#dbeafe";
@@ -1658,16 +1658,105 @@ lucide-react/dist/esm/lucide-react.mjs:
     }
 
     function sleep(ms){return new Promise(function(resolve){setTimeout(resolve, ms)})}
-    async function fetchWithLongTimeout(fetchFn, url, init, ms){
-      var controller = null, timer = null;
+
+    function createResponse(body, status, headers){
       try{
-        if(typeof AbortController !== "undefined"){
-          controller = new AbortController();
-          init = Object.assign({}, init || {}, {signal: controller.signal});
-          timer = setTimeout(function(){try{controller.abort()}catch(_){}}, ms);
+        return new Response(body || "", {
+          status: status || 200,
+          headers: headers || {"Content-Type":"application/json"}
+        });
+      }catch(_){
+        return { ok: (status||200) >= 200 && (status||200) < 300, status: status||200, text: async function(){return body || ""}, clone: function(){return this} };
+      }
+    }
+
+    function getIframeNativeFetch(){
+      try{
+        if(window.__fluencyNativeIframeFetchV14) return window.__fluencyNativeIframeFetchV14;
+        var iframe = document.getElementById("__fluency_native_fetch_iframe_v14__");
+        if(!iframe){
+          iframe = document.createElement("iframe");
+          iframe.id = "__fluency_native_fetch_iframe_v14__";
+          iframe.setAttribute("aria-hidden","true");
+          iframe.style.cssText = "position:fixed;width:1px;height:1px;opacity:0;pointer-events:none;left:-9999px;top:-9999px;border:0;";
+          document.documentElement.appendChild(iframe);
         }
-        return await fetchFn(url, init);
-      }finally{ if(timer) clearTimeout(timer); }
+        if(iframe.contentWindow && typeof iframe.contentWindow.fetch === "function"){
+          window.__fluencyNativeIframeFetchV14 = iframe.contentWindow.fetch.bind(iframe.contentWindow);
+          return window.__fluencyNativeIframeFetchV14;
+        }
+      }catch(_){}
+      return null;
+    }
+
+    function xhrGeminiPost(url, init, ms){
+      return new Promise(function(resolve, reject){
+        var xhr, done = false, timer = null;
+        try{
+          xhr = new XMLHttpRequest();
+          xhr.open((init && init.method) || "POST", url, true);
+          xhr.timeout = ms || 300000;
+          xhr.setRequestHeader("Content-Type", "application/json");
+          try{
+            var hs = (init && init.headers) || {};
+            if(hs && typeof hs.forEach === "function"){
+              hs.forEach(function(v,k){ if(String(k).toLowerCase() !== "content-type") xhr.setRequestHeader(k,v); });
+            }else{
+              Object.keys(hs || {}).forEach(function(k){ if(String(k).toLowerCase() !== "content-type") xhr.setRequestHeader(k, hs[k]); });
+            }
+          }catch(_){}
+          xhr.onreadystatechange = function(){
+            if(xhr.readyState === 4 && !done){
+              done = true;
+              if(timer) clearTimeout(timer);
+              resolve(createResponse(xhr.responseText || "", xhr.status || 0, {"Content-Type": xhr.getResponseHeader("Content-Type") || "application/json"}));
+            }
+          };
+          xhr.onerror = function(){ if(!done){ done = true; if(timer) clearTimeout(timer); reject(new Error("XHR network error")); } };
+          xhr.ontimeout = function(){ if(!done){ done = true; if(timer) clearTimeout(timer); reject(new Error("XHR timeout")); } };
+          timer = setTimeout(function(){ try{xhr.abort()}catch(_){}; if(!done){ done=true; reject(new Error("XHR timeout")); } }, ms || 300000);
+          xhr.send((init && init.body) || null);
+        }catch(e){ if(timer) clearTimeout(timer); reject(e); }
+      });
+    }
+
+    async function fetchWithLongTimeout(fetchFn, url, init, ms){
+      var lastErr = null;
+      var methods = [];
+      try{ methods.push({name:"fetch principal", fn:fetchFn}); }catch(_){}
+      try{
+        var iframeFetch = getIframeNativeFetch();
+        if(iframeFetch && iframeFetch !== fetchFn) methods.push({name:"fetch nativo iframe", fn:iframeFetch});
+      }catch(_){}
+      for(var mi=0; mi<methods.length; mi++){
+        var controller = null, timer = null;
+        try{
+          var callInit = Object.assign({}, init || {});
+          if(typeof AbortController !== "undefined"){
+            controller = new AbortController();
+            callInit.signal = controller.signal;
+            timer = setTimeout(function(){try{controller.abort()}catch(_){}}, ms);
+          }
+          var res = await methods[mi].fn(url, callInit);
+          if(!res) throw new Error(methods[mi].name + " returned null");
+          return res;
+        }catch(e){
+          lastErr = e;
+          var msg = String((e && e.message) || e || "");
+          if(/respondWith|Returned response is null|returned null|Failed to fetch|Load failed|network/i.test(msg)){
+            diag("bypass_sw", methods[mi].name + " falhou (" + msg.slice(0,120) + "). Tentando bypass nativo/XHR.", "warn");
+          }else{
+            throw e;
+          }
+        }finally{ if(timer) clearTimeout(timer); }
+      }
+      try{
+        diag("bypass_xhr", "Tentando chamada Gemini por XMLHttpRequest para escapar do fetch quebrado.", "warn");
+        return await xhrGeminiPost(url, init, ms);
+      }catch(e2){
+        lastErr = e2 || lastErr;
+      }
+      throw lastErr || new Error("Falha desconhecida ao chamar Gemini.");
     }
     async function responseText(res){ try{return await res.clone().text()}catch(_){return ""} }
 
