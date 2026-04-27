@@ -1350,20 +1350,20 @@ lucide-react/dist/esm/lucide-react.mjs:
 
 
 
-/* === FLUENCY PATCH V6 CLEAN - aula IA, rotação Gemini e diagnóstico visível === */
+/* === FLUENCY PATCH V7 QUALITY - aulas longas, completas, sem fallback curto === */
 ;(function(){
   try{
-    if(window.__fluencyLessonPatchV6Clean) return;
-    window.__fluencyLessonPatchV6Clean = true;
+    if(window.__fluencyLessonPatchV7Quality) return;
+    window.__fluencyLessonPatchV7Quality = true;
 
-    var VERSION = "V6-CLEAN";
+    var VERSION = "V7-QUALITY";
     var DIAG_KEY = "fluency_lessonGenerationDiag";
-    var BAD_KEY = "fluency_badGeminiKeysV6";
+    var BAD_KEY = "fluency_badGeminiKeysV7";
     var BAD_TTL = 6 * 60 * 1000;
 
     function safeJson(v){try{return JSON.parse(v)}catch(_){return null}}
     function time(){try{return new Date().toLocaleTimeString()}catch(_){return String(Date.now())}}
-    function html(s){return String(s||"").replace(/[<>&]/g,function(c){return {"<":"&lt;",">":"&gt;","&":"&amp;"}[c]})}
+    function esc(s){return String(s||"").replace(/[<>&]/g,function(c){return {"<":"&lt;",">":"&gt;","&":"&amp;"}[c]})}
 
     function findPanel(){
       try{
@@ -1379,12 +1379,12 @@ lucide-react/dist/esm/lucide-react.mjs:
       try{
         var p = findPanel();
         if(!p) return;
-        var root = document.getElementById("__fluency_lesson_v6_panel__");
+        var root = document.getElementById("__fluency_lesson_v7_panel__");
         if(!root){
           root = document.createElement("div");
-          root.id = "__fluency_lesson_v6_panel__";
-          root.style.cssText = "margin-top:10px;padding-top:10px;border-top:1px solid rgba(148,163,184,.25);font-size:13px;line-height:1.38;color:#dbeafe;max-height:260px;overflow:auto;";
-          root.innerHTML = "<div style='font-weight:900;color:#86efac;margin-bottom:6px'>Aulas IA — PATCH V6-CLEAN ATIVO</div>";
+          root.id = "__fluency_lesson_v7_panel__";
+          root.style.cssText = "margin-top:10px;padding-top:10px;border-top:1px solid rgba(148,163,184,.25);font-size:13px;line-height:1.38;color:#dbeafe;max-height:280px;overflow:auto;";
+          root.innerHTML = "<div style='font-weight:900;color:#86efac;margin-bottom:6px'>Aulas IA — PATCH V7-QUALITY ATIVO</div>";
           p.appendChild(root);
         }
         var color = "#dbeafe";
@@ -1395,7 +1395,7 @@ lucide-react/dist/esm/lucide-react.mjs:
         row.style.color = color;
         row.textContent = time() + " Aula IA " + VERSION + ": " + String(msg||"");
         root.insertBefore(row, root.children[1] || null);
-        while(root.children.length > 20) root.removeChild(root.lastChild);
+        while(root.children.length > 22) root.removeChild(root.lastChild);
       }catch(_){}
     }
 
@@ -1404,7 +1404,7 @@ lucide-react/dist/esm/lucide-react.mjs:
         var d = Object.assign({version:VERSION,status:status,detail:String(detail||""),time:new Date().toLocaleString(),ts:Date.now()}, extra||{});
         window.__fluencyLessonDiag = d;
         localStorage.setItem(DIAG_KEY, JSON.stringify(d));
-        var kind = status === "ok" ? "ok" : (/erro|falha|travado|todas/i.test(status) ? "err" : (/429|503|quota|limite|abort|pulando/i.test(String(detail)) ? "warn" : ""));
+        var kind = status === "ok" ? "ok" : (/erro|falha|travado|curta|incompleta|todas/i.test(status) ? "err" : (/429|503|quota|limite|abort|pulando|repetir/i.test(String(detail)) ? "warn" : ""));
         log(detail, kind);
         return d;
       }catch(_){}
@@ -1461,7 +1461,7 @@ lucide-react/dist/esm/lucide-react.mjs:
       return /generativelanguage\.googleapis\.com/.test(String(url||"")) && /generateContent/.test(String(url||""));
     }
 
-    function getBody(init){
+    function bodyText(init){
       try{return init && typeof init.body === "string" ? init.body : ""}catch(_){return ""}
     }
 
@@ -1470,6 +1470,63 @@ lucide-react/dist/esm/lucide-react.mjs:
       var b = String(body||"");
       if(/pronuncia|pronúncia|speaking|speech|stt|transcri|utterance|audio|mimeType|inlineData|base64/i.test(b)) return false;
       return /aula|li[cç][aã]o|lesson|grammar|gram[áa]tica|exercise|exerc|vocabulary|vocabul/i.test(b);
+    }
+
+    var QUALITY_INSTRUCTION =
+      "\n\n" +
+      "INSTRUÇÃO CRÍTICA DE QUALIDADE PARA A AULA:\n" +
+      "Não gere aula curta, resumida ou vaga. Gere uma aula COMPLETA, longa e estruturada para estudante brasileiro de inglês.\n" +
+      "A resposta precisa ter conteúdo suficiente para uma aula real de 15 a 25 minutos.\n" +
+      "Obrigatório conter:\n" +
+      "1) título específico;\n" +
+      "2) subtítulo;\n" +
+      "3) introdução em português com no mínimo 140 palavras;\n" +
+      "4) no mínimo 4 seções didáticas, cada seção com heading, explicação em português com no mínimo 180 palavras e no mínimo 4 exemplos inglês-português;\n" +
+      "5) no mínimo 8 exercícios com pergunta, resposta correta e explicação;\n" +
+      "6) no mínimo 8 itens de vocabulário com tradução e exemplo;\n" +
+      "7) no mínimo 4 dicas práticas;\n" +
+      "8) resumo final com no mínimo 100 palavras.\n" +
+      "Se estiver retornando JSON, mantenha exatamente o schema esperado pelo app, mas preencha todos os campos com conteúdo longo e completo.\n" +
+      "Não use placeholders. Não simplifique. Não responda apenas com introdução e dica final.\n";
+
+    function enhanceBody(raw, attempt){
+      try{
+        var obj = JSON.parse(raw);
+        var added = false;
+
+        function walk(x){
+          if(!x || added) return;
+          if(Array.isArray(x)){
+            for(var i=0;i<x.length;i++) walk(x[i]);
+            return;
+          }
+          if(typeof x === "object"){
+            if(typeof x.text === "string" && /aula|li[cç][aã]o|lesson|grammar|gram[áa]tica|exerc|vocabul/i.test(x.text)){
+              x.text += QUALITY_INSTRUCTION;
+              if(attempt > 1){
+                x.text += "\nA tentativa anterior ficou curta/incompleta. Refaça com muito mais conteúdo e detalhes. A resposta curta será rejeitada.\n";
+              }
+              added = true;
+              return;
+            }
+            Object.keys(x).forEach(function(k){walk(x[k])});
+          }
+        }
+
+        walk(obj);
+        if(!added){
+          obj.contents = obj.contents || [];
+          obj.contents.push({role:"user", parts:[{text:QUALITY_INSTRUCTION}]});
+        }
+
+        obj.generationConfig = obj.generationConfig || {};
+        obj.generationConfig.temperature = Math.min(0.9, Math.max(0.65, Number(obj.generationConfig.temperature || 0.75)));
+        obj.generationConfig.maxOutputTokens = Math.max(Number(obj.generationConfig.maxOutputTokens || 0), 8192);
+
+        return JSON.stringify(obj);
+      }catch(_){
+        return raw + QUALITY_INSTRUCTION;
+      }
     }
 
     function flashUrl(url,key){
@@ -1485,7 +1542,7 @@ lucide-react/dist/esm/lucide-react.mjs:
       }
     }
 
-    function initClean(init){
+    function initClean(init, body, attempt){
       var out = {};
       try{
         init = init || {};
@@ -1494,6 +1551,8 @@ lucide-react/dist/esm/lucide-react.mjs:
           out[k] = init[k];
         });
         out.method = out.method || "POST";
+        out.body = enhanceBody(body || out.body || "", attempt || 1);
+        out.headers = out.headers || {"Content-Type":"application/json"};
       }catch(_){}
       return out;
     }
@@ -1510,6 +1569,78 @@ lucide-react/dist/esm/lucide-react.mjs:
       return {type:"other", msg: status ? "HTTP "+status : t.slice(0,150)};
     }
 
+    function extractGeminiText(apiText){
+      try{
+        var j = JSON.parse(apiText);
+        var out = [];
+        (j.candidates || []).forEach(function(c){
+          (((c.content||{}).parts)||[]).forEach(function(p){
+            if(typeof p.text === "string") out.push(p.text);
+          });
+        });
+        return out.join("\n");
+      }catch(_){return String(apiText||"")}
+    }
+
+    function stripJsonDecorations(s){
+      s = String(s||"").trim();
+      s = s.replace(/^```json\s*/i,"").replace(/^```\s*/,"").replace(/```$/,"").trim();
+      return s;
+    }
+
+    function findLessonObject(text){
+      text = stripJsonDecorations(text);
+      try{return JSON.parse(text)}catch(_){}
+      try{
+        var start = text.indexOf("{");
+        var end = text.lastIndexOf("}");
+        if(start >= 0 && end > start) return JSON.parse(text.slice(start,end+1));
+      }catch(_){}
+      return null;
+    }
+
+    function lessonQualityFromText(apiText){
+      var gemText = extractGeminiText(apiText);
+      var lesson = findLessonObject(gemText);
+
+      var textAll = gemText;
+      if(lesson){
+        try{textAll = JSON.stringify(lesson)}catch(_){}
+      }
+
+      var score = 0;
+      var reasons = [];
+
+      if(textAll.length >= 4500) score++; else reasons.push("texto menor que 4500 caracteres");
+
+      if(lesson && typeof lesson === "object"){
+        var intro = String(lesson.intro || lesson.introduction || "");
+        var sections = Array.isArray(lesson.sections) ? lesson.sections : [];
+        var exercises = Array.isArray(lesson.exercises) ? lesson.exercises : [];
+        var vocab = Array.isArray(lesson.vocabulary) ? lesson.vocabulary : [];
+        var tips = Array.isArray(lesson.tips) ? lesson.tips : [];
+
+        if(intro.length >= 500) score++; else reasons.push("introdução curta");
+        if(sections.length >= 4) score++; else reasons.push("menos de 4 seções");
+        if(sections.filter(function(s){return s && String(s.content||s.explanation||"").length >= 450}).length >= 3) score++; else reasons.push("seções sem explicação longa");
+        if(exercises.length >= 8) score++; else reasons.push("menos de 8 exercícios");
+        if(vocab.length >= 8) score++; else reasons.push("menos de 8 vocabulários");
+        if(tips.length >= 3) score++; else reasons.push("menos de 3 dicas");
+      }else{
+        if(/exerc/i.test(textAll)) score++; else reasons.push("sem exercícios");
+        if(/vocabul|vocabulary/i.test(textAll)) score++; else reasons.push("sem vocabulário");
+        if((textAll.match(/exemplo|example/gi)||[]).length >= 8) score++; else reasons.push("poucos exemplos");
+      }
+
+      return {ok: score >= 5, score:score, reasons:reasons.slice(0,4), length:textAll.length};
+    }
+
+    function makeErrorResponse(message){
+      return new Response(JSON.stringify({
+        error:{code:422,status:"LESSON_TOO_SHORT",message:message}
+      }), {status:422, headers:{"Content-Type":"application/json"}});
+    }
+
     function purgeBadLessons(){
       try{
         var removed = 0;
@@ -1518,10 +1649,10 @@ lucide-react/dist/esm/lucide-react.mjs:
           if(!k || (k.indexOf("fluency_lesson_")!==0 && k.indexOf("fluency_lesson_v")!==0)) continue;
           try{
             var v = JSON.parse(localStorage.getItem(k)||"null");
-            var bad = !v || v._fallback || !v.title || !v.intro || String(v.intro).length < 80 ||
-              !Array.isArray(v.sections) || v.sections.length < 3 ||
-              !Array.isArray(v.exercises) || v.exercises.length < 4 ||
-              !Array.isArray(v.vocabulary) || v.vocabulary.length < 4;
+            var bad = !v || v._fallback || !v.title || !v.intro || String(v.intro).length < 120 ||
+              !Array.isArray(v.sections) || v.sections.length < 4 ||
+              !Array.isArray(v.exercises) || v.exercises.length < 8 ||
+              !Array.isArray(v.vocabulary) || v.vocabulary.length < 8;
             if(bad){localStorage.removeItem(k); removed++}
           }catch(_){}
         }
@@ -1535,22 +1666,21 @@ lucide-react/dist/esm/lucide-react.mjs:
       localStorage.setItem("fluency_validateLessons","false");
       localStorage.setItem("fluency_lessonModel","gemini-2.5-flash");
       localStorage.setItem("fluency_preferredLessonModel","gemini-2.5-flash");
-      localStorage.removeItem("fluency_badGeminiKeysV4");
-      localStorage.removeItem("fluency_badGeminiKeysV5");
+      ["fluency_badGeminiKeysV4","fluency_badGeminiKeysV5","fluency_badGeminiKeysV6"].forEach(function(k){localStorage.removeItem(k)});
       var wm = localStorage.getItem("fluency_workingGeminiModel");
       if(wm && /pro/i.test(wm)) localStorage.removeItem("fluency_workingGeminiModel");
     }catch(_){}
 
-    if(typeof window.fetch === "function" && !window.__fluencyFetchV6CleanInstalled){
-      window.__fluencyFetchV6CleanInstalled = true;
+    if(typeof window.fetch === "function" && !window.__fluencyFetchV7QualityInstalled){
+      window.__fluencyFetchV7QualityInstalled = true;
       var realFetch = window.fetch.bind(window);
 
       window.fetch = async function(input, init){
         var url = "";
         try{url = typeof input === "string" ? input : (input && input.url) || ""}catch(_){}
-        var body = getBody(init);
+        var originalBody = bodyText(init);
 
-        if(!isLesson(url, body)){
+        if(!isLesson(url, originalBody)){
           return realFetch(input, init);
         }
 
@@ -1563,9 +1693,8 @@ lucide-react/dist/esm/lucide-react.mjs:
         var usable = keys.filter(function(k){return !isBad(k)});
         if(!usable.length) usable = keys;
 
-        var clean = initClean(init);
         var last = "";
-        diag("inicio", "Detectei "+keys.length+"/5 Gemini key(s). Aula será gerada só com Flash e sem AbortSignal antigo.", {keysTotal:keys.length});
+        diag("inicio", "Detectei "+keys.length+"/5 Gemini key(s). V7 vai rejeitar aula curta e pedir aula completa.", {keysTotal:keys.length});
 
         for(var i=0;i<usable.length;i++){
           var key = usable[i];
@@ -1574,12 +1703,22 @@ lucide-react/dist/esm/lucide-react.mjs:
 
           for(var attempt=1; attempt<=3; attempt++){
             try{
-              diag("chamando_api", "Key "+idx+"/"+keys.length+" tentativa "+attempt+"/3 em gemini-2.5-flash.", {keyIndex:idx,attempt:attempt});
+              diag("chamando_api", "Key "+idx+"/"+keys.length+" tentativa "+attempt+"/3 em gemini-2.5-flash com prompt completo.", {keyIndex:idx,attempt:attempt});
+              var clean = initClean(init, originalBody, attempt);
               var res = await realFetch(reqUrl, clean);
 
               if(res && res.ok){
-                diag("ok", "Aula gerada com sucesso na key "+idx+"/"+keys.length+".", {keyIndex:idx});
-                return res;
+                var apiText = await textOf(res);
+                var q = lessonQualityFromText(apiText);
+                if(q.ok){
+                  diag("ok", "Aula completa aprovada na key "+idx+"/"+keys.length+". Score "+q.score+", tamanho "+q.length+" caracteres.", {keyIndex:idx, score:q.score, length:q.length});
+                  return res;
+                }
+
+                last = "aula curta/incompleta: " + q.reasons.join(", ");
+                diag("aula_curta", "Resposta rejeitada por ser curta/incompleta ("+last+"). Vou tentar gerar uma aula maior.", {keyIndex:idx, score:q.score, length:q.length});
+                if(attempt < 3){ await sleep(800); continue; }
+                break;
               }
 
               var txt = await textOf(res);
@@ -1614,14 +1753,8 @@ lucide-react/dist/esm/lucide-react.mjs:
           }
         }
 
-        diag("todas_falharam", "Todas as "+keys.length+" Gemini keys falharam. Último erro: "+(last||"sem detalhe")+".", {keysTotal:keys.length, raw:last});
-        return new Response(JSON.stringify({
-          error:{
-            code:429,
-            status:"RESOURCE_EXHAUSTED",
-            message:"Todas as Gemini keys falharam. Último erro: "+(last||"sem detalhe")
-          }
-        }), {status:429, headers:{"Content-Type":"application/json"}});
+        diag("todas_falharam", "Não consegui gerar aula completa com as "+keys.length+" keys. Último erro: "+(last||"sem detalhe")+".", {keysTotal:keys.length, raw:last});
+        return makeErrorResponse("Não consegui gerar aula completa. Último erro: "+(last||"sem detalhe"));
       };
     }
 
@@ -1641,14 +1774,14 @@ lucide-react/dist/esm/lucide-react.mjs:
         var detail = d.detail || "A geração está demorando demais.";
         diag("travado", "Tela presa há "+sec+"s. "+detail);
 
-        if(document.getElementById("__lesson_stuck_v6__")) return;
+        if(document.getElementById("__lesson_stuck_v7__")) return;
         var parent = (document.querySelector(".animate-spin") || {}).parentElement || document.body;
         var box = document.createElement("div");
-        box.id = "__lesson_stuck_v6__";
+        box.id = "__lesson_stuck_v7__";
         box.style.cssText = "margin:18px auto;max-width:520px;padding:14px;border-radius:16px;background:rgba(127,29,29,.24);border:1px solid rgba(248,113,113,.5);color:#fecaca;font-family:-apple-system,BlinkMacSystemFont,sans-serif;text-align:left;font-size:13px;line-height:1.45;z-index:999999;position:relative;";
-        box.innerHTML = "<b>A geração da aula travou.</b><br>"+html(detail)+"<br><button id='__lesson_clear_v6__' style='margin-top:10px;padding:10px 12px;border-radius:12px;border:1px solid rgba(252,165,165,.55);background:rgba(127,29,29,.35);color:#fff;font-weight:800'>Limpar cache de aulas e recarregar</button>";
+        box.innerHTML = "<b>A geração da aula travou.</b><br>"+esc(detail)+"<br><button id='__lesson_clear_v7__' style='margin-top:10px;padding:10px 12px;border-radius:12px;border:1px solid rgba(252,165,165,.55);background:rgba(127,29,29,.35);color:#fff;font-weight:800'>Limpar cache de aulas e recarregar</button>";
         parent.appendChild(box);
-        document.getElementById("__lesson_clear_v6__").onclick = function(){
+        document.getElementById("__lesson_clear_v7__").onclick = function(){
           try{
             purgeBadLessons();
             localStorage.removeItem(BAD_KEY);
@@ -1663,9 +1796,9 @@ lucide-react/dist/esm/lucide-react.mjs:
     setInterval(watchStuck,3000);
 
     setTimeout(function(){
-      diag("patch_v6_ativo", "PATCH V6-CLEAN ativo. Se você não vir este texto no painel, o site ainda está usando bundle antigo em cache.", {keysDetected:getKeys().length});
+      diag("patch_v7_ativo", "PATCH V7-QUALITY ativo. Agora aula curta será rejeitada e a IA tentará gerar uma aula maior.", {keysDetected:getKeys().length});
     }, 1200);
   }catch(e){
-    try{console.warn("Patch V6 failed",e)}catch(_){}
+    try{console.warn("Patch V7 failed",e)}catch(_){}
   }
 })();
