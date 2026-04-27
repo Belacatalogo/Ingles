@@ -1002,10 +1002,20 @@ window.__AppComponent=Cs;window.React=Qa();window.ReactDOM=zc();})();
     css();
     if(!document.body)return;
     var text=(document.body.innerText||"").toLowerCase();
-    if(text.indexOf("seu progresso")===-1&&text.indexOf("chaves da ia")===-1)return;
-    if(document.getElementById("__usage_settings_card__"))return;
-    var main=document.querySelector("main")||document.querySelector(".max-w-3xl")||document.body;
+    var isProgress=text.indexOf("seu progresso")!==-1||text.indexOf("nível atual")!==-1||text.indexOf("nivel atual")!==-1||text.indexOf("você está indo longe")!==-1||text.indexOf("voce esta indo longe")!==-1;
+    var existing=document.getElementById("__usage_settings_card__");
+    if(!isProgress){ if(existing) existing.remove(); return; }
+    var containers=Array.prototype.slice.call(document.querySelectorAll(".max-w-3xl, main, section, body"));
+    var main=null;
+    for(var k=0;k<containers.length;k++){
+      var tx=(containers[k].innerText||"").toLowerCase();
+      if((tx.indexOf("seu progresso")!==-1||tx.indexOf("nível atual")!==-1||tx.indexOf("nivel atual")!==-1) && containers[k].getBoundingClientRect().width>250){ main=containers[k]; }
+    }
+    main=main||document.querySelector(".max-w-3xl")||document.body;
+    if(existing){ if(existing.parentElement!==main) main.appendChild(existing); return; }
     var card=document.createElement("div");card.id="__usage_settings_card__";card.className="card-paper rounded-sm p-5 anim-rise";
+    card.style.marginTop="24px";
+    card.style.marginBottom="32px";
     card.innerHTML='<div class="fx-body text-xs uppercase tracking-[0.22em] mb-2" style="color:var(--muted)">Configurações</div><p class="fx-body text-sm mb-3" style="color:var(--accent)">Veja consumo por key Gemini, Gemini TTS, Azure e controle os painéis de diagnóstico.</p><button class="__usage_btn" id="__open_usage_settings__">Configurações</button>';
     main.appendChild(card);
     var btn=document.getElementById("__open_usage_settings__");if(btn)btn.onclick=openSettings;
