@@ -1,5 +1,90 @@
 (()=>{
 
+/* === FLUENCY FIX V13 - SERVICE WORKER BYPASS PARA GEMINI === */
+;(function(){
+  try{
+    if(window.__fluencyDisableBrokenServiceWorkerV13) return;
+    window.__fluencyDisableBrokenServiceWorkerV13 = true;
+
+    var FLAG = "fluency_sw_gemini_fix_v13_reloaded";
+    var NEEDLE = /FetchEvent\.respondWith|Returned response is null|service worker|ServiceWorker/i;
+
+    function swLog(msg){
+      try{
+        console.warn("[Fluency V13 SW Fix]", msg);
+        window.__fluencySwFixLast = String(msg||"");
+        localStorage.setItem("fluency_sw_fix_last", String(msg||""));
+      }catch(_){}
+    }
+
+    async function clearBadServiceWorkers(reason){
+      try{
+        if(!("serviceWorker" in navigator)) return false;
+        var regs = await navigator.serviceWorker.getRegistrations().catch(function(){return []});
+        var removed = 0;
+        for(var i=0;i<regs.length;i++){
+          try{ if(await regs[i].unregister()) removed++; }catch(_){}
+        }
+        try{
+          if(window.caches && caches.keys){
+            var keys = await caches.keys();
+            for(var j=0;j<keys.length;j++){
+              if(/workbox|precache|runtime|fluency|vite|pwa|offline/i.test(keys[j])){
+                try{ await caches.delete(keys[j]); }catch(_){}
+              }
+            }
+          }
+        }catch(_){}
+        swLog("Service Worker removido para não interceptar Gemini. Motivo: " + reason + ". Removidos: " + removed);
+        return removed > 0 || !!navigator.serviceWorker.controller;
+      }catch(e){
+        swLog("Falha ao limpar Service Worker: " + ((e&&e.message)||e));
+        return false;
+      }
+    }
+
+    // Bloqueia novo registro de SW quebrado feito por HTML/PWA antigo.
+    try{
+      if(navigator.serviceWorker && navigator.serviceWorker.register && !navigator.serviceWorker.register.__fluencyBlockedV13){
+        var nativeRegister = navigator.serviceWorker.register.bind(navigator.serviceWorker);
+        navigator.serviceWorker.register = function(scriptURL, options){
+          swLog("Registro de Service Worker bloqueado: " + scriptURL);
+          return Promise.resolve({
+            scope: location.origin + "/",
+            active: null, installing: null, waiting: null,
+            unregister: function(){ return Promise.resolve(true); },
+            update: function(){ return Promise.resolve(); },
+            addEventListener: function(){}, removeEventListener: function(){}
+          });
+        };
+        navigator.serviceWorker.register.__fluencyBlockedV13 = true;
+        navigator.serviceWorker.__fluencyNativeRegister = nativeRegister;
+      }
+    }catch(_){}
+
+    // Se a página já estiver controlada por SW, remove e recarrega UMA vez.
+    setTimeout(function(){
+      try{
+        if(navigator.serviceWorker && navigator.serviceWorker.controller && !sessionStorage.getItem(FLAG)){
+          sessionStorage.setItem(FLAG, "1");
+          clearBadServiceWorkers("página estava controlada por Service Worker").then(function(changed){
+            if(changed) location.reload();
+          });
+        }
+      }catch(_){}
+    }, 350);
+
+    window.__fluencyFixGeminiServiceWorkerV13 = clearBadServiceWorkers;
+    window.addEventListener("unhandledrejection", function(ev){
+      try{
+        var msg = String((ev && ev.reason && ev.reason.message) || (ev && ev.reason) || "");
+        if(NEEDLE.test(msg)) clearBadServiceWorkers("erro detectado: " + msg);
+      }catch(_){}
+    }, true);
+  }catch(e){}
+})();
+
+
 ;(function(){
   try {
     if (!window.__fluencyResetWorkingModelV1) {
@@ -1776,6 +1861,15 @@ lucide-react/dist/esm/lucide-react.mjs:
             var c2 = classify(0, "", e);
             last = c2.msg;
             networkErrors++;
+            if(/FetchEvent\.respondWith|Returned response is null|service worker|ServiceWorker/i.test(String((e&&e.message)||e||""))){
+              diag("sw_corrigindo", "Erro fixo encontrado: Service Worker retornou resposta nula no fetch do Gemini. Removendo Service Worker/cache e recarregando uma vez.", {attempt:attempt, model:model});
+              try{
+                if(window.__fluencyFixGeminiServiceWorkerV13){
+                  window.__fluencyFixGeminiServiceWorkerV13("fetch Gemini retornou null").then(function(){try{location.reload()}catch(_){}});
+                }
+              }catch(_){}
+              return makeErrorResponse(503, "Corrigi o Service Worker que estava bloqueando o Gemini. Recarregando a página; tente gerar a aula novamente.");
+            }
             diag("erro_rede", "Falha/timeout usando " + model + ": " + c2.msg + ". Vou tentar novamente no modo Pro exclusivo.", {attempt:attempt, model:model, networkErrors:networkErrors});
             await sleep(2200 * Math.min(attempt, 3));
             continue;
