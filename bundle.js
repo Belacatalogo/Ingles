@@ -354,7 +354,6 @@ E encerre com algo simp\xE1tico: 'Nice to meet you!'`,examples:[{en:"I am Ana an
 \u2022 Apresenta\xE7\xE3o: My name is\u2026, I am from\u2026, I live in\u2026`,examples:[{en:"I am Luis and I am from Brazil.",pt:"Eu sou Luis e sou do Brasil."},{en:"Are you a student?",pt:"Voc\xEA \xE9 estudante?"}]},{heading:"Uma dica valiosa",content:`Se voc\xEA j\xE1 consegue entender esta frase sem tradutor, est\xE1 pronto para ir al\xE9m:
 
 'My friend Ana is from Portugal. She is very happy today because she is not busy.'`,examples:[{en:"She is not busy.",pt:"Ela n\xE3o est\xE1 ocupada."}]}],exercises:[{type:"choice",question:"Complete: 'My friends ___ from Argentina.'",options:["is","are","am"],answer:"are",explanation:"Friends = plural, ent\xE3o 'are'."},{type:"translate",question:"Traduza: 'Meu nome \xE9 Carlos e eu sou do Brasil.'",options:[],answer:"My name is Carlos and I am from Brazil",explanation:"Junte: My name is + nome + and + I am from + pa\xEDs."},{type:"choice",question:"Qual \xE9 a pergunta correta?",options:["You are tired?","Are you tired?","Is you tired?"],answer:"Are you tired?",explanation:"Para perguntar, o verbo 'are' vem antes: Are you\u2026?"},{type:"choice",question:"O que significa 'She is not a student'?",options:["Ela \xE9 estudante","Ela n\xE3o \xE9 estudante","Ela ser\xE1 estudante"],answer:"Ela n\xE3o \xE9 estudante",explanation:"'Is not' = negativa no presente."}],vocabulary:[{word:"also",pos:"adv",translation:"tamb\xE9m",example:"I am a student. I am also a worker."},{word:"very",pos:"adv",translation:"muito",example:"She is very happy."},{word:"today",pos:"adv",translation:"hoje",example:"Today is a good day."},{word:"because",pos:"conj",translation:"porque",example:"I am happy because it is Friday."},{word:"but",pos:"conj",translation:"mas",example:"I am tired but happy."}],tips:["Revis\xE3o n\xE3o \xE9 repeti\xE7\xE3o. \xC9 hora de ligar tudo o que voc\xEA j\xE1 viu.","Tente escrever 3 frases sobre voc\xEA usando tudo de hoje. \xC9 o melhor exerc\xEDcio."],finalTip:"Boa semana! Segunda tem gram\xE1tica nova."}}},Gp=(e,a)=>{let t=ii[a]||ii.grammar;return t[e]||t.A1},He=e=>{try{let a=localStorage.getItem("fluency_"+e);return a?JSON.parse(a):null}catch(a){return null}},__cloudAllowed=e=>{let a=String(e||"");return!!a&&!/^cache_/.test(a)&&a!=="firebaseConfig"&&a!=="geminiKey"&&a!=="geminiKeys"&&a!=="lastWorkingGeminiModel"},__cloudIndex=e=>{try{let a=JSON.parse(localStorage.getItem("fluency___cloudIndex")||"[]");Array.isArray(a)||(a=[]);a.includes(e)||(a=[...a,e].slice(-200),localStorage.setItem("fluency___cloudIndex",JSON.stringify(a)));return a}catch(a){return[]}},__saveCloudLocal=(e,a)=>{try{if(!__cloudAllowed(e))return;let t=gs,o=null;try{o=window.firebase&&window.firebase.auth&&window.firebase.auth().currentUser&&window.firebase.auth().currentUser.uid}catch(_){}if(!t||!o)return;let r=typeof a=="string"?a:JSON.stringify(a),l=__cloudIndex(e);t.collection("users").doc(o).collection("data").doc(e).set({value:r,updatedAt:Date.now(),source:"auto-sync"}).catch(()=>{});t.collection("users").doc(o).collection("data").doc("__cloudIndex").set({value:JSON.stringify(l),updatedAt:Date.now(),source:"auto-sync"}).catch(()=>{})}catch(t){}},pa=(e,a)=>{try{localStorage.setItem("fluency_"+e,JSON.stringify(a)),__saveCloudLocal(e,a)}catch(t){}},gs=null,Ls=()=>gs;var fs=e=>new Promise((a,t)=>{let o=document.createElement("script");o.src=e,o.onload=a,o.onerror=t,document.head.appendChild(o)}),cs="https://www.gstatic.com/firebasejs/10.12.0",ci=async e=>{if(!e||!e.apiKey)return null;try{window.firebase||(await fs(cs+"/firebase-app-compat.js"),await fs(cs+"/firebase-firestore-compat.js"),await fs(cs+"/firebase-auth-compat.js")),window.__firebaseApp||(window.__firebaseApp=window.firebase.initializeApp(e)),gs=window.firebase.firestore();let a=window.firebase.auth();try{await a.setPersistence(window.firebase.auth.Auth.Persistence.LOCAL)}catch(_){}return await new Promise(t=>{let o=a.onAuthStateChanged(r=>{o(),t(r)})}),await _handleRedirectResult(),a.currentUser||await a.signInAnonymously(),gs}catch(a){return console.warn("Firebase init failed:",a.message),null}},ys=()=>{var e,a,t,o;try{return((o=(t=(a=(e=window.firebase)==null?void 0:e.auth)==null?void 0:a.call(e))==null?void 0:t.currentUser)==null?void 0:o.uid)||null}catch(r){return null}},di=()=>{var e,a,t;try{let o=(t=(a=(e=window.firebase)==null?void 0:e.auth)==null?void 0:a.call(e))==null?void 0:t.currentUser;return!o||o.isAnonymous?null:{name:o.displayName,email:o.email,photo:o.photoURL}}catch(o){return null}},_isPWA=()=>(window.matchMedia("(display-mode: standalone)").matches||window.matchMedia("(display-mode: fullscreen)").matches||window.navigator.standalone===true),_isIOS=()=>/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1),_isSafariBrowser=()=>/^((?!chrome|crios|fxios|edgios|opios|android).)*safari/i.test(navigator.userAgent),_shouldUseRedirect=()=>_isPWA()||_isIOS()||_isSafariBrowser(),_dlFromCloud=async()=>{try{let db=Ls(),uid=ys();if(!db||!uid)return false;let keys=["profile","geminiKey","geminiKeys","completedLessons","flashcards","immersionHistory","immersionEntries","immersionSummaries","diaryDraft","diaryEntries","diaryErrors","diaryPatternSummary","diaryPatternLastRun"],got=false,timeout=new Promise(res=>setTimeout(()=>res("__timeout__"),8000));try{let ix=await Promise.race([db.collection("users").doc(uid).collection("data").doc("__cloudIndex").get(),timeout]);if(ix!=="__timeout__"&&ix.exists){let iv=ix.data().value;try{iv=typeof iv=="string"?JSON.parse(iv):iv}catch(_){}Array.isArray(iv)&&(keys=[...new Set(keys.concat(iv))])}}catch(_){}for(let k of keys){try{let p=db.collection("users").doc(uid).collection("data").doc(k).get(),d=await Promise.race([p,timeout]);if(d==="__timeout__")break;if(d.exists){got=true;let v=d.data().value;localStorage.setItem("fluency_"+k,typeof v==="string"?v:JSON.stringify(v))}}catch(_){}}return got}catch(e){return false}},_handleRedirectResult=async()=>{try{let a=window.firebase.auth(),r=await Promise.race([a.getRedirectResult(),new Promise(res=>setTimeout(()=>res(null),8000))]);if(r&&r.user){localStorage.removeItem("fluency_pendingLink");let dl=await _dlFromCloud();if(!dl){await pi()}}}catch(a){if((a.code==="auth/credential-already-in-use"||a.code==="auth/email-already-in-use")&&a.credential){try{let auth=window.firebase.auth();if(auth.currentUser&&auth.currentUser.isAnonymous){try{await auth.currentUser.delete()}catch(_){}}let res=await auth.signInWithCredential(a.credential);if(res&&res.user){localStorage.removeItem("fluency_pendingLink");let dl=await _dlFromCloud();if(!dl){await pi()}}}catch(t){console.warn("Recovery failed:",t.message)}}console.warn("Redirect result:",a.message)}},_GOOGLE_CLIENT_ID="135623744083-e52t6g7576it6ti4sodajgp77e1b8c13.apps.googleusercontent.com",_loadGIS=()=>new Promise((res,rej)=>{if(typeof google!=="undefined"&&google.accounts&&google.accounts.id){res();return}let existing=document.querySelector('script[src*="gsi/client"]');if(existing){let iv=setInterval(()=>{if(typeof google!=="undefined"&&google.accounts&&google.accounts.id){clearInterval(iv);res()}},80);setTimeout(()=>{clearInterval(iv);rej(new Error("GIS load timeout"))},8000);return}let s=document.createElement("script");s.src="https://accounts.google.com/gsi/client";s.async=true;s.defer=true;s.onload=()=>res();s.onerror=()=>rej(new Error("Failed to load GIS"));document.head.appendChild(s)}),_gisLogin=async()=>{try{await _loadGIS()}catch(e){return{ok:false,error:"Falha ao carregar Google Sign In: "+e.message}}return new Promise(resolve=>{let resolved=false;const onCred=async response=>{if(resolved)return;resolved=true;try{const cred=window.firebase.auth.GoogleAuthProvider.credential(response.credential);const auth=window.firebase.auth();if(auth.currentUser&&auth.currentUser.isAnonymous){try{await auth.currentUser.delete()}catch(_){}}const result=await auth.signInWithCredential(cred);if(result&&result.user){await _dlFromCloud();resolve({ok:true})}else{resolve({ok:false,error:"Login nao retornou usuario"})}}catch(e){if(e.code==="auth/credential-already-in-use"&&e.credential){try{const result=await window.firebase.auth().signInWithCredential(e.credential);if(result&&result.user){await _dlFromCloud();resolve({ok:true});return}}catch(t){}}resolve({ok:false,error:e.message||String(e)})}};try{google.accounts.id.initialize({client_id:_GOOGLE_CLIENT_ID,callback:onCred,auto_select:false,cancel_on_tap_outside:false,use_fedcm_for_prompt:true});google.accounts.id.prompt(notif=>{if(notif.isNotDisplayed&&notif.isNotDisplayed()){if(!resolved){resolved=true;resolve({ok:false,error:"Google bloqueou o popup. Verifique se belacatalogo.github.io esta nas Authorized JavaScript origins."})}}else if(notif.isSkippedMoment&&notif.isSkippedMoment()){if(!resolved){resolved=true;resolve({ok:false,error:"Login cancelado"})}}})}catch(e){resolve({ok:false,error:"GIS init failed: "+e.message})}})},Xp=async()=>{var e;try{let gis=await _gisLogin();if(gis.ok)return gis;let a=window.firebase.auth(),t=new window.firebase.auth.GoogleAuthProvider;if(_shouldUseRedirect()){await a.signInWithRedirect(t);return{ok:!0,redirecting:!0}}if((e=a.currentUser)!=null&&e.isAnonymous)try{await a.currentUser.linkWithPopup(t)}catch(o){if(o.code==="auth/credential-already-in-use"||o.code==="auth/email-already-in-use")await a.signInWithPopup(t);else throw o}else await a.signInWithPopup(t);return await pi(),{ok:!0}}catch(a){return a.code==="auth/popup-blocked"?{ok:!1,error:"Popup bloqueado. Permita popups para este site."}:a.code==="auth/unauthorized-domain"?{ok:!1,error:"Dom\\xEDnio n\\xE3o autorizado. Veja as instru\\xE7\\xF5es abaixo."}:{ok:!1,error:a.message}}},Kp=async()=>{try{return await window.firebase.auth().signOut(),await window.firebase.auth().signInAnonymously(),!0}catch(e){return!1}},Nr="fluency_",So=async e=>{try{let a=localStorage.getItem(Nr+e);if(a)try{return JSON.parse(a)}catch(r){return a}let t=Ls(),o=ys();if(t&&o){let r=await t.collection("users").doc(o).collection("data").doc(e).get();if(r.exists){let l=r.data().value;localStorage.setItem(Nr+e,typeof l=="string"?l:JSON.stringify(l));try{return JSON.parse(l)}catch(n){return l}}}return null}catch(a){return null}},we=async(e,a)=>{try{let t=typeof a=="string"?a:JSON.stringify(a);localStorage.setItem(Nr+e,t);let o=Ls(),r=ys();return o&&r&&await o.collection("users").doc(r).collection("data").doc(e).set({value:t,updatedAt:Date.now()}),!0}catch(t){return!1}},pi=async()=>{let e=Ls(),a=ys();if(!e||!a)return;let t=["profile","geminiKey","geminiKeys","completedLessons","flashcards","immersionHistory","immersionEntries","immersionSummaries","diaryDraft","diaryEntries","diaryErrors","diaryPatternSummary","diaryPatternLastRun"];try{let ix=JSON.parse(localStorage.getItem("fluency___cloudIndex")||"[]");Array.isArray(ix)&&(t=[...new Set(t.concat(ix))])}catch(_){}for(let o of t){let r=localStorage.getItem(Nr+o);if(r)try{await e.collection("users").doc(a).collection("data").doc(o).set({value:r,updatedAt:Date.now()})}catch(l){console.warn("Sync failed for",o,l.message)}}},Bt=e=>String(e).padStart(2,"0"),xs=()=>{let e=new Date;return`${e.getFullYear()}-${Bt(e.getMonth()+1)}-${Bt(e.getDate())}`},$p=(e,a)=>{let t=new Date(e+"T00:00:00"),o=new Date(a+"T00:00:00");return Math.round((o-t)/864e5)},__markStudyDay=async(prof,today)=>{if(!prof)return prof;let days=Array.isArray(prof.studyDays)?prof.studyDays:[];let alreadyToday=prof.lastStudyDate===today||days.includes(today);if(alreadyToday){if(!days.includes(today)){let next=Se(ne({},prof),{studyDays:[...days,today]});await we("profile",next);return next}return prof}let streak=prof.streak||0;if(prof.lastStudyDate){let diff=$p(prof.lastStudyDate,today);if(diff===1)streak+=1;else if(diff>1){let d=new Date(prof.lastStudyDate+"T00:00:00"),onlyWeekendsBetween=true;for(let k=1;k<diff;k++){let nd=new Date(d);nd.setDate(d.getDate()+k);let wd=nd.getDay();if(wd!==0&&wd!==6){onlyWeekendsBetween=false;break}}streak=onlyWeekendsBetween?streak+1:1}else if(diff<=0)return prof}else streak=1;let newDays=days.includes(today)?days:[...days,today];let next=Se(ne({},prof),{streak,lastStudyDate:today,studyDays:newDays});await we("profile",next);return next},Is=()=>new Date().getDay(),Qp=()=>{let e=new Date,a=["domingo","segunda","ter\xE7a","quarta","quinta","sexta","s\xE1bado"],t=["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"];return`${a[e.getDay()]}, ${e.getDate()} de ${t[e.getMonth()]}`},Zp={A1:{grammar:["Verbo 'to be' \u2013 afirmativa: I am, you are, he/she/it is","Verbo 'to be' \u2013 negativa: I am not, she isn't","Verbo 'to be' \u2013 perguntas: Are you? Is he? What is it?","Verbo 'to be' \u2013 contra\xE7\xF5es e usos no cotidiano","Pronomes pessoais sujeito: I, you, he, she, it, we, they","Artigos indefinidos: a / an \u2013 quando usar cada um","Artigo definido: the \u2013 quando usar e quando omitir","Adjetivos possessivos: my, your, his, her, its, our, their","Plural dos substantivos: regras com -s e -es","Plural irregular: man/men, child/children, tooth/teeth","Substantivos cont\xE1veis e incont\xE1veis (introdu\xE7\xE3o)","Present Simple \u2013 afirmativa: I work, she works","Present Simple \u2013 negativa: don't e doesn't","Present Simple \u2013 perguntas com do e does","Present Simple \u2013 respostas curtas: Yes, I do / No, she doesn't","Adv\xE9rbios de frequ\xEAncia: always, usually, often, sometimes, never","Present Continuous \u2013 I am eating, she is working","Present Continuous \u2013 negativa e perguntas","Diferen\xE7a Present Simple vs Present Continuous","Can / Can't \u2013 habilidade e possibilidade","Can / Could \u2013 pedidos educados","Would like \u2013 fazer pedidos e expressar desejo","Preposi\xE7\xF5es de lugar: in, on, at, under, next to, between","Preposi\xE7\xF5es de tempo: at (horas), on (dias), in (meses/anos)","There is / There are \u2013 afirmativa, negativa e pergunta","N\xFAmeros cardinais 1\u2013100 e ordinais 1st\u201320th","Horas: What time is it? It's half past three.","Dias da semana, meses e esta\xE7\xF5es do ano","Imperativo: Open the door! Don't run!","Adjetivos descritivos: big/small, old/new, happy/sad","Adjetivos de cor e forma","Revis\xE3o: to be + pronomes + artigos","Revis\xE3o: present simple \u2013 rotina e h\xE1bitos","Revis\xE3o: present continuous \u2013 a\xE7\xF5es em curso","Revis\xE3o: can, would like, preposi\xE7\xF5es","Revis\xE3o: n\xFAmeros, horas, datas","Revis\xE3o geral A1 \u2013 parte 1","Revis\xE3o geral A1 \u2013 parte 2","Revis\xE3o geral A1 \u2013 parte 3"],reading:["Texto: rotina matinal de Ana \u2013 vocabul\xE1rio do dia a dia","Texto: apresenta\xE7\xE3o de fam\xEDlia \u2013 pronomes e adjetivos","Texto: card\xE1pio de restaurante \u2013 n\xFAmeros e alimentos","Texto: an\xFAncio de emprego simples \u2013 present simple","Texto: e-mail de apresenta\xE7\xE3o entre amigos","Texto: descri\xE7\xE3o de uma cidade pequena","Texto: lista de compras \u2013 cont\xE1veis e incont\xE1veis","Texto: di\xE1logo numa loja \u2013 can/would like","Texto: post de rede social sobre fim de semana","Texto: hor\xE1rio de \xF4nibus \u2013 preposi\xE7\xF5es de tempo","Texto: descri\xE7\xE3o de casa \u2013 there is/are + preposi\xE7\xF5es","Texto: agenda semanal \u2013 dias e horas","Texto: perfil de personagem \u2013 adjetivos descritivos","Texto: notinha de recado \u2013 imperativo e present simple","Texto: di\xE1logo sobre rotina \u2013 revis\xE3o geral A1"],writing:["Se apresentar: My name is\u2026 I am from\u2026 I am\u2026 years old.","Descrever sua rotina di\xE1ria com present simple","Escrever um e-mail simples de apresenta\xE7\xE3o","Descrever sua fam\xEDlia com adjetivos","Escrever um bilhete curto com imperativo","Preencher um formul\xE1rio b\xE1sico (nome, idade, pa\xEDs)","Escrever sobre o que voc\xEA gosta e n\xE3o gosta","Descrever sua casa com there is/are","Escrever sobre seu trabalho ou escola","Cart\xE3o de anivers\xE1rio simples","Descrever sua cidade natal","Lista de objetivos pessoais com would like","Post de rede social sobre sua semana","E-mail pedindo informa\xE7\xF5es simples","Par\xE1grafo de revis\xE3o: sobre voc\xEA mesmo"],listening:["Di\xE1logo: cumprimentos e apresenta\xE7\xF5es \u2013 Hi, how are you?","Di\xE1logo: pedindo informa\xE7\xF5es na rua","Di\xE1logo: no restaurante \u2013 fazer pedido","Di\xE1logo: comprar algo numa loja com can/would like","Di\xE1logo: perguntar e dizer horas","Di\xE1logo: falar sobre fam\xEDlia e adjetivos","Di\xE1logo: planos para o fim de semana","Di\xE1logo: reservar um quarto de hotel","Di\xE1logo: no m\xE9dico \u2013 sintomas b\xE1sicos","Di\xE1logo: despedida e agradecimento","Di\xE1logo: falar sobre a rotina di\xE1ria","Di\xE1logo: descrever onde voc\xEA mora","Di\xE1logo: o que voc\xEA pode/n\xE3o pode fazer","Di\xE1logo: convidar algu\xE9m para fazer algo","Di\xE1logo de revis\xE3o A1: situa\xE7\xE3o completa no cotidiano"],review:["Revis\xE3o semana 1: to be + pronomes + artigos + adjetivos","Revis\xE3o semana 2: present simple \u2013 h\xE1bitos e rotina","Revis\xE3o semana 3: present continuous + can + would like","Revis\xE3o semana 4: preposi\xE7\xF5es + there is/are + n\xFAmeros","Revis\xE3o semana 5: plurais + cont\xE1veis/incont\xE1veis + horas","Revis\xE3o semana 6: imperativo + adjetivos descritivos","Revis\xE3o semana 7: vocabul\xE1rio tem\xE1tico A1","Revis\xE3o final A1"]},A2:{grammar:["Past Simple \u2013 verbos regulares: walked, played, watched","Past Simple \u2013 verbos irregulares grupo 1: go/went, eat/ate, see/saw","Past Simple \u2013 verbos irregulares grupo 2: have/had, do/did, come/came","Past Simple \u2013 negativa: didn't + infinitivo","Past Simple \u2013 perguntas: Did you? Where did she?","Past Simple \u2013 respostas curtas e uso com express\xF5es de tempo","Futuro com going to \u2013 planos e inten\xE7\xF5es","Futuro com will \u2013 decis\xF5es no momento e previs\xF5es","Diferen\xE7a going to vs will","Futuro com present continuous \u2013 planos confirmados","Comparativos de adjetivos: bigger, more beautiful","Superlativos: the biggest, the most expensive","Comparativo de igualdade: as\u2026 as","Present Perfect \u2013 have/has + partic\xEDpio (introdu\xE7\xE3o e forma\xE7\xE3o)","Present Perfect \u2013 ever / never / already / yet","Present Perfect \u2013 for / since (dura\xE7\xE3o)","Present Perfect vs Past Simple \u2013 diferen\xE7a fundamental","Should / shouldn't \u2013 conselho e recomenda\xE7\xE3o","Must / mustn't \u2013 obriga\xE7\xE3o e proibi\xE7\xE3o","Have to / don't have to \u2013 necessidade e aus\xEAncia","May / might \u2013 possibilidade no presente/futuro","Condicional tipo 0: If water reaches 100\xB0C, it boils.","Condicional tipo 1: If it rains, I will stay home.","Some / any \u2013 afirmativa, negativa e pergunta","Much / many / a lot of / a few / a little","Too / enough: too hot, not big enough","Phrasal verbs b\xE1sicos: get up, turn on/off, look for, put on","Preposi\xE7\xF5es de movimento: to, from, along, past, across","Adjetivos + preposi\xE7\xE3o: good at, afraid of, interested in","Conectivos b\xE1sicos: and, but, or, so, because","Conectivos de contraste: although, however","Pronomes objeto: me, him, her, us, them","Revis\xE3o: past simple regular e irregular","Revis\xE3o: futuro going to e will","Revis\xE3o: present perfect \u2013 ever, never, already, yet","Revis\xE3o: modais \u2013 should, must, have to, might","Revis\xE3o: comparativos e superlativos","Revis\xE3o: condicionais tipo 0 e 1","Revis\xE3o: quantificadores e conectivos","Revis\xE3o geral A2 \u2013 parte 1","Revis\xE3o geral A2 \u2013 parte 2"],reading:["Texto: relato de uma viagem passada \u2013 past simple","Texto: not\xEDcia simples de jornal \u2013 passado e presente","Texto: resenha de filme em linguagem simples","Texto: receita culin\xE1ria \u2013 imperativo e vocabul\xE1rio","Texto: post de blog sobre hobby","Texto: e-mail de reclama\xE7\xE3o a hotel","Texto: entrevista curta com celebridade","Texto: guia tur\xEDstico de cidade \u2013 present perfect","Texto: descri\xE7\xE3o de rotina profissional","Texto: folheto de evento cultural","Texto: compara\xE7\xE3o entre duas cidades","Texto: planos de f\xE9rias \u2013 going to","Texto: e-mail de resposta sobre emprego","Texto: artigo simples sobre sa\xFAde e h\xE1bitos","Texto de revis\xE3o A2: situa\xE7\xE3o cotidiana completa"],writing:["Escrever sobre um fim de semana passado","E-mail informal para um amigo sobre novidades","Descrever planos futuros com going to e will","Comparar duas cidades ou pa\xEDses","Escrever uma resenha curta de filme ou s\xE9rie","Carta de agradecimento","Escrever instru\xE7\xF5es: como chegar a algum lugar","Descrever um problema e sugerir solu\xE7\xE3o","Di\xE1rio de viagem \u2013 1 dia","E-mail solicitando informa\xE7\xF5es sobre um curso","Escrever sobre experi\xEAncias: have you ever\u2026?","Post de blog sobre algo que voc\xEA aprendeu","E-mail de reclama\xE7\xE3o simples","Descri\xE7\xE3o de pessoa famosa com comparativos","Par\xE1grafo de revis\xE3o A2: planos e experi\xEAncias"],listening:["Di\xE1logo: contar como foi o fim de semana \u2013 past simple","Di\xE1logo: fazer planos com going to e will","Di\xE1logo: pedir e dar dire\xE7\xF5es na cidade","Di\xE1logo: reclama\xE7\xE3o num hotel","Di\xE1logo: entrevista de emprego simples","Di\xE1logo: comparar produtos numa loja","Di\xE1logo: marcar uma consulta m\xE9dica","Di\xE1logo: discutir planos de viagem","Di\xE1logo: experi\xEAncias passadas \u2013 ever/never","Di\xE1logo: expressar opini\xF5es sobre filmes","Di\xE1logo: conselhos \u2013 should/shouldn't","Di\xE1logo: obriga\xE7\xF5es e regras \u2013 must/have to","Di\xE1logo: possibilidades \u2013 might/may","Di\xE1logo: compras e comparativos","Di\xE1logo de revis\xE3o A2: conversa variada completa"],review:["Revis\xE3o semana 1: past simple regular e irregular","Revis\xE3o semana 2: futuro going to, will e present continuous","Revis\xE3o semana 3: present perfect \u2013 ever/never/already/yet/for/since","Revis\xE3o semana 4: modais \u2013 should, must, have to, might","Revis\xE3o semana 5: comparativos, superlativos, as\u2026as","Revis\xE3o semana 6: condicionais 0 e 1","Revis\xE3o semana 7: quantificadores, phrasal verbs, conectivos","Revis\xE3o semana 8: vocabul\xE1rio tem\xE1tico A2","Revis\xE3o final A2"]},B1:{grammar:["Past Continuous \u2013 I was sleeping when the phone rang.","Past Continuous vs Past Simple \u2013 intera\xE7\xE3o entre a\xE7\xF5es","Past Perfect \u2013 I had already eaten when she arrived.","Past Perfect vs Past Simple \u2013 sequ\xEAncia de eventos","Past Perfect Continuous \u2013 I had been waiting for an hour.","Present Perfect Continuous \u2013 I have been studying.","Present Perfect: escolha entre Simple e Continuous","Futuro cont\xEDnuo: I will be working at 9pm.","Futuro perfeito: I will have finished by Friday.","Futuro com present perfect: By 2030, we will have solved\u2026","Voz passiva: presente e passado simples","Voz passiva: present perfect e futuro","Agente na voz passiva: by + agente","Reported speech \u2013 afirmativa: She said she was tired.","Reported speech \u2013 perguntas: He asked where I lived.","Reported speech \u2013 imperativo e modal","Mudan\xE7a de tempo verbal no reported speech","Condicional tipo 2: If I had money, I would travel.","Condicional tipo 3: If I had studied, I would have passed.","Mixed conditional: If I had studied, I would be a doctor.","Ora\xE7\xF5es relativas: who, which, that, where, whose","Ora\xE7\xF5es relativas restritivas vs n\xE3o-restritivas","Ger\xFAndio como sujeito: Swimming is good for you.","Ger\xFAndio ap\xF3s preposi\xE7\xE3o: I'm good at cooking.","Verbos + ger\xFAndio: enjoy, avoid, suggest, keep","Verbos + infinitivo: want, hope, decide, agree","Verbos + ger\xFAndio ou infinitivo com mudan\xE7a de sentido","Modais de dedu\xE7\xE3o no presente: must be, can't be, might be","Modais de dedu\xE7\xE3o no passado: must have, can't have, might have","Conectivos de contraste: however, nevertheless, despite, in spite of","Conectivos de resultado: therefore, as a result, consequently","Conectivos de adi\xE7\xE3o: moreover, furthermore, in addition","Phrasal verbs intermedi\xE1rios \u2013 grupo 1: put off, carry out, bring up","Phrasal verbs intermedi\xE1rios \u2013 grupo 2: take up, give up, look into","Phrasal verbs intermedi\xE1rios \u2013 grupo 3: run out of, come across, set up","Revis\xE3o: tempos do passado \u2013 simple, continuous, perfect","Revis\xE3o: voz passiva em todos os tempos","Revis\xE3o: reported speech completo","Revis\xE3o: condicionais 2, 3 e misto","Revis\xE3o: ora\xE7\xF5es relativas e conectivos avan\xE7ados","Revis\xE3o: modais de dedu\xE7\xE3o","Revis\xE3o: ger\xFAndio e infinitivo","Revis\xE3o geral B1 \u2013 parte 1","Revis\xE3o geral B1 \u2013 parte 2"],reading:["Artigo: tend\xEAncias de trabalho remoto no mundo atual","Artigo: mudan\xE7as clim\xE1ticas \u2013 causas e solu\xE7\xF5es","Entrevista: empreendedor jovem de sucesso","Texto: an\xE1lise de um problema social contempor\xE2neo","Conto curto em ingl\xEAs com vocabul\xE1rio B1","Artigo de opini\xE3o sobre redes sociais e juventude","Texto: benef\xEDcios de aprender idiomas para o c\xE9rebro","Reportagem: estilo de vida sustent\xE1vel na pr\xE1tica","Texto: hist\xF3ria de vida inspiradora com supera\xE7\xE3o","Artigo: sa\xFAde mental e h\xE1bitos na era digital","Texto: futuro das cidades inteligentes","Reportagem: diversidade cultural no ambiente de trabalho","Artigo: impacto da IA no mercado de trabalho","Texto narrativo: dilema moral de um personagem","Leitura de revis\xE3o B1: artigo complexo com infer\xEAncia"],writing:["Ensaio de opini\xE3o: estrutura \u2013 tese, desenvolvimento, conclus\xE3o","Par\xE1grafo de opini\xE3o com argumentos e exemplos","Ensaio: vantagens e desvantagens de um tema","E-mail formal de solicita\xE7\xE3o","E-mail formal de reclama\xE7\xE3o com pedido de resolu\xE7\xE3o","E-mail formal de resposta profissional","Relat\xF3rio simples: descrever dados de gr\xE1fico","Texto narrativo: contar uma hist\xF3ria pessoal com detalhes","Review: avaliar produto/servi\xE7o com argumenta\xE7\xE3o","Carta de motiva\xE7\xE3o: introdu\xE7\xE3o e perfil pessoal","Carta de motiva\xE7\xE3o: habilidades e objetivos","Texto: descrever um problema e propor solu\xE7\xF5es","Blog post: experi\xEAncia pessoal com reflex\xE3o","Texto argumentativo: contra-argumento e refuta\xE7\xE3o","Par\xE1grafo de revis\xE3o B1: escrita coerente e conectada"],listening:["Di\xE1logo: debate de opini\xE3o entre amigos sobre tema atual","Di\xE1logo: negocia\xE7\xE3o simples no trabalho","Podcast curto: not\xEDcia do dia explicada","Di\xE1logo: entrevista de emprego completa","Di\xE1logo: resolver um conflito profissional educadamente","Apresenta\xE7\xE3o informal sobre um tema de interesse","Di\xE1logo: discutir pr\xF3s e contras de uma decis\xE3o importante","Podcast: dicas de produtividade e organiza\xE7\xE3o","Di\xE1logo: relato de experi\xEAncia de viagem com detalhes","Reuni\xE3o de trabalho informal \u2013 planejamento","Di\xE1logo: conselhos sobre sa\xFAde e bem-estar","Podcast: tend\xEAncias tecnol\xF3gicas explicadas","Di\xE1logo: discuss\xE3o sobre dilema \xE9tico cotidiano","Entrevista: especialista explica tema de interesse geral","\xC1udio de revis\xE3o B1: situa\xE7\xE3o profissional e pessoal"],review:["Revis\xE3o semana 1: past continuous e past perfect","Revis\xE3o semana 2: present perfect continuous e futuros avan\xE7ados","Revis\xE3o semana 3: voz passiva completa","Revis\xE3o semana 4: reported speech completo","Revis\xE3o semana 5: condicionais 2, 3 e misto","Revis\xE3o semana 6: ora\xE7\xF5es relativas","Revis\xE3o semana 7: ger\xFAndio e infinitivo avan\xE7ados","Revis\xE3o semana 8: modais de dedu\xE7\xE3o","Revis\xE3o semana 9: conectivos e coes\xE3o textual","Revis\xE3o semana 10: phrasal verbs intermedi\xE1rios","Revis\xE3o final B1"]},B2:{grammar:["Subjuntivo em ingl\xEAs: I suggest that he be / It's vital that she attend","Invers\xE3o para \xEAnfase: Never have I seen such dedication.","Invers\xE3o com condicionais: Were I to leave / Had I known","Cleft sentences para \xEAnfase: It was John who broke it.","Pseudo-cleft: What I need is rest. What surprised me was\u2026","Voz passiva com modais: It must be done / should have been told","Voz passiva com verbos de percep\xE7\xE3o: It is said that\u2026 / He is believed to\u2026","Get passive: She got promoted. The car got stolen.","Reported speech com verbos de reporte variados: admit, deny, warn, insist","Reported speech de perguntas indiretas em contextos formais","Ora\xE7\xF5es nominais: The fact that\u2026 / What matters is\u2026","Nominaliza\xE7\xE3o b\xE1sica: decide \u2192 decision, fail \u2192 failure","Frases nominais complexas: a rapidly growing economy","Partic\xEDpio presente como adjunto: Walking down the street, she saw\u2026","Partic\xEDpio passado como adjunto: Exhausted by the trip, he slept.","Cl\xE1usulas absolutas: The work done, they left.","Verbos de percep\xE7\xE3o + -ing vs infinitivo: I saw her running / run","Estruturas de desejo: I wish + past simple / I wish + would","I'd rather, I'd sooner, I'd prefer \u2013 prefer\xEAncia e hip\xF3tese","Coloca\xE7\xF5es avan\xE7adas grupo 1: make a decision, take action, do research","Coloca\xE7\xF5es avan\xE7adas grupo 2: reach a conclusion, draw attention, raise awareness","Phrasal verbs avan\xE7ados separ\xE1veis \u2013 grupo 1: bring about, carry out, rule out","Phrasal verbs avan\xE7ados insepar\xE1veis \u2013 grupo 2: come across, look into, go through","Registro formal vs informal: escolhas gramaticais e lexicais","Hedging language: tend to, seem to, appear to, be likely to","Discourse markers na fala: well, actually, you know, I mean, right","Discourse markers na escrita: in contrast, on the other hand, to illustrate","Conectivos avan\xE7ados: notwithstanding, whereas, albeit, inasmuch as","Artigos avan\xE7ados: uso com nomes pr\xF3prios, institui\xE7\xF5es, refei\xE7\xF5es","Omiss\xE3o de artigos: contextos e padr\xF5es","Revis\xE3o: invers\xE3o e \xEAnfase \u2013 estruturas avan\xE7adas","Revis\xE3o: voz passiva avan\xE7ada e get passive","Revis\xE3o: reported speech com verbos de reporte variados","Revis\xE3o: nominaliza\xE7\xE3o e frases nominais","Revis\xE3o: partic\xEDpios e cl\xE1usulas absolutas","Revis\xE3o: coloca\xE7\xF5es e phrasal verbs avan\xE7ados","Revis\xE3o: hedging, discourse markers, registro","Revis\xE3o geral B2 \u2013 parte 1","Revis\xE3o geral B2 \u2013 parte 2"],reading:["Artigo acad\xEAmico simplificado: impacto social da tecnologia","Editorial de jornal: argumento pol\xEDtico com subentendidos","Ensaio liter\xE1rio sobre conto cl\xE1ssico de autor angl\xF3fono","Reportagem investigativa: explora\xE7\xE3o de dados e causas","Artigo: psicologia do comportamento humano em grupos","Texto filos\xF3fico acess\xEDvel: \xE9tica e dilemas modernos","Cr\xEDtica cultural: cinema contempor\xE2neo e mensagens","Texto: economia para n\xE3o-economistas \u2013 desigualdade","Artigo: inova\xE7\xE3o biotecnol\xF3gica e quest\xF5es \xE9ticas","Entrevista longa com personalidade relevante do mundo das artes","Artigo de opini\xE3o com argumento e contra-argumento","Reportagem: crise clim\xE1tica \u2013 dados e solu\xE7\xF5es","Texto: sociologia da identidade na era das redes sociais","An\xE1lise de discurso: como l\xEDderes usam a linguagem","Leitura de revis\xE3o B2: texto denso com infer\xEAncia avan\xE7ada"],writing:["Ensaio argumentativo: estrutura acad\xEAmica completa","Proposta formal de projeto com objetivos e metodologia","Relat\xF3rio com an\xE1lise de dados e gr\xE1ficos","Artigo de opini\xE3o para jornal: tom jornal\xEDstico","Resumo executivo de documento complexo","Carta de apresenta\xE7\xE3o profissional completa e persuasiva","Texto persuasivo: pitch de ideia ou proposta","An\xE1lise cr\xEDtica de texto jornal\xEDstico ou liter\xE1rio","Texto comparativo: dois pontos de vista com s\xEDntese","Resposta profissional a e-mail complexo com tom formal","Ensaio: problema + an\xE1lise + solu\xE7\xE3o + conclus\xE3o","Review acad\xEAmica de artigo ou livro","Texto de divulga\xE7\xE3o para p\xFAblico geral","White paper: posi\xE7\xE3o sobre tema controverso","Par\xE1grafo de revis\xE3o B2: coes\xE3o e sofistica\xE7\xE3o lexical"],listening:["Palestra simplificada TED: inova\xE7\xE3o e mudan\xE7a social","Debate: globaliza\xE7\xE3o \u2013 pr\xF3s e contras com argumentos complexos","Podcast: tend\xEAncias culturais e comportamentais","Reuni\xE3o de trabalho formal com decis\xF5es e a\xE7\xF5es","Entrevista jornal\xEDstica com especialista","Di\xE1logo: negocia\xE7\xE3o comercial com linguagem de neg\xF3cios","Palestra universit\xE1ria: trecho introdut\xF3rio de aula","Document\xE1rio: narra\xE7\xE3o densa com vocabul\xE1rio espec\xEDfico","Podcast: hist\xF3ria contempor\xE2nea e an\xE1lise cultural","Debate: \xE9tica em IA e tecnologia","Apresenta\xE7\xE3o de dados \u2013 relat\xF3rio oral","Confer\xEAncia: discurso de abertura motivacional","Podcast: sa\xFAde mental no ambiente corporativo","Entrevista: empreendedor narra desafios e aprendizados","\xC1udio de revis\xE3o B2: contexto profissional e acad\xEAmico"],review:["Revis\xE3o semana 1: estruturas de \xEAnfase, invers\xE3o, cleft","Revis\xE3o semana 2: voz passiva avan\xE7ada + get passive","Revis\xE3o semana 3: reported speech avan\xE7ado","Revis\xE3o semana 4: nominaliza\xE7\xE3o e frases nominais","Revis\xE3o semana 5: partic\xEDpios e cl\xE1usulas absolutas","Revis\xE3o semana 6: coloca\xE7\xF5es avan\xE7adas grupo 1 e 2","Revis\xE3o semana 7: phrasal verbs avan\xE7ados","Revis\xE3o semana 8: hedging, discourse markers, registro","Revis\xE3o semana 9: artigos avan\xE7ados e omiss\xE3o","Revis\xE3o semana 10: desejo, prefer\xEAncia e hip\xF3tese","Revis\xE3o final B2"]},C1:{grammar:["Nominaliza\xE7\xE3o avan\xE7ada: transform verb phrases into nouns in academic writing","Fronting para \xEAnfase: Rarely do we see such clarity.","Invers\xE3o com adv\xE9rbios negativos: No sooner had\u2026 than\u2026, Hardly had\u2026","Invers\xE3o com condicionais formais: Should you require / Were this to happen","Aspectos verbais: perfect vs continuous \u2013 nuances de significado","Modalidade epist\xEAmica: must, can't, may, might, could \u2013 graus de certeza","Modalidade de\xF4ntica em contexto formal: shall, ought to, be supposed to","Cl\xE1usulas absolutas avan\xE7adas: The negotiations completed, both parties signed.","Ora\xE7\xF5es reduzidas: Having arrived late, he missed the introduction.","Adjetivos predicativos vs atributivos \u2013 distin\xE7\xF5es e coloca\xE7\xF5es espec\xEDficas","Auxiliares para \xEAnfase e contraste: I do believe / It is important / They did warn us.","Voz passiva com get em contextos formais e informais","Reported speech: estruturas amb\xEDguas e verbos de reporte sofisticados","Subjuntivo formal avan\xE7ado em contextos jur\xEDdicos e acad\xEAmicos","Coes\xE3o textual: refer\xEAncia, substitui\xE7\xE3o, elipse e conjun\xE7\xE3o","Coloca\xE7\xF5es acad\xEAmicas: conduct research, challenge assumptions, shed light on","Coloca\xE7\xF5es profissionais: streamline processes, leverage strengths, foster innovation","Phrasal verbs em registro formal: carry out \u2192 execute, put off \u2192 postpone","Pontua\xE7\xE3o avan\xE7ada: ponto e v\xEDrgula, travess\xE3o, dois-pontos em prosa formal","Estruturas de hip\xF3tese: Suppose / Assuming that / Given that\u2026","Discourse markers em escrita acad\xEAmica: as previously mentioned, it follows that","Met\xE1fora gramatical: transformar processos em coisas (an\xE1lise de linguagem)","Quantificadores em contexto formal: a proportion of, the majority of, a fraction of","Ora\xE7\xF5es relativas apositivas em prosa acad\xEAmica","Estruturas de prefer\xEAncia avan\xE7adas em contexto formal","Revis\xE3o C1: nominaliza\xE7\xE3o + invers\xE3o + aspectos verbais","Revis\xE3o C1: modalidade epist\xEAmica e de\xF4ntica","Revis\xE3o C1: coes\xE3o e coer\xEAncia em textos longos","Revis\xE3o C1: coloca\xE7\xF5es acad\xEAmicas e profissionais","Revis\xE3o geral C1"],reading:["Ensaio filos\xF3fico: \xE9tica, liberdade e determinismo","Artigo cient\xEDfico: leitura de abstract e an\xE1lise cr\xEDtica","Trecho de romance cl\xE1ssico angl\xF3fono com an\xE1lise estil\xEDstica","Artigo de pol\xEDtica internacional: an\xE1lise de subentendidos","Ensaio sociol\xF3gico: identidade, ra\xE7a e cultura","Texto jur\xEDdico simplificado: estrutura e linguagem","Artigo econ\xF4mico com dados e posi\xE7\xE3o argumentativa","Cr\xEDtica liter\xE1ria de obra contempor\xE2nea","Discurso pol\xEDtico para an\xE1lise ret\xF3rica","Ensaio sobre linguagem, poder e constru\xE7\xE3o da realidade","Artigo: neuroci\xEAncia e aprendizagem humana","Ensaio: globaliza\xE7\xE3o e eros\xE3o cultural","Texto: bio\xE9tica \u2013 dilemas da medicina moderna","Artigo de m\xEDdia: como a imprensa constr\xF3i narrativas","Leitura de revis\xE3o C1: texto acad\xEAmico com an\xE1lise completa"],writing:["Ensaio acad\xEAmico: tese + argumento + evid\xEAncia + refuta\xE7\xE3o + conclus\xE3o","Abstract de artigo de pesquisa \u2013 estrutura e linguagem","Proposta acad\xEAmica formal: objetivos, m\xE9todo, impacto","Cr\xEDtica de livro ou artigo com posi\xE7\xE3o sustentada","Relat\xF3rio de an\xE1lise de mercado ou pol\xEDtica","Editorial com argumento forte e nuan\xE7ado","Texto de divulga\xE7\xE3o cient\xEDfica para p\xFAblico geral","Carta de motiva\xE7\xE3o para programa internacional de alto n\xEDvel","White paper: posi\xE7\xE3o sobre tema complexo com dados","Resenha acad\xEAmica com an\xE1lise cr\xEDtica aprofundada","Ensaio de contraste: duas vis\xF5es opostas com s\xEDntese","Texto formal: resposta a proposta ou relat\xF3rio externo","An\xE1lise de discurso: identificar estrat\xE9gias ret\xF3ricas","Ensaio especulativo: e se\u2026 an\xE1lise de cen\xE1rio hipot\xE9tico","Par\xE1grafo de revis\xE3o C1: precis\xE3o lexical e coes\xE3o sofisticada"],listening:["Palestra acad\xEAmica: sociologia urbana com vocabul\xE1rio denso","Debate formal com m\xFAltiplos pontos de vista conflitantes","Podcast de jornalismo investigativo aprofundado","Confer\xEAncia: discurso de abertura com ret\xF3rica elaborada","Entrevista aprofundada com especialista em \xE1rea t\xE9cnica","Audi\xEAncia formal: testemunho, argumento e contra-argumento","Document\xE1rio: narra\xE7\xE3o com vocabul\xE1rio especializado","Semin\xE1rio universit\xE1rio: discuss\xE3o em grupo com diverg\xEAncia","Podcast: filosofia aplicada ao cotidiano","Palestra: lingu\xEDstica e poder da comunica\xE7\xE3o","Debate: intelig\xEAncia artificial e futuro da humanidade","Palestra: economia comportamental \u2013 vieses e decis\xF5es","Podcast: sa\xFAde p\xFAblica e pol\xEDticas sociais","Entrevista: artista ou escritor fala sobre processo criativo","\xC1udio de revis\xE3o C1: contexto acad\xEAmico e profissional avan\xE7ado"],review:["Revis\xE3o semana 1: nominaliza\xE7\xE3o e estruturas de \xEAnfase avan\xE7adas","Revis\xE3o semana 2: aspectos verbais e modalidade avan\xE7ada","Revis\xE3o semana 3: coes\xE3o, coer\xEAncia e pontua\xE7\xE3o acad\xEAmica","Revis\xE3o semana 4: coloca\xE7\xF5es acad\xEAmicas e profissionais","Revis\xE3o semana 5: ora\xE7\xF5es reduzidas e cl\xE1usulas absolutas","Revis\xE3o semana 6: discourse markers em escrita e fala","Revis\xE3o semana 7: registro \u2013 formal, neutro, informal avan\xE7ado","Revis\xE3o semana 8: ret\xF3rica \u2013 persuas\xE3o e argumenta\xE7\xE3o","Revis\xE3o semana 9: an\xE1lise cr\xEDtica de texto","Revis\xE3o semana 10: produ\xE7\xE3o escrita de alto n\xEDvel","Revis\xE3o final C1"]},C2:{grammar:["Varia\xE7\xE3o estil\xEDstica: arca\xEDsmos, formalidade extrema e linguagem liter\xE1ria","Ret\xF3rica avan\xE7ada: an\xE1fora, ant\xEDtese, paralelismo, quiasmo","Ambiguidade intencional em textos liter\xE1rios e po\xE9ticos","Ironia, sarcasmo, understatement brit\xE2nico e litotes","Dialetos do ingl\xEAs: brit\xE2nico, americano, australiano, indiano \u2013 diferen\xE7as","Linguagem figurada: met\xE1fora morta, meton\xEDmia, sin\xE9doque","Intertextualidade: refer\xEAncias, alus\xF5es e par\xF3dia","Sintaxe de longa dist\xE2ncia e constru\xE7\xF5es raras em prosa liter\xE1ria","Ingl\xEAs jur\xEDdico: shall, herein, whereas, notwithstanding, pursuant to","Ingl\xEAs cient\xEDfico: passiva, impessoalidade, hedging extremo","Ingl\xEAs de neg\xF3cios de alto n\xEDvel: due diligence, leverage, synergy","Humor em ingl\xEAs: puns, wordplay, wit e double entendre","Estruturas po\xE9ticas: metro i\xE2mbico, alitera\xE7\xE3o, enjambment","Prosa liter\xE1ria: an\xE1lise de ritmo, voz narrativa e ponto de vista","Linguagem de m\xEDdia: manchetes, clickbait, eufemismo pol\xEDtico","An\xE1lise de discurso pol\xEDtico: estrat\xE9gias de persuas\xE3o e manipula\xE7\xE3o","Pragm\xE1tica: implicatura conversacional e pressuposi\xE7\xE3o","Deixis e refer\xEAncia anaf\xF3rica em textos complexos","Registro extremo: linguagem de luto, diplomacia e cerim\xF4nia","Identidade lingu\xEDstica: code-switching, bilinguismo e hibridismo","Revis\xE3o C2: ret\xF3rica e estilo liter\xE1rio","Revis\xE3o C2: pragm\xE1tica e an\xE1lise de discurso","Revis\xE3o C2: varia\xE7\xE3o de registro em contextos extremos","Revis\xE3o C2: humor, ironia e subvers\xE3o da linguagem","Revis\xE3o final C2"],reading:["Trecho de romance liter\xE1rio moderno com an\xE1lise de voz e estilo","Ensaio de David Foster Wallace: ironia e metafic\xE7\xE3o","Artigo do The Economist: an\xE1lise econ\xF4mica e pol\xEDtica completa","Poema moderno: interpreta\xE7\xE3o, an\xE1lise m\xE9trica e sem\xE2ntica","Trecho de pe\xE7a teatral: Harold Pinter \u2013 subtexto e sil\xEAncio","Artigo filos\xF3fico denso: argumenta\xE7\xE3o e contra-argumenta\xE7\xE3o","Conto de autor can\xF4nico: Carver, Flannery O'Connor \u2013 an\xE1lise","Discurso hist\xF3rico: Churchill ou MLK \u2013 an\xE1lise ret\xF3rica completa","Artigo de cr\xEDtica cultural: ironia, subvers\xE3o e intertextualidade","Texto experimental: stream of consciousness \u2013 Joyce ou Woolf","Artigo de The New Yorker: longform journalism com an\xE1lise","Ensaio pessoal: voz \xEDntima e constru\xE7\xE3o de ethos","Trecho de romance dist\xF3pico: an\xE1lise pol\xEDtica e lingu\xEDstica","Cr\xF4nica jornal\xEDstica: estilo, tom e constru\xE7\xE3o da persona","Leitura de revis\xE3o C2: texto nativo complexo com an\xE1lise total"],writing:["Ensaio liter\xE1rio de alto n\xEDvel com an\xE1lise estil\xEDstica","Artigo de opini\xE3o com ironia, sofistica\xE7\xE3o e voz pr\xF3pria","Proposta acad\xEAmica para banca internacional de alto n\xEDvel","An\xE1lise ret\xF3rica completa de discurso famoso","Texto criativo: conto curto com voz pr\xF3pria e densidade liter\xE1ria","Cr\xEDtica de arte ou m\xFAsica com linguagem especializada","Texto de diplomacia: comunicado formal e carta aberta","Manifesto cultural ou pol\xEDtico com argumenta\xE7\xE3o densa","An\xE1lise de poema com argumenta\xE7\xE3o cr\xEDtica e evid\xEAncia textual","Ensaio pessoal estilo The New Yorker: narrativa + reflex\xE3o + an\xE1lise","Parodia ou pastiche de estilo liter\xE1rio reconhec\xEDvel","Texto especulativo de fic\xE7\xE3o cient\xEDfica curta","Proposta de pesquisa interdisciplinar","Texto de divulga\xE7\xE3o para audi\xEAncia especializada","Par\xE1grafo de revis\xE3o C2: dom\xEDnio de estilo e voz nativa"],listening:["Palestra de filosofia com ritmo e vocabul\xE1rio nativo denso","Podcast brit\xE2nico: cultura, humor e s\xE1tira social","Debate pol\xEDtico ao vivo com m\xFAltiplos sotaques e velocidade nativa","Entrevista liter\xE1ria com escritor angl\xF3fono sobre processo criativo","Stand-up comedy em ingl\xEAs: an\xE1lise cultural e lingu\xEDstica","Document\xE1rio BBC: narra\xE7\xE3o liter\xE1ria densa","Discuss\xE3o acad\xEAmica informal em ingl\xEAs nativo \u2013 v\xE1rios sotaques","This American Life: podcast de jornalismo narrativo americano","Di\xE1logo de filme de autor: subtexto, implicatura e n\xE3o-dito","Confer\xEAncia TED avan\xE7ada sem simplifica\xE7\xE3o vocabular","Podcast de com\xE9dia de ideias: wit e argumenta\xE7\xE3o r\xE1pida","Entrevista jornal\xEDstica adversarial: estrat\xE9gias de evas\xE3o e press\xE3o","Programa de r\xE1dio brit\xE2nico: humor intelectual e refer\xEAncias culturais","Audiolivro: trecho de romance contempor\xE2neo lido pelo autor","\xC1udio de revis\xE3o C2: variedade de estilos e sotaques nativos"],review:["Revis\xE3o semana 1: ret\xF3rica, figuras de linguagem e estilo liter\xE1rio","Revis\xE3o semana 2: dialetos, varia\xE7\xE3o e identidade lingu\xEDstica","Revis\xE3o semana 3: pragm\xE1tica, implicatura e an\xE1lise de discurso","Revis\xE3o semana 4: ingl\xEAs t\xE9cnico \u2013 jur\xEDdico, cient\xEDfico, corporativo","Revis\xE3o semana 5: ironia, humor e subvers\xE3o na linguagem","Revis\xE3o semana 6: an\xE1lise cr\xEDtica de texto liter\xE1rio","Revis\xE3o semana 7: produ\xE7\xE3o escrita de n\xEDvel liter\xE1rio","Revis\xE3o semana 8: compreens\xE3o oral de falantes nativos","Revis\xE3o semana 9: s\xEDntese de dom\xEDnio C2","Revis\xE3o final C2: profici\xEAncia de n\xEDvel nativo"]}},mi=(e,a,t)=>{var r;let o=((r=Zp[e])==null?void 0:r[a])||[];return o.length===0?null:o[t%o.length]},gi=(e,a,t)=>e.filter(o=>o.level===a&&o.skill===t).length,__fctx=(e=[])=>{let a=Array.isArray(e)?e:[],t=o=>a.filter(r=>r&&r.word&&r.lastLevel===o).sort((r,l)=>(l.nextReview||l.updatedAt||l.createdAt||0)-(r.nextReview||r.updatedAt||r.createdAt||0)).slice(0,15).map(r=>`${r.word}${r.translation?` (${r.translation})`:""}`).join("; ")||"nenhuma";return{easy:t("easy"),hard:t("hard")}},
-__LD=(e,a,t={})=>{try{let o=Se(ne({},{status:e,detail:String(a||""),time:new Date().toLocaleString(),ts:Date.now()}),t);typeof window!="undefined"&&(window.__fluencyLessonDiag=o);pa("lessonGenerationDiag",o);return o}catch(o){return null}},
 __LQ=e=>{
   try{
     if(typeof window!=="undefined"&&window.__fluencyLessonIsComplete)return window.__fluencyLessonIsComplete(e);
@@ -484,7 +483,7 @@ REGRAS ABSOLUTAS DE PROFUNDIDADE (NÃO NEGOCIÁVEIS):
 - NUNCA escreva perguntas de exercicios inteiramente em ingles
 - Nivel ${e}: nem abaixo (entediante) nem acima (frustrante)
 
-ATENÇÃO ESPECIAL — ANTI-RASA: Esta aula NÃO PODE ser rasa. Cada seção precisa ENSINAR ALGO REAL com profundidade, não apenas mencionar conceitos. Se você está prestes a escrever uma seção com menos de 5 frases, PARE e expanda com: regras adicionais, exceções, exemplos extras integrados ao texto, comparações com o português, ou contextos de uso. O aluno deve sair desta aula tendo APRENDIDO algo concreto e aprofundado, não apenas visto um resumo.`},Yp=e=>{let a=e.replace(/```json\s*/gi,"").replace(/```\s*/g,"").trim(),t=a.indexOf("{"),o=a.lastIndexOf("}");if(t===-1||o===-1||o<=t)throw new Error("No JSON object found");a=a.slice(t,o+1);try{return JSON.parse(a)}catch(r){let l=a.replace(/,(\s*[}\]])/g,"$1");return JSON.parse(l)}},em=["gemini-2.5-flash","gemini-2.5-flash-lite","gemini-flash-latest","gemini-2.0-flash-001","gemini-1.5-flash"],am=async e=>{try{let a=He("availableModels"),t=He("availableModelsAt");if(a&&t&&Date.now()-t<864e5)return a;let o=await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${e}`);if(!o.ok)return null;let r=await o.json();if(!r.models)return null;let l=r.models.filter(n=>{var u;return(u=n.supportedGenerationMethods)==null?void 0:u.includes("generateContent")}).map(n=>n.name.replace("models/","")).filter(n=>n.includes("flash")&&!n.includes("audio")&&!n.includes("image")&&!n.includes("thinking")&&!n.includes("tts")&&!n.includes("embed"));return pa("availableModels",l),pa("availableModelsAt",Date.now()),l}catch(a){return console.warn("N\xE3o foi poss\xEDvel descobrir modelos:",a.message),null}},tm=async e=>{let a=await am(e);if(a&&a.length>0){let t=a.map(o=>{let r=0;return o.includes("2.5")?r+=100:o.includes("2.0")?r+=50:o.includes("1.5")&&(r+=20),o.includes("flash-latest")&&(r+=30),o.includes("flash-lite")?r-=20:o.endsWith("flash")&&(r+=15),o.includes("preview")&&(r-=5),o.includes("exp")&&(r-=10),{model:o,score:r}});return t.sort((o,r)=>r.score-o.score),t.map(o=>o.model)}return em},_AK=e=>{let a=[];try{let t=He("geminiKeys");Array.isArray(t)&&(a=a.concat(t))}catch(t){}return e&&(a=a.concat(String(e).split(/[\n,; ]+/))),[...new Set(a.map(t=>String(t||"").trim()).filter(Boolean))].slice(0,5)},_UD=()=>{let e=new Date;return`${e.getFullYear()}-${Bt(e.getMonth()+1)}-${Bt(e.getDate())}`},_UG=()=>{let e=He("apiUsage_"+_UD());return e&&typeof e==="object"?Se({flash:0,pro:0},e):{flash:0,pro:0}},_UI=e=>{let a=_UG(),t=(e||"").includes("pro")?"pro":"flash";a[t]=(a[t]||0)+1,pa("apiUsage_"+_UD(),a)},_HS=e=>{let a=2166136261,t=String(e||"");for(let o=0;o<t.length;o++)a^=t.charCodeAt(o),a=a*16777619>>>0;return a.toString(36)},_RV=async(e,a)=>{let t=_AK(a),o=["gemini-2.5-pro","gemini-pro-latest","gemini-1.5-pro"];for(let r=0;r<t.length;r++)for(let l=0;l<o.length;l++)try{let n=await om(e,t[r],o[l]);return Se(ne({},n),{_validationModel:o[l]})}catch(n){if(console.warn(`Validação Pro indisponível (${o[l]} chave ${r+1}): ${n.message}`),n.status===429||String(n.message||"").includes("quota")||String(n.message||"").includes("RESOURCE_EXHAUSTED"))break}let r=await rm(e,a);return Se(ne({},r),{_validationModel:"flash"})},_VL=async(e,a,t)=>{if(!e||He("validateLessons")===!1)return e;try{let o=_HS(JSON.stringify(e)),r="cache_validation_"+o,l=He(r);if(l&&Date.now()-(l.ts||0)<2592e6)return Se(ne({},e),{_validation:l.value});let n=`Esta é uma aula de inglês para um brasileiro nível ${a}. Verifique: (1) algum erro gramatical em inglês? (2) traduções para PT-BR estão precisas e naturais? (3) exemplos são realistas e contemporâneos? (4) explicações estão corretas? Responda APENAS em JSON: {"ok": boolean, "severity": "none"|"minor"|"major", "issues": ["..."], "suggestedFixes": {}}. Aula: ${JSON.stringify(e).slice(0,12000)}`,u=await _RV(n,t),i={ok:!!u.ok,severity:u.severity||"none",issues:Array.isArray(u.issues)?u.issues.slice(0,5):[],suggestedFixes:u.suggestedFixes||{},model:u._validationModel||"auto"};return pa(r,{ts:Date.now(),value:i}),Se(ne({},e),{_validation:i})}catch(o){return console.warn("Validação da aula ignorada:",o.message),Se(ne({},e),{_validation:{ok:null,severity:"skipped",issues:["Validação indisponível hoje."],suggestedFixes:{},model:"skipped"}})}},om=async(e,a,t)=>{var u,i,c,g;_UI(t);let __ctrl=new AbortController();let __to=setTimeout(()=>{try{__ctrl.abort()}catch(_){}},20000);let r;try{r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${t}:generateContent?key=${a}`,{method:"POST",headers:{"Content-Type":"application/json"},signal:__ctrl.signal,body:JSON.stringify({system_instruction:{parts:[{text:"Voc\xEA \xE9 um gerador de aulas de ingl\xEAs. Responda APENAS com JSON v\xE1lido, sem texto antes ou depois, sem blocos de c\xF3digo markdown."}]},contents:[{parts:[{text:e}]}],generationConfig:{maxOutputTokens:8192,temperature:.75}})})}catch(__er){clearTimeout(__to);if(__er&&__er.name==="AbortError"){let __e=new Error("Gemini API timeout (20s) — tentando próximo modelo");__e.status=408;throw __e}throw __er}clearTimeout(__to);if(!r.ok){let m=await r.text().catch(()=>""),x=r.status===404,h=m.includes("no longer available")||m.includes("not found"),L=new Error(`Gemini API ${r.status}: ${m}`);throw L.isModelError=x||h,L.status=r.status,L}let l=await r.json();if(l.error){let m=new Error(l.error.message);throw m.isModelError=l.error.code===404||(l.error.message||"").includes("not found"),m}let n=((g=(c=(i=(u=l.candidates)==null?void 0:u[0])==null?void 0:i.content)==null?void 0:c.parts)==null?void 0:g.map(m=>m.text||"").join(""))||"";if(!n)throw new Error("Resposta vazia da IA.");return Yp(n)},rm=async(e,a)=>{let t=_AK(a),o;if(!t.length)throw new Error("Nenhuma chave Gemini configurada.");for(let r=0;r<t.length;r++){let l=t[r],n=(await tm(l)).slice(0,3),u=He("workingGeminiModel");if(u&&n.includes(u)){let c=n.indexOf(u);n.splice(c,1),n.unshift(u)}for(let c=0;c<n.length;c++){let g=n[c];for(let m=0;m<1;m++)try{let x=await om(e,l,g);return pa("workingGeminiModel",g),x}catch(x){if(o=x,console.warn(`Chave ${r+1}/${t.length} modelo ${g} tentativa ${m+1}: ${x.message}`),x.isModelError){He("workingGeminiModel")===g&&pa("workingGeminiModel",null),pa("availableModelsAt",null);break}if(x.status===429||x.status===403||String(x.message||"").includes("quota")||String(x.message||"").includes("RESOURCE_EXHAUSTED")||String(x.message||"").includes("API_KEY_INVALID")){break}m===0&&await new Promise(h=>setTimeout(h,800))}if(o&&(o.status===429||o.status===403||String(o.message||"").includes("quota")||String(o.message||"").includes("RESOURCE_EXHAUSTED")||String(o.message||"").includes("API_KEY_INVALID")))break}}throw o||new Error("Todos os modelos Gemini falharam.")},ps=()=>s.default.createElement("div",{style:{position:"fixed",inset:0,zIndex:0,overflow:"hidden",pointerEvents:"none"}},s.default.createElement("div",{style:{position:"absolute",width:"70vw",height:"70vw",maxWidth:700,maxHeight:700,top:"-15%",left:"-10%",borderRadius:"50%",background:"radial-gradient(circle,rgba(59,130,246,0.22) 0%,rgba(99,102,241,0.14) 45%,transparent 70%)",filter:"blur(40px)",animation:"orbFloat1 18s ease-in-out infinite"}}),s.default.createElement("div",{style:{position:"absolute",width:"60vw",height:"60vw",maxWidth:600,maxHeight:600,bottom:"-10%",right:"-10%",borderRadius:"50%",background:"radial-gradient(circle,rgba(139,92,246,0.20) 0%,rgba(59,130,246,0.12) 45%,transparent 70%)",filter:"blur(50px)",animation:"orbFloat2 22s ease-in-out infinite"}}),s.default.createElement("div",{style:{position:"absolute",width:"45vw",height:"45vw",maxWidth:450,maxHeight:450,top:"35%",right:"5%",borderRadius:"50%",background:"radial-gradient(circle,rgba(14,165,233,0.15) 0%,rgba(99,102,241,0.08) 50%,transparent 70%)",filter:"blur(35px)",animation:"orbFloat3 26s ease-in-out infinite"}}),s.default.createElement("div",{style:{position:"absolute",width:"35vw",height:"35vw",maxWidth:350,maxHeight:350,top:"60%",left:"5%",borderRadius:"50%",background:"radial-gradient(circle,rgba(168,85,247,0.12) 0%,transparent 70%)",filter:"blur(45px)",animation:"orbFloat4 20s ease-in-out infinite"}}),s.default.createElement("div",{style:{position:"absolute",inset:0,backgroundImage:"linear-gradient(rgba(255,255,255,0.022) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.022) 1px,transparent 1px)",backgroundSize:"60px 60px"}})),hs="",Dt=null,Mr=new Map,xi=e=>{hs=e},Fr="fluency_tts_",fi=300,lm=e=>{let a=2166136261;for(let t=0;t<e.length;t++)a^=e.charCodeAt(t),a=a*16777619>>>0;return a.toString(36)},vs=e=>Fr+lm(e.trim().toLowerCase()),sm=e=>{let a=e.trim().slice(0,150);if(Mr.has(a))return Mr.get(a);try{let t=localStorage.getItem(vs(e));if(!t)return null;let o=JSON.parse(t);return Mr.set(a,o),o}catch(t){return null}},nm=(e,a)=>{let t=e.trim().slice(0,150);Mr.set(t,a);try{let o=[];for(let r=0;r<localStorage.length;r++){let l=localStorage.key(r);l&&l.startsWith(Fr)&&o.push(l)}o.length>=fi&&o.map(l=>{try{return{k:l,t:JSON.parse(localStorage.getItem(l)).savedAt||0}}catch(n){return{k:l,t:0}}}).sort((l,n)=>l.t-n.t).slice(0,Math.ceil(fi*.2)).forEach(({k:l})=>localStorage.removeItem(l)),localStorage.setItem(vs(e),JSON.stringify(Se(ne({},a),{savedAt:Date.now()})))}catch(o){console.warn("TTS cache full, clearing oldest entries");try{let r=[];for(let l=0;l<localStorage.length;l++){let n=localStorage.key(l);n&&n.startsWith(Fr)&&r.push(n)}r.slice(0,Math.ceil(r.length/2)).forEach(l=>localStorage.removeItem(l)),localStorage.setItem(vs(e),JSON.stringify(Se(ne({},a),{savedAt:Date.now()})))}catch(r){}}},um=()=>{let e=0;for(let a=0;a<localStorage.length;a++)(localStorage.key(a)||"").startsWith(Fr)&&e++;return e};var __pcmToWavBlob=function(__pcm,__rate){var __pb=__pcm.byteLength;var __ab=new ArrayBuffer(44+__pb);var __v=new DataView(__ab);var __wstr=function(__o,__s){for(var __i=0;__i<__s.length;__i++)__v.setUint8(__o+__i,__s.charCodeAt(__i))};__wstr(0,"RIFF");__v.setUint32(4,36+__pb,true);__wstr(8,"WAVE");__wstr(12,"fmt ");__v.setUint32(16,16,true);__v.setUint16(20,1,true);__v.setUint16(22,1,true);__v.setUint32(24,__rate,true);__v.setUint32(28,__rate*2,true);__v.setUint16(32,2,true);__v.setUint16(34,16,true);__wstr(36,"data");__v.setUint32(40,__pb,true);new Uint8Array(__ab).set(new Uint8Array(__pcm),44);return new Blob([__ab],{type:"audio/wav"});};var __audioBufferToWavBlob=function(__abuf){var __ch=__abuf.numberOfChannels||1;var __sr=__abuf.sampleRate||24000;var __len=__abuf.length;var __interleaved=new Int16Array(__len*__ch);for(var __c=0;__c<__ch;__c++){var __cd=__abuf.getChannelData(__c);for(var __i=0;__i<__len;__i++){var __s=Math.max(-1,Math.min(1,__cd[__i]));__interleaved[__i*__ch+__c]=__s<0?__s*0x8000:__s*0x7FFF;}}var __pb=__interleaved.byteLength;var __ab=new ArrayBuffer(44+__pb);var __v=new DataView(__ab);var __wstr=function(__o,__s){for(var __i=0;__i<__s.length;__i++)__v.setUint8(__o+__i,__s.charCodeAt(__i))};__wstr(0,"RIFF");__v.setUint32(4,36+__pb,true);__wstr(8,"WAVE");__wstr(12,"fmt ");__v.setUint32(16,16,true);__v.setUint16(20,1,true);__v.setUint16(22,__ch,true);__v.setUint32(24,__sr,true);__v.setUint32(28,__sr*__ch*2,true);__v.setUint16(32,__ch*2,true);__v.setUint16(34,16,true);__wstr(36,"data");__v.setUint32(40,__pb,true);new Uint8Array(__ab).set(new Uint8Array(__interleaved.buffer),44);return new Blob([__ab],{type:"audio/wav"});};var __sharedAudioEl=null;var __getAudioEl=function(){if(window.__sharedHTMLAudio){__sharedAudioEl=window.__sharedHTMLAudio}if(!__sharedAudioEl){try{__sharedAudioEl=document.createElement("audio");__sharedAudioEl.preload="auto";__sharedAudioEl.setAttribute("playsinline","");__sharedAudioEl.setAttribute("webkit-playsinline","");__sharedAudioEl.style.display="none";document.body.appendChild(__sharedAudioEl);window.__sharedHTMLAudio=__sharedAudioEl;}catch(_){return null}}return __sharedAudioEl;};var __playViaHTMLAudio=function(__blob){return new Promise(function(__resolve,__reject){var __el=__getAudioEl();if(!__el){return __reject(new Error("no audio element"))}var __url=URL.createObjectURL(__blob);var __done=false;var __releaseNowPlaying=function(){try{__el.pause()}catch(_){}try{__el.removeAttribute("src")}catch(_){}try{__el.src=""}catch(_){}try{__el.load()}catch(_){}try{if("mediaSession" in navigator){navigator.mediaSession.metadata=null;try{navigator.mediaSession.playbackState="none"}catch(_){}}}catch(_){}};var __cleanup=function(){if(__done)return;__done=true;try{URL.revokeObjectURL(__url)}catch(_){}__el.onended=null;__el.onerror=null;__el.onpause=null;__releaseNowPlaying();};try{__el.pause();__el.currentTime=0}catch(_){}__el.onended=function(){__cleanup();__resolve()};__el.onerror=function(){__cleanup();__reject(new Error("audio element error code "+(__el.error&&__el.error.code)))};__el.src=__url;try{__el.volume=1.0;__el.muted=false}catch(_){}var __p;try{__p=__el.play()}catch(__pe){return __cleanup(),__reject(__pe)}if(__p&&typeof __p.catch==="function"){__p.catch(function(__er){__cleanup();__reject(__er)})}});};window.__stopHTMLAudio=function(){try{var __el=__sharedAudioEl||window.__sharedHTMLAudio;if(__el){__el.pause();__el.onended=null;__el.onerror=null;try{__el.removeAttribute("src")}catch(_){}try{__el.src=""}catch(_){}try{__el.load()}catch(_){}try{if("mediaSession" in navigator){navigator.mediaSession.metadata=null;try{navigator.mediaSession.playbackState="none"}catch(_){}}}catch(_){}}}catch(_){}};Er=()=>{if(!Dt||Dt.state==="closed"){var __Cx=window.AudioContext||window.webkitAudioContext;try{Dt=new __Cx({latencyHint:"playback"})}catch(_){try{Dt=new __Cx()}catch(__){return null}}}if(Dt.state==="suspended"){try{Dt.resume()}catch(_){}}return Dt;},im=e=>{let a=atob(e),t=new ArrayBuffer(a.length),o=new Uint8Array(t);for(let r=0;r<a.length;r++)o[r]=a.charCodeAt(r);return t},dm=e=>{let a=Er(),t=new Int16Array(e),o=new Float32Array(t.length);for(let n=0;n<t.length;n++)o[n]=t[n]/32768;let r=a.createBuffer(1,o.length,24e3);r.copyToChannel(o,0);let l=a.createBufferSource();return l.buffer=r,l.connect(a.destination),new Promise(n=>{l.onended=n,l.start(0)})},dmRate=function(e,rate){let a=Er();let t=new Int16Array(e);let o=new Float32Array(t.length);for(let n=0;n<t.length;n++)o[n]=t[n]/32768;let r=a.createBuffer(1,o.length,rate||24000);r.copyToChannel(o,0);let l=a.createBufferSource();l.buffer=r;l.connect(a.destination);return new Promise(function(resolve){l.onended=resolve;l.start(0)})},fm=e=>{let a=Er(),t=a.createBufferSource();return t.buffer=e,t.connect(a.destination),new Promise(o=>{t.onended=o,t.start(0)})},cm=["gemini-3.1-flash-tts-preview","gemini-2.5-flash-preview-tts"],__ttsState={loading:false,error:null,set:function(l,e){this.loading=l;this.error=e;window.dispatchEvent(new CustomEvent("ttsstate",{detail:{loading:l,error:e}}))}};window.__ttsState=__ttsState,pm=async e=>{var t,o,r,l;let __keys=[];try{__keys=_AK(hs)}catch(_){__keys=hs?[hs]:[]}if(!__keys.length)return null;let a=sm(e);if(a)return a;let __errors=[];
+ATENÇÃO ESPECIAL — ANTI-RASA: Esta aula NÃO PODE ser rasa. Cada seção precisa ENSINAR ALGO REAL com profundidade, não apenas mencionar conceitos. Se você está prestes a escrever uma seção com menos de 5 frases, PARE e expanda com: regras adicionais, exceções, exemplos extras integrados ao texto, comparações com o português, ou contextos de uso. O aluno deve sair desta aula tendo APRENDIDO algo concreto e aprofundado, não apenas visto um resumo.`},Yp=e=>{let a=e.replace(/```json\s*/gi,"").replace(/```\s*/g,"").trim(),t=a.indexOf("{"),o=a.lastIndexOf("}");if(t===-1||o===-1||o<=t)throw new Error("No JSON object found");a=a.slice(t,o+1);try{return JSON.parse(a)}catch(r){let l=a.replace(/,(\s*[}\]])/g,"$1");return JSON.parse(l)}},em=["gemini-2.5-flash","gemini-2.5-flash-lite","gemini-flash-latest","gemini-2.0-flash-001","gemini-1.5-flash"],am=async e=>{try{let a=He("availableModels"),t=He("availableModelsAt");if(a&&t&&Date.now()-t<864e5)return a;let o=await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${e}`);if(!o.ok)return null;let r=await o.json();if(!r.models)return null;let l=r.models.filter(n=>{var u;return(u=n.supportedGenerationMethods)==null?void 0:u.includes("generateContent")}).map(n=>n.name.replace("models/","")).filter(n=>n.includes("flash")&&!n.includes("audio")&&!n.includes("image")&&!n.includes("thinking")&&!n.includes("tts")&&!n.includes("embed"));return pa("availableModels",l),pa("availableModelsAt",Date.now()),l}catch(a){return console.warn("N\xE3o foi poss\xEDvel descobrir modelos:",a.message),null}},tm=async e=>{let a=await am(e);if(a&&a.length>0){let t=a.map(o=>{let r=0;return o.includes("2.5")?r+=100:o.includes("2.0")?r+=50:o.includes("1.5")&&(r+=20),o.includes("flash-latest")&&(r+=30),o.includes("flash-lite")?r-=20:o.endsWith("flash")&&(r+=15),o.includes("preview")&&(r-=5),o.includes("exp")&&(r-=10),{model:o,score:r}});return t.sort((o,r)=>r.score-o.score),t.map(o=>o.model)}return em},_AK=e=>{let a=[];try{let t=He("geminiKeys");Array.isArray(t)&&(a=a.concat(t))}catch(t){}return e&&(a=a.concat(String(e).split(/[\n,; ]+/))),[...new Set(a.map(t=>String(t||"").trim()).filter(Boolean))].slice(0,5)},_UD=()=>{let e=new Date;return`${e.getFullYear()}-${Bt(e.getMonth()+1)}-${Bt(e.getDate())}`},_UG=()=>{let e=He("apiUsage_"+_UD());return e&&typeof e==="object"?Se({flash:0,pro:0},e):{flash:0,pro:0}},_UI=e=>{let a=_UG(),t=(e||"").includes("pro")?"pro":"flash";a[t]=(a[t]||0)+1,pa("apiUsage_"+_UD(),a)},_HS=e=>{let a=2166136261,t=String(e||"");for(let o=0;o<t.length;o++)a^=t.charCodeAt(o),a=a*16777619>>>0;return a.toString(36)},_RV=async(e,a)=>{let t=_AK(a),o=["gemini-2.5-pro","gemini-pro-latest","gemini-1.5-pro"];for(let r=0;r<t.length;r++)for(let l=0;l<o.length;l++)try{let n=await om(e,t[r],o[l]);return Se(ne({},n),{_validationModel:o[l]})}catch(n){if(console.warn(`Validação Pro indisponível (${o[l]} chave ${r+1}): ${n.message}`),n.status===429||String(n.message||"").includes("quota")||String(n.message||"").includes("RESOURCE_EXHAUSTED"))break}let r=await rm(e,a);return Se(ne({},r),{_validationModel:"flash"})},_VL=async(e,a,t)=>{if(!e||He("validateLessons")===!1)return e;try{let o=_HS(JSON.stringify(e)),r="cache_validation_"+o,l=He(r);if(l&&Date.now()-(l.ts||0)<2592e6)return Se(ne({},e),{_validation:l.value});let n=`Esta é uma aula de inglês para um brasileiro nível ${a}. Verifique: (1) algum erro gramatical em inglês? (2) traduções para PT-BR estão precisas e naturais? (3) exemplos são realistas e contemporâneos? (4) explicações estão corretas? Responda APENAS em JSON: {"ok": boolean, "severity": "none"|"minor"|"major", "issues": ["..."], "suggestedFixes": {}}. Aula: ${JSON.stringify(e).slice(0,12000)}`,u=await _RV(n,t),i={ok:!!u.ok,severity:u.severity||"none",issues:Array.isArray(u.issues)?u.issues.slice(0,5):[],suggestedFixes:u.suggestedFixes||{},model:u._validationModel||"auto"};return pa(r,{ts:Date.now(),value:i}),Se(ne({},e),{_validation:i})}catch(o){return console.warn("Validação da aula ignorada:",o.message),Se(ne({},e),{_validation:{ok:null,severity:"skipped",issues:["Validação indisponível hoje."],suggestedFixes:{},model:"skipped"}})}},om=async(e,a,t)=>{var u,i,c,g;_UI(t);let __ctrl=new AbortController();let __to=setTimeout(()=>{try{__ctrl.abort()}catch(_){}},45000);let r;try{r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${t}:generateContent?key=${a}`,{method:"POST",headers:{"Content-Type":"application/json"},signal:__ctrl.signal,body:JSON.stringify({system_instruction:{parts:[{text:"Voc\xEA \xE9 um gerador de aulas de ingl\xEAs. Responda APENAS com JSON v\xE1lido, sem texto antes ou depois, sem blocos de c\xF3digo markdown."}]},contents:[{parts:[{text:e}]}],generationConfig:{maxOutputTokens:8192,temperature:.75}})})}catch(__er){clearTimeout(__to);if(__er&&__er.name==="AbortError"){let __e=new Error("Gemini API timeout (45s) — tentando próximo modelo");__e.status=408;throw __e}throw __er}clearTimeout(__to);if(!r.ok){let m=await r.text().catch(()=>""),x=r.status===404,h=m.includes("no longer available")||m.includes("not found"),L=new Error(`Gemini API ${r.status}: ${m}`);throw L.isModelError=x||h,L.status=r.status,L}let l=await r.json();if(l.error){let m=new Error(l.error.message);throw m.isModelError=l.error.code===404||(l.error.message||"").includes("not found"),m}let n=((g=(c=(i=(u=l.candidates)==null?void 0:u[0])==null?void 0:i.content)==null?void 0:c.parts)==null?void 0:g.map(m=>m.text||"").join(""))||"";if(!n)throw new Error("Resposta vazia da IA.");return Yp(n)},rm=async(e,a)=>{let t=_AK(a),o;if(!t.length)throw new Error("Nenhuma chave Gemini configurada.");for(let r=0;r<t.length;r++){let l=t[r],n=await tm(l),u=He("workingGeminiModel");if(u&&n.includes(u)){let c=n.indexOf(u);n.splice(c,1),n.unshift(u)}for(let c=0;c<n.length;c++){let g=n[c];for(let m=0;m<2;m++)try{let x=await om(e,l,g);return pa("workingGeminiModel",g),x}catch(x){if(o=x,console.warn(`Chave ${r+1}/${t.length} modelo ${g} tentativa ${m+1}: ${x.message}`),x.isModelError){He("workingGeminiModel")===g&&pa("workingGeminiModel",null),pa("availableModelsAt",null);break}if(x.status===429||x.status===403||String(x.message||"").includes("quota")||String(x.message||"").includes("RESOURCE_EXHAUSTED")||String(x.message||"").includes("API_KEY_INVALID")){break}m===0&&await new Promise(h=>setTimeout(h,800))}if(o&&(o.status===429||o.status===403||String(o.message||"").includes("quota")||String(o.message||"").includes("RESOURCE_EXHAUSTED")||String(o.message||"").includes("API_KEY_INVALID")))break}}throw o||new Error("Todos os modelos Gemini falharam.")},ps=()=>s.default.createElement("div",{style:{position:"fixed",inset:0,zIndex:0,overflow:"hidden",pointerEvents:"none"}},s.default.createElement("div",{style:{position:"absolute",width:"70vw",height:"70vw",maxWidth:700,maxHeight:700,top:"-15%",left:"-10%",borderRadius:"50%",background:"radial-gradient(circle,rgba(59,130,246,0.22) 0%,rgba(99,102,241,0.14) 45%,transparent 70%)",filter:"blur(40px)",animation:"orbFloat1 18s ease-in-out infinite"}}),s.default.createElement("div",{style:{position:"absolute",width:"60vw",height:"60vw",maxWidth:600,maxHeight:600,bottom:"-10%",right:"-10%",borderRadius:"50%",background:"radial-gradient(circle,rgba(139,92,246,0.20) 0%,rgba(59,130,246,0.12) 45%,transparent 70%)",filter:"blur(50px)",animation:"orbFloat2 22s ease-in-out infinite"}}),s.default.createElement("div",{style:{position:"absolute",width:"45vw",height:"45vw",maxWidth:450,maxHeight:450,top:"35%",right:"5%",borderRadius:"50%",background:"radial-gradient(circle,rgba(14,165,233,0.15) 0%,rgba(99,102,241,0.08) 50%,transparent 70%)",filter:"blur(35px)",animation:"orbFloat3 26s ease-in-out infinite"}}),s.default.createElement("div",{style:{position:"absolute",width:"35vw",height:"35vw",maxWidth:350,maxHeight:350,top:"60%",left:"5%",borderRadius:"50%",background:"radial-gradient(circle,rgba(168,85,247,0.12) 0%,transparent 70%)",filter:"blur(45px)",animation:"orbFloat4 20s ease-in-out infinite"}}),s.default.createElement("div",{style:{position:"absolute",inset:0,backgroundImage:"linear-gradient(rgba(255,255,255,0.022) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.022) 1px,transparent 1px)",backgroundSize:"60px 60px"}})),hs="",Dt=null,Mr=new Map,xi=e=>{hs=e},Fr="fluency_tts_",fi=300,lm=e=>{let a=2166136261;for(let t=0;t<e.length;t++)a^=e.charCodeAt(t),a=a*16777619>>>0;return a.toString(36)},vs=e=>Fr+lm(e.trim().toLowerCase()),sm=e=>{let a=e.trim().slice(0,150);if(Mr.has(a))return Mr.get(a);try{let t=localStorage.getItem(vs(e));if(!t)return null;let o=JSON.parse(t);return Mr.set(a,o),o}catch(t){return null}},nm=(e,a)=>{let t=e.trim().slice(0,150);Mr.set(t,a);try{let o=[];for(let r=0;r<localStorage.length;r++){let l=localStorage.key(r);l&&l.startsWith(Fr)&&o.push(l)}o.length>=fi&&o.map(l=>{try{return{k:l,t:JSON.parse(localStorage.getItem(l)).savedAt||0}}catch(n){return{k:l,t:0}}}).sort((l,n)=>l.t-n.t).slice(0,Math.ceil(fi*.2)).forEach(({k:l})=>localStorage.removeItem(l)),localStorage.setItem(vs(e),JSON.stringify(Se(ne({},a),{savedAt:Date.now()})))}catch(o){console.warn("TTS cache full, clearing oldest entries");try{let r=[];for(let l=0;l<localStorage.length;l++){let n=localStorage.key(l);n&&n.startsWith(Fr)&&r.push(n)}r.slice(0,Math.ceil(r.length/2)).forEach(l=>localStorage.removeItem(l)),localStorage.setItem(vs(e),JSON.stringify(Se(ne({},a),{savedAt:Date.now()})))}catch(r){}}},um=()=>{let e=0;for(let a=0;a<localStorage.length;a++)(localStorage.key(a)||"").startsWith(Fr)&&e++;return e};var __pcmToWavBlob=function(__pcm,__rate){var __pb=__pcm.byteLength;var __ab=new ArrayBuffer(44+__pb);var __v=new DataView(__ab);var __wstr=function(__o,__s){for(var __i=0;__i<__s.length;__i++)__v.setUint8(__o+__i,__s.charCodeAt(__i))};__wstr(0,"RIFF");__v.setUint32(4,36+__pb,true);__wstr(8,"WAVE");__wstr(12,"fmt ");__v.setUint32(16,16,true);__v.setUint16(20,1,true);__v.setUint16(22,1,true);__v.setUint32(24,__rate,true);__v.setUint32(28,__rate*2,true);__v.setUint16(32,2,true);__v.setUint16(34,16,true);__wstr(36,"data");__v.setUint32(40,__pb,true);new Uint8Array(__ab).set(new Uint8Array(__pcm),44);return new Blob([__ab],{type:"audio/wav"});};var __audioBufferToWavBlob=function(__abuf){var __ch=__abuf.numberOfChannels||1;var __sr=__abuf.sampleRate||24000;var __len=__abuf.length;var __interleaved=new Int16Array(__len*__ch);for(var __c=0;__c<__ch;__c++){var __cd=__abuf.getChannelData(__c);for(var __i=0;__i<__len;__i++){var __s=Math.max(-1,Math.min(1,__cd[__i]));__interleaved[__i*__ch+__c]=__s<0?__s*0x8000:__s*0x7FFF;}}var __pb=__interleaved.byteLength;var __ab=new ArrayBuffer(44+__pb);var __v=new DataView(__ab);var __wstr=function(__o,__s){for(var __i=0;__i<__s.length;__i++)__v.setUint8(__o+__i,__s.charCodeAt(__i))};__wstr(0,"RIFF");__v.setUint32(4,36+__pb,true);__wstr(8,"WAVE");__wstr(12,"fmt ");__v.setUint32(16,16,true);__v.setUint16(20,1,true);__v.setUint16(22,__ch,true);__v.setUint32(24,__sr,true);__v.setUint32(28,__sr*__ch*2,true);__v.setUint16(32,__ch*2,true);__v.setUint16(34,16,true);__wstr(36,"data");__v.setUint32(40,__pb,true);new Uint8Array(__ab).set(new Uint8Array(__interleaved.buffer),44);return new Blob([__ab],{type:"audio/wav"});};var __sharedAudioEl=null;var __getAudioEl=function(){if(window.__sharedHTMLAudio){__sharedAudioEl=window.__sharedHTMLAudio}if(!__sharedAudioEl){try{__sharedAudioEl=document.createElement("audio");__sharedAudioEl.preload="auto";__sharedAudioEl.setAttribute("playsinline","");__sharedAudioEl.setAttribute("webkit-playsinline","");__sharedAudioEl.style.display="none";document.body.appendChild(__sharedAudioEl);window.__sharedHTMLAudio=__sharedAudioEl;}catch(_){return null}}return __sharedAudioEl;};var __playViaHTMLAudio=function(__blob){return new Promise(function(__resolve,__reject){var __el=__getAudioEl();if(!__el){return __reject(new Error("no audio element"))}var __url=URL.createObjectURL(__blob);var __done=false;var __releaseNowPlaying=function(){try{__el.pause()}catch(_){}try{__el.removeAttribute("src")}catch(_){}try{__el.src=""}catch(_){}try{__el.load()}catch(_){}try{if("mediaSession" in navigator){navigator.mediaSession.metadata=null;try{navigator.mediaSession.playbackState="none"}catch(_){}}}catch(_){}};var __cleanup=function(){if(__done)return;__done=true;try{URL.revokeObjectURL(__url)}catch(_){}__el.onended=null;__el.onerror=null;__el.onpause=null;__releaseNowPlaying();};try{__el.pause();__el.currentTime=0}catch(_){}__el.onended=function(){__cleanup();__resolve()};__el.onerror=function(){__cleanup();__reject(new Error("audio element error code "+(__el.error&&__el.error.code)))};__el.src=__url;try{__el.volume=1.0;__el.muted=false}catch(_){}var __p;try{__p=__el.play()}catch(__pe){return __cleanup(),__reject(__pe)}if(__p&&typeof __p.catch==="function"){__p.catch(function(__er){__cleanup();__reject(__er)})}});};window.__stopHTMLAudio=function(){try{var __el=__sharedAudioEl||window.__sharedHTMLAudio;if(__el){__el.pause();__el.onended=null;__el.onerror=null;try{__el.removeAttribute("src")}catch(_){}try{__el.src=""}catch(_){}try{__el.load()}catch(_){}try{if("mediaSession" in navigator){navigator.mediaSession.metadata=null;try{navigator.mediaSession.playbackState="none"}catch(_){}}}catch(_){}}}catch(_){}};Er=()=>{if(!Dt||Dt.state==="closed"){var __Cx=window.AudioContext||window.webkitAudioContext;try{Dt=new __Cx({latencyHint:"playback"})}catch(_){try{Dt=new __Cx()}catch(__){return null}}}if(Dt.state==="suspended"){try{Dt.resume()}catch(_){}}return Dt;},im=e=>{let a=atob(e),t=new ArrayBuffer(a.length),o=new Uint8Array(t);for(let r=0;r<a.length;r++)o[r]=a.charCodeAt(r);return t},dm=e=>{let a=Er(),t=new Int16Array(e),o=new Float32Array(t.length);for(let n=0;n<t.length;n++)o[n]=t[n]/32768;let r=a.createBuffer(1,o.length,24e3);r.copyToChannel(o,0);let l=a.createBufferSource();return l.buffer=r,l.connect(a.destination),new Promise(n=>{l.onended=n,l.start(0)})},dmRate=function(e,rate){let a=Er();let t=new Int16Array(e);let o=new Float32Array(t.length);for(let n=0;n<t.length;n++)o[n]=t[n]/32768;let r=a.createBuffer(1,o.length,rate||24000);r.copyToChannel(o,0);let l=a.createBufferSource();l.buffer=r;l.connect(a.destination);return new Promise(function(resolve){l.onended=resolve;l.start(0)})},fm=e=>{let a=Er(),t=a.createBufferSource();return t.buffer=e,t.connect(a.destination),new Promise(o=>{t.onended=o,t.start(0)})},cm=["gemini-3.1-flash-tts-preview","gemini-2.5-flash-preview-tts"],__ttsState={loading:false,error:null,set:function(l,e){this.loading=l;this.error=e;window.dispatchEvent(new CustomEvent("ttsstate",{detail:{loading:l,error:e}}))}};window.__ttsState=__ttsState,pm=async e=>{var t,o,r,l;let __keys=[];try{__keys=_AK(hs)}catch(_){__keys=hs?[hs]:[]}if(!__keys.length)return null;let a=sm(e);if(a)return a;let __errors=[];
 let __ttsModels=cm.slice();
 try{
   let __working=localStorage.getItem("__tts_working_model__");
@@ -968,7 +967,7 @@ Rules:
 - Correct important mistakes gently without interrupting the flow.
 - At the very end of your response, add exactly this separator and a JSON object:
 |||CORRECTION|||{"hasError": true/false, "correction": "brief correction in Portuguese of grammar, vocabulary, pronunciation, or naturalness errors, or null if no errors"}
-- Only correct significant errors, not minor accent issues`,l=[...a.map(g=>({role:g.role==="user"?"user":"model",parts:[{text:g.text}]})),{role:"user",parts:[{text:e}]}],p=_AK(o);if(!p.length){__convDiag("sem_chave","Nenhuma chave detectada em geminiKeys/apiKey");return{text:"⚠️ Não consegui conectar à IA da conversa: nenhuma chave Gemini foi detectada. Vá em Progresso → Chave da IA, cole as chaves e toque em Salvar chaves.",correction:null}}try{__convDiag("tentando",p.length+" chave(s) detectada(s) · hash1 #"+_HS(p[0])+" len "+p[0].length);for(let g=0;g<p.length;g++){let k=p[g],m=[];try{m=await tm(k)}catch(f){m=[]}(!m||!m.length)&&(m=["gemini-2.5-flash","gemini-2.0-flash-001","gemini-2.0-flash","gemini-1.5-flash","gemini-1.5-flash-latest"]);m=[...new Set(m)].slice(0,8);for(let x=0;x<m.length;x++){let h=m[x];try{let L=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${h}:generateContent?key=${encodeURIComponent(k)}`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({system_instruction:{parts:[{text:r}]},contents:l,generationConfig:{maxOutputTokens:700,temperature:.75}})});if(!L.ok){let I="";try{I=(await L.text()).slice(0,180)}catch(y){}__convDiag("erro_http","key "+(g+1)+"/"+p.length+" #"+_HS(k)+" len "+k.length+" · "+h+" HTTP "+L.status+(I?" · "+I:""));continue}let I=((c=(i=(u=(n=(await L.json()).candidates)==null?void 0:n[0])==null?void 0:u.content)==null?void 0:i.parts)==null?void 0:c.map(y=>y.text||"").join(""))||"";if(!I){__convDiag("resposta_vazia","key "+(g+1)+"/"+p.length+" #"+_HS(k)+" · "+h+" sem texto");continue}__convDiag("ok","key "+(g+1)+"/"+p.length+" #"+_HS(k)+" · "+h+" respondeu");let y=I.indexOf("|||CORRECTION|||");if(y!==-1){let f=I.slice(0,y).trim(),d=I.slice(y+16).trim();try{let v=JSON.parse(d);return{text:f||"Resposta recebida, mas vazia antes da correção.",correction:v.hasError?v.correction:null}}catch(v){return{text:f||I.trim(),correction:null}}}return{text:I.trim(),correction:null}}catch(L){__convDiag("excecao","key "+(g+1)+"/"+p.length+" #"+_HS(k)+" · "+h+" · "+((L&&L.message)||String(L)));console.warn("Conversation model error:",L)}}}}catch(g){__convDiag("excecao_geral",(g&&g.message)||String(g));console.warn("Conversation error:",g)}let m="⚠️ A IA da conversa não respondeu agora. Veja o diagnóstico padrão para o motivo. O painel de diagnóstico mostra status, etapa e erro bruto quando houver falha.";return{text:m,correction:null}},bm=({profile:e,apiKey:a,setProfile:__setProfile,flashcards:__flashcards,setFlashcards:__setFlashcards})=>{var Uu;let[__spkTtsLoading,__setSpkTtsLoading]=(0,s.useState)(false),[__spkTtsError,__setSpkTtsError]=(0,s.useState)(null);(0,s.useEffect)(()=>{const h2=ev=>{__setSpkTtsLoading(ev.detail.loading);if(ev.detail.error)__setSpkTtsError(ev.detail.error);else if(!ev.detail.loading)__setSpkTtsError(null);};window.addEventListener("ttsstate",h2);return()=>window.removeEventListener("ttsstate",h2);},[]);(0,s.useEffect)(()=>{try{let __h=He("pron_history");if(Array.isArray(__h))__setPronHistory(__h)}catch(_){}},[]);let[__pronHistory,__setPronHistory]=(0,s.useState)([]),[t,o]=(0,s.useState)("pronunciation"),[r,l]=(0,s.useState)([]),[n,u]=(0,s.useState)(0),[i,c]=(0,s.useState)(!1),[g,m]=(0,s.useState)(!1),[x,h]=(0,s.useState)(""),[L,I]=(0,s.useState)(""),[y,f]=(0,s.useState)(null),[d,p]=(0,s.useState)(!1),[v,w]=(0,s.useState)([]),P=(0,s.useRef)(null),[k,T]=(0,s.useState)([]),[R,N]=(0,s.useState)(!1),[b,D]=(0,s.useState)(""),[F,j]=(0,s.useState)(!1),[_,V]=(0,s.useState)(""),J=(0,s.useRef)(null),Q=(0,s.useRef)(null),B=!!(window.SpeechRecognition||window.webkitSpeechRecognition),[__shText,__setShText]=(0,s.useState)("I need to figure out how to make this sound more natural."),[__shRec,__setShRec]=(0,s.useState)(!1),[__shLive,__setShLive]=(0,s.useState)(""),[__shResult,__setShResult]=(0,s.useState)(null),[__shLoading,__setShLoading]=(0,s.useState)(!1),__shSR=(0,s.useRef)(null),E=e.level;(0,s.useEffect)(()=>{t==="pronunciation"&&(async()=>{var H,pe,oa,fa,Hu;c(!0);let S=`speaking_phrases_${E}`,z=He(S),O=He(S+"_at");if(z&&O&&Date.now()-O<7*864e5){l(z),c(!1);return}if(!a){l(Ar[E]||Ar.A1),c(!1);return}try{let as=Sm(E),_u=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${a}`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({system_instruction:{parts:[{text:"Responda APENAS com JSON v\xE1lido."}]},contents:[{parts:[{text:as}]}],generationConfig:{maxOutputTokens:1200,temperature:.7}})});if(_u.ok){let ts=(((fa=(oa=(pe=(H=(await _u.json()).candidates)==null?void 0:H[0])==null?void 0:pe.content)==null?void 0:oa.parts)==null?void 0:fa.map(po=>po.text||"").join(""))||"").replace(/```json\s*/gi,"").replace(/```\s*/g,"").trim(),Ru=ts.indexOf("{"),Vc=ts.lastIndexOf("}");if(Ru!==-1){let po=JSON.parse(ts.slice(Ru,Vc+1));if((Hu=po.phrases)!=null&&Hu.length){pa(S,po.phrases),pa(S+"_at",Date.now()),l(po.phrases),c(!1);return}}}}catch(as){console.warn(as)}l(Ar[E]||Ar.A1),c(!1)})()},[t,E]),(0,s.useEffect)(()=>{var S;(S=Q.current)==null||S.scrollIntoView({behavior:"smooth"})},[k,F]),(0,s.useEffect)(()=>{if(t==="conversation"&&k.length===0){let S={A1:"Hi! I'm your English tutor. How are you today? If you have a question, you can ask in Portuguese too.",A2:"Hello! Great to practice English with you. What would you like to talk about? You can ask doubts in Portuguese if needed.",B1:"Hey there! Ready to practice your English? Tell me about your day. If you get stuck, ask me in Portuguese.",B2:"Hi! Let's have a conversation in English. What's on your mind today? Portuguese is okay for questions.",C1:"Hello! I'm here to help you refine your English. What shall we discuss? You may ask complex doubts in Portuguese.",C2:"Good day! Shall we engage in some stimulating conversation? What topic interests you? Portuguese is welcome for precise questions."};T([{role:"ai",text:S[E]||S.A1,correction:null}]),Nt(S[E]||S.A1)}},[t]);let __translate=async(__txt,__key)=>{if(!__key||!__txt)return null;try{let __mods=["gemini-2.0-flash","gemini-2.5-flash","gemini-1.5-flash-latest"];for(let __m of __mods){let __res;try{__res=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+__m+":generateContent?key="+__key,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({contents:[{parts:[{text:"Traduza esta frase do inglês para o português brasileiro de forma natural, curta e idiomática. Responda APENAS com a tradução, sem aspas, sem explicações.\n\nFrase: \""+__txt+"\""}]}],generationConfig:{maxOutputTokens:200,temperature:.2}})})}catch(__ne){continue}if(!__res||!__res.ok)continue;let __jr;try{__jr=await __res.json()}catch(__je){continue}let __cands=__jr&&__jr.candidates;if(__cands&&__cands[0]&&__cands[0].content&&__cands[0].content.parts){let __t="";for(let __p of __cands[0].content.parts){if(__p&&__p.text)__t+=__p.text}__t=__t.trim().replace(/^["']|["']$/g,"");if(__t)return __t;}}}catch(_){}return null;};let __renderHistory=()=>s.default.createElement("div",{className:"anim-rise"},__pronHistory.length===0?s.default.createElement("div",{className:"text-center py-16"},s.default.createElement("p",{className:"fx-display text-2xl mb-2",style:{fontWeight:600,color:"var(--ink)"}},"Sem histórico ainda."),s.default.createElement("p",{className:"fx-body text-sm",style:{color:"var(--muted)"}},"Pratique frases na aba Pronúncia. Quando você acertar, elas aparecem aqui com a tradução.")):s.default.createElement(s.default.Fragment,null,s.default.createElement("div",{className:"flex items-center justify-between mb-4"},s.default.createElement("p",{className:"fx-body text-sm",style:{color:"var(--ink-soft)"}},__pronHistory.length+" "+(__pronHistory.length===1?"frase praticada":"frases praticadas")),s.default.createElement("button",{onClick:()=>{if(confirm("Apagar todo o histórico de pronúncia?")){__setPronHistory([]);try{pa("pron_history",[])}catch(_){}}},className:"fx-body text-xs px-3 py-1 rounded-full",style:{color:"var(--muted)",border:"1px solid rgba(255,255,255,0.1)"}},"Limpar")),s.default.createElement("div",{className:"space-y-2"},__pronHistory.map((__h,__i)=>s.default.createElement("div",{key:__i,className:"card-paper rounded-xl p-4"},s.default.createElement("div",{className:"flex items-start justify-between gap-3 mb-1.5"},s.default.createElement("p",{className:"fx-display text-base flex-1",style:{fontWeight:500,color:"var(--ink)",lineHeight:1.4}},__h.text),s.default.createElement("div",{className:"flex items-center gap-2 flex-shrink-0"},s.default.createElement("span",{className:"fx-body text-xs px-2 py-0.5 rounded-full",style:{background:__h.score>=80?"rgba(52,211,153,0.15)":__h.score>=60?"rgba(244,200,66,0.15)":"rgba(248,113,113,0.12)",color:__h.score>=80?"var(--sage)":__h.score>=60?"var(--gold)":"var(--error)",border:"1px solid "+(__h.score>=80?"rgba(52,211,153,0.3)":__h.score>=60?"rgba(244,200,66,0.3)":"rgba(248,113,113,0.3)")}},__h.score+"%"),s.default.createElement("button",{onClick:()=>Nt(__h.text),style:{color:"var(--accent)"}},s.default.createElement(ra,{size:14})))),__h.translation&&s.default.createElement("p",{className:"fx-serif-italic text-sm",style:{color:"var(--ink-soft)"}},__h.translation),s.default.createElement("p",{className:"fx-body text-[10px] mt-2",style:{color:"var(--muted)"}},(()=>{try{return new Date(__h.ts).toLocaleString("pt-BR",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"})}catch(_){return ""}})()))))));let co=S=>{let z=window.SpeechRecognition||window.webkitSpeechRecognition;if(!z)return null;let O=new z;return O.lang="en-US",O.continuous=!1,O.interimResults=!0,O.onresult=H=>{let pe=Array.from(H.results).map(fa=>fa[0].transcript).join("");if(H.results[H.results.length-1].isFinal)S(pe);else return pe;return pe},O.onresult=H=>{let pe="";for(let oa=0;oa<H.results.length;oa++)pe+=H.results[oa][0].transcript;H.results[H.results.length-1].isFinal&&S(pe)},O.onerror=()=>{},O.onend=()=>{},O.start(),O},xr=()=>{f(null),h(""),I("");
+- Only correct significant errors, not minor accent issues`,l=[...a.map(g=>({role:g.role==="user"?"user":"model",parts:[{text:g.text}]})),{role:"user",parts:[{text:e}]}],p=_AK(o);if(!p.length){__convDiag("sem_chave","Nenhuma chave detectada em geminiKeys/apiKey");return{text:"⚠️ Não consegui conectar à IA da conversa: nenhuma chave Gemini foi detectada. Vá em Progresso → Chave da IA, cole as chaves e toque em Salvar chaves.",correction:null}}try{__convDiag("tentando",p.length+" chave(s) detectada(s) · hash1 #"+_HS(p[0])+" len "+p[0].length);for(let g=0;g<p.length;g++){let k=p[g],m=[];try{m=await tm(k)}catch(f){m=[]}(!m||!m.length)&&(m=["gemini-2.5-flash","gemini-2.0-flash-001","gemini-2.0-flash","gemini-1.5-flash","gemini-1.5-flash-latest"]);m=[...new Set(m)].slice(0,8);for(let x=0;x<m.length;x++){let h=m[x];try{let L=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${h}:generateContent?key=${encodeURIComponent(k)}`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({system_instruction:{parts:[{text:r}]},contents:l,generationConfig:{maxOutputTokens:700,temperature:.75}})});if(!L.ok){let I="";try{I=(await L.text()).slice(0,180)}catch(y){}__convDiag("erro_http","key "+(g+1)+"/"+p.length+" #"+_HS(k)+" len "+k.length+" · "+h+" HTTP "+L.status+(I?" · "+I:""));continue}let I=((c=(i=(u=(n=(await L.json()).candidates)==null?void 0:n[0])==null?void 0:u.content)==null?void 0:i.parts)==null?void 0:c.map(y=>y.text||"").join(""))||"";if(!I){__convDiag("resposta_vazia","key "+(g+1)+"/"+p.length+" #"+_HS(k)+" · "+h+" sem texto");continue}__convDiag("ok","key "+(g+1)+"/"+p.length+" #"+_HS(k)+" · "+h+" respondeu");let y=I.indexOf("|||CORRECTION|||");if(y!==-1){let f=I.slice(0,y).trim(),d=I.slice(y+16).trim();try{let v=JSON.parse(d);return{text:f||"Resposta recebida, mas vazia antes da correção.",correction:v.hasError?v.correction:null}}catch(v){return{text:f||I.trim(),correction:null}}}return{text:I.trim(),correction:null}}catch(L){__convDiag("excecao","key "+(g+1)+"/"+p.length+" #"+_HS(k)+" · "+h+" · "+((L&&L.message)||String(L)));console.warn("Conversation model error:",L)}}}}catch(g){__convDiag("excecao_geral",(g&&g.message)||String(g));console.warn("Conversation error:",g)}let m="⚠️ A IA da conversa não respondeu agora. Veja o painel 'IA Conversa' para o motivo. O painel agora mostra qual chave/modelo falhou, hash da chave e tamanho para comparar com o teste de chaves.";return{text:m,correction:null}},bm=({profile:e,apiKey:a,setProfile:__setProfile,flashcards:__flashcards,setFlashcards:__setFlashcards})=>{var Uu;let[__spkTtsLoading,__setSpkTtsLoading]=(0,s.useState)(false),[__spkTtsError,__setSpkTtsError]=(0,s.useState)(null);(0,s.useEffect)(()=>{const h2=ev=>{__setSpkTtsLoading(ev.detail.loading);if(ev.detail.error)__setSpkTtsError(ev.detail.error);else if(!ev.detail.loading)__setSpkTtsError(null);};window.addEventListener("ttsstate",h2);return()=>window.removeEventListener("ttsstate",h2);},[]);(0,s.useEffect)(()=>{try{let __h=He("pron_history");if(Array.isArray(__h))__setPronHistory(__h)}catch(_){}},[]);let[__pronHistory,__setPronHistory]=(0,s.useState)([]),[t,o]=(0,s.useState)("pronunciation"),[r,l]=(0,s.useState)([]),[n,u]=(0,s.useState)(0),[i,c]=(0,s.useState)(!1),[g,m]=(0,s.useState)(!1),[x,h]=(0,s.useState)(""),[L,I]=(0,s.useState)(""),[y,f]=(0,s.useState)(null),[d,p]=(0,s.useState)(!1),[v,w]=(0,s.useState)([]),P=(0,s.useRef)(null),[k,T]=(0,s.useState)([]),[R,N]=(0,s.useState)(!1),[b,D]=(0,s.useState)(""),[F,j]=(0,s.useState)(!1),[_,V]=(0,s.useState)(""),J=(0,s.useRef)(null),Q=(0,s.useRef)(null),B=!!(window.SpeechRecognition||window.webkitSpeechRecognition),[__shText,__setShText]=(0,s.useState)("I need to figure out how to make this sound more natural."),[__shRec,__setShRec]=(0,s.useState)(!1),[__shLive,__setShLive]=(0,s.useState)(""),[__shResult,__setShResult]=(0,s.useState)(null),[__shLoading,__setShLoading]=(0,s.useState)(!1),__shSR=(0,s.useRef)(null),E=e.level;(0,s.useEffect)(()=>{t==="pronunciation"&&(async()=>{var H,pe,oa,fa,Hu;c(!0);let S=`speaking_phrases_${E}`,z=He(S),O=He(S+"_at");if(z&&O&&Date.now()-O<7*864e5){l(z),c(!1);return}if(!a){l(Ar[E]||Ar.A1),c(!1);return}try{let as=Sm(E),_u=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${a}`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({system_instruction:{parts:[{text:"Responda APENAS com JSON v\xE1lido."}]},contents:[{parts:[{text:as}]}],generationConfig:{maxOutputTokens:1200,temperature:.7}})});if(_u.ok){let ts=(((fa=(oa=(pe=(H=(await _u.json()).candidates)==null?void 0:H[0])==null?void 0:pe.content)==null?void 0:oa.parts)==null?void 0:fa.map(po=>po.text||"").join(""))||"").replace(/```json\s*/gi,"").replace(/```\s*/g,"").trim(),Ru=ts.indexOf("{"),Vc=ts.lastIndexOf("}");if(Ru!==-1){let po=JSON.parse(ts.slice(Ru,Vc+1));if((Hu=po.phrases)!=null&&Hu.length){pa(S,po.phrases),pa(S+"_at",Date.now()),l(po.phrases),c(!1);return}}}}catch(as){console.warn(as)}l(Ar[E]||Ar.A1),c(!1)})()},[t,E]),(0,s.useEffect)(()=>{var S;(S=Q.current)==null||S.scrollIntoView({behavior:"smooth"})},[k,F]),(0,s.useEffect)(()=>{if(t==="conversation"&&k.length===0){let S={A1:"Hi! I'm your English tutor. How are you today? If you have a question, you can ask in Portuguese too.",A2:"Hello! Great to practice English with you. What would you like to talk about? You can ask doubts in Portuguese if needed.",B1:"Hey there! Ready to practice your English? Tell me about your day. If you get stuck, ask me in Portuguese.",B2:"Hi! Let's have a conversation in English. What's on your mind today? Portuguese is okay for questions.",C1:"Hello! I'm here to help you refine your English. What shall we discuss? You may ask complex doubts in Portuguese.",C2:"Good day! Shall we engage in some stimulating conversation? What topic interests you? Portuguese is welcome for precise questions."};T([{role:"ai",text:S[E]||S.A1,correction:null}]),Nt(S[E]||S.A1)}},[t]);let __translate=async(__txt,__key)=>{if(!__key||!__txt)return null;try{let __mods=["gemini-2.0-flash","gemini-2.5-flash","gemini-1.5-flash-latest"];for(let __m of __mods){let __res;try{__res=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+__m+":generateContent?key="+__key,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({contents:[{parts:[{text:"Traduza esta frase do inglês para o português brasileiro de forma natural, curta e idiomática. Responda APENAS com a tradução, sem aspas, sem explicações.\n\nFrase: \""+__txt+"\""}]}],generationConfig:{maxOutputTokens:200,temperature:.2}})})}catch(__ne){continue}if(!__res||!__res.ok)continue;let __jr;try{__jr=await __res.json()}catch(__je){continue}let __cands=__jr&&__jr.candidates;if(__cands&&__cands[0]&&__cands[0].content&&__cands[0].content.parts){let __t="";for(let __p of __cands[0].content.parts){if(__p&&__p.text)__t+=__p.text}__t=__t.trim().replace(/^["']|["']$/g,"");if(__t)return __t;}}}catch(_){}return null;};let __renderHistory=()=>s.default.createElement("div",{className:"anim-rise"},__pronHistory.length===0?s.default.createElement("div",{className:"text-center py-16"},s.default.createElement("p",{className:"fx-display text-2xl mb-2",style:{fontWeight:600,color:"var(--ink)"}},"Sem histórico ainda."),s.default.createElement("p",{className:"fx-body text-sm",style:{color:"var(--muted)"}},"Pratique frases na aba Pronúncia. Quando você acertar, elas aparecem aqui com a tradução.")):s.default.createElement(s.default.Fragment,null,s.default.createElement("div",{className:"flex items-center justify-between mb-4"},s.default.createElement("p",{className:"fx-body text-sm",style:{color:"var(--ink-soft)"}},__pronHistory.length+" "+(__pronHistory.length===1?"frase praticada":"frases praticadas")),s.default.createElement("button",{onClick:()=>{if(confirm("Apagar todo o histórico de pronúncia?")){__setPronHistory([]);try{pa("pron_history",[])}catch(_){}}},className:"fx-body text-xs px-3 py-1 rounded-full",style:{color:"var(--muted)",border:"1px solid rgba(255,255,255,0.1)"}},"Limpar")),s.default.createElement("div",{className:"space-y-2"},__pronHistory.map((__h,__i)=>s.default.createElement("div",{key:__i,className:"card-paper rounded-xl p-4"},s.default.createElement("div",{className:"flex items-start justify-between gap-3 mb-1.5"},s.default.createElement("p",{className:"fx-display text-base flex-1",style:{fontWeight:500,color:"var(--ink)",lineHeight:1.4}},__h.text),s.default.createElement("div",{className:"flex items-center gap-2 flex-shrink-0"},s.default.createElement("span",{className:"fx-body text-xs px-2 py-0.5 rounded-full",style:{background:__h.score>=80?"rgba(52,211,153,0.15)":__h.score>=60?"rgba(244,200,66,0.15)":"rgba(248,113,113,0.12)",color:__h.score>=80?"var(--sage)":__h.score>=60?"var(--gold)":"var(--error)",border:"1px solid "+(__h.score>=80?"rgba(52,211,153,0.3)":__h.score>=60?"rgba(244,200,66,0.3)":"rgba(248,113,113,0.3)")}},__h.score+"%"),s.default.createElement("button",{onClick:()=>Nt(__h.text),style:{color:"var(--accent)"}},s.default.createElement(ra,{size:14})))),__h.translation&&s.default.createElement("p",{className:"fx-serif-italic text-sm",style:{color:"var(--ink-soft)"}},__h.translation),s.default.createElement("p",{className:"fx-body text-[10px] mt-2",style:{color:"var(--muted)"}},(()=>{try{return new Date(__h.ts).toLocaleString("pt-BR",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"})}catch(_){return ""}})()))))));let co=S=>{let z=window.SpeechRecognition||window.webkitSpeechRecognition;if(!z)return null;let O=new z;return O.lang="en-US",O.continuous=!1,O.interimResults=!0,O.onresult=H=>{let pe=Array.from(H.results).map(fa=>fa[0].transcript).join("");if(H.results[H.results.length-1].isFinal)S(pe);else return pe;return pe},O.onresult=H=>{let pe="";for(let oa=0;oa<H.results.length;oa++)pe+=H.results[oa][0].transcript;H.results[H.results.length-1].isFinal&&S(pe)},O.onerror=()=>{},O.onend=()=>{},O.start(),O},xr=()=>{f(null),h(""),I("");
 try{if(window.__diagPron){window.__diagPron.reset();window.__diagPron.setMode("aguardando-audio")}}catch(__dr){}window.__pronAudio=null;window.__pronAudioPending=true;try{if(window.__pronStream){window.__pronStream.getTracks().forEach(function(__t){__t.stop()});window.__pronStream=null}}catch(_){}try{if(window.__pronMR&&window.__pronMR.state!=="inactive"){window.__pronMR.stop();window.__pronMR=null}}catch(_){}
 if(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia&&window.MediaRecorder){
   navigator.mediaDevices.getUserMedia({audio:true}).then(__strm=>{window.__pronStream=__strm;
@@ -1128,12 +1127,10 @@ function _Diary({profile:e,apiKey:a,flashcards:t,setFlashcards:o}){
   ]);
 }
 
-function Cs(){var N;let[e,a]=(0,s.useState)(!1),[t,o]=(0,s.useState)(null),[r,l]=(0,s.useState)(""),[n,u]=(0,s.useState)([]),[i,c]=(0,s.useState)([]),[g,m]=(0,s.useState)("today"),[x,h]=(0,s.useState)(null),[L,I]=(0,s.useState)(!1),[y,f]=(0,s.useState)(!1);(0,s.useEffect)(()=>{(async()=>{let b=He("firebaseConfig");try{let __fp=await So("profile");if(__fp){o(__fp);let __fl=await So("completedLessons");Array.isArray(__fl)&&u(__fl);let __fc=await So("flashcards");Array.isArray(__fc)&&c(__fc);a(!0)}}catch(__e){console.warn("fast local boot failed",__e)}if(b)try{await Promise.race([ci(b),new Promise((_,rj)=>setTimeout(()=>rj(new Error("Firebase boot timeout (5s)")),5000))]),_dlFromCloud().catch(__e=>console.warn("cloud sync background failed",__e))}catch(V){console.warn("Firebase load failed:",V)}let D=await So("profile");D&&o(D);let F=await So("geminiKeys");Array.isArray(F)&&F.length?(l(F.join("\n")),xi(F[0])):(F=await So("geminiKey"),F&&(l(F),xi(F)));let j=await So("completedLessons");if(!Array.isArray(j))j=[];let __cleanupFlag=He("_weekendBugFixed_v21");if(!__cleanupFlag){let __filtered=j.filter(les=>{if(!les||!les.date)return true;let __dt=new Date(les.date+"T00:00:00"),__wd=__dt.getDay();return __wd!==0&&__wd!==6});if(__filtered.length!==j.length){console.warn("[fluency] Cleanup: removidas",j.length-__filtered.length,"aula(s) registrada(s) em fim de semana.");j=__filtered;await we("completedLessons",j);let __profileNow=await So("profile");if(__profileNow){let __dates=[...new Set(j.map(l=>l.date))].filter(Boolean).sort(),__newStreak=0,__newLast=null;if(__dates.length){__newLast=__dates[__dates.length-1];__newStreak=1;for(let __k=__dates.length-2;__k>=0;__k--){let __diff=$p(__dates[__k],__dates[__k+1]);if(__diff===1){__newStreak++;continue}if(__diff>1){let __d=new Date(__dates[__k]+"T00:00:00"),__only=true;for(let __kk=1;__kk<__diff;__kk++){let __nd=new Date(__d);__nd.setDate(__d.getDate()+__kk);let __wdd=__nd.getDay();if(__wdd!==0&&__wdd!==6){__only=false;break}}if(__only){__newStreak++;continue}}break}}let __fixedProfile=Se(ne({},__profileNow),{streak:__newStreak,lastStudyDate:__newLast});await we("profile",__fixedProfile);o(__fixedProfile)}}pa("_weekendBugFixed_v21",1)}u(j);let _=await So("flashcards");Array.isArray(_)&&c(_);try{if(!He("weekendBugFixed_v21")){let __today=xs(),__profCur=await So("profile"),__lessonsCur=Array.isArray(j)?j:[],__cleaned=__lessonsCur.filter(L=>{if(!L||!L.date)return true;let dt=new Date(L.date+"T00:00:00"),wd=dt.getDay();return wd!==0&&wd!==6});if(__cleaned.length!==__lessonsCur.length){u(__cleaned);await we("completedLessons",__cleaned);if(__profCur){let __validDates=__cleaned.map(L=>L.date).sort(),__lastValid=__validDates.length?__validDates[__validDates.length-1]:null,__newStreak=0;if(__lastValid){__newStreak=1;for(let k=__validDates.length-2;k>=0;k--){let diff=$p(__validDates[k],__validDates[k+1]);if(diff===1)__newStreak+=1;else if(diff>1){let dStart=new Date(__validDates[k]+"T00:00:00"),onlyWk=true;for(let z=1;z<diff;z++){let nd=new Date(dStart);nd.setDate(dStart.getDate()+z);let wd=nd.getDay();if(wd!==0&&wd!==6){onlyWk=false;break}}if(onlyWk)__newStreak+=1;else break}else break}}let __fixed=Se(ne({},__profCur),{streak:__newStreak,lastStudyDate:__lastValid});await we("profile",__fixed);o(__fixed)}}pa("weekendBugFixed_v21",1)}}catch(__e){console.warn("weekend cleanup failed:",__e)}a(!0)})()},[]);let d=((N=Tr[Is()])==null?void 0:N.key)||"grammar",p=xs();(0,s.useEffect)(()=>{let __wd=Is();if(__wd===0||__wd===6)return;g==="lesson"&&t&&!x&&!L&&k()},[g,t]);let v=n.find(b=>b.date===p),w=n.filter(b=>b.level===(t==null?void 0:t.level)).length,P=(0,s.useMemo)(()=>{let b={1:!1,2:!1,3:!1,4:!1,5:!1},D=new Date,F=D.getDay(),j=F===0?-6:1-F,_=new Date(D);_.setDate(D.getDate()+j);let __sd=Array.isArray(t==null?void 0:t.studyDays)?t.studyDays:[];for(let V=0;V<5;V++){let J=new Date(_);J.setDate(_.getDate()+V);let Q=`${J.getFullYear()}-${Bt(J.getMonth()+1)}-${Bt(J.getDate())}`;if(n.some(B=>B.date===Q)||__sd.includes(Q))b[V+1]=!0}return b},[n,t]),k=(0,s.useCallback)(async(b=!1)=>{if(t){__LD("iniciando","Gerando aula de "+t.level+" / "+d),I(!0),f(!1);try{let D=gi(n,t.level,d),F=(mi(t.level,d,D)||"").slice(0,40).replace(/[^a-zA-Z0-9]/g,"-"),j=`lesson_v4_${t.level}_${d}_${D}_${F}`;if(!b){let B=await So(j);if(B&&__LQ(B)&&!B._fallback){__LD("cache_ok","Aula completa carregada do cache",{title:B.title||"",level:t.level,skill:d}),h(B),I(!1);return}if(B){__LD("cache_invalido","Aula antiga incompleta removida; gerando outra",{key:j});try{localStorage.removeItem("fluency_"+j)}catch(__e){}}}let _=Jp(t.level,d,w,n,i),V=null;if(!r)V="Chave do Gemini n\xE3o foi configurada. V\xE1 em Progresso \u2192 Chave da IA para adicionar.",__LD("erro",V,{stage:"missing_key"}),f(!0),h(null);else {try{__LD("chamando_ia","Enviando prompt da aula para o Gemini",{level:t.level,skill:d,topic:F,hasKey:!!r});let B=await rm(_,r);__LD("resposta_recebida","Resposta recebida; validando estrutura da aula",{level:t.level,skill:d});let __retryCount=0;while(!__LQ(B)&&__retryCount<1){__retryCount++;let __retryPrompt=_+`\n\nA TENTATIVA ANTERIOR FICOU INCOMPLETA. Esta é uma nova tentativa. Gere uma aula COMPLETA e DETALHADA. Regras OBRIGATÓRIAS:\n- intro: mínimo 3 frases, mínimo 110 caracteres\n- EXATAMENTE 3 seções com heading, content de pelo menos 250 caracteres (5+ frases) e EXATAMENTE 3 examples (en + pt) cada\n- Pelo menos 5 exercícios variados (2 choice, 1 fill, 1 translate + 1 extra), TODOS com explanation de pelo menos 25 caracteres\n- Pelo menos 5 itens de vocabulário com word, pos, translation e example real\n- 2 tips com pelo menos 30 caracteres cada\n- finalTip com pelo menos 35 caracteres\nNÃO resuma. NÃO pule seções. Responda APENAS JSON válido.`;__LD("retry_aula_incompleta","A primeira resposta veio incompleta; tentando novamente",{attempt:__retryCount+1});B=await rm(__retryPrompt,r)}if(!__LQ(B)){__LD("erro","A IA retornou aula incompleta mesmo após nova tentativa",{attempts:__retryCount+1});throw new Error("Aula incompleta após "+(__retryCount+1)+" tentativas. Tente novamente.")};if(He("validateLessons")!==!1){B=await _VL(B,t.level,r);if((B._validation||{}).severity==="major"){let E=await rm(_+"\n\nA validação apontou problema importante. Gere uma nova versão corrigida, mantendo exatamente o mesmo schema JSON.",r);if(__LQ(E))B=await _VL(E,t.level,r)}}__LD("ok","Aula completa gerada e salva",{title:B.title||"",sections:(B.sections||[]).length,exercises:(B.exercises||[]).length,vocabulary:(B.vocabulary||[]).length,level:t.level,skill:d}),h(B),await we(j,B);return}catch(B){console.warn("Gemini falhou:",B==null?void 0:B.message);let E=(B==null?void 0:B.message)||"erro desconhecido";E.includes("API_KEY_INVALID")||E.includes("API key not valid")||E.includes("INVALID_ARGUMENT")?V="Chave do Gemini inv\xE1lida. V\xE1 em Progresso \u2192 Chave da IA e verifique se colou corretamente, ou gere uma nova em aistudio.google.com/apikey":E.includes("quota")||E.includes("RESOURCE_EXHAUSTED")||E.includes("429")?V="Limite di\xE1rio da API gratuita do Gemini atingido. Aguarde algumas horas ou crie outra chave em aistudio.google.com/apikey":E.includes("PERMISSION_DENIED")||E.includes("403")?V="Permiss\xE3o negada. Sua chave pode estar bloqueada. Tente gerar uma nova em aistudio.google.com/apikey":E.includes("Failed to fetch")||E.includes("NetworkError")||E.includes("network")?V="Sem conex\xE3o com a internet. Verifique sua rede e tente novamente.":E.includes("Resposta vazia")?V="IA retornou resposta vazia. Pode ser conte\xFAdo bloqueado por seguran\xE7a \u2014 clique em Tentar novamente.":E.includes("JSON")?V="IA retornou resposta malformada. Clique em Tentar novamente.":E.includes("Todos os modelos")?V="Todos os modelos Gemini falharam. Verifique sua chave em Progresso \u2192 Chave da IA.":E.includes("no longer available")||E.includes("404")?V="Modelo Gemini foi descontinuado. O app tentou alternativas autom\xE1ticas mas nenhuma funcionou. Verifique se sua chave tem acesso aos modelos mais recentes.":V="Erro da IA: "+E.slice(0,200),__LD("erro",V,{raw:E,level:t.level,skill:d});f(!0);h(null)}}}catch(D){__LD("erro",(D&&D.message)||String(D),{stage:"outer"}),console.error(D),f(!0)}finally{I(!1)}}},[t,d,p,w,r]),T=async()=>{m("lesson");let __bad=x&&!x._fallback&&!__LQ(x);if(__bad){alert("Esta aula salva veio incompleta. Vou gerar uma aula nova e completa agora.");try{window.__fluencyPurgeIncompleteLessons&&window.__fluencyPurgeIncompleteLessons()}catch(__e){}h(null);await k(!0);return}(!x||x._stale)&&await k()},R=async()=>{if(!x||!t)return;let __wd=Is();if(__wd===0||__wd===6){alert("Hoje é fim de semana — não há aula para concluir. Aproveite para revisar flashcards ou praticar speaking!");m("today");return}if(n.some(B=>B.date===p)){m("today");return}let b=`${p}_${d}`,D={id:b,date:p,skill:d,level:t.level,title:x.title},F=[...n,D];u(F),await we("completedLessons",F);let j=new Set(i.map(B=>B.word.toLowerCase())),_=(x.vocabulary||[]).filter(B=>B.word&&!j.has(B.word.toLowerCase())).map(B=>({id:`fc_${Date.now()}_${Math.random().toString(36).slice(2,8)}`,word:B.word,translation:B.translation,pos:B.pos,example:B.example,skill:d,level:t.level,createdAt:Date.now(),intervalDays:1,nextReview:Date.now(),seen:0,activeUsageCount:0,lastActiveUse:null,graduated:!1})),V=[...i,..._];c(V),await we("flashcards",V);let Q=await __markStudyDay(t,p);o(Q),m("today")};return e?t?s.default.createElement(s.default.Fragment,null,s.default.createElement(ms,null),s.default.createElement(ps,null),s.default.createElement("div",{className:"min-h-screen paper-grain",style:{position:"relative",zIndex:1}},s.default.createElement(xm,{profile:t,streak:t.streak||0,tab:g,setTab:m}),g==="today"&&s.default.createElement(hm,{profile:t,completedAtLevel:w,lessonToday:v,openLesson:T,setTab:m,allCompleted:!1,weekProgress:P,forceRegenerate:async()=>{try{window.__fluencyPurgeIncompleteLessons&&window.__fluencyPurgeIncompleteLessons()}catch(__e){}try{let __D=gi(n,t.level,d),__F=(mi(t.level,d,__D)||"").slice(0,40).replace(/[^a-zA-Z0-9]/g,"-"),__j=`lesson_v4_${t.level}_${d}_${__D}_${__F}`;localStorage.removeItem("fluency_"+__j)}catch(__e){}m("lesson");h(null);await k(!0)}}),g==="lesson"&&((Is()===0||Is()===6)?s.default.createElement("div",{className:"max-w-3xl mx-auto px-4 md:px-6 py-12"},s.default.createElement("div",{className:"card-paper rounded-2xl p-8 text-center anim-rise"},s.default.createElement("div",{className:"fx-body text-xs uppercase tracking-[0.28em] mb-2",style:{color:"var(--muted)"}},"Fim de semana"),s.default.createElement("h2",{className:"fx-display text-3xl mt-2",style:{fontWeight:600}},"Sem aula hoje."),s.default.createElement("p",{className:"fx-serif-italic mt-3 text-lg",style:{color:"var(--accent)"}},"As aulas voltam na segunda-feira."),s.default.createElement("p",{className:"fx-body mt-4 text-sm",style:{color:"var(--ink-soft)"}},"Aproveite para revisar flashcards ou praticar speaking — manter o contato com o inglês ajuda muito a fixar."),s.default.createElement("div",{className:"flex flex-wrap gap-2 justify-center mt-6"},s.default.createElement("button",{onClick:()=>m("flashcards"),className:"btn-primary px-4 py-2 rounded-xl fx-body text-sm flex items-center gap-2"},s.default.createElement(ze,{size:14})," Flashcards"),s.default.createElement("button",{onClick:()=>m("speaking"),className:"btn-ghost px-4 py-2 rounded-xl fx-body text-sm flex items-center gap-2"},s.default.createElement(at,{size:14})," Speaking")))):!x&&!L&&!y?s.default.createElement("div",{className:"max-w-3xl mx-auto px-4 md:px-6 py-16 text-center"},s.default.createElement(Te,{className:"animate-spin mx-auto",size:24,style:{color:"var(--accent)"}}),s.default.createElement("p",{className:"fx-body mt-4 text-sm",style:{color:"var(--ink-soft)"}},"Preparando sua aula\u2026")):x&&!x._fallback&&!__LQ(x)?s.default.createElement("div",{className:"max-w-3xl mx-auto px-4 md:px-6 py-12"},s.default.createElement("div",{className:"card-paper rounded-2xl p-8 text-center anim-rise"},s.default.createElement("div",{className:"fx-body text-xs uppercase tracking-[0.28em] mb-2",style:{color:"var(--muted)"}},"Aula incompleta detectada"),s.default.createElement("h2",{className:"fx-display text-3xl mt-2",style:{fontWeight:600}},"Vamos gerar uma aula completa."),s.default.createElement("p",{className:"fx-body mt-4 text-sm",style:{color:"var(--ink-soft)"}},"A aula salva não tem seções, exemplos e exercícios suficientes. Toque abaixo para substituir por uma aula completa."),s.default.createElement("button",{onClick:async()=>{try{window.__fluencyPurgeIncompleteLessons&&window.__fluencyPurgeIncompleteLessons()}catch(__e){}h(null);await k(!0)},className:"btn-primary px-5 py-3 rounded-xl fx-body text-sm flex items-center gap-2 mx-auto mt-6"},s.default.createElement(Te,{size:15})," Gerar aula completa"))):s.default.createElement(vm,{profile:t,lessonData:x,loading:L,error:y,onRegenerate:()=>k(!0),onComplete:R,isCompleted:!!v,focusKey:d})),g==="flashcards"&&s.default.createElement(Lm,{flashcards:i,setFlashcards:c,profile:t,setProfile:o,today:p}),g==="speaking"&&s.default.createElement(bm,{profile:t,apiKey:r,setProfile:o,flashcards:i,setFlashcards:c}),g==="immersion"&&s.default.createElement(_Immersion,{profile:t,apiKey:r,flashcards:i,setFlashcards:c}),g==="diary"&&s.default.createElement(_Diary,{profile:t,apiKey:r,flashcards:i,setFlashcards:c}),g==="progress"&&s.default.createElement(Cm,{profile:t,completedLessons:n,flashcards:i,setProfile:o,apiKey:r,setApiKey:l}))):s.default.createElement(s.default.Fragment,null,s.default.createElement(ms,null),s.default.createElement(ps,null),s.default.createElement(gm,{onDone:(b,D)=>{o(b),D&&l(D)}})):s.default.createElement(s.default.Fragment,null,s.default.createElement(ms,null),s.default.createElement(ps,null),s.default.createElement("div",{className:"min-h-screen flex items-center justify-center paper-grain",style:{position:"relative",zIndex:1}},s.default.createElement(Te,{className:"animate-spin",size:24,style:{color:"var(--accent)"}})))}
+function Cs(){var N;let[e,a]=(0,s.useState)(!1),[t,o]=(0,s.useState)(null),[r,l]=(0,s.useState)(""),[n,u]=(0,s.useState)([]),[i,c]=(0,s.useState)([]),[g,m]=(0,s.useState)("today"),[x,h]=(0,s.useState)(null),[L,I]=(0,s.useState)(!1),[y,f]=(0,s.useState)(!1);(0,s.useEffect)(()=>{(async()=>{let b=He("firebaseConfig");try{let __fp=await So("profile");if(__fp){o(__fp);let __fl=await So("completedLessons");Array.isArray(__fl)&&u(__fl);let __fc=await So("flashcards");Array.isArray(__fc)&&c(__fc);a(!0)}}catch(__e){console.warn("fast local boot failed",__e)}if(b)try{await Promise.race([ci(b),new Promise((_,rj)=>setTimeout(()=>rj(new Error("Firebase boot timeout (5s)")),5000))]),_dlFromCloud().catch(__e=>console.warn("cloud sync background failed",__e))}catch(V){console.warn("Firebase load failed:",V)}let D=await So("profile");D&&o(D);let F=await So("geminiKeys");Array.isArray(F)&&F.length?(l(F.join("\n")),xi(F[0])):(F=await So("geminiKey"),F&&(l(F),xi(F)));let j=await So("completedLessons");if(!Array.isArray(j))j=[];let __cleanupFlag=He("_weekendBugFixed_v21");if(!__cleanupFlag){let __filtered=j.filter(les=>{if(!les||!les.date)return true;let __dt=new Date(les.date+"T00:00:00"),__wd=__dt.getDay();return __wd!==0&&__wd!==6});if(__filtered.length!==j.length){console.warn("[fluency] Cleanup: removidas",j.length-__filtered.length,"aula(s) registrada(s) em fim de semana.");j=__filtered;await we("completedLessons",j);let __profileNow=await So("profile");if(__profileNow){let __dates=[...new Set(j.map(l=>l.date))].filter(Boolean).sort(),__newStreak=0,__newLast=null;if(__dates.length){__newLast=__dates[__dates.length-1];__newStreak=1;for(let __k=__dates.length-2;__k>=0;__k--){let __diff=$p(__dates[__k],__dates[__k+1]);if(__diff===1){__newStreak++;continue}if(__diff>1){let __d=new Date(__dates[__k]+"T00:00:00"),__only=true;for(let __kk=1;__kk<__diff;__kk++){let __nd=new Date(__d);__nd.setDate(__d.getDate()+__kk);let __wdd=__nd.getDay();if(__wdd!==0&&__wdd!==6){__only=false;break}}if(__only){__newStreak++;continue}}break}}let __fixedProfile=Se(ne({},__profileNow),{streak:__newStreak,lastStudyDate:__newLast});await we("profile",__fixedProfile);o(__fixedProfile)}}pa("_weekendBugFixed_v21",1)}u(j);let _=await So("flashcards");Array.isArray(_)&&c(_);try{if(!He("weekendBugFixed_v21")){let __today=xs(),__profCur=await So("profile"),__lessonsCur=Array.isArray(j)?j:[],__cleaned=__lessonsCur.filter(L=>{if(!L||!L.date)return true;let dt=new Date(L.date+"T00:00:00"),wd=dt.getDay();return wd!==0&&wd!==6});if(__cleaned.length!==__lessonsCur.length){u(__cleaned);await we("completedLessons",__cleaned);if(__profCur){let __validDates=__cleaned.map(L=>L.date).sort(),__lastValid=__validDates.length?__validDates[__validDates.length-1]:null,__newStreak=0;if(__lastValid){__newStreak=1;for(let k=__validDates.length-2;k>=0;k--){let diff=$p(__validDates[k],__validDates[k+1]);if(diff===1)__newStreak+=1;else if(diff>1){let dStart=new Date(__validDates[k]+"T00:00:00"),onlyWk=true;for(let z=1;z<diff;z++){let nd=new Date(dStart);nd.setDate(dStart.getDate()+z);let wd=nd.getDay();if(wd!==0&&wd!==6){onlyWk=false;break}}if(onlyWk)__newStreak+=1;else break}else break}}let __fixed=Se(ne({},__profCur),{streak:__newStreak,lastStudyDate:__lastValid});await we("profile",__fixed);o(__fixed)}}pa("weekendBugFixed_v21",1)}}catch(__e){console.warn("weekend cleanup failed:",__e)}a(!0)})()},[]);let d=((N=Tr[Is()])==null?void 0:N.key)||"grammar",p=xs();(0,s.useEffect)(()=>{let __wd=Is();if(__wd===0||__wd===6)return;g==="lesson"&&t&&!x&&!L&&k()},[g,t]);let v=n.find(b=>b.date===p),w=n.filter(b=>b.level===(t==null?void 0:t.level)).length,P=(0,s.useMemo)(()=>{let b={1:!1,2:!1,3:!1,4:!1,5:!1},D=new Date,F=D.getDay(),j=F===0?-6:1-F,_=new Date(D);_.setDate(D.getDate()+j);let __sd=Array.isArray(t==null?void 0:t.studyDays)?t.studyDays:[];for(let V=0;V<5;V++){let J=new Date(_);J.setDate(_.getDate()+V);let Q=`${J.getFullYear()}-${Bt(J.getMonth()+1)}-${Bt(J.getDate())}`;if(n.some(B=>B.date===Q)||__sd.includes(Q))b[V+1]=!0}return b},[n,t]),k=(0,s.useCallback)(async(b=!1)=>{if(t){I(!0),f(!1);try{let D=gi(n,t.level,d),F=(mi(t.level,d,D)||"").slice(0,40).replace(/[^a-zA-Z0-9]/g,"-"),j=`lesson_v4_${t.level}_${d}_${D}_${F}`;if(!b){let B=await So(j);if(B&&__LQ(B)&&!B._fallback){h(B),I(!1);return}if(B){try{localStorage.removeItem("fluency_"+j)}catch(__e){}}}let _=Jp(t.level,d,w,n,i),V=null;if(!r)V="Chave do Gemini n\xE3o foi configurada. V\xE1 em Progresso \u2192 Chave da IA para adicionar.";else try{let B=await rm(_,r);let __retryCount=0;while(!__LQ(B)&&__retryCount<1){__retryCount++;let __retryPrompt=_+`\n\nA TENTATIVA ANTERIOR FICOU INCOMPLETA. Esta é uma nova tentativa. Gere uma aula COMPLETA e DETALHADA. Regras OBRIGATÓRIAS:\n- intro: mínimo 3 frases, mínimo 110 caracteres\n- EXATAMENTE 3 seções com heading, content de pelo menos 250 caracteres (5+ frases) e EXATAMENTE 3 examples (en + pt) cada\n- Pelo menos 5 exercícios variados (2 choice, 1 fill, 1 translate + 1 extra), TODOS com explanation de pelo menos 25 caracteres\n- Pelo menos 5 itens de vocabulário com word, pos, translation e example real\n- 2 tips com pelo menos 30 caracteres cada\n- finalTip com pelo menos 35 caracteres\nNÃO resuma. NÃO pule seções. Responda APENAS JSON válido.`;B=await rm(__retryPrompt,r)}if(!__LQ(B))throw new Error("Aula incompleta após "+(__retryCount+1)+" tentativas. Tente novamente.");if(He("validateLessons")!==!1){B=await _VL(B,t.level,r);if((B._validation||{}).severity==="major"){let E=await rm(_+"\n\nA validação apontou problema importante. Gere uma nova versão corrigida, mantendo exatamente o mesmo schema JSON.",r);if(__LQ(E))B=await _VL(E,t.level,r)}}h(B),await we(j,B);return}catch(B){console.warn("Gemini falhou:",B==null?void 0:B.message);let E=(B==null?void 0:B.message)||"erro desconhecido";E.includes("API_KEY_INVALID")||E.includes("API key not valid")||E.includes("INVALID_ARGUMENT")?V="Chave do Gemini inv\xE1lida. V\xE1 em Progresso \u2192 Chave da IA e verifique se colou corretamente, ou gere uma nova em aistudio.google.com/apikey":E.includes("quota")||E.includes("RESOURCE_EXHAUSTED")||E.includes("429")?V="Limite di\xE1rio da API gratuita do Gemini atingido. Aguarde algumas horas ou crie outra chave em aistudio.google.com/apikey":E.includes("PERMISSION_DENIED")||E.includes("403")?V="Permiss\xE3o negada. Sua chave pode estar bloqueada. Tente gerar uma nova em aistudio.google.com/apikey":E.includes("Failed to fetch")||E.includes("NetworkError")||E.includes("network")?V="Sem conex\xE3o com a internet. Verifique sua rede e tente novamente.":E.includes("Resposta vazia")?V="IA retornou resposta vazia. Pode ser conte\xFAdo bloqueado por seguran\xE7a \u2014 clique em Tentar novamente.":E.includes("JSON")?V="IA retornou resposta malformada. Clique em Tentar novamente.":E.includes("Todos os modelos")?V="Todos os modelos Gemini falharam. Verifique sua chave em Progresso \u2192 Chave da IA.":E.includes("no longer available")||E.includes("404")?V="Modelo Gemini foi descontinuado. O app tentou alternativas autom\xE1ticas mas nenhuma funcionou. Verifique se sua chave tem acesso aos modelos mais recentes.":V="Erro da IA: "+E.slice(0,200)}let J=Gp(t.level,d),Q=Se(ne({},J),{_fallback:!0,_fallbackReason:V});h(Q)}catch(D){console.error(D),f(!0)}finally{I(!1)}}},[t,d,p,w,r]),T=async()=>{m("lesson");let __bad=x&&!x._fallback&&!__LQ(x);if(__bad){alert("Esta aula salva veio incompleta. Vou gerar uma aula nova e completa agora.");try{window.__fluencyPurgeIncompleteLessons&&window.__fluencyPurgeIncompleteLessons()}catch(__e){}h(null);await k(!0);return}(!x||x._stale)&&await k()},R=async()=>{if(!x||!t)return;let __wd=Is();if(__wd===0||__wd===6){alert("Hoje é fim de semana — não há aula para concluir. Aproveite para revisar flashcards ou praticar speaking!");m("today");return}if(n.some(B=>B.date===p)){m("today");return}let b=`${p}_${d}`,D={id:b,date:p,skill:d,level:t.level,title:x.title},F=[...n,D];u(F),await we("completedLessons",F);let j=new Set(i.map(B=>B.word.toLowerCase())),_=(x.vocabulary||[]).filter(B=>B.word&&!j.has(B.word.toLowerCase())).map(B=>({id:`fc_${Date.now()}_${Math.random().toString(36).slice(2,8)}`,word:B.word,translation:B.translation,pos:B.pos,example:B.example,skill:d,level:t.level,createdAt:Date.now(),intervalDays:1,nextReview:Date.now(),seen:0,activeUsageCount:0,lastActiveUse:null,graduated:!1})),V=[...i,..._];c(V),await we("flashcards",V);let Q=await __markStudyDay(t,p);o(Q),m("today")};return e?t?s.default.createElement(s.default.Fragment,null,s.default.createElement(ms,null),s.default.createElement(ps,null),s.default.createElement("div",{className:"min-h-screen paper-grain",style:{position:"relative",zIndex:1}},s.default.createElement(xm,{profile:t,streak:t.streak||0,tab:g,setTab:m}),g==="today"&&s.default.createElement(hm,{profile:t,completedAtLevel:w,lessonToday:v,openLesson:T,setTab:m,allCompleted:!1,weekProgress:P,forceRegenerate:async()=>{try{window.__fluencyPurgeIncompleteLessons&&window.__fluencyPurgeIncompleteLessons()}catch(__e){}try{let __D=gi(n,t.level,d),__F=(mi(t.level,d,__D)||"").slice(0,40).replace(/[^a-zA-Z0-9]/g,"-"),__j=`lesson_v4_${t.level}_${d}_${__D}_${__F}`;localStorage.removeItem("fluency_"+__j)}catch(__e){}m("lesson");h(null);await k(!0)}}),g==="lesson"&&((Is()===0||Is()===6)?s.default.createElement("div",{className:"max-w-3xl mx-auto px-4 md:px-6 py-12"},s.default.createElement("div",{className:"card-paper rounded-2xl p-8 text-center anim-rise"},s.default.createElement("div",{className:"fx-body text-xs uppercase tracking-[0.28em] mb-2",style:{color:"var(--muted)"}},"Fim de semana"),s.default.createElement("h2",{className:"fx-display text-3xl mt-2",style:{fontWeight:600}},"Sem aula hoje."),s.default.createElement("p",{className:"fx-serif-italic mt-3 text-lg",style:{color:"var(--accent)"}},"As aulas voltam na segunda-feira."),s.default.createElement("p",{className:"fx-body mt-4 text-sm",style:{color:"var(--ink-soft)"}},"Aproveite para revisar flashcards ou praticar speaking — manter o contato com o inglês ajuda muito a fixar."),s.default.createElement("div",{className:"flex flex-wrap gap-2 justify-center mt-6"},s.default.createElement("button",{onClick:()=>m("flashcards"),className:"btn-primary px-4 py-2 rounded-xl fx-body text-sm flex items-center gap-2"},s.default.createElement(ze,{size:14})," Flashcards"),s.default.createElement("button",{onClick:()=>m("speaking"),className:"btn-ghost px-4 py-2 rounded-xl fx-body text-sm flex items-center gap-2"},s.default.createElement(at,{size:14})," Speaking")))):!x&&!L&&!y?s.default.createElement("div",{className:"max-w-3xl mx-auto px-4 md:px-6 py-16 text-center"},s.default.createElement(Te,{className:"animate-spin mx-auto",size:24,style:{color:"var(--accent)"}}),s.default.createElement("p",{className:"fx-body mt-4 text-sm",style:{color:"var(--ink-soft)"}},"Preparando sua aula\u2026")):x&&!x._fallback&&!__LQ(x)?s.default.createElement("div",{className:"max-w-3xl mx-auto px-4 md:px-6 py-12"},s.default.createElement("div",{className:"card-paper rounded-2xl p-8 text-center anim-rise"},s.default.createElement("div",{className:"fx-body text-xs uppercase tracking-[0.28em] mb-2",style:{color:"var(--muted)"}},"Aula incompleta detectada"),s.default.createElement("h2",{className:"fx-display text-3xl mt-2",style:{fontWeight:600}},"Vamos gerar uma aula completa."),s.default.createElement("p",{className:"fx-body mt-4 text-sm",style:{color:"var(--ink-soft)"}},"A aula salva não tem seções, exemplos e exercícios suficientes. Toque abaixo para substituir por uma aula completa."),s.default.createElement("button",{onClick:async()=>{try{window.__fluencyPurgeIncompleteLessons&&window.__fluencyPurgeIncompleteLessons()}catch(__e){}h(null);await k(!0)},className:"btn-primary px-5 py-3 rounded-xl fx-body text-sm flex items-center gap-2 mx-auto mt-6"},s.default.createElement(Te,{size:15})," Gerar aula completa"))):s.default.createElement(vm,{profile:t,lessonData:x,loading:L,error:y,onRegenerate:()=>k(!0),onComplete:R,isCompleted:!!v,focusKey:d})),g==="flashcards"&&s.default.createElement(Lm,{flashcards:i,setFlashcards:c,profile:t,setProfile:o,today:p}),g==="speaking"&&s.default.createElement(bm,{profile:t,apiKey:r,setProfile:o,flashcards:i,setFlashcards:c}),g==="immersion"&&s.default.createElement(_Immersion,{profile:t,apiKey:r,flashcards:i,setFlashcards:c}),g==="diary"&&s.default.createElement(_Diary,{profile:t,apiKey:r,flashcards:i,setFlashcards:c}),g==="progress"&&s.default.createElement(Cm,{profile:t,completedLessons:n,flashcards:i,setProfile:o,apiKey:r,setApiKey:l}))):s.default.createElement(s.default.Fragment,null,s.default.createElement(ms,null),s.default.createElement(ps,null),s.default.createElement(gm,{onDone:(b,D)=>{o(b),D&&l(D)}})):s.default.createElement(s.default.Fragment,null,s.default.createElement(ms,null),s.default.createElement(ps,null),s.default.createElement("div",{className:"min-h-screen flex items-center justify-center paper-grain",style:{position:"relative",zIndex:1}},s.default.createElement(Te,{className:"animate-spin",size:24,style:{color:"var(--accent)"}})))}
 
 
-(function(){try{if(window.__fluencyConvDiagPanelInstalled)return;window.__fluencyConvDiagPanelInstalled=true;var HIDE_KEY="fluency_hide_debug_panels";function hidden(){try{return localStorage.getItem(HIDE_KEY)==="1"}catch(e){return false}}function setHidden(v){try{localStorage.setItem(HIDE_KEY,v?"1":"0")}catch(e){}applyHide()}function applyHide(){var h=hidden();try{document.body&&document.body.classList.toggle("__fluency_hide_debug",h)}catch(e){}var css=document.getElementById("__fluency_hide_debug_css__");if(!css){css=document.createElement("style");css.id="__fluency_hide_debug_css__";css.textContent="body.__fluency_hide_debug #__audio_diag__,body.__fluency_hide_debug #__diag_reopen__,body.__fluency_hide_debug #__conv_diag_panel__{display:none!important}#__debug_show_btn__{position:fixed;right:12px;bottom:78px;z-index:99999;width:34px;height:34px;border-radius:50%;border:1px solid rgba(91,156,246,.35);background:rgba(6,13,31,.72);color:#93C5FD;font:16px -apple-system,BlinkMacSystemFont,sans-serif;display:none;align-items:center;justify-content:center;box-shadow:0 6px 18px rgba(0,0,0,.32);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}body.__fluency_hide_debug #__debug_show_btn__{display:flex!important}";document.head.appendChild(css)}var btn=document.getElementById("__debug_show_btn__");if(!btn){btn=document.createElement("button");btn.id="__debug_show_btn__";btn.textContent="🔧";btn.title="Mostrar diagnósticos";btn.onclick=function(){setHidden(false)};document.body.appendChild(btn)}}function rd(){try{return window.__fluencyConvDiag||JSON.parse(localStorage.getItem("fluency_conversation_diag")||"null")}catch(e){return null}}function esc(x){return String(x||"").replace(/[<>&]/g,function(c){return {"<":"&lt;",">":"&gt;","&":"&amp;"}[c]})}function ensure(){try{var __old=document.getElementById("__conv_diag_panel__");if(__old)__old.remove()}catch(e){}return;if(!document||!document.body)return;applyHide();if(hidden())return;var el=document.getElementById("__conv_diag_panel__");if(!el){el=document.createElement("div");el.id="__conv_diag_panel__";el.style.cssText="position:fixed;right:10px;top:104px;z-index:99999;max-width:260px;padding:9px 11px;border-radius:14px;background:rgba(6,13,31,.88);border:1px solid rgba(91,156,246,.32);box-shadow:0 8px 24px rgba(0,0,0,.35);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);font:11px -apple-system,BlinkMacSystemFont,sans-serif;color:#E8EFF8;line-height:1.35;opacity:.92";document.body.appendChild(el)}var d=rd();var ok=d&&d.status==="ok";var warn=d&&d.status&&d.status!=="ok";el.innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><b style="color:'+(ok?'#34D399':warn?'#F59E0B':'#93C5FD')+'">IA Conversa</b><button id="__conv_diag_hide__" style="border:0;background:rgba(255,255,255,.08);color:#E8EFF8;border-radius:9px;padding:2px 7px;font:12px -apple-system">×</button></div><span>'+(d?esc(d.status||'—'):'aguardando')+'</span><br><span style="color:rgba(232,239,248,.68)">'+(d&&d.detail?esc(d.detail):'envie uma mensagem para testar')+'</span><br><span style="color:rgba(232,239,248,.45)">'+(d&&d.time?esc(d.time):'')+'</span>';var x=document.getElementById("__conv_diag_hide__");if(x)x.onclick=function(ev){ev&&ev.stopPropagation&&ev.stopPropagation();setHidden(true)}}setInterval(ensure,1000);if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',ensure);else ensure();window.__fluencyHideDebugPanels=function(){setHidden(true)};window.__fluencyShowDebugPanels=function(){setHidden(false)}}catch(e){}})();
-
-;(function(){try{var kill=function(){var e=document.getElementById("__conv_diag_panel__");if(e)e.remove();};kill();setInterval(kill,1000);var st=document.createElement("style");st.textContent="#__conv_diag_panel__{display:none!important}";document.head&&document.head.appendChild(st)}catch(e){}})();
+(function(){try{if(window.__fluencyConvDiagPanelInstalled)return;window.__fluencyConvDiagPanelInstalled=true;var HIDE_KEY="fluency_hide_debug_panels";function hidden(){try{return localStorage.getItem(HIDE_KEY)==="1"}catch(e){return false}}function setHidden(v){try{localStorage.setItem(HIDE_KEY,v?"1":"0")}catch(e){}applyHide()}function applyHide(){var h=hidden();try{document.body&&document.body.classList.toggle("__fluency_hide_debug",h)}catch(e){}var css=document.getElementById("__fluency_hide_debug_css__");if(!css){css=document.createElement("style");css.id="__fluency_hide_debug_css__";css.textContent="body.__fluency_hide_debug #__audio_diag__,body.__fluency_hide_debug #__diag_reopen__,body.__fluency_hide_debug #__conv_diag_panel__{display:none!important}#__debug_show_btn__{position:fixed;right:12px;bottom:78px;z-index:99999;width:34px;height:34px;border-radius:50%;border:1px solid rgba(91,156,246,.35);background:rgba(6,13,31,.72);color:#93C5FD;font:16px -apple-system,BlinkMacSystemFont,sans-serif;display:none;align-items:center;justify-content:center;box-shadow:0 6px 18px rgba(0,0,0,.32);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}body.__fluency_hide_debug #__debug_show_btn__{display:flex!important}";document.head.appendChild(css)}var btn=document.getElementById("__debug_show_btn__");if(!btn){btn=document.createElement("button");btn.id="__debug_show_btn__";btn.textContent="🔧";btn.title="Mostrar diagnósticos";btn.onclick=function(){setHidden(false)};document.body.appendChild(btn)}}function rd(){try{return window.__fluencyConvDiag||JSON.parse(localStorage.getItem("fluency_conversation_diag")||"null")}catch(e){return null}}function esc(x){return String(x||"").replace(/[<>&]/g,function(c){return {"<":"&lt;",">":"&gt;","&":"&amp;"}[c]})}function ensure(){if(!document||!document.body)return;applyHide();if(hidden())return;var el=document.getElementById("__conv_diag_panel__");if(!el){el=document.createElement("div");el.id="__conv_diag_panel__";el.style.cssText="position:fixed;right:10px;top:104px;z-index:99999;max-width:260px;padding:9px 11px;border-radius:14px;background:rgba(6,13,31,.88);border:1px solid rgba(91,156,246,.32);box-shadow:0 8px 24px rgba(0,0,0,.35);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);font:11px -apple-system,BlinkMacSystemFont,sans-serif;color:#E8EFF8;line-height:1.35;opacity:.92";document.body.appendChild(el)}var d=rd();var ok=d&&d.status==="ok";var warn=d&&d.status&&d.status!=="ok";el.innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><b style="color:'+(ok?'#34D399':warn?'#F59E0B':'#93C5FD')+'">IA Conversa</b><button id="__conv_diag_hide__" style="border:0;background:rgba(255,255,255,.08);color:#E8EFF8;border-radius:9px;padding:2px 7px;font:12px -apple-system">×</button></div><span>'+(d?esc(d.status||'—'):'aguardando')+'</span><br><span style="color:rgba(232,239,248,.68)">'+(d&&d.detail?esc(d.detail):'envie uma mensagem para testar')+'</span><br><span style="color:rgba(232,239,248,.45)">'+(d&&d.time?esc(d.time):'')+'</span>';var x=document.getElementById("__conv_diag_hide__");if(x)x.onclick=function(ev){ev&&ev.stopPropagation&&ev.stopPropagation();setHidden(true)}}setInterval(ensure,1000);if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',ensure);else ensure();window.__fluencyHideDebugPanels=function(){setHidden(true)};window.__fluencyShowDebugPanels=function(){setHidden(false)}}catch(e){}})();
 window.__AppComponent=Cs;window.React=Qa();window.ReactDOM=zc();})();
 
 ;(function(){
@@ -1215,9 +1212,6 @@ window.__AppComponent=Cs;window.React=Qa();window.ReactDOM=zc();})();
     var d=read(),dy=(d.days&&d.days[day()])||{gemini:{},tts:{},azure:{total:0},errors:0},mo=(d.months&&d.months[month()])||{gemini:{},tts:{},azure:{total:0},errors:0};
     return {day:dy,month:mo,keys:keysFromStorage()}
   }
-  function escHtml(x){return String(x==null?"":x).replace(/[<>&]/g,function(c){return {"<":"&lt;",">":"&gt;","&":"&amp;"}[c]})}
-  function lessonDiag(){try{return window.__fluencyLessonDiag||JSON.parse(localStorage.getItem("fluency_lessonGenerationDiag")||"null")}catch(e){return window.__fluencyLessonDiag||null}}
-  function lessonDiagHtml(){var d=lessonDiag();if(!d)return '<div class="__usage_small">Nenhuma geração de aula registrada ainda.</div>';return '<div class="__usage_small"><b>Status:</b> '+escHtml(d.status||"—")+'</div><div class="__usage_small"><b>Detalhe:</b> '+escHtml(d.detail||"—")+'</div><div class="__usage_small"><b>Quando:</b> '+escHtml(d.time||"—")+'</div>'+(d.raw?'<div class="__usage_small"><b>Erro bruto:</b> '+escHtml(String(d.raw).slice(0,500))+'</div>':'')}
   function rows(bucket,keys){
     keys=keys||[];var html="";
     keys.forEach(function(k,i){var h=hash(k),b=bucket&&bucket[h]||{total:0,models:{}};var models=Object.keys(b.models||{}).map(function(m){return m+": "+b.models[m]}).join("<br>")||"—";html+="<tr><td>Key "+(i+1)+" <span style='color:rgba(232,239,248,.45)'>#"+h+"</span></td><td>"+b.total+"</td><td>"+models+"</td></tr>"});
@@ -1228,8 +1222,7 @@ window.__AppComponent=Cs;window.React=Qa();window.ReactDOM=zc();})();
     css();var data=currentData();var el=document.getElementById("__usage_modal__");if(el)el.remove();
     el=document.createElement("div");el.id="__usage_modal__";el.className="__usage_modal";
     el.innerHTML='<div class="__usage_panel"><div class="__usage_row"><div><div style="font-weight:900;font-size:22px;letter-spacing:-.03em">Configurações</div><div class="__usage_small">Consumo local estimado de Gemini, Gemini TTS e Azure. Os números são contados neste aparelho/navegador.</div></div><button class="__usage_btn secondary" id="__usage_close__">×</button></div>'+
-      '<div class="__usage_box"><b>Diagnóstico padrão</b><div class="__usage_small">Você pode esconder ou mostrar o diagnóstico padrão. O painel “IA Conversa” foi removido.</div><div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"><button class="__usage_btn secondary" id="__usage_hide_debug__">Esconder diagnóstico</button><button class="__usage_btn secondary" id="__usage_show_debug__">Mostrar diagnóstico</button></div><div class="__usage_small" style="margin-top:8px">Status atual: '+(debugHidden()?'ocultos':'visíveis')+'</div></div>'+ 
-      '<div class="__usage_box"><b>Diagnóstico da geração de aulas</b>'+lessonDiagHtml()+'</div>'+
+      '<div class="__usage_box"><b>Diagnósticos da tela</b><div class="__usage_small">Você pode esconder ou mostrar os painéis “Áudio” e “IA Conversa”.</div><div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"><button class="__usage_btn secondary" id="__usage_hide_debug__">Esconder diagnósticos</button><button class="__usage_btn secondary" id="__usage_show_debug__">Mostrar diagnósticos</button></div><div class="__usage_small" style="margin-top:8px">Status atual: '+(debugHidden()?'ocultos':'visíveis')+'</div></div>'+
       '<div class="__usage_box"><b>Gemini — chamadas de texto hoje</b><table class="__usage_table"><tr><td><b>Chave</b></td><td><b>Chamadas</b></td><td><b>Modelos</b></td></tr>'+rows(data.day.gemini,data.keys)+'</table></div>'+
       '<div class="__usage_box"><b>Gemini TTS — áudio natural hoje</b><table class="__usage_table"><tr><td><b>Chave</b></td><td><b>Chamadas</b></td><td><b>Modelos</b></td></tr>'+rows(data.day.tts,data.keys)+'</table><div class="__usage_small">Se o TTS Gemini falhar, o app ainda pode cair na voz do navegador. Último erro TTS: '+String((window.__ttsLastErrors&&window.__ttsLastErrors[0])||"—").replace(/[<>&]/g,function(c){return {"<":"&lt;",">":"&gt;","&":"&amp;"}[c]})+'</div></div>'+
       '<div class="__usage_box"><b>Azure Pronunciation — estimativa</b><div class="__usage_small">Hoje: '+((data.day.azure&&data.day.azure.total)||0)+' avaliação(ões) / token(s). Mês: '+((data.month.azure&&data.month.azure.total)||0)+'.</div><div class="__usage_small">Com F0, trate como estimativa local. A confirmação real fica no portal Azure de cada conta.</div></div>'+
@@ -1261,7 +1254,7 @@ window.__AppComponent=Cs;window.React=Qa();window.ReactDOM=zc();})();
     var card=document.createElement("div");card.id="__usage_settings_card__";card.className="card-paper rounded-sm p-5 anim-rise";
     card.style.marginTop="24px";
     card.style.marginBottom="32px";
-    card.innerHTML='<div class="fx-body text-xs uppercase tracking-[0.22em] mb-2" style="color:var(--muted)">Configurações</div><p class="fx-body text-sm mb-3" style="color:var(--accent)">Veja consumo por key Gemini, Gemini TTS, Azure e o diagnóstico padrão.</p><button class="__usage_btn" id="__open_usage_settings__">Configurações</button>';
+    card.innerHTML='<div class="fx-body text-xs uppercase tracking-[0.22em] mb-2" style="color:var(--muted)">Configurações</div><p class="fx-body text-sm mb-3" style="color:var(--accent)">Veja consumo por key Gemini, Gemini TTS, Azure e controle os painéis de diagnóstico.</p><button class="__usage_btn" id="__open_usage_settings__">Configurações</button>';
     main.appendChild(card);
     var btn=document.getElementById("__open_usage_settings__");if(btn)btn.onclick=openSettings;
   }
@@ -1355,325 +1348,55 @@ lucide-react/dist/esm/lucide-react.mjs:
    *)
 */
 
+
+
+/* === Fluency patch V5: corrige AbortSignal nos retries + rotação real das 5 Gemini keys para AULAS === */
 ;(function(){
   try{
-    if(window.__fluencyLessonEmergencyPatchV2)return;
-    window.__fluencyLessonEmergencyPatchV2=true;
-    var LS="fluency_lessonGenerationDiag";
-    function now(){try{return new Date().toLocaleTimeString("pt-BR")}catch(_){return new Date().toISOString()}}
-    function esc(s){return String(s==null?"":s).replace(/[<>&]/g,function(c){return {"<":"&lt;",">":"&gt;","&":"&amp;"}[c]})}
-    function log(status,detail,extra){
-      try{
-        var d=Object.assign({status:status,detail:String(detail||""),time:now(),ts:Date.now()},extra||{});
-        window.__fluencyLessonDiag=d;
-        localStorage.setItem(LS,JSON.stringify(d));
-        injectDiag();
-        return d;
-      }catch(_){return null}
-    }
-    window.__fluencyLessonLog=log;
-    function isLessonKey(k){return /^fluency_lesson(_|_v\d|_v4|_v)/.test(k)||/^fluency_lesson_v4_/.test(k)||/^fluency_cache_validation_/.test(k)||k.indexOf("lesson_v4_")!==-1||k.indexOf("cache_validation_")!==-1}
-    function strongLesson(v){
-      try{
-        if(!v||typeof v!=="object")return false;
-        if(v._fallback)return false;
-        var intro=String(v.intro||"").trim();
-        if(!v.title||String(v.title).trim().length<12||intro.length<180)return false;
-        if(!Array.isArray(v.sections)||v.sections.length<3)return false;
-        var okSecs=v.sections.every(function(s){return s&&String(s.heading||"").trim().length>=4&&String(s.content||"").trim().length>=420&&Array.isArray(s.examples)&&s.examples.length>=3&&s.examples.every(function(ex){return ex&&String(ex.en||"").trim().length>=8&&String(ex.pt||"").trim().length>=8})});
-        if(!okSecs)return false;
-        if(!Array.isArray(v.exercises)||v.exercises.length<6)return false;
-        if(!v.exercises.every(function(e){return e&&String(e.question||"").trim().length>=12&&String(e.explanation||"").trim().length>=25&&e.answer!=null&&String(e.answer).trim().length>=1}))return false;
-        if(!Array.isArray(v.vocabulary)||v.vocabulary.length<5)return false;
-        if(!Array.isArray(v.tips)||v.tips.length<2)return false;
-        if(String(v.finalTip||"").trim().length<35)return false;
-        return true;
-      }catch(_){return false}
-    }
-    window.__fluencyLessonIsComplete=strongLesson;
-    window.__fluencyPurgeIncompleteLessons=function(forceAll){
-      var removed=0;
-      try{
-        var keys=[];
-        for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i); if(k&&isLessonKey(k))keys.push(k)}
-        keys.forEach(function(k){
-          try{
-            if(forceAll){localStorage.removeItem(k);removed++;return}
-            var raw=localStorage.getItem(k), v=null;
-            try{v=JSON.parse(raw||"null")}catch(_){v=null}
-            if(!v||v._fallback||!strongLesson(v)){localStorage.removeItem(k);removed++}
-          }catch(_){ }
-        });
-        if(removed)log("cache_limpo",removed+" aula(s)/validação(ões) antigas ou incompletas foram removidas",{removed:removed});
-      }catch(e){log("erro_cache",e.message||String(e))}
-      return removed;
-    };
-    try{
-      var resetKey="fluency___lessonHardResetV2";
-      if(!localStorage.getItem(resetKey)){
-        window.__fluencyPurgeIncompleteLessons(true);
-        localStorage.removeItem("fluency_workingGeminiModel");
-        localStorage.removeItem("fluency_availableModels");
-        localStorage.removeItem("fluency_availableModelsAt");
-        localStorage.setItem(resetKey,"1");
-        log("reset_aulas","Cache antigo de aulas foi limpo uma vez para remover aulas curtas salvas");
-      }else{window.__fluencyPurgeIncompleteLessons(false)}
-    }catch(_){ }
-    window.addEventListener("unhandledrejection",function(ev){
-      try{
-        var r=ev&&ev.reason; var msg=(r&&r.message)||String(r||"");
-        if(/transaction|indexedDB|database|get records|firebase|firestore/i.test(msg)){
-          log("erro_banco_local",msg.slice(0,500),{raw:msg});
-        }else if(/Gemini|generateContent|API|fetch|quota|429|403|timeout|JSON/i.test(msg)){
-          log("erro_geracao",msg.slice(0,500),{raw:msg});
-        }
-      }catch(_){ }
-    });
-    window.addEventListener("error",function(ev){
-      try{var msg=(ev&&ev.message)||""; if(/transaction|indexedDB|database|get records|Gemini|fetch|JSON/i.test(msg))log("erro_javascript",msg.slice(0,500),{raw:msg})}catch(_){ }
-    });
-    function diagHtml(){
-      var d=null; try{d=window.__fluencyLessonDiag||JSON.parse(localStorage.getItem(LS)||"null")}catch(_){ }
-      if(!d)return "<div style='opacity:.75;font-size:13px'>Aguardando geração de aula.</div>";
-      return "<div style='font-size:13px;line-height:1.45'><b>Aulas IA</b><br>Status: <span style='color:#93c5fd'>"+esc(d.status||"—")+"</span><br>Detalhe: "+esc(d.detail||"—")+"<br>Horário: "+esc(d.time||"—")+(d.raw?"<br>Erro bruto: "+esc(String(d.raw).slice(0,260)):"")+"</div>";
-    }
-    function injectDiag(){
-      try{
-        var panels=[].slice.call(document.querySelectorAll("div"));
-        var p=panels.find(function(el){var tx=el.innerText||"";return tx.indexOf("Vozes carregadas")!==-1&&tx.indexOf("Saúde Azure")!==-1});
-        if(!p)return;
-        var box=document.getElementById("__lesson_diag_default_panel__");
-        if(!box){box=document.createElement("div");box.id="__lesson_diag_default_panel__";box.style.cssText="margin-top:10px;padding-top:10px;border-top:1px solid rgba(148,163,184,.25);color:#dbeafe";p.appendChild(box)}
-        box.innerHTML=diagHtml();
-      }catch(_){ }
-    }
-    setInterval(injectDiag,1000);
-    var prepSince=0;
-    setInterval(function(){
-      try{
-        var txt=document.body&&document.body.innerText||"";
-        if(txt.indexOf("Preparando sua aula")!==-1){
-          if(!prepSince)prepSince=Date.now();
-          var sec=Math.round((Date.now()-prepSince)/1000);
-          if(sec>35)log("travado_preparando","A tela está em Preparando sua aula há "+sec+"s. Possível falha de IA, chave, rede ou banco local.");
-          var spinner=document.querySelector(".animate-spin");
-          if(spinner&&!document.getElementById("__lesson_force_reset_btn__")){
-            var btn=document.createElement("button");btn.id="__lesson_force_reset_btn__";btn.textContent="Limpar aula travada e recarregar";
-            btn.style.cssText="margin-top:14px;padding:10px 14px;border-radius:14px;border:1px solid rgba(147,197,253,.45);background:rgba(30,64,175,.35);color:#dbeafe;font-weight:700";
-            btn.onclick=function(){try{window.__fluencyPurgeIncompleteLessons(true)}catch(_){} location.reload()};
-            spinner.parentElement&&spinner.parentElement.appendChild(btn);
-          }
-        }else prepSince=0;
-      }catch(_){ }
-    },3000);
-    log("patch_v2_ativo","Correção reforçada ativa: cache antigo limpo, timeout Gemini reduzido e diagnóstico de aula integrado ao painel padrão");
-  }catch(e){try{console.warn("lesson emergency patch failed",e)}catch(_){}}
-})();
+    if(window.__fluencyLessonPatchV5) return;
+    window.__fluencyLessonPatchV5 = true;
 
+    var DIAG_KEY = "fluency_lessonGenerationDiag";
+    var BAD_KEY_TTL = 8 * 60 * 1000;
 
+    function safeJson(v){ try{return JSON.parse(v)}catch(_){return null} }
+    function esc(s){ return String(s||"").replace(/[<>&]/g,function(c){return {"<":"&lt;",">":"&gt;","&":"&amp;"}[c]}) }
+    function clock(){ try{return new Date().toLocaleTimeString()}catch(_){return String(Date.now())} }
 
-/* === Fluency emergency patch V3: lesson generation diagnostics + quota handling === */
-;(function(){
-  try{
-    if(window.__fluencyLessonPatchV3) return;
-    window.__fluencyLessonPatchV3 = true;
-
-    var LS = "fluency_lessonGenerationDiag";
-
-    function now(){
-      try{return new Date().toLocaleString()}catch(_){return String(Date.now())}
-    }
-
-    function saveDiag(status, detail, extra){
-      try{
-        var d = Object.assign({
-          status: status || "info",
-          detail: String(detail || ""),
-          time: now(),
-          ts: Date.now()
-        }, extra || {});
-        window.__fluencyLessonDiag = d;
-        localStorage.setItem(LS, JSON.stringify(d));
-        return d;
-      }catch(_){return null}
-    }
-
-    function addPanelLog(text, color){
+    function findDiagPanel(){
       try{
         var panels = Array.prototype.slice.call(document.querySelectorAll("div"));
-        var panel = panels.find(function(el){
+        return panels.find(function(el){
           var tx = el.innerText || "";
           return tx.indexOf("Vozes carregadas") !== -1 && tx.indexOf("Saúde Azure") !== -1;
         });
+      }catch(_){ return null }
+    }
+
+    function panelLog(text, kind){
+      try{
+        var panel = findDiagPanel();
         if(!panel) return;
-
-        var list = document.getElementById("__lesson_diag_v3_log__");
-        if(!list){
-          list = document.createElement("div");
-          list.id = "__lesson_diag_v3_log__";
-          list.style.cssText = "margin-top:10px;padding-top:10px;border-top:1px solid rgba(148,163,184,.25);font-size:13px;line-height:1.38;color:#dbeafe;max-height:190px;overflow:auto;";
-          panel.appendChild(list);
+        var box = document.getElementById("__lesson_diag_v5__");
+        if(!box){
+          box = document.createElement("div");
+          box.id = "__lesson_diag_v5__";
+          box.style.cssText = "margin-top:10px;padding-top:10px;border-top:1px solid rgba(148,163,184,.25);font-size:13px;line-height:1.38;color:#dbeafe;max-height:240px;overflow:auto;";
+          panel.appendChild(box);
         }
-
+        var color = "#dbeafe";
+        if(kind === "ok") color = "#86efac";
+        if(kind === "warn") color = "#fbbf24";
+        if(kind === "err") color = "#fca5a5";
         var row = document.createElement("div");
-        row.style.color = color || "#dbeafe";
-        row.textContent = new Date().toLocaleTimeString() + " Aula IA: " + text;
-        list.insertBefore(row, list.firstChild);
-        while(list.children.length > 12) list.removeChild(list.lastChild);
+        row.style.color = color;
+        row.textContent = clock() + " Aula IA: " + String(text||"");
+        box.insertBefore(row, box.firstChild);
+        while(box.children.length > 18) box.removeChild(box.lastChild);
       }catch(_){}
     }
 
-    function purgeBadLessons(){
-      try{
-        var removed = 0;
-        for(var i = localStorage.length - 1; i >= 0; i--){
-          var k = localStorage.key(i);
-          if(!k || k.indexOf("fluency_lesson_") !== 0 && k.indexOf("fluency_lesson_v") !== 0) continue;
-          try{
-            var v = JSON.parse(localStorage.getItem(k) || "null");
-            var bad = !v || v._fallback ||
-              !v.title ||
-              !v.intro || String(v.intro).trim().length < 80 ||
-              !Array.isArray(v.sections) || v.sections.length < 3 ||
-              !Array.isArray(v.exercises) || v.exercises.length < 4 ||
-              !Array.isArray(v.vocabulary) || v.vocabulary.length < 4;
-            if(bad){
-              localStorage.removeItem(k);
-              removed++;
-            }
-          }catch(_){}
-        }
-        if(removed){
-          saveDiag("cache_limpo", "Removi " + removed + " aula(s) curta(s)/incompleta(s) salvas no navegador.");
-          addPanelLog("cache antigo limpo: " + removed + " aula(s) removida(s)", "#86efac");
-        }
-      }catch(_){}
-    }
-
-    // Evita gastar chamadas com validação extra em modelos Pro. A aula continua sendo gerada por Flash.
-    try{
-      localStorage.setItem("fluency_validateLessons", "false");
-      var wm = localStorage.getItem("fluency_workingGeminiModel");
-      if(wm && /pro/i.test(wm)) localStorage.removeItem("fluency_workingGeminiModel");
-    }catch(_){}
-
-    purgeBadLessons();
-
-    // Diagnóstico real de HTTP da Gemini API. Agora 429/503 aparecem como erro de aula no painel.
-    try{
-      if(!window.__fluencyFetchLessonDiagV3 && typeof window.fetch === "function"){
-        window.__fluencyFetchLessonDiagV3 = true;
-        var nativeFetch = window.fetch;
-        window.fetch = function(input, init){
-          var url = "";
-          try{ url = typeof input === "string" ? input : (input && input.url) || ""; }catch(_){}
-          var isGemini = /generativelanguage\.googleapis\.com/.test(url) && /generateContent/.test(url);
-          var model = "";
-          try{ model = (url.match(/\/models\/([^:\/]+):generateContent/) || [])[1] || ""; }catch(_){}
-          if(isGemini){
-            saveDiag("chamando_api", "Chamando Gemini " + (model || "modelo desconhecido") + "…", {model:model});
-            addPanelLog("chamando Gemini " + (model || "modelo desconhecido") + "…", "#93c5fd");
-          }
-          return nativeFetch.apply(this, arguments).then(function(res){
-            try{
-              if(isGemini && !res.ok){
-                var status = res.status;
-                var msg = status === 429
-                  ? "HTTP 429: limite/quota da API Gemini atingido. Use outra key ou aguarde liberar."
-                  : status === 503
-                    ? "HTTP 503: Gemini indisponível/sobrecarregado no momento. Tente novamente depois."
-                    : "HTTP " + status + " da API Gemini.";
-                saveDiag("erro_api_gemini", msg, {raw: msg, model:model, statusCode:status});
-                addPanelLog(msg, status === 429 ? "#fbbf24" : "#fca5a5");
-              }else if(isGemini && res.ok){
-                saveDiag("api_ok", "Gemini respondeu com sucesso: " + (model || "modelo desconhecido"), {model:model});
-                addPanelLog("Gemini respondeu OK: " + (model || "modelo desconhecido"), "#86efac");
-              }
-            }catch(_){}
-            return res;
-          }).catch(function(err){
-            try{
-              if(isGemini){
-                var m = (err && err.message) || String(err || "");
-                saveDiag("erro_rede_gemini", "Falha de rede/timeout ao chamar Gemini: " + m.slice(0,180), {raw:m, model:model});
-                addPanelLog("falha Gemini: " + m.slice(0,120), "#fca5a5");
-              }
-            }catch(_){}
-            throw err;
-          });
-        };
-      }
-    }catch(_){}
-
-    // Se a tela ficar presa em "Preparando sua aula", mostra o erro dentro da própria tela.
-    var stuckSince = 0;
-    function ensureStuckMessage(){
-      try{
-        var txt = document.body && document.body.innerText || "";
-        if(txt.indexOf("Preparando sua aula") === -1){
-          stuckSince = 0;
-          return;
-        }
-        if(!stuckSince) stuckSince = Date.now();
-        var sec = Math.round((Date.now() - stuckSince) / 1000);
-        if(sec < 25) return;
-
-        var diag = null;
-        try{ diag = window.__fluencyLessonDiag || JSON.parse(localStorage.getItem(LS) || "null"); }catch(_){}
-        var detail = diag && diag.detail ? diag.detail : "A geração demorou demais. Possível limite da Gemini API, rede instável ou cache antigo.";
-        saveDiag("travado_preparando", "Preparando aula há " + sec + "s. " + detail, {raw: detail});
-
-        var spin = document.querySelector(".animate-spin");
-        var parent = spin && spin.parentElement;
-        if(!parent || document.getElementById("__lesson_stuck_v3__")) return;
-
-        var box = document.createElement("div");
-        box.id = "__lesson_stuck_v3__";
-        box.style.cssText = "margin:18px auto 0;max-width:520px;padding:14px;border-radius:16px;background:rgba(127,29,29,.22);border:1px solid rgba(248,113,113,.45);color:#fecaca;font-family:-apple-system,BlinkMacSystemFont,sans-serif;text-align:left;font-size:13px;line-height:1.45;";
-        box.innerHTML = "<b>A geração da aula travou.</b><br>" +
-          detail.replace(/[<>&]/g,function(c){return {'<':'&lt;','>':'&gt;','&':'&amp;'}[c]}) +
-          "<br><button id='__lesson_clear_v3__' style='margin-top:10px;padding:10px 12px;border-radius:12px;border:1px solid rgba(252,165,165,.55);background:rgba(127,29,29,.35);color:#fff;font-weight:800'>Limpar aula travada e recarregar</button>";
-        parent.appendChild(box);
-        document.getElementById("__lesson_clear_v3__").onclick = function(){
-          try{
-            purgeBadLessons();
-            localStorage.removeItem("fluency_workingGeminiModel");
-            localStorage.removeItem("fluency_availableModels");
-            localStorage.removeItem("fluency_availableModelsAt");
-          }catch(_){}
-          location.reload();
-        };
-      }catch(_){}
-    }
-
-    setInterval(ensureStuckMessage, 3000);
-    saveDiag("patch_v3_ativo", "Correção V3 ativa: validação Pro desligada, cache ruim removido e erros 429/503 da Gemini visíveis no diagnóstico.");
-    addPanelLog("patch V3 ativo", "#86efac");
-  }catch(e){
-    try{ console.warn("Fluency patch V3 failed", e); }catch(_){}
-  }
-})();
-
-
-
-/* === Fluency patch V4: geração de aula separada da pronúncia + rotação real das 5 Gemini keys === */
-;(function(){
-  try{
-    if(window.__fluencyLessonPatchV4) return;
-    window.__fluencyLessonPatchV4 = true;
-
-    var DIAG_KEY = "fluency_lessonGenerationDiag";
-    var BAD_KEY_TTL = 10 * 60 * 1000; // 10 min
-
-    function tnow(){
-      try{return new Date().toLocaleTimeString()}catch(_){return String(Date.now())}
-    }
-
-    function safeJson(v){
-      try{return JSON.parse(v)}catch(_){return null}
-    }
-
-    function diag(status, detail, extra){
+    function setDiag(status, detail, extra){
       try{
         var d = Object.assign({
           status: status || "info",
@@ -1683,150 +1406,131 @@ lucide-react/dist/esm/lucide-react.mjs:
         }, extra || {});
         window.__fluencyLessonDiag = d;
         localStorage.setItem(DIAG_KEY, JSON.stringify(d));
-        panelLog(String(detail || status), status);
+        panelLog(detail, status === "ok" ? "ok" : (/erro|travado|falharam/i.test(status) ? "err" : (/quota|limite|503|429|próxima|proxima|abort/i.test(String(detail)) ? "warn" : "")));
         return d;
-      }catch(_){return null}
+      }catch(_){ return null }
     }
 
-    function panelLog(text, status){
+    function addKey(keys, k){
       try{
-        var panels = Array.prototype.slice.call(document.querySelectorAll("div"));
-        var panel = panels.find(function(el){
-          var tx = el.innerText || "";
-          return tx.indexOf("Vozes carregadas") !== -1 && tx.indexOf("Saúde Azure") !== -1;
-        });
-        if(!panel) return;
-
-        var list = document.getElementById("__lesson_diag_v4_log__");
-        if(!list){
-          list = document.createElement("div");
-          list.id = "__lesson_diag_v4_log__";
-          list.style.cssText = "margin-top:10px;padding-top:10px;border-top:1px solid rgba(148,163,184,.25);font-size:13px;line-height:1.38;color:#dbeafe;max-height:220px;overflow:auto;";
-          panel.appendChild(list);
-        }
-
-        var color = "#dbeafe";
-        if(status === "ok" || status === "patch_v4_ativo" || status === "cache_limpo") color = "#86efac";
-        if(status === "quota" || status === "tentando_proxima_key") color = "#fbbf24";
-        if(status === "erro" || status === "erro_api_gemini" || status === "travado") color = "#fca5a5";
-
-        var row = document.createElement("div");
-        row.style.color = color;
-        row.textContent = tnow() + " Aula IA: " + text;
-        list.insertBefore(row, list.firstChild);
-        while(list.children.length > 16) list.removeChild(list.lastChild);
+        k = String(k || "").trim();
+        if(!k || k.length < 20) return;
+        if(keys.indexOf(k) === -1) keys.push(k);
       }catch(_){}
     }
 
     function getGeminiKeys(){
       var keys = [];
-      function add(k){
-        try{
-          k = String(k || "").trim();
-          if(!k || k.length < 20) return;
-          if(keys.indexOf(k) === -1) keys.push(k);
-        }catch(_){}
-      }
-
-      try{ add(localStorage.getItem("geminiApiKey")); }catch(_){}
-      try{ add(localStorage.getItem("fluency_gemini_api_key")); }catch(_){}
-      try{ add(localStorage.getItem("fluency_geminiApiKey")); }catch(_){}
-      try{ add(localStorage.getItem("GOOGLE_API_KEY")); }catch(_){}
-
+      try{ addKey(keys, localStorage.getItem("geminiApiKey")); }catch(_){}
+      try{ addKey(keys, localStorage.getItem("fluency_gemini_api_key")); }catch(_){}
+      try{ addKey(keys, localStorage.getItem("fluency_geminiApiKey")); }catch(_){}
+      try{ addKey(keys, localStorage.getItem("GOOGLE_API_KEY")); }catch(_){}
       try{
         var arr = safeJson(localStorage.getItem("geminiKeys") || "[]");
-        if(Array.isArray(arr)) arr.forEach(add);
+        if(Array.isArray(arr)) arr.forEach(function(k){ addKey(keys,k) });
       }catch(_){}
-
       try{
         var arr2 = safeJson(localStorage.getItem("fluency_geminiKeys") || "[]");
-        if(Array.isArray(arr2)) arr2.forEach(add);
+        if(Array.isArray(arr2)) arr2.forEach(function(k){ addKey(keys,k) });
       }catch(_){}
-
-      // Procura arrays/strings salvos com nomes parecidos, sem expor a key.
       try{
         for(var i=0;i<localStorage.length;i++){
-          var k = localStorage.key(i);
-          if(!k || !/gemini/i.test(k) || !/key/i.test(k)) continue;
-          var val = localStorage.getItem(k);
-          if(!val) continue;
+          var name = localStorage.key(i);
+          if(!name || !/gemini/i.test(name) || !/key/i.test(name)) continue;
+          var val = localStorage.getItem(name);
           var parsed = safeJson(val);
-          if(Array.isArray(parsed)) parsed.forEach(add);
-          else String(val).split(/[\n,; ]+/).forEach(add);
+          if(Array.isArray(parsed)) parsed.forEach(function(k){ addKey(keys,k) });
+          else String(val || "").split(/[\s,;]+/).forEach(function(k){ addKey(keys,k) });
         }
       }catch(_){}
-
       return keys.slice(0,5);
     }
 
-    function badMap(){
-      return safeJson(localStorage.getItem("fluency_badGeminiKeysV4") || "{}") || {};
-    }
-
-    function setBad(key, reason){
+    function badMap(){ return safeJson(localStorage.getItem("fluency_badGeminiKeysV5") || "{}") || {} }
+    function markBad(key, reason){
       try{
         var m = badMap();
         m[String(key).slice(-8)] = {ts:Date.now(), reason:String(reason||"erro")};
-        localStorage.setItem("fluency_badGeminiKeysV4", JSON.stringify(m));
+        localStorage.setItem("fluency_badGeminiKeysV5", JSON.stringify(m));
       }catch(_){}
     }
-
     function isBad(key){
       try{
-        var m = badMap();
-        var rec = m[String(key).slice(-8)];
-        if(!rec) return false;
-        if(Date.now() - rec.ts > BAD_KEY_TTL) return false;
-        return true;
-      }catch(_){return false}
+        var rec = badMap()[String(key).slice(-8)];
+        return !!(rec && Date.now() - rec.ts < BAD_KEY_TTL);
+      }catch(_){ return false }
     }
 
-    function keyIndex(key, keys){
-      try{return Math.max(1, keys.indexOf(key)+1)}catch(_){return 1}
+    function keyNumber(key, keys){
+      var n = keys.indexOf(key);
+      return n < 0 ? 1 : n + 1;
     }
 
-    function isLessonRequest(url, bodyText){
-      var u = String(url || "");
-      var b = String(bodyText || "");
-      if(!/generativelanguage\.googleapis\.com/.test(u) || !/generateContent/.test(u)) return false;
-      // Sinais fortes de geração de aula, sem confundir com pronúncia/STT.
-      if(/pronuncia|pronúncia|speaking|speech|stt|transcri|utterance|audio|mimeType|inlineData|base64/i.test(b)) return false;
-      return /lesson|li[cç][aã]o|aula|grammar|gram[áa]tica|exercises|exerc/i.test(b);
-    }
-
-    function forceFlashUrl(url){
+    function requestBodyText(input, init){
       try{
-        var u = String(url || "");
-        // Aula nunca deve usar Pro.
-        u = u.replace(/\/models\/gemini-[^:\/]*pro[^:\/]*:generateContent/i, "/models/gemini-2.5-flash:generateContent");
-        u = u.replace(/\/models\/gemini-pro[^:\/]*:generateContent/i, "/models/gemini-2.0-flash:generateContent");
-        return u;
-      }catch(_){return url}
+        if(init && typeof init.body === "string") return init.body;
+        if(input && typeof input === "object" && input.__fluencyBodyText) return input.__fluencyBodyText;
+      }catch(_){}
+      return "";
     }
 
-    function urlWithKey(url, key){
+    function isGeminiGenerate(url){
+      return /generativelanguage\.googleapis\.com/.test(String(url||"")) && /generateContent/.test(String(url||""));
+    }
+
+    function isLessonRequest(url, body){
+      if(!isGeminiGenerate(url)) return false;
+      var b = String(body || "");
+      if(/pronuncia|pronúncia|speaking|speech|stt|transcri|utterance|audio|mimeType|inlineData|base64/i.test(b)) return false;
+      return /lesson|li[cç][aã]o|aula|grammar|gram[áa]tica|exercises|exerc|vocabulary|vocabul/i.test(b);
+    }
+
+    function forceLessonModel(url){
+      var s = String(url || "");
+      // Nunca usar Pro para aula.
+      s = s.replace(/\/models\/gemini-[^:\/]*pro[^:\/]*:generateContent/i, "/models/gemini-2.5-flash:generateContent");
+      s = s.replace(/\/models\/gemini-pro[^:\/]*:generateContent/i, "/models/gemini-2.0-flash:generateContent");
+      // Se estiver em outro modelo, mantém; se vier vazio/estranho, tenta flash.
+      return s;
+    }
+
+    function withKey(url, key){
       try{
         var u = new URL(String(url), location.href);
         u.searchParams.set("key", key);
         return u.toString();
       }catch(_){
         var s = String(url);
-        return s.replace(/([?&]key=)[^&]+/, "$1" + encodeURIComponent(key));
+        return s.indexOf("key=") >= 0 ? s.replace(/([?&]key=)[^&]+/, "$1"+encodeURIComponent(key)) : s + (s.indexOf("?")>=0?"&":"?") + "key=" + encodeURIComponent(key);
       }
     }
 
-    async function responseTextClone(res){
-      try{return await res.clone().text()}catch(_){return ""}
+    function cleanInit(init){
+      var out = {};
+      try{
+        init = init || {};
+        Object.keys(init).forEach(function(k){
+          if(k === "signal") return; // correção principal: não reutilizar AbortSignal já abortado
+          out[k] = init[k];
+        });
+        if(!out.method) out.method = init.method || "POST";
+      }catch(_){}
+      return out;
     }
 
-    function quotaMessage(status, txt){
-      txt = String(txt || "");
-      if(status === 429 || /RESOURCE_EXHAUSTED|quota|rate limit|Too Many Requests/i.test(txt)) return "HTTP 429/quota da API Gemini";
-      if(status === 503 || /UNAVAILABLE|overload|temporarily unavailable/i.test(txt)) return "HTTP 503/indisponibilidade da API Gemini";
-      return "";
+    function delay(ms){ return new Promise(function(resolve){ setTimeout(resolve, ms) }) }
+
+    async function readClone(res){ try{return await res.clone().text()}catch(_){return ""} }
+
+    function classify(status, text, err){
+      var t = String(text || (err && err.message) || err || "");
+      if(status === 429 || /RESOURCE_EXHAUSTED|quota|rate limit|Too Many Requests/i.test(t)) return {type:"quota", msg:"HTTP 429/quota da API Gemini"};
+      if(status === 503 || /UNAVAILABLE|overload|temporarily unavailable|Service Unavailable/i.test(t)) return {type:"unavailable", msg:"HTTP 503/indisponibilidade da API Gemini"};
+      if(/aborted|AbortError|operation was aborted/i.test(t)) return {type:"abort", msg:"requisição abortada pelo timeout antigo do app"};
+      if(/Failed to fetch|network|Load failed/i.test(t)) return {type:"network", msg:"erro de rede ao chamar Gemini"};
+      return {type:"other", msg: status ? "HTTP "+status+" da API Gemini" : t.slice(0,180)};
     }
 
-    // Remove aulas fallback/curtas antigas.
     function purgeBadLessons(){
       try{
         var removed = 0;
@@ -1844,13 +1548,12 @@ lucide-react/dist/esm/lucide-react.mjs:
             if(bad){ localStorage.removeItem(k); removed++; }
           }catch(_){}
         }
-        if(removed) diag("cache_limpo", "Cache limpo: " + removed + " aula(s) curta(s)/incompleta(s) removida(s).");
+        if(removed) setDiag("cache_limpo", "Cache limpo: " + removed + " aula(s) curta(s)/incompleta(s) removida(s).");
       }catch(_){}
     }
 
     purgeBadLessons();
 
-    // Desliga validações extras com Pro; deixa Pro apenas para partes não-aula, caso o app use.
     try{
       localStorage.setItem("fluency_validateLessons", "false");
       localStorage.setItem("fluency_lessonModel", "gemini-2.5-flash");
@@ -1859,142 +1562,127 @@ lucide-react/dist/esm/lucide-react.mjs:
       if(wm && /pro/i.test(wm)) localStorage.removeItem("fluency_workingGeminiModel");
     }catch(_){}
 
-    // Rotação real de keys somente para GERAÇÃO DE AULA. Pronúncia/STT fica fora.
-    try{
-      if(!window.__fluencyLessonFetchRotatorV4 && typeof window.fetch === "function"){
-        window.__fluencyLessonFetchRotatorV4 = true;
-        var nativeFetch = window.fetch;
-        window.fetch = async function(input, init){
-          var url = "";
-          var method = "";
-          var bodyText = "";
+    if(typeof window.fetch === "function" && !window.__fluencyLessonFetchV5Installed){
+      window.__fluencyLessonFetchV5Installed = true;
+      var nativeFetch = window.fetch.bind(window);
 
-          try{ url = typeof input === "string" ? input : (input && input.url) || ""; }catch(_){}
-          try{ method = (init && init.method) || (input && input.method) || "GET"; }catch(_){}
-          try{
-            var b = init && init.body;
-            if(typeof b === "string") bodyText = b;
-          }catch(_){}
+      window.fetch = async function(input, init){
+        var url = "";
+        try{ url = typeof input === "string" ? input : (input && input.url) || ""; }catch(_){}
+        var body = requestBodyText(input, init);
 
-          var isGemini = /generativelanguage\.googleapis\.com/.test(String(url)) && /generateContent/.test(String(url));
-          var lessonReq = isGemini && isLessonRequest(url, bodyText);
+        if(!isLessonRequest(url, body)){
+          return nativeFetch(input, init);
+        }
 
-          if(!lessonReq){
-            return nativeFetch.apply(this, arguments);
-          }
+        var keys = getGeminiKeys();
+        if(!keys.length){
+          setDiag("erro_sem_key", "Nenhuma Gemini key encontrada para gerar aula.");
+          return nativeFetch(input, init);
+        }
 
-          var keys = getGeminiKeys();
-          if(!keys.length){
-            diag("erro", "Nenhuma Gemini key encontrada para gerar aula.");
-            return nativeFetch.apply(this, arguments);
-          }
+        var usable = keys.filter(function(k){ return !isBad(k) });
+        if(!usable.length) usable = keys;
 
-          var usable = keys.filter(function(k){return !isBad(k)});
-          if(!usable.length) usable = keys; // depois do TTL ou se todas deram ruim, tenta novamente.
+        var baseUrl = forceLessonModel(url);
+        var initBase = cleanInit(init);
+        var last = "";
 
-          var baseUrl = forceFlashUrl(url);
-          var lastErrText = "";
-          diag("info", "Geração de aula: usando Flash e testando até " + keys.length + " Gemini key(s).", {keysTotal:keys.length});
+        setDiag("iniciando", "Geração de aula: " + keys.length + "/5 Gemini key(s) detectada(s). Timeout antigo removido dos retries.");
 
-          for(var i=0;i<usable.length;i++){
-            var key = usable[i];
-            var idx = keyIndex(key, keys);
-            var reqUrl = urlWithKey(baseUrl, key);
+        for(var i=0;i<usable.length;i++){
+          var key = usable[i];
+          var idx = keyNumber(key, keys);
+          var reqUrl = withKey(baseUrl, key);
 
+          // 2 tentativas por key para 503/abort/rede curta. 429 pula direto.
+          for(var attempt=1; attempt<=2; attempt++){
             try{
-              diag("info", "Tentando gerar aula com Gemini key " + idx + "/" + keys.length + " em gemini-2.5-flash.", {keyIndex:idx, keysTotal:keys.length, model:"gemini-2.5-flash"});
+              setDiag("chamando_api", "Tentando Gemini key " + idx + "/" + keys.length + " em gemini-2.5-flash. Tentativa " + attempt + "/2.", {keyIndex:idx, keysTotal:keys.length, attempt:attempt});
 
-              var nextInput = input;
-              if(typeof input === "string") nextInput = reqUrl;
-              else {
-                try{
-                  nextInput = new Request(reqUrl, input);
-                }catch(_){
-                  nextInput = reqUrl;
-                }
-              }
-
-              var res = await nativeFetch.call(this, nextInput, init);
+              var res = await nativeFetch(reqUrl, initBase);
 
               if(res && res.ok){
-                diag("ok", "Aula gerada: Gemini key " + idx + "/" + keys.length + " respondeu com sucesso.", {keyIndex:idx, keysTotal:keys.length, model:"gemini-2.5-flash"});
+                setDiag("ok", "Aula gerada com sucesso usando Gemini key " + idx + "/" + keys.length + ".", {keyIndex:idx, keysTotal:keys.length});
                 return res;
               }
 
-              var txt = await responseTextClone(res);
-              var qm = quotaMessage(res && res.status, txt);
-              lastErrText = qm || ("HTTP " + (res && res.status) + " da API Gemini");
+              var txt = await readClone(res);
+              var c = classify(res && res.status, txt);
+              last = c.msg;
 
-              if(qm){
-                setBad(key, qm);
-                diag("tentando_proxima_key", "Key " + idx + "/" + keys.length + " falhou por limite/instabilidade (" + qm + "). Pulando para a próxima.", {keyIndex:idx, keysTotal:keys.length, statusCode:res && res.status});
-                continue;
+              if(c.type === "quota"){
+                markBad(key, c.msg);
+                setDiag("quota", "Key " + idx + "/" + keys.length + " atingiu limite. Pulando para próxima.", {keyIndex:idx, keysTotal:keys.length});
+                break;
               }
 
-              diag("erro_api_gemini", "Gemini key " + idx + "/" + keys.length + " falhou: " + lastErrText, {keyIndex:idx, keysTotal:keys.length, statusCode:res && res.status});
-              return res;
+              if(c.type === "unavailable"){
+                setDiag("instavel", "Key " + idx + "/" + keys.length + " recebeu 503. Aguardando e tentando " + (attempt === 1 ? "de novo" : "próxima key") + ".", {keyIndex:idx, keysTotal:keys.length});
+                if(attempt === 1){ await delay(1200); continue; }
+                markBad(key, c.msg);
+                break;
+              }
+
+              setDiag("erro_api", "Key " + idx + "/" + keys.length + " falhou: " + c.msg + ". Pulando para próxima.", {keyIndex:idx, keysTotal:keys.length});
+              markBad(key, c.msg);
+              break;
 
             }catch(err){
-              lastErrText = (err && err.message) || String(err || "");
-              setBad(key, lastErrText);
-              diag("tentando_proxima_key", "Key " + idx + "/" + keys.length + " deu erro de rede. Pulando para próxima. " + lastErrText.slice(0,120), {keyIndex:idx, keysTotal:keys.length});
-              continue;
+              var c2 = classify(0, "", err);
+              last = c2.msg;
+              if(c2.type === "abort"){
+                setDiag("abort_corrigido", "O app abortou a chamada antiga. V5 removeu o AbortSignal e vai tentar novamente/key seguinte.", {keyIndex:idx, keysTotal:keys.length});
+                // tenta novamente na mesma key uma vez
+                if(attempt === 1){ await delay(500); continue; }
+              }else{
+                setDiag("erro_rede", "Key " + idx + "/" + keys.length + " falhou por rede: " + c2.msg + ". Pulando para próxima.", {keyIndex:idx, keysTotal:keys.length});
+              }
+              markBad(key, c2.msg);
+              break;
             }
           }
+        }
 
-          diag("erro", "Todas as " + keys.length + " Gemini keys falharam para gerar aula. Último erro: " + (lastErrText || "sem detalhe"), {keysTotal:keys.length, raw:lastErrText});
-
-          // Cria uma resposta JSON de erro controlado para o app parar de carregar infinito.
-          return new Response(JSON.stringify({
-            error:{
-              code:429,
-              message:"Todas as Gemini keys falharam para gerar aula. " + (lastErrText || ""),
-              status:"RESOURCE_EXHAUSTED"
-            }
-          }), {
-            status:429,
-            headers:{"Content-Type":"application/json"}
-          });
-        };
-      }
-    }catch(e){
-      diag("erro", "Falha ao instalar rotação de Gemini keys: " + ((e && e.message) || e));
+        setDiag("todas_falharam", "Todas as " + keys.length + " Gemini keys falharam para gerar aula. Último erro: " + (last || "sem detalhe") + ".", {keysTotal:keys.length, raw:last});
+        return new Response(JSON.stringify({
+          error:{
+            code:429,
+            status:"RESOURCE_EXHAUSTED",
+            message:"Todas as Gemini keys falharam para gerar aula. Último erro: " + (last || "sem detalhe")
+          }
+        }), {status:429, headers:{"Content-Type":"application/json"}});
+      };
     }
 
-    // Mensagem visual quando ficar preso.
     var stuckSince = 0;
     function stuckWatch(){
       try{
-        var txt = document.body && document.body.innerText || "";
-        if(txt.indexOf("Preparando sua aula") === -1 && txt.indexOf("Preparando aula") === -1){
+        var text = document.body && document.body.innerText || "";
+        if(text.indexOf("Preparando sua aula") === -1 && text.indexOf("Preparando aula") === -1){
           stuckSince = 0;
           return;
         }
         if(!stuckSince) stuckSince = Date.now();
-        var sec = Math.round((Date.now() - stuckSince) / 1000);
+        var sec = Math.round((Date.now() - stuckSince)/1000);
         if(sec < 25) return;
-
         var d = window.__fluencyLessonDiag || safeJson(localStorage.getItem(DIAG_KEY) || "null") || {};
-        var detail = d.detail || "A geração demorou demais. Verifique limite das Gemini keys.";
-        diag("travado", "Tela presa em preparação há " + sec + "s. " + detail);
-
-        if(document.getElementById("__lesson_stuck_v4__")) return;
-        var spin = document.querySelector(".animate-spin");
-        var parent = spin && spin.parentElement || document.body;
+        var detail = d.detail || "A geração demorou demais.";
+        setDiag("travado", "Tela presa em preparação há " + sec + "s. " + detail);
+        if(document.getElementById("__lesson_stuck_v5__")) return;
+        var parent = (document.querySelector(".animate-spin") || {}).parentElement || document.body;
         var box = document.createElement("div");
-        box.id = "__lesson_stuck_v4__";
-        box.style.cssText = "margin:18px auto;max-width:520px;padding:14px;border-radius:16px;background:rgba(127,29,29,.22);border:1px solid rgba(248,113,113,.45);color:#fecaca;font-family:-apple-system,BlinkMacSystemFont,sans-serif;text-align:left;font-size:13px;line-height:1.45;z-index:99999;position:relative;";
-        box.innerHTML = "<b>A geração da aula travou.</b><br>" +
-          String(detail).replace(/[<>&]/g,function(c){return {'<':'&lt;','>':'&gt;','&':'&amp;'}[c]}) +
-          "<br><button id='__lesson_clear_v4__' style='margin-top:10px;padding:10px 12px;border-radius:12px;border:1px solid rgba(252,165,165,.55);background:rgba(127,29,29,.35);color:#fff;font-weight:800'>Limpar aula travada e recarregar</button>";
+        box.id = "__lesson_stuck_v5__";
+        box.style.cssText = "margin:18px auto;max-width:520px;padding:14px;border-radius:16px;background:rgba(127,29,29,.24);border:1px solid rgba(248,113,113,.5);color:#fecaca;font-family:-apple-system,BlinkMacSystemFont,sans-serif;text-align:left;font-size:13px;line-height:1.45;z-index:999999;position:relative;";
+        box.innerHTML = "<b>A geração da aula travou.</b><br>"+esc(detail)+"<br><button id='__lesson_clear_v5__' style='margin-top:10px;padding:10px 12px;border-radius:12px;border:1px solid rgba(252,165,165,.55);background:rgba(127,29,29,.35);color:#fff;font-weight:800'>Limpar aula travada e recarregar</button>";
         parent.appendChild(box);
-        document.getElementById("__lesson_clear_v4__").onclick = function(){
+        document.getElementById("__lesson_clear_v5__").onclick = function(){
           try{
             purgeBadLessons();
             localStorage.removeItem("fluency_workingGeminiModel");
             localStorage.removeItem("fluency_availableModels");
             localStorage.removeItem("fluency_availableModelsAt");
-            localStorage.removeItem("fluency_badGeminiKeysV4");
+            localStorage.removeItem("fluency_badGeminiKeysV5");
           }catch(_){}
           location.reload();
         };
@@ -2002,9 +1690,8 @@ lucide-react/dist/esm/lucide-react.mjs:
     }
     setInterval(stuckWatch, 3000);
 
-    var found = getGeminiKeys().length;
-    diag("patch_v4_ativo", "Patch V4 ativo: aula separada da pronúncia, Pro bloqueado na aula, rotação detectou " + found + "/5 Gemini key(s).", {keysDetected:found});
+    setDiag("patch_v5_ativo", "Patch V5 ativo: corrige erro 'operation was aborted', força aula em Flash e testa até " + getGeminiKeys().length + "/5 Gemini keys.");
   }catch(e){
-    try{console.warn("Fluency patch V4 failed", e)}catch(_){}
+    try{ console.warn("Fluency V5 failed", e); }catch(_){}
   }
 })();
