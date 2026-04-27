@@ -1,5 +1,5 @@
 // Fluency Service Worker — offline cache
-const CACHE = "fluency-v37-reactdom-bundle-fix";
+const CACHE = "fluency-v38-2-blocos-multikey-diagnostico";
 const STATIC = [
   "./",
   "./index.html",
@@ -12,7 +12,8 @@ const STATIC = [
   "./azure-pronunciation-core.js",
   "./shadowing-ai.js",
   "./grammar-pro.js",
-  "./audio-volume-guard.js"
+  "./audio-volume-guard.js",
+  "./lesson-enhancer.js"
 ];
 
 const BUNDLE_BOOTSTRAP = `
@@ -30,19 +31,21 @@ const BUNDLE_BOOTSTRAP = `
   var selfScript = document.currentScript;
   var original = selfScript && selfScript.src ? new URL(selfScript.src, location.href) : new URL('bundle.js', location.href);
   original.searchParams.set('__orig', '1');
-  original.searchParams.set('__swfix', 'v37');
+  original.searchParams.set('__swfix', 'v38-2');
   var originalSrc = original.href;
+  var enhancerSrc = new URL('lesson-enhancer.js?v=38-2', location.href).href;
   var deps = [];
   if (!window.React) deps.push('https://unpkg.com/react@18/umd/react.production.min.js');
   if (!window.ReactDOM || typeof window.ReactDOM.createRoot !== 'function') deps.push('https://unpkg.com/react-dom@18/umd/react-dom.production.min.js');
   if (!window.lucide) deps.push('https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js');
   if (document.readyState === 'loading') {
     deps.forEach(writeScript);
+    writeScript(enhancerSrc);
     writeScript(originalSrc);
     return;
   }
   (function next(i){
-    if (i >= deps.length) return appendScript(originalSrc);
+    if (i >= deps.length) return appendScript(enhancerSrc, function(){ appendScript(originalSrc); });
     appendScript(deps[i], function(){ next(i + 1); });
   })(0);
 })();
