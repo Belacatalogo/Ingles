@@ -1952,3 +1952,446 @@ lucide-react/dist/esm/lucide-react.mjs:
     try{console.warn("Patch V11 schema failed", e)}catch(_){}
   }
 })();
+
+
+
+/* === FLUENCY PATCH V12 - HÍBRIDO INTELIGENTE FLASH -> PRO PARA AULAS === */
+;(function(){
+  try{
+    if(window.__fluencyHybridLessonV12) return;
+    window.__fluencyHybridLessonV12 = true;
+
+    var VERSION = "V12-HYBRID-FLASH-PRO";
+    var LESSON_KEY_STORAGE = "fluency_lessonGeminiApiKey";
+    var DIAG_KEY = "fluency_lessonGenerationDiag";
+    var MODEL_FLASH = "gemini-2.5-flash";
+    var MODEL_PRO = "gemini-2.5-pro";
+
+    function safeJson(v){try{return JSON.parse(v)}catch(_){return null}}
+    function now(){try{return new Date().toLocaleTimeString()}catch(_){return String(Date.now())}}
+
+    function findDiagPanel(){
+      try{
+        var els = Array.prototype.slice.call(document.querySelectorAll("div"));
+        return els.find(function(el){
+          var t = el.innerText || "";
+          return t.indexOf("Vozes carregadas") !== -1 && t.indexOf("Saúde Azure") !== -1;
+        });
+      }catch(_){return null}
+    }
+
+    function log(msg, kind){
+      try{
+        var p = findDiagPanel();
+        if(!p) return;
+        var root = document.getElementById("__fluency_hybrid_lesson_v12_panel__");
+        if(!root){
+          root = document.createElement("div");
+          root.id = "__fluency_hybrid_lesson_v12_panel__";
+          root.style.cssText = "margin-top:10px;padding-top:10px;border-top:1px solid rgba(148,163,184,.25);font-size:13px;line-height:1.38;color:#dbeafe;max-height:330px;overflow:auto;";
+          root.innerHTML = "<div style='font-weight:900;color:#86efac;margin-bottom:6px'>Aulas IA — HÍBRIDO FLASH → PRO V12 ATIVO</div>";
+          p.appendChild(root);
+        }
+        var color = "#dbeafe";
+        if(kind === "ok") color = "#86efac";
+        if(kind === "warn") color = "#fbbf24";
+        if(kind === "err") color = "#fca5a5";
+        if(kind === "pro") color = "#c4b5fd";
+        var row = document.createElement("div");
+        row.style.color = color;
+        row.textContent = now() + " Aula IA " + VERSION + ": " + String(msg||"");
+        root.insertBefore(row, root.children[1] || null);
+        while(root.children.length > 32) root.removeChild(root.lastChild);
+      }catch(_){}
+    }
+
+    function diag(status, detail, extra){
+      try{
+        var d = Object.assign({version:VERSION,status:status,detail:String(detail||""),time:new Date().toLocaleString(),ts:Date.now()}, extra||{});
+        window.__fluencyLessonDiag = d;
+        localStorage.setItem(DIAG_KEY, JSON.stringify(d));
+        var kind = status === "ok" ? "ok" :
+          status === "escalando_pro" || status === "pro" ? "pro" :
+          (/erro|falha|curta|travado|sem_key|invalid|rejeitada|incompleta/i.test(status) ? "err" :
+          (/aguardando|tentativa|tempo|demorar|429|503|quota|schema|flash/i.test(String(detail)) ? "warn" : ""));
+        log(detail, kind);
+      }catch(_){}
+    }
+
+    function getLessonKey(){
+      try{return String(localStorage.getItem(LESSON_KEY_STORAGE) || "").trim()}catch(_){return ""}
+    }
+
+    function setLessonKeyFlow(){
+      try{
+        var current = getLessonKey();
+        var masked = current ? "Key atual termina com ..." + current.slice(-6) + "\n\n" : "";
+        var key = prompt(masked + "Cole aqui a Gemini API Key PAGA que será usada SOMENTE para gerar aulas.\n\nO modo híbrido usará Flash primeiro e Pro só se a qualidade falhar 2x.", current || "");
+        if(key === null) return;
+        key = String(key || "").trim();
+        if(!key){
+          localStorage.removeItem(LESSON_KEY_STORAGE);
+          diag("key_removida", "Key Gemini exclusiva de aulas removida.");
+          alert("Key de aulas removida.");
+          return;
+        }
+        if(key.length < 20){
+          alert("Essa key parece curta demais. Confira e tente novamente.");
+          return;
+        }
+        localStorage.setItem(LESSON_KEY_STORAGE, key);
+        localStorage.setItem("fluency_lessonGeminiModel", MODEL_FLASH);
+        localStorage.setItem("fluency_lessonModel", MODEL_FLASH);
+        localStorage.setItem("fluency_preferredLessonModel", MODEL_FLASH);
+        diag("key_configurada", "Key de aulas configurada. Modo híbrido: Flash primeiro, Pro somente se Flash falhar na qualidade 2x.");
+        alert("Key de aulas configurada. Modo: Flash → Pro se necessário.");
+      }catch(e){
+        alert("Erro ao salvar key de aulas: " + ((e && e.message) || e));
+      }
+    }
+
+    function addConfigButton(){
+      try{
+        if(document.getElementById("__lesson_hybrid_key_v12_btn__")) return;
+        var btn = document.createElement("button");
+        btn.id = "__lesson_hybrid_key_v12_btn__";
+        btn.textContent = "Configurar Key Gemini de Aulas";
+        btn.style.cssText = "position:fixed;right:14px;bottom:86px;z-index:999999;padding:10px 12px;border-radius:14px;border:1px solid rgba(196,181,253,.65);background:rgba(15,23,42,.94);color:#ddd6fe;font-weight:900;font-size:12px;box-shadow:0 10px 28px rgba(0,0,0,.32);";
+        btn.onclick = setLessonKeyFlow;
+        document.body.appendChild(btn);
+      }catch(_){}
+    }
+    setInterval(addConfigButton, 2500);
+    setTimeout(addConfigButton, 500);
+
+    function isGeminiGenerate(url){
+      return /generativelanguage\.googleapis\.com/.test(String(url||"")) && /generateContent/.test(String(url||""));
+    }
+    function getBody(init){ try{return init && typeof init.body === "string" ? init.body : ""}catch(_){return ""} }
+    function isLessonRequest(url, body){
+      if(!isGeminiGenerate(url)) return false;
+      var b = String(body || "");
+      if(/pronuncia|pronúncia|speaking|speech|stt|transcri|utterance|audio|mimeType|inlineData|base64|wav|mp3|webm/i.test(b)) return false;
+      return /aula|li[cç][aã]o|lesson|grammar|gram[áa]tica|exercise|exerc|vocabulary|vocabul|sections|seções|secões/i.test(b);
+    }
+
+    var lessonSchema = {
+      type: "OBJECT",
+      properties: {
+        title: {type:"STRING"},
+        subtitle: {type:"STRING"},
+        estimatedMinutes: {type:"NUMBER"},
+        intro: {type:"STRING"},
+        sections: {type:"ARRAY", items: {type:"OBJECT", properties: {
+          heading:{type:"STRING"}, content:{type:"STRING"},
+          examples:{type:"ARRAY", items:{type:"OBJECT", properties:{en:{type:"STRING"}, pt:{type:"STRING"}}, required:["en","pt"]}}
+        }, required:["heading","content","examples"]}},
+        vocabulary: {type:"ARRAY", items:{type:"OBJECT", properties:{word:{type:"STRING"}, pos:{type:"STRING"}, translation:{type:"STRING"}, example:{type:"STRING"}}, required:["word","translation","example"]}},
+        exercises: {type:"ARRAY", items:{type:"OBJECT", properties:{type:{type:"STRING"}, question:{type:"STRING"}, options:{type:"ARRAY", items:{type:"STRING"}}, answer:{type:"STRING"}, explanation:{type:"STRING"}}, required:["type","question","answer","explanation"]}},
+        tips: {type:"ARRAY", items:{type:"STRING"}},
+        finalTip: {type:"STRING"}
+      },
+      required:["title","subtitle","estimatedMinutes","intro","sections","vocabulary","exercises","tips","finalTip"]
+    };
+
+    function qualityInstruction(modelName, attempt, rejectionCount){
+      var proText = modelName === MODEL_PRO ? "\nMODO PRO: corrija rigorosamente a estrutura, sem economizar conteúdo.\n" : "\nMODO FLASH: gere rápido, mas complete todos os arrays corretamente.\n";
+      return "\n\n" +
+        "GERE A AULA EXATAMENTE NO JSON DO SCHEMA.\n" +
+        proText +
+        "O app só renderiza aula completa se sections, vocabulary e exercises forem ARRAYS reais.\n" +
+        "Não coloque seções dentro da introdução. Não coloque exercícios em texto corrido.\n" +
+        "Obrigatório:\n" +
+        "- sections: exatamente 4 objetos.\n" +
+        "- cada section: content com 450 a 900 caracteres e examples com exatamente 4 objetos {en, pt}.\n" +
+        "- vocabulary: exatamente 10 objetos.\n" +
+        "- exercises: exatamente 10 objetos.\n" +
+        "- tips: exatamente 5 strings.\n" +
+        "- intro: 500 a 900 caracteres.\n" +
+        "- finalTip: 350 a 700 caracteres.\n" +
+        "Responda só JSON. Sem markdown. Sem comentários fora do JSON.\n" +
+        "Use português brasileiro nas explicações e exemplos em inglês com tradução.\n" +
+        (attempt > 1 || rejectionCount > 0 ? "\nA tentativa anterior foi rejeitada por estrutura incompleta. Corrija obrigatoriamente os arrays e exemplos.\n" : "");
+    }
+
+    function enhanceBody(raw, attempt, modelName, rejectionCount){
+      try{
+        var obj = JSON.parse(raw || "{}");
+        var instruction = qualityInstruction(modelName, attempt, rejectionCount);
+        var added = false;
+        function walk(x){
+          if(!x || added) return;
+          if(Array.isArray(x)){ for(var i=0;i<x.length;i++) walk(x[i]); return; }
+          if(typeof x === "object"){
+            if(typeof x.text === "string" && /aula|li[cç][aã]o|lesson|grammar|gram[áa]tica|exerc|vocabul|sections/i.test(x.text)){
+              x.text += instruction;
+              added = true;
+              return;
+            }
+            Object.keys(x).forEach(function(k){walk(x[k])});
+          }
+        }
+        walk(obj);
+        if(!added){
+          obj.contents = obj.contents || [];
+          obj.contents.push({role:"user", parts:[{text:instruction}]});
+        }
+        obj.generationConfig = obj.generationConfig || {};
+        obj.generationConfig.temperature = modelName === MODEL_PRO ? 0.45 : 0.58;
+        obj.generationConfig.maxOutputTokens = Math.max(Number(obj.generationConfig.maxOutputTokens || 0), modelName === MODEL_PRO ? 16000 : 12000);
+        obj.generationConfig.responseMimeType = "application/json";
+        obj.generationConfig.responseSchema = lessonSchema;
+        try{ delete obj.generationConfig.stopSequences; }catch(_){}
+        return JSON.stringify(obj);
+      }catch(_){
+        return String(raw || "") + qualityInstruction(modelName, attempt, rejectionCount);
+      }
+    }
+
+    function buildLessonUrl(originalUrl, lessonKey, modelName){
+      var s = String(originalUrl || "");
+      s = s.replace(/\/models\/[^:\/]+:generateContent/i, "/models/" + modelName + ":generateContent");
+      try{
+        var u = new URL(s, location.href);
+        u.searchParams.set("key", lessonKey);
+        return u.toString();
+      }catch(_){
+        if(s.indexOf("key=") >= 0) return s.replace(/([?&]key=)[^&]+/, "$1" + encodeURIComponent(lessonKey));
+        return s + (s.indexOf("?") >= 0 ? "&" : "?") + "key=" + encodeURIComponent(lessonKey);
+      }
+    }
+
+    function cleanInit(init, body, attempt, modelName, rejectionCount){
+      var out = {};
+      try{
+        init = init || {};
+        Object.keys(init).forEach(function(k){ if(k !== "signal") out[k] = init[k]; });
+        out.method = out.method || "POST";
+        out.headers = out.headers || {"Content-Type":"application/json"};
+        out.body = enhanceBody(body || out.body || "", attempt || 1, modelName, rejectionCount || 0);
+      }catch(_){}
+      return out;
+    }
+
+    function sleep(ms){return new Promise(function(resolve){setTimeout(resolve, ms)})}
+    async function fetchWithLongTimeout(fetchFn, url, init, ms){
+      var controller = null, timer = null;
+      try{
+        if(typeof AbortController !== "undefined"){
+          controller = new AbortController();
+          init = Object.assign({}, init || {}, {signal: controller.signal});
+          timer = setTimeout(function(){try{controller.abort()}catch(_){}}, ms);
+        }
+        return await fetchFn(url, init);
+      }finally{ if(timer) clearTimeout(timer); }
+    }
+    async function responseText(res){ try{return await res.clone().text()}catch(_){return ""} }
+
+    function classify(status, txt, err){
+      var t = String(txt || (err && err.message) || err || "");
+      if(status === 429 || /RESOURCE_EXHAUSTED|quota|rate limit|Too Many Requests/i.test(t)) return {type:"quota", msg:"HTTP 429/quota"};
+      if(status === 503 || /UNAVAILABLE|overload|temporarily unavailable|Service Unavailable/i.test(t)) return {type:"unavailable", msg:"HTTP 503/indisponível"};
+      if(/abort|aborted|AbortError|operation was aborted/i.test(t)) return {type:"timeout", msg:"tempo limite atingido"};
+      if(/network|Failed to fetch|Load failed/i.test(t)) return {type:"network", msg:"erro de rede"};
+      return {type:"other", msg: status ? "HTTP " + status + " " + t.slice(0,120) : t.slice(0,160)};
+    }
+
+    function extractGeminiText(apiText){
+      try{
+        var j = JSON.parse(apiText), out = [];
+        (j.candidates || []).forEach(function(c){
+          (((c.content || {}).parts) || []).forEach(function(p){ if(typeof p.text === "string") out.push(p.text); });
+        });
+        return out.join("\n");
+      }catch(_){ return String(apiText || ""); }
+    }
+    function stripDecor(s){ return String(s||"").trim().replace(/^```json\s*/i,"").replace(/^```\s*/i,"").replace(/```$/i,"").trim(); }
+    function findLessonJson(text){
+      text = stripDecor(text);
+      try{return JSON.parse(text)}catch(_){}
+      try{
+        var a = text.indexOf("{"), b = text.lastIndexOf("}");
+        if(a >= 0 && b > a) return JSON.parse(text.slice(a,b+1));
+      }catch(_){}
+      return null;
+    }
+
+    function normalizeExercise(ex){
+      if(!ex || typeof ex !== "object") return ex;
+      if(!ex.type) ex.type = Array.isArray(ex.options) && ex.options.length ? "choice" : "translate";
+      if(Array.isArray(ex.options)){
+        ex.options = ex.options.map(function(o){return String(o)});
+        while(ex.options.length < 4) ex.options.push("Opção " + (ex.options.length + 1));
+        if(ex.answer && ex.options.indexOf(String(ex.answer)) === -1) ex.options[0] = String(ex.answer);
+      } else ex.options = [];
+      return ex;
+    }
+    function normalizeLesson(lesson){
+      if(!lesson || typeof lesson !== "object") return lesson;
+      lesson.estimatedMinutes = Number(lesson.estimatedMinutes || 20);
+      if(!Array.isArray(lesson.sections)) lesson.sections = [];
+      if(!Array.isArray(lesson.vocabulary)) lesson.vocabulary = [];
+      if(!Array.isArray(lesson.exercises)) lesson.exercises = [];
+      if(!Array.isArray(lesson.tips)) lesson.tips = [];
+      lesson.sections = lesson.sections.map(function(s){ s = s || {}; if(!Array.isArray(s.examples)) s.examples = []; return s; });
+      lesson.exercises = lesson.exercises.map(normalizeExercise);
+      return lesson;
+    }
+
+    function validateLessonObject(lesson){
+      var errors = [];
+      if(!lesson || typeof lesson !== "object") return {ok:false, errors:["não veio JSON de aula"], length:0};
+      lesson = normalizeLesson(lesson);
+      var all = "";
+      try{all = JSON.stringify(lesson)}catch(_){}
+      if(!lesson.title || String(lesson.title).trim().length < 8) errors.push("title curto");
+      if(!lesson.subtitle || String(lesson.subtitle).trim().length < 5) errors.push("subtitle curto");
+      if(!lesson.intro || String(lesson.intro).trim().length < 420) errors.push("intro curta");
+      if(!Array.isArray(lesson.sections) || lesson.sections.length < 4) errors.push("sections precisa ter 4+ itens");
+      lesson.sections.slice(0,4).forEach(function(s,i){
+        if(!s.heading || String(s.heading).trim().length < 4) errors.push("section "+(i+1)+" sem heading");
+        if(!s.content || String(s.content).trim().length < 320) errors.push("section "+(i+1)+" content curto");
+        if(!Array.isArray(s.examples) || s.examples.length < 4) errors.push("section "+(i+1)+" com poucos exemplos");
+        (s.examples||[]).slice(0,4).forEach(function(ex,j){ if(!ex || !ex.en || !ex.pt) errors.push("section "+(i+1)+" example "+(j+1)+" incompleto"); });
+      });
+      if(!Array.isArray(lesson.vocabulary) || lesson.vocabulary.length < 8) errors.push("vocabulary precisa ter 8+ itens");
+      if(!Array.isArray(lesson.exercises) || lesson.exercises.length < 8) errors.push("exercises precisa ter 8+ itens");
+      if(!Array.isArray(lesson.tips) || lesson.tips.length < 3) errors.push("tips precisa ter 3+ itens");
+      if(!lesson.finalTip || String(lesson.finalTip).trim().length < 220) errors.push("finalTip curto");
+      if(all.length < 4200) errors.push("JSON total menor que 4200 caracteres");
+      return {ok:errors.length === 0, errors:errors, length:all.length, lesson:lesson};
+    }
+
+    function replaceGeminiResponseWithLesson(originalApiText, lesson){
+      var cleanLesson = normalizeLesson(lesson);
+      var lessonText = JSON.stringify(cleanLesson);
+      try{
+        var api = JSON.parse(originalApiText);
+        if(api.candidates && api.candidates[0] && api.candidates[0].content && api.candidates[0].content.parts && api.candidates[0].content.parts[0]){
+          api.candidates[0].content.parts[0].text = lessonText;
+          return JSON.stringify(api);
+        }
+      }catch(_){}
+      return JSON.stringify({candidates:[{content:{role:"model",parts:[{text:lessonText}]},finishReason:"STOP"}]});
+    }
+    function makeResponseFromText(text, status){ return new Response(text, {status:status || 200, headers:{"Content-Type":"application/json"}}); }
+    function makeErrorResponse(status, message){ return new Response(JSON.stringify({error:{code:status,status:"LESSON_GENERATION_FAILED",message:message}}), {status:status, headers:{"Content-Type":"application/json"}}); }
+
+    function purgeShortLessons(){
+      try{
+        var removed = 0;
+        for(var i=localStorage.length-1;i>=0;i--){
+          var k = localStorage.key(i);
+          if(!k || (k.indexOf("fluency_lesson_") !== 0 && k.indexOf("fluency_lesson_v") !== 0)) continue;
+          try{
+            var v = JSON.parse(localStorage.getItem(k) || "null");
+            var bad = !v || v._fallback || !v.title || !v.intro || String(v.intro).length < 100 ||
+              !Array.isArray(v.sections) || v.sections.length < 3 ||
+              !Array.isArray(v.exercises) || v.exercises.length < 5 ||
+              !Array.isArray(v.vocabulary) || v.vocabulary.length < 5;
+            if(bad){localStorage.removeItem(k); removed++}
+          }catch(_){}
+        }
+        if(removed) diag("cache_limpo", "Removi " + removed + " aula(s) curtas/incompletas salvas no cache.");
+      }catch(_){}
+    }
+    purgeShortLessons();
+
+    try{
+      localStorage.setItem("fluency_lessonGeminiModel", MODEL_FLASH);
+      localStorage.setItem("fluency_lessonModel", MODEL_FLASH);
+      localStorage.setItem("fluency_preferredLessonModel", MODEL_FLASH);
+      localStorage.setItem("fluency_validateLessons", "false");
+    }catch(_){}
+
+    if(typeof window.fetch === "function" && !window.__fluencyHybridLessonFetchV12Installed){
+      window.__fluencyHybridLessonFetchV12Installed = true;
+      var realFetch = window.fetch.bind(window);
+
+      window.fetch = async function(input, init){
+        var url = "";
+        try{url = typeof input === "string" ? input : (input && input.url) || ""}catch(_){}
+        var body = getBody(init);
+        if(!isLessonRequest(url, body)) return realFetch(input, init);
+
+        var lessonKey = getLessonKey();
+        if(!lessonKey){
+          diag("sem_key_aulas", "Nenhuma key Gemini exclusiva de aulas configurada.");
+          return makeErrorResponse(400, "Configure a Gemini key exclusiva para aulas.");
+        }
+
+        diag("inicio", "Híbrido inteligente iniciado: Flash primeiro. Se a validação rejeitar 2x, escalo para Pro só nesta aula.", {model:MODEL_FLASH});
+
+        var last = "", qualityRejects = 0, networkErrors = 0;
+        var attemptPlan = [
+          {model: MODEL_FLASH, n: 1},
+          {model: MODEL_FLASH, n: 2},
+          {model: MODEL_PRO, n: 3},
+          {model: MODEL_PRO, n: 4},
+          {model: MODEL_PRO, n: 5}
+        ];
+
+        for(var i=0; i<attemptPlan.length; i++){
+          var plan = attemptPlan[i];
+          var model = plan.model;
+          var attempt = plan.n;
+          if(model === MODEL_PRO && qualityRejects < 2 && networkErrors < 2) model = MODEL_FLASH;
+
+          try{
+            if(model === MODEL_PRO && qualityRejects >= 2) diag("escalando_pro", "Flash foi rejeitado por qualidade/estrutura 2x. Escalando para Pro somente nesta aula.", {attempt:attempt, qualityRejects:qualityRejects});
+            diag(model === MODEL_PRO ? "pro" : "tentativa", "Tentativa " + attempt + "/5 usando " + model + ". " + (model === MODEL_PRO ? "Modo Pro para corrigir estrutura." : "Modo Flash rápido/barato."), {attempt:attempt, model:model});
+
+            var lessonUrl = buildLessonUrl(url, lessonKey, model);
+            var clean = cleanInit(init, body, attempt, model, qualityRejects);
+            var res = await fetchWithLongTimeout(realFetch, lessonUrl, clean, model === MODEL_PRO ? 300000 : 240000);
+
+            if(res && res.ok){
+              var txt = await responseText(res);
+              var gemText = extractGeminiText(txt);
+              var lesson = findLessonJson(gemText);
+              var validation = validateLessonObject(lesson);
+
+              if(validation.ok){
+                var fixedApiText = replaceGeminiResponseWithLesson(txt, validation.lesson);
+                diag("ok", "Aula aprovada usando " + model + ". Sections: " + validation.lesson.sections.length + ", exercícios: " + validation.lesson.exercises.length + ", vocabulário: " + validation.lesson.vocabulary.length + ", tamanho: " + validation.length + ".", {length:validation.length, model:model, qualityRejects:qualityRejects});
+                return makeResponseFromText(fixedApiText, 200);
+              }
+
+              qualityRejects++;
+              last = validation.errors.slice(0,5).join("; ");
+              diag("aula_rejeitada", model + " rejeitado por qualidade/estrutura (" + qualityRejects + "x): " + last + ".", {attempt:attempt, model:model, qualityRejects:qualityRejects, length:validation.length});
+
+              if(qualityRejects >= 2 && model !== MODEL_PRO) diag("escalando_pro", "Duas rejeições seguidas no Flash. Próxima tentativa será Pro só para esta aula.", {qualityRejects:qualityRejects});
+              await sleep(1600);
+              continue;
+            }
+
+            var raw = await responseText(res);
+            var c = classify(res && res.status, raw);
+            last = c.msg;
+            if(c.type === "unavailable" || c.type === "timeout" || c.type === "network") networkErrors++;
+            diag("erro_api", "Erro usando " + model + ": " + c.msg + ". Vou tentar novamente conforme plano híbrido.", {attempt:attempt, model:model, statusCode:res && res.status, networkErrors:networkErrors});
+            await sleep(2200 * Math.min(attempt, 3));
+            continue;
+
+          }catch(e){
+            var c2 = classify(0, "", e);
+            last = c2.msg;
+            networkErrors++;
+            diag("erro_rede", "Falha/timeout usando " + model + ": " + c2.msg + ". Vou tentar novamente conforme plano híbrido.", {attempt:attempt, model:model, networkErrors:networkErrors});
+            await sleep(2200 * Math.min(attempt, 3));
+            continue;
+          }
+        }
+        return makeErrorResponse(500, "Não consegui gerar aula completa no modo híbrido. Último erro: " + (last || "sem detalhe"));
+      };
+    }
+
+    setTimeout(function(){
+      var hasKey = !!getLessonKey();
+      diag("patch_v12_ativo", "PATCH V12 ativo. Key de aulas: " + (hasKey ? "configurada" : "não configurada") + ". Híbrido: Flash primeiro, Pro após 2 rejeições de validação.", {hasLessonKey:hasKey});
+    }, 1200);
+  }catch(e){
+    try{console.warn("Patch V12 hybrid failed", e)}catch(_){}
+  }
+})();
