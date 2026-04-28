@@ -482,6 +482,9 @@ window.__ttsState = window.__ttsState || {
   right: 8px;
   z-index: 99999;
   max-width: 280px;
+  max-height: calc(100vh - 16px);
+  display: flex;
+  flex-direction: column;
   background: rgba(6, 13, 31, 0.95);
   border: 1px solid rgba(91, 156, 246, 0.4);
   border-radius: 12px;
@@ -573,14 +576,43 @@ window.__ttsState = window.__ttsState || {
   color: #5B9CF6;
   font-weight: 500;
 }
-#__audio_diag__ .__diag_log__ {
-  max-height: 140px;
+#__audio_diag__ .__diag_body__ {
+  flex: 1 1 auto;
+  min-height: 0;
   overflow-y: auto;
-  margin-top: 6px;
-  padding-top: 6px;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  overscroll-behavior: contain;
+  padding-right: 2px;
+  margin-right: -2px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(91, 156, 246, 0.4) transparent;
+}
+#__audio_diag__ .__diag_body__::-webkit-scrollbar { width: 4px; }
+#__audio_diag__ .__diag_body__::-webkit-scrollbar-track { background: transparent; }
+#__audio_diag__ .__diag_body__::-webkit-scrollbar-thumb { background: rgba(91, 156, 246, 0.35); border-radius: 2px; }
+#__audio_diag__ .__diag_section__ {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(167, 139, 250, 0.75);
+  margin: 8px 0 4px 0;
+  padding-bottom: 3px;
+  border-bottom: 1px solid rgba(167, 139, 250, 0.18);
+}
+#__audio_diag__ .__diag_section__:first-child { margin-top: 0; }
+#__audio_diag__ .__diag_log__ {
+  max-height: 180px;
+  overflow-y: auto;
+  margin-top: 4px;
+  padding: 6px 4px 0 4px;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   font-size: 10px;
   line-height: 1.4;
+  background: rgba(0, 0, 0, 0.18);
+  border-radius: 6px;
 }
 #__audio_diag__ .__diag_log__ div {
   margin: 2px 0;
@@ -632,11 +664,23 @@ window.__ttsState = window.__ttsState || {
     <span class="__diag_close__" id="__diag_close__">×</span>
   </div>
   <div class="__diag_body__">
+    <!-- ═══ SISTEMA ═══ -->
+    <div class="__diag_section__">Sistema</div>
     <div class="__diag_row__"><span>Status</span><b id="__diag_status__">aguardando…</b></div>
+    <div class="__diag_row__"><span>🏷️ Build</span><b id="__diag_build__" style="font-size:9px">—</b></div>
+    <div class="__diag_row__"><span>🌐 Conexão</span><b id="__diag_conn__">—</b></div>
+    <div class="__diag_row__"><span>🎵 AudioContext</span><b id="__diag_audioctx__">—</b></div>
+    <div class="__diag_row__"><span>🔌 Service Worker</span><b id="__diag_sw__" style="font-size:9px;max-width:140px;word-break:break-word;">—</b></div>
+    <div class="__diag_row__"><span>👁️ Aba ativa</span><b id="__diag_visible__">sim</b></div>
+
+    <!-- ═══ ÁUDIO ═══ -->
+    <div class="__diag_section__">Áudio</div>
     <div class="__diag_row__"><span>Vozes carregadas</span><b id="__diag_voices__">?</b></div>
     <div class="__diag_row__"><span>Speech destravado</span><b id="__diag_unlocked__">não</b></div>
     <div class="__diag_row__"><span>Última voz usada</span><b id="__diag_last_voice__">—</b></div>
-    <div style="border-top:1px solid rgba(255,255,255,0.08);margin:6px 0;"></div>
+
+    <!-- ═══ PRONÚNCIA / IA ═══ -->
+    <div class="__diag_section__">Pronúncia / IA</div>
     <div class="__diag_row__"><span>🎤 Modo análise pron.</span><b id="__diag_pron_mode__">—</b></div>
     <div class="__diag_row__"><span>🎙️ Áudio capturado</span><b id="__diag_pron_audio__">—</b></div>
     <div class="__diag_row__"><span>🤖 IA usada</span><b id="__diag_pron_ai__">—</b></div>
@@ -644,6 +688,9 @@ window.__ttsState = window.__ttsState || {
     <div class="__diag_row__"><span>🩺 Saúde Azure</span><b id="__diag_azure_health__" style="font-size:9px;max-width:145px;word-break:break-word;">—</b></div>
     <div class="__diag_row__"><span>📊 Último score</span><b id="__diag_pron_score__">—</b></div>
     <div class="__diag_row__"><span>⚠️ Motivo fallback</span><b id="__diag_pron_reason__" style="color:#F59E0B;font-size:9px;max-width:140px;word-break:break-word;">—</b></div>
+
+    <!-- ═══ LOGS ═══ -->
+    <div class="__diag_section__">Logs em tempo real</div>
     <div class="__diag_log__" id="__diag_log__"></div>
   </div>
 </div>
@@ -663,6 +710,12 @@ window.__ttsState = window.__ttsState || {
   var toggleEl = document.getElementById('__diag_toggle__');
   var closeEl = document.getElementById('__diag_close__');
   var headerEl = document.getElementById('__diag_header__');
+  // Novas referências (Sistema)
+  var buildEl = document.getElementById('__diag_build__');
+  var connEl = document.getElementById('__diag_conn__');
+  var audioCtxEl = document.getElementById('__diag_audioctx__');
+  var swEl = document.getElementById('__diag_sw__');
+  var visibleEl = document.getElementById('__diag_visible__');
 
   // Estado persistido no localStorage
   var STORAGE_KEY = '__fluency_diag_state__';
@@ -881,6 +934,294 @@ window.__ttsState = window.__ttsState || {
       }
     }
   });
+
+  // ═══════════════════════════════════════════════════════════
+  // ░░░ NOVOS HOOKS DE DIAGNÓSTICO (7 categorias críticas) ░░░
+  // ═══════════════════════════════════════════════════════════
+
+  // ── 1. BUILD / VERSÃO ──────────────────────────────────────
+  // Marca a build do index.html para identificar versão antiga em cache.
+  var __FLUENCY_BUILD__ = '2026-04-28-v2';
+  if (buildEl) buildEl.textContent = __FLUENCY_BUILD__;
+  logMsg('info', 'Build ' + __FLUENCY_BUILD__);
+
+  // ── 2. CONEXÃO online / offline ────────────────────────────
+  function updateConn() {
+    var on = navigator.onLine !== false;
+    if (connEl) {
+      connEl.textContent = on ? 'online' : 'offline';
+      connEl.style.color = on ? '#34D399' : '#F87171';
+    }
+  }
+  updateConn();
+  window.addEventListener('online', function() {
+    updateConn();
+    logMsg('ok', 'Conexão restaurada (online)');
+  });
+  window.addEventListener('offline', function() {
+    updateConn();
+    logMsg('warn', 'Sem conexão (offline)');
+  });
+
+  // ── 3. AUDIOCONTEXT state (suspended/running/interrupted) ──
+  // Intercepta criação de AudioContext para monitorar mudanças de estado.
+  // No iOS, começa "suspended" e só vira "running" após user gesture.
+  function trackAudioContext(ctx) {
+    if (!ctx || ctx.__fluencyTracked) return;
+    ctx.__fluencyTracked = true;
+    function update() {
+      if (audioCtxEl) {
+        audioCtxEl.textContent = ctx.state;
+        audioCtxEl.style.color = ctx.state === 'running' ? '#34D399'
+                              : ctx.state === 'suspended' ? '#F59E0B'
+                              : '#F87171';
+      }
+    }
+    update();
+    try {
+      ctx.addEventListener('statechange', function() {
+        update();
+        logMsg(ctx.state === 'running' ? 'ok' : (ctx.state === 'closed' || ctx.state === 'interrupted' ? 'err' : 'warn'),
+               'AudioContext: ' + ctx.state);
+      });
+    } catch(e) {}
+  }
+  ['AudioContext', 'webkitAudioContext'].forEach(function(name) {
+    var Original = window[name];
+    if (typeof Original === 'function' && !Original.__fluencyDiagWrapped) {
+      var Wrapped = function() {
+        var ctx;
+        if (arguments.length === 0) ctx = new Original();
+        else if (arguments.length === 1) ctx = new Original(arguments[0]);
+        else ctx = new Original(arguments[0], arguments[1]);
+        try { trackAudioContext(ctx); } catch(e) {}
+        return ctx;
+      };
+      try {
+        Wrapped.prototype = Original.prototype;
+        Object.setPrototypeOf(Wrapped, Original);
+        Wrapped.__fluencyDiagWrapped = true;
+        window[name] = Wrapped;
+      } catch(e) {}
+    }
+  });
+
+  // ── 4. SERVICE WORKER status ───────────────────────────────
+  // Mostra estado do SW (registrado/ativo/atualizando) e loga eventos
+  // críticos. Útil para detectar cache antigo no GitHub Pages.
+  function setSwStatus(text, color) {
+    if (swEl) {
+      swEl.textContent = text;
+      if (color) swEl.style.color = color;
+    }
+  }
+  if ('serviceWorker' in navigator) {
+    setSwStatus('verificando…', '#F59E0B');
+    navigator.serviceWorker.getRegistration().then(function(reg) {
+      if (!reg) {
+        setSwStatus('não registrado', '#6B7280');
+        logMsg('info', 'SW: não há service worker registrado');
+        return;
+      }
+      var s = reg.active ? 'ativo' : reg.installing ? 'instalando' : reg.waiting ? 'aguardando' : 'desconhecido';
+      setSwStatus(s, s === 'ativo' ? '#34D399' : '#F59E0B');
+      logMsg('ok', 'SW: ' + s);
+      reg.addEventListener('updatefound', function() {
+        setSwStatus('atualizando…', '#F59E0B');
+        logMsg('warn', 'SW: nova versão sendo baixada');
+        var nw = reg.installing;
+        if (nw) {
+          nw.addEventListener('statechange', function() {
+            if (nw.state === 'installed') {
+              if (navigator.serviceWorker.controller) {
+                setSwStatus('aguardando reload', '#F59E0B');
+                logMsg('warn', 'SW: nova versão pronta — recarregue a página');
+              } else {
+                setSwStatus('ativo (1ª vez)', '#34D399');
+                logMsg('ok', 'SW: instalado pela primeira vez');
+              }
+            } else if (nw.state === 'activated') {
+              setSwStatus('ativo', '#34D399');
+              logMsg('ok', 'SW: ativado');
+            } else if (nw.state === 'redundant') {
+              logMsg('err', 'SW: instalação falhou (redundant)');
+            }
+          });
+        }
+      });
+    }).catch(function(err) {
+      setSwStatus('erro', '#F87171');
+      logMsg('err', 'SW erro: ' + (err.message || err));
+    });
+    navigator.serviceWorker.addEventListener('controllerchange', function() {
+      logMsg('warn', 'SW: controller mudou (página será recarregada)');
+    });
+  } else {
+    setSwStatus('indisponível', '#6B7280');
+  }
+
+  // ── 5. PAGE VISIBILITY ─────────────────────────────────────
+  // iOS Safari pausa speechSynthesis quando aba sai de foco e
+  // não retoma sozinho — saber quando isso acontece é crítico.
+  document.addEventListener('visibilitychange', function() {
+    var hidden = document.hidden;
+    if (visibleEl) {
+      visibleEl.textContent = hidden ? 'não' : 'sim';
+      visibleEl.style.color = hidden ? '#F59E0B' : '#34D399';
+    }
+    logMsg(hidden ? 'warn' : 'info', 'Página ' + (hidden ? 'foi para o background' : 'voltou ao primeiro plano'));
+  });
+  window.addEventListener('pageshow', function(ev) {
+    if (ev.persisted) logMsg('warn', 'Página restaurada do bfcache (estado pode estar antigo)');
+  });
+
+  // ── 6. SPEECH RECOGNITION (microfone + reconhecimento) ─────
+  // Hook global em SpeechRecognition para capturar erros de
+  // permissão de mic, áudio e timeout — falhas silenciosas comuns no iOS.
+  function wrapSpeechRecognition(name) {
+    var Original = window[name];
+    if (typeof Original !== 'function' || Original.__fluencyDiagWrapped) return;
+    var Wrapped = function() {
+      var rec = arguments.length === 0 ? new Original() : new Original(arguments[0]);
+      try {
+        rec.addEventListener('start', function() { logMsg('info', 'SpeechRecognition: ▶ start'); });
+        rec.addEventListener('end',   function() { logMsg('info', 'SpeechRecognition: ⏹ end'); });
+        rec.addEventListener('nomatch', function() { logMsg('warn', 'SpeechRecognition: nenhum resultado reconhecido'); });
+        rec.addEventListener('error', function(ev) {
+          var t = ev && ev.error ? ev.error : 'desconhecido';
+          var msg = {
+            'no-speech':     'Nenhuma fala detectada',
+            'aborted':       'Cancelado',
+            'audio-capture': 'Falha na captura de áudio (mic em uso?)',
+            'not-allowed':   'Permissão de microfone NEGADA',
+            'service-not-allowed': 'Serviço de reconhecimento bloqueado',
+            'bad-grammar':   'Gramática inválida',
+            'language-not-supported': 'Idioma não suportado',
+            'network':       'Erro de rede no reconhecimento'
+          }[t] || t;
+          logMsg(t === 'not-allowed' || t === 'audio-capture' ? 'err' : 'warn', 'SpeechRecognition: ' + msg);
+        });
+      } catch(e) {}
+      return rec;
+    };
+    try {
+      Wrapped.prototype = Original.prototype;
+      Object.setPrototypeOf(Wrapped, Original);
+      Wrapped.__fluencyDiagWrapped = true;
+      window[name] = Wrapped;
+    } catch(e) {}
+  }
+  wrapSpeechRecognition('SpeechRecognition');
+  wrapSpeechRecognition('webkitSpeechRecognition');
+
+  // ── 7. PERMISSÃO DE MICROFONE (getUserMedia) ───────────────
+  if (navigator.mediaDevices && typeof navigator.mediaDevices.getUserMedia === 'function' &&
+      !navigator.mediaDevices.getUserMedia.__fluencyDiagWrapped) {
+    var origGUM = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
+    var newGUM = function(constraints) {
+      var hasAudio = constraints && constraints.audio;
+      if (hasAudio) logMsg('info', 'getUserMedia: solicitando microfone…');
+      return origGUM(constraints).then(function(stream) {
+        if (hasAudio) logMsg('ok', 'getUserMedia: microfone concedido ✓');
+        return stream;
+      }).catch(function(err) {
+        var name = err && err.name ? err.name : 'Erro';
+        var friendly = {
+          'NotAllowedError':   'Usuário NEGOU permissão de microfone',
+          'PermissionDeniedError': 'Permissão de microfone negada',
+          'NotFoundError':     'Nenhum microfone encontrado',
+          'DevicesNotFoundError': 'Nenhum microfone encontrado',
+          'NotReadableError':  'Microfone em uso por outro app',
+          'TrackStartError':   'Microfone em uso por outro app',
+          'OverconstrainedError': 'Restrições de áudio incompatíveis',
+          'SecurityError':     'Bloqueado por segurança (HTTPS?)',
+          'AbortError':        'Solicitação abortada'
+        }[name] || (err.message || name);
+        logMsg('err', 'getUserMedia: ' + friendly);
+        throw err;
+      });
+    };
+    newGUM.__fluencyDiagWrapped = true;
+    try { navigator.mediaDevices.getUserMedia = newGUM; } catch(e) {}
+  }
+
+  // ── 8. GEMINI TEXT GENERATION (não só TTS) ─────────────────
+  // O hook de fetch existente acima já captura TTS. Estende para todas
+  // as chamadas Gemini de geração de texto (aulas, conversa, etc).
+  var origFetchTextGen = window.fetch;
+  if (origFetchTextGen && !origFetchTextGen.__fluencyDiagTextGen) {
+    var prevFetchTextGen = origFetchTextGen.bind(window);
+    var newFetchTextGen = function(url, opts) {
+      var u = (typeof url === 'string') ? url : (url && url.url) || '';
+      var isGemini = /generativelanguage\.googleapis\.com/i.test(u) && /:generateContent|:streamGenerateContent/i.test(u);
+      // Ignora se for chamada TTS (já tratada pelo hook anterior)
+      var isTts = false;
+      try {
+        if (opts && opts.body && typeof opts.body === 'string' && opts.body.includes('AUDIO')) isTts = true;
+      } catch(e) {}
+      if (isGemini && !isTts) {
+        var modelMatch = String(u).match(/\/models\/([^/:?]+)(?::generateContent|:streamGenerateContent)/i);
+        var model = modelMatch ? decodeURIComponent(modelMatch[1]) : 'modelo?';
+        var t0 = Date.now();
+        logMsg('info', 'Gemini text → ' + model);
+        return prevFetchTextGen(url, opts).then(function(resp) {
+          var dt = Date.now() - t0;
+          if (resp.ok) {
+            logMsg('ok', 'Gemini ' + resp.status + ' · ' + model + ' · ' + dt + 'ms');
+          } else {
+            // Mensagens específicas para erros HTTP críticos
+            var why = resp.status === 429 ? 'quota/rate limit'
+                    : resp.status === 403 ? 'permissão/key inválida'
+                    : resp.status === 401 ? 'auth (key inválida)'
+                    : resp.status === 400 ? 'requisição inválida'
+                    : resp.status >= 500 ? 'erro no servidor Gemini'
+                    : 'falhou';
+            logMsg('err', 'Gemini ' + resp.status + ' (' + why + ') · ' + model);
+          }
+          return resp;
+        }).catch(function(err) {
+          logMsg('err', 'Gemini fetch falhou: ' + (err.message || err));
+          throw err;
+        });
+      }
+      return prevFetchTextGen(url, opts);
+    };
+    newFetchTextGen.__fluencyDiagTextGen = true;
+    try { window.fetch = newFetchTextGen; } catch(e) {}
+  }
+
+  // ── 9. LOCALSTORAGE QUOTA ──────────────────────────────────
+  // Detecta QuotaExceededError. App salva muito (perfil, flashcards,
+  // cache de aulas, logs); quando estoura, dados começam a sumir silenciosamente.
+  try {
+    var origSetItem = Storage.prototype.setItem;
+    if (!origSetItem.__fluencyDiagWrapped) {
+      var newSetItem = function(k, v) {
+        try {
+          return origSetItem.call(this, k, v);
+        } catch(err) {
+          var name = err && err.name ? err.name : 'StorageError';
+          if (/Quota/i.test(name) || /Quota/i.test(String(err && err.message || ''))) {
+            // Calcula tamanho aproximado para ajudar o diagnóstico
+            var total = 0;
+            try {
+              for (var i = 0; i < this.length; i++) {
+                var key = this.key(i);
+                total += (key || '').length + ((this.getItem(key) || '').length);
+              }
+            } catch(e) {}
+            var kb = Math.round(total / 1024);
+            logMsg('err', 'localStorage CHEIO! Tentou salvar "' + String(k).slice(0, 40) + '" · ~' + kb + 'KB usados');
+          } else {
+            logMsg('err', 'localStorage erro: ' + name + ' em "' + String(k).slice(0, 40) + '"');
+          }
+          throw err;
+        }
+      };
+      newSetItem.__fluencyDiagWrapped = true;
+      Storage.prototype.setItem = newSetItem;
+    }
+  } catch(e) {}
 
   setStatus('pronto', 'idle');
   logMsg('info', 'Diagnóstico iniciado');
