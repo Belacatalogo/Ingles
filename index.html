@@ -97,7 +97,7 @@ button {
 <script>
 // Register service worker for PWA / offline
 // Versão atual: APP_VERSION é checada e se mudar, força reload + cache clear
-var APP_VERSION = 'v52-2-teclado-fix';
+var APP_VERSION = 'v53-reading-ui-clean';
 var savedVersion = null;
 try { savedVersion = localStorage.getItem('__app_version__'); } catch(e) {}
 
@@ -324,7 +324,9 @@ window.__ttsState = window.__ttsState || {
 <script src="azure-pronunciation.js?v=5"></script>
 
 <!-- bundle.js define window.React, window.ReactDOM e window.__AppComponent -->
-<script src="bundle.js?v=52-2-teclado-fix"></script>
+<link rel="stylesheet" href="reading-renderer.css?v=20-1">
+<script src="reading-renderer.js?v=20-1"></script>
+<script src="bundle.js?v=53-reading-ui-clean"></script>
 
 <!-- Renderização em script separado, garantindo execução após bundle.js -->
 <script>

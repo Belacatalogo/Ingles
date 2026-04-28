@@ -758,6 +758,11 @@
       }catch(_){ return false; }
     }
     function renderLessonHtml(L){
+      try{
+        if(window.__fluencyIsReadingLessonV201 && window.__fluencyRenderReadingLessonV201 && window.__fluencyIsReadingLessonV201(L)){
+          return window.__fluencyRenderReadingLessonV201(L);
+        }
+      }catch(_){ }
       var h = '';
       h += '<section class="fluency-v18-full-lesson-render" style="margin-top:28px;border:1px solid rgba(91,156,246,.35);border-radius:18px;padding:18px;background:rgba(10,24,54,.72);box-shadow:0 12px 35px rgba(0,0,0,.18);">';
       h += '<div style="font-family:inherit;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:#93B7FF;margin-bottom:10px;">Aula completa gerada pela IA</div>';
