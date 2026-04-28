@@ -359,7 +359,7 @@
     var BLOCKS = [
       {name:'BLOCO 1', key:'core', instruction:'Retorne JSON com: title, subtitle, intro com no mínimo 180 palavras, estimatedMinutes, sections exatamente 3 itens. Cada section deve ter heading, content com no mínimo 220 palavras e examples exatamente 3 itens {en, pt}. Não inclua exercícios nem vocabulário neste bloco.'},
       {name:'BLOCO 2', key:'practice', instruction:'Retorne JSON com: vocabulary exatamente 12 itens {word,pos,translation,example}; exercises exatamente 8 itens {type,question,options,answer,explanation}. Os exercícios devem misturar tradução, completar lacuna, escolha múltipla e produção guiada.'},
-      {name:'BLOCO 3', key:'finish', instruction:'Retorne JSON com: tips exatamente 4 frases úteis com no mínimo 25 caracteres cada; commonMistakes exatamente 4 itens {mistake,why,avoid}; finalTip com no mínimo 45 palavras; listeningText com 120 a 180 palavras em inglês natural adequado ao nível da aula.'}
+      {name:'BLOCO 3', key:'finish', instruction:'Retorne JSON com: tips exatamente 4 frases úteis com no mínimo 25 caracteres cada; commonMistakes exatamente 4 itens {mistake,why,avoid}; NÃO gere finalTip nem texto motivacional; listeningText com 120 a 180 palavras em inglês natural adequado ao nível da aula.'}
     ];
     function validateBlock(obj, block){
       if(!obj || typeof obj !== 'object') throw new Error(block.name+' vazio');
@@ -370,7 +370,7 @@
         if(!Array.isArray(obj.vocabulary) || obj.vocabulary.length < 5 || !Array.isArray(obj.exercises) || obj.exercises.length < 5) throw new Error('bloco 2 sem vocabulário/exercícios suficientes');
       }
       if(block.key === 'finish'){
-        if(!Array.isArray(obj.tips) || obj.tips.length < 2 || !obj.finalTip) throw new Error('bloco 3 sem dicas/finalTip');
+        if(!Array.isArray(obj.tips) || obj.tips.length < 2) throw new Error('bloco 3 sem dicas');
       }
       return true;
     }
@@ -386,7 +386,7 @@
         exercises: Array.isArray(b.exercises) ? b.exercises : [],
         tips: Array.isArray(c.tips) ? c.tips : [],
         commonMistakes: Array.isArray(c.commonMistakes) ? c.commonMistakes : (Array.isArray(c.common_mistakes) ? c.common_mistakes : []),
-        finalTip: c.finalTip || c.final_tip || '',
+        finalTip:'',
         listeningText: c.listeningText || c.listening_text || '',
         _generatedBy: VERSION,
         _blockMode: true,
@@ -3898,7 +3898,7 @@ lucide-react/dist/esm/lucide-react.mjs:
     }
     function merge(parts){
       var a=parts[0]||{}, b=parts[1]||{}, c=parts[2]||{};
-      return {title:a.title||'Aula de inglês',subtitle:a.subtitle||'',estimatedMinutes:a.estimatedMinutes||40,intro:a.intro||'',sections:Array.isArray(a.sections)?a.sections:[],vocabulary:Array.isArray(b.vocabulary)?b.vocabulary:[],exercises:Array.isArray(b.exercises)?b.exercises:[],tips:Array.isArray(c.tips)?c.tips:[],commonMistakes:Array.isArray(c.commonMistakes)?c.commonMistakes:(Array.isArray(c.common_mistakes)?c.common_mistakes:[]),finalTip:c.finalTip||c.final_tip||'',listeningText:c.listeningText||c.listening_text||'',readingText:c.readingText||c.reading_text||'',_generatedBy:VERSION,_blocks:3,_keyCount:state.keyCount,_generatedAt:new Date().toISOString()};
+      return {title:a.title||'Aula de inglês',subtitle:a.subtitle||'',estimatedMinutes:a.estimatedMinutes||40,intro:a.intro||'',sections:Array.isArray(a.sections)?a.sections:[],vocabulary:Array.isArray(b.vocabulary)?b.vocabulary:[],exercises:Array.isArray(b.exercises)?b.exercises:[],tips:Array.isArray(c.tips)?c.tips:[],commonMistakes:Array.isArray(c.commonMistakes)?c.commonMistakes:(Array.isArray(c.common_mistakes)?c.common_mistakes:[]),finalTip:'',listeningText:c.listeningText||c.listening_text||'',readingText:c.readingText||c.reading_text||'',_generatedBy:VERSION,_blocks:3,_keyCount:state.keyCount,_generatedAt:new Date().toISOString()};
     }
     function okResponse(lesson){
       return new Response(JSON.stringify({candidates:[{content:{role:'model',parts:[{text:JSON.stringify(lesson)}]},finishReason:'STOP'}],usageMetadata:{promptTokenCount:0,candidatesTokenCount:0,totalTokenCount:0},fluencyPatch:{version:VERSION,blocks:3,keyCount:state.keyCount}}),{status:200,headers:{'Content-Type':'application/json'}});
@@ -4258,11 +4258,11 @@ lucide-react/dist/esm/lucide-react.mjs:
     }
     function apiText(data){try{var parts=data&&data.candidates&&data.candidates[0]&&data.candidates[0].content&&data.candidates[0].content.parts;if(Array.isArray(parts))return parts.map(function(p){return p&&p.text||''}).join('\n')}catch(_){ }return ''}
     function parseJson(s){s=String(s||'').trim().replace(/^```(?:json)?\s*/i,'').replace(/```$/,'').trim();var a=s.indexOf('{'),b=s.lastIndexOf('}');if(a>=0&&b>a)s=s.slice(a,b+1);try{return JSON.parse(s)}catch(e){try{return JSON.parse(s.replace(/,(\s*[}\]])/g,'$1'))}catch(_){throw e}}}
-    function validate(o,kind){if(!o||typeof o!=='object')throw new Error(kind+' vazio');if(kind==='BLOCO 1'&&(!o.title||!Array.isArray(o.sections)||o.sections.length<3))throw new Error('BLOCO 1 sem title/sections');if(kind==='BLOCO 2'&&(!Array.isArray(o.vocabulary)||o.vocabulary.length<5||!Array.isArray(o.exercises)||o.exercises.length<5))throw new Error('BLOCO 2 sem vocabulary/exercises');if(kind==='BLOCO 3'&&(!Array.isArray(o.tips)||o.tips.length<2||!o.finalTip))throw new Error('BLOCO 3 sem tips/finalTip');return o}
+    function validate(o,kind){if(!o||typeof o!=='object')throw new Error(kind+' vazio');if(kind==='BLOCO 1'&&(!o.title||!Array.isArray(o.sections)||o.sections.length<3))throw new Error('BLOCO 1 sem title/sections');if(kind==='BLOCO 2'&&(!Array.isArray(o.vocabulary)||o.vocabulary.length<5||!Array.isArray(o.exercises)||o.exercises.length<5))throw new Error('BLOCO 2 sem vocabulary/exercises');if(kind==='BLOCO 3'&&(!Array.isArray(o.tips)||o.tips.length<2))throw new Error('BLOCO 3 sem tips');return o}
     var BLOCKS=[
       {name:'BLOCO 1',instruction:'Retorne JSON com: title, subtitle, estimatedMinutes, intro com 4+ frases, sections exatamente 5 itens. Cada section deve ter heading, content com explicação completa e examples exatamente 4 itens {en, pt}. Não inclua exercícios nem vocabulário neste bloco.'},
       {name:'BLOCO 2',instruction:'Retorne JSON com: vocabulary exatamente 12 itens {word,pos,translation,example}; exercises exatamente 12 itens {type,question,options,answer,explanation}. Misture choice, fill, translate e prática guiada.'},
-      {name:'BLOCO 3',instruction:'Retorne JSON com: tips exatamente 5 strings, commonMistakes de 3 a 5 itens {mistake,why,avoid}, finalTip com 150+ palavras e, quando fizer sentido, listeningText ou readingText.'}
+      {name:'BLOCO 3',instruction:'Retorne JSON com: tips exatamente 5 strings, commonMistakes de 3 a 5 itens {mistake,why,avoid}, NÃO gere finalTip nem texto motivacional. Retorne somente: tips exatamente 5 strings curtas, commonMistakes de 3 a 5 itens {mistake,why,avoid} e, quando fizer sentido, listeningText ou readingText.'}
     ];
     async function callBlock(originalUrl,init,block,candidates){
       var body=buildBody(init&&init.body,block.name,block.instruction),last='';
@@ -4284,7 +4284,7 @@ lucide-react/dist/esm/lucide-react.mjs:
       }
       throw new Error(block.name+' falhou. Último erro: '+last);
     }
-    function merge(p){var a=p[0]||{},b=p[1]||{},c=p[2]||{};return {title:a.title||'Aula de inglês',subtitle:a.subtitle||'',estimatedMinutes:a.estimatedMinutes||40,intro:a.intro||'',sections:Array.isArray(a.sections)?a.sections:[],vocabulary:Array.isArray(b.vocabulary)?b.vocabulary:[],exercises:Array.isArray(b.exercises)?b.exercises:[],tips:Array.isArray(c.tips)?c.tips:[],commonMistakes:Array.isArray(c.commonMistakes)?c.commonMistakes:(Array.isArray(c.common_mistakes)?c.common_mistakes:[]),finalTip:c.finalTip||c.final_tip||'',listeningText:c.listeningText||c.listening_text||'',readingText:c.readingText||c.reading_text||'',_generatedBy:VERSION,_blocks:3,_generatedAt:new Date().toISOString(),_blockMeta:{block1:a.__fluencyBlockMeta||null,block2:b.__fluencyBlockMeta||null,block3:c.__fluencyBlockMeta||null}}}
+    function merge(p){var a=p[0]||{},b=p[1]||{},c=p[2]||{};return {title:a.title||'Aula de inglês',subtitle:a.subtitle||'',estimatedMinutes:a.estimatedMinutes||40,intro:a.intro||'',sections:Array.isArray(a.sections)?a.sections:[],vocabulary:Array.isArray(b.vocabulary)?b.vocabulary:[],exercises:Array.isArray(b.exercises)?b.exercises:[],tips:Array.isArray(c.tips)?c.tips:[],commonMistakes:Array.isArray(c.commonMistakes)?c.commonMistakes:(Array.isArray(c.common_mistakes)?c.common_mistakes:[]),finalTip:'',listeningText:c.listeningText||c.listening_text||'',readingText:c.readingText||c.reading_text||'',_generatedBy:VERSION,_blocks:3,_generatedAt:new Date().toISOString(),_blockMeta:{block1:a.__fluencyBlockMeta||null,block2:b.__fluencyBlockMeta||null,block3:c.__fluencyBlockMeta||null}}}
     function geminiResponse(lesson){return new Response(JSON.stringify({candidates:[{content:{role:'model',parts:[{text:JSON.stringify(lesson)}]},finishReason:'STOP'}],usageMetadata:{promptTokenCount:0,candidatesTokenCount:0,totalTokenCount:0},fluencyPatch:{version:VERSION,mode:'real-fetch-isolated'}}),{status:200,headers:{'content-type':'application/json'}})}
     async function generate(url,init){
       if(STATE.running && STATE.block) return new Response(JSON.stringify({error:{code:409,status:'LESSON_ALREADY_RUNNING',message:'Já existe uma geração de aula em andamento.'},fluencyPatch:{version:VERSION}}),{status:409,headers:{'content-type':'application/json'}});
@@ -4424,8 +4424,8 @@ lucide-react/dist/esm/lucide-react.mjs:
     function buildBody(originalBody,blockName,instruction){var original=getPrompt(originalBody);var prompt=['Aula IA V42. Responda APENAS JSON válido, sem markdown.','Gere o '+blockName+' de uma aula completa de inglês para brasileiro.',instruction,'Use português claro nas explicações e inglês correto nos exemplos.','Não gere conteúdo raso. Seja específico, didático e prático.','Prompt original do app:',original].join('\n\n');return JSON.stringify({system_instruction:{parts:[{text:'Você é uma API JSON de aulas de inglês. A única saída permitida é JSON válido.'}]},contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{temperature:0.35,maxOutputTokens:8192,responseMimeType:'application/json'}})}
     function apiText(data){try{var parts=data&&data.candidates&&data.candidates[0]&&data.candidates[0].content&&data.candidates[0].content.parts;if(Array.isArray(parts))return parts.map(function(p){return p&&p.text||''}).join('\n')}catch(_){ }return ''}
     function parseJson(s){s=String(s||'').trim().replace(/^```(?:json)?\s*/i,'').replace(/```$/,'').trim();var a=s.indexOf('{'),b=s.lastIndexOf('}');if(a>=0&&b>a)s=s.slice(a,b+1);try{return JSON.parse(s)}catch(e){try{return JSON.parse(s.replace(/,(\s*[}\]])/g,'$1'))}catch(_){throw e}}}
-    function validate(o,kind){if(!o||typeof o!=='object')throw new Error(kind+' vazio');if(kind==='BLOCO 1'&&(!o.title||!Array.isArray(o.sections)||o.sections.length<3))throw new Error('BLOCO 1 sem title/sections');if(kind==='BLOCO 2'&&(!Array.isArray(o.vocabulary)||o.vocabulary.length<5||!Array.isArray(o.exercises)||o.exercises.length<5))throw new Error('BLOCO 2 sem vocabulary/exercises');if(kind==='BLOCO 3'&&(!Array.isArray(o.tips)||o.tips.length<2||!o.finalTip))throw new Error('BLOCO 3 sem tips/finalTip');return o}
-    var BLOCKS=[{name:'BLOCO 1',instruction:'Retorne JSON com: title, subtitle, estimatedMinutes, intro com 4+ frases, sections exatamente 5 itens. Cada section deve ter heading, content com explicação completa e examples exatamente 4 itens {en, pt}. Não inclua exercícios nem vocabulário neste bloco.'},{name:'BLOCO 2',instruction:'Retorne JSON com: vocabulary exatamente 12 itens {word,pos,translation,example}; exercises exatamente 12 itens {type,question,options,answer,explanation}. Misture choice, fill, translate e prática guiada.'},{name:'BLOCO 3',instruction:'Retorne JSON com: tips exatamente 5 strings, commonMistakes de 3 a 5 itens {mistake,why,avoid}, finalTip com 150+ palavras e, quando fizer sentido, listeningText ou readingText.'}];
+    function validate(o,kind){if(!o||typeof o!=='object')throw new Error(kind+' vazio');if(kind==='BLOCO 1'&&(!o.title||!Array.isArray(o.sections)||o.sections.length<3))throw new Error('BLOCO 1 sem title/sections');if(kind==='BLOCO 2'&&(!Array.isArray(o.vocabulary)||o.vocabulary.length<5||!Array.isArray(o.exercises)||o.exercises.length<5))throw new Error('BLOCO 2 sem vocabulary/exercises');if(kind==='BLOCO 3'&&(!Array.isArray(o.tips)||o.tips.length<2))throw new Error('BLOCO 3 sem tips');return o}
+    var BLOCKS=[{name:'BLOCO 1',instruction:'Retorne JSON com: title, subtitle, estimatedMinutes, intro com 4+ frases, sections exatamente 5 itens. Cada section deve ter heading, content com explicação completa e examples exatamente 4 itens {en, pt}. Não inclua exercícios nem vocabulário neste bloco.'},{name:'BLOCO 2',instruction:'Retorne JSON com: vocabulary exatamente 12 itens {word,pos,translation,example}; exercises exatamente 12 itens {type,question,options,answer,explanation}. Misture choice, fill, translate e prática guiada.'},{name:'BLOCO 3',instruction:'Retorne JSON com: tips exatamente 5 strings, commonMistakes de 3 a 5 itens {mistake,why,avoid}, NÃO gere finalTip nem texto motivacional. Retorne somente: tips exatamente 5 strings curtas, commonMistakes de 3 a 5 itens {mistake,why,avoid} e, quando fizer sentido, listeningText ou readingText.'}];
     function classifyHttp(status,raw,msg){var t=String(raw||msg||'');if(status===429||/RESOURCE_EXHAUSTED|quota|rate limit|Too Many Requests/i.test(t))return 'quota';if(status===403||/API_KEY_INVALID|permission|forbidden|PERMISSION_DENIED/i.test(t))return 'key';if(status===404||/not found|no longer available/i.test(t))return 'model';if(status>=500||/timeout|network/i.test(t))return 'transient';return 'other'}
     async function tryCandidate(init,block,c){
       var body=buildBody(init&&init.body,block.name,block.instruction);
@@ -4459,7 +4459,7 @@ lucide-react/dist/esm/lucide-react.mjs:
       }
       throw new Error(block.name+' falhou até na Pro. Último erro: '+last);
     }
-    function merge(p){var a=p[0]||{},b=p[1]||{},c=p[2]||{};return {title:a.title||'Aula de inglês',subtitle:a.subtitle||'',estimatedMinutes:a.estimatedMinutes||40,intro:a.intro||'',sections:Array.isArray(a.sections)?a.sections:[],vocabulary:Array.isArray(b.vocabulary)?b.vocabulary:[],exercises:Array.isArray(b.exercises)?b.exercises:[],tips:Array.isArray(c.tips)?c.tips:[],commonMistakes:Array.isArray(c.commonMistakes)?c.commonMistakes:(Array.isArray(c.common_mistakes)?c.common_mistakes:[]),finalTip:c.finalTip||c.final_tip||'',listeningText:c.listeningText||c.listening_text||'',readingText:c.readingText||c.reading_text||'',_source:'ai',_generatedBy:VERSION,_blocks:3,_generatedAt:new Date().toISOString(),_fallbackPolicy:'Pro só liberada depois de todas as Flash/free falharem em '+FREE_ROUNDS+' rodadas com espera.',_blockMeta:{block1:a.__fluencyBlockMeta||null,block2:b.__fluencyBlockMeta||null,block3:c.__fluencyBlockMeta||null}}}
+    function merge(p){var a=p[0]||{},b=p[1]||{},c=p[2]||{};return {title:a.title||'Aula de inglês',subtitle:a.subtitle||'',estimatedMinutes:a.estimatedMinutes||40,intro:a.intro||'',sections:Array.isArray(a.sections)?a.sections:[],vocabulary:Array.isArray(b.vocabulary)?b.vocabulary:[],exercises:Array.isArray(b.exercises)?b.exercises:[],tips:Array.isArray(c.tips)?c.tips:[],commonMistakes:Array.isArray(c.commonMistakes)?c.commonMistakes:(Array.isArray(c.common_mistakes)?c.common_mistakes:[]),finalTip:'',listeningText:c.listeningText||c.listening_text||'',readingText:c.readingText||c.reading_text||'',_source:'ai',_generatedBy:VERSION,_blocks:3,_generatedAt:new Date().toISOString(),_fallbackPolicy:'Pro só liberada depois de todas as Flash/free falharem em '+FREE_ROUNDS+' rodadas com espera.',_blockMeta:{block1:a.__fluencyBlockMeta||null,block2:b.__fluencyBlockMeta||null,block3:c.__fluencyBlockMeta||null}}}
     function complete(L){return L&&L.title&&String(L.intro||'').length>50&&Array.isArray(L.sections)&&L.sections.length>=3&&Array.isArray(L.vocabulary)&&L.vocabulary.length>=5&&Array.isArray(L.exercises)&&L.exercises.length>=5}
     function saveActive(L){try{if(!complete(L))return;var id='ai-'+new Date().toISOString().slice(0,10)+'-'+Date.now();L.lessonId=L.lessonId||id;L.activeLessonId=L.lessonId;L._displayPriority=9999;var text=JSON.stringify(L);localStorage.setItem('fluency_active_ai_lesson_v41',text);localStorage.setItem('fluency_last_ai_lesson_v41',text);localStorage.setItem('fluency_active_lesson_id_v41',L.lessonId);localStorage.setItem('fluency_active_lesson_id',L.lessonId);localStorage.setItem('fluency_last_lesson_model_v197',JSON.stringify({at:Date.now(),version:VERSION,title:L.title,blocks:L._blockMeta||null,policy:L._fallbackPolicy||''}));}catch(_){ }}
     function geminiResponse(lesson){saveActive(lesson);return new Response(JSON.stringify({candidates:[{content:{role:'model',parts:[{text:JSON.stringify(lesson)}]},finishReason:'STOP'}],usageMetadata:{promptTokenCount:0,candidatesTokenCount:0,totalTokenCount:0},fluencyPatch:{version:VERSION,mode:'strict-free-first-pro-last',freeRounds:FREE_ROUNDS}}),{status:200,headers:{'content-type':'application/json'}})}
@@ -4794,4 +4794,108 @@ lucide-react/dist/esm/lucide-react.mjs:
     ['click','touchend','focus','hashchange','popstate','visibilitychange'].forEach(function(ev){window.addEventListener(ev,function(){setTimeout(tick,120);},true)});
     try{new MutationObserver(function(){setTimeout(clean,90)}).observe(document.documentElement||document.body,{childList:true,subtree:true,characterData:true})}catch(_){ }
   }catch(e){try{console.warn('Patch V45 safe remove congrats failed',e)}catch(_){}}
+})();
+
+
+/* === FLUENCY PATCH V46 - RENDERIZAÇÃO AUTÔNOMA TOTAL SEM TEXTO MOTIVACIONAL === */
+;(function(){
+  try{
+    if(window.__fluencyV46AutonomousFullLessonNoMotivation) return;
+    window.__fluencyV46AutonomousFullLessonNoMotivation = true;
+    var VERSION='V46-FULL-RENDER-SEM-MOTIVACAO';
+    var PAGE_ID='__fluency_v46_lesson_page__';
+    var CSS_ID='__fluency_v46_lesson_css__';
+    var STORAGE_KEYS=['fluency_active_ai_lesson_v43','fluency_last_ai_lesson_v43','fluency_active_ai_lesson_v41','fluency_last_ai_lesson_v41','fluency_last_ai_lesson','fluency_generated_lesson','fluency_today_lesson'];
+
+    function txt(v){return String(v==null?'':v).trim()}
+    function esc(v){return txt(v).replace(/[&<>\"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]||c})}
+    function arr(x){return Array.isArray(x)?x:[]}
+    function pick(o,ks){if(!o||typeof o!=='object')return '';for(var i=0;i<ks.length;i++){var v=o[ks[i]];if(v!=null&&txt(v))return v}return ''}
+    function parse(v){
+      try{
+        if(v==null)return null; var x=typeof v==='string'?v.trim():v; if(!x)return null;
+        if(typeof x==='string'){
+          x=x.replace(/^```(?:json)?\s*/i,'').replace(/```$/,'').trim();
+          var a=x.indexOf('{'),b=x.lastIndexOf('}'); if(a>=0&&b>a)x=x.slice(a,b+1);
+          x=JSON.parse(x); if(typeof x==='string')return parse(x);
+        }
+        if(x&&x.candidates){var p=x.candidates&&x.candidates[0]&&x.candidates[0].content&&x.candidates[0].content.parts;if(Array.isArray(p))return parse(p.map(function(q){return q&&(q.text||'')}).join('\n'))}
+        if(x&&x.lessonData)x=x.lessonData; if(x&&x.lesson)x=x.lesson; if(x&&x.aula)x=x.aula; if(x&&x.data&&x.data.lesson)x=x.data.lesson;
+        return x&&typeof x==='object'?x:null;
+      }catch(_){return null}
+    }
+    function normExample(e){if(typeof e==='string')return {en:e,pt:''};e=e||{};return {en:pick(e,['en','english','sentence','phrase','example','text','frase']),pt:pick(e,['pt','portuguese','translation','traducao','tradução','meaning'])}}
+    function normalize(L){
+      L=parse(L); if(!L)return null;
+      var out={};
+      out.title=pick(L,['title','titulo','título','name'])||'Aula de inglês';
+      out.subtitle=pick(L,['subtitle','subtitulo','subtítulo','description']);
+      out.level=pick(L,['level','nivel','nível'])||'A1';
+      out.skill=pick(L,['skill','type','tipo'])||'aula';
+      out.estimatedMinutes=Number(L.estimatedMinutes||L.minutes||L.duration||40)||40;
+      out.intro=pick(L,['intro','introduction','introducao','introdução','overview','descricao','descrição']);
+      out.readingText=pick(L,['readingText','reading_text','text','texto','textoLeitura']);
+      out.listeningText=pick(L,['listeningText','listening_text','audioText','dialogue','dialogo','diálogo']);
+      var secs=arr(L.sections&&L.sections.length?L.sections:(L.secoes||L.seções||L.parts||L.modules||L.contentSections));
+      out.sections=secs.map(function(s,i){if(typeof s==='string')s={content:s};s=s||{};var ex=arr(s.examples&&s.examples.length?s.examples:(s.exemplos||s.sentences||s.frases||s.phrases)).map(normExample).filter(function(e){return txt(e.en)||txt(e.pt)});return {heading:pick(s,['heading','title','titulo','título','name'])||('Seção '+(i+1)),content:pick(s,['content','body','text','explicacao','explicação','explanation','description','lesson','conteudo']),examples:ex}}).filter(function(s){return txt(s.heading)||txt(s.content)||s.examples.length});
+      var voc=arr(L.vocabulary&&L.vocabulary.length?L.vocabulary:(L.vocabulario||L.vocabulário||L.words||L.terms));
+      out.vocabulary=voc.map(function(v){if(typeof v==='string')return {word:v,pos:'',translation:'',example:''};v=v||{};return {word:pick(v,['word','palavra','term','english','en']),pos:pick(v,['pos','class','classe','type']),translation:pick(v,['translation','traducao','tradução','pt','meaning','portuguese']),example:pick(v,['example','exemplo','sentence','phrase','frase'])}}).filter(function(v){return txt(v.word)||txt(v.translation)});
+      var exs=arr(L.exercises&&L.exercises.length?L.exercises:(L.exercicios||L.exercícios||L.questions||L.quiz||L.practice));
+      out.exercises=exs.map(function(e,i){if(typeof e==='string')e={question:e};e=e||{};return {type:pick(e,['type','tipo'])||'practice',question:pick(e,['question','pergunta','prompt','instruction','enunciado','task'])||('Exercício '+(i+1)),options:arr(e.options||e.opcoes||e.opções||e.choices).map(txt),answer:pick(e,['answer','resposta','correct','correctAnswer','expected','gabarito']),explanation:pick(e,['explanation','explicacao','explicação','why','feedback','comentario','comentário'])}}).filter(function(e){return txt(e.question)||txt(e.answer)});
+      out.tips=arr(L.tips&&L.tips.length?L.tips:(L.dicas||L.notes||L.studyTips)).map(function(t){return typeof t==='string'?t:pick(t,['tip','text','content','dica'])}).filter(function(t){return txt(t)});
+      out.commonMistakes=arr(L.commonMistakes||L.common_mistakes||L.errosComuns||L.mistakes).map(function(m){m=m||{};return {mistake:pick(m,['mistake','erro','title']),why:pick(m,['why','porque','porquê','reason','motivo']),avoid:pick(m,['avoid','correction','comoEvitar','fix','corrigir'])}}).filter(function(m){return txt(m.mistake)||txt(m.why)||txt(m.avoid)});
+      out._blockMeta=L._blockMeta||L.blockMeta||null; out._generatedAt=L._generatedAt||L.generatedAt||''; out._source=L._source||L.source||'ai';
+      return out;
+    }
+    function complete(L){return !!(L&&txt(L.title)&&txt(L.intro).length>40&&Array.isArray(L.sections)&&L.sections.length>=1)}
+    function score(L){if(!L)return 0;var n=0;try{n+=JSON.stringify(L).length/8}catch(_){};n+=txt(L.intro).length+L.sections.length*1200+L.vocabulary.length*160+L.exercises.length*220+L.commonMistakes.length*150+L.tips.length*80+txt(L.readingText).length+txt(L.listeningText).length;return n}
+    function read(k){try{return localStorage.getItem(k)}catch(_){return null}}
+    function write(k,v){try{localStorage.setItem(k,v)}catch(_){}}
+    function scrubStoredFinalTips(){
+      try{
+        var keys=[]; for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i)||''; if(/lesson|aula/i.test(k)&&!/api|key|gemini|azure|logs|model/i.test(k))keys.push(k)}
+        STORAGE_KEYS.forEach(function(k){if(keys.indexOf(k)<0)keys.push(k)});
+        keys.forEach(function(k){var raw=read(k), L=parse(raw); if(!L)return; var changed=false; ['finalTip','final_tip','conclusion','conclusao','conclusão','closing','resumoFinal'].forEach(function(p){if(L[p]){delete L[p];changed=true}}); if(changed)write(k,JSON.stringify(L));});
+      }catch(_){ }
+    }
+    function bestLesson(){
+      scrubStoredFinalTips(); var best=null,bs=0,bk='';
+      function consider(k){var L=normalize(read(k));var s=score(L);if(s>bs&&complete(L)){best=L;bs=s;bk=k}}
+      STORAGE_KEYS.forEach(consider);
+      try{for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i)||'';if(!/(lesson|aula)/i.test(k))continue;if(/api|key|gemini|azure|lock|logs|model|version|active_lesson_id/i.test(k))continue;consider(k)}}catch(_){ }
+      if(best)best.__storageKey=bk; return best;
+    }
+    function css(){
+      if(document.getElementById(CSS_ID))return; var st=document.createElement('style');st.id=CSS_ID;
+      st.textContent='html,body,#root{height:auto!important;min-height:100%!important;overflow-y:auto!important;-webkit-overflow-scrolling:touch!important} #__fluency_v43_full_lesson__,.fluency-v18-full-lesson-render{display:none!important} #'+PAGE_ID+'{position:fixed;left:0;right:0;top:154px;bottom:0;z-index:35;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:22px 34px 190px 34px;background:linear-gradient(135deg,#071128 0%,#0b1732 48%,#060d1f 100%);color:#dbeafe;font-family:inherit} #'+PAGE_ID+' *{box-sizing:border-box} #'+PAGE_ID+' .v46-kicker{font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:#8fb7ff;margin:0 0 12px;font-weight:900} #'+PAGE_ID+' .v46-title{font-size:38px;line-height:1.08;margin:0 0 10px;color:#f8fbff;font-family:Georgia,serif;font-weight:900} #'+PAGE_ID+' .v46-sub{font-size:20px;line-height:1.4;color:#78a9ff;font-style:italic;margin:0 0 26px} #'+PAGE_ID+' .v46-p{white-space:pre-wrap;font-size:21px;line-height:1.68;color:#78a9ff;margin:0} #'+PAGE_ID+' .v46-card{border:1px solid rgba(91,156,246,.32);border-radius:18px;background:linear-gradient(135deg,rgba(21,50,105,.72),rgba(14,27,58,.76));padding:18px;margin:18px 0;box-shadow:0 12px 36px rgba(0,0,0,.22)} #'+PAGE_ID+' .v46-h2{font-size:28px;line-height:1.22;color:#f8fbff;margin:0 0 12px;font-weight:950} #'+PAGE_ID+' .v46-grid{display:grid;gap:12px} #'+PAGE_ID+' .v46-item{border:1px solid rgba(255,255,255,.13);border-radius:14px;padding:14px;background:rgba(255,255,255,.05)} #'+PAGE_ID+' .v46-en{font-size:19px;line-height:1.45;color:#fff;font-weight:850} #'+PAGE_ID+' .v46-pt,.v46-small{font-size:15px;line-height:1.5;color:#adc8ff;margin-top:5px} #'+PAGE_ID+' .v46-ok{color:#86efac} #'+PAGE_ID+' .v46-btn{width:100%;min-height:54px;margin-top:22px;border:0;border-radius:18px;background:linear-gradient(135deg,#60a5fa,#a78bfa);color:#fff;font-weight:950;font-size:18px;box-shadow:0 12px 28px rgba(96,165,250,.26)} #'+PAGE_ID+' .v46-muted{opacity:.78}';
+      document.head.appendChild(st);
+    }
+    function blockMeta(L){var bm=L._blockMeta||{};var lines=[];['block1','block2','block3'].forEach(function(k,i){if(bm[k]){var m=bm[k];lines.push('Bloco '+(i+1)+': '+(m.model||m.modelo||'modelo')+' · '+(m.paid?'Pro':'Flash/free'))}});return lines}
+    function html(L){
+      var h='<div data-v46-title="'+esc(L.title)+'"><div class="v46-kicker">'+esc((L.skill||'AULA').toUpperCase())+' · NÍVEL '+esc(L.level)+' · ≈ '+esc(L.estimatedMinutes)+' MIN</div><h1 class="v46-title">'+esc(L.title)+'</h1>'+(L.subtitle?'<p class="v46-sub">'+esc(L.subtitle)+'</p>':'')+'<p class="v46-p">'+esc(L.intro)+'</p>';
+      var meta=blockMeta(L); if(meta.length)h+='<div class="v46-card"><div class="v46-kicker">Origem da geração</div><div class="v46-small">'+meta.map(esc).join('<br>')+'</div></div>';
+      if(L.readingText||L.listeningText)h+='<section class="v46-card"><div class="v46-kicker">Texto de prática</div>'+(L.readingText?'<p class="v46-p">'+esc(L.readingText)+'</p>':'')+(L.listeningText?'<p class="v46-p" style="margin-top:14px">'+esc(L.listeningText)+'</p>':'')+'</section>';
+      L.sections.forEach(function(s,i){h+='<section class="v46-card"><h2 class="v46-h2">§ '+esc(s.heading)+'</h2>'+(s.content?'<p class="v46-p">'+esc(s.content)+'</p>':''); if(s.examples.length){h+='<div class="v46-grid" style="margin-top:15px">';s.examples.forEach(function(ex){h+='<div class="v46-item">'+(ex.en?'<div class="v46-en">'+esc(ex.en)+'</div>':'')+(ex.pt?'<div class="v46-pt"><em>'+esc(ex.pt)+'</em></div>':'')+'</div>'});h+='</div>'} h+='</section>'});
+      if(L.vocabulary.length){h+='<section class="v46-card"><div class="v46-kicker">Vocabulário</div><div class="v46-grid">';L.vocabulary.forEach(function(v){h+='<div class="v46-item"><div class="v46-en">'+esc(v.word)+(v.translation?' <span class="v46-ok">• '+esc(v.translation)+'</span>':'')+'</div>'+(v.example?'<div class="v46-pt">“'+esc(v.example)+'”</div>':'')+'</div>'});h+='</div></section>'}
+      if(L.commonMistakes.length){h+='<section class="v46-card"><div class="v46-kicker">Erros comuns</div><div class="v46-grid">';L.commonMistakes.forEach(function(m){h+='<div class="v46-item">'+(m.mistake?'<div class="v46-en">'+esc(m.mistake)+'</div>':'')+(m.why?'<div class="v46-small">'+esc(m.why)+'</div>':'')+(m.avoid?'<div class="v46-small v46-ok">Como evitar: '+esc(m.avoid)+'</div>':'')+'</div>'});h+='</div></section>'}
+      if(L.tips.length){h+='<section class="v46-card"><div class="v46-kicker">Dicas rápidas</div><ul class="v46-small" style="padding-left:22px;margin:0;color:#8fb7ff">';L.tips.forEach(function(t){h+='<li style="margin:8px 0">'+esc(t)+'</li>'});h+='</ul></section>'}
+      if(L.exercises.length){h+='<section class="v46-card"><div class="v46-kicker">Exercícios</div><div class="v46-grid">';L.exercises.forEach(function(e,i){h+='<div class="v46-item"><div class="v46-en"><span style="color:#78a9ff">'+(i+1)+'.</span> '+esc(e.question)+'</div>'+(e.options.length?'<div class="v46-small">Opções: '+e.options.map(esc).join(' • ')+'</div>':'')+(e.answer?'<div class="v46-small v46-ok">Resposta: '+esc(e.answer)+'</div>':'')+(e.explanation?'<div class="v46-small">'+esc(e.explanation)+'</div>':'')+'</div>'});h+='</div></section>'}
+      h+='<button class="v46-btn" id="__fluency_v46_complete_btn__">✓ Concluir aula</button><div class="v46-small v46-muted" style="text-align:center;margin-top:12px">Renderização V46: conteúdo completo, sem texto motivacional final.</div></div>';
+      return h;
+    }
+    function aulaOpen(){try{var t=document.body.innerText||'';return /\bAula\b/i.test(t)&&(/Gerada por IA|LEITURA|GRAMÁTICA|AULA|Texto para leitura/i.test(t))}catch(_){return false}}
+    function removePage(){var p=document.getElementById(PAGE_ID);if(p&&p.parentNode)p.parentNode.removeChild(p)}
+    function render(force){
+      try{css(); if(!aulaOpen()){removePage();return false} var L=bestLesson(); if(!complete(L))return false; var sig=[L.title,L.sections.length,L.vocabulary.length,L.exercises.length,L.commonMistakes.length,L.tips.length,txt(L.readingText).length,txt(L.listeningText).length].join('|'); var p=document.getElementById(PAGE_ID); if(!p){p=document.createElement('div');p.id=PAGE_ID;document.body.appendChild(p)} if(force||p.getAttribute('data-sig')!==sig){p.innerHTML=html(L);p.setAttribute('data-sig',sig);var b=document.getElementById('__fluency_v46_complete_btn__');if(b)b.onclick=function(){try{var btns=Array.prototype.slice.call(document.querySelectorAll('button'));var native=btns.find(function(x){return x!==b&&/concluir|finalizar|complete/i.test(x.innerText||x.textContent||'')});if(native)native.click();}catch(_){}try{localStorage.setItem('fluency_lesson_completed_v46',JSON.stringify({at:new Date().toISOString(),title:L.title}))}catch(_){}b.textContent='✓ Aula concluída';b.disabled=true;};} return true}catch(e){try{console.warn('[Fluency '+VERSION+'] render falhou',e)}catch(_){}return false}
+    }
+    var prevFetch=window.fetch&&window.fetch.bind(window);
+    if(prevFetch&&!window.fetch.__fluencyV46NoFinalTip){window.fetch=async function(input,init){var res=await prevFetch(input,init);try{var url=typeof input==='string'?input:((input&&input.url)||'');if(/generativelanguage\.googleapis\.com/i.test(url||'')&&res&&res.ok){res.clone().text().then(function(raw){try{var L=parse(raw); if(L){['finalTip','final_tip','conclusion','conclusao','conclusão','closing','resumoFinal'].forEach(function(k){if(L[k])delete L[k]});var n=normalize(L);if(complete(n)){var s=JSON.stringify(n);['fluency_active_ai_lesson_v43','fluency_last_ai_lesson_v43','fluency_active_ai_lesson_v41','fluency_last_ai_lesson_v41'].forEach(function(k){write(k,s)});setTimeout(function(){render(true)},120)}}}catch(_){}})}}catch(_){}return res};window.fetch.__fluencyV46NoFinalTip=true}
+    window.__fluencyV46RenderLesson=function(){return render(true)};
+    window.__fluencyV46Status=function(){var L=bestLesson();return {version:VERSION,hasLesson:!!L,title:L&&L.title,sections:L&&L.sections.length,vocabulary:L&&L.vocabulary.length,exercises:L&&L.exercises.length,rendered:!!document.getElementById(PAGE_ID),storageKey:L&&L.__storageKey}};
+    function tick(){render(false)}
+    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){render(true)});else setTimeout(function(){render(true)},100);
+    setTimeout(function(){render(true)},700);setTimeout(function(){render(true)},1600);setInterval(tick,900);
+    ['click','touchend','focus','hashchange','popstate','visibilitychange'].forEach(function(ev){window.addEventListener(ev,function(){setTimeout(function(){render(true)},120);setTimeout(tick,600)},true)});
+    try{new MutationObserver(function(){setTimeout(tick,120)}).observe(document.documentElement||document.body,{childList:true,subtree:true,characterData:true})}catch(_){ }
+  }catch(e){try{console.warn('Patch V46 failed',e)}catch(_){}}
 })();
