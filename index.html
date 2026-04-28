@@ -87,37 +87,6 @@ button {
 </head>
 <body>
 
-<!-- Marcador visual de versão: confirma que o HTML correto carregou -->
-<style>
-#__fluency_build_badge_v202__ {
-  position: fixed;
-  left: 10px;
-  bottom: 10px;
-  z-index: 999999;
-  max-width: calc(100vw - 20px);
-  padding: 7px 10px;
-  border-radius: 999px;
-  background: rgba(6,13,31,.82);
-  border: 1px solid rgba(91,156,246,.38);
-  color: #9FC5FF;
-  font: 700 10px/1.2 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  box-shadow: 0 8px 22px rgba(0,0,0,.28);
-  opacity: .78;
-  pointer-events: none;
-}
-</style>
-<div id="__fluency_build_badge_v202__">V20.2 · Reading IA + Gemini Audio</div>
-<script>
-window.__FLUENCY_HTML_VERSION__ = 'V20.2-READING-IA-GEMINI-AUDIO-VISIBLE';
-try {
-  console.warn('[Fluency] HTML carregado:', window.__FLUENCY_HTML_VERSION__);
-} catch(e) {}
-</script>
-
 <div id="root">
   <div id="splash">
     <p id="splash-logo">Fluency<span>.</span></p>
@@ -129,7 +98,7 @@ try {
 <script>
 // Register service worker for PWA / offline
 // Versão atual: APP_VERSION é checada e se mudar, força reload + cache clear
-var APP_VERSION = 'v54-reading-takeover-ai-audio-version-visible';
+var APP_VERSION = '2026-04-28-v20.3-reading-diagnostico-build-fix';
 var savedVersion = null;
 try { savedVersion = localStorage.getItem('__app_version__'); } catch(e) {}
 
@@ -356,9 +325,160 @@ window.__ttsState = window.__ttsState || {
 <script src="azure-pronunciation.js?v=5"></script>
 
 <!-- bundle.js define window.React, window.ReactDOM e window.__AppComponent -->
-<script src="bundle.js?v=54-reading-takeover-ai-audio-version-visible"></script>
-<link rel="stylesheet" href="reading-v20.css?v=20-2-version-visible">
-<script src="reading-v20.js?v=20-2-version-visible"></script>
+
+<!-- V20.3: saneamento de aulas antes do React montar.
+     Corrige erro: Minified React error #31 object with keys {title,text} -->
+<script>
+window.__FLUENCY_BUILD_VERSION__ = '2026-04-28-v20.3-reading-diagnostico-build-fix';
+(function() {
+  try {
+    if (window.__fluencyLessonSanitizerV203) return;
+    window.__fluencyLessonSanitizerV203 = true;
+
+    function isLessonKey(k) {
+      k = String(k || '');
+      return /^fluency_lesson/i.test(k) ||
+             /^lesson_v\d+_/i.test(k) ||
+             /fluency_.*lesson/i.test(k) ||
+             /reading/i.test(k);
+    }
+
+    function textify(v) {
+      if (v == null) return '';
+      if (typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean') return String(v);
+      if (Array.isArray(v)) return v.map(textify).filter(Boolean).join('\n');
+      if (typeof v === 'object') {
+        var title = textify(v.title || v.heading || v.name || v.label || '');
+        var text = textify(v.text || v.content || v.body || v.description || v.value || '');
+        var out = [title, text].filter(Boolean).join('\n');
+        if (out) return out;
+        try { return JSON.stringify(v); } catch(_) { return String(v); }
+      }
+      return String(v);
+    }
+
+    function sanitizeLesson(L) {
+      if (!L || typeof L !== 'object') return L;
+
+      if (L.lessonData && typeof L.lessonData === 'object') L.lessonData = sanitizeLesson(L.lessonData);
+      if (L.lesson && typeof L.lesson === 'object') L.lesson = sanitizeLesson(L.lesson);
+      if (L.aula && typeof L.aula === 'object') L.aula = sanitizeLesson(L.aula);
+      if (L.data && L.data.lesson && typeof L.data.lesson === 'object') L.data.lesson = sanitizeLesson(L.data.lesson);
+
+      ['title','subtitle','intro','introduction','finalTip','listeningText','readingText'].forEach(function(k) {
+        if (L[k] != null && typeof L[k] === 'object') L[k] = textify(L[k]);
+      });
+
+      if (Array.isArray(L.sections)) {
+        L.sections = L.sections.map(function(s) {
+          if (typeof s === 'string') return { heading: 'Seção', content: s, examples: [] };
+          s = s || {};
+          ['heading','title','content','text','body','description'].forEach(function(k) {
+            if (s[k] != null && typeof s[k] === 'object') s[k] = textify(s[k]);
+          });
+          if (Array.isArray(s.examples)) {
+            s.examples = s.examples.map(function(ex) {
+              if (typeof ex === 'string') return { en: ex, pt: '' };
+              ex = ex || {};
+              ['en','pt','english','portuguese','translation','example','text','sentence'].forEach(function(k) {
+                if (ex[k] != null && typeof ex[k] === 'object') ex[k] = textify(ex[k]);
+              });
+              return ex;
+            });
+          }
+          return s;
+        });
+      }
+
+      if (Array.isArray(L.vocabulary)) {
+        L.vocabulary = L.vocabulary.map(function(v) {
+          if (typeof v === 'string') return { word: v, translation: '' };
+          v = v || {};
+          ['word','term','translation','meaning','pos','example'].forEach(function(k) {
+            if (v[k] != null && typeof v[k] === 'object') v[k] = textify(v[k]);
+          });
+          return v;
+        });
+      }
+
+      if (Array.isArray(L.exercises)) {
+        L.exercises = L.exercises.map(function(e) {
+          if (typeof e === 'string') return { question: e, answer: '' };
+          e = e || {};
+          ['question','prompt','instruction','answer','correctAnswer','explanation','type'].forEach(function(k) {
+            if (e[k] != null && typeof e[k] === 'object') e[k] = textify(e[k]);
+          });
+          if (Array.isArray(e.options)) e.options = e.options.map(textify);
+          return e;
+        });
+      }
+
+      if (Array.isArray(L.tips)) L.tips = L.tips.map(textify);
+
+      if (Array.isArray(L.commonMistakes)) {
+        L.commonMistakes = L.commonMistakes.map(function(m) {
+          if (typeof m === 'string') return { mistake: m, why: '', avoid: '' };
+          m = m || {};
+          ['mistake','why','avoid'].forEach(function(k) {
+            if (m[k] != null && typeof m[k] === 'object') m[k] = textify(m[k]);
+          });
+          return m;
+        });
+      }
+
+      return L;
+    }
+
+    function trySanitizeValue(raw) {
+      try {
+        var obj = JSON.parse(raw);
+        var clean = sanitizeLesson(obj);
+        return JSON.stringify(clean);
+      } catch(_) {
+        return raw;
+      }
+    }
+
+    function sanitizeStorage() {
+      try {
+        var changed = 0;
+        for (var i = 0; i < localStorage.length; i++) {
+          var k = localStorage.key(i);
+          if (!isLessonKey(k)) continue;
+          var raw = localStorage.getItem(k);
+          if (!raw) continue;
+          var clean = trySanitizeValue(raw);
+          if (clean && clean !== raw) {
+            localStorage.setItem(k, clean);
+            changed++;
+          }
+        }
+        if (changed) console.warn('[Fluency V20.3] aulas saneadas antes do React:', changed);
+      } catch(e) {
+        console.warn('[Fluency V20.3] sanitizer falhou:', e);
+      }
+    }
+
+    sanitizeStorage();
+
+    var nativeSet = Storage.prototype.setItem;
+    Storage.prototype.setItem = function(k, v) {
+      try {
+        if (this === localStorage && isLessonKey(k)) v = trySanitizeValue(String(v));
+      } catch(_) {}
+      return nativeSet.call(this, k, v);
+    };
+
+    window.__fluencySanitizeLessonsV203 = sanitizeStorage;
+  } catch(e) {
+    console.warn('[Fluency V20.3] sanitizer bootstrap erro:', e);
+  }
+})();
+</script>
+
+<script src="bundle.js?v=2026-04-28-v20.3-reading-diagnostico-build-fix"></script>
+<link rel="stylesheet" href="reading-v20.css?v=2026-04-28-v20.3-reading-diagnostico-build-fix">
+<script src="reading-v20.js?v=2026-04-28-v20.3-reading-diagnostico-build-fix"></script>
 
 <!-- Renderização em script separado, garantindo execução após bundle.js -->
 <script>
@@ -1471,5 +1591,23 @@ window.__ttsState = window.__ttsState || {
   }
 })();
 </script>
+
+<script>
+(function() {
+  function setBuildVersionV203() {
+    try {
+      window.__FLUENCY_BUILD_VERSION__ = '2026-04-28-v20.3-reading-diagnostico-build-fix';
+      var el = document.getElementById('__diag_build__');
+      if (el) el.textContent = '2026-04-28-v20.3-reading-diagnostico-build-fix';
+      var badge = document.getElementById('__fluency_build_badge_v202__');
+      if (badge) badge.remove();
+    } catch(e) {}
+  }
+  setBuildVersionV203();
+  setInterval(setBuildVersionV203, 1000);
+  window.__FLUENCY_HTML_VERSION__ = '2026-04-28-v20.3-reading-diagnostico-build-fix';
+})();
+</script>
+
 </body>
 </html>

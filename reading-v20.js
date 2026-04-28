@@ -4,7 +4,7 @@
     if(window.__fluencyReadingTakeoverV202) return;
     window.__fluencyReadingTakeoverV202 = true;
 
-    var VERSION = 'V20.2-READING-TAKEOVER-IA-AUDIO';
+    var VERSION = 'V20.3-READING-DIAGNOSTICO-BUILD-FIX';
     var mountedKey = '';
     var running = false;
 
