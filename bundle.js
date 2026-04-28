@@ -4582,3 +4582,795 @@ lucide-react/dist/esm/lucide-react.mjs:
     setInterval(render,900); ['click','touchend','hashchange','popstate','focus'].forEach(function(ev){window.addEventListener(ev,function(){setTimeout(render,120);setTimeout(render,800)},true)}); setTimeout(render,600); setTimeout(render,1600); setTimeout(render,3200);
   }catch(e){try{console.warn('Fluency V51 patch failed',e)}catch(_){} }
 })();
+
+
+/* === FLUENCY PATCH V52 - RENDERIZAÇÃO ÚNICA E COMPLETA DA AULA (DARK THEME) === */
+/* Resolve o problema de aulas que aparecem cortadas na aba "Aula" devido ao conflito
+   entre vários patches anteriores (V18, V41, V48, V51). Toma posse da aba quando há
+   uma aula ativa, esconde a renderização parcial do React, e injeta uma renderização
+   completa, polida e responsiva (mobile first) com TODAS as seções, vocabulário,
+   exercícios, dicas e erros comuns. */
+;(function(){
+  try{
+    if(window.__fluencyV52UnifiedLessonRender) return;
+    window.__fluencyV52UnifiedLessonRender = true;
+    var VERSION = 'V52-UNIFIED-LESSON-RENDER';
+    var MOUNT_ID = '__fluency_v52_lesson_root__';
+    var STYLE_ID = '__fluency_v52_style__';
+    var HIDE_REACT_CLASS = '__fluency_v52_hide_react_lesson__';
+
+    /* ---- Helpers ---- */
+    function todayStr(){ var d=new Date(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0'); return d.getFullYear()+'-'+m+'-'+day; }
+    function txt(v){ return String(v == null ? '' : v).trim(); }
+    function arr(x){ return Array.isArray(x) ? x : []; }
+    function esc(v){
+      return txt(v).replace(/[&<>"']/g, function(c){
+        return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+      });
+    }
+    function pick(o, ks){
+      o = o || {};
+      for(var i=0;i<ks.length;i++){ var v=o[ks[i]]; if(v!=null && txt(v)) return v; }
+      return '';
+    }
+    function log(msg, kind){
+      try{
+        console.warn('[Fluency '+VERSION+'] '+msg);
+        var st = window.__fluencyBlockLessonStateV197;
+        if(st && Array.isArray(st.logs)){
+          st.logs.push({at:new Date().toLocaleTimeString(), kind:kind||'info', msg:'Aula '+VERSION+': '+msg});
+          if(st.logs.length>140) st.logs.shift();
+        }
+      }catch(_){}
+    }
+
+    function parseLesson(raw){
+      try{
+        if(raw == null) return null;
+        var x = raw;
+        if(typeof x === 'string'){
+          var s = x.trim().replace(/^```(?:json)?\s*/i,'').replace(/```$/,'').trim();
+          var a = s.indexOf('{'), b = s.lastIndexOf('}');
+          if(a>=0 && b>a) s = s.slice(a, b+1);
+          x = JSON.parse(s);
+        }
+        if(typeof x === 'string'){ try{ x = JSON.parse(x); }catch(_){} }
+        if(x && typeof x.value === 'string'){ try{ var inner = JSON.parse(x.value); if(inner && typeof inner === 'object') x = inner; }catch(_){} }
+        if(x && x.lessonData && typeof x.lessonData === 'object') x = x.lessonData;
+        if(x && x.lesson && typeof x.lesson === 'object') x = x.lesson;
+        if(x && x.aula && typeof x.aula === 'object') x = x.aula;
+        if(x && x.data && x.data.lesson && typeof x.data.lesson === 'object') x = x.data.lesson;
+        return x && typeof x === 'object' ? x : null;
+      }catch(_){ return null; }
+    }
+
+    function normalizeExample(e){
+      if(typeof e === 'string') return {en:e, pt:''};
+      e = e || {};
+      return {
+        en: pick(e, ['en','english','sentence','phrase','example','text']),
+        pt: pick(e, ['pt','portuguese','translation','traducao','tradução','meaning'])
+      };
+    }
+
+    function normalize(L){
+      L = parseLesson(L);
+      if(!L || typeof L !== 'object') return null;
+      var out = {};
+      // Preserve underscore-keys (metadata) so we don't drop _generatedBy / _fallback / _validation etc.
+      Object.keys(L).forEach(function(k){ if(k && k.charAt(0) === '_') out[k] = L[k]; });
+
+      out.title = pick(L, ['title','titulo','título','name']) || '';
+      out.subtitle = pick(L, ['subtitle','subtitulo','subtítulo']) || '';
+      out.estimatedMinutes = Number(L.estimatedMinutes || L.minutes || L.duration || 40) || 40;
+      out.intro = pick(L, ['intro','introduction','introducao','introdução','overview']) || '';
+      out.readingText = pick(L, ['readingText','reading_text','textoLeitura','texto_para_leitura','text']) || '';
+      out.listeningText = pick(L, ['listeningText','listening_text','audioText','transcript']) || '';
+
+      var secsRaw = arr(L.sections && L.sections.length ? L.sections : (L.secoes || L.seções || L.parts || L.modules));
+      out.sections = secsRaw.map(function(s, i){
+        if(typeof s === 'string') s = { heading:'Seção '+(i+1), content:s };
+        s = s || {};
+        var ex = arr(s.examples && s.examples.length ? s.examples : (s.exemplos || s.sentences || s.frases))
+          .map(normalizeExample)
+          .filter(function(e){ return txt(e.en) || txt(e.pt); });
+        return {
+          heading: pick(s, ['heading','title','titulo','título','name']) || ('Seção '+(i+1)),
+          content: pick(s, ['content','body','text','explicacao','explicação','explanation','description','conteudo']) || '',
+          examples: ex
+        };
+      }).filter(function(s){ return txt(s.heading) || txt(s.content) || s.examples.length; });
+
+      var vocRaw = arr(L.vocabulary && L.vocabulary.length ? L.vocabulary : (L.vocabulario || L.vocabulário || L.words));
+      out.vocabulary = vocRaw.map(function(v){
+        if(typeof v === 'string') return { word:v, pos:'', translation:'', example:'' };
+        v = v || {};
+        return {
+          word: pick(v, ['word','palavra','term','english']),
+          pos: pick(v, ['pos','class','classe','type']) || '',
+          translation: pick(v, ['translation','traducao','tradução','pt','meaning']),
+          example: pick(v, ['example','exemplo','sentence','phrase']) || ''
+        };
+      }).filter(function(v){ return txt(v.word) || txt(v.translation); });
+
+      var exRaw = arr(L.exercises && L.exercises.length ? L.exercises : (L.exercicios || L.exercícios || L.questions || L.quiz));
+      out.exercises = exRaw.map(function(e, i){
+        if(typeof e === 'string') e = { question:e };
+        e = e || {};
+        return {
+          type: pick(e, ['type','tipo']) || 'practice',
+          question: pick(e, ['question','pergunta','prompt','instruction','enunciado']) || ('Exercício '+(i+1)),
+          options: arr(e.options || e.opcoes || e.opções || e.choices).map(txt),
+          answer: pick(e, ['answer','resposta','correct','correctAnswer','expected']) || '',
+          explanation: pick(e, ['explanation','explicacao','explicação','why','feedback']) || ''
+        };
+      }).filter(function(e){ return txt(e.question); });
+
+      out.tips = arr(L.tips && L.tips.length ? L.tips : (L.dicas || L.notes))
+        .map(function(t){ return typeof t === 'string' ? t : pick(t, ['tip','text','content']); })
+        .filter(function(t){ return txt(t); });
+
+      out.commonMistakes = arr(L.commonMistakes || L.common_mistakes || L.errosComuns || L.mistakes).map(function(m){
+        m = m || {};
+        return {
+          mistake: pick(m, ['mistake','erro','title']),
+          why: pick(m, ['why','porque','porquê','reason']),
+          avoid: pick(m, ['avoid','correction','comoEvitar','fix'])
+        };
+      }).filter(function(m){ return txt(m.mistake) || txt(m.why) || txt(m.avoid); });
+
+      out.finalTip = pick(L, ['finalTip','final_tip','conclusion','closing']) || '';
+      out.lessonId = L.lessonId || L.activeLessonId || ('ai-'+Date.now());
+      out._generatedBy = L._generatedBy || VERSION;
+      out._generatedAt = L._generatedAt || new Date().toISOString();
+      out._fluencyDate = L._fluencyDate || todayStr();
+      if(L._blockMeta) out._blockMeta = L._blockMeta;
+      if(L._fallback) out._fallback = L._fallback;
+      if(L._fallbackReason) out._fallbackReason = L._fallbackReason;
+      if(L._validation) out._validation = L._validation;
+      return out;
+    }
+
+    function lessonHasContent(L){
+      L = normalize(L);
+      if(!L) return false;
+      // We accept partial lessons (e.g. only title+intro) so the user always sees something —
+      // but we use this to decide whether V52 should take over the screen at all.
+      return !!(txt(L.title) || txt(L.intro) || L.sections.length || L.exercises.length || L.vocabulary.length || txt(L.readingText) || txt(L.listeningText));
+    }
+
+    /* ---- Storage: read the active lesson from any of the known keys ---- */
+    var ACTIVE_KEYS = [
+      'fluency_active_ai_lesson_v51',
+      'fluency_active_ai_lesson_v41',
+      'fluency_last_ai_lesson_v41',
+      'fluency_last_ai_lesson'
+    ];
+    function rawGetItem(k){ try{ var fn = (Storage.prototype.getItem.__fluencyV41ActiveLesson || Storage.prototype.getItem.__fluencyV51Capture) ? null : Storage.prototype.getItem; return localStorage.getItem(k); }catch(_){ return null; } }
+
+    function readActiveLesson(){
+      // 1) explicit active keys
+      for(var i=0;i<ACTIVE_KEYS.length;i++){
+        var raw = localStorage.getItem(ACTIVE_KEYS[i]);
+        if(raw){
+          var L = normalize(raw);
+          if(lessonHasContent(L)) return L;
+        }
+      }
+      // 2) any fluency_lesson_v* key — pick the one with the most content
+      var best = null, bestScore = -1;
+      try{
+        for(var j=0;j<localStorage.length;j++){
+          var k = localStorage.key(j) || '';
+          if(!/^fluency_lesson_v\d+_/i.test(k)) continue;
+          var L2 = normalize(localStorage.getItem(k));
+          if(!lessonHasContent(L2)) continue;
+          var sc = (txt(L2.title).length>0?100:0) + (txt(L2.intro).length>0?80:0) + L2.sections.length*40 + L2.exercises.length*15 + L2.vocabulary.length*8 + (txt(L2.readingText).length>0?20:0);
+          if(sc > bestScore){ best = L2; bestScore = sc; }
+        }
+      }catch(_){}
+      return best;
+    }
+
+    /* ---- Tab detection ---- */
+    function isLessonTab(){
+      try{
+        var btns = document.querySelectorAll('button');
+        for(var i=0;i<btns.length;i++){
+          var b = btns[i];
+          var t = (b.innerText || b.textContent || '').replace(/\s+/g,' ').trim();
+          if(t === 'Aula'){
+            // Active tab has an underline span (linear-gradient) or accent color
+            var hasUnderline = !!b.querySelector('span[style*="linear-gradient"]');
+            var styleStr = (b.getAttribute('style') || '') + ' ' + getComputedStyle(b).color;
+            if(hasUnderline || /91, ?156, ?246|112, ?166, ?255|var\(--accent\)|rgb\(91/.test(styleStr)) return true;
+          }
+        }
+      }catch(_){}
+      return false;
+    }
+
+    /* ---- Styles for V52 mount: full dark theme matching the screenshots ---- */
+    function injectStyles(){
+      if(document.getElementById(STYLE_ID)) return;
+      var st = document.createElement('style');
+      st.id = STYLE_ID;
+      st.textContent = ''
+        + '/* Hide the React-rendered lesson page when V52 is active. We hide the SCROLLER,'
+        + '   not the header (which contains the tabs). */'
+        + '.'+HIDE_REACT_CLASS+' > .max-w-3xl.mx-auto.px-4.md\\:px-6.py-6.pb-24,'
+        + '.'+HIDE_REACT_CLASS+' > .max-w-3xl.mx-auto.px-4.md\\:px-6.py-16,'
+        + '.'+HIDE_REACT_CLASS+' > .max-w-3xl.mx-auto.px-4.md\\:px-6.py-12 {'
+        + '  display: none !important;'
+        + '}'
+        + '#'+MOUNT_ID+' {'
+        + '  position: relative; z-index: 5; max-width: 768px; margin: 0 auto;'
+        + '  padding: 18px 16px 120px; color: #E8EFF8;'
+        + '  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;'
+        + '}'
+        + '#'+MOUNT_ID+' .v52-meta { font-size:11px; letter-spacing:.28em; text-transform:uppercase; color:#8FB8FF; margin-bottom:12px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }'
+        + '#'+MOUNT_ID+' .v52-pill-ai { display:inline-flex; align-items:center; gap:6px; border:1px solid rgba(52,211,153,.55); background:rgba(52,211,153,.12); color:#A7F3D0; border-radius:999px; padding:5px 12px; font-weight:700; font-size:11px; letter-spacing:.05em; }'
+        + '#'+MOUNT_ID+' .v52-pill-fb { display:inline-flex; align-items:center; gap:6px; border:1px solid rgba(245,158,11,.55); background:rgba(245,158,11,.12); color:#FCD34D; border-radius:999px; padding:5px 12px; font-weight:700; font-size:11px; letter-spacing:.05em; }'
+        + '#'+MOUNT_ID+' h1.v52-title { font-family:Georgia,"Times New Roman",serif; font-size:34px; line-height:1.05; font-weight:700; margin:6px 0 8px; color:#F5F8FF; letter-spacing:-0.01em; }'
+        + '#'+MOUNT_ID+' .v52-subtitle { font-family:Georgia,serif; font-style:italic; font-size:18px; color:#79A8FF; margin-bottom:18px; line-height:1.35; }'
+        + '#'+MOUNT_ID+' .v52-intro { font-size:16px; line-height:1.7; color:#9EBCFF; margin-bottom:24px; }'
+        + '#'+MOUNT_ID+' .v52-card { border:1px solid rgba(91,156,246,.22); background:linear-gradient(180deg, rgba(91,156,246,.10), rgba(91,156,246,.04)); border-radius:18px; padding:18px 18px 20px; margin:18px 0; }'
+        + '#'+MOUNT_ID+' .v52-card-reading { background:linear-gradient(180deg, rgba(91,156,246,.14), rgba(91,156,246,.05)); }'
+        + '#'+MOUNT_ID+' .v52-card-listen { background:linear-gradient(180deg, rgba(167,139,250,.14), rgba(167,139,250,.05)); border-color:rgba(167,139,250,.28); }'
+        + '#'+MOUNT_ID+' .v52-card-mistake { background:rgba(248,113,113,.10); border:1px solid rgba(248,113,113,.30); }'
+        + '#'+MOUNT_ID+' .v52-section-label { display:flex; align-items:center; gap:10px; margin-bottom:12px; }'
+        + '#'+MOUNT_ID+' .v52-section-label .v52-label-text { font-size:11px; letter-spacing:.25em; text-transform:uppercase; color:#A9C7FF; font-weight:700; }'
+        + '#'+MOUNT_ID+' .v52-section-label .v52-label-line { flex:1; height:1px; background:linear-gradient(90deg, rgba(91,156,246,.3), transparent); }'
+        + '#'+MOUNT_ID+' .v52-section-label .v52-count { font-size:11px; padding:2px 8px; border-radius:999px; background:rgba(91,156,246,.15); border:1px solid rgba(91,156,246,.35); color:#A9C7FF; font-weight:700; }'
+        + '#'+MOUNT_ID+' .v52-section h2 { font-family:Georgia,serif; font-size:24px; line-height:1.18; margin:0 0 10px; color:#F5F8FF; font-weight:700; }'
+        + '#'+MOUNT_ID+' .v52-section h2 .v52-section-mark { color:#5B9CF6; margin-right:6px; }'
+        + '#'+MOUNT_ID+' .v52-section .v52-section-body { font-size:15.5px; line-height:1.75; color:#9EBCFF; white-space:pre-wrap; }'
+        + '#'+MOUNT_ID+' .v52-examples { display:grid; gap:10px; margin-top:14px; }'
+        + '#'+MOUNT_ID+' .v52-example { display:flex; align-items:flex-start; gap:10px; padding:11px 13px; border-radius:12px; border:1px solid rgba(255,255,255,.10); background:rgba(255,255,255,.04); }'
+        + '#'+MOUNT_ID+' .v52-example .v52-example-text { flex:1; min-width:0; }'
+        + '#'+MOUNT_ID+' .v52-example .v52-en { font-size:15px; color:#F5F8FF; font-weight:600; line-height:1.4; }'
+        + '#'+MOUNT_ID+' .v52-example .v52-pt { font-size:13px; color:#A9C7FF; font-style:italic; margin-top:3px; line-height:1.4; }'
+        + '#'+MOUNT_ID+' .v52-tts-btn { flex-shrink:0; width:34px; height:34px; border-radius:50%; border:1px solid rgba(91,156,246,.4); background:rgba(91,156,246,.10); color:#A9C7FF; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; font-size:14px; padding:0; }'
+        + '#'+MOUNT_ID+' .v52-tts-btn:active { transform:scale(0.96); }'
+        + '#'+MOUNT_ID+' .v52-tts-btn-pill { display:inline-flex; align-items:center; gap:6px; padding:5px 11px; border-radius:999px; border:1px solid rgba(91,156,246,.35); background:rgba(91,156,246,.10); color:#A9C7FF; cursor:pointer; font-size:12px; font-weight:600; }'
+        + '#'+MOUNT_ID+' .v52-reading-text { font-family:Georgia,serif; font-size:18px; line-height:1.7; color:#F5F8FF; margin-top:4px; }'
+        + '#'+MOUNT_ID+' .v52-vocab-grid { display:grid; grid-template-columns:1fr; gap:10px; }'
+        + '@media (min-width:520px){ #'+MOUNT_ID+' .v52-vocab-grid { grid-template-columns:1fr 1fr; } }'
+        + '#'+MOUNT_ID+' .v52-vocab-card { padding:13px; border-radius:13px; border:1px solid rgba(255,255,255,.10); background:rgba(255,255,255,.045); }'
+        + '#'+MOUNT_ID+' .v52-vocab-head { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }'
+        + '#'+MOUNT_ID+' .v52-vocab-word { font-size:16px; font-weight:700; color:#F5F8FF; }'
+        + '#'+MOUNT_ID+' .v52-vocab-meta { font-size:12px; color:#A9C7FF; margin-top:2px; }'
+        + '#'+MOUNT_ID+' .v52-vocab-example { font-size:13px; color:#9EBCFF; font-style:italic; margin-top:7px; line-height:1.45; }'
+        + '#'+MOUNT_ID+' .v52-exercise { padding:16px; border-radius:14px; border:1px solid rgba(91,156,246,.22); background:rgba(91,156,246,.06); margin-bottom:12px; }'
+        + '#'+MOUNT_ID+' .v52-exercise.v52-ex-correct { border-color:rgba(52,211,153,.45); background:rgba(52,211,153,.07); }'
+        + '#'+MOUNT_ID+' .v52-exercise.v52-ex-wrong { border-color:rgba(248,113,113,.40); background:rgba(248,113,113,.06); }'
+        + '#'+MOUNT_ID+' .v52-ex-head { display:flex; align-items:flex-start; gap:11px; }'
+        + '#'+MOUNT_ID+' .v52-ex-num { flex-shrink:0; width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; background:rgba(91,156,246,.18); border:1px solid rgba(91,156,246,.40); color:#A9C7FF; }'
+        + '#'+MOUNT_ID+' .v52-exercise.v52-ex-correct .v52-ex-num { background:rgba(52,211,153,.20); border-color:rgba(52,211,153,.50); color:#A7F3D0; }'
+        + '#'+MOUNT_ID+' .v52-exercise.v52-ex-wrong .v52-ex-num { background:rgba(248,113,113,.20); border-color:rgba(248,113,113,.50); color:#FCA5A5; }'
+        + '#'+MOUNT_ID+' .v52-ex-question { flex:1; min-width:0; font-size:15.5px; line-height:1.55; color:#F5F8FF; }'
+        + '#'+MOUNT_ID+' .v52-ex-options { display:grid; grid-template-columns:1fr; gap:8px; margin-top:11px; }'
+        + '#'+MOUNT_ID+' .v52-ex-opt { display:flex; align-items:center; gap:10px; padding:11px 13px; border-radius:11px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.045); color:#DBEAFE; font-size:14px; cursor:pointer; text-align:left; line-height:1.45; transition:background .15s, border-color .15s; }'
+        + '#'+MOUNT_ID+' .v52-ex-opt:hover { background:rgba(91,156,246,.10); border-color:rgba(91,156,246,.30); }'
+        + '#'+MOUNT_ID+' .v52-ex-opt.v52-opt-selected { background:rgba(91,156,246,.18); border-color:rgba(91,156,246,.50); }'
+        + '#'+MOUNT_ID+' .v52-ex-opt.v52-opt-correct { background:rgba(52,211,153,.18); border-color:rgba(52,211,153,.50); color:#D1FAE5; }'
+        + '#'+MOUNT_ID+' .v52-ex-opt.v52-opt-wrong { background:rgba(248,113,113,.15); border-color:rgba(248,113,113,.45); color:#FECACA; }'
+        + '#'+MOUNT_ID+' .v52-ex-opt[disabled] { cursor:default; }'
+        + '#'+MOUNT_ID+' .v52-ex-opt-letter { width:22px; height:22px; border-radius:50%; background:rgba(255,255,255,.10); color:#9EBCFF; font-size:11px; font-weight:700; display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; }'
+        + '#'+MOUNT_ID+' .v52-ex-input-row { display:flex; gap:8px; margin-top:11px; }'
+        + '#'+MOUNT_ID+' .v52-ex-input { flex:1; min-width:0; padding:10px 12px; border-radius:11px; border:1px solid rgba(255,255,255,.18); background:rgba(0,0,0,.20); color:#F5F8FF; font-size:14px; font-family:inherit; }'
+        + '#'+MOUNT_ID+' .v52-ex-input:focus { outline:none; border-color:rgba(91,156,246,.55); }'
+        + '#'+MOUNT_ID+' .v52-ex-verify { padding:10px 14px; border-radius:11px; border:none; background:linear-gradient(135deg,#5B9CF6,#A78BFA); color:#fff; font-weight:700; font-size:13px; cursor:pointer; flex-shrink:0; }'
+        + '#'+MOUNT_ID+' .v52-ex-explanation { margin-top:11px; padding:11px 13px; border-radius:10px; font-size:13.5px; line-height:1.6; }'
+        + '#'+MOUNT_ID+' .v52-ex-explanation.v52-expl-correct { background:rgba(52,211,153,.10); border:1px solid rgba(52,211,153,.32); color:#D1FAE5; }'
+        + '#'+MOUNT_ID+' .v52-ex-explanation.v52-expl-wrong { background:rgba(248,113,113,.08); border:1px solid rgba(248,113,113,.28); color:#FECACA; }'
+        + '#'+MOUNT_ID+' .v52-ex-expl-label { font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:.1em; margin-bottom:5px; }'
+        + '#'+MOUNT_ID+' .v52-ex-expl-answer { font-style:italic; }'
+        + '#'+MOUNT_ID+' .v52-tips { display:grid; gap:9px; }'
+        + '#'+MOUNT_ID+' .v52-tip { display:flex; align-items:flex-start; gap:10px; padding:12px 14px; border-radius:12px; background:rgba(252,211,77,.06); border:1px solid rgba(252,211,77,.25); color:#FEF3C7; font-size:14px; line-height:1.55; }'
+        + '#'+MOUNT_ID+' .v52-tip-bullet { color:#FCD34D; font-weight:900; flex-shrink:0; }'
+        + '#'+MOUNT_ID+' .v52-mistake { padding:13px; }'
+        + '#'+MOUNT_ID+' .v52-mistake-title { font-weight:700; color:#FECACA; font-size:14.5px; margin-bottom:5px; }'
+        + '#'+MOUNT_ID+' .v52-mistake-why { font-size:13.5px; color:#DBEAFE; line-height:1.55; }'
+        + '#'+MOUNT_ID+' .v52-mistake-fix { font-size:13.5px; color:#A7F3D0; margin-top:6px; line-height:1.55; }'
+        + '#'+MOUNT_ID+' .v52-conclude-card { margin-top:32px; padding:22px; border-radius:18px; text-align:center; border:1px solid rgba(91,156,246,.30); background:linear-gradient(180deg, rgba(91,156,246,.10), rgba(167,139,250,.06)); }'
+        + '#'+MOUNT_ID+' .v52-score { font-size:13px; color:#A9C7FF; margin-bottom:14px; }'
+        + '#'+MOUNT_ID+' .v52-score.v52-score-pass { color:#A7F3D0; }'
+        + '#'+MOUNT_ID+' .v52-conclude-btn { width:100%; max-width:340px; padding:14px 20px; border-radius:14px; border:none; background:linear-gradient(135deg,#5B9CF6,#A78BFA); color:#fff; font-weight:800; font-size:15px; cursor:pointer; box-shadow:0 8px 24px rgba(91,156,246,.25); }'
+        + '#'+MOUNT_ID+' .v52-conclude-btn:active { transform:scale(.98); }'
+        + '#'+MOUNT_ID+' .v52-conclude-btn[disabled] { opacity:.55; cursor:default; }'
+        + '#'+MOUNT_ID+' .v52-conclude-done { color:#A7F3D0; font-weight:700; font-size:15px; }'
+        + '#'+MOUNT_ID+' .v52-empty { padding:60px 20px; text-align:center; color:#A9C7FF; }'
+        + '#'+MOUNT_ID+' .v52-empty h2 { font-family:Georgia,serif; font-size:24px; color:#F5F8FF; margin:0 0 10px; }'
+        + '#'+MOUNT_ID+' .v52-empty p { font-size:14px; line-height:1.55; }'
+        + '#'+MOUNT_ID+' .v52-fallback-note { padding:12px 14px; border-radius:12px; background:rgba(245,158,11,.10); border:1px solid rgba(245,158,11,.35); color:#FCD34D; font-size:13px; line-height:1.5; margin-bottom:18px; }';
+      document.head.appendChild(st);
+    }
+
+    /* ---- TTS using browser speech synthesis (works on iOS Safari) ---- */
+    var __ttsCurrent = null;
+    function tts(text){
+      try{
+        if(!text || !text.trim()) return;
+        var sy = window.speechSynthesis;
+        if(!sy) return;
+        if(__ttsCurrent){ sy.cancel(); __ttsCurrent = null; return; }
+        var u = new SpeechSynthesisUtterance(text);
+        u.lang = 'en-US';
+        u.rate = 0.95;
+        u.onend = function(){ __ttsCurrent = null; };
+        u.onerror = function(){ __ttsCurrent = null; };
+        __ttsCurrent = u;
+        sy.speak(u);
+      }catch(_){}
+    }
+
+    /* ---- HTML builders ---- */
+    function htmlHeader(L){
+      var pill = L._fallback
+        ? '<span class="v52-pill-fb">⚠ Aula padrão (IA indisponível)</span>'
+        : '<span class="v52-pill-ai">✦ Gerada por IA</span>';
+      var fb = L._fallback && L._fallbackReason
+        ? '<div class="v52-fallback-note"><b>Por que a IA não gerou esta aula?</b><br>'+esc(L._fallbackReason)+'</div>'
+        : '';
+      var meta = '<div class="v52-meta">'
+        + '<span>Aula · ≈ '+esc(L.estimatedMinutes)+' min</span>'
+        + pill
+        + '</div>';
+      var subtitle = L.subtitle ? '<div class="v52-subtitle">'+esc(L.subtitle)+'</div>' : '';
+      var intro = L.intro ? '<p class="v52-intro">'+esc(L.intro)+'</p>' : '';
+      return meta + (L.title ? '<h1 class="v52-title">'+esc(L.title)+'</h1>' : '') + subtitle + intro + fb;
+    }
+
+    function htmlReading(L){
+      if(!L.readingText) return '';
+      return '<section class="v52-card v52-card-reading">'
+        + '<div class="v52-section-label" style="margin-bottom:10px;">'
+        +   '<span class="v52-label-text">Texto para leitura</span>'
+        +   '<span class="v52-label-line"></span>'
+        +   '<button class="v52-tts-btn-pill" data-v52-tts="reading">▶ Ouvir</button>'
+        + '</div>'
+        + '<p class="v52-reading-text">'+esc(L.readingText)+'</p>'
+        + '</section>';
+    }
+
+    function htmlListening(L){
+      if(!L.listeningText) return '';
+      return '<section class="v52-card v52-card-listen">'
+        + '<div class="v52-section-label" style="margin-bottom:10px;">'
+        +   '<span class="v52-label-text">Primeiro, escute</span>'
+        +   '<span class="v52-label-line"></span>'
+        +   '<button class="v52-tts-btn-pill" data-v52-tts="listening">▶ Ouvir</button>'
+        + '</div>'
+        + '<details style="margin-top:8px;">'
+        +   '<summary style="cursor:pointer;color:#A9C7FF;font-size:13px;font-weight:600;">Ver transcrição</summary>'
+        +   '<p class="v52-reading-text" style="margin-top:10px;font-size:15.5px;">'+esc(L.listeningText)+'</p>'
+        + '</details>'
+        + '</section>';
+    }
+
+    function htmlSections(L){
+      if(!L.sections.length) return '';
+      var inner = L.sections.map(function(sec, i){
+        var examples = sec.examples.map(function(ex, j){
+          return '<div class="v52-example">'
+            + '<button class="v52-tts-btn" data-v52-tts="ex" data-v52-text="'+esc(ex.en)+'">▶</button>'
+            + '<div class="v52-example-text">'
+            +   (ex.en ? '<div class="v52-en">'+esc(ex.en)+'</div>' : '')
+            +   (ex.pt ? '<div class="v52-pt">'+esc(ex.pt)+'</div>' : '')
+            + '</div>'
+            + '</div>';
+        }).join('');
+        return '<section class="v52-section v52-card" style="margin:18px 0;">'
+          + '<h2><span class="v52-section-mark">§</span>'+esc(sec.heading)+'</h2>'
+          + (sec.content ? '<div class="v52-section-body">'+esc(sec.content)+'</div>' : '')
+          + (examples ? '<div class="v52-examples">'+examples+'</div>' : '')
+          + '</section>';
+      }).join('');
+      return inner;
+    }
+
+    function htmlVocabulary(L){
+      if(!L.vocabulary.length) return '';
+      var cards = L.vocabulary.map(function(v, i){
+        return '<div class="v52-vocab-card">'
+          + '<div class="v52-vocab-head">'
+          +   '<div>'
+          +     '<div class="v52-vocab-word">'+esc(v.word)+'</div>'
+          +     '<div class="v52-vocab-meta">'+esc(v.pos)+(v.pos&&v.translation?' · ':'')+esc(v.translation)+'</div>'
+          +   '</div>'
+          +   '<button class="v52-tts-btn" data-v52-tts="word" data-v52-text="'+esc(v.word)+'">▶</button>'
+          + '</div>'
+          + (v.example ? '<div class="v52-vocab-example">"'+esc(v.example)+'"</div>' : '')
+          + '</div>';
+      }).join('');
+      return '<section style="margin:24px 0;">'
+        + '<div class="v52-section-label">'
+        +   '<span class="v52-label-text">Vocabulário</span>'
+        +   '<span class="v52-label-line"></span>'
+        +   '<span class="v52-count">'+L.vocabulary.length+'</span>'
+        + '</div>'
+        + '<div class="v52-vocab-grid">'+cards+'</div>'
+        + '</section>';
+    }
+
+    function htmlExercises(L, state){
+      if(!L.exercises.length) return '';
+      var items = L.exercises.map(function(ex, i){
+        var ans = state.answers[i] || '';
+        var checked = !!state.checked[i];
+        var correctAns = String(ex.answer || '').trim().toLowerCase();
+        var isCorrect = checked && String(ans).trim().toLowerCase() === correctAns;
+        var clsExtra = checked ? (isCorrect ? ' v52-ex-correct' : ' v52-ex-wrong') : '';
+        var hasOptions = Array.isArray(ex.options) && ex.options.length > 0 && (ex.type !== 'translate');
+        var inner;
+        if(hasOptions){
+          var opts = ex.options.map(function(o, k){
+            var letter = String.fromCharCode(65 + k);
+            var oVal = String(o);
+            var oCls = 'v52-ex-opt';
+            if(checked){
+              if(String(oVal).trim().toLowerCase() === correctAns) oCls += ' v52-opt-correct';
+              else if(oVal === ans) oCls += ' v52-opt-wrong';
+            } else if(oVal === ans){
+              oCls += ' v52-opt-selected';
+            }
+            return '<button class="'+oCls+'" data-v52-ex="'+i+'" data-v52-opt="'+esc(oVal)+'"'+(checked?' disabled':'')+'>'
+              + '<span class="v52-ex-opt-letter">'+letter+'</span>'
+              + '<span>'+esc(oVal)+'</span>'
+              + '</button>';
+          }).join('');
+          inner = '<div class="v52-ex-options">'+opts+'</div>';
+        } else {
+          inner = '<div class="v52-ex-input-row">'
+            + '<input class="v52-ex-input" type="text" placeholder="Digite sua resposta em inglês…" data-v52-ex-input="'+i+'" value="'+esc(ans)+'"'+(checked?' disabled':'')+' />'
+            + (checked ? '' : '<button class="v52-ex-verify" data-v52-ex-verify="'+i+'">Verificar</button>')
+            + '</div>';
+        }
+        var explanationHtml = '';
+        if(checked){
+          var lbl = isCorrect ? '✓ Correto!' : ('✗ Resposta: '+esc(ex.answer));
+          explanationHtml = '<div class="v52-ex-explanation '+(isCorrect?'v52-expl-correct':'v52-expl-wrong')+'">'
+            + '<div class="v52-ex-expl-label">'+lbl+'</div>'
+            + (ex.explanation ? '<div class="v52-ex-expl-answer">'+esc(ex.explanation)+'</div>' : '')
+            + '</div>';
+        }
+        var marker = checked ? (isCorrect ? '✓' : '✗') : String(i+1);
+        return '<div class="v52-exercise'+clsExtra+'">'
+          + '<div class="v52-ex-head">'
+          +   '<div class="v52-ex-num">'+marker+'</div>'
+          +   '<div style="flex:1;">'
+          +     '<div class="v52-ex-question">'+esc(ex.question)+'</div>'
+          +     inner
+          +     explanationHtml
+          +   '</div>'
+          + '</div>'
+          + '</div>';
+      }).join('');
+      var answeredCount = L.exercises.filter(function(ex,i){ return !!state.checked[i]; }).length;
+      var correctCount = L.exercises.filter(function(ex,i){ return state.checked[i] && String(state.answers[i]||'').trim().toLowerCase() === String(ex.answer||'').trim().toLowerCase(); }).length;
+      return '<section style="margin:24px 0;">'
+        + '<div class="v52-section-label">'
+        +   '<span class="v52-label-text">Exercícios</span>'
+        +   '<span class="v52-label-line"></span>'
+        +   '<span class="v52-count">'+correctCount+'/'+L.exercises.length+'</span>'
+        + '</div>'
+        + items
+        + '</section>';
+    }
+
+    function htmlMistakes(L){
+      if(!L.commonMistakes.length) return '';
+      var items = L.commonMistakes.map(function(m){
+        return '<div class="v52-card v52-card-mistake v52-mistake">'
+          + (m.mistake ? '<div class="v52-mistake-title">'+esc(m.mistake)+'</div>' : '')
+          + (m.why ? '<div class="v52-mistake-why">'+esc(m.why)+'</div>' : '')
+          + (m.avoid ? '<div class="v52-mistake-fix">Como evitar: '+esc(m.avoid)+'</div>' : '')
+          + '</div>';
+      }).join('');
+      return '<section style="margin:24px 0;">'
+        + '<div class="v52-section-label">'
+        +   '<span class="v52-label-text">Erros comuns</span>'
+        +   '<span class="v52-label-line"></span>'
+        + '</div>'
+        + items
+        + '</section>';
+    }
+
+    function htmlTips(L){
+      if(!L.tips.length) return '';
+      var items = L.tips.map(function(t){
+        return '<div class="v52-tip"><span class="v52-tip-bullet">•</span><span>'+esc(t)+'</span></div>';
+      }).join('');
+      return '<section style="margin:24px 0;">'
+        + '<div class="v52-section-label">'
+        +   '<span class="v52-label-text">Dicas</span>'
+        +   '<span class="v52-label-line"></span>'
+        + '</div>'
+        + '<div class="v52-tips">'+items+'</div>'
+        + '</section>';
+    }
+
+    function htmlConclude(L, state, alreadyDoneToday){
+      var ex = L.exercises;
+      var answered = ex.filter(function(_, i){ return !!state.checked[i]; }).length;
+      var correct = ex.filter(function(b, i){ return state.checked[i] && String(state.answers[i]||'').trim().toLowerCase() === String(b.answer||'').trim().toLowerCase(); }).length;
+      var pct = ex.length ? Math.round(correct/ex.length*100) : 100;
+      var pass = pct >= 80;
+      var scoreLine = ex.length
+        ? '<div class="v52-score'+(pass && answered===ex.length ? ' v52-score-pass' : '')+'">Pontuação: '+correct+'/'+ex.length+' ('+pct+'%). Para concluir: 80%+.</div>'
+        : '';
+      if(alreadyDoneToday){
+        return '<div class="v52-conclude-card">'
+          + (L.finalTip ? '<div style="font-style:italic;font-family:Georgia,serif;font-size:17px;color:#9EBCFF;margin-bottom:12px;">"'+esc(L.finalTip)+'"</div>' : '')
+          + '<div class="v52-conclude-done">✓ Aula concluída</div>'
+          + '</div>';
+      }
+      return '<div class="v52-conclude-card">'
+        + (L.finalTip ? '<div style="font-style:italic;font-family:Georgia,serif;font-size:17px;color:#9EBCFF;margin-bottom:14px;">"'+esc(L.finalTip)+'"</div>' : '')
+        + scoreLine
+        + '<button class="v52-conclude-btn" data-v52-conclude="1">✓ Concluir aula de hoje</button>'
+        + '</div>';
+    }
+
+    function buildLessonHtml(L, state, alreadyDoneToday){
+      if(!L) return '<div class="v52-empty"><h2>Sem aula ativa</h2><p>Volte para a aba Hoje e toque em "Começar aula".</p></div>';
+      return ''
+        + htmlHeader(L)
+        + htmlReading(L)
+        + htmlListening(L)
+        + htmlSections(L)
+        + htmlVocabulary(L)
+        + htmlExercises(L, state)
+        + htmlMistakes(L)
+        + htmlTips(L)
+        + htmlConclude(L, state, alreadyDoneToday);
+    }
+
+    /* ---- Per-lesson interactive state (kept in memory keyed by lesson title) ---- */
+    var __state = { title:'', answers:{}, checked:{} };
+    function ensureStateFor(L){
+      if(!L) return __state;
+      if(__state.title !== (L.title||'')){
+        __state = { title: L.title||'', answers:{}, checked:{} };
+      }
+      return __state;
+    }
+
+    /* ---- Lesson completion (write to completedLessons + flashcards) ---- */
+    function getCompletedLessonsToday(){
+      try{
+        var raw = localStorage.getItem('fluency_completedLessons');
+        if(!raw) return [];
+        var arr = JSON.parse(raw);
+        return Array.isArray(arr) ? arr : [];
+      }catch(_){ return []; }
+    }
+    function isLessonDoneToday(){
+      var t = todayStr();
+      return getCompletedLessonsToday().some(function(c){ return c && c.date === t; });
+    }
+    function concludeLesson(L, state){
+      var ex = arr(L.exercises);
+      var answered = ex.filter(function(_, i){ return !!state.checked[i]; }).length;
+      var correct = ex.filter(function(b, i){ return state.checked[i] && String(state.answers[i]||'').trim().toLowerCase() === String(b.answer||'').trim().toLowerCase(); }).length;
+      var pct = ex.length ? Math.round(correct/ex.length*100) : 100;
+      if(ex.length && answered < ex.length){
+        alert('Responda e verifique todos os exercícios antes de concluir a aula.');
+        return false;
+      }
+      if(ex.length && pct < 80){
+        alert('Você acertou '+pct+'%. Revise os exercícios errados antes de concluir. Meta: 80% ou mais.');
+        return false;
+      }
+      try{
+        var t = todayStr();
+        var cur = getCompletedLessonsToday();
+        if(!cur.some(function(c){ return c && c.date === t; })){
+          cur.push({ id: t+'_v52', date: t, skill:'reading', level:'A1', title: L.title || 'Aula', score: pct });
+          localStorage.setItem('fluency_completedLessons', JSON.stringify(cur));
+        }
+        // Mark V51 completion (keeps existing systems happy)
+        localStorage.setItem('fluency_v51_completed_'+t, '1');
+      }catch(e){
+        log('falha ao salvar conclusão: '+(e&&e.message||e), 'error');
+      }
+      alert('Aula concluída! Você acertou '+pct+'%.');
+      return true;
+    }
+
+    /* ---- React lesson hider: tag the root container so CSS hides the broken render ---- */
+    function findLessonContainer(){
+      // The React lesson page is the .max-w-3xl div directly under the .min-h-screen wrapper
+      var screens = document.querySelectorAll('.min-h-screen.paper-grain');
+      for(var i=0;i<screens.length;i++){ return screens[i]; }
+      return null;
+    }
+    function hideReactLesson(){
+      var c = findLessonContainer();
+      if(c) c.classList.add(HIDE_REACT_CLASS);
+    }
+    function unhideReactLesson(){
+      var c = findLessonContainer();
+      if(c) c.classList.remove(HIDE_REACT_CLASS);
+    }
+
+    /* ---- Disable older overlay renderers so they don't fight us ---- */
+    function neutralizeOldRenderers(){
+      try{ window.__fluencyRenderFullLessonV18 = function(){ return false; }; }catch(_){}
+      try{ window.__fluencyV43RenderLesson = function(){ return false; }; }catch(_){}
+      try{ window.__fluencyV46RenderLesson = function(){ return false; }; }catch(_){}
+      // V51's mount: remove if present (V52 takes over)
+      try{ var m = document.getElementById('__fluency_v51_ai_mount__'); if(m) m.remove(); }catch(_){}
+      try{ var m18 = document.querySelector('.fluency-v18-full-lesson-render'); if(m18) m18.remove(); }catch(_){}
+    }
+
+    /* ---- Main render loop ---- */
+    function render(){
+      try{
+        if(!isLessonTab()){
+          var m0 = document.getElementById(MOUNT_ID);
+          if(m0) m0.remove();
+          unhideReactLesson();
+          return;
+        }
+        // Don't fight while React is showing the loader
+        var bodyTxt = document.body ? (document.body.innerText || '') : '';
+        if(/A tinta está secando|A tinta esta secando|Preparando sua aula/i.test(bodyTxt) && !readActiveLesson()){
+          var mLoad = document.getElementById(MOUNT_ID);
+          if(mLoad) mLoad.remove();
+          return;
+        }
+        neutralizeOldRenderers();
+        var L = readActiveLesson();
+        if(!L){
+          // Nothing to render; let React show whatever it has
+          var m1 = document.getElementById(MOUNT_ID);
+          if(m1) m1.remove();
+          unhideReactLesson();
+          return;
+        }
+        var state = ensureStateFor(L);
+        var done = isLessonDoneToday();
+        hideReactLesson();
+        var mount = document.getElementById(MOUNT_ID);
+        if(!mount){
+          mount = document.createElement('div');
+          mount.id = MOUNT_ID;
+          var header = document.querySelector('header');
+          if(header && header.parentNode){
+            header.parentNode.insertBefore(mount, header.nextSibling);
+          } else {
+            (document.getElementById('root') || document.body).appendChild(mount);
+          }
+        }
+        mount.innerHTML = buildLessonHtml(L, state, done);
+        attachInteractions(mount, L, state);
+      }catch(e){
+        log('render falhou: '+(e&&e.message||e), 'error');
+      }
+    }
+
+    /* ---- Interactions on the V52 mount ---- */
+    function attachInteractions(mount, L, state){
+      // Delegate clicks
+      if(mount.__v52Wired) return;
+      mount.__v52Wired = true;
+
+      mount.addEventListener('click', function(ev){
+        var t = ev.target;
+        // Walk up to find element with data-v52-* attributes
+        while(t && t !== mount && !(t.dataset && (t.dataset.v52Tts || t.dataset.v52Ex !== undefined || t.dataset.v52ExVerify !== undefined || t.dataset.v52Conclude))){
+          t = t.parentElement;
+        }
+        if(!t || t === mount) return;
+        try{
+          if(t.dataset.v52Tts){
+            ev.preventDefault();
+            if(t.dataset.v52Tts === 'reading') tts(L.readingText);
+            else if(t.dataset.v52Tts === 'listening') tts(L.listeningText);
+            else tts(t.dataset.v52Text || '');
+            return;
+          }
+          if(t.dataset.v52Conclude){
+            ev.preventDefault();
+            var ok = concludeLesson(L, state);
+            if(ok) render();
+            return;
+          }
+          if(t.dataset.v52Ex !== undefined){
+            ev.preventDefault();
+            var i = parseInt(t.dataset.v52Ex, 10);
+            if(state.checked[i]) return;
+            state.answers[i] = t.dataset.v52Opt;
+            state.checked[i] = true;
+            render();
+            return;
+          }
+          if(t.dataset.v52ExVerify !== undefined){
+            ev.preventDefault();
+            var i2 = parseInt(t.dataset.v52ExVerify, 10);
+            // read input value
+            var input = mount.querySelector('input[data-v52-ex-input="'+i2+'"]');
+            var val = input ? input.value : '';
+            if(!val.trim()){ alert('Digite sua resposta antes de verificar.'); return; }
+            state.answers[i2] = val;
+            state.checked[i2] = true;
+            render();
+            return;
+          }
+        }catch(e){
+          log('click handler falhou: '+(e&&e.message||e), 'error');
+        }
+      }, true);
+
+      // Sync input values into state on input (so render() doesn't lose them)
+      mount.addEventListener('input', function(ev){
+        var t = ev.target;
+        if(t && t.dataset && t.dataset.v52ExInput !== undefined){
+          state.answers[parseInt(t.dataset.v52ExInput,10)] = t.value;
+        }
+      });
+    }
+
+    /* ---- Test injection: drop a lesson into the same place the AI puts it ---- */
+    function saveLessonAsActive(lesson){
+      var n = normalize(lesson);
+      if(!n){ return false; }
+      n.lessonId = n.lessonId || ('test-'+Date.now());
+      n._fluencyDate = todayStr();
+      var s = JSON.stringify(n);
+      ACTIVE_KEYS.forEach(function(k){
+        try{ localStorage.setItem(k, s); }catch(_){}
+      });
+      try{
+        // Also drop a synthetic per-day cache key so React's path also picks it up
+        var key = 'fluency_lesson_v4_'+(n.title||'untitled').toLowerCase().replace(/\s+/g,'-').slice(0,40);
+        localStorage.setItem(key, s);
+      }catch(_){}
+      return true;
+    }
+
+    window.__fluencyInjectTestLesson = function(lesson){
+      if(!lesson || typeof lesson !== 'object'){ console.warn('[V52] lesson inválida'); return false; }
+      var ok = saveLessonAsActive(lesson);
+      log('test lesson injetada: '+(lesson.title||'sem título'), ok ? 'ok' : 'error');
+      // Reset state and render
+      __state = { title:'', answers:{}, checked:{} };
+      setTimeout(render, 50);
+      setTimeout(render, 350);
+      return ok;
+    };
+    window.__fluencyV52Status = function(){
+      var L = readActiveLesson();
+      return {
+        version: VERSION,
+        onLessonTab: isLessonTab(),
+        hasActive: !!L,
+        title: L && L.title,
+        sections: L && L.sections.length,
+        vocabulary: L && L.vocabulary.length,
+        exercises: L && L.exercises.length,
+        readingText: L && !!L.readingText,
+        listeningText: L && !!L.listeningText,
+        tips: L && L.tips.length,
+        commonMistakes: L && L.commonMistakes.length,
+        mountInDom: !!document.getElementById(MOUNT_ID)
+      };
+    };
+    window.__fluencyV52Render = render;
+
+    /* ---- Boot ---- */
+    injectStyles();
+    setTimeout(function(){ neutralizeOldRenderers(); render(); }, 250);
+    setTimeout(render, 900);
+    setTimeout(render, 2200);
+    setInterval(render, 900);
+    ['click','touchend','hashchange','popstate','focus','visibilitychange'].forEach(function(ev){
+      window.addEventListener(ev, function(){ setTimeout(render, 80); setTimeout(render, 380); }, true);
+    });
+    log('patch ativo. Aba Aula passou a renderizar pela V52.', 'ok');
+  }catch(e){
+    try{ console.warn('Fluency V52 patch failed', e); }catch(_){}
+  }
+})();
