@@ -4868,3 +4868,193 @@ lucide-react/dist/esm/lucide-react.mjs:
     window.__fluencyV1921FixDiagConflict=tick;
   }catch(e){try{console.warn('Patch V19.21 diag exclusive failed',e);}catch(_){}}
 })();
+
+/* === FLUENCY PATCH V19.22 - DIAGNOSTICO RECOLHIVEL + NAO OCUPAR TELA === */
+;(function(){
+  try{
+    if(window.__fluencyDiagCollapsibleV1922) return;
+    window.__fluencyDiagCollapsibleV1922 = true;
+
+    var VERSION = 'V19.22-DIAG-RECOLHIVEL';
+    var STORE = 'fluency_v1922_diag_collapsed';
+    var AUTO = 'fluency_v1922_diag_auto';
+
+    function get(k){ try{return localStorage.getItem(k)||'';}catch(_){return '';} }
+    function set(k,v){ try{localStorage.setItem(k,String(v));}catch(_){ } }
+    function safeText(el){ try{return String(el && (el.innerText || el.textContent) || '')}catch(_){return ''} }
+    function visible(el){ try{ var r=el.getBoundingClientRect(), cs=getComputedStyle(el); return r.width>10 && r.height>10 && cs.display!=='none' && cs.visibility!=='hidden' && Number(cs.opacity||1)>0.03; }catch(_){ return false; } }
+    function esc(s){ return String(s||'').replace(/[&<>\"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+
+    function state(){
+      try{ return window.__fluencyBlockLessonStateV197 || {}; }catch(_){ return {}; }
+    }
+    function hasActiveProblem(){
+      var s=state();
+      var phase=String(s.phase||'').toLowerCase();
+      return !!(s.running || /erro|falha|bloqueado|sem keys|429|403/.test(phase) || s.lastError);
+    }
+    function shouldCollapse(){
+      // Se a geração estiver rodando ou houver erro, expande automaticamente para o diagnóstico cumprir sua função.
+      if(hasActiveProblem()) return false;
+      var saved = get(STORE);
+      if(saved === ''){
+        // Padrão novo: recolhido para não ocupar a tela toda. O usuário abre no botão de ferramenta.
+        set(STORE,'1');
+        return true;
+      }
+      return saved === '1';
+    }
+
+    function findDiagPanel(){
+      try{
+        var els = Array.prototype.slice.call(document.querySelectorAll('div,section,aside,main'));
+        var candidates = els.filter(function(el){
+          if(!visible(el)) return false;
+          var t=safeText(el);
+          return /Painel de Diagnóstico/i.test(t) && /DIAG-PRO-CUSTO|Proteção diária|GERAÇÃO DA AULA|TOKENS DA ÚLTIMA CHAMADA/i.test(t);
+        });
+        if(!candidates.length) return null;
+        candidates.sort(function(a,b){
+          var ar=a.getBoundingClientRect(), br=b.getBoundingClientRect();
+          return (ar.width*ar.height)-(br.width*br.height);
+        });
+        return candidates[0];
+      }catch(_){ return null; }
+    }
+
+    function findDiagShell(panel){
+      try{
+        var p=panel;
+        for(var i=0;i<5 && p && p!==document.body;i++,p=p.parentElement){
+          var t=safeText(p);
+          var r=p.getBoundingClientRect();
+          if(/Painel de Diagnóstico/i.test(t) && r.width>250 && r.height>120) return p;
+        }
+      }catch(_){ }
+      return panel;
+    }
+
+    function styleOnce(){
+      if(document.getElementById('__fluency_v1922_diag_css__')) return;
+      var st=document.createElement('style');
+      st.id='__fluency_v1922_diag_css__';
+      st.textContent = [
+        '#__fluency_v1922_toggle{position:fixed!important;right:14px!important;bottom:92px!important;z-index:2147483647!important;width:52px!important;height:52px!important;border-radius:999px!important;border:1px solid rgba(96,165,250,.45)!important;background:linear-gradient(135deg,rgba(15,23,42,.92),rgba(37,99,235,.55))!important;color:#dbeafe!important;font-size:22px!important;box-shadow:0 14px 35px rgba(0,0,0,.38)!important;display:flex!important;align-items:center!important;justify-content:center!important;cursor:pointer!important;touch-action:manipulation!important;-webkit-tap-highlight-color:transparent!important}',
+        '#__fluency_v1922_toggle[data-open="1"]{background:linear-gradient(135deg,rgba(34,197,94,.55),rgba(37,99,235,.55))!important;color:#ecfdf5!important}',
+        '#__fluency_v1922_minicard{margin:10px 0 12px 0!important;padding:12px 14px!important;border-radius:18px!important;border:1px solid rgba(96,165,250,.40)!important;background:linear-gradient(135deg,rgba(7,15,35,.92),rgba(37,99,235,.22))!important;color:#dbeafe!important;box-shadow:0 12px 32px rgba(0,0,0,.26)!important;font-family:inherit!important}',
+        '[data-fluency-v1922-shell="1"]{max-height:60vh!important;overflow-y:auto!important;overflow-x:hidden!important;-webkit-overflow-scrolling:touch!important;touch-action:pan-y!important;overscroll-behavior:contain!important;padding-bottom:24px!important}',
+        '[data-fluency-v1922-collapsed="1"]{max-height:0!important;min-height:0!important;height:0!important;overflow:hidden!important;padding-top:0!important;padding-bottom:0!important;margin-top:0!important;margin-bottom:0!important;border-width:0!important;opacity:0!important;pointer-events:none!important}',
+        '[data-fluency-v1922-collapsed="0"]{max-height:60vh!important;overflow-y:auto!important;overflow-x:hidden!important;-webkit-overflow-scrolling:touch!important}',
+        '@media(max-width:700px){[data-fluency-v1922-shell="1"]{max-height:52vh!important;padding-bottom:90px!important}#__fluency_v1922_toggle{bottom:86px!important;right:12px!important}}'
+      ].join('\n');
+      document.head.appendChild(st);
+    }
+
+    function miniHtml(open){
+      var s=state();
+      var phase=s.phase||'pronto';
+      var err=s.lastError||'';
+      var keys=(s.keyCount!=null?s.keyCount:'--');
+      var http=s.lastHttp||'--';
+      var running=!!s.running;
+      var statusColor = err ? '#fecaca' : running ? '#fde68a' : '#86efac';
+      return '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px">'+
+        '<div style="min-width:0">'+
+          '<div style="font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:#93c5fd;font-weight:900">Diagnóstico '+VERSION+'</div>'+
+          '<div style="font-size:15px;font-weight:950;color:'+statusColor+';white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(running?'⏳ ':'● ')+esc(phase)+'</div>'+
+          '<div style="font-size:11px;color:#bfdbfe;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Gemini: '+esc(http)+' · Keys aulas: '+esc(keys)+(err?' · Erro: '+esc(err).slice(0,80):'')+'</div>'+
+        '</div>'+
+        '<button id="__fluency_v1922_minibtn" style="flex:0 0 auto;border:1px solid rgba(96,165,250,.45);background:rgba(37,99,235,.24);color:#dbeafe;border-radius:999px;padding:9px 12px;font-weight:900;font-family:inherit">'+(open?'Ocultar':'Abrir')+'</button>'+
+      '</div>';
+    }
+
+    function toggle(force){
+      var next;
+      if(typeof force === 'boolean') next = force;
+      else next = !(get(STORE)==='1');
+      set(STORE, next ? '1' : '0');
+      apply(true);
+    }
+
+    function ensureButton(open){
+      var btn=document.getElementById('__fluency_v1922_toggle');
+      if(!btn){
+        btn=document.createElement('button');
+        btn.id='__fluency_v1922_toggle';
+        btn.type='button';
+        btn.title='Abrir/ocultar diagnóstico';
+        document.body.appendChild(btn);
+        btn.addEventListener('click',function(e){ try{e.preventDefault();e.stopPropagation();}catch(_){} toggle(); },true);
+        btn.addEventListener('touchend',function(e){ try{e.preventDefault();e.stopPropagation();}catch(_){} toggle(); },true);
+      }
+      btn.setAttribute('data-open', open?'1':'0');
+      btn.innerHTML = open ? '×' : '🔧';
+      return btn;
+    }
+
+    function apply(force){
+      try{
+        styleOnce();
+        var panel=findDiagPanel();
+        if(!panel){ ensureButton(false); return false; }
+        var shell=findDiagShell(panel);
+        shell.setAttribute('data-fluency-v1922-shell','1');
+
+        // Evita que containers pais fiquem prendendo o scroll no iPhone.
+        var p=shell.parentElement;
+        for(var i=0;i<4 && p && p!==document.body;i++,p=p.parentElement){
+          try{
+            var cs=getComputedStyle(p);
+            if(cs.overflowY==='hidden' || cs.overflow==='hidden'){
+              p.style.overflowY='visible';
+              p.style.overflow='visible';
+            }
+          }catch(_){ }
+        }
+
+        var collapsed = shouldCollapse();
+        var open = !collapsed;
+        ensureButton(open);
+
+        var mini=document.getElementById('__fluency_v1922_minicard');
+        if(!mini){
+          mini=document.createElement('div');
+          mini.id='__fluency_v1922_minicard';
+          shell.parentElement ? shell.parentElement.insertBefore(mini, shell) : shell.insertBefore(mini, shell.firstChild);
+        }
+        mini.innerHTML = miniHtml(open);
+        var mb=document.getElementById('__fluency_v1922_minibtn');
+        if(mb){ mb.onclick=function(e){try{e.preventDefault();e.stopPropagation();}catch(_){} toggle();}; }
+
+        // Quando recolhido, o painel pesado some totalmente e deixa só o minicard.
+        shell.setAttribute('data-fluency-v1922-collapsed', collapsed?'1':'0');
+        mini.style.display = collapsed ? '' : 'none';
+
+        // Quando aberto, não deixa ocupar a tela inteira.
+        if(!collapsed){
+          shell.style.maxHeight='60vh';
+          shell.style.overflowY='auto';
+          shell.style.overflowX='hidden';
+          shell.style.webkitOverflowScrolling='touch';
+          shell.style.touchAction='pan-y';
+          shell.style.paddingBottom='90px';
+        }
+        return true;
+      }catch(e){ try{console.warn('[Fluency '+VERSION+'] falhou',e);}catch(_){} return false; }
+    }
+
+    window.__fluencyV1922ToggleDiag = function(){ toggle(); };
+    window.__fluencyV1922OpenDiag = function(){ toggle(false); };
+    window.__fluencyV1922CloseDiag = function(){ toggle(true); };
+    window.__fluencyV1922DiagStatus = function(){ return {collapsed:get(STORE)==='1', auto:get(AUTO), state:state()}; };
+
+    setTimeout(function(){ apply(true); },50);
+    setTimeout(function(){ apply(true); },500);
+    setTimeout(function(){ apply(true); },1300);
+    setInterval(function(){ apply(false); },900);
+    ['click','touchend','pointerup','focus','hashchange','popstate','scroll'].forEach(function(ev){
+      window.addEventListener(ev,function(){ setTimeout(function(){apply(false);},80); },true);
+    });
+    try{ new MutationObserver(function(){ setTimeout(function(){apply(false);},80); }).observe(document.documentElement||document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['style','class']}); }catch(_){ }
+  }catch(e){ try{console.warn('Fluency V19.22 diag collapsible failed', e);}catch(_){} }
+})();
