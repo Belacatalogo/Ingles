@@ -759,7 +759,7 @@
     }
     function renderLessonHtml(L){
       try{
-        if(window.__fluencyIsReadingLessonV201 && window.__fluencyRenderReadingLessonV201 && window.__fluencyIsReadingLessonV201(L)){
+        if(window.__fluencyReadingV202Status && window.__fluencyRenderReadingLessonV201 && window.__fluencyIsReadingLessonV201 && window.__fluencyIsReadingLessonV201(L)){
           return window.__fluencyRenderReadingLessonV201(L);
         }
       }catch(_){ }
