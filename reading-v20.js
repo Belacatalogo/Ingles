@@ -4,7 +4,7 @@
     if(window.__fluencyReadingTakeoverV202) return;
     window.__fluencyReadingTakeoverV202 = true;
 
-    var VERSION = 'V20.3-READING-DIAGNOSTICO-BUILD-FIX';
+    var VERSION = 'V20.4-READING-ACTIVE-LESSON-ONLY';
     var mountedKey = '';
     var running = false;
 
@@ -470,12 +470,102 @@
         }
       });
     }
+
+    function visibleText(){
+      try{ return String(document.body && (document.body.innerText || document.body.textContent) || ''); }
+      catch(_){ return ''; }
+    }
+
+    function visibleLessonSignature(){
+      var t = visibleText();
+      var title = '';
+      try{
+        var hs = Array.prototype.slice.call(document.querySelectorAll('h1,h2'));
+        for(var i=0;i<hs.length;i++){
+          var s = String(hs[i].innerText || hs[i].textContent || '').trim();
+          if(s && s.length > 8){ title = s; break; }
+        }
+      }catch(_){}
+      return norm([title, t.slice(0, 2600)].join('\n'));
+    }
+
+    function currentVisibleLessonIsReading(){
+      var sig = visibleLessonSignature();
+
+      // Nunca assumir Reading só porque existe "Texto para leitura".
+      // Aulas de gramática também podem ter leitura curta.
+      if(/gramatica|gramática|pronome|pronomes|verbo to be|saudacoes|saudações|ingles essencial|inglês essencial/.test(sig)){
+        return false;
+      }
+
+      // Precisa haver sinal explícito de habilidade Reading na aula visível.
+      if(/(^|\s)(reading|leitura)(\s|$)/.test(sig) && /reading practice|reading lesson|compreensao de leitura|compreensão de leitura|estrategias de leitura|estratégias de leitura|skimming|scanning/.test(sig)){
+        return true;
+      }
+
+      if(/rotina matinal|daily routines and reading strategies|compreendendo textos|reading strategies/.test(sig)){
+        return true;
+      }
+
+      return false;
+    }
+
+    function findVisibleMatchingStoredLesson(){
+      var sig = visibleLessonSignature();
+      var titleCandidates = [];
+      try{
+        var hs = Array.prototype.slice.call(document.querySelectorAll('h1,h2'));
+        hs.forEach(function(h){
+          var s = String(h.innerText || h.textContent || '').trim();
+          if(s && s.length > 8) titleCandidates.push(norm(s).slice(0,60));
+        });
+      }catch(_){}
+
+      var best = null, bestScore = 0;
+      try{
+        for(var i=0;i<localStorage.length;i++){
+          var k=localStorage.key(i);
+          if(!isLessonKey(k)) continue;
+          var L=normalizeLesson(localStorage.getItem(k));
+          if(!L) continue;
+          L.__key=k;
+
+          var lt = norm(L.title || '');
+          var li = norm(L.intro || '');
+          var sc = 0;
+
+          if(lt && sig.indexOf(lt.slice(0, Math.min(45, lt.length))) >= 0) sc += 80;
+          titleCandidates.forEach(function(tc){
+            if(tc && lt && (tc.indexOf(lt.slice(0, Math.min(40, lt.length))) >= 0 || lt.indexOf(tc.slice(0, Math.min(40, tc.length))) >= 0)) sc += 60;
+          });
+          if(li && sig.indexOf(li.slice(0, Math.min(80, li.length))) >= 0) sc += 30;
+
+          arr(L.sections).slice(0,2).forEach(function(s){
+            var c = norm(s && s.content || '');
+            if(c && sig.indexOf(c.slice(0, Math.min(80, c.length))) >= 0) sc += 35;
+          });
+
+          if(sc > bestScore){
+            best = L;
+            bestScore = sc;
+          }
+        }
+      }catch(_){}
+
+      return bestScore >= 60 ? best : null;
+    }
+
     function takeover(){
       if(running) return;
       running = true;
       try{
         if(!isLessonTabActive()) return;
-        var L = bestStoredLesson();
+
+        // V20.4: não pegar mais "melhor aula salva" automaticamente.
+        // Só assume a tela quando a aula VISÍVEL for Reading de verdade.
+        if(!currentVisibleLessonIsReading()) return;
+
+        var L = findVisibleMatchingStoredLesson();
         if(!L || !isReadingLesson(L)) return;
         var key = L.__key + '|' + (L.title||'');
         var existing = document.querySelector('.fluency-reading-v202[data-key="'+CSS.escape(key)+'"]');
@@ -515,7 +605,7 @@
     };
     window.__fluencyReadingV202Status = function(){
       var L=bestStoredLesson();
-      return {version:VERSION, lesson:!!L, reading:!!(L&&isReadingLesson(L)), title:L&&L.title, key:L&&L.__key, mounted:!!document.querySelector('.fluency-reading-v202'), keys:getGeminiKeys().length};
+      return {version:VERSION, visibleReading:currentVisibleLessonIsReading(), lesson:!!L, reading:!!(L&&isReadingLesson(L)), title:L&&L.title, key:L&&L.__key, mounted:!!document.querySelector('.fluency-reading-v202'), keys:getGeminiKeys().length};
     };
 
     setTimeout(takeover, 600);

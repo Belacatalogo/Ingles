@@ -98,7 +98,7 @@ button {
 <script>
 // Register service worker for PWA / offline
 // Versão atual: APP_VERSION é checada e se mudar, força reload + cache clear
-var APP_VERSION = '2026-04-28-v20.3-reading-diagnostico-build-fix';
+var APP_VERSION = '2026-04-28-v20.4-reading-active-lesson-only';
 var savedVersion = null;
 try { savedVersion = localStorage.getItem('__app_version__'); } catch(e) {}
 
@@ -329,7 +329,7 @@ window.__ttsState = window.__ttsState || {
 <!-- V20.3: saneamento de aulas antes do React montar.
      Corrige erro: Minified React error #31 object with keys {title,text} -->
 <script>
-window.__FLUENCY_BUILD_VERSION__ = '2026-04-28-v20.3-reading-diagnostico-build-fix';
+window.__FLUENCY_BUILD_VERSION__ = '2026-04-28-v20.4-reading-active-lesson-only';
 (function() {
   try {
     if (window.__fluencyLessonSanitizerV203) return;
@@ -476,9 +476,9 @@ window.__FLUENCY_BUILD_VERSION__ = '2026-04-28-v20.3-reading-diagnostico-build-f
 })();
 </script>
 
-<script src="bundle.js?v=2026-04-28-v20.3-reading-diagnostico-build-fix"></script>
-<link rel="stylesheet" href="reading-v20.css?v=2026-04-28-v20.3-reading-diagnostico-build-fix">
-<script src="reading-v20.js?v=2026-04-28-v20.3-reading-diagnostico-build-fix"></script>
+<script src="bundle.js?v=2026-04-28-v20.4-reading-active-lesson-only"></script>
+<link rel="stylesheet" href="reading-v20.css?v=2026-04-28-v20.4-reading-active-lesson-only">
+<script src="reading-v20.js?v=2026-04-28-v20.4-reading-active-lesson-only"></script>
 
 <!-- Renderização em script separado, garantindo execução após bundle.js -->
 <script>
@@ -1596,16 +1596,16 @@ window.__FLUENCY_BUILD_VERSION__ = '2026-04-28-v20.3-reading-diagnostico-build-f
 (function() {
   function setBuildVersionV203() {
     try {
-      window.__FLUENCY_BUILD_VERSION__ = '2026-04-28-v20.3-reading-diagnostico-build-fix';
+      window.__FLUENCY_BUILD_VERSION__ = '2026-04-28-v20.4-reading-active-lesson-only';
       var el = document.getElementById('__diag_build__');
-      if (el) el.textContent = '2026-04-28-v20.3-reading-diagnostico-build-fix';
+      if (el) el.textContent = '2026-04-28-v20.4-reading-active-lesson-only';
       var badge = document.getElementById('__fluency_build_badge_v202__');
       if (badge) badge.remove();
     } catch(e) {}
   }
   setBuildVersionV203();
   setInterval(setBuildVersionV203, 1000);
-  window.__FLUENCY_HTML_VERSION__ = '2026-04-28-v20.3-reading-diagnostico-build-fix';
+  window.__FLUENCY_HTML_VERSION__ = '2026-04-28-v20.4-reading-active-lesson-only';
 })();
 </script>
 
