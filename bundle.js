@@ -4486,3 +4486,278 @@ lucide-react/dist/esm/lucide-react.mjs:
     log('patch ativo: keys de aula lidas sem cache antigo e Pro só entra depois das free esgotarem com retry.','ok');
   }catch(e){try{console.warn('Patch V42 failed',e)}catch(_){ }}
 })();
+
+/* === FLUENCY PATCH V43 - RENDERIZAÇÃO TOTAL E ESTÁVEL DA AULA ATIVA === */
+;(function(){
+  try{
+    if(window.__fluencyV43FullLessonRenderer) return;
+    window.__fluencyV43FullLessonRenderer = true;
+    var VERSION='V44-FULL-LESSON-SEM-PARABENS';
+    var ACTIVE_KEYS=['fluency_active_ai_lesson_v43','fluency_active_ai_lesson_v41','fluency_last_ai_lesson_v43','fluency_last_ai_lesson_v41','fluency_last_ai_lesson','fluency_generated_lesson','fluency_today_lesson'];
+    var ROOT_ID='__fluency_v43_full_lesson__';
+    var CSS_ID='__fluency_v43_full_lesson_css__';
+    var lastSignature='';
+
+    function now(){try{return new Date().toLocaleTimeString()}catch(_){return ''}}
+    function log(kind,msg,meta){
+      try{
+        var s=window.__fluencyBlockLessonStateV197;
+        if(s&&Array.isArray(s.logs)){
+          s.logs.push({at:now(),kind:kind||'info',msg:'Aula '+VERSION+': '+String(msg||''),meta:meta||null});
+          if(s.logs.length>140)s.logs=s.logs.slice(-140);
+          if(kind==='error'||kind==='warn')s.lastError=String(msg||'');
+        }
+        if(window.__fluencyV1919DiagRender) window.__fluencyV1919DiagRender();
+      }catch(_){}
+      try{console.warn('[Fluency '+VERSION+'] '+msg,meta||'')}catch(_){}
+    }
+    function esc(v){return String(v==null?'':v).replace(/[&<>\"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]||c})}
+    function txt(v){return String(v==null?'':v).trim()}
+    function arr(x){return Array.isArray(x)?x:[]}
+    function pick(o,ks){if(!o||typeof o!=='object')return '';for(var i=0;i<ks.length;i++){var v=o[ks[i]];if(v!=null&&txt(v))return v;}return ''}
+    function parseMaybe(v){
+      try{
+        if(v==null)return null;
+        var x=typeof v==='string'?v.trim():v;
+        if(typeof x==='string'){
+          if(!x)return null;
+          x=x.replace(/^```(?:json)?\s*/i,'').replace(/```$/,'').trim();
+          var a=x.indexOf('{'),b=x.lastIndexOf('}');
+          if(a>=0&&b>a)x=x.slice(a,b+1);
+          x=JSON.parse(x);
+          if(typeof x==='string') return parseMaybe(x);
+        }
+        if(x&&x.candidates){
+          var parts=x.candidates&&x.candidates[0]&&x.candidates[0].content&&x.candidates[0].content.parts;
+          if(Array.isArray(parts)) return parseMaybe(parts.map(function(p){return p&&(p.text||'')}).join('\n'));
+        }
+        if(x&&x.lessonData)x=x.lessonData;
+        if(x&&x.lesson)x=x.lesson;
+        if(x&&x.aula)x=x.aula;
+        if(x&&x.data&&x.data.lesson)x=x.data.lesson;
+        return x&&typeof x==='object'?x:null;
+      }catch(_){return null}
+    }
+    function normExample(ex){
+      if(typeof ex==='string')return {en:ex,pt:''};
+      ex=ex||{};
+      return {en:pick(ex,['en','english','sentence','phrase','example','text','frase']),pt:pick(ex,['pt','portuguese','translation','traducao','tradução','meaning','meaningPt'])};
+    }
+    function normalize(L){
+      L=parseMaybe(L); if(!L)return null;
+      var out={};
+      out.title=pick(L,['title','titulo','título','name'])||'Aula de inglês';
+      out.subtitle=pick(L,['subtitle','subtitulo','subtítulo','description']);
+      out.skill=pick(L,['skill','type','tipo'])||'aula';
+      out.level=pick(L,['level','nivel','nível'])||'A1';
+      out.estimatedMinutes=L.estimatedMinutes||L.minutes||L.duration||25;
+      out.intro=pick(L,['intro','introduction','introducao','introdução','overview','descricao','descrição']);
+      out.finalTip=pick(L,['finalTip','final_tip','conclusion','conclusao','conclusão','closing','resumoFinal']);
+      out.readingText=pick(L,['readingText','reading_text','text','texto','textoLeitura']);
+      out.listeningText=pick(L,['listeningText','listening_text','audioText','dialogue','dialogo','diálogo']);
+      var secs=arr(L.sections&&L.sections.length?L.sections:(L.secoes||L.seções||L.parts||L.modules||L.contentSections));
+      out.sections=secs.map(function(s,i){s=s||{};var exs=arr(s.examples&&s.examples.length?s.examples:(s.exemplos||s.sentences||s.frases||s.phrases));return {heading:pick(s,['heading','title','titulo','título','name'])||('Seção '+(i+1)),content:pick(s,['content','body','text','explicacao','explicação','explanation','description','lesson'])||'',examples:exs.map(normExample).filter(function(e){return txt(e.en)||txt(e.pt)})}}).filter(function(s){return txt(s.heading)||txt(s.content)||s.examples.length});
+      var voc=arr(L.vocabulary&&L.vocabulary.length?L.vocabulary:(L.vocabulario||L.vocabulário||L.words||L.terms));
+      out.vocabulary=voc.map(function(v){if(typeof v==='string')return {word:v,pos:'',translation:'',example:''};v=v||{};return {word:pick(v,['word','palavra','term','english','en']),pos:pick(v,['pos','class','classe','type'])||'',translation:pick(v,['translation','traducao','tradução','pt','meaning','portuguese']),example:pick(v,['example','exemplo','sentence','phrase','frase'])}}).filter(function(v){return txt(v.word)||txt(v.translation)});
+      var exs=arr(L.exercises&&L.exercises.length?L.exercises:(L.exercicios||L.exercícios||L.questions||L.quiz||L.practice));
+      out.exercises=exs.map(function(e,i){if(typeof e==='string')return {type:'practice',question:e,options:[],answer:'',explanation:''};e=e||{};return {type:pick(e,['type','tipo'])||'practice',question:pick(e,['question','pergunta','prompt','instruction','enunciado','task'])||('Exercício '+(i+1)),options:arr(e.options||e.opcoes||e.opções||e.choices).map(function(o){return String(o)}),answer:pick(e,['answer','resposta','correct','correctAnswer','expected','gabarito'])||'',explanation:pick(e,['explanation','explicacao','explicação','why','feedback','comentario','comentário'])||''}}).filter(function(e){return txt(e.question)||txt(e.answer)});
+      out.tips=arr(L.tips&&L.tips.length?L.tips:(L.dicas||L.notes||L.studyTips)).map(function(t){return typeof t==='string'?t:pick(t,['tip','text','content','dica'])}).filter(function(t){return txt(t)});
+      out.commonMistakes=arr(L.commonMistakes||L.common_mistakes||L.errosComuns||L.mistakes).map(function(m){m=m||{};return {mistake:pick(m,['mistake','erro','title']),why:pick(m,['why','porque','porquê','reason','motivo']),avoid:pick(m,['avoid','correction','comoEvitar','fix','corrigir'])}}).filter(function(m){return txt(m.mistake)||txt(m.why)||txt(m.avoid)});
+      out._blockMeta=L._blockMeta||L.blockMeta||L._generationMeta||null;
+      out._generatedAt=L._generatedAt||L.generatedAt||new Date().toISOString();
+      out._source=L._source||L.source||'ai';
+      return out;
+    }
+    function score(L){if(!L)return 0;var n=0;try{n+=JSON.stringify(L).length/10}catch(_){}n+=txt(L.intro).length+numeric(L.sections)*900+numeric(L.vocabulary)*100+numeric(L.exercises)*140+numeric(L.finalTip).length;return n}
+    function numeric(x){return Array.isArray(x)?x.length:0}
+    function isCompleteEnough(L){return !!(L&&txt(L.title)&&txt(L.intro).length>=80&&L.sections&&L.sections.length>=1&&(L.vocabulary.length||L.exercises.length||L.tips.length||txt(L.finalTip)))}
+    function readRaw(k){try{return localStorage.getItem(k)}catch(_){return null}}
+    function writeRaw(k,v){try{localStorage.setItem(k,v)}catch(_){}}
+    function bestLesson(){
+      var best=null,bestScore=0,bestKey='';
+      ACTIVE_KEYS.forEach(function(k){var L=normalize(readRaw(k));var s=score(L);if(s>bestScore&&isCompleteEnough(L)){best=L;bestScore=s;bestKey=k;}});
+      try{
+        for(var i=0;i<localStorage.length;i++){
+          var k=localStorage.key(i)||'';
+          if(!/(lesson|aula)/i.test(k))continue;
+          if(/api|key|gemini|azure|lock|logs|model|version|active_lesson_id/i.test(k))continue;
+          var L=normalize(readRaw(k));var s=score(L);if(s>bestScore&&isCompleteEnough(L)){best=L;bestScore=s;bestKey=k;}
+        }
+      }catch(_){}
+      if(best)best.__storageKey=bestKey;
+      return best;
+    }
+    function saveActive(L,reason){
+      L=normalize(L); if(!isCompleteEnough(L))return false;
+      L.lessonId=L.lessonId||('ai-'+Date.now());
+      L._renderVersion=VERSION;
+      var text=JSON.stringify(L);
+      ['fluency_active_ai_lesson_v43','fluency_last_ai_lesson_v43','fluency_active_ai_lesson_v41','fluency_last_ai_lesson_v41'].forEach(function(k){writeRaw(k,text)});
+      writeRaw('fluency_active_lesson_id',L.lessonId);
+      writeRaw('fluency_v43_render_last',JSON.stringify({at:new Date().toISOString(),reason:reason||'',title:L.title,sections:L.sections.length,vocabulary:L.vocabulary.length,exercises:L.exercises.length,tips:L.tips.length}));
+      log('ok','aula ativa salva para renderização total: '+L.title+' · '+L.sections.length+' seções · '+L.vocabulary.length+' vocabulários · '+L.exercises.length+' exercícios',{reason:reason});
+      return true;
+    }
+    function css(){
+      if(document.getElementById(CSS_ID))return;
+      var st=document.createElement('style');st.id=CSS_ID;
+      st.textContent='html,body,#root{height:auto!important;min-height:100%!important;overflow-y:auto!important;-webkit-overflow-scrolling:touch!important} .fluency-v18-full-lesson-render{display:none!important} #'+ROOT_ID+'{margin:22px 0 160px 0;padding:0 0 40px 0;font-family:inherit;color:#dbeafe} #'+ROOT_ID+' .v43-card{border:1px solid rgba(91,156,246,.30);border-radius:18px;background:linear-gradient(135deg,rgba(10,24,54,.72),rgba(15,23,42,.70));box-shadow:0 12px 34px rgba(0,0,0,.20);padding:17px;margin:14px 0} #'+ROOT_ID+' .v43-kicker{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:#93b7ff;margin-bottom:9px;font-weight:900} #'+ROOT_ID+' .v43-h2{font-size:25px;line-height:1.25;margin:0 0 11px;color:#f8fbff;font-weight:950} #'+ROOT_ID+' .v43-p{white-space:pre-wrap;font-size:18px;line-height:1.72;color:#7fb0ff;margin:0} #'+ROOT_ID+' .v43-small{font-size:14px;line-height:1.58;color:#a9c3f5} #'+ROOT_ID+' .v43-grid{display:grid;gap:11px} #'+ROOT_ID+' .v43-example,#'+ROOT_ID+' .v43-item{border:1px solid rgba(255,255,255,.11);border-radius:14px;padding:13px;background:rgba(255,255,255,.045)} #'+ROOT_ID+' .v43-en{font-size:17px;line-height:1.45;color:#f8fbff;font-weight:800} #'+ROOT_ID+' .v43-pt{font-size:14px;line-height:1.45;color:#a9c3f5;font-style:italic;margin-top:4px} #'+ROOT_ID+' .v43-ok{color:#86efac} #'+ROOT_ID+' .v43-warn{color:#fbbf24} #'+ROOT_ID+' strong{color:#f8fbff}';
+      document.head.appendChild(st);
+    }
+    function metaHtml(L){
+      var bm=L._blockMeta||{}; var h='';
+      if(bm&&typeof bm==='object'){
+        var rows=[]; ['block1','block2','block3','BLOCO 1','BLOCO 2','BLOCO 3'].forEach(function(k){if(bm[k])rows.push(k+': '+(typeof bm[k]==='string'?bm[k]:JSON.stringify(bm[k])))});
+        if(rows.length) h+='<div class="v43-card"><div class="v43-kicker">Origem da geração</div><div class="v43-small">'+rows.map(esc).join('<br>')+'</div></div>';
+      }
+      return h;
+    }
+    function html(L){
+      var h='<div id="'+ROOT_ID+'" data-title="'+esc(L.title)+'">';
+      h+='<div class="v43-card" style="border-color:rgba(34,197,94,.35);background:linear-gradient(135deg,rgba(5,46,22,.42),rgba(15,23,42,.72));"><div class="v43-kicker">Renderização completa V44</div><div class="v43-small v43-ok">✅ Aula ativa carregada integralmente: '+esc(L.sections.length)+' seções · '+esc(L.vocabulary.length)+' vocabulários · '+esc(L.exercises.length)+' exercícios · '+esc(L.tips.length)+' dicas.</div></div>';
+      if(L.sections.length){
+        h+='<section class="v43-card"><div class="v43-kicker">Conteúdo completo da aula</div>';
+        L.sections.forEach(function(s,i){
+          h+='<article style="margin-top:'+(i?26:4)+'px"><h2 class="v43-h2">§ '+esc(s.heading)+'</h2>';
+          if(s.content)h+='<p class="v43-p">'+esc(s.content)+'</p>';
+          if(s.examples&&s.examples.length){h+='<div class="v43-grid" style="margin-top:14px">';s.examples.forEach(function(ex){h+='<div class="v43-example">'+(ex.en?'<div class="v43-en">'+esc(ex.en)+'</div>':'')+(ex.pt?'<div class="v43-pt">'+esc(ex.pt)+'</div>':'')+'</div>'});h+='</div>'}
+          h+='</article>';
+        });
+        h+='</section>';
+      }
+      if(L.readingText||L.listeningText){h+='<section class="v43-card"><div class="v43-kicker">Texto de prática</div>'+(L.readingText?'<p class="v43-p">'+esc(L.readingText)+'</p>':'')+(L.listeningText?'<p class="v43-p" style="margin-top:12px">'+esc(L.listeningText)+'</p>':'')+'</section>'}
+      if(L.vocabulary.length){h+='<section class="v43-card"><div class="v43-kicker">Vocabulário completo</div><div class="v43-grid">';L.vocabulary.forEach(function(v){h+='<div class="v43-item"><div><strong style="font-size:18px">'+esc(v.word)+'</strong>'+(v.pos?' <span class="v43-small">'+esc(v.pos)+'</span>':'')+(v.translation?' <span class="v43-small v43-ok">• '+esc(v.translation)+'</span>':'')+'</div>'+(v.example?'<div class="v43-pt">“'+esc(v.example)+'”</div>':'')+'</div>'});h+='</div></section>'}
+      if(L.exercises.length){h+='<section class="v43-card"><div class="v43-kicker">Exercícios completos</div><div class="v43-grid">';L.exercises.forEach(function(e,i){h+='<div class="v43-item"><div class="v43-en"><span style="color:#7fb0ff">'+(i+1)+'.</span> '+esc(e.question)+'</div>'+(e.options&&e.options.length?'<div class="v43-small" style="margin-top:8px">Opções: '+e.options.map(esc).join(' • ')+'</div>':'')+(e.answer?'<div class="v43-small v43-ok" style="margin-top:8px">Resposta: '+esc(e.answer)+'</div>':'')+(e.explanation?'<div class="v43-small" style="margin-top:6px">'+esc(e.explanation)+'</div>':'')+'</div>'});h+='</div></section>'}
+      if(L.commonMistakes.length){h+='<section class="v43-card"><div class="v43-kicker">Erros comuns</div><div class="v43-grid">';L.commonMistakes.forEach(function(m){h+='<div class="v43-item" style="border-color:rgba(245,158,11,.25);background:rgba(245,158,11,.055)">'+(m.mistake?'<div class="v43-en">'+esc(m.mistake)+'</div>':'')+(m.why?'<div class="v43-small">'+esc(m.why)+'</div>':'')+(m.avoid?'<div class="v43-small v43-ok">Como evitar: '+esc(m.avoid)+'</div>':'')+'</div>'});h+='</div></section>'}
+      if(L.tips.length){h+='<section class="v43-card"><div class="v43-kicker">Dicas finais</div><ul class="v43-small" style="margin:0;padding-left:20px;color:#7fb0ff">';L.tips.forEach(function(t){h+='<li style="margin:7px 0">'+esc(t)+'</li>'});h+='</ul></section>'}
+      /* V44: mensagem final/parabéns removida da renderização por solicitação do usuário. O finalTip continua salvo no JSON, mas não aparece na tela. */
+      h+=metaHtml(L);
+      h+='</div>';
+      return h;
+    }
+    function visible(el){try{var r=el.getBoundingClientRect(),cs=getComputedStyle(el);return r.width>40&&r.height>40&&cs.display!=='none'&&cs.visibility!=='hidden'}catch(_){return false}}
+    function findLessonContainer(L){
+      var title=(L&&L.title)||''; var nodes=Array.prototype.slice.call(document.querySelectorAll('main,section,article,div'));
+      var candidates=[];
+      nodes.forEach(function(el){
+        if(!visible(el))return; var t=''; try{t=el.innerText||el.textContent||''}catch(_){return}
+        if(t.indexOf('LOGS EM TEMPO REAL')>=0||t.indexOf('SISTEMA')>=0&&t.indexOf('ÁUDIO')>=0)return;
+        var hasTitle=title&&t.indexOf(title.slice(0,Math.min(24,title.length)))>=0;
+        var hasLesson=/Gerada por IA|AULA|LEITURA|GRAMÁTICA|NÍVEL|Aula completa/i.test(t);
+        if(hasTitle||hasLesson){var r=el.getBoundingClientRect();candidates.push({el:el,area:r.width*r.height,text:t.length});}
+      });
+      candidates.sort(function(a,b){return a.area-b.area});
+      return candidates.length?candidates[0].el:(document.querySelector('main')||document.getElementById('root')||document.body);
+    }
+    function isAulaOpen(){try{var t=document.body.innerText||'';return /\bAula\b/.test(t)&&(/Gerada por IA|LEITURA|GRAMÁTICA|AULA COMPLETA|Aula completa/i.test(t))}catch(_){return false}}
+    function insertPoint(container,L){
+      try{
+        var finalStart=txt(L.finalTip).slice(0,30); if(finalStart){var all=Array.prototype.slice.call(container.querySelectorAll('div,section,article,p'));for(var i=0;i<all.length;i++){var tt=all[i].innerText||all[i].textContent||'';if(tt.indexOf(finalStart)>=0&&all[i].id!==ROOT_ID)return {parent:all[i].parentNode, before:all[i]};}}
+      }catch(_){}
+      return {parent:container,before:null};
+    }
+    function render(force){
+      try{
+        if(!isAulaOpen())return false;
+        css();
+        var L=bestLesson(); if(!L)return false;
+        var sig=[L.title,L.sections.length,L.vocabulary.length,L.exercises.length,L.tips.length,txt(L.finalTip).length,txt(L.intro).length].join('|');
+        var existing=document.getElementById(ROOT_ID);
+        if(existing&&existing.getAttribute('data-sig')===sig&&!force)return true;
+        if(existing&&existing.parentNode)existing.parentNode.removeChild(existing);
+        var c=findLessonContainer(L); if(!c)return false;
+        var tmp=document.createElement('div'); tmp.innerHTML=html(L); var node=tmp.firstChild; node.setAttribute('data-sig',sig);
+        var ip=insertPoint(c,L); if(ip&&ip.parent){ip.parent.insertBefore(node,ip.before||null);} else c.appendChild(node);
+        lastSignature=sig; saveActive(L,'render-v43');
+        log('ok','renderização total aplicada: '+L.title+' · '+L.sections.length+' seções · '+L.vocabulary.length+' vocabulários · '+L.exercises.length+' exercícios');
+        return true;
+      }catch(e){log('error','falha ao renderizar conteúdo completo: '+((e&&e.message)||e));return false}
+    }
+    // Captura qualquer aula nova retornada pela geração e salva no formato renderizável.
+    var prevFetch=window.fetch&&window.fetch.bind(window);
+    if(prevFetch&&!window.fetch.__fluencyV43FullLessonRenderer){
+      window.fetch=async function(input,init){
+        var res=await prevFetch(input,init);
+        try{
+          var url=typeof input==='string'?input:((input&&input.url)||'');
+          if(/generativelanguage\.googleapis\.com/i.test(url||'')&&res&&res.ok){
+            res.clone().text().then(function(raw){try{var L=parseMaybe(raw); if(saveActive(L,'fetch-v43'))setTimeout(function(){render(true)},80);}catch(_){}}).catch(function(){});
+          }
+        }catch(_){}
+        return res;
+      };
+      window.fetch.__fluencyV43FullLessonRenderer=true;
+    }
+    window.__fluencyV43RenderLesson=function(){return render(true)};
+    window.__fluencyV43LessonStatus=function(){var L=bestLesson();return {version:VERSION,hasLesson:!!L,title:L&&L.title,sections:L&&L.sections&&L.sections.length,vocabulary:L&&L.vocabulary&&L.vocabulary.length,exercises:L&&L.exercises&&L.exercises.length,tips:L&&L.tips&&L.tips.length,storageKey:L&&L.__storageKey,rendered:!!document.getElementById(ROOT_ID)}};
+    ['click','touchend','focus','hashchange','popstate','visibilitychange'].forEach(function(ev){window.addEventListener(ev,function(){setTimeout(function(){render(false)},120);setTimeout(function(){render(false)},600)},true)});
+    setTimeout(function(){render(true)},700); setTimeout(function(){render(true)},1600); setInterval(function(){render(false)},1200);
+    try{new MutationObserver(function(){setTimeout(function(){render(false)},180)}).observe(document.documentElement||document.body,{childList:true,subtree:true,characterData:false})}catch(_){}
+    log('ok','patch instalado: a aba Aula agora recebe renderização completa e estável do JSON da aula ativa.');
+  }catch(e){try{console.warn('Patch V43 failed',e)}catch(_){}}
+})();
+
+
+/* === FLUENCY PATCH V44 - REMOVER TEXTO DE PARABÉNS / CONCLUSÃO DA AULA === */
+;(function(){
+  try{
+    if(window.__fluencyV44RemoveCongratsFinal) return;
+    window.__fluencyV44RemoveCongratsFinal = true;
+    var VERSION='V44-REMOVE-PARABENS-CONCLUSAO';
+    var NEEDLES=[
+      'Parabéns por completar mais esta etapa',
+      'Parabens por completar mais esta etapa',
+      'Parabéns por concluir',
+      'Parabens por concluir',
+      'Continue explorando novos textos',
+      'Sua jornada no inglês está apenas começando',
+      'Sua jornada no ingles esta apenas comecando'
+    ];
+    function norm(s){return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[“”"']/g,'').replace(/\s+/g,' ').trim().toLowerCase();}
+    var N=NEEDLES.map(norm);
+    function hit(t){t=norm(t);return N.some(function(n){return n && t.indexOf(n)>=0;});}
+    function isImportantRoot(el){
+      if(!el) return true;
+      if(el.id==='root' || el.tagName==='BODY' || el.tagName==='HTML') return true;
+      if(el.id==='__fluency_v43_full_lesson_render__') return true;
+      return false;
+    }
+    function pickRemovalNode(el){
+      var cur=el, best=el;
+      for(var i=0;i<5 && cur && !isImportantRoot(cur);i++,cur=cur.parentElement){
+        var txt=String(cur.innerText||cur.textContent||'');
+        var r; try{r=cur.getBoundingClientRect()}catch(_){r={width:0,height:0}}
+        // Prefer the visible card containing only the congratulation/final message.
+        if(hit(txt) && txt.length<1800 && r.width>120 && r.height>40) best=cur;
+      }
+      return best;
+    }
+    function clean(){
+      try{
+        var nodes=Array.prototype.slice.call(document.querySelectorAll('section,article,div,p,blockquote'));
+        nodes.forEach(function(el){
+          if(isImportantRoot(el)) return;
+          var t=String(el.innerText||el.textContent||'');
+          if(!hit(t)) return;
+          // Do not remove the whole generated lesson renderer; V44 already does not render finalTip there.
+          if(el.closest && el.closest('#__fluency_v43_full_lesson_render__')) return;
+          var target=pickRemovalNode(el);
+          if(target && !isImportantRoot(target)){
+            target.setAttribute('data-fluency-v44-removed-congrats','true');
+            target.style.display='none';
+            target.style.height='0px';
+            target.style.minHeight='0px';
+            target.style.margin='0px';
+            target.style.padding='0px';
+            target.style.overflow='hidden';
+          }
+        });
+      }catch(e){try{console.warn('[Fluency '+VERSION+'] limpeza falhou',e)}catch(_){}}
+    }
+    window.__fluencyV44RemoveCongratsNow=clean;
+    function tick(){clean()}
+    if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',tick); else setTimeout(tick,0);
+    setTimeout(tick,300); setTimeout(tick,1000); setInterval(tick,1200);
+    try{new MutationObserver(function(){setTimeout(tick,80)}).observe(document.documentElement||document.body,{childList:true,subtree:true,characterData:true})}catch(_){ }
+  }catch(e){try{console.warn('Patch V44 remove congrats failed',e)}catch(_){}}
+})();
