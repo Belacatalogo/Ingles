@@ -97,7 +97,7 @@ button {
 <script>
 // Register service worker for PWA / offline
 // Versão atual: APP_VERSION é checada e se mudar, força reload + cache clear
-var APP_VERSION = 'v47';
+var APP_VERSION = 'v48';
 var savedVersion = null;
 try { savedVersion = localStorage.getItem('__app_version__'); } catch(e) {}
 
@@ -324,7 +324,7 @@ window.__ttsState = window.__ttsState || {
 <script src="azure-pronunciation.js?v=5"></script>
 
 <!-- bundle.js define window.React, window.ReactDOM e window.__AppComponent -->
-<script src="bundle.js?v=47"></script>
+<script src="bundle.js?v=48"></script>
 
 <!-- Renderização em script separado, garantindo execução após bundle.js -->
 <script>
@@ -948,7 +948,7 @@ window.__ttsState = window.__ttsState || {
 
   // ── 1. BUILD / VERSÃO ──────────────────────────────────────
   // Marca a build do index.html para identificar versão antiga em cache.
-  var __FLUENCY_BUILD__ = '2026-04-28-v11-v47-aula-scope-fix';
+  var __FLUENCY_BUILD__ = '2026-04-28-v12-stable-scope-reset';
   if (buildEl) buildEl.textContent = __FLUENCY_BUILD__;
   logMsg('info', 'Build ' + __FLUENCY_BUILD__);
 

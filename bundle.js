@@ -359,7 +359,7 @@
     var BLOCKS = [
       {name:'BLOCO 1', key:'core', instruction:'Retorne JSON com: title, subtitle, intro com no mínimo 180 palavras, estimatedMinutes, sections exatamente 3 itens. Cada section deve ter heading, content com no mínimo 220 palavras e examples exatamente 3 itens {en, pt}. Não inclua exercícios nem vocabulário neste bloco.'},
       {name:'BLOCO 2', key:'practice', instruction:'Retorne JSON com: vocabulary exatamente 12 itens {word,pos,translation,example}; exercises exatamente 8 itens {type,question,options,answer,explanation}. Os exercícios devem misturar tradução, completar lacuna, escolha múltipla e produção guiada.'},
-      {name:'BLOCO 3', key:'finish', instruction:'Retorne JSON com: tips exatamente 4 frases úteis com no mínimo 25 caracteres cada; commonMistakes exatamente 4 itens {mistake,why,avoid}; NÃO gere finalTip nem texto motivacional; listeningText com 120 a 180 palavras em inglês natural adequado ao nível da aula.'}
+      {name:'BLOCO 3', key:'finish', instruction:'Retorne JSON com: tips exatamente 4 frases úteis com no mínimo 25 caracteres cada; commonMistakes exatamente 4 itens {mistake,why,avoid}; finalTip com no mínimo 45 palavras; listeningText com 120 a 180 palavras em inglês natural adequado ao nível da aula.'}
     ];
     function validateBlock(obj, block){
       if(!obj || typeof obj !== 'object') throw new Error(block.name+' vazio');
@@ -370,7 +370,7 @@
         if(!Array.isArray(obj.vocabulary) || obj.vocabulary.length < 5 || !Array.isArray(obj.exercises) || obj.exercises.length < 5) throw new Error('bloco 2 sem vocabulário/exercícios suficientes');
       }
       if(block.key === 'finish'){
-        if(!Array.isArray(obj.tips) || obj.tips.length < 2) throw new Error('bloco 3 sem dicas');
+        if(!Array.isArray(obj.tips) || obj.tips.length < 2 || !obj.finalTip) throw new Error('bloco 3 sem dicas/finalTip');
       }
       return true;
     }
@@ -386,7 +386,7 @@
         exercises: Array.isArray(b.exercises) ? b.exercises : [],
         tips: Array.isArray(c.tips) ? c.tips : [],
         commonMistakes: Array.isArray(c.commonMistakes) ? c.commonMistakes : (Array.isArray(c.common_mistakes) ? c.common_mistakes : []),
-        finalTip:'',
+        finalTip: c.finalTip || c.final_tip || '',
         listeningText: c.listeningText || c.listening_text || '',
         _generatedBy: VERSION,
         _blockMode: true,
@@ -4258,11 +4258,11 @@ lucide-react/dist/esm/lucide-react.mjs:
     }
     function apiText(data){try{var parts=data&&data.candidates&&data.candidates[0]&&data.candidates[0].content&&data.candidates[0].content.parts;if(Array.isArray(parts))return parts.map(function(p){return p&&p.text||''}).join('\n')}catch(_){ }return ''}
     function parseJson(s){s=String(s||'').trim().replace(/^```(?:json)?\s*/i,'').replace(/```$/,'').trim();var a=s.indexOf('{'),b=s.lastIndexOf('}');if(a>=0&&b>a)s=s.slice(a,b+1);try{return JSON.parse(s)}catch(e){try{return JSON.parse(s.replace(/,(\s*[}\]])/g,'$1'))}catch(_){throw e}}}
-    function validate(o,kind){if(!o||typeof o!=='object')throw new Error(kind+' vazio');if(kind==='BLOCO 1'&&(!o.title||!Array.isArray(o.sections)||o.sections.length<3))throw new Error('BLOCO 1 sem title/sections');if(kind==='BLOCO 2'&&(!Array.isArray(o.vocabulary)||o.vocabulary.length<5||!Array.isArray(o.exercises)||o.exercises.length<5))throw new Error('BLOCO 2 sem vocabulary/exercises');if(kind==='BLOCO 3'&&(!Array.isArray(o.tips)||o.tips.length<2))throw new Error('BLOCO 3 sem tips');return o}
+    function validate(o,kind){if(!o||typeof o!=='object')throw new Error(kind+' vazio');if(kind==='BLOCO 1'&&(!o.title||!Array.isArray(o.sections)||o.sections.length<3))throw new Error('BLOCO 1 sem title/sections');if(kind==='BLOCO 2'&&(!Array.isArray(o.vocabulary)||o.vocabulary.length<5||!Array.isArray(o.exercises)||o.exercises.length<5))throw new Error('BLOCO 2 sem vocabulary/exercises');if(kind==='BLOCO 3'&&(!Array.isArray(o.tips)||o.tips.length<2))throw new Error('BLOCO 3 sem tips suficientes');return o}
     var BLOCKS=[
       {name:'BLOCO 1',instruction:'Retorne JSON com: title, subtitle, estimatedMinutes, intro com 4+ frases, sections exatamente 5 itens. Cada section deve ter heading, content com explicação completa e examples exatamente 4 itens {en, pt}. Não inclua exercícios nem vocabulário neste bloco.'},
       {name:'BLOCO 2',instruction:'Retorne JSON com: vocabulary exatamente 12 itens {word,pos,translation,example}; exercises exatamente 12 itens {type,question,options,answer,explanation}. Misture choice, fill, translate e prática guiada.'},
-      {name:'BLOCO 3',instruction:'Retorne JSON com: tips exatamente 5 strings, commonMistakes de 3 a 5 itens {mistake,why,avoid}, NÃO gere finalTip nem texto motivacional. Retorne somente: tips exatamente 5 strings curtas, commonMistakes de 3 a 5 itens {mistake,why,avoid} e, quando fizer sentido, listeningText ou readingText.'}
+      {name:'BLOCO 3',instruction:'Retorne JSON com: tips exatamente 5 strings curtas e objetivas; commonMistakes de 3 a 5 itens {mistake,why,avoid}; quando fizer sentido, listeningText ou readingText. NÃO gere finalTip, mensagem motivacional, texto de parabéns, conclusão longa ou encerramento.'}
     ];
     async function callBlock(originalUrl,init,block,candidates){
       var body=buildBody(init&&init.body,block.name,block.instruction),last='';
@@ -4363,7 +4363,7 @@ lucide-react/dist/esm/lucide-react.mjs:
   try{
     if(window.__fluencyV42StrictProFallback) return;
     window.__fluencyV42StrictProFallback = true;
-    var VERSION='V42-PRO-ULTIMO-CASO-REAL';
+    var VERSION='V48-PRO-ULTIMO-CASO-REAL-STABLE';
     var prevFetch = window.fetch ? window.fetch.bind(window) : null;
     var STATE = window.__fluencyBlockLessonStateV197 = window.__fluencyBlockLessonStateV197 || {};
     var MULTI_KEYS='fluency_lessonGeminiApiKeys_v197';
@@ -4424,8 +4424,8 @@ lucide-react/dist/esm/lucide-react.mjs:
     function buildBody(originalBody,blockName,instruction){var original=getPrompt(originalBody);var prompt=['Aula IA V42. Responda APENAS JSON válido, sem markdown.','Gere o '+blockName+' de uma aula completa de inglês para brasileiro.',instruction,'Use português claro nas explicações e inglês correto nos exemplos.','Não gere conteúdo raso. Seja específico, didático e prático.','Prompt original do app:',original].join('\n\n');return JSON.stringify({system_instruction:{parts:[{text:'Você é uma API JSON de aulas de inglês. A única saída permitida é JSON válido.'}]},contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{temperature:0.35,maxOutputTokens:8192,responseMimeType:'application/json'}})}
     function apiText(data){try{var parts=data&&data.candidates&&data.candidates[0]&&data.candidates[0].content&&data.candidates[0].content.parts;if(Array.isArray(parts))return parts.map(function(p){return p&&p.text||''}).join('\n')}catch(_){ }return ''}
     function parseJson(s){s=String(s||'').trim().replace(/^```(?:json)?\s*/i,'').replace(/```$/,'').trim();var a=s.indexOf('{'),b=s.lastIndexOf('}');if(a>=0&&b>a)s=s.slice(a,b+1);try{return JSON.parse(s)}catch(e){try{return JSON.parse(s.replace(/,(\s*[}\]])/g,'$1'))}catch(_){throw e}}}
-    function validate(o,kind){if(!o||typeof o!=='object')throw new Error(kind+' vazio');if(kind==='BLOCO 1'&&(!o.title||!Array.isArray(o.sections)||o.sections.length<3))throw new Error('BLOCO 1 sem title/sections');if(kind==='BLOCO 2'&&(!Array.isArray(o.vocabulary)||o.vocabulary.length<5||!Array.isArray(o.exercises)||o.exercises.length<5))throw new Error('BLOCO 2 sem vocabulary/exercises');if(kind==='BLOCO 3'&&(!Array.isArray(o.tips)||o.tips.length<2))throw new Error('BLOCO 3 sem tips');return o}
-    var BLOCKS=[{name:'BLOCO 1',instruction:'Retorne JSON com: title, subtitle, estimatedMinutes, intro com 4+ frases, sections exatamente 5 itens. Cada section deve ter heading, content com explicação completa e examples exatamente 4 itens {en, pt}. Não inclua exercícios nem vocabulário neste bloco.'},{name:'BLOCO 2',instruction:'Retorne JSON com: vocabulary exatamente 12 itens {word,pos,translation,example}; exercises exatamente 12 itens {type,question,options,answer,explanation}. Misture choice, fill, translate e prática guiada.'},{name:'BLOCO 3',instruction:'Retorne JSON com: tips exatamente 5 strings, commonMistakes de 3 a 5 itens {mistake,why,avoid}, NÃO gere finalTip nem texto motivacional. Retorne somente: tips exatamente 5 strings curtas, commonMistakes de 3 a 5 itens {mistake,why,avoid} e, quando fizer sentido, listeningText ou readingText.'}];
+    function validate(o,kind){if(!o||typeof o!=='object')throw new Error(kind+' vazio');if(kind==='BLOCO 1'&&(!o.title||!Array.isArray(o.sections)||o.sections.length<3))throw new Error('BLOCO 1 sem title/sections');if(kind==='BLOCO 2'&&(!Array.isArray(o.vocabulary)||o.vocabulary.length<5||!Array.isArray(o.exercises)||o.exercises.length<5))throw new Error('BLOCO 2 sem vocabulary/exercises');if(kind==='BLOCO 3'&&(!Array.isArray(o.tips)||o.tips.length<2))throw new Error('BLOCO 3 sem tips suficientes');return o}
+    var BLOCKS=[{name:'BLOCO 1',instruction:'Retorne JSON com: title, subtitle, estimatedMinutes, intro com 4+ frases, sections exatamente 5 itens. Cada section deve ter heading, content com explicação completa e examples exatamente 4 itens {en, pt}. Não inclua exercícios nem vocabulário neste bloco.'},{name:'BLOCO 2',instruction:'Retorne JSON com: vocabulary exatamente 12 itens {word,pos,translation,example}; exercises exatamente 12 itens {type,question,options,answer,explanation}. Misture choice, fill, translate e prática guiada.'},{name:'BLOCO 3',instruction:'Retorne JSON com: tips exatamente 5 strings curtas e objetivas; commonMistakes de 3 a 5 itens {mistake,why,avoid}; quando fizer sentido, listeningText ou readingText. NÃO gere finalTip, mensagem motivacional, texto de parabéns, conclusão longa ou encerramento.'}];
     function classifyHttp(status,raw,msg){var t=String(raw||msg||'');if(status===429||/RESOURCE_EXHAUSTED|quota|rate limit|Too Many Requests/i.test(t))return 'quota';if(status===403||/API_KEY_INVALID|permission|forbidden|PERMISSION_DENIED/i.test(t))return 'key';if(status===404||/not found|no longer available/i.test(t))return 'model';if(status>=500||/timeout|network/i.test(t))return 'transient';return 'other'}
     async function tryCandidate(init,block,c){
       var body=buildBody(init&&init.body,block.name,block.instruction);
@@ -4487,466 +4487,51 @@ lucide-react/dist/esm/lucide-react.mjs:
   }catch(e){try{console.warn('Patch V42 failed',e)}catch(_){ }}
 })();
 
-/* === FLUENCY PATCH V43 - RENDERIZAÇÃO TOTAL E ESTÁVEL DA AULA ATIVA === */
+
+/* === FLUENCY PATCH V48 - ESTABILIZAÇÃO CIRÚRGICA: REMOVER OVERLAYS EXPERIMENTAIS E RESTAURAR ABAS === */
 ;(function(){
   try{
-    if(window.__fluencyV43FullLessonRenderer) return;
-    window.__fluencyV43FullLessonRenderer = true;
-    var VERSION='V45-FULL-LESSON-SEM-PARABENS-SEGURO';
-    var ACTIVE_KEYS=['fluency_active_ai_lesson_v43','fluency_active_ai_lesson_v41','fluency_last_ai_lesson_v43','fluency_last_ai_lesson_v41','fluency_last_ai_lesson','fluency_generated_lesson','fluency_today_lesson'];
-    var ROOT_ID='__fluency_v43_full_lesson__';
-    var CSS_ID='__fluency_v43_full_lesson_css__';
-    var lastSignature='';
-
-    function now(){try{return new Date().toLocaleTimeString()}catch(_){return ''}}
-    function log(kind,msg,meta){
+    if(window.__fluencyV48StableScopeReset) return;
+    window.__fluencyV48StableScopeReset = true;
+    var VERSION='V48-STABLE-SCOPE-RESET';
+    var BAD_IDS=['__fluency_v43_full_lesson__','__fluency_v46_lesson_page__'];
+    var BAD_CSS=['__fluency_v43_full_lesson_css__','__fluency_v46_lesson_css__','__fluency_v47_scope_css__'];
+    function rm(id){try{var el=document.getElementById(id); if(el&&el.parentNode)el.parentNode.removeChild(el);}catch(_){}}
+    function cleanDom(){
       try{
-        var s=window.__fluencyBlockLessonStateV197;
-        if(s&&Array.isArray(s.logs)){
-          s.logs.push({at:now(),kind:kind||'info',msg:'Aula '+VERSION+': '+String(msg||''),meta:meta||null});
-          if(s.logs.length>140)s.logs=s.logs.slice(-140);
-          if(kind==='error'||kind==='warn')s.lastError=String(msg||'');
-        }
-        if(window.__fluencyV1919DiagRender) window.__fluencyV1919DiagRender();
-      }catch(_){}
-      try{console.warn('[Fluency '+VERSION+'] '+msg,meta||'')}catch(_){}
+        BAD_IDS.forEach(rm); BAD_CSS.forEach(rm);
+        try{document.documentElement.classList.remove('__fluency_v47_aula_active')}catch(_){}
+        try{document.body.classList.remove('__fluency_v47_aula_active')}catch(_){}
+        var root=document.getElementById('root');
+        if(root){root.style.display='';root.style.visibility='';root.style.opacity='';root.style.position='';root.style.pointerEvents='';}
+        Array.prototype.slice.call(document.querySelectorAll('main,section,article')).forEach(function(el){
+          try{el.style.display='';el.style.visibility='';el.style.opacity='';el.style.pointerEvents='';}catch(_){}
+        });
+      }catch(_){ }
     }
-    function esc(v){return String(v==null?'':v).replace(/[&<>\"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]||c})}
-    function txt(v){return String(v==null?'':v).trim()}
-    function arr(x){return Array.isArray(x)?x:[]}
-    function pick(o,ks){if(!o||typeof o!=='object')return '';for(var i=0;i<ks.length;i++){var v=o[ks[i]];if(v!=null&&txt(v))return v;}return ''}
-    function parseMaybe(v){
+    function parse(v){try{if(!v)return null;var x=String(v).trim();if(!x)return null;var a=x.indexOf('{'),b=x.lastIndexOf('}');if(a>=0&&b>a)x=x.slice(a,b+1);x=JSON.parse(x);if(typeof x==='string')return parse(x);if(x&&x.lesson)x=x.lesson;if(x&&x.aula)x=x.aula;if(x&&x.lessonData)x=x.lessonData;return x&&typeof x==='object'?x:null}catch(_){return null}}
+    function scrubFinalTips(){
       try{
-        if(v==null)return null;
-        var x=typeof v==='string'?v.trim():v;
-        if(typeof x==='string'){
-          if(!x)return null;
-          x=x.replace(/^```(?:json)?\s*/i,'').replace(/```$/,'').trim();
-          var a=x.indexOf('{'),b=x.lastIndexOf('}');
-          if(a>=0&&b>a)x=x.slice(a,b+1);
-          x=JSON.parse(x);
-          if(typeof x==='string') return parseMaybe(x);
-        }
-        if(x&&x.candidates){
-          var parts=x.candidates&&x.candidates[0]&&x.candidates[0].content&&x.candidates[0].content.parts;
-          if(Array.isArray(parts)) return parseMaybe(parts.map(function(p){return p&&(p.text||'')}).join('\n'));
-        }
-        if(x&&x.lessonData)x=x.lessonData;
-        if(x&&x.lesson)x=x.lesson;
-        if(x&&x.aula)x=x.aula;
-        if(x&&x.data&&x.data.lesson)x=x.data.lesson;
-        return x&&typeof x==='object'?x:null;
-      }catch(_){return null}
-    }
-    function normExample(ex){
-      if(typeof ex==='string')return {en:ex,pt:''};
-      ex=ex||{};
-      return {en:pick(ex,['en','english','sentence','phrase','example','text','frase']),pt:pick(ex,['pt','portuguese','translation','traducao','tradução','meaning','meaningPt'])};
-    }
-    function normalize(L){
-      L=parseMaybe(L); if(!L)return null;
-      var out={};
-      out.title=pick(L,['title','titulo','título','name'])||'Aula de inglês';
-      out.subtitle=pick(L,['subtitle','subtitulo','subtítulo','description']);
-      out.skill=pick(L,['skill','type','tipo'])||'aula';
-      out.level=pick(L,['level','nivel','nível'])||'A1';
-      out.estimatedMinutes=L.estimatedMinutes||L.minutes||L.duration||25;
-      out.intro=pick(L,['intro','introduction','introducao','introdução','overview','descricao','descrição']);
-      out.finalTip=pick(L,['finalTip','final_tip','conclusion','conclusao','conclusão','closing','resumoFinal']);
-      out.readingText=pick(L,['readingText','reading_text','text','texto','textoLeitura']);
-      out.listeningText=pick(L,['listeningText','listening_text','audioText','dialogue','dialogo','diálogo']);
-      var secs=arr(L.sections&&L.sections.length?L.sections:(L.secoes||L.seções||L.parts||L.modules||L.contentSections));
-      out.sections=secs.map(function(s,i){s=s||{};var exs=arr(s.examples&&s.examples.length?s.examples:(s.exemplos||s.sentences||s.frases||s.phrases));return {heading:pick(s,['heading','title','titulo','título','name'])||('Seção '+(i+1)),content:pick(s,['content','body','text','explicacao','explicação','explanation','description','lesson'])||'',examples:exs.map(normExample).filter(function(e){return txt(e.en)||txt(e.pt)})}}).filter(function(s){return txt(s.heading)||txt(s.content)||s.examples.length});
-      var voc=arr(L.vocabulary&&L.vocabulary.length?L.vocabulary:(L.vocabulario||L.vocabulário||L.words||L.terms));
-      out.vocabulary=voc.map(function(v){if(typeof v==='string')return {word:v,pos:'',translation:'',example:''};v=v||{};return {word:pick(v,['word','palavra','term','english','en']),pos:pick(v,['pos','class','classe','type'])||'',translation:pick(v,['translation','traducao','tradução','pt','meaning','portuguese']),example:pick(v,['example','exemplo','sentence','phrase','frase'])}}).filter(function(v){return txt(v.word)||txt(v.translation)});
-      var exs=arr(L.exercises&&L.exercises.length?L.exercises:(L.exercicios||L.exercícios||L.questions||L.quiz||L.practice));
-      out.exercises=exs.map(function(e,i){if(typeof e==='string')return {type:'practice',question:e,options:[],answer:'',explanation:''};e=e||{};return {type:pick(e,['type','tipo'])||'practice',question:pick(e,['question','pergunta','prompt','instruction','enunciado','task'])||('Exercício '+(i+1)),options:arr(e.options||e.opcoes||e.opções||e.choices).map(function(o){return String(o)}),answer:pick(e,['answer','resposta','correct','correctAnswer','expected','gabarito'])||'',explanation:pick(e,['explanation','explicacao','explicação','why','feedback','comentario','comentário'])||''}}).filter(function(e){return txt(e.question)||txt(e.answer)});
-      out.tips=arr(L.tips&&L.tips.length?L.tips:(L.dicas||L.notes||L.studyTips)).map(function(t){return typeof t==='string'?t:pick(t,['tip','text','content','dica'])}).filter(function(t){return txt(t)});
-      out.commonMistakes=arr(L.commonMistakes||L.common_mistakes||L.errosComuns||L.mistakes).map(function(m){m=m||{};return {mistake:pick(m,['mistake','erro','title']),why:pick(m,['why','porque','porquê','reason','motivo']),avoid:pick(m,['avoid','correction','comoEvitar','fix','corrigir'])}}).filter(function(m){return txt(m.mistake)||txt(m.why)||txt(m.avoid)});
-      out._blockMeta=L._blockMeta||L.blockMeta||L._generationMeta||null;
-      out._generatedAt=L._generatedAt||L.generatedAt||new Date().toISOString();
-      out._source=L._source||L.source||'ai';
-      return out;
-    }
-    function score(L){if(!L)return 0;var n=0;try{n+=JSON.stringify(L).length/10}catch(_){}n+=txt(L.intro).length+numeric(L.sections)*900+numeric(L.vocabulary)*100+numeric(L.exercises)*140+numeric(L.finalTip).length;return n}
-    function numeric(x){return Array.isArray(x)?x.length:0}
-    function isCompleteEnough(L){return !!(L&&txt(L.title)&&txt(L.intro).length>=80&&L.sections&&L.sections.length>=1&&(L.vocabulary.length||L.exercises.length||L.tips.length||txt(L.finalTip)))}
-    function readRaw(k){try{return localStorage.getItem(k)}catch(_){return null}}
-    function writeRaw(k,v){try{localStorage.setItem(k,v)}catch(_){}}
-    function bestLesson(){
-      var best=null,bestScore=0,bestKey='';
-      ACTIVE_KEYS.forEach(function(k){var L=normalize(readRaw(k));var s=score(L);if(s>bestScore&&isCompleteEnough(L)){best=L;bestScore=s;bestKey=k;}});
-      try{
+        var fields=['finalTip','final_tip','conclusion','conclusao','conclusão','closing','resumoFinal'];
         for(var i=0;i<localStorage.length;i++){
           var k=localStorage.key(i)||'';
-          if(!/(lesson|aula)/i.test(k))continue;
-          if(/api|key|gemini|azure|lock|logs|model|version|active_lesson_id/i.test(k))continue;
-          var L=normalize(readRaw(k));var s=score(L);if(s>bestScore&&isCompleteEnough(L)){best=L;bestScore=s;bestKey=k;}
+          if(!/(lesson|aula)/i.test(k)) continue;
+          if(/api|key|gemini|azure|logs|model|version|active_lesson_id/i.test(k)) continue;
+          var raw=localStorage.getItem(k); var obj=parse(raw); if(!obj) continue;
+          var changed=false; fields.forEach(function(f){if(obj[f]){delete obj[f];changed=true;}});
+          if(changed) localStorage.setItem(k,JSON.stringify(obj));
         }
-      }catch(_){}
-      if(best)best.__storageKey=bestKey;
-      return best;
-    }
-    function saveActive(L,reason){
-      L=normalize(L); if(!isCompleteEnough(L))return false;
-      L.lessonId=L.lessonId||('ai-'+Date.now());
-      L._renderVersion=VERSION;
-      var text=JSON.stringify(L);
-      ['fluency_active_ai_lesson_v43','fluency_last_ai_lesson_v43','fluency_active_ai_lesson_v41','fluency_last_ai_lesson_v41'].forEach(function(k){writeRaw(k,text)});
-      writeRaw('fluency_active_lesson_id',L.lessonId);
-      writeRaw('fluency_v43_render_last',JSON.stringify({at:new Date().toISOString(),reason:reason||'',title:L.title,sections:L.sections.length,vocabulary:L.vocabulary.length,exercises:L.exercises.length,tips:L.tips.length}));
-      log('ok','aula ativa salva para renderização total: '+L.title+' · '+L.sections.length+' seções · '+L.vocabulary.length+' vocabulários · '+L.exercises.length+' exercícios',{reason:reason});
-      return true;
-    }
-    function css(){
-      if(document.getElementById(CSS_ID))return;
-      var st=document.createElement('style');st.id=CSS_ID;
-      st.textContent='html,body,#root{height:auto!important;min-height:100%!important;overflow-y:auto!important;-webkit-overflow-scrolling:touch!important} .fluency-v18-full-lesson-render{display:none!important} #'+ROOT_ID+'{margin:22px 0 160px 0;padding:0 0 40px 0;font-family:inherit;color:#dbeafe} #'+ROOT_ID+' .v43-card{border:1px solid rgba(91,156,246,.30);border-radius:18px;background:linear-gradient(135deg,rgba(10,24,54,.72),rgba(15,23,42,.70));box-shadow:0 12px 34px rgba(0,0,0,.20);padding:17px;margin:14px 0} #'+ROOT_ID+' .v43-kicker{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:#93b7ff;margin-bottom:9px;font-weight:900} #'+ROOT_ID+' .v43-h2{font-size:25px;line-height:1.25;margin:0 0 11px;color:#f8fbff;font-weight:950} #'+ROOT_ID+' .v43-p{white-space:pre-wrap;font-size:18px;line-height:1.72;color:#7fb0ff;margin:0} #'+ROOT_ID+' .v43-small{font-size:14px;line-height:1.58;color:#a9c3f5} #'+ROOT_ID+' .v43-grid{display:grid;gap:11px} #'+ROOT_ID+' .v43-example,#'+ROOT_ID+' .v43-item{border:1px solid rgba(255,255,255,.11);border-radius:14px;padding:13px;background:rgba(255,255,255,.045)} #'+ROOT_ID+' .v43-en{font-size:17px;line-height:1.45;color:#f8fbff;font-weight:800} #'+ROOT_ID+' .v43-pt{font-size:14px;line-height:1.45;color:#a9c3f5;font-style:italic;margin-top:4px} #'+ROOT_ID+' .v43-ok{color:#86efac} #'+ROOT_ID+' .v43-warn{color:#fbbf24} #'+ROOT_ID+' strong{color:#f8fbff}';
-      document.head.appendChild(st);
-    }
-    function metaHtml(L){
-      var bm=L._blockMeta||{}; var h='';
-      if(bm&&typeof bm==='object'){
-        var rows=[]; ['block1','block2','block3','BLOCO 1','BLOCO 2','BLOCO 3'].forEach(function(k){if(bm[k])rows.push(k+': '+(typeof bm[k]==='string'?bm[k]:JSON.stringify(bm[k])))});
-        if(rows.length) h+='<div class="v43-card"><div class="v43-kicker">Origem da geração</div><div class="v43-small">'+rows.map(esc).join('<br>')+'</div></div>';
-      }
-      return h;
-    }
-    function html(L){
-      var h='<div id="'+ROOT_ID+'" data-title="'+esc(L.title)+'">';
-      h+='<div class="v43-card" style="border-color:rgba(34,197,94,.35);background:linear-gradient(135deg,rgba(5,46,22,.42),rgba(15,23,42,.72));"><div class="v43-kicker">Renderização completa V44</div><div class="v43-small v43-ok">✅ Aula ativa carregada integralmente: '+esc(L.sections.length)+' seções · '+esc(L.vocabulary.length)+' vocabulários · '+esc(L.exercises.length)+' exercícios · '+esc(L.tips.length)+' dicas.</div></div>';
-      if(L.sections.length){
-        h+='<section class="v43-card"><div class="v43-kicker">Conteúdo completo da aula</div>';
-        L.sections.forEach(function(s,i){
-          h+='<article style="margin-top:'+(i?26:4)+'px"><h2 class="v43-h2">§ '+esc(s.heading)+'</h2>';
-          if(s.content)h+='<p class="v43-p">'+esc(s.content)+'</p>';
-          if(s.examples&&s.examples.length){h+='<div class="v43-grid" style="margin-top:14px">';s.examples.forEach(function(ex){h+='<div class="v43-example">'+(ex.en?'<div class="v43-en">'+esc(ex.en)+'</div>':'')+(ex.pt?'<div class="v43-pt">'+esc(ex.pt)+'</div>':'')+'</div>'});h+='</div>'}
-          h+='</article>';
-        });
-        h+='</section>';
-      }
-      if(L.readingText||L.listeningText){h+='<section class="v43-card"><div class="v43-kicker">Texto de prática</div>'+(L.readingText?'<p class="v43-p">'+esc(L.readingText)+'</p>':'')+(L.listeningText?'<p class="v43-p" style="margin-top:12px">'+esc(L.listeningText)+'</p>':'')+'</section>'}
-      if(L.vocabulary.length){h+='<section class="v43-card"><div class="v43-kicker">Vocabulário completo</div><div class="v43-grid">';L.vocabulary.forEach(function(v){h+='<div class="v43-item"><div><strong style="font-size:18px">'+esc(v.word)+'</strong>'+(v.pos?' <span class="v43-small">'+esc(v.pos)+'</span>':'')+(v.translation?' <span class="v43-small v43-ok">• '+esc(v.translation)+'</span>':'')+'</div>'+(v.example?'<div class="v43-pt">“'+esc(v.example)+'”</div>':'')+'</div>'});h+='</div></section>'}
-      if(L.exercises.length){h+='<section class="v43-card"><div class="v43-kicker">Exercícios completos</div><div class="v43-grid">';L.exercises.forEach(function(e,i){h+='<div class="v43-item"><div class="v43-en"><span style="color:#7fb0ff">'+(i+1)+'.</span> '+esc(e.question)+'</div>'+(e.options&&e.options.length?'<div class="v43-small" style="margin-top:8px">Opções: '+e.options.map(esc).join(' • ')+'</div>':'')+(e.answer?'<div class="v43-small v43-ok" style="margin-top:8px">Resposta: '+esc(e.answer)+'</div>':'')+(e.explanation?'<div class="v43-small" style="margin-top:6px">'+esc(e.explanation)+'</div>':'')+'</div>'});h+='</div></section>'}
-      if(L.commonMistakes.length){h+='<section class="v43-card"><div class="v43-kicker">Erros comuns</div><div class="v43-grid">';L.commonMistakes.forEach(function(m){h+='<div class="v43-item" style="border-color:rgba(245,158,11,.25);background:rgba(245,158,11,.055)">'+(m.mistake?'<div class="v43-en">'+esc(m.mistake)+'</div>':'')+(m.why?'<div class="v43-small">'+esc(m.why)+'</div>':'')+(m.avoid?'<div class="v43-small v43-ok">Como evitar: '+esc(m.avoid)+'</div>':'')+'</div>'});h+='</div></section>'}
-      if(L.tips.length){h+='<section class="v43-card"><div class="v43-kicker">Dicas finais</div><ul class="v43-small" style="margin:0;padding-left:20px;color:#7fb0ff">';L.tips.forEach(function(t){h+='<li style="margin:7px 0">'+esc(t)+'</li>'});h+='</ul></section>'}
-      /* V44: mensagem final/parabéns removida da renderização por solicitação do usuário. O finalTip continua salvo no JSON, mas não aparece na tela. */
-      h+=metaHtml(L);
-      h+='</div>';
-      return h;
-    }
-    function visible(el){try{var r=el.getBoundingClientRect(),cs=getComputedStyle(el);return r.width>40&&r.height>40&&cs.display!=='none'&&cs.visibility!=='hidden'}catch(_){return false}}
-    function findLessonContainer(L){
-      var title=(L&&L.title)||''; var nodes=Array.prototype.slice.call(document.querySelectorAll('main,section,article,div'));
-      var candidates=[];
-      nodes.forEach(function(el){
-        if(!visible(el))return; var t=''; try{t=el.innerText||el.textContent||''}catch(_){return}
-        if(t.indexOf('LOGS EM TEMPO REAL')>=0||t.indexOf('SISTEMA')>=0&&t.indexOf('ÁUDIO')>=0)return;
-        var hasTitle=title&&t.indexOf(title.slice(0,Math.min(24,title.length)))>=0;
-        var hasLesson=/Gerada por IA|AULA|LEITURA|GRAMÁTICA|NÍVEL|Aula completa/i.test(t);
-        if(hasTitle||hasLesson){var r=el.getBoundingClientRect();candidates.push({el:el,area:r.width*r.height,text:t.length});}
-      });
-      candidates.sort(function(a,b){return a.area-b.area});
-      return candidates.length?candidates[0].el:(document.querySelector('main')||document.getElementById('root')||document.body);
-    }
-    function isAulaOpen(){try{var t=document.body.innerText||'';return /\bAula\b/.test(t)&&(/Gerada por IA|LEITURA|GRAMÁTICA|AULA COMPLETA|Aula completa/i.test(t))}catch(_){return false}}
-    function insertPoint(container,L){
-      try{
-        var finalStart=txt(L.finalTip).slice(0,30); if(finalStart){var all=Array.prototype.slice.call(container.querySelectorAll('div,section,article,p'));for(var i=0;i<all.length;i++){var tt=all[i].innerText||all[i].textContent||'';if(tt.indexOf(finalStart)>=0&&all[i].id!==ROOT_ID)return {parent:all[i].parentNode, before:all[i]};}}
-      }catch(_){}
-      return {parent:container,before:null};
-    }
-    function render(force){
-      try{
-        if(!isAulaOpen())return false;
-        css();
-        var L=bestLesson(); if(!L)return false;
-        var sig=[L.title,L.sections.length,L.vocabulary.length,L.exercises.length,L.tips.length,txt(L.finalTip).length,txt(L.intro).length].join('|');
-        var existing=document.getElementById(ROOT_ID);
-        if(existing&&existing.getAttribute('data-sig')===sig&&!force)return true;
-        if(existing&&existing.parentNode)existing.parentNode.removeChild(existing);
-        var c=findLessonContainer(L); if(!c)return false;
-        var tmp=document.createElement('div'); tmp.innerHTML=html(L); var node=tmp.firstChild; node.setAttribute('data-sig',sig);
-        var ip=insertPoint(c,L); if(ip&&ip.parent){ip.parent.insertBefore(node,ip.before||null);} else c.appendChild(node);
-        lastSignature=sig; saveActive(L,'render-v43');
-        log('ok','renderização total aplicada: '+L.title+' · '+L.sections.length+' seções · '+L.vocabulary.length+' vocabulários · '+L.exercises.length+' exercícios');
-        return true;
-      }catch(e){log('error','falha ao renderizar conteúdo completo: '+((e&&e.message)||e));return false}
-    }
-    // Captura qualquer aula nova retornada pela geração e salva no formato renderizável.
-    var prevFetch=window.fetch&&window.fetch.bind(window);
-    if(prevFetch&&!window.fetch.__fluencyV43FullLessonRenderer){
-      window.fetch=async function(input,init){
-        var res=await prevFetch(input,init);
-        try{
-          var url=typeof input==='string'?input:((input&&input.url)||'');
-          if(/generativelanguage\.googleapis\.com/i.test(url||'')&&res&&res.ok){
-            res.clone().text().then(function(raw){try{var L=parseMaybe(raw); if(saveActive(L,'fetch-v43'))setTimeout(function(){render(true)},80);}catch(_){}}).catch(function(){});
-          }
-        }catch(_){}
-        return res;
-      };
-      window.fetch.__fluencyV43FullLessonRenderer=true;
-    }
-    window.__fluencyV43RenderLesson=function(){return render(true)};
-    window.__fluencyV43LessonStatus=function(){var L=bestLesson();return {version:VERSION,hasLesson:!!L,title:L&&L.title,sections:L&&L.sections&&L.sections.length,vocabulary:L&&L.vocabulary&&L.vocabulary.length,exercises:L&&L.exercises&&L.exercises.length,tips:L&&L.tips&&L.tips.length,storageKey:L&&L.__storageKey,rendered:!!document.getElementById(ROOT_ID)}};
-    ['click','touchend','focus','hashchange','popstate','visibilitychange'].forEach(function(ev){window.addEventListener(ev,function(){setTimeout(function(){render(false)},120);setTimeout(function(){render(false)},600)},true)});
-    setTimeout(function(){render(true)},700); setTimeout(function(){render(true)},1600); setInterval(function(){render(false)},1200);
-    try{new MutationObserver(function(){setTimeout(function(){render(false)},180)}).observe(document.documentElement||document.body,{childList:true,subtree:true,characterData:false})}catch(_){}
-    log('ok','patch instalado: a aba Aula agora recebe renderização completa e estável do JSON da aula ativa.');
-  }catch(e){try{console.warn('Patch V43 failed',e)}catch(_){}}
-})();
-
-
-
-/* === FLUENCY PATCH V45 - REMOVER PARABÉNS SEM APAGAR A AULA === */
-;(function(){
-  try{
-    if(window.__fluencyV45SafeRemoveCongratsFinal) return;
-    window.__fluencyV45SafeRemoveCongratsFinal = true;
-    var VERSION='V45-SAFE-REMOVE-PARABENS-SEM-BLANK';
-    var RENDER_ROOT='__fluency_v43_full_lesson__';
-    var NEEDLES=[
-      'Parabéns por completar mais esta etapa',
-      'Parabens por completar mais esta etapa',
-      'Parabéns por concluir',
-      'Parabens por concluir',
-      'Continue explorando novos textos',
-      'Sua jornada no inglês está apenas começando',
-      'Sua jornada no ingles esta apenas comecando'
-    ];
-    function norm(s){
-      return String(s||'')
-        .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
-        .replace(/[“”"']/g,'')
-        .replace(/\s+/g,' ')
-        .trim().toLowerCase();
-    }
-    var N=NEEDLES.map(norm);
-    function hit(t){t=norm(t);return N.some(function(n){return n && t.indexOf(n)>=0;});}
-    function text(el){try{return String(el&&((el.innerText||el.textContent)||''))}catch(_){return ''}}
-    function important(el){
-      if(!el) return true;
-      if(el.id==='root'||el.id===RENDER_ROOT||el.tagName==='BODY'||el.tagName==='HTML'||el.tagName==='MAIN') return true;
-      if(el.closest && el.closest('#'+RENDER_ROOT)) return true;
-      var t=text(el);
-      if(/\bHoje\b[\s\S]*\bAula\b[\s\S]*\bFlashcards\b|\bSpeaking\b/.test(t)) return true;
-      if(/LOGS EM TEMPO REAL|SISTEMA[\s\S]*ÁUDIO|Chaves Exclusivas de Aulas/i.test(t)) return true;
-      return false;
-    }
-    function restoreBadV44(){
-      try{
-        Array.prototype.slice.call(document.querySelectorAll('[data-fluency-v44-removed-congrats]')).forEach(function(el){
-          el.removeAttribute('data-fluency-v44-removed-congrats');
-          el.removeAttribute('data-fluency-v45-safe-hidden');
-          el.style.display='';
-          el.style.height='';
-          el.style.minHeight='';
-          el.style.margin='';
-          el.style.padding='';
-          el.style.overflow='';
-        });
       }catch(_){ }
     }
-    function hideNode(el){
-      try{
-        el.setAttribute('data-fluency-v45-safe-hidden','true');
-        el.style.display='none';
-      }catch(_){ }
-    }
-    function clean(){
-      restoreBadV44();
-      try{
-        var nodes=Array.prototype.slice.call(document.querySelectorAll('p,blockquote,div,section,article'));
-        nodes.forEach(function(el){
-          if(important(el)) return;
-          var t=text(el);
-          if(!hit(t)) return;
-          // Nunca esconda um container grande da aula. Se algum filho também contém o texto,
-          // deixe o filho ser tratado; isso impede a tela em branco.
-          var childHit=false;
-          try{
-            childHit=Array.prototype.slice.call(el.children||[]).some(function(ch){return hit(text(ch));});
-          }catch(_){childHit=false;}
-          if(childHit) return;
-          if(t.length>1700) return;
-          if(el.querySelector && el.querySelector('button,a,input,textarea,select,[role="tab"]')) return;
-          var target=el;
-          // Se o cartão pai contém praticamente só esse texto final, esconda o cartão;
-          // caso contrário, esconda apenas o parágrafo/texto.
-          try{
-            var p=el.parentElement;
-            if(p && !important(p)){
-              var pt=text(p);
-              var same=hit(pt) && pt.length<=t.length+120 && !(p.querySelector&&p.querySelector('button,a,input,textarea,select,[role="tab"]'));
-              if(same) target=p;
-            }
-          }catch(_){ }
-          if(!important(target)) hideNode(target);
-        });
-      }catch(e){try{console.warn('[Fluency '+VERSION+'] limpeza segura falhou',e)}catch(_){}}
-    }
-    window.__fluencyV44RemoveCongratsNow=clean;
-    window.__fluencyV45SafeRemoveCongratsNow=clean;
-    function tick(){clean(); try{ if(window.__fluencyV43RenderLesson) window.__fluencyV43RenderLesson(); }catch(_){} }
-    if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',tick); else setTimeout(tick,0);
-    setTimeout(tick,250); setTimeout(tick,900); setTimeout(tick,1800); setInterval(clean,1600);
-    ['click','touchend','focus','hashchange','popstate','visibilitychange'].forEach(function(ev){window.addEventListener(ev,function(){setTimeout(tick,120);},true)});
-    try{new MutationObserver(function(){setTimeout(clean,90)}).observe(document.documentElement||document.body,{childList:true,subtree:true,characterData:true})}catch(_){ }
-  }catch(e){try{console.warn('Patch V45 safe remove congrats failed',e)}catch(_){}}
-})();
-
-
-/* === FLUENCY PATCH V46 - RENDERIZAÇÃO AUTÔNOMA TOTAL SEM TEXTO MOTIVACIONAL === */
-;(function(){
-  try{
-    if(window.__fluencyV46AutonomousFullLessonNoMotivation) return;
-    window.__fluencyV46AutonomousFullLessonNoMotivation = true;
-    var VERSION='V46-FULL-RENDER-SEM-MOTIVACAO';
-    var PAGE_ID='__fluency_v46_lesson_page__';
-    var CSS_ID='__fluency_v46_lesson_css__';
-    var STORAGE_KEYS=['fluency_active_ai_lesson_v43','fluency_last_ai_lesson_v43','fluency_active_ai_lesson_v41','fluency_last_ai_lesson_v41','fluency_last_ai_lesson','fluency_generated_lesson','fluency_today_lesson'];
-
-    function txt(v){return String(v==null?'':v).trim()}
-    function esc(v){return txt(v).replace(/[&<>\"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]||c})}
-    function arr(x){return Array.isArray(x)?x:[]}
-    function pick(o,ks){if(!o||typeof o!=='object')return '';for(var i=0;i<ks.length;i++){var v=o[ks[i]];if(v!=null&&txt(v))return v}return ''}
-    function parse(v){
-      try{
-        if(v==null)return null; var x=typeof v==='string'?v.trim():v; if(!x)return null;
-        if(typeof x==='string'){
-          x=x.replace(/^```(?:json)?\s*/i,'').replace(/```$/,'').trim();
-          var a=x.indexOf('{'),b=x.lastIndexOf('}'); if(a>=0&&b>a)x=x.slice(a,b+1);
-          x=JSON.parse(x); if(typeof x==='string')return parse(x);
-        }
-        if(x&&x.candidates){var p=x.candidates&&x.candidates[0]&&x.candidates[0].content&&x.candidates[0].content.parts;if(Array.isArray(p))return parse(p.map(function(q){return q&&(q.text||'')}).join('\n'))}
-        if(x&&x.lessonData)x=x.lessonData; if(x&&x.lesson)x=x.lesson; if(x&&x.aula)x=x.aula; if(x&&x.data&&x.data.lesson)x=x.data.lesson;
-        return x&&typeof x==='object'?x:null;
-      }catch(_){return null}
-    }
-    function normExample(e){if(typeof e==='string')return {en:e,pt:''};e=e||{};return {en:pick(e,['en','english','sentence','phrase','example','text','frase']),pt:pick(e,['pt','portuguese','translation','traducao','tradução','meaning'])}}
-    function normalize(L){
-      L=parse(L); if(!L)return null;
-      var out={};
-      out.title=pick(L,['title','titulo','título','name'])||'Aula de inglês';
-      out.subtitle=pick(L,['subtitle','subtitulo','subtítulo','description']);
-      out.level=pick(L,['level','nivel','nível'])||'A1';
-      out.skill=pick(L,['skill','type','tipo'])||'aula';
-      out.estimatedMinutes=Number(L.estimatedMinutes||L.minutes||L.duration||40)||40;
-      out.intro=pick(L,['intro','introduction','introducao','introdução','overview','descricao','descrição']);
-      out.readingText=pick(L,['readingText','reading_text','text','texto','textoLeitura']);
-      out.listeningText=pick(L,['listeningText','listening_text','audioText','dialogue','dialogo','diálogo']);
-      var secs=arr(L.sections&&L.sections.length?L.sections:(L.secoes||L.seções||L.parts||L.modules||L.contentSections));
-      out.sections=secs.map(function(s,i){if(typeof s==='string')s={content:s};s=s||{};var ex=arr(s.examples&&s.examples.length?s.examples:(s.exemplos||s.sentences||s.frases||s.phrases)).map(normExample).filter(function(e){return txt(e.en)||txt(e.pt)});return {heading:pick(s,['heading','title','titulo','título','name'])||('Seção '+(i+1)),content:pick(s,['content','body','text','explicacao','explicação','explanation','description','lesson','conteudo']),examples:ex}}).filter(function(s){return txt(s.heading)||txt(s.content)||s.examples.length});
-      var voc=arr(L.vocabulary&&L.vocabulary.length?L.vocabulary:(L.vocabulario||L.vocabulário||L.words||L.terms));
-      out.vocabulary=voc.map(function(v){if(typeof v==='string')return {word:v,pos:'',translation:'',example:''};v=v||{};return {word:pick(v,['word','palavra','term','english','en']),pos:pick(v,['pos','class','classe','type']),translation:pick(v,['translation','traducao','tradução','pt','meaning','portuguese']),example:pick(v,['example','exemplo','sentence','phrase','frase'])}}).filter(function(v){return txt(v.word)||txt(v.translation)});
-      var exs=arr(L.exercises&&L.exercises.length?L.exercises:(L.exercicios||L.exercícios||L.questions||L.quiz||L.practice));
-      out.exercises=exs.map(function(e,i){if(typeof e==='string')e={question:e};e=e||{};return {type:pick(e,['type','tipo'])||'practice',question:pick(e,['question','pergunta','prompt','instruction','enunciado','task'])||('Exercício '+(i+1)),options:arr(e.options||e.opcoes||e.opções||e.choices).map(txt),answer:pick(e,['answer','resposta','correct','correctAnswer','expected','gabarito']),explanation:pick(e,['explanation','explicacao','explicação','why','feedback','comentario','comentário'])}}).filter(function(e){return txt(e.question)||txt(e.answer)});
-      out.tips=arr(L.tips&&L.tips.length?L.tips:(L.dicas||L.notes||L.studyTips)).map(function(t){return typeof t==='string'?t:pick(t,['tip','text','content','dica'])}).filter(function(t){return txt(t)});
-      out.commonMistakes=arr(L.commonMistakes||L.common_mistakes||L.errosComuns||L.mistakes).map(function(m){m=m||{};return {mistake:pick(m,['mistake','erro','title']),why:pick(m,['why','porque','porquê','reason','motivo']),avoid:pick(m,['avoid','correction','comoEvitar','fix','corrigir'])}}).filter(function(m){return txt(m.mistake)||txt(m.why)||txt(m.avoid)});
-      out._blockMeta=L._blockMeta||L.blockMeta||null; out._generatedAt=L._generatedAt||L.generatedAt||''; out._source=L._source||L.source||'ai';
-      return out;
-    }
-    function complete(L){return !!(L&&txt(L.title)&&txt(L.intro).length>40&&Array.isArray(L.sections)&&L.sections.length>=1)}
-    function score(L){if(!L)return 0;var n=0;try{n+=JSON.stringify(L).length/8}catch(_){};n+=txt(L.intro).length+L.sections.length*1200+L.vocabulary.length*160+L.exercises.length*220+L.commonMistakes.length*150+L.tips.length*80+txt(L.readingText).length+txt(L.listeningText).length;return n}
-    function read(k){try{return localStorage.getItem(k)}catch(_){return null}}
-    function write(k,v){try{localStorage.setItem(k,v)}catch(_){}}
-    function scrubStoredFinalTips(){
-      try{
-        var keys=[]; for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i)||''; if(/lesson|aula/i.test(k)&&!/api|key|gemini|azure|logs|model/i.test(k))keys.push(k)}
-        STORAGE_KEYS.forEach(function(k){if(keys.indexOf(k)<0)keys.push(k)});
-        keys.forEach(function(k){var raw=read(k), L=parse(raw); if(!L)return; var changed=false; ['finalTip','final_tip','conclusion','conclusao','conclusão','closing','resumoFinal'].forEach(function(p){if(L[p]){delete L[p];changed=true}}); if(changed)write(k,JSON.stringify(L));});
-      }catch(_){ }
-    }
-    function bestLesson(){
-      scrubStoredFinalTips(); var best=null,bs=0,bk='';
-      function consider(k){var L=normalize(read(k));var s=score(L);if(s>bs&&complete(L)){best=L;bs=s;bk=k}}
-      STORAGE_KEYS.forEach(consider);
-      try{for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i)||'';if(!/(lesson|aula)/i.test(k))continue;if(/api|key|gemini|azure|lock|logs|model|version|active_lesson_id/i.test(k))continue;consider(k)}}catch(_){ }
-      if(best)best.__storageKey=bk; return best;
-    }
-    function css(){
-      if(document.getElementById(CSS_ID))return; var st=document.createElement('style');st.id=CSS_ID;
-      st.textContent='html,body,#root{height:auto!important;min-height:100%!important;overflow-y:auto!important;-webkit-overflow-scrolling:touch!important} #__fluency_v43_full_lesson__,.fluency-v18-full-lesson-render{display:none!important} #'+PAGE_ID+'{position:fixed;left:0;right:0;top:154px;bottom:0;z-index:35;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:22px 34px 190px 34px;background:linear-gradient(135deg,#071128 0%,#0b1732 48%,#060d1f 100%);color:#dbeafe;font-family:inherit} #'+PAGE_ID+' *{box-sizing:border-box} #'+PAGE_ID+' .v46-kicker{font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:#8fb7ff;margin:0 0 12px;font-weight:900} #'+PAGE_ID+' .v46-title{font-size:38px;line-height:1.08;margin:0 0 10px;color:#f8fbff;font-family:Georgia,serif;font-weight:900} #'+PAGE_ID+' .v46-sub{font-size:20px;line-height:1.4;color:#78a9ff;font-style:italic;margin:0 0 26px} #'+PAGE_ID+' .v46-p{white-space:pre-wrap;font-size:21px;line-height:1.68;color:#78a9ff;margin:0} #'+PAGE_ID+' .v46-card{border:1px solid rgba(91,156,246,.32);border-radius:18px;background:linear-gradient(135deg,rgba(21,50,105,.72),rgba(14,27,58,.76));padding:18px;margin:18px 0;box-shadow:0 12px 36px rgba(0,0,0,.22)} #'+PAGE_ID+' .v46-h2{font-size:28px;line-height:1.22;color:#f8fbff;margin:0 0 12px;font-weight:950} #'+PAGE_ID+' .v46-grid{display:grid;gap:12px} #'+PAGE_ID+' .v46-item{border:1px solid rgba(255,255,255,.13);border-radius:14px;padding:14px;background:rgba(255,255,255,.05)} #'+PAGE_ID+' .v46-en{font-size:19px;line-height:1.45;color:#fff;font-weight:850} #'+PAGE_ID+' .v46-pt,.v46-small{font-size:15px;line-height:1.5;color:#adc8ff;margin-top:5px} #'+PAGE_ID+' .v46-ok{color:#86efac} #'+PAGE_ID+' .v46-btn{width:100%;min-height:54px;margin-top:22px;border:0;border-radius:18px;background:linear-gradient(135deg,#60a5fa,#a78bfa);color:#fff;font-weight:950;font-size:18px;box-shadow:0 12px 28px rgba(96,165,250,.26)} #'+PAGE_ID+' .v46-muted{opacity:.78}';
-      document.head.appendChild(st);
-    }
-    function blockMeta(L){var bm=L._blockMeta||{};var lines=[];['block1','block2','block3'].forEach(function(k,i){if(bm[k]){var m=bm[k];lines.push('Bloco '+(i+1)+': '+(m.model||m.modelo||'modelo')+' · '+(m.paid?'Pro':'Flash/free'))}});return lines}
-    function html(L){
-      var h='<div data-v46-title="'+esc(L.title)+'"><div class="v46-kicker">'+esc((L.skill||'AULA').toUpperCase())+' · NÍVEL '+esc(L.level)+' · ≈ '+esc(L.estimatedMinutes)+' MIN</div><h1 class="v46-title">'+esc(L.title)+'</h1>'+(L.subtitle?'<p class="v46-sub">'+esc(L.subtitle)+'</p>':'')+'<p class="v46-p">'+esc(L.intro)+'</p>';
-      var meta=blockMeta(L); if(meta.length)h+='<div class="v46-card"><div class="v46-kicker">Origem da geração</div><div class="v46-small">'+meta.map(esc).join('<br>')+'</div></div>';
-      if(L.readingText||L.listeningText)h+='<section class="v46-card"><div class="v46-kicker">Texto de prática</div>'+(L.readingText?'<p class="v46-p">'+esc(L.readingText)+'</p>':'')+(L.listeningText?'<p class="v46-p" style="margin-top:14px">'+esc(L.listeningText)+'</p>':'')+'</section>';
-      L.sections.forEach(function(s,i){h+='<section class="v46-card"><h2 class="v46-h2">§ '+esc(s.heading)+'</h2>'+(s.content?'<p class="v46-p">'+esc(s.content)+'</p>':''); if(s.examples.length){h+='<div class="v46-grid" style="margin-top:15px">';s.examples.forEach(function(ex){h+='<div class="v46-item">'+(ex.en?'<div class="v46-en">'+esc(ex.en)+'</div>':'')+(ex.pt?'<div class="v46-pt"><em>'+esc(ex.pt)+'</em></div>':'')+'</div>'});h+='</div>'} h+='</section>'});
-      if(L.vocabulary.length){h+='<section class="v46-card"><div class="v46-kicker">Vocabulário</div><div class="v46-grid">';L.vocabulary.forEach(function(v){h+='<div class="v46-item"><div class="v46-en">'+esc(v.word)+(v.translation?' <span class="v46-ok">• '+esc(v.translation)+'</span>':'')+'</div>'+(v.example?'<div class="v46-pt">“'+esc(v.example)+'”</div>':'')+'</div>'});h+='</div></section>'}
-      if(L.commonMistakes.length){h+='<section class="v46-card"><div class="v46-kicker">Erros comuns</div><div class="v46-grid">';L.commonMistakes.forEach(function(m){h+='<div class="v46-item">'+(m.mistake?'<div class="v46-en">'+esc(m.mistake)+'</div>':'')+(m.why?'<div class="v46-small">'+esc(m.why)+'</div>':'')+(m.avoid?'<div class="v46-small v46-ok">Como evitar: '+esc(m.avoid)+'</div>':'')+'</div>'});h+='</div></section>'}
-      if(L.tips.length){h+='<section class="v46-card"><div class="v46-kicker">Dicas rápidas</div><ul class="v46-small" style="padding-left:22px;margin:0;color:#8fb7ff">';L.tips.forEach(function(t){h+='<li style="margin:8px 0">'+esc(t)+'</li>'});h+='</ul></section>'}
-      if(L.exercises.length){h+='<section class="v46-card"><div class="v46-kicker">Exercícios</div><div class="v46-grid">';L.exercises.forEach(function(e,i){h+='<div class="v46-item"><div class="v46-en"><span style="color:#78a9ff">'+(i+1)+'.</span> '+esc(e.question)+'</div>'+(e.options.length?'<div class="v46-small">Opções: '+e.options.map(esc).join(' • ')+'</div>':'')+(e.answer?'<div class="v46-small v46-ok">Resposta: '+esc(e.answer)+'</div>':'')+(e.explanation?'<div class="v46-small">'+esc(e.explanation)+'</div>':'')+'</div>'});h+='</div></section>'}
-      h+='<button class="v46-btn" id="__fluency_v46_complete_btn__">✓ Concluir aula</button><div class="v46-small v46-muted" style="text-align:center;margin-top:12px">Renderização V46: conteúdo completo, sem texto motivacional final.</div></div>';
-      return h;
-    }
-    function aulaOpen(){try{var t=document.body.innerText||'';return /\bAula\b/i.test(t)&&(/Gerada por IA|LEITURA|GRAMÁTICA|AULA|Texto para leitura/i.test(t))}catch(_){return false}}
-    function removePage(){var p=document.getElementById(PAGE_ID);if(p&&p.parentNode)p.parentNode.removeChild(p)}
-    function render(force){
-      try{css(); if(!aulaOpen()){removePage();return false} var L=bestLesson(); if(!complete(L))return false; var sig=[L.title,L.sections.length,L.vocabulary.length,L.exercises.length,L.commonMistakes.length,L.tips.length,txt(L.readingText).length,txt(L.listeningText).length].join('|'); var p=document.getElementById(PAGE_ID); if(!p){p=document.createElement('div');p.id=PAGE_ID;document.body.appendChild(p)} if(force||p.getAttribute('data-sig')!==sig){p.innerHTML=html(L);p.setAttribute('data-sig',sig);var b=document.getElementById('__fluency_v46_complete_btn__');if(b)b.onclick=function(){try{var btns=Array.prototype.slice.call(document.querySelectorAll('button'));var native=btns.find(function(x){return x!==b&&/concluir|finalizar|complete/i.test(x.innerText||x.textContent||'')});if(native)native.click();}catch(_){}try{localStorage.setItem('fluency_lesson_completed_v46',JSON.stringify({at:new Date().toISOString(),title:L.title}))}catch(_){}b.textContent='✓ Aula concluída';b.disabled=true;};} return true}catch(e){try{console.warn('[Fluency '+VERSION+'] render falhou',e)}catch(_){}return false}
-    }
-    var prevFetch=window.fetch&&window.fetch.bind(window);
-    if(prevFetch&&!window.fetch.__fluencyV46NoFinalTip){window.fetch=async function(input,init){var res=await prevFetch(input,init);try{var url=typeof input==='string'?input:((input&&input.url)||'');if(/generativelanguage\.googleapis\.com/i.test(url||'')&&res&&res.ok){res.clone().text().then(function(raw){try{var L=parse(raw); if(L){['finalTip','final_tip','conclusion','conclusao','conclusão','closing','resumoFinal'].forEach(function(k){if(L[k])delete L[k]});var n=normalize(L);if(complete(n)){var s=JSON.stringify(n);['fluency_active_ai_lesson_v43','fluency_last_ai_lesson_v43','fluency_active_ai_lesson_v41','fluency_last_ai_lesson_v41'].forEach(function(k){write(k,s)});setTimeout(function(){render(true)},120)}}}catch(_){}})}}catch(_){}return res};window.fetch.__fluencyV46NoFinalTip=true}
-    window.__fluencyV46RenderLesson=function(){return render(true)};
-    window.__fluencyV46Status=function(){var L=bestLesson();return {version:VERSION,hasLesson:!!L,title:L&&L.title,sections:L&&L.sections.length,vocabulary:L&&L.vocabulary.length,exercises:L&&L.exercises.length,rendered:!!document.getElementById(PAGE_ID),storageKey:L&&L.__storageKey}};
-    function tick(){render(false)}
-    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){render(true)});else setTimeout(function(){render(true)},100);
-    setTimeout(function(){render(true)},700);setTimeout(function(){render(true)},1600);setInterval(tick,900);
-    ['click','touchend','focus','hashchange','popstate','visibilitychange'].forEach(function(ev){window.addEventListener(ev,function(){setTimeout(function(){render(true)},120);setTimeout(tick,600)},true)});
-    try{new MutationObserver(function(){setTimeout(tick,120)}).observe(document.documentElement||document.body,{childList:true,subtree:true,characterData:true})}catch(_){ }
-  }catch(e){try{console.warn('Patch V46 failed',e)}catch(_){}}
-})();
-
-/* === FLUENCY PATCH V47 - AULA SÓ NA ABA AULA + RENDER POR FOCO === */
-;(function(){
-  try{
-    if(window.__fluencyV47LessonOnlyInsideAulaTab) return;
-    window.__fluencyV47LessonOnlyInsideAulaTab = true;
-    var VERSION='V47-AULA-SOMENTE-NA-ABA-AULA';
-    var PAGE_ID='__fluency_v46_lesson_page__';
-    var CSS_ID='__fluency_v47_scope_css__';
-    var tabs=['Hoje','Aula','Flashcards','Speaking'];
-    function txt(el){try{return String(el&&(el.innerText||el.textContent)||'').replace(/\s+/g,' ').trim()}catch(_){return ''}}
-    function visible(el){try{var r=el.getBoundingClientRect(), cs=getComputedStyle(el);return r.width>8&&r.height>8&&cs.display!=='none'&&cs.visibility!=='hidden'&&Number(cs.opacity||1)>0.05}catch(_){return false}}
-    function rgbScore(color){try{var m=String(color||'').match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/i); if(!m)return 0; var r=+m[1],g=+m[2],b=+m[3]; return (b+g-r)+(Math.max(r,g,b)-Math.min(r,g,b));}catch(_){return 0}}
-    function candidatesFor(label){
-      return Array.prototype.slice.call(document.querySelectorAll('button,a,[role="tab"],nav *,header *,div,span')).filter(function(el){
-        if(!visible(el))return false; if(txt(el)!==label)return false; var r=el.getBoundingClientRect();
-        return r.top>=55 && r.top<=235 && r.left>=0 && r.right<=window.innerWidth+50;
-      });
-    }
-    function tabScore(el){
-      try{var cs=getComputedStyle(el), r=el.getBoundingClientRect(), s=0;
-        if(el.getAttribute('aria-selected')==='true')s+=1000;
-        if(/active|selected|current/i.test(String(el.className||'')))s+=180;
-        s+=rgbScore(cs.color); var fw=parseInt(cs.fontWeight||'0',10); if(fw>=600)s+=60;
-        var bw=parseFloat(cs.borderBottomWidth||'0'); if(bw>0)s+=80+rgbScore(cs.borderBottomColor);
-        var near=Array.prototype.slice.call(document.querySelectorAll('div,span'));
-        for(var i=0;i<near.length;i++){var n=near[i]; if(!visible(n))continue; var nr=n.getBoundingClientRect();
-          if(nr.height<=6 && nr.width>20 && Math.abs((nr.left+nr.right)/2-(r.left+r.right)/2)<50 && nr.top>=r.bottom-4 && nr.top<=r.bottom+20){s+=220+rgbScore(getComputedStyle(n).backgroundColor||getComputedStyle(n).borderBottomColor)}
-        }
-        return s;
-      }catch(_){return 0}
-    }
-    function activeTab(){
-      var best={name:'',score:-999};
-      tabs.forEach(function(label){candidatesFor(label).forEach(function(el){var s=tabScore(el); if(s>best.score)best={name:label,score:s}})});
-      if(best.score<120){var body=txt(document.body).slice(0,3500); if(/FLASHCARD\s+\d+\s+DE/i.test(body))return 'Flashcards'; if(/TERÇA|SEGUNDA|QUARTA|QUINTA|SEXTA/i.test(body)&&!/AULA\s*·|Gerada por IA/i.test(body))return 'Hoje'}
-      return best.name||'';
-    }
-    function isAula(){return activeTab()==='Aula'}
-    function installCss(){if(document.getElementById(CSS_ID))return; var st=document.createElement('style'); st.id=CSS_ID; st.textContent='html:not(.__fluency_v47_aula_active) #'+PAGE_ID+'{display:none!important;pointer-events:none!important} html.__fluency_v47_aula_active #'+PAGE_ID+'{display:block!important;pointer-events:auto!important}'; document.head.appendChild(st)}
-    function apply(){
-      try{installCss(); var on=isAula(); document.documentElement.classList.toggle('__fluency_v47_aula_active',on); document.body.classList.toggle('__fluency_v47_aula_active',on); var p=document.getElementById(PAGE_ID); if(!on){if(p&&p.parentNode)p.parentNode.removeChild(p); return false} if(on&&typeof window.__fluencyV46RenderLesson==='function')setTimeout(function(){try{window.__fluencyV46RenderLesson()}catch(_){}},30); return on}catch(e){try{console.warn('[Fluency '+VERSION+'] scope falhou',e)}catch(_){} return false}
-    }
-    window.__fluencyV47ActiveTab=activeTab;
-    window.__fluencyV47ScopeStatus=function(){return {version:VERSION,activeTab:activeTab(),aulaActive:isAula(),pageVisible:!!document.getElementById(PAGE_ID)}};
-    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',apply);else setTimeout(apply,0);
-    setTimeout(apply,250); setTimeout(apply,900); setInterval(apply,500);
-    ['click','touchstart','touchend','focus','hashchange','popstate','visibilitychange'].forEach(function(ev){window.addEventListener(ev,function(){setTimeout(apply,30);setTimeout(apply,180);setTimeout(apply,650)},true)});
-    try{new MutationObserver(function(){setTimeout(apply,80)}).observe(document.documentElement||document.body,{childList:true,subtree:true,attributes:true,characterData:true})}catch(_){ }
-  }catch(e){try{console.warn('Patch V47 failed',e)}catch(_){} }
+    window.__fluencyV43RenderLesson=function(){cleanDom();return false};
+    window.__fluencyV46RenderLesson=function(){cleanDom();return false};
+    window.__fluencyV47ScopeStatus=function(){return {version:VERSION,disabledExperimentalOverlays:true}};
+    window.__fluencyV48StableStatus=function(){return {version:VERSION,removedOverlays:true,root:!!document.getElementById('root')}};
+    function tick(){cleanDom();scrubFinalTips();}
+    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',tick); else setTimeout(tick,0);
+    setTimeout(tick,250); setTimeout(tick,900); setTimeout(tick,1800); setInterval(cleanDom,1200);
+    ['click','touchstart','touchend','focus','hashchange','popstate','visibilitychange'].forEach(function(ev){window.addEventListener(ev,function(){setTimeout(tick,60);setTimeout(cleanDom,350)},true)});
+    try{new MutationObserver(function(){setTimeout(cleanDom,80)}).observe(document.documentElement||document.body,{childList:true,subtree:true,attributes:true});}catch(_){ }
+    try{console.warn('[Fluency '+VERSION+'] overlays experimentais removidos; renderização voltou para o fluxo nativo por aba.')}catch(_){ }
+  }catch(e){try{console.warn('Patch V48 failed',e)}catch(_){}}
 })();
