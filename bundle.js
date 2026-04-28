@@ -4277,13 +4277,14 @@ lucide-react/dist/esm/lucide-react.mjs:
           if(!res.ok){last='HTTP '+res.status+': '+raw.slice(0,260);log(block.name+' falhou: '+last,(res.status===429||res.status===403)?'warn':'error');continue;}
           var obj=parseJson(apiText(JSON.parse(raw)));
           validate(obj,block.name);
-          log(block.name+' concluído com '+c.model,'ok');
+          try{obj.__fluencyBlockMeta={block:block.name,model:c.model,keyType:c.paid?'pro':'flash',key:mask(c.key),at:new Date().toISOString()};}catch(_){}
+          log(block.name+' concluído com '+c.model+' ('+(c.paid?'Pro último caso':'Flash/free')+')','ok');
           return obj;
         }catch(e){last=String(e&&e.message||e);log(block.name+' erro: '+last,'warn')}
       }
       throw new Error(block.name+' falhou. Último erro: '+last);
     }
-    function merge(p){var a=p[0]||{},b=p[1]||{},c=p[2]||{};return {title:a.title||'Aula de inglês',subtitle:a.subtitle||'',estimatedMinutes:a.estimatedMinutes||40,intro:a.intro||'',sections:Array.isArray(a.sections)?a.sections:[],vocabulary:Array.isArray(b.vocabulary)?b.vocabulary:[],exercises:Array.isArray(b.exercises)?b.exercises:[],tips:Array.isArray(c.tips)?c.tips:[],commonMistakes:Array.isArray(c.commonMistakes)?c.commonMistakes:(Array.isArray(c.common_mistakes)?c.common_mistakes:[]),finalTip:c.finalTip||c.final_tip||'',listeningText:c.listeningText||c.listening_text||'',readingText:c.readingText||c.reading_text||'',_generatedBy:VERSION,_blocks:3,_generatedAt:new Date().toISOString()}}
+    function merge(p){var a=p[0]||{},b=p[1]||{},c=p[2]||{};return {title:a.title||'Aula de inglês',subtitle:a.subtitle||'',estimatedMinutes:a.estimatedMinutes||40,intro:a.intro||'',sections:Array.isArray(a.sections)?a.sections:[],vocabulary:Array.isArray(b.vocabulary)?b.vocabulary:[],exercises:Array.isArray(b.exercises)?b.exercises:[],tips:Array.isArray(c.tips)?c.tips:[],commonMistakes:Array.isArray(c.commonMistakes)?c.commonMistakes:(Array.isArray(c.common_mistakes)?c.common_mistakes:[]),finalTip:c.finalTip||c.final_tip||'',listeningText:c.listeningText||c.listening_text||'',readingText:c.readingText||c.reading_text||'',_generatedBy:VERSION,_blocks:3,_generatedAt:new Date().toISOString(),_blockMeta:{block1:a.__fluencyBlockMeta||null,block2:b.__fluencyBlockMeta||null,block3:c.__fluencyBlockMeta||null}}}
     function geminiResponse(lesson){return new Response(JSON.stringify({candidates:[{content:{role:'model',parts:[{text:JSON.stringify(lesson)}]},finishReason:'STOP'}],usageMetadata:{promptTokenCount:0,candidatesTokenCount:0,totalTokenCount:0},fluencyPatch:{version:VERSION,mode:'real-fetch-isolated'}}),{status:200,headers:{'content-type':'application/json'}})}
     async function generate(url,init){
       if(STATE.running && STATE.block) return new Response(JSON.stringify({error:{code:409,status:'LESSON_ALREADY_RUNNING',message:'Já existe uma geração de aula em andamento.'},fluencyPatch:{version:VERSION}}),{status:409,headers:{'content-type':'application/json'}});
@@ -4316,4 +4317,172 @@ lucide-react/dist/esm/lucide-react.mjs:
     try{localStorage.setItem('fluency_lesson_patch_version',VERSION)}catch(_){ }
     log('patch ativo: chamadas de AULA usam iframe/XHR direto e não passam pelos hooks antigos que retornavam null.','ok');
   }catch(e){try{console.warn('Patch V40 failed',e)}catch(_){ }}
+})();
+
+/* === FLUENCY PATCH V41 - AULA ATIVA REAL + CACHE/OVERLAY CIRÚRGICO === */
+;(function(){
+  try{
+    if(window.__fluencyActiveLessonV41) return;
+    window.__fluencyActiveLessonV41 = true;
+    var VERSION='V41-ACTIVE-LESSON-CACHE-FIX';
+    var ACTIVE_KEY='fluency_active_ai_lesson_v41';
+    var ACTIVE_ID='fluency_active_lesson_id_v41';
+    var LAST_KEY='fluency_last_ai_lesson';
+    var LAST_META='fluency_last_ai_lesson_meta_v41';
+    var DEBUG='fluency_v41_debug';
+    function today(){try{return new Date().toISOString().slice(0,10)}catch(_){return ''}}
+    function log(kind,msg,meta){try{var line={at:new Date().toLocaleTimeString(),kind:kind||'info',msg:String(msg||''),meta:meta||null,version:VERSION};var arr=[];try{arr=JSON.parse(localStorage.getItem(DEBUG)||'[]')||[]}catch(_){}arr.push(line);if(arr.length>80)arr=arr.slice(-80);localStorage.setItem(DEBUG,JSON.stringify(arr));if(window.__fluencyBlockLessonStateV197&&Array.isArray(window.__fluencyBlockLessonStateV197.logs)){window.__fluencyBlockLessonStateV197.logs.push({at:line.at,kind:kind||'info',msg:'Aula '+VERSION+': '+line.msg,meta:meta||null});if(window.__fluencyBlockLessonStateV197.logs.length>140)window.__fluencyBlockLessonStateV197.logs.shift()}try{console.warn('[Fluency '+VERSION+'] '+line.msg,meta||'')}catch(_){}}catch(_){}}
+    function txt(x){return String(x==null?'':x).trim()}
+    function arr(x){return Array.isArray(x)?x:[]}
+    function parse(v){try{if(v==null)return null;var x=typeof v==='string'?JSON.parse(v):v;if(typeof x==='string'){try{x=JSON.parse(x)}catch(_){}}return x}catch(_){return null}}
+    function pick(o,ks){o=o||{};for(var i=0;i<ks.length;i++){var v=o[ks[i]];if(v!=null&&txt(v))return v}return ''}
+    function normExample(e){if(typeof e==='string')return{en:e,pt:''};e=e||{};return{en:pick(e,['en','english','sentence','phrase','example','text']),pt:pick(e,['pt','portuguese','translation','traducao','tradução','meaning'])}}
+    function normalize(L){L=parse(L);if(!L||typeof L!=='object')return null;if(L.lessonData&&typeof L.lessonData==='object')L=L.lessonData;if(L.lesson&&typeof L.lesson==='object')L=L.lesson;if(L.aula&&typeof L.aula==='object')L=L.aula;if(L.data&&L.data.lesson&&typeof L.data.lesson==='object')L=L.data.lesson;var out={};Object.keys(L).forEach(function(k){if(k.charAt(0)==='_')out[k]=L[k]});out.title=pick(L,['title','titulo','título','name'])||'Aula de inglês';out.subtitle=pick(L,['subtitle','subtitulo','subtítulo']);out.estimatedMinutes=Number(L.estimatedMinutes||L.minutes||L.duration||40)||40;out.intro=pick(L,['intro','introduction','introducao','introdução','overview']);var secs=arr((L.sections&&L.sections.length?L.sections:(L.secoes||L.seções||L.parts||L.modules)));out.sections=secs.map(function(s,i){if(typeof s==='string')s={heading:'Seção '+(i+1),content:s};s=s||{};var ex=arr(s.examples&&s.examples.length?s.examples:(s.exemplos||s.sentences||s.frases)).map(normExample).filter(function(e){return txt(e.en)||txt(e.pt)});return{heading:pick(s,['heading','title','titulo','título','name'])||('Seção '+(i+1)),content:pick(s,['content','body','text','explicacao','explicação','explanation','description','conteudo']),examples:ex}}).filter(function(s){return txt(s.heading)||txt(s.content)||s.examples.length});var voc=arr(L.vocabulary&&L.vocabulary.length?L.vocabulary:(L.vocabulario||L.vocabulário||L.words));out.vocabulary=voc.map(function(v){if(typeof v==='string')return{word:v,pos:'',translation:'',example:''};v=v||{};return{word:pick(v,['word','palavra','term','english']),pos:pick(v,['pos','class','classe','type']),translation:pick(v,['translation','traducao','tradução','pt','meaning']),example:pick(v,['example','exemplo','sentence','phrase'])}}).filter(function(v){return txt(v.word)||txt(v.translation)});var exs=arr(L.exercises&&L.exercises.length?L.exercises:(L.exercicios||L.exercícios||L.questions||L.quiz));out.exercises=exs.map(function(e,i){if(typeof e==='string')e={question:e};e=e||{};return{type:pick(e,['type','tipo'])||'practice',question:pick(e,['question','pergunta','prompt','instruction','enunciado'])||('Exercício '+(i+1)),options:arr(e.options||e.opcoes||e.opções||e.choices).map(txt),answer:pick(e,['answer','resposta','correct','correctAnswer','expected']),explanation:pick(e,['explanation','explicacao','explicação','why','feedback'])}}).filter(function(e){return txt(e.question)||txt(e.answer)});out.tips=arr(L.tips&&L.tips.length?L.tips:(L.dicas||L.notes)).map(function(t){return typeof t==='string'?t:pick(t,['tip','text','content'])}).filter(Boolean);out.commonMistakes=arr(L.commonMistakes||L.common_mistakes||L.errosComuns||L.mistakes).map(function(m){m=m||{};return{mistake:pick(m,['mistake','erro','title']),why:pick(m,['why','porque','porquê','reason']),avoid:pick(m,['avoid','correction','comoEvitar','fix'])}}).filter(function(m){return txt(m.mistake)||txt(m.why)||txt(m.avoid)});out.finalTip=pick(L,['finalTip','final_tip','conclusion','conclusao','conclusão','closing','resumoFinal']);out.listeningText=pick(L,['listeningText','listening_text']);out.readingText=pick(L,['readingText','reading_text']);out._source='ai';out._activeBy=VERSION;out._activatedAt=new Date().toISOString();out._generatedBy=out._generatedBy||L._generatedBy||VERSION;out._generatedAt=out._generatedAt||L._generatedAt||new Date().toISOString();if(L._blockMeta)out._blockMeta=L._blockMeta;return out}
+    function complete(L){try{L=normalize(L);if(!L)return false;if(txt(L.title).length<6)return false;if(txt(L.intro).length<80)return false;if(!Array.isArray(L.sections)||L.sections.length<3)return false;if(!Array.isArray(L.exercises)||L.exercises.length<5)return false;if(!Array.isArray(L.vocabulary)||L.vocabulary.length<5)return false;return true}catch(_){return false}}
+    function lessonKey(k){k=String(k||'');return /^fluency_lesson/i.test(k)||/^lesson_v\d+_/i.test(k)||/^fluency_lesson_v/i.test(k)||/^fluency_lesson_/.test(k)}
+    function removeOldOverlay(){try{Array.prototype.slice.call(document.querySelectorAll('.fluency-v18-full-lesson-render')).forEach(function(el){el.remove()})}catch(_){}}
+    function saveActive(L,reason){L=normalize(L);if(!complete(L))return false;var id='ai-'+today()+'-'+Date.now();L.lessonId=L.lessonId||id;L.activeLessonId=L.lessonId;L._displayPriority=9999;var text=JSON.stringify(L);try{localStorage.setItem(ACTIVE_KEY,text);localStorage.setItem(LAST_KEY,text);localStorage.setItem(ACTIVE_ID,L.lessonId);localStorage.setItem('fluency_active_lesson_id',L.lessonId);localStorage.setItem('fluency_last_lesson_model_v197',JSON.stringify({at:Date.now(),version:VERSION,title:L.title,blocks:L._blockMeta||null,reason:reason||''}));localStorage.setItem(LAST_META,JSON.stringify({at:new Date().toISOString(),title:L.title,sections:L.sections.length,vocabulary:L.vocabulary.length,exercises:L.exercises.length,blockMeta:L._blockMeta||null,reason:reason||''}))}catch(_){}window.__fluencyActiveLessonV41Data=L;log('ok','aula ativa salva/substituída: '+L.title,{reason:reason,blockMeta:L._blockMeta||null});removeOldOverlay();return true}
+    function readActive(){try{var L=normalize(localStorage.getItem(ACTIVE_KEY)||localStorage.getItem(LAST_KEY));return complete(L)?L:null}catch(_){return null}}
+    function extractLessonFromGeminiText(t){var api=parse(t), text='';try{var parts=api&&api.candidates&&api.candidates[0]&&api.candidates[0].content&&api.candidates[0].content.parts;if(Array.isArray(parts))text=parts.map(function(p){return p&&p.text||''}).join('\n')}catch(_){}if(!text)return null;return normalize(text)}
+    function cloneResponse(res,text){try{return new Response(text,{status:res.status,statusText:res.statusText,headers:res.headers})}catch(_){return res}}
+    function isGeminiUrl(url){return /generativelanguage\.googleapis\.com/i.test(String(url||''))&&/:generateContent|:streamGenerateContent/i.test(String(url||''))}
+    function isLessonLike(init){try{var b=(init&&init.body)||'';if(typeof b!=='string')b=JSON.stringify(b);return /aula|lesson|sections|seções|exercises|vocabulary|vocabulário|grammar|reading|writing|listening|speaking/i.test(b)}catch(_){return true}}
+    var prevFetch=window.fetch&&window.fetch.bind(window);if(prevFetch&&!window.fetch.__fluencyActiveLessonV41){window.fetch=async function(input,init){var url='';try{url=typeof input==='string'?input:(input&&input.url)||''}catch(_){}var res=await prevFetch(input,init);try{if(isGeminiUrl(url)&&res&&res.ok&&isLessonLike(init)){var text=await res.clone().text();var L=extractLessonFromGeminiText(text);if(complete(L)){saveActive(L,'fetch-response');return cloneResponse(res,text)}}}catch(e){log('warn','não consegui marcar resposta como aula ativa: '+String(e&&e.message||e).slice(0,160))}return res};window.fetch.__fluencyActiveLessonV41=true}
+    var rawGet=Storage.prototype.getItem, rawSet=Storage.prototype.setItem;if(rawGet&&!rawGet.__fluencyActiveLessonV41){Storage.prototype.getItem=function(k){try{if(this===localStorage&&lessonKey(k)){var active=readActive();if(active)return JSON.stringify(active)}}catch(_){}return rawGet.apply(this,arguments)};Storage.prototype.getItem.__fluencyActiveLessonV41=true}
+    if(rawSet&&!rawSet.__fluencyActiveLessonV41){Storage.prototype.setItem=function(k,v){try{if(this===localStorage&&lessonKey(k)){var L=normalize(v);if(complete(L)){L._storedInKey=String(k||'');saveActive(L,'storage-set:'+k);v=JSON.stringify(normalize(L))}}}catch(_){}return rawSet.call(this,k,v)};Storage.prototype.setItem.__fluencyActiveLessonV41=true}
+    function injectCss(){try{if(document.getElementById('__fluency_v41_css__'))return;var st=document.createElement('style');st.id='__fluency_v41_css__';st.textContent='.fluency-v18-full-lesson-render{display:none!important}';document.head.appendChild(st)}catch(_){}}
+    injectCss();removeOldOverlay();try{window.__fluencyRenderFullLessonV18=function(){removeOldOverlay();return false}}catch(_){}try{new MutationObserver(function(){removeOldOverlay()}).observe(document.documentElement||document.body,{childList:true,subtree:true})}catch(_){}setInterval(removeOldOverlay,900);
+    window.__fluencyV41ActiveLessonStatus=function(){var L=readActive();return{version:VERSION,hasActive:!!L,title:L&&L.title,sections:L&&L.sections&&L.sections.length,vocabulary:L&&L.vocabulary&&L.vocabulary.length,exercises:L&&L.exercises&&L.exercises.length,blockMeta:L&&L._blockMeta||null,storedId:localStorage.getItem(ACTIVE_ID)||''}};
+    window.__fluencyV41ClearActiveLesson=function(){try{localStorage.removeItem(ACTIVE_KEY);localStorage.removeItem(LAST_KEY);localStorage.removeItem(ACTIVE_ID);localStorage.removeItem('fluency_active_lesson_id')}catch(_){}removeOldOverlay();return true};
+    try{localStorage.setItem('fluency_lesson_patch_version',VERSION)}catch(_){}log('ok','patch ativo: aula nova vira ativa, substitui cache antigo e remove sobreposição V18.');
+  }catch(e){try{console.warn('Patch V41 failed',e)}catch(_){} }
+})();
+
+/* === FLUENCY PATCH V42 - PRO APENAS APÓS FREE ESGOTAR DE VERDADE === */
+;(function(){
+  try{
+    if(window.__fluencyV42StrictProFallback) return;
+    window.__fluencyV42StrictProFallback = true;
+    var VERSION='V42-PRO-ULTIMO-CASO-REAL';
+    var prevFetch = window.fetch ? window.fetch.bind(window) : null;
+    var STATE = window.__fluencyBlockLessonStateV197 = window.__fluencyBlockLessonStateV197 || {};
+    var MULTI_KEYS='fluency_lessonGeminiApiKeys_v197';
+    var FLASH_ALIASES=['fluency_lessonGeminiApiKey','fluency_lessonGeminiKey','lessonGeminiApiKey','lessonGeminiKey','fluency_geminiLessonKey','fluency_aulasGeminiKey','fluency_lesson_key','fluency_lesson_api_key'];
+    var PRO_ALIASES=['fluency_proLessonGeminiApiKey','fluency_geminiProKey','geminiProApiKey','fluency_paidGeminiKey','fluency_lessonPaidGeminiKey'];
+    var ALL_KEY_NAMES=[MULTI_KEYS].concat(FLASH_ALIASES).concat(PRO_ALIASES);
+    var FLASH_MODELS=['gemini-2.5-flash','gemini-2.5-flash-lite','gemini-2.0-flash','gemini-1.5-flash'];
+    var PRO_MODELS=['gemini-2.5-pro','gemini-1.5-pro'];
+    var FREE_ROUNDS=3;
+    var ROUND_DELAYS=[0,9000,22000];
+    function now(){try{return new Date().toLocaleTimeString()}catch(_){return String(Date.now())}}
+    function log(msg,kind,meta){
+      try{
+        STATE.logs=Array.isArray(STATE.logs)?STATE.logs:[];
+        STATE.logs.push({at:now(),msg:String(msg||''),kind:kind||'info',version:VERSION,meta:meta||null});
+        if(STATE.logs.length>160) STATE.logs.shift();
+        if(kind==='error'||kind==='warn') STATE.lastError=String(msg||'');
+        try{localStorage.setItem('fluency_v197_diag_logs',JSON.stringify(STATE.logs.slice(-100)))}catch(_){ }
+        try{if(window.__diag_log) window.__diag_log(kind==='error'?'err':kind||'info','Aula '+VERSION+': '+msg)}catch(_){ }
+        try{window.dispatchEvent(new CustomEvent('fluency-lesson-diag',{detail:STATE}))}catch(_){ }
+        try{console.warn('[Fluency '+VERSION+'] '+msg,meta||'')}catch(_){ }
+      }catch(_){ }
+    }
+    function sleep(ms){return new Promise(function(r){setTimeout(r,ms)})}
+    function clean(v){v=String(v==null?'':v).trim();try{if(v&&((v[0]==='[')||(v[0]==='{')||(v[0]==='"'&&v[v.length-1]==='"'))){var p=JSON.parse(v);if(Array.isArray(p))return p.join('\n');if(typeof p==='string')return p;if(p&&Array.isArray(p.keys))return p.keys.join('\n');if(p&&typeof p.key==='string')return p.key;if(p&&typeof p.apiKey==='string')return p.apiKey;}}catch(_){}return v.replace(/\r/g,'\n').trim()}
+    function valid(k){k=String(k||'').replace(/\s+/g,'').trim();return /^AIza[0-9A-Za-z_\-]{20,}$/.test(k)}
+    function mask(k){k=String(k||'').replace(/\s+/g,'').trim();return k?k.slice(0,8)+'...'+k.slice(-4):'--'}
+    function uniq(a){var out=[],seen={};(a||[]).forEach(function(k){k=String(k||'').replace(/\s+/g,'').trim();if(valid(k)&&!seen[k]){seen[k]=1;out.push(k)}});return out}
+    function parseKeys(v){return uniq(clean(v).split(/[\n,;| ]+/).filter(Boolean))}
+    function rawStorageGet(storage,k){
+      try{var v=storage && storage[k]; if(typeof v==='string' && v) return v;}catch(_){ }
+      try{var v2=storage && storage.getItem && storage.getItem(k); if(typeof v2==='string') return v2;}catch(_){ }
+      return '';
+    }
+    function getRaw(k){return rawStorageGet(localStorage,k)||rawStorageGet(sessionStorage,k)||''}
+    // Corrige um bug da V41: o interceptador de cache era amplo demais e podia devolver JSON de aula antiga
+    // quando o sistema pedia fluency_lessonGeminiApiKey. Para nomes de API key, sempre devolver o valor cru.
+    try{
+      var previousGet = Storage.prototype.getItem;
+      if(previousGet && !previousGet.__fluencyV42KeyBypass){
+        Storage.prototype.getItem=function(k){
+          try{if(ALL_KEY_NAMES.indexOf(String(k||''))!==-1){var direct=this&&this[k];return typeof direct==='string'?direct:null;}}
+          catch(_){ }
+          return previousGet.apply(this,arguments);
+        };
+        Storage.prototype.getItem.__fluencyV42KeyBypass=true;
+      }
+    }catch(_){ }
+    function readFlashKeys(){var arr=[];arr=arr.concat(parseKeys(getRaw(MULTI_KEYS)));FLASH_ALIASES.forEach(function(k){var v=getRaw(k);if(valid(v))arr.push(v)});return uniq(arr).slice(0,3)}
+    function readProKeys(){var arr=[];PRO_ALIASES.forEach(function(k){var v=getRaw(k);if(valid(v))arr.push(v)});return uniq(arr).slice(0,1)}
+    function isGeminiUrl(url){return /generativelanguage\.googleapis\.com/i.test(String(url||''))&&/:generateContent|:streamGenerateContent/i.test(String(url||''))}
+    function getPrompt(body){try{var b=typeof body==='string'?JSON.parse(body):body,arr=[];function walk(x){if(!x)return;if(typeof x==='string'){arr.push(x);return}if(Array.isArray(x)){x.forEach(walk);return}if(typeof x==='object'){if(typeof x.text==='string')arr.push(x.text);Object.keys(x).forEach(function(k){if(k!=='text')walk(x[k])})}}walk(b&&b.contents?b.contents:b);return arr.join('\n')}catch(_){return String(body||'')}}
+    function likelyLesson(url,init){var txt=getPrompt(init&&init.body).slice(0,22000);if(/Aula\s+IA\s+V42|Aula\s+IA\s+V40/i.test(txt))return false;if(/tts|text-to-speech|generateSpeech|voz|audio/i.test(txt)&&!/aula|lesson/i.test(txt))return false;return /aula|lesson|sections|seções|secoes|exercises|exercícios|vocabulary|vocabulário|grammar|reading|writing|listening|speaking|finalTip|TOPICO|Aluno/i.test(txt)}
+    function modelUrl(model,key){return 'https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(model)+':generateContent?key='+encodeURIComponent(key)}
+    function iframeFetch(){try{var f=document.getElementById('__fluency_v42_real_fetch_iframe__');if(!f){f=document.createElement('iframe');f.id='__fluency_v42_real_fetch_iframe__';f.style.cssText='position:fixed;width:1px;height:1px;opacity:0;left:-9999px;top:-9999px;border:0;pointer-events:none;';(document.documentElement||document.body).appendChild(f)}if(f.contentWindow&&typeof f.contentWindow.fetch==='function')return f.contentWindow.fetch.bind(f.contentWindow)}catch(_){ }return null}
+    function xhrPost(url,body,ms){return new Promise(function(resolve,reject){var x=new XMLHttpRequest(),done=false,to=setTimeout(function(){try{x.abort()}catch(_){};if(!done){done=true;reject(new Error('XHR timeout'))}},ms||300000);try{x.open('POST',url,true);x.timeout=ms||300000;x.setRequestHeader('Content-Type','application/json');x.onreadystatechange=function(){if(x.readyState===4&&!done){done=true;clearTimeout(to);resolve({ok:x.status>=200&&x.status<300,status:x.status,text:function(){return Promise.resolve(x.responseText||'')},json:function(){return Promise.resolve(JSON.parse(x.responseText||'{}'))},clone:function(){return this}})}};x.onerror=function(){if(!done){done=true;clearTimeout(to);reject(new Error('XHR network error'))}};x.ontimeout=function(){if(!done){done=true;clearTimeout(to);reject(new Error('XHR timeout'))}};x.send(body)}catch(e){clearTimeout(to);reject(e)}})}
+    async function realPost(url,body){var f=iframeFetch();if(f){try{var ctrl=new AbortController();var timer=setTimeout(function(){try{ctrl.abort()}catch(_){}},300000);var r=await f(url,{method:'POST',headers:{'Content-Type':'application/json'},body:body,signal:ctrl.signal});clearTimeout(timer);if(r&&typeof r.ok!=='undefined')return r}catch(e){log('fetch real via iframe falhou; tentando XHR: '+String(e&&e.message||e).slice(0,120),'warn')}}return xhrPost(url,body,300000)}
+    function buildBody(originalBody,blockName,instruction){var original=getPrompt(originalBody);var prompt=['Aula IA V42. Responda APENAS JSON válido, sem markdown.','Gere o '+blockName+' de uma aula completa de inglês para brasileiro.',instruction,'Use português claro nas explicações e inglês correto nos exemplos.','Não gere conteúdo raso. Seja específico, didático e prático.','Prompt original do app:',original].join('\n\n');return JSON.stringify({system_instruction:{parts:[{text:'Você é uma API JSON de aulas de inglês. A única saída permitida é JSON válido.'}]},contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{temperature:0.35,maxOutputTokens:8192,responseMimeType:'application/json'}})}
+    function apiText(data){try{var parts=data&&data.candidates&&data.candidates[0]&&data.candidates[0].content&&data.candidates[0].content.parts;if(Array.isArray(parts))return parts.map(function(p){return p&&p.text||''}).join('\n')}catch(_){ }return ''}
+    function parseJson(s){s=String(s||'').trim().replace(/^```(?:json)?\s*/i,'').replace(/```$/,'').trim();var a=s.indexOf('{'),b=s.lastIndexOf('}');if(a>=0&&b>a)s=s.slice(a,b+1);try{return JSON.parse(s)}catch(e){try{return JSON.parse(s.replace(/,(\s*[}\]])/g,'$1'))}catch(_){throw e}}}
+    function validate(o,kind){if(!o||typeof o!=='object')throw new Error(kind+' vazio');if(kind==='BLOCO 1'&&(!o.title||!Array.isArray(o.sections)||o.sections.length<3))throw new Error('BLOCO 1 sem title/sections');if(kind==='BLOCO 2'&&(!Array.isArray(o.vocabulary)||o.vocabulary.length<5||!Array.isArray(o.exercises)||o.exercises.length<5))throw new Error('BLOCO 2 sem vocabulary/exercises');if(kind==='BLOCO 3'&&(!Array.isArray(o.tips)||o.tips.length<2||!o.finalTip))throw new Error('BLOCO 3 sem tips/finalTip');return o}
+    var BLOCKS=[{name:'BLOCO 1',instruction:'Retorne JSON com: title, subtitle, estimatedMinutes, intro com 4+ frases, sections exatamente 5 itens. Cada section deve ter heading, content com explicação completa e examples exatamente 4 itens {en, pt}. Não inclua exercícios nem vocabulário neste bloco.'},{name:'BLOCO 2',instruction:'Retorne JSON com: vocabulary exatamente 12 itens {word,pos,translation,example}; exercises exatamente 12 itens {type,question,options,answer,explanation}. Misture choice, fill, translate e prática guiada.'},{name:'BLOCO 3',instruction:'Retorne JSON com: tips exatamente 5 strings, commonMistakes de 3 a 5 itens {mistake,why,avoid}, finalTip com 150+ palavras e, quando fizer sentido, listeningText ou readingText.'}];
+    function classifyHttp(status,raw,msg){var t=String(raw||msg||'');if(status===429||/RESOURCE_EXHAUSTED|quota|rate limit|Too Many Requests/i.test(t))return 'quota';if(status===403||/API_KEY_INVALID|permission|forbidden|PERMISSION_DENIED/i.test(t))return 'key';if(status===404||/not found|no longer available/i.test(t))return 'model';if(status>=500||/timeout|network/i.test(t))return 'transient';return 'other'}
+    async function tryCandidate(init,block,c){
+      var body=buildBody(init&&init.body,block.name,block.instruction);
+      STATE.phase='gerando '+block.name;STATE.block=block.name;STATE.activeModel=c.model;STATE.activeKey=mask(c.key);STATE.activeKeyType=c.paid?'pro':'flash';STATE.running=true;
+      log(block.name+' tentando '+c.model+' com key '+mask(c.key)+(c.paid?' (PRO: último caso absoluto)':' (Flash/free)'),'info');
+      var res=await realPost(modelUrl(c.model,c.key),body);
+      if(!res||typeof res.ok==='undefined'){var e0=new Error('fetch real retornou null/undefined');e0.kind='transient';throw e0}
+      var raw=await res.text();STATE.lastHttp='HTTP '+res.status;
+      if(!res.ok){var kind=classifyHttp(res.status,raw,'');var e=new Error('HTTP '+res.status+': '+raw.slice(0,300));e.status=res.status;e.kind=kind;throw e}
+      var obj=parseJson(apiText(JSON.parse(raw)));validate(obj,block.name);try{obj.__fluencyBlockMeta={block:block.name,model:c.model,keyType:c.paid?'pro':'flash',key:mask(c.key),at:new Date().toISOString(),fallbackPolicy:VERSION}}catch(_){};
+      log(block.name+' concluído com '+c.model+' ('+(c.paid?'PRO último caso':'Flash/free')+')','ok');
+      return obj;
+    }
+    async function callBlock(init,block,freeCand,proCand){
+      var last='', failures=[], quotaCount=0;
+      if(freeCand.length){
+        for(var round=0;round<FREE_ROUNDS;round++){
+          if(ROUND_DELAYS[round]){log(block.name+' recebeu erro/limite nas free. Aguardando '+Math.round(ROUND_DELAYS[round]/1000)+'s antes de repetir as Flash/free. Pro ainda bloqueada.','warn');await sleep(ROUND_DELAYS[round])}
+          log(block.name+' rodada Flash/free '+(round+1)+'/'+FREE_ROUNDS+' — tentando todas as keys free antes da Pro.','info');
+          for(var i=0;i<freeCand.length;i++){
+            try{return await tryCandidate(init,block,freeCand[i])}
+            catch(e){last=String(e&&e.message||e);var kind=e&&e.kind||classifyHttp(e&&e.status,'',last);if(kind==='quota')quotaCount++;failures.push({kind:kind,msg:last.slice(0,180),model:freeCand[i].model,key:mask(freeCand[i].key)});log(block.name+' Flash/free falhou ('+kind+'): '+last.slice(0,220),'warn');}
+          }
+        }
+      }
+      if(!proCand.length){throw new Error(block.name+' falhou nas Flash/free e não há Pro configurada. Último erro: '+last)}
+      log(block.name+' TODAS as Flash/free falharam em '+FREE_ROUNDS+' rodada(s), incluindo '+quotaCount+' erro(s) de quota/429. Só agora a Pro será liberada.','warn',{failures:failures.slice(-12)});
+      for(var p=0;p<proCand.length;p++){
+        try{return await tryCandidate(init,block,proCand[p])}
+        catch(e2){last=String(e2&&e2.message||e2);log(block.name+' Pro último caso falhou: '+last.slice(0,220),'error')}
+      }
+      throw new Error(block.name+' falhou até na Pro. Último erro: '+last);
+    }
+    function merge(p){var a=p[0]||{},b=p[1]||{},c=p[2]||{};return {title:a.title||'Aula de inglês',subtitle:a.subtitle||'',estimatedMinutes:a.estimatedMinutes||40,intro:a.intro||'',sections:Array.isArray(a.sections)?a.sections:[],vocabulary:Array.isArray(b.vocabulary)?b.vocabulary:[],exercises:Array.isArray(b.exercises)?b.exercises:[],tips:Array.isArray(c.tips)?c.tips:[],commonMistakes:Array.isArray(c.commonMistakes)?c.commonMistakes:(Array.isArray(c.common_mistakes)?c.common_mistakes:[]),finalTip:c.finalTip||c.final_tip||'',listeningText:c.listeningText||c.listening_text||'',readingText:c.readingText||c.reading_text||'',_source:'ai',_generatedBy:VERSION,_blocks:3,_generatedAt:new Date().toISOString(),_fallbackPolicy:'Pro só liberada depois de todas as Flash/free falharem em '+FREE_ROUNDS+' rodadas com espera.',_blockMeta:{block1:a.__fluencyBlockMeta||null,block2:b.__fluencyBlockMeta||null,block3:c.__fluencyBlockMeta||null}}}
+    function complete(L){return L&&L.title&&String(L.intro||'').length>50&&Array.isArray(L.sections)&&L.sections.length>=3&&Array.isArray(L.vocabulary)&&L.vocabulary.length>=5&&Array.isArray(L.exercises)&&L.exercises.length>=5}
+    function saveActive(L){try{if(!complete(L))return;var id='ai-'+new Date().toISOString().slice(0,10)+'-'+Date.now();L.lessonId=L.lessonId||id;L.activeLessonId=L.lessonId;L._displayPriority=9999;var text=JSON.stringify(L);localStorage.setItem('fluency_active_ai_lesson_v41',text);localStorage.setItem('fluency_last_ai_lesson_v41',text);localStorage.setItem('fluency_active_lesson_id_v41',L.lessonId);localStorage.setItem('fluency_active_lesson_id',L.lessonId);localStorage.setItem('fluency_last_lesson_model_v197',JSON.stringify({at:Date.now(),version:VERSION,title:L.title,blocks:L._blockMeta||null,policy:L._fallbackPolicy||''}));}catch(_){ }}
+    function geminiResponse(lesson){saveActive(lesson);return new Response(JSON.stringify({candidates:[{content:{role:'model',parts:[{text:JSON.stringify(lesson)}]},finishReason:'STOP'}],usageMetadata:{promptTokenCount:0,candidatesTokenCount:0,totalTokenCount:0},fluencyPatch:{version:VERSION,mode:'strict-free-first-pro-last',freeRounds:FREE_ROUNDS}}),{status:200,headers:{'content-type':'application/json'}})}
+    async function generate(url,init){
+      if(STATE.running&&STATE.block){return new Response(JSON.stringify({error:{code:409,status:'LESSON_ALREADY_RUNNING',message:'Já existe uma geração de aula em andamento.'},fluencyPatch:{version:VERSION}}),{status:409,headers:{'content-type':'application/json'}})}
+      var flash=readFlashKeys(),pro=readProKeys(),freeCand=[],proCand=[];
+      flash.forEach(function(k){FLASH_MODELS.forEach(function(m){freeCand.push({key:k,model:m,paid:false})})});
+      pro.forEach(function(k){PRO_MODELS.forEach(function(m){proCand.push({key:k,model:m,paid:true})})});
+      STATE.version=VERSION;STATE.running=true;STATE.phase='iniciando';STATE.logs=[];STATE.lastError='';STATE.completedBlocks=0;STATE.keyCount=flash.length;STATE.proKeyCount=pro.length;STATE.policy='free-first-strict';
+      try{
+        if(!freeCand.length&&!proCand.length) throw new Error('Nenhuma key exclusiva de aulas configurada. Adicione pelo menos a Key aulas Flash 1.');
+        log('geração V42 iniciada. Flash/free: '+flash.length+' key(s) · Pro último caso: '+pro.length+'. Regra: Pro bloqueada até todas as free falharem em '+FREE_ROUNDS+' rodadas.','info');
+        var parts=[];
+        for(var i=0;i<BLOCKS.length;i++){parts[i]=await callBlock(init,BLOCKS[i],freeCand,proCand);STATE.completedBlocks=i+1}
+        var lesson=merge(parts);if(!complete(lesson))throw new Error('aula final incompleta depois da mesclagem');
+        STATE.phase='concluído';STATE.lastSuccess='Aula gerada: '+lesson.sections.length+' seções, '+lesson.vocabulary.length+' vocabulários, '+lesson.exercises.length+' exercícios. Pro usada somente se aparecer em metadados do bloco.';log(STATE.lastSuccess,'ok');
+        return geminiResponse(lesson);
+      }catch(e){var msg=String(e&&e.message||e);STATE.phase='erro';STATE.lastError=msg;log('falha final da aula: '+msg,'error');return new Response(JSON.stringify({error:{code:500,status:'LESSON_GENERATION_FAILED',message:msg},fluencyPatch:{version:VERSION,policy:'strict-free-first-pro-last'}}),{status:500,headers:{'content-type':'application/json'}})}
+      finally{STATE.running=false;STATE.block=''}
+    }
+    if(prevFetch){window.fetch=async function(input,init){var url='';try{url=typeof input==='string'?input:(input&&input.url)||''}catch(_){ }if(isGeminiUrl(url)&&likelyLesson(url,init||{}))return await generate(url,init||{});return prevFetch.apply(this,arguments)};window.fetch.__fluencyV42StrictProFallback=true}
+    window.__fluencyV42KeyStatus=function(){return {version:VERSION,flash:readFlashKeys().map(mask),pro:readProKeys().map(mask),policy:'Pro só após todas as Flash/free falharem em '+FREE_ROUNDS+' rodadas com espera.'}}
+    try{localStorage.setItem('fluency_lesson_patch_version',VERSION)}catch(_){ }
+    log('patch ativo: keys de aula lidas sem cache antigo e Pro só entra depois das free esgotarem com retry.','ok');
+  }catch(e){try{console.warn('Patch V42 failed',e)}catch(_){ }}
 })();
