@@ -5208,6 +5208,15 @@ lucide-react/dist/esm/lucide-react.mjs:
     /* ---- Main render loop ---- */
     function render(){
       try{
+        // V52.1: evita redesenhar a aula enquanto um input/textarea/select está focado no iOS.
+        // O render automático destruía o campo no momento do toque e o teclado não abria.
+        try{
+          var active = document.activeElement;
+          var mountFocus = document.getElementById(MOUNT_ID);
+          if(mountFocus && active && mountFocus.contains(active) && /^(INPUT|TEXTAREA|SELECT) i.test(active.tagName || "")){
+            return;
+          }
+        }catch(_focusGuard){}
         if(!isLessonTab()){
           var m0 = document.getElementById(MOUNT_ID);
           if(m0) m0.remove();
