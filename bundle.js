@@ -1,249 +1,629 @@
-/* === FLUENCY PATCH V19.5 - DIAGNOSTICO COM SCROLL + MODELO DA AULA === */
+
+/* === FLUENCY PATCH V19.15 - KEYS DE AULAS ISOLADAS DO CARD GEMINI GERAL === */
 ;(function(){
   try{
-    if(window.__fluencyDiagScrollModelBadgeV195) return;
-    window.__fluencyDiagScrollModelBadgeV195 = true;
-    var VERSION = 'V19.5-DIAG-SCROLL-MODEL-BADGE';
+    if(window.__fluencyLessonKeysPanelV1914) return;
+    window.__fluencyLessonKeysPanelV1914 = true;
 
-    function now(){ try{return new Date().toLocaleTimeString()}catch(_){return ''} }
+    var VERSION = 'V19.16-KEYS-AULAS-ISOLADAS-PRO-SEPARADO';
+    var MULTI_KEYS = 'fluency_lessonGeminiApiKeys_v197';
+    var MULTI_KEYS_OLD = ['fluency_lessonGeminiApiKeys','fluency_lessonGeminiKeys','lessonGeminiApiKeys','lessonGeminiKeys','fluency_freeGeminiKeys','fluency_flashGeminiKeys'];
+    var LESSON_KEY_ALIASES = ['fluency_lessonGeminiApiKey','fluency_lessonGeminiKey','lessonGeminiApiKey','lessonGeminiKey','fluency_geminiLessonKey','fluency_aulasGeminiKey','fluency_lesson_key','fluency_lesson_api_key'];
+    var PRO_KEY_ALIASES = ['fluency_proLessonGeminiApiKey','fluency_geminiProKey','geminiProApiKey','fluency_paidGeminiKey','fluency_lessonPaidGeminiKey'];
+    var FLASH_MODEL = 'gemini-2.5-flash';
+    var PRO_MODEL = 'gemini-2.5-pro';
+
     function safeText(el){ try{return String(el && (el.innerText || el.textContent) || '')}catch(_){return ''} }
-    function visible(el){
-      try{ var r=el.getBoundingClientRect(), cs=getComputedStyle(el); return r.width>8 && r.height>8 && cs.display!=='none' && cs.visibility!=='hidden' && Number(cs.opacity||1)>0.04; }catch(_){ return false; }
-    }
-    function mask(k){ k=String(k||'').trim(); return k ? k.slice(0,8)+'...'+k.slice(-4) : ''; }
-    function readLastModel(){
+    function visible(el){ try{ var r=el.getBoundingClientRect(), cs=getComputedStyle(el); return r.width>20 && r.height>20 && cs.display!=='none' && cs.visibility!=='hidden' && Number(cs.opacity||1)>0.03; }catch(_){ return false; } }
+    function clean(v){
+      v = String(v || '').trim();
       try{
-        var last = window.__fluencyLastLessonModelV193 || null;
-        if(last && last.model) return last;
-        var raw = localStorage.getItem('fluency_last_lesson_model_v195') || localStorage.getItem('fluency_last_lesson_model') || '';
-        if(raw){ try{ last = JSON.parse(raw); }catch(_){ last = null; } }
-        if(last && last.model) return last;
+        if((v[0]==='[' || v[0]==='{' || (v[0]==='"' && v[v.length-1]==='"'))){
+          var p = JSON.parse(v);
+          if(Array.isArray(p)) return p.join('\n');
+          if(typeof p === 'string') return p;
+          if(p && Array.isArray(p.keys)) return p.keys.join('\n');
+          if(p && typeof p.key === 'string') return p.key;
+          if(p && typeof p.apiKey === 'string') return p.apiKey;
+        }
       }catch(_){ }
-      return null;
+      return v.replace(/\r/g,'\n').trim();
     }
-    function writeLastModel(last){
-      try{ if(last && last.model) localStorage.setItem('fluency_last_lesson_model_v195', JSON.stringify(last)); }catch(_){ }
-    }
-    function modelLabel(last){
-      if(!last || !last.model) return 'Último modelo da aula: ainda não detectado';
-      var m = String(last.model || '');
-      var tipo = /flash/i.test(m) ? 'FLASH 2.5' : /pro/i.test(m) ? 'PRO PAGO' : m;
-      var detail = [];
-      if(last.status) detail.push('HTTP '+last.status);
-      if(last.error) detail.push('erro');
-      if(last.fallbackFromFlash) detail.push('fallback do Flash');
-      if(last.key) detail.push('key '+last.key);
-      return 'Última aula: '+tipo+' · '+m+(detail.length?' · '+detail.join(' · '):'');
-    }
+    function valid(k){ k=String(k||'').replace(/\s+/g,'').trim(); return /^AIza[0-9A-Za-z_\-]{20,}$/.test(k); }
+    function mask(k){ k=String(k||'').replace(/\s+/g,'').trim(); return k?k.slice(0,8)+'...'+k.slice(-4):''; }
+    function uniq(arr){ var out=[], seen={}; (arr||[]).forEach(function(k){ k=String(k||'').replace(/\s+/g,'').trim(); if(valid(k)&&!seen[k]){seen[k]=1;out.push(k);} }); return out; }
+    function parseKeys(v){ return uniq(clean(v).split(/[\n,;| ]+/).filter(Boolean)); }
+    function get(k){ try{return localStorage.getItem(k)||sessionStorage.getItem(k)||'';}catch(_){return '';} }
+    function set(k,v){ try{localStorage.setItem(k,v);}catch(_){ } try{sessionStorage.setItem(k,v);}catch(_){ } }
+    function remove(k){ try{localStorage.removeItem(k);}catch(_){ } try{sessionStorage.removeItem(k);}catch(_){ } }
 
-    // Captura qualquer chamada Gemini de aula e registra modelo real visto na URL.
-    var nativeFetch = window.fetch ? window.fetch.bind(window) : null;
-    if(nativeFetch && !window.fetch.__fluencyModelAuditV195){
-      var prevFetch = window.fetch;
-      window.fetch = async function(input, init){
-        var url = '';
-        try{ url = typeof input === 'string' ? input : (input && input.url) || ''; }catch(_){ }
-        var isGeminiLesson = /generativelanguage\.googleapis\.com/i.test(url) && /:generateContent|:streamGenerateContent/i.test(url);
-        var modelMatch = String(url||'').match(/\/models\/([^/:?]+)(?::generateContent|:streamGenerateContent)/i);
-        var keyMatch = String(url||'').match(/[?&]key=([^&]+)/i);
-        try{
-          var res = await prevFetch.apply(this, arguments);
-          if(isGeminiLesson && modelMatch){
-            var body = init && init.body;
-            var isLikelyLesson = true;
-            try{ isLikelyLesson = /aula|lesson|sections|exercises|vocabulary|pilar|speaking|listening|reading|writing|grammar/i.test(typeof body === 'string' ? body : JSON.stringify(body||'')); }catch(_){ }
-            if(isLikelyLesson){
-              var last = {model:modelMatch[1], key:keyMatch?mask(decodeURIComponent(keyMatch[1])):'', status:res && res.status, at:Date.now(), source:'V19.5 audit'};
-              window.__fluencyLastLessonModelV195 = last;
-              writeLastModel(last);
-              diag('modelo capturado pela chamada real: '+modelLabel(last), 'ok');
-            }
-          }
-          return res;
-        }catch(err){
-          if(isGeminiLesson && modelMatch){
-            var lastErr = {model:modelMatch[1], key:keyMatch?mask(decodeURIComponent(keyMatch[1])):'', error:String((err&&err.message)||err), at:Date.now(), source:'V19.5 audit'};
-            window.__fluencyLastLessonModelV195 = lastErr;
-            writeLastModel(lastErr);
-            diag('erro capturado na chamada real: '+modelLabel(lastErr), 'warn');
-          }
-          throw err;
-        }
-      };
-      window.fetch.__fluencyModelAuditV195 = true;
+    function readFlashKeys(){
+      var keys=[];
+      keys=keys.concat(parseKeys(get(MULTI_KEYS)));
+      MULTI_KEYS_OLD.forEach(function(k){ keys=keys.concat(parseKeys(get(k))); });
+      LESSON_KEY_ALIASES.forEach(function(k){ var v=get(k); if(valid(v)) keys.push(v); });
+      return uniq(keys).slice(0,3);
     }
-
-    function findDiagnosticPanel(){
+    function saveFlashKeys(keys){
+      keys=uniq(keys).slice(0,3);
+      set(MULTI_KEYS, keys.join('\n'));
       try{
-        var els = Array.prototype.slice.call(document.querySelectorAll('div,section,aside'));
-        // O painel real contém estes textos.
-        var candidates = els.filter(function(el){
-          var t=safeText(el);
-          return t.indexOf('Vozes carregadas')!==-1 && (t.indexOf('Saúde Azure')!==-1 || t.indexOf('Motivo fallback')!==-1);
-        }).filter(visible);
-        if(!candidates.length) return null;
-        // Preferir o menor container que ainda contém o conteúdo do diagnóstico.
-        candidates.sort(function(a,b){
-          var ar=a.getBoundingClientRect(), br=b.getBoundingClientRect();
-          return (ar.width*ar.height) - (br.width*br.height);
+        // alias principal só recebe a key 1 para compatibilidade com o gerador real
+        LESSON_KEY_ALIASES.forEach(function(a){ keys[0] ? localStorage.setItem(a, keys[0]) : localStorage.removeItem(a); });
+      }catch(_){ }
+      try{
+        window.__fluencyV197SaveKeys && window.__fluencyV197SaveKeys(keys.join('\n'));
+      }catch(_){ }
+      return keys;
+    }
+    function readProKey(){
+      for(var i=0;i<PRO_KEY_ALIASES.length;i++){ var v=get(PRO_KEY_ALIASES[i]); if(valid(v)) return String(v).replace(/\s+/g,'').trim(); }
+      return '';
+    }
+    function saveProKey(k){ try{localStorage.setItem('fluency_pro_key_user_set_v39','1');}catch(_){} PRO_KEY_ALIASES.forEach(function(a){ set(a,k); }); return k; }
+    function removeProKey(){ try{localStorage.removeItem('fluency_pro_key_user_set_v39');}catch(_){} PRO_KEY_ALIASES.forEach(remove); }
+
+    function isProgressActive(){
+      try{
+        var tabs=Array.prototype.slice.call(document.querySelectorAll('button,a,[role="tab"],div,span'));
+        return tabs.some(function(el){
+          var t=safeText(el).replace(/\s+/g,' ').trim();
+          if(t !== 'Progresso') return false;
+          var cs=getComputedStyle(el), fw=parseInt(cs.fontWeight||'0',10), c=String(cs.color||'');
+          return el.getAttribute('aria-selected')==='true' || fw>=600 || /rgb\((96, 165, 250|147, 197, 253|191, 219, 254)/.test(c);
         });
-        return candidates[0];
-      }catch(_){ return null; }
-    }
-
-    function applyScrollFix(){
-      var p = findDiagnosticPanel();
-      if(!p) return false;
-      try{
-        // Inject a global CSS rule so the panel and its scroll wrapper work on iOS Safari
-        if(!document.getElementById('__fluency_scroll_css__')){
-          var st = document.createElement('style');
-          st.id = '__fluency_scroll_css__';
-          st.textContent = [
-            '[data-fluency-v195-scroll="1"]{',
-            '  max-height:72vh!important;',
-            '  overflow-y:auto!important;',
-            '  overflow-x:hidden!important;',
-            '  -webkit-overflow-scrolling:touch!important;',
-            '  touch-action:pan-y!important;',
-            '  overscroll-behavior:contain!important;',
-            '  padding-bottom:80px!important;',
-            '}',
-            '[data-fluency-v195-scroll="1"] *{',
-            '  -webkit-overflow-scrolling:touch;',
-            '}'
-          ].join('');
-          document.head.appendChild(st);
-        }
-        p.style.maxHeight = '72vh';
-        p.style.overflowY = 'auto';
-        p.style.overflowX = 'hidden';
-        p.style.webkitOverflowScrolling = 'touch';
-        p.style.touchAction = 'pan-y';
-        p.style.overscrollBehavior = 'contain';
-        p.style.paddingBottom = '80px';
-        p.setAttribute('data-fluency-v195-scroll','1');
-        // Libera também os 4 ancestrais que possam ter overflow:hidden
-        var parent = p.parentElement;
-        for(var i=0;i<4 && parent && parent !== document.body;i++,parent=parent.parentElement){
-          var cs = window.getComputedStyle(parent);
-          if(cs.overflow === 'hidden' || cs.overflowY === 'hidden'){
-            parent.style.overflow = 'visible';
-            parent.style.overflowY = 'visible';
-          }
-          parent.style.webkitOverflowScrolling = 'touch';
-        }
-        return true;
       }catch(_){ return false; }
     }
 
-    function diag(msg,kind){
-      // painel V19.5 desativado — sem output visual
+    function findGenericAiKeysCard(){
+      try{
+        var old=document.getElementById('__fluency_v1914_lesson_keys_panel__');
+        if(old) old.style.display='none';
+        var nodes=Array.prototype.slice.call(document.querySelectorAll('div,section,article'));
+        var candidates=[];
+        nodes.forEach(function(el){
+          if(!visible(el)) return;
+          var t=safeText(el);
+          if(!/CHAVES DA IA\s*\(GEMINI\)|Chaves da IA\s*\(Gemini\)|Chaves da IA/i.test(t)) return;
+          if(!/Salvar chaves/i.test(t) || !/Testar chaves/i.test(t)) return;
+          var r=el.getBoundingClientRect();
+          if(r.width < 260 || r.height < 130) return;
+          candidates.push(el);
+        });
+        if(old) old.style.display='';
+        if(!candidates.length) return null;
+        // Queremos o card azul das chaves Gemini, não a página inteira.
+        candidates.sort(function(a,b){
+          var ar=a.getBoundingClientRect(), br=b.getBoundingClientRect();
+          var aa=ar.width*ar.height, bb=br.width*br.height;
+          return aa-bb;
+        });
+        return candidates[0];
+      }catch(_){ try{var o=document.getElementById('__fluency_v1914_lesson_keys_panel__'); if(o)o.style.display='';}catch(__){} return null; }
     }
 
-    function isAulaActive(){
+    function btnStyle(bg,border,color){ return 'padding:9px 14px;border-radius:12px;background:'+bg+';border:1px solid '+border+';color:'+color+';font-size:13px;cursor:pointer;font-family:inherit;font-weight:900;min-height:40px'; }
+    function cardHtml(){
+      var keys=readFlashKeys(), pro=readProKey();
+      function flash(i){
+        var k=keys[i]||'', label=(i+1)+') Key aulas Flash 2.5 '+(i===0?'principal':'reserva '+i);
+        return '<div style="padding:13px;border-radius:14px;background:rgba(15,23,42,.38);border:1px solid rgba(96,165,250,.25);box-shadow:inset 0 1px 0 rgba(255,255,255,.04)">'+
+          '<div style="font-weight:950;color:#bfdbfe;font-size:14px;margin-bottom:6px">'+label+'</div>'+ 
+          '<div style="font-size:12px;color:'+(k?'#86efac':'#fbbf24')+';line-height:1.45;margin-bottom:10px">'+(k?'✅ Configurada — '+mask(k)+' · '+FLASH_MODEL:'⚠️ Não configurada · será pulada na rotação')+'</div>'+ 
+          '<button id="__v1914_set_flash_'+i+'" style="'+btnStyle('linear-gradient(135deg,rgba(59,130,246,.34),rgba(34,197,94,.18))','rgba(96,165,250,.45)','#e8eff8')+'">'+(k?'✏️ Alterar key '+(i+1):'➕ Adicionar key '+(i+1))+'</button> '+
+          (k?'<button id="__v1914_remove_flash_'+i+'" style="'+btnStyle('rgba(248,113,113,.08)','rgba(248,113,113,.34)','#fca5a5')+'">🗑 Remover</button>':'')+
+        '</div>';
+      }
+      return '<div style="margin-top:22px;margin-bottom:22px;padding:17px;border-radius:18px;border:1px solid rgba(34,197,94,.30);background:linear-gradient(135deg,rgba(4,20,12,.62),rgba(37,99,235,.18));box-shadow:0 18px 42px rgba(0,0,0,.22);color:#dbeafe">'+
+        '<div style="font-size:10px;text-transform:uppercase;letter-spacing:.20em;color:rgba(191,219,254,.70);margin-bottom:6px">Chaves Exclusivas de Aulas — '+VERSION+'</div>'+ 
+        '<div style="font-weight:950;color:#e8eff8;margin-bottom:8px;font-size:16px;line-height:1.25">Flash/free em blocos + rotação de 3 keys</div>'+ 
+        '<p style="font-size:13px;color:#bfdbfe;margin:0 0 13px 0;line-height:1.55">Este painel é <b>somente para geração de aulas</b>. Ele fica separado do card <b>Chaves da IA (Gemini)</b> e não altera as keys do resto do site.</p>'+ 
+        '<div style="display:grid;gap:11px">'+flash(0)+flash(1)+flash(2)+
+          '<div style="padding:13px;border-radius:14px;background:rgba(15,23,42,.38);border:1px solid rgba(168,85,247,.28)">'+
+            '<div style="font-weight:950;color:#ddd6fe;font-size:14px;margin-bottom:6px">4) Key aulas Pro pago último caso</div>'+ 
+            '<div style="font-size:12px;color:'+(pro?'#86efac':'#fbbf24')+';line-height:1.45;margin-bottom:10px">'+(pro?'✅ Configurada — '+mask(pro)+' · '+PRO_MODEL:'⚠️ Não configurada · se todas as Flash falharem, não haverá fallback pago')+'</div>'+ 
+            '<button id="__v1914_set_pro" style="'+btnStyle('linear-gradient(135deg,rgba(139,92,246,.30),rgba(59,130,246,.16))','rgba(168,85,247,.45)','#e8eff8')+'">'+(pro?'✏️ Alterar Pro':'➕ Adicionar Pro')+'</button> '+
+            (pro?'<button id="__v1914_remove_pro" style="'+btnStyle('rgba(248,113,113,.08)','rgba(248,113,113,.34)','#fca5a5')+'">🗑 Remover</button>':'')+
+          '</div>'+ 
+        '</div>'+ 
+        '<div style="margin-top:11px;font-size:12px;color:#a7f3d0;line-height:1.45">Status: '+keys.length+'/3 key(s) Flash/free na rotação · '+(pro?'Pro último caso pronto':'Pro último caso ausente')+'</div>'+ 
+      '</div>';
+    }
+
+    function promptFlash(i){
+      var keys=readFlashKeys();
+      var current=keys[i]||'';
+      var input=prompt((current?'Key atual '+(i+1)+': '+mask(current)+'\n\n':'')+'Cole a Gemini API Key Flash/free '+(i+1)+' exclusiva para aulas (AIza...):', current);
+      if(input===null) return;
+      input=String(input||'').replace(/\s+/g,'').trim();
+      if(!input) return;
+      if(!valid(input)){ alert('Essa key não parece válida. Ela normalmente começa com AIza.'); return; }
+      keys[i]=input;
+      saveFlashKeys(keys);
+      render(true);
+      alert('✅ Key Flash '+(i+1)+' de aulas salva.');
+    }
+    function promptPro(){
+      var current=readProKey();
+      var input=prompt((current?'Key Pro atual: '+mask(current)+'\n\n':'')+'Cole a Gemini API Key Pro paga, usada só como último caso:', current);
+      if(input===null) return;
+      input=String(input||'').replace(/\s+/g,'').trim();
+      if(!input) return;
+      if(!valid(input)){ alert('Essa key não parece válida. Ela normalmente começa com AIza.'); return; }
+      saveProKey(input);
+      render(true);
+      alert('✅ Key Pro de aulas salva como último caso.');
+    }
+    function bind(){
+      for(var i=0;i<3;i++)(function(idx){
+        var b=document.getElementById('__v1914_set_flash_'+idx); if(b) b.onclick=function(e){try{e.preventDefault();e.stopPropagation();}catch(_){} promptFlash(idx);};
+        b=document.getElementById('__v1914_remove_flash_'+idx); if(b) b.onclick=function(e){try{e.preventDefault();e.stopPropagation();}catch(_){} if(confirm('Remover key Flash '+(idx+1)+' exclusiva de aulas?')){ var keys=readFlashKeys(); keys.splice(idx,1); saveFlashKeys(keys); render(true); }};
+      })(i);
+      var p=document.getElementById('__v1914_set_pro'); if(p) p.onclick=function(e){try{e.preventDefault();e.stopPropagation();}catch(_){} promptPro();};
+      p=document.getElementById('__v1914_remove_pro'); if(p) p.onclick=function(e){try{e.preventDefault();e.stopPropagation();}catch(_){} if(confirm('Remover key Pro paga das aulas?')){ removeProKey(); render(true); }};
+    }
+
+    function removeWrongProgressDiag(){
       try{
-        var navs = Array.prototype.slice.call(document.querySelectorAll('button,a,[role="tab"]'));
-        for(var i=0;i<navs.length;i++){
-          var t=safeText(navs[i]).replace(/\s+/g,' ').trim();
-          if(t==='Aula'){
-            if(navs[i].getAttribute('aria-selected')==='true') return true;
-            var cs=getComputedStyle(navs[i]);
-            var fw=parseInt(cs.fontWeight||'0',10);
-            var color=String(cs.color||'');
-            if(fw>=600 && /rgb\((91, 156, 246|96, 165, 250|147, 183, 255)/i.test(color)) return true;
-            // procura underline visual perto do botão
-            var r=navs[i].getBoundingClientRect();
-            var spans = Array.prototype.slice.call(navs[i].querySelectorAll('*'));
-            if(spans.some(function(s){ var sr=s.getBoundingClientRect(); return sr.height<=4 && sr.width>20 && Math.abs(sr.bottom-r.bottom)<12; })) return true;
+        var b=document.getElementById('__fluency_v197_diag_box__');
+        if(!b) return;
+        var txt=safeText(b.parentElement||document.body);
+        if(txt.indexOf('Vozes carregadas')===-1 && txt.indexOf('Saúde Azure')===-1){ b.remove(); }
+      }catch(_){ }
+    }
+    function hideOldLessonPanels(){
+      try{
+        var old=document.getElementById('__lk193_dual_section__');
+        if(old) old.style.display='none';
+        old=document.getElementById('__fluency_v197_keys_box__');
+        if(old) old.style.display='none';
+      }catch(_){ }
+    }
+    function render(force){
+      try{
+        removeWrongProgressDiag();
+        hideOldLessonPanels();
+        var panel=document.getElementById('__fluency_v1914_lesson_keys_panel__');
+        var generic=findGenericAiKeysCard();
+        if(!generic){ if(panel) panel.style.display='none'; return false; }
+        if(!panel){ panel=document.createElement('div'); panel.id='__fluency_v1914_lesson_keys_panel__'; }
+        panel.style.display='';
+        panel.setAttribute('data-fluency-verified-location','below-generic-gemini-keys-card');
+        if(generic.parentElement && panel.previousElementSibling !== generic){ generic.parentElement.insertBefore(panel, generic.nextSibling); }
+        var html=cardHtml();
+        if(force || panel.__html !== html){ panel.innerHTML=html; panel.__html=html; }
+        bind();
+        return true;
+      }catch(e){ try{console.warn('[Fluency '+VERSION+'] render falhou',e)}catch(_){} return false; }
+    }
+
+    window.__fluencyV1914RenderLessonKeysPanel = function(){ return render(true); };
+    window.__fluencyV1914ReadLessonKeys = function(){ return {flash: readFlashKeys().map(mask), pro: mask(readProKey()), location: !!document.getElementById('__fluency_v1914_lesson_keys_panel__')}; };
+    window.__fluencyV1914VerifyLocation = function(){
+      var p=document.getElementById('__fluency_v1914_lesson_keys_panel__'), g=findGenericAiKeysCard();
+      return {ok: !!(p&&g&&p.previousElementSibling===g&&visible(p)), progressCardFound: !!g, panelVisible: !!(p&&visible(p)), flashKeys: readFlashKeys().length, pro: !!readProKey()};
+    };
+
+    if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', function(){ render(true); });
+    else setTimeout(function(){ render(true); }, 0);
+    try{ new MutationObserver(function(){ setTimeout(render,60); }).observe(document.documentElement||document.body,{childList:true,subtree:true}); }catch(_){ }
+    setInterval(render, 800);
+    ['click','touchend','focus','hashchange','popstate'].forEach(function(ev){ window.addEventListener(ev,function(){ setTimeout(function(){render(true);},120); }, true); });
+  }catch(e){ try{console.warn('Patch V19.14 keys panel failed', e)}catch(_){} }
+})();
+
+/* === FLUENCY PATCH V19.15 - DIAGNOSTICO TEMPO REAL + AULAS SOMENTE COM KEYS EXCLUSIVAS === */
+;(function(){
+  try{
+    if(window.__fluencyBlocksMultiKeysV1912) return;
+    window.__fluencyBlocksMultiKeysV1912 = true;
+
+    var VERSION = 'V19.16-DIAG-TEMPO-REAL-BLOCOS-KEYS-ISOLADAS';
+    var MULTI_KEYS = 'fluency_lessonGeminiApiKeys_v197';
+    var MULTI_KEYS_OLD = ['fluency_lessonGeminiApiKeys','fluency_lessonGeminiKeys','lessonGeminiApiKeys','lessonGeminiKeys','fluency_freeGeminiKeys','fluency_flashGeminiKeys'];
+    var LESSON_KEY_ALIASES = ['fluency_lessonGeminiApiKey','fluency_lessonGeminiKey','lessonGeminiApiKey','lessonGeminiKey','fluency_geminiLessonKey','fluency_aulasGeminiKey','fluency_lesson_key','fluency_lesson_api_key'];
+    var PRO_KEY_ALIASES = ['fluency_proLessonGeminiApiKey','fluency_geminiProKey','geminiProApiKey','fluency_paidGeminiKey','fluency_lessonPaidGeminiKey'];
+    var FLASH_MODELS = ['gemini-2.5-flash','gemini-2.0-flash','gemini-1.5-flash'];
+    var PRO_MODELS = ['gemini-2.5-pro','gemini-1.5-pro'];
+    var nativeFetch = window.fetch ? window.fetch.bind(window) : null;
+    if(!nativeFetch) return;
+
+    var state = window.__fluencyBlockLessonStateV197 = window.__fluencyBlockLessonStateV197 || {
+      version: VERSION, running:false, phase:'pronto', logs:[], lastError:'', lastSuccess:null, activeKey:'', activeModel:'', keyCount:0, block:'', attempts:0, completedBlocks:0, intercepted:0, lastHttp:'', lastGeminiUrl:'', clickAt:0
+    };
+
+    function clean(v){
+      v = String(v == null ? '' : v).trim();
+      try{
+        if((v[0] === '[' || v[0] === '{' || (v[0] === '"' && v[v.length-1] === '"'))){
+          var p = JSON.parse(v);
+          if(Array.isArray(p)) return p.join('\n');
+          if(typeof p === 'string') return p;
+          if(p && typeof p.key === 'string') return p.key;
+          if(p && typeof p.apiKey === 'string') return p.apiKey;
+          if(p && Array.isArray(p.keys)) return p.keys.join('\n');
+        }
+      }catch(_){ }
+      return v.replace(/\r/g,'\n').trim();
+    }
+    function validKey(k){ k = String(k||'').replace(/\s+/g,'').trim(); return /^AIza[0-9A-Za-z_\-]{20,}$/.test(k); }
+    function mask(k){ k = String(k||'').replace(/\s+/g,'').trim(); return k ? k.slice(0,8)+'...'+k.slice(-4) : ''; }
+    function uniq(arr){ var out=[], seen={}; (arr||[]).forEach(function(k){ k=String(k||'').replace(/\s+/g,'').trim(); if(validKey(k) && !seen[k]){seen[k]=1; out.push(k);} }); return out; }
+    function parseKeysText(v){ return uniq(clean(v).split(/[\n,;| ]+/).filter(Boolean)); }
+    function getItem(k){ try{return localStorage.getItem(k) || sessionStorage.getItem(k) || '';}catch(_){return '';} }
+    function setItem(k,v){ try{localStorage.setItem(k,v);}catch(_){ } }
+    function readKeys(){
+      var keys = [];
+      keys = keys.concat(parseKeysText(getItem(MULTI_KEYS)));
+      MULTI_KEYS_OLD.forEach(function(k){ keys = keys.concat(parseKeysText(getItem(k))); });
+      LESSON_KEY_ALIASES.forEach(function(k){ var v=String(getItem(k)||'').trim(); if(validKey(v)) keys.push(v); });
+      keys = uniq(keys);
+      state.keyCount = keys.length;
+      return keys;
+    }
+    function readProKeys(){
+      var keys = [];
+      PRO_KEY_ALIASES.forEach(function(k){ var v=String(getItem(k)||'').trim(); if(validKey(v)) keys.push(v); });
+      // se não tiver key paga separada, o Pro não é tentado de forma agressiva para não gastar uma key grátis sem querer.
+      return uniq(keys);
+    }
+    function log(msg, kind, meta){
+      try{
+        var item = {at:new Date().toLocaleTimeString(), msg:String(msg||''), kind:kind||'info', meta:meta||null};
+        state.logs.push(item); if(state.logs.length > 120) state.logs.shift();
+        if(kind === 'error' || kind === 'warn') state.lastError = item.msg;
+        localStorage.setItem('fluency_v197_diag_logs', JSON.stringify(state.logs.slice(-80)));
+        try{ localStorage.setItem('fluency_diag_logs', JSON.stringify(state.logs.slice(-80))); }catch(__){}
+        renderDiag();
+        try{ console.warn('[Fluency '+VERSION+'] '+item.msg, meta||''); }catch(_){ }
+      }catch(_){ }
+    }
+    function stripJson(txt){
+      txt = String(txt||'').trim();
+      txt = txt.replace(/^```(?:json)?\s*/i,'').replace(/```$/,'').trim();
+      var a = txt.indexOf('{'), b = txt.lastIndexOf('}');
+      if(a >= 0 && b > a) txt = txt.slice(a,b+1);
+      return txt;
+    }
+    function parseJsonText(txt){ try{return JSON.parse(stripJson(txt));}catch(e){ throw new Error('JSON inválido: '+((e&&e.message)||e)); } }
+    function textFromGemini(data){
+      try{
+        var parts = data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts;
+        if(Array.isArray(parts)) return parts.map(function(p){ return p && (p.text || ''); }).join('\n');
+      }catch(_){ }
+      return '';
+    }
+    function responseFromLesson(lesson){
+      var text = JSON.stringify(lesson);
+      var payload = {
+        candidates:[{content:{role:'model', parts:[{text:text}]}, finishReason:'STOP'}],
+        usageMetadata:{promptTokenCount:0,candidatesTokenCount:0,totalTokenCount:0},
+        fluencyPatch:{version:VERSION, mode:'blocks-flash-multikeys', blocks:3, keyCount:state.keyCount}
+      };
+      return new Response(JSON.stringify(payload), {status:200, headers:{'content-type':'application/json'}});
+    }
+    function isGeminiUrl(url){ return /generativelanguage\.googleapis\.com/i.test(url||'') && /:generateContent|:streamGenerateContent/i.test(url||''); }
+    function getModelFromUrl(url){ var m=String(url||'').match(/\/models\/([^/:?]+)(?::generateContent|:streamGenerateContent)/i); return m ? decodeURIComponent(m[1]) : ''; }
+    function replaceModelAndKey(url, model, key){
+      url = String(url||'');
+      url = url.replace(/\/models\/([^/:?]+)(:generateContent|:streamGenerateContent)/i, '/models/'+encodeURIComponent(model)+'$2');
+      if(/[?&]key=/.test(url)) url = url.replace(/([?&]key=)[^&]*/i, '$1'+encodeURIComponent(key));
+      else url += (url.indexOf('?')>=0?'&':'?')+'key='+encodeURIComponent(key);
+      return url;
+    }
+    function getPromptFromBody(body){
+      try{
+        var b = typeof body === 'string' ? JSON.parse(body) : body;
+        var arr=[];
+        function walk(x){
+          if(!x) return;
+          if(typeof x === 'string') { arr.push(x); return; }
+          if(Array.isArray(x)) { x.forEach(walk); return; }
+          if(typeof x === 'object') { if(typeof x.text === 'string') arr.push(x.text); Object.keys(x).forEach(function(k){ if(k !== 'text') walk(x[k]); }); }
+        }
+        walk(b && b.contents ? b.contents : b);
+        return arr.join('\n');
+      }catch(_){ return String(body||''); }
+    }
+    function likelyLesson(url, init){
+      try{
+        var body = init && init.body;
+        var text = getPromptFromBody(body).slice(0,18000);
+        if(!/aula|lesson|sections|seções|secoes|exercises|exercícios|vocabulary|vocabulário|grammar|listening|speaking|reading|writing|finalTip/i.test(text)) return false;
+        if(/tts|audio|voice|voz|generateSpeech|text-to-speech/i.test(text) && !/lesson|aula/i.test(text)) return false;
+        return true;
+      }catch(_){ return false; }
+    }
+    function cloneBodyForBlock(originalBody, blockName, instruction){
+      var body;
+      try{ body = typeof originalBody === 'string' ? JSON.parse(originalBody) : JSON.parse(JSON.stringify(originalBody||{})); }
+      catch(_){ body = {contents:[{role:'user', parts:[{text:String(originalBody||'')}]}]}; }
+      var originalPrompt = getPromptFromBody(body);
+      var blockPrompt = [
+        'Você é o gerador de aulas do Fluency. Gere APENAS JSON válido, sem markdown.',
+        'Modo V19.15: aula completa em blocos usando SOMENTE keys exclusivas de aulas; não usar Chaves da IA (Gemini).',
+        'Bloco solicitado: '+blockName+'.',
+        instruction,
+        'Mantenha português claro para explicações e inglês correto nos exemplos.',
+        'Não economize demais: faça conteúdo profundo, mas dentro do bloco.',
+        'Prompt original do app:',
+        originalPrompt
+      ].join('\n\n');
+      body.contents = [{role:'user', parts:[{text:blockPrompt}]}];
+      body.generationConfig = body.generationConfig || {};
+      body.generationConfig.temperature = body.generationConfig.temperature == null ? 0.45 : body.generationConfig.temperature;
+      body.generationConfig.responseMimeType = 'application/json';
+      body.generationConfig.maxOutputTokens = Math.max(Number(body.generationConfig.maxOutputTokens||0), blockName === 'BLOCO 1' ? 3500 : blockName === 'BLOCO 2' ? 3200 : 2200);
+      return JSON.stringify(body);
+    }
+    var BLOCKS = [
+      {name:'BLOCO 1', key:'core', instruction:'Retorne JSON com: title, subtitle, intro com no mínimo 180 palavras, estimatedMinutes, sections exatamente 3 itens. Cada section deve ter heading, content com no mínimo 220 palavras e examples exatamente 3 itens {en, pt}. Não inclua exercícios nem vocabulário neste bloco.'},
+      {name:'BLOCO 2', key:'practice', instruction:'Retorne JSON com: vocabulary exatamente 12 itens {word,pos,translation,example}; exercises exatamente 8 itens {type,question,options,answer,explanation}. Os exercícios devem misturar tradução, completar lacuna, escolha múltipla e produção guiada.'},
+      {name:'BLOCO 3', key:'finish', instruction:'Retorne JSON com: tips exatamente 4 frases úteis com no mínimo 25 caracteres cada; commonMistakes exatamente 4 itens {mistake,why,avoid}; listeningText com 120 a 180 palavras em inglês natural adequado ao nível da aula. NÃO inclua finalTip nem texto motivacional de parabéns.'}
+    ];
+    function validateBlock(obj, block){
+      if(!obj || typeof obj !== 'object') throw new Error(block.name+' vazio');
+      if(block.key === 'core'){
+        if(!obj.title || !Array.isArray(obj.sections) || obj.sections.length < 3) throw new Error('bloco 1 sem título/seções suficientes');
+      }
+      if(block.key === 'practice'){
+        if(!Array.isArray(obj.vocabulary) || obj.vocabulary.length < 5 || !Array.isArray(obj.exercises) || obj.exercises.length < 5) throw new Error('bloco 2 sem vocabulário/exercícios suficientes');
+      }
+      if(block.key === 'finish'){
+        if(!Array.isArray(obj.tips) || obj.tips.length < 2) throw new Error('bloco 3 sem dicas suficientes');
+      }
+      return true;
+    }
+    function mergeLesson(parts){
+      var a = parts[0]||{}, b = parts[1]||{}, c = parts[2]||{};
+      return {
+        title: a.title || 'Aula de inglês',
+        subtitle: a.subtitle || '',
+        intro: a.intro || '',
+        estimatedMinutes: a.estimatedMinutes || 30,
+        sections: Array.isArray(a.sections) ? a.sections : [],
+        vocabulary: Array.isArray(b.vocabulary) ? b.vocabulary : [],
+        exercises: Array.isArray(b.exercises) ? b.exercises : [],
+        tips: Array.isArray(c.tips) ? c.tips : [],
+        commonMistakes: Array.isArray(c.commonMistakes) ? c.commonMistakes : (Array.isArray(c.common_mistakes) ? c.common_mistakes : []),
+        finalTip: '',
+        listeningText: c.listeningText || c.listening_text || '',
+        _generatedBy: VERSION,
+        _blockMode: true,
+        _blocks: 3,
+        _keyCount: state.keyCount,
+        _generatedAt: new Date().toISOString()
+      };
+    }
+    function lessonComplete(L){
+      try{
+        return L && L.title && L.intro && Array.isArray(L.sections) && L.sections.length >= 3 && Array.isArray(L.vocabulary) && L.vocabulary.length >= 5 && Array.isArray(L.exercises) && L.exercises.length >= 5 && Array.isArray(L.tips) && L.tips.length >= 2;
+      }catch(_){ return false; }
+    }
+    async function callGeminiBlock(url, originalInit, block, keys, proKeys){
+      var originalBody = originalInit && originalInit.body;
+      var body = cloneBodyForBlock(originalBody, block.name, block.instruction);
+      var lastErr = '';
+      var candidates = [];
+      keys.forEach(function(k){ FLASH_MODELS.forEach(function(m){ candidates.push({key:k, model:m, paid:false}); }); });
+      proKeys.forEach(function(k){ PRO_MODELS.forEach(function(m){ candidates.push({key:k, model:m, paid:true}); }); });
+      if(!candidates.length) throw new Error('nenhuma key válida configurada para aulas');
+      for(var i=0;i<candidates.length;i++){
+        var c = candidates[i];
+        state.attempts++; state.phase = 'gerando '+block.name; state.activeKey = mask(c.key); state.activeModel = c.model; state.block = block.name; renderDiag();
+        log(block.name+' tentando '+c.model+' com key '+mask(c.key)+(c.paid?' (Pro último caso)':' (Flash/free)'), 'info');
+        try{
+          var newUrl = replaceModelAndKey(url, c.model, c.key);
+          var init = Object.assign({}, originalInit || {}, {body: body});
+          delete init.signal;
+          var res = await nativeFetch(newUrl, init);
+          if(!res || typeof res.ok === 'undefined') throw new Error('fetch Gemini retornou null/undefined antes de gerar '+block.name);
+          var raw = await res.text();
+          if(!res.ok){
+            state.lastHttp = 'HTTP '+res.status; lastErr = 'HTTP '+res.status+' em '+c.model+' key '+mask(c.key)+': '+raw.slice(0,260);
+            log(block.name+' falhou: '+lastErr, res.status === 429 || res.status === 403 ? 'warn' : 'error');
+            continue;
+          }
+          var data = JSON.parse(raw);
+          var text = textFromGemini(data);
+          var obj = parseJsonText(text);
+          validateBlock(obj, block);
+          log(block.name+' concluído com '+c.model+' key '+mask(c.key), 'ok');
+          return obj;
+        }catch(e){
+          lastErr = ((e&&e.message)||String(e));
+          log(block.name+' erro em '+c.model+' key '+mask(c.key)+': '+lastErr, 'warn');
+        }
+      }
+      throw new Error(block.name+' não conseguiu gerar. Último erro: '+lastErr);
+    }
+    async function generateBlocks(url, init){
+      if(state.running) return nativeFetch.apply(window, arguments);
+      state.running = true; state.phase = 'gerando'; state.logs = []; state.completedBlocks = 0; state.attempts = 0; state.lastError = ''; state.lastSuccess = null; state.lastHttp = ''; state.block = 'preparando'; state.activeModel = '--'; state.activeKey = '--';
+      var keys = readKeys();
+      var proKeys = readProKeys();
+      if(!keys.length && !proKeys.length){ state.running=false; state.phase='sem keys'; log('sem keys válidas para geração em blocos; usando chamada original do app.', 'warn'); return null; }
+      log('iniciando aula em 3 blocos. Keys Flash/free: '+keys.length+'. Keys Pro último caso: '+proKeys.length+'.', 'info');
+      try{
+        var parts = [];
+        for(var i=0;i<BLOCKS.length;i++){
+          parts[i] = await callGeminiBlock(url, init, BLOCKS[i], keys, proKeys);
+          state.completedBlocks = i+1;
+        }
+        var lesson = mergeLesson(parts);
+        if(!lessonComplete(lesson)) throw new Error('aula mesclada não passou na validação final');
+        try{ localStorage.setItem('fluency_last_lesson_model_v197', JSON.stringify({model:'flash-blocks-v197', keyCount:keys.length, blocks:3, at:Date.now()})); }catch(_){ }
+        state.phase = 'concluído'; state.lastSuccess = 'Aula completa criada em blocos: '+lesson.sections.length+' seções, '+lesson.vocabulary.length+' vocabulários, '+lesson.exercises.length+' exercícios.';
+        log(state.lastSuccess, 'ok');
+        return responseFromLesson(lesson);
+      }catch(e){
+        state.phase = 'erro'; state.lastError = ((e&&e.message)||String(e));
+        log('falha na geração em blocos: '+state.lastError+'. O app poderá tentar o fluxo original.', 'error');
+        return null;
+      }finally{
+        state.running = false; if(state.phase==='gerando') state.phase='finalizado'; renderDiag();
+      }
+    }
+
+    window.fetch = async function(input, init){
+      var url = '';
+      try{ url = typeof input === 'string' ? input : (input && input.url) || ''; }catch(_){ }
+      var gemini = isGeminiUrl(url);
+      var lesson = false;
+      if(gemini){
+        state.intercepted = (state.intercepted||0)+1;
+        state.lastGeminiUrl = String(url||'').slice(0,180);
+        try{ lesson = likelyLesson(url, init || {}); }catch(_){ lesson = false; }
+        log(lesson ? 'chamada Gemini de AULA interceptada. Preparando geração em blocos…' : 'chamada Gemini detectada, mas não parece geração de aula. Modelo: '+(getModelFromUrl(url)||'desconhecido'), 'info');
+      }
+      if(gemini && lesson && !((init||{}).__fluencyV197Bypass)){
+        var synthetic = await generateBlocks(url, init || {});
+        if(synthetic) return synthetic;
+        var errMsg = state.lastError || 'A geração em blocos não retornou resposta. Configure/valide as Chaves Exclusivas de Aulas.';
+        log('bloqueado fallback para Chaves da IA (Gemini): aulas usam somente keys exclusivas. Motivo: '+errMsg, 'error');
+        return new Response(JSON.stringify({error:{code:400,status:'FAILED_PRECONDITION',message:'Aulas usam somente Chaves Exclusivas de Aulas. '+errMsg},fluencyPatch:{version:VERSION,mode:'lesson-keys-only',blockedGenericGeminiFallback:true}}), {status:400, headers:{'content-type':'application/json'}});
+      }
+      try{
+        var res = await nativeFetch.apply(this, arguments);
+        if(!res || typeof res.ok === 'undefined'){
+          if(gemini){ log('chamada Gemini retornou null/undefined; convertida para HTTP 599.', 'error'); }
+          return new Response(JSON.stringify({error:{code:599,status:'FETCH_NULL',message:'Fetch Gemini retornou null/undefined.'}}), {status:599, headers:{'content-type':'application/json'}});
+        }
+        if(gemini){
+          state.lastHttp = 'HTTP '+(res && res.status);
+          if(!res.ok){
+            try{
+              var clone = res.clone();
+              clone.text().then(function(t){ log('erro na chamada Gemini original: HTTP '+res.status+' — '+String(t||'').slice(0,350), 'error'); }).catch(function(){ log('erro na chamada Gemini original: HTTP '+res.status, 'error'); });
+            }catch(_){ log('erro na chamada Gemini original: HTTP '+res.status, 'error'); }
+          }else{
+            log('chamada Gemini original respondeu HTTP '+res.status+'.', 'ok');
           }
         }
+        return res;
+      }catch(e){
+        if(gemini){ log('erro de rede/fetch na chamada Gemini: '+(((e&&e.message)||e)), 'error'); }
+        throw e;
+      }
+    };
+    window.fetch.__fluencyBlocksMultiKeysV197 = true;
+    window.fetch.__fluencyBlocksMultiKeysV1912 = true;
+
+    function safeText(el){ try{return String(el && (el.innerText || el.textContent) || '')}catch(_){return ''} }
+    function visible(el){ try{ var r=el.getBoundingClientRect(), cs=getComputedStyle(el); return r.width>8 && r.height>8 && cs.display!=='none' && cs.visibility!=='hidden'; }catch(_){ return false; } }
+    function findPanel(words){
+      try{
+        var els = Array.prototype.slice.call(document.querySelectorAll('main,div,section,aside'));
+        var c = els.filter(function(el){ var t=safeText(el); return words.every(function(w){ return t.toLowerCase().indexOf(w.toLowerCase()) !== -1; }); }).filter(visible);
+        c.sort(function(a,b){ var ar=a.getBoundingClientRect(), br=b.getBoundingClientRect(); return (ar.width*ar.height)-(br.width*br.height); });
+        return c[0] || null;
+      }catch(_){ return null; }
+    }
+    function renderDiag(){
+      // Painel de diagnóstico desativado por solicitação do usuário.
+      // Função mantida como no-op para que chamadas existentes continuem funcionando.
+      try{
+        var box = document.getElementById('__fluency_v197_diag_box__');
+        if(box && box.parentNode) box.parentNode.removeChild(box);
+      }catch(_){ }
+    }
+    function escapeHtml(s){ return String(s||'').replace(/[&<>\"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+
+    function renderKeyConfig(){
+      // V19.8: a caixa solta de multikeys foi removida da tela Hoje.
+      // As keys agora ficam somente no card correto da aba Progresso.
+      try{
+        var old = document.getElementById('__fluency_v197_keys_box__');
+        if(old) old.remove();
       }catch(_){ }
       return false;
     }
 
-    function findLessonContainer(){
+
+    function describeTarget(el){
       try{
-        var els = Array.prototype.slice.call(document.querySelectorAll('div,section'));
-        var candidates = els.filter(function(el){
-          var t=safeText(el);
-          return /AULA COMPLETA GERADA PELA IA|Gerada por IA|Aula completa/i.test(t) && /to be|verbo|aula|lesson|grammar|speaking|listening/i.test(t);
-        }).filter(visible);
-        if(!candidates.length) return null;
-        candidates.sort(function(a,b){
-          var ar=a.getBoundingClientRect(), br=b.getBoundingClientRect();
-          return (ar.width*ar.height)-(br.width*br.height);
-        });
-        return candidates[0];
-      }catch(_){ return null; }
+        for(var i=0;i<4 && el;i++,el=el.parentElement){
+          var t=safeText(el).replace(/\s+/g,' ').trim();
+          if(t && t.length<90) return t;
+        }
+      }catch(_){ }
+      return '';
     }
-
-    function renderModelBadge(){
+    function watchGenerateClicks(ev){
       try{
-        var old = document.getElementById('__fluency_v195_model_badge__');
-        if(!isAulaActive()){
-          if(old) old.remove();
-          return false;
+        var t = describeTarget(ev && ev.target);
+        if(/gerar nova|começar aula|comecar aula|gerar aula|nova aula/i.test(t)){
+          state.clickAt = Date.now();
+          state.phase = 'clique detectado';
+          log('clique detectado em "'+t+'". Aguardando chamada Gemini da geração da aula…', 'info');
+          var before = state.intercepted||0;
+          setTimeout(function(){
+            try{
+              if((state.intercepted||0) === before && !state.running){
+                log('nenhuma chamada Gemini foi interceptada após o clique. Isso indica cache, aula já pronta, ou botão que não iniciou a geração.', 'warn');
+              }
+            }catch(_){ }
+          }, 3500);
         }
-        var box = findLessonContainer();
-        if(!box) return false;
-        var last = window.__fluencyLastLessonModelV195 || readLastModel() || window.__fluencyLastLessonModelV193 || null;
-        if(window.__fluencyLastLessonModelV193) writeLastModel(window.__fluencyLastLessonModelV193);
-        var label = modelLabel(last);
-        var isFlash = last && /flash/i.test(last.model||'');
-        var isPro = last && /pro/i.test(last.model||'');
-        if(!old){
-          old = document.createElement('div');
-          old.id = '__fluency_v195_model_badge__';
-          old.style.cssText = 'margin:10px 0 12px 0;padding:10px 12px;border-radius:14px;border:1px solid rgba(96,165,250,.28);background:linear-gradient(135deg,rgba(15,23,42,.72),rgba(37,99,235,.18));color:#dbeafe;font-size:12px;line-height:1.35;font-weight:800;box-shadow:0 10px 26px rgba(0,0,0,.18);';
-          var first = box.firstChild;
-          box.insertBefore(old, first && first.nextSibling ? first.nextSibling : first);
-        }
-        old.innerHTML = '<div style="color:'+(isFlash?'#86efac':isPro?'#c4b5fd':'#93c5fd')+'">🔎 '+label+'</div><div style="font-size:11px;color:#bfdbfe;font-weight:600;margin-top:3px">O log antigo V15 pode continuar escrito “Pro”, mas este badge mostra o modelo interceptado pela chamada real.</div>';
-        return true;
-      }catch(_){ return false; }
+      }catch(_){ }
     }
+    window.addEventListener('click', watchGenerateClicks, true);
+    window.addEventListener('touchend', watchGenerateClicks, true);
+    window.addEventListener('error', function(ev){
+      try{ log('JS: '+((ev&&ev.message)||'erro')+(ev&&ev.filename?' em '+ev.filename:''), 'error'); }catch(_){ }
+    }, true);
+    window.addEventListener('unhandledrejection', function(ev){
+      try{ var r=ev&&ev.reason; log('Promise rejeitada: '+((r&&r.message)||r||'erro desconhecido'), 'error'); }catch(_){ }
+    }, true);
 
-    function tick(){
-      var ok = applyScrollFix();
-      renderModelBadge();
-      if(ok && !window.__fluencyV195LoggedScroll){ window.__fluencyV195LoggedScroll = true; diag('scroll do painel de diagnóstico liberado. Arraste dentro do painel para ver logs antigos.', 'ok'); }
-      var l = window.__fluencyLastLessonModelV193 || window.__fluencyLastLessonModelV195;
-      if(l && l.model){ window.__fluencyLastLessonModelV195 = l; writeLastModel(l); }
-    }
+    window.__fluencyV197Status = function(){ return JSON.parse(JSON.stringify(state)); };
+    window.__fluencyV197SaveKeys = function(text){ var keys=parseKeysText(text); setItem(MULTI_KEYS, keys.join('\n')); log('keys exclusivas de aulas salvas manualmente: '+keys.length, 'ok'); return keys.map(mask); };
+    window.__fluencyV197ReadKeys = function(){ return readKeys().map(mask); };
 
-    setTimeout(tick,80); setTimeout(tick,400); setTimeout(tick,1200);
-    setInterval(tick,700);
-    ['click','touchend','pointerup','focus','hashchange','popstate'].forEach(function(ev){ window.addEventListener(ev,function(){ setTimeout(tick,80); setTimeout(tick,350); }, true); });
-    try{ new MutationObserver(function(){ setTimeout(tick,60); }).observe(document.documentElement || document.body, {childList:true, subtree:true}); }catch(_){ }
-
-    window.__fluencyV195ModelStatus = function(){ return window.__fluencyLastLessonModelV195 || readLastModel() || window.__fluencyLastLessonModelV193 || null; };
-  }catch(e){ try{console.warn('Patch V19.5 diag/model failed',e)}catch(_){} }
+    function tick(){ renderKeyConfig(); renderDiag(); }
+    setTimeout(function(){ log('patch ativo. A próxima geração de aula será feita em blocos com Flash e rotação de keys.', 'ok'); }, 350);
+    setTimeout(tick, 500); setTimeout(tick, 1200); setInterval(tick, 1500);
+    ['click','touchend','focus','hashchange','popstate'].forEach(function(ev){ window.addEventListener(ev,function(){ setTimeout(tick,150); }, true); });
+    try{ new MutationObserver(function(){ setTimeout(tick,120); }).observe(document.documentElement || document.body, {childList:true, subtree:true}); }catch(_){ }
+  }catch(e){ try{ console.warn('Fluency V19.7 blocks/multikeys failed', e); }catch(_){ } }
 })();
-/* === FLUENCY PATCH V19.2 - RELAY DEFINITIVO DA KEY EXCLUSIVA PARA AULAS === */
+/* === FLUENCY PATCH V19.2.1 - RELAY CORRIGIDO: FLASH NÃO ALTERA PRO === */
 ;(function(){
   try{
-    if(window.__fluencyLessonKeyRelayV192) return;
-    window.__fluencyLessonKeyRelayV192 = true;
-    var VERSION='V19.2-LESSON-KEY-RELAY';
-    var ALIASES=['fluency_lessonGeminiApiKey','fluency_lessonGeminiKey','lessonGeminiApiKey','lessonGeminiKey','fluency_geminiLessonKey','fluency_proLessonGeminiApiKey','fluency_aulasGeminiKey','fluency_lesson_key','fluency_lesson_api_key'];
+    if(window.__fluencyLessonKeyRelayV1921) return;
+    window.__fluencyLessonKeyRelayV1921 = true;
+    var VERSION='V19.2.1-LESSON-KEY-RELAY-NO-PRO-MIX';
+    // IMPORTANTE: aqui ficam SOMENTE aliases da key Flash/principal de aulas.
+    // A key Pro foi removida deste relay porque o V19.2 copiava a key 1 para fluency_proLessonGeminiApiKey.
+    var ALIASES=['fluency_lessonGeminiApiKey','fluency_lessonGeminiKey','lessonGeminiApiKey','lessonGeminiKey','fluency_geminiLessonKey','fluency_aulasGeminiKey','fluency_lesson_key','fluency_lesson_api_key'];
+    var PRO_ALIASES=['fluency_proLessonGeminiApiKey','fluency_geminiProKey','geminiProApiKey','fluency_paidGeminiKey','fluency_lessonPaidGeminiKey'];
     function isAlias(k){return ALIASES.indexOf(String(k||''))!==-1;}
     function clean(v){v=String(v||'').trim();if(!v)return '';try{if((v[0]==='"'&&v[v.length-1]==='"')||v[0]==='{'||v[0]==='['){var p=JSON.parse(v);if(typeof p==='string')v=p;else if(p&&typeof p.key==='string')v=p.key;else if(p&&typeof p.apiKey==='string')v=p.apiKey;}}catch(_){}return String(v||'').replace(/\s+/g,'').trim();}
     function valid(k){k=clean(k);return /^AIza[0-9A-Za-z_\-]{20,}$/.test(k);}
     function mask(k){k=clean(k);return k?k.slice(0,8)+'...'+k.slice(-4):'';}
-    var nativeGet=Storage.prototype.getItem,nativeSet=Storage.prototype.setItem;
-    function scan(storage){try{for(var i=0;i<ALIASES.length;i++){var v=clean(nativeGet.call(storage,ALIASES[i]));if(valid(v))return v;}}catch(_){}return '';}
-    function getKey(){var k='';try{k=scan(localStorage)||scan(sessionStorage);}catch(_){}return valid(k)?k:'';}
+    var nativeGet=Storage.prototype.getItem,nativeSet=Storage.prototype.setItem,nativeRemove=Storage.prototype.removeItem;
+    function scan(storage, aliases){try{for(var i=0;i<aliases.length;i++){var v=clean(nativeGet.call(storage,aliases[i]));if(valid(v))return v;}}catch(_){}return '';}
+    function getKey(){var k='';try{k=scan(localStorage,ALIASES)||scan(sessionStorage,ALIASES);}catch(_){}return valid(k)?k:'';}
+    function getProKey(){var k='';try{k=scan(localStorage,PRO_ALIASES)||scan(sessionStorage,PRO_ALIASES);}catch(_){}return valid(k)?k:'';}
     function sync(k){k=clean(k||getKey());if(!valid(k))return '';try{for(var i=0;i<ALIASES.length;i++)nativeSet.call(localStorage,ALIASES[i],k);}catch(_){}try{for(var j=0;j<ALIASES.length;j++)nativeSet.call(sessionStorage,ALIASES[j],k);}catch(_){}try{nativeSet.call(localStorage,'fluency___lessonKeySavedAt',String(Date.now()));}catch(_){}return k;}
+    function cleanupAccidentalProClone(){
+      try{
+        var flash=getKey(), pro=getProKey();
+        if(valid(flash)&&valid(pro)&&flash===pro && !nativeGet.call(localStorage,'fluency_pro_key_user_set_v39')){
+          for(var i=0;i<PRO_ALIASES.length;i++){nativeRemove.call(localStorage,PRO_ALIASES[i]);nativeRemove.call(sessionStorage,PRO_ALIASES[i]);}
+          nativeSet.call(localStorage,'fluency_v39_removed_cloned_pro_key','1');
+        }
+      }catch(_){}
+    }
     if(getKey())sync(getKey());
+    cleanupAccidentalProClone();
     window.__fluencyGetLessonKeyV192=function(){return getKey();};
     window.__fluencySetLessonKeyV192=function(k){return sync(k);};
-    window.__fluencyLessonKeyStatusV192=function(){var k=getKey();return {configured:!!k,masked:mask(k),aliases:ALIASES.slice()};};
-    if(nativeGet&&!Storage.prototype.getItem.__fluencyLessonKeyRelayV192){Storage.prototype.getItem=function(k){var v=nativeGet.apply(this,arguments);try{if(isAlias(k)){var c=clean(v);if(valid(c))return c;var r=getKey();if(valid(r))return r;}}catch(_){}return v;};Storage.prototype.getItem.__fluencyLessonKeyRelayV192=true;}
-    if(nativeSet&&!Storage.prototype.setItem.__fluencyLessonKeyRelayV192){Storage.prototype.setItem=function(k,v){try{if(isAlias(k)){var c=clean(v);if(valid(c)){var r=nativeSet.apply(this,[k,c]);sync(c);return r;}}}catch(_){}return nativeSet.apply(this,arguments);};Storage.prototype.setItem.__fluencyLessonKeyRelayV192=true;}
-    function diag(msg,kind){/* Chave de Aulas V19.2 painel desativado */}
-    setTimeout(function(){var k=sync();diag(k?'key detectada e entregue para V15: '+mask(k):'nenhuma key de aulas encontrada nos aliases.',k?'ok':'warn');},1000);
-  }catch(e){try{console.warn('Fluency V19.2 lesson key relay failed',e)}catch(_){}}
+    window.__fluencyLessonKeyStatusV192=function(){var k=getKey();return {configured:!!k,masked:mask(k),aliases:ALIASES.slice(),proSeparated:true,version:VERSION};};
+    if(nativeGet&&!Storage.prototype.getItem.__fluencyLessonKeyRelayV1921){Storage.prototype.getItem=function(k){var v=nativeGet.apply(this,arguments);try{if(isAlias(k)){var c=clean(v);if(valid(c))return c;var r=getKey();if(valid(r))return r;}}catch(_){}return v;};Storage.prototype.getItem.__fluencyLessonKeyRelayV1921=true;}
+    if(nativeSet&&!Storage.prototype.setItem.__fluencyLessonKeyRelayV1921){Storage.prototype.setItem=function(k,v){try{if(isAlias(k)){var c=clean(v);if(valid(c)){var r=nativeSet.apply(this,[k,c]);sync(c);return r;}} if(PRO_ALIASES.indexOf(String(k||''))!==-1){try{nativeSet.call(localStorage,'fluency_pro_key_user_set_v39','1');}catch(__){}}}catch(_){}return nativeSet.apply(this,arguments);};Storage.prototype.setItem.__fluencyLessonKeyRelayV1921=true;}
+    setTimeout(function(){cleanupAccidentalProClone();},600);
+  }catch(e){try{console.warn('Fluency V19.2.1 lesson key relay failed',e)}catch(_){}}
 })();
 /* === FLUENCY PATCH V18 - RENDERIZAÇÃO COMPLETA DA AULA NA ABA AULA === */
 ;(function(){
@@ -1081,7 +1461,7 @@ __LQ=e=>{
     if(!e.vocabulary.every(v=>v&&v.word&&v.translation&&v.example&&String(v.example).trim().length>=8))return false;
     if(!Array.isArray(e.tips)||e.tips.length<2)return false;
     if(!e.tips.every(t=>t&&String(t).trim().length>=25))return false;
-    if(!e.finalTip||String(e.finalTip).trim().length<30)return false;
+    /* V51: finalTip motivacional não é mais obrigatório. */
     return true;
   }catch(a){return false}
 },Jp=(e,a,t,o=[],__cards=[])=>{let __ctx=__fctx(__cards),__hist=(Array.isArray(o)?o:[]).filter(__l=>__l&&__l.title).slice(-8).map(__l=>`- ${__l.title} (${__l.skill||"skill?"}, ${__l.level||"nivel?"})`).join("\n")||"- nenhuma aula concluida ainda";let r=gi(o,e,a),l=mi(e,a,r),n=["B2","C1","C2"].includes(e),u=n?18:15,i=n?15:12,c={grammar:`TOPICO GRAMATICAL: "${l}"
@@ -1204,7 +1584,7 @@ REGRAS ABSOLUTAS DE PROFUNDIDADE (NÃO NEGOCIÁVEIS):
 - NUNCA escreva perguntas de exercicios inteiramente em ingles
 - Nivel ${e}: nem abaixo (entediante) nem acima (frustrante)
 
-ATENÇÃO ESPECIAL — ANTI-RASA: Esta aula NÃO PODE ser rasa. Cada seção precisa ENSINAR ALGO REAL com profundidade, não apenas mencionar conceitos. Se você está prestes a escrever uma seção com menos de 5 frases, PARE e expanda com: regras adicionais, exceções, exemplos extras integrados ao texto, comparações com o português, ou contextos de uso. O aluno deve sair desta aula tendo APRENDIDO algo concreto e aprofundado, não apenas visto um resumo.`},Yp=e=>{let a=e.replace(/```json\s*/gi,"").replace(/```\s*/g,"").trim(),t=a.indexOf("{"),o=a.lastIndexOf("}");if(t===-1||o===-1||o<=t)throw new Error("No JSON object found");a=a.slice(t,o+1);try{return JSON.parse(a)}catch(r){let l=a.replace(/,(\s*[}\]])/g,"$1");return JSON.parse(l)}},em=["gemini-2.5-flash","gemini-2.5-flash-lite","gemini-flash-latest","gemini-2.0-flash-001","gemini-1.5-flash"],am=async e=>{try{let a=He("availableModels"),t=He("availableModelsAt");if(a&&t&&Date.now()-t<864e5)return a;let o=await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${e}`);if(!o.ok)return null;let r=await o.json();if(!r.models)return null;let l=r.models.filter(n=>{var u;return(u=n.supportedGenerationMethods)==null?void 0:u.includes("generateContent")}).map(n=>n.name.replace("models/","")).filter(n=>n.includes("flash")&&!n.includes("audio")&&!n.includes("image")&&!n.includes("thinking")&&!n.includes("tts")&&!n.includes("embed"));return pa("availableModels",l),pa("availableModelsAt",Date.now()),l}catch(a){return console.warn("N\xE3o foi poss\xEDvel descobrir modelos:",a.message),null}},tm=async e=>{let a=await am(e);if(a&&a.length>0){let t=a.map(o=>{let r=0;return o.includes("2.5")?r+=100:o.includes("2.0")?r+=50:o.includes("1.5")&&(r+=20),o.includes("flash-latest")&&(r+=30),o.includes("flash-lite")?r-=20:o.endsWith("flash")&&(r+=15),o.includes("preview")&&(r-=5),o.includes("exp")&&(r-=10),{model:o,score:r}});return t.sort((o,r)=>r.score-o.score),t.map(o=>o.model)}return em},_AK=e=>{let a=[];try{let t=He("geminiKeys");Array.isArray(t)&&(a=a.concat(t))}catch(t){}return e&&(a=a.concat(String(e).split(/[\n,; ]+/))),[...new Set(a.map(t=>String(t||"").trim()).filter(Boolean))].slice(0,5)},_UD=()=>{let e=new Date;return`${e.getFullYear()}-${Bt(e.getMonth()+1)}-${Bt(e.getDate())}`},_UG=()=>{let e=He("apiUsage_"+_UD());return e&&typeof e==="object"?Se({flash:0,pro:0},e):{flash:0,pro:0}},_UI=e=>{let a=_UG(),t=(e||"").includes("pro")?"pro":"flash";a[t]=(a[t]||0)+1,pa("apiUsage_"+_UD(),a)},_HS=e=>{let a=2166136261,t=String(e||"");for(let o=0;o<t.length;o++)a^=t.charCodeAt(o),a=a*16777619>>>0;return a.toString(36)},_RV=async(e,a)=>{let t=_AK(a),o=["gemini-2.5-pro","gemini-pro-latest","gemini-1.5-pro"];for(let r=0;r<t.length;r++)for(let l=0;l<o.length;l++)try{let n=await om(e,t[r],o[l]);return Se(ne({},n),{_validationModel:o[l]})}catch(n){if(console.warn(`Validação Pro indisponível (${o[l]} chave ${r+1}): ${n.message}`),n.status===429||String(n.message||"").includes("quota")||String(n.message||"").includes("RESOURCE_EXHAUSTED"))break}let r=await rm(e,a);return Se(ne({},r),{_validationModel:"flash"})},_VL=async(e,a,t)=>{if(!e||He("validateLessons")===!1)return e;try{let o=_HS(JSON.stringify(e)),r="cache_validation_"+o,l=He(r);if(l&&Date.now()-(l.ts||0)<2592e6)return Se(ne({},e),{_validation:l.value});let n=`Esta é uma aula de inglês para um brasileiro nível ${a}. Verifique: (1) algum erro gramatical em inglês? (2) traduções para PT-BR estão precisas e naturais? (3) exemplos são realistas e contemporâneos? (4) explicações estão corretas? Responda APENAS em JSON: {"ok": boolean, "severity": "none"|"minor"|"major", "issues": ["..."], "suggestedFixes": {}}. Aula: ${JSON.stringify(e).slice(0,12000)}`,u=await _RV(n,t),i={ok:!!u.ok,severity:u.severity||"none",issues:Array.isArray(u.issues)?u.issues.slice(0,5):[],suggestedFixes:u.suggestedFixes||{},model:u._validationModel||"auto"};return pa(r,{ts:Date.now(),value:i}),Se(ne({},e),{_validation:i})}catch(o){return console.warn("Validação da aula ignorada:",o.message),Se(ne({},e),{_validation:{ok:null,severity:"skipped",issues:["Validação indisponível hoje."],suggestedFixes:{},model:"skipped"}})}},om=async(e,a,t)=>{var u,i,c,g;_UI(t);let __ctrl=new AbortController();let __to=setTimeout(()=>{try{__ctrl.abort()}catch(_){}},180000);let r;try{r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${t}:generateContent?key=${a}`,{method:"POST",headers:{"Content-Type":"application/json"},signal:__ctrl.signal,body:JSON.stringify({system_instruction:{parts:[{text:"Voc\xEA \xE9 um gerador de aulas de ingl\xEAs. Responda APENAS com JSON v\xE1lido, sem texto antes ou depois, sem blocos de c\xF3digo markdown."}]},contents:[{parts:[{text:e}]}],generationConfig:{maxOutputTokens:8192,temperature:.75}})})}catch(__er){clearTimeout(__to);if(__er&&__er.name==="AbortError"){let __e=new Error("Gemini API timeout (180s) — tentando próximo modelo");__e.status=408;throw __e}throw __er}clearTimeout(__to);if(!r.ok){let m=await r.text().catch(()=>""),x=r.status===404,h=m.includes("no longer available")||m.includes("not found"),L=new Error(`Gemini API ${r.status}: ${m}`);throw L.isModelError=x||h,L.status=r.status,L}let l=await r.json();if(l.error){let m=new Error(l.error.message);throw m.isModelError=l.error.code===404||(l.error.message||"").includes("not found"),m}let n=((g=(c=(i=(u=l.candidates)==null?void 0:u[0])==null?void 0:i.content)==null?void 0:c.parts)==null?void 0:g.map(m=>m.text||"").join(""))||"";if(!n)throw new Error("Resposta vazia da IA.");return Yp(n)},rm=async(e,a)=>{let t=_AK(a),o;if(!t.length)throw new Error("Nenhuma chave Gemini configurada.");for(let r=0;r<t.length;r++){let l=t[r],n=await tm(l),u=He("workingGeminiModel");if(u&&n.includes(u)){let c=n.indexOf(u);n.splice(c,1),n.unshift(u)}for(let c=0;c<n.length;c++){let g=n[c];for(let m=0;m<2;m++)try{let x=await om(e,l,g);return pa("workingGeminiModel",g),x}catch(x){if(o=x,console.warn(`Chave ${r+1}/${t.length} modelo ${g} tentativa ${m+1}: ${x.message}`),x.isModelError){He("workingGeminiModel")===g&&pa("workingGeminiModel",null),pa("availableModelsAt",null);break}if(x.status===429||x.status===403||String(x.message||"").includes("quota")||String(x.message||"").includes("RESOURCE_EXHAUSTED")||String(x.message||"").includes("API_KEY_INVALID")){break}m===0&&await new Promise(h=>setTimeout(h,800))}if(o&&(o.status===429||o.status===403||String(o.message||"").includes("quota")||String(o.message||"").includes("RESOURCE_EXHAUSTED")||String(o.message||"").includes("API_KEY_INVALID")))break}}throw o||new Error("Todos os modelos Gemini falharam.")},ps=()=>s.default.createElement("div",{style:{position:"fixed",inset:0,zIndex:0,overflow:"hidden",pointerEvents:"none"}},s.default.createElement("div",{style:{position:"absolute",width:"70vw",height:"70vw",maxWidth:700,maxHeight:700,top:"-15%",left:"-10%",borderRadius:"50%",background:"radial-gradient(circle,rgba(59,130,246,0.22) 0%,rgba(99,102,241,0.14) 45%,transparent 70%)",filter:"blur(40px)",animation:"orbFloat1 18s ease-in-out infinite"}}),s.default.createElement("div",{style:{position:"absolute",width:"60vw",height:"60vw",maxWidth:600,maxHeight:600,bottom:"-10%",right:"-10%",borderRadius:"50%",background:"radial-gradient(circle,rgba(139,92,246,0.20) 0%,rgba(59,130,246,0.12) 45%,transparent 70%)",filter:"blur(50px)",animation:"orbFloat2 22s ease-in-out infinite"}}),s.default.createElement("div",{style:{position:"absolute",width:"45vw",height:"45vw",maxWidth:450,maxHeight:450,top:"35%",right:"5%",borderRadius:"50%",background:"radial-gradient(circle,rgba(14,165,233,0.15) 0%,rgba(99,102,241,0.08) 50%,transparent 70%)",filter:"blur(35px)",animation:"orbFloat3 26s ease-in-out infinite"}}),s.default.createElement("div",{style:{position:"absolute",width:"35vw",height:"35vw",maxWidth:350,maxHeight:350,top:"60%",left:"5%",borderRadius:"50%",background:"radial-gradient(circle,rgba(168,85,247,0.12) 0%,transparent 70%)",filter:"blur(45px)",animation:"orbFloat4 20s ease-in-out infinite"}}),s.default.createElement("div",{style:{position:"absolute",inset:0,backgroundImage:"linear-gradient(rgba(255,255,255,0.022) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.022) 1px,transparent 1px)",backgroundSize:"60px 60px"}})),hs="",Dt=null,Mr=new Map,xi=e=>{hs=e},Fr="fluency_tts_",fi=300,lm=e=>{let a=2166136261;for(let t=0;t<e.length;t++)a^=e.charCodeAt(t),a=a*16777619>>>0;return a.toString(36)},vs=e=>Fr+lm(e.trim().toLowerCase()),sm=e=>{let a=e.trim().slice(0,150);if(Mr.has(a))return Mr.get(a);try{let t=localStorage.getItem(vs(e));if(!t)return null;let o=JSON.parse(t);return Mr.set(a,o),o}catch(t){return null}},nm=(e,a)=>{let t=e.trim().slice(0,150);Mr.set(t,a);try{let o=[];for(let r=0;r<localStorage.length;r++){let l=localStorage.key(r);l&&l.startsWith(Fr)&&o.push(l)}o.length>=fi&&o.map(l=>{try{return{k:l,t:JSON.parse(localStorage.getItem(l)).savedAt||0}}catch(n){return{k:l,t:0}}}).sort((l,n)=>l.t-n.t).slice(0,Math.ceil(fi*.2)).forEach(({k:l})=>localStorage.removeItem(l)),localStorage.setItem(vs(e),JSON.stringify(Se(ne({},a),{savedAt:Date.now()})))}catch(o){console.warn("TTS cache full, clearing oldest entries");try{let r=[];for(let l=0;l<localStorage.length;l++){let n=localStorage.key(l);n&&n.startsWith(Fr)&&r.push(n)}r.slice(0,Math.ceil(r.length/2)).forEach(l=>localStorage.removeItem(l)),localStorage.setItem(vs(e),JSON.stringify(Se(ne({},a),{savedAt:Date.now()})))}catch(r){}}},um=()=>{let e=0;for(let a=0;a<localStorage.length;a++)(localStorage.key(a)||"").startsWith(Fr)&&e++;return e};var __pcmToWavBlob=function(__pcm,__rate){var __pb=__pcm.byteLength;var __ab=new ArrayBuffer(44+__pb);var __v=new DataView(__ab);var __wstr=function(__o,__s){for(var __i=0;__i<__s.length;__i++)__v.setUint8(__o+__i,__s.charCodeAt(__i))};__wstr(0,"RIFF");__v.setUint32(4,36+__pb,true);__wstr(8,"WAVE");__wstr(12,"fmt ");__v.setUint32(16,16,true);__v.setUint16(20,1,true);__v.setUint16(22,1,true);__v.setUint32(24,__rate,true);__v.setUint32(28,__rate*2,true);__v.setUint16(32,2,true);__v.setUint16(34,16,true);__wstr(36,"data");__v.setUint32(40,__pb,true);new Uint8Array(__ab).set(new Uint8Array(__pcm),44);return new Blob([__ab],{type:"audio/wav"});};var __audioBufferToWavBlob=function(__abuf){var __ch=__abuf.numberOfChannels||1;var __sr=__abuf.sampleRate||24000;var __len=__abuf.length;var __interleaved=new Int16Array(__len*__ch);for(var __c=0;__c<__ch;__c++){var __cd=__abuf.getChannelData(__c);for(var __i=0;__i<__len;__i++){var __s=Math.max(-1,Math.min(1,__cd[__i]));__interleaved[__i*__ch+__c]=__s<0?__s*0x8000:__s*0x7FFF;}}var __pb=__interleaved.byteLength;var __ab=new ArrayBuffer(44+__pb);var __v=new DataView(__ab);var __wstr=function(__o,__s){for(var __i=0;__i<__s.length;__i++)__v.setUint8(__o+__i,__s.charCodeAt(__i))};__wstr(0,"RIFF");__v.setUint32(4,36+__pb,true);__wstr(8,"WAVE");__wstr(12,"fmt ");__v.setUint32(16,16,true);__v.setUint16(20,1,true);__v.setUint16(22,__ch,true);__v.setUint32(24,__sr,true);__v.setUint32(28,__sr*__ch*2,true);__v.setUint16(32,__ch*2,true);__v.setUint16(34,16,true);__wstr(36,"data");__v.setUint32(40,__pb,true);new Uint8Array(__ab).set(new Uint8Array(__interleaved.buffer),44);return new Blob([__ab],{type:"audio/wav"});};var __sharedAudioEl=null;var __getAudioEl=function(){if(window.__sharedHTMLAudio){__sharedAudioEl=window.__sharedHTMLAudio}if(!__sharedAudioEl){try{__sharedAudioEl=document.createElement("audio");__sharedAudioEl.preload="auto";__sharedAudioEl.setAttribute("playsinline","");__sharedAudioEl.setAttribute("webkit-playsinline","");__sharedAudioEl.style.display="none";document.body.appendChild(__sharedAudioEl);window.__sharedHTMLAudio=__sharedAudioEl;}catch(_){return null}}return __sharedAudioEl;};var __playViaHTMLAudio=function(__blob){return new Promise(function(__resolve,__reject){var __el=__getAudioEl();if(!__el){return __reject(new Error("no audio element"))}var __url=URL.createObjectURL(__blob);var __done=false;var __releaseNowPlaying=function(){try{__el.pause()}catch(_){}try{__el.removeAttribute("src")}catch(_){}try{__el.src=""}catch(_){}try{__el.load()}catch(_){}try{if("mediaSession" in navigator){navigator.mediaSession.metadata=null;try{navigator.mediaSession.playbackState="none"}catch(_){}}}catch(_){}};var __cleanup=function(){if(__done)return;__done=true;try{URL.revokeObjectURL(__url)}catch(_){}__el.onended=null;__el.onerror=null;__el.onpause=null;__releaseNowPlaying();};try{__el.pause();__el.currentTime=0}catch(_){}__el.onended=function(){__cleanup();__resolve()};__el.onerror=function(){__cleanup();__reject(new Error("audio element error code "+(__el.error&&__el.error.code)))};__el.src=__url;try{__el.volume=1.0;__el.muted=false}catch(_){}var __p;try{__p=__el.play()}catch(__pe){return __cleanup(),__reject(__pe)}if(__p&&typeof __p.catch==="function"){__p.catch(function(__er){__cleanup();__reject(__er)})}});};window.__stopHTMLAudio=function(){try{var __el=__sharedAudioEl||window.__sharedHTMLAudio;if(__el){__el.pause();__el.onended=null;__el.onerror=null;try{__el.removeAttribute("src")}catch(_){}try{__el.src=""}catch(_){}try{__el.load()}catch(_){}try{if("mediaSession" in navigator){navigator.mediaSession.metadata=null;try{navigator.mediaSession.playbackState="none"}catch(_){}}}catch(_){}}}catch(_){}};Er=()=>{if(!Dt||Dt.state==="closed"){var __Cx=window.AudioContext||window.webkitAudioContext;try{Dt=new __Cx({latencyHint:"playback"})}catch(_){try{Dt=new __Cx()}catch(__){return null}}}if(Dt.state==="suspended"){try{Dt.resume()}catch(_){}}return Dt;},im=e=>{let a=atob(e),t=new ArrayBuffer(a.length),o=new Uint8Array(t);for(let r=0;r<a.length;r++)o[r]=a.charCodeAt(r);return t},dm=e=>{let a=Er(),t=new Int16Array(e),o=new Float32Array(t.length);for(let n=0;n<t.length;n++)o[n]=t[n]/32768;let r=a.createBuffer(1,o.length,24e3);r.copyToChannel(o,0);let l=a.createBufferSource();return l.buffer=r,l.connect(a.destination),new Promise(n=>{l.onended=n,l.start(0)})},dmRate=function(e,rate){let a=Er();let t=new Int16Array(e);let o=new Float32Array(t.length);for(let n=0;n<t.length;n++)o[n]=t[n]/32768;let r=a.createBuffer(1,o.length,rate||24000);r.copyToChannel(o,0);let l=a.createBufferSource();l.buffer=r;l.connect(a.destination);return new Promise(function(resolve){l.onended=resolve;l.start(0)})},fm=e=>{let a=Er(),t=a.createBufferSource();return t.buffer=e,t.connect(a.destination),new Promise(o=>{t.onended=o,t.start(0)})},cm=["gemini-3.1-flash-tts-preview","gemini-2.5-flash-preview-tts"],__ttsState={loading:false,error:null,set:function(l,e){this.loading=l;this.error=e;window.dispatchEvent(new CustomEvent("ttsstate",{detail:{loading:l,error:e}}))}};window.__ttsState=__ttsState,pm=async e=>{var t,o,r,l;let __keys=[];try{__keys=_AK(hs)}catch(_){__keys=hs?[hs]:[]}if(!__keys.length)return null;let a=sm(e);if(a)return a;let __errors=[];
+ATENÇÃO ESPECIAL — ANTI-RASA: Esta aula NÃO PODE ser rasa. Cada seção precisa ENSINAR ALGO REAL com profundidade, não apenas mencionar conceitos. Se você está prestes a escrever uma seção com menos de 5 frases, PARE e expanda com: regras adicionais, exceções, exemplos extras integrados ao texto, comparações com o português, ou contextos de uso. O aluno deve sair desta aula tendo APRENDIDO algo concreto e aprofundado, não apenas visto um resumo.`},Yp=e=>{let a=e.replace(/```json\s*/gi,"").replace(/```\s*/g,"").trim(),t=a.indexOf("{"),o=a.lastIndexOf("}");if(t===-1||o===-1||o<=t)throw new Error("No JSON object found");a=a.slice(t,o+1);try{return JSON.parse(a)}catch(r){let l=a.replace(/,(\s*[}\]])/g,"$1");return JSON.parse(l)}},em=["gemini-2.5-flash","gemini-2.5-flash-lite","gemini-flash-latest","gemini-2.0-flash-001","gemini-1.5-flash"],am=async e=>{try{let a=He("availableModels"),t=He("availableModelsAt");if(a&&t&&Date.now()-t<864e5)return a;let o=await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${e}`);if(!o.ok)return null;let r=await o.json();if(!r.models)return null;let l=r.models.filter(n=>{var u;return(u=n.supportedGenerationMethods)==null?void 0:u.includes("generateContent")}).map(n=>n.name.replace("models/","")).filter(n=>n.includes("flash")&&!n.includes("audio")&&!n.includes("image")&&!n.includes("thinking")&&!n.includes("tts")&&!n.includes("embed"));return pa("availableModels",l),pa("availableModelsAt",Date.now()),l}catch(a){return console.warn("N\xE3o foi poss\xEDvel descobrir modelos:",a.message),null}},tm=async e=>{let a=await am(e);if(a&&a.length>0){let t=a.map(o=>{let r=0;return o.includes("2.5")?r+=100:o.includes("2.0")?r+=50:o.includes("1.5")&&(r+=20),o.includes("flash-latest")&&(r+=30),o.includes("flash-lite")?r-=20:o.endsWith("flash")&&(r+=15),o.includes("preview")&&(r-=5),o.includes("exp")&&(r-=10),{model:o,score:r}});return t.sort((o,r)=>r.score-o.score),t.map(o=>o.model)}return em},_AK=e=>{let a=[];try{let t=He("geminiKeys");Array.isArray(t)&&(a=a.concat(t))}catch(t){}return e&&(a=a.concat(String(e).split(/[\n,; ]+/))),[...new Set(a.map(t=>String(t||"").trim()).filter(Boolean))].slice(0,5)},_UD=()=>{let e=new Date;return`${e.getFullYear()}-${Bt(e.getMonth()+1)}-${Bt(e.getDate())}`},_UG=()=>{let e=He("apiUsage_"+_UD());return e&&typeof e==="object"?Se({flash:0,pro:0},e):{flash:0,pro:0}},_UI=e=>{let a=_UG(),t=(e||"").includes("pro")?"pro":"flash";a[t]=(a[t]||0)+1,pa("apiUsage_"+_UD(),a)},_HS=e=>{let a=2166136261,t=String(e||"");for(let o=0;o<t.length;o++)a^=t.charCodeAt(o),a=a*16777619>>>0;return a.toString(36)},_RV=async(e,a)=>{let t=_AK(a),o=["gemini-2.5-pro","gemini-pro-latest","gemini-1.5-pro"];for(let r=0;r<t.length;r++)for(let l=0;l<o.length;l++)try{let n=await om(e,t[r],o[l]);return Se(ne({},n),{_validationModel:o[l]})}catch(n){if(console.warn(`Validação Pro indisponível (${o[l]} chave ${r+1}): ${n.message}`),n.status===429||String(n.message||"").includes("quota")||String(n.message||"").includes("RESOURCE_EXHAUSTED"))break}let r=await rm(e,a);return Se(ne({},r),{_validationModel:"flash"})},_VL=async(e,a,t)=>{if(!e||He("validateLessons")===!1)return e;try{let o=_HS(JSON.stringify(e)),r="cache_validation_"+o,l=He(r);if(l&&Date.now()-(l.ts||0)<2592e6)return Se(ne({},e),{_validation:l.value});let n=`Esta é uma aula de inglês para um brasileiro nível ${a}. Verifique: (1) algum erro gramatical em inglês? (2) traduções para PT-BR estão precisas e naturais? (3) exemplos são realistas e contemporâneos? (4) explicações estão corretas? Responda APENAS em JSON: {"ok": boolean, "severity": "none"|"minor"|"major", "issues": ["..."], "suggestedFixes": {}}. Aula: ${JSON.stringify(e).slice(0,12000)}`,u=await _RV(n,t),i={ok:!!u.ok,severity:u.severity||"none",issues:Array.isArray(u.issues)?u.issues.slice(0,5):[],suggestedFixes:u.suggestedFixes||{},model:u._validationModel||"auto"};return pa(r,{ts:Date.now(),value:i}),Se(ne({},e),{_validation:i})}catch(o){return console.warn("Validação da aula ignorada:",o.message),Se(ne({},e),{_validation:{ok:null,severity:"skipped",issues:["Validação indisponível hoje."],suggestedFixes:{},model:"skipped"}})}},om=async(e,a,t)=>{var u,i,c,g;_UI(t);let __ctrl=new AbortController();let __to=setTimeout(()=>{try{__ctrl.abort()}catch(_){}},180000);let r;try{r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${t}:generateContent?key=${a}`,{method:"POST",headers:{"Content-Type":"application/json"},signal:__ctrl.signal,body:JSON.stringify({system_instruction:{parts:[{text:"Voc\xEA \xE9 um gerador de aulas de ingl\xEAs. Responda APENAS com JSON v\xE1lido, sem texto antes ou depois, sem blocos de c\xF3digo markdown."}]},contents:[{parts:[{text:e}]}],generationConfig:{maxOutputTokens:8192,temperature:.75}})})}catch(__er){clearTimeout(__to);if(__er&&__er.name==="AbortError"){let __e=new Error("Gemini API timeout (180s) — tentando próximo modelo");__e.status=408;throw __e}throw __er}clearTimeout(__to);if(!r||typeof r.ok==="undefined"){let L=new Error("Gemini API retornou resposta vazia/null");L.status=599;throw L}if(!r.ok){let m=await r.text().catch(()=>""),x=r.status===404,h=m.includes("no longer available")||m.includes("not found"),L=new Error(`Gemini API ${r.status}: ${m}`);throw L.isModelError=x||h,L.status=r.status,L}let l=await r.json();if(l.error){let m=new Error(l.error.message);throw m.isModelError=l.error.code===404||(l.error.message||"").includes("not found"),m}let n=((g=(c=(i=(u=l.candidates)==null?void 0:u[0])==null?void 0:i.content)==null?void 0:c.parts)==null?void 0:g.map(m=>m.text||"").join(""))||"";if(!n)throw new Error("Resposta vazia da IA.");return Yp(n)},rm=async(e,a)=>{let t=_AK(a),o;if(!t.length)throw new Error("Nenhuma chave Gemini configurada.");for(let r=0;r<t.length;r++){let l=t[r],n=await tm(l),u=He("workingGeminiModel");if(u&&n.includes(u)){let c=n.indexOf(u);n.splice(c,1),n.unshift(u)}for(let c=0;c<n.length;c++){let g=n[c];for(let m=0;m<2;m++)try{let x=await om(e,l,g);return pa("workingGeminiModel",g),x}catch(x){if(o=x,console.warn(`Chave ${r+1}/${t.length} modelo ${g} tentativa ${m+1}: ${x.message}`),x.isModelError){He("workingGeminiModel")===g&&pa("workingGeminiModel",null),pa("availableModelsAt",null);break}if(x.status===429||x.status===403||String(x.message||"").includes("quota")||String(x.message||"").includes("RESOURCE_EXHAUSTED")||String(x.message||"").includes("API_KEY_INVALID")){break}m===0&&await new Promise(h=>setTimeout(h,800))}if(o&&(o.status===429||o.status===403||String(o.message||"").includes("quota")||String(o.message||"").includes("RESOURCE_EXHAUSTED")||String(o.message||"").includes("API_KEY_INVALID")))break}}throw o||new Error("Todos os modelos Gemini falharam.")},ps=()=>s.default.createElement("div",{style:{position:"fixed",inset:0,zIndex:0,overflow:"hidden",pointerEvents:"none"}},s.default.createElement("div",{style:{position:"absolute",width:"70vw",height:"70vw",maxWidth:700,maxHeight:700,top:"-15%",left:"-10%",borderRadius:"50%",background:"radial-gradient(circle,rgba(59,130,246,0.22) 0%,rgba(99,102,241,0.14) 45%,transparent 70%)",filter:"blur(40px)",animation:"orbFloat1 18s ease-in-out infinite"}}),s.default.createElement("div",{style:{position:"absolute",width:"60vw",height:"60vw",maxWidth:600,maxHeight:600,bottom:"-10%",right:"-10%",borderRadius:"50%",background:"radial-gradient(circle,rgba(139,92,246,0.20) 0%,rgba(59,130,246,0.12) 45%,transparent 70%)",filter:"blur(50px)",animation:"orbFloat2 22s ease-in-out infinite"}}),s.default.createElement("div",{style:{position:"absolute",width:"45vw",height:"45vw",maxWidth:450,maxHeight:450,top:"35%",right:"5%",borderRadius:"50%",background:"radial-gradient(circle,rgba(14,165,233,0.15) 0%,rgba(99,102,241,0.08) 50%,transparent 70%)",filter:"blur(35px)",animation:"orbFloat3 26s ease-in-out infinite"}}),s.default.createElement("div",{style:{position:"absolute",width:"35vw",height:"35vw",maxWidth:350,maxHeight:350,top:"60%",left:"5%",borderRadius:"50%",background:"radial-gradient(circle,rgba(168,85,247,0.12) 0%,transparent 70%)",filter:"blur(45px)",animation:"orbFloat4 20s ease-in-out infinite"}}),s.default.createElement("div",{style:{position:"absolute",inset:0,backgroundImage:"linear-gradient(rgba(255,255,255,0.022) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.022) 1px,transparent 1px)",backgroundSize:"60px 60px"}})),hs="",Dt=null,Mr=new Map,xi=e=>{hs=e},Fr="fluency_tts_",fi=300,lm=e=>{let a=2166136261;for(let t=0;t<e.length;t++)a^=e.charCodeAt(t),a=a*16777619>>>0;return a.toString(36)},vs=e=>Fr+lm(e.trim().toLowerCase()),sm=e=>{let a=e.trim().slice(0,150);if(Mr.has(a))return Mr.get(a);try{let t=localStorage.getItem(vs(e));if(!t)return null;let o=JSON.parse(t);return Mr.set(a,o),o}catch(t){return null}},nm=(e,a)=>{let t=e.trim().slice(0,150);Mr.set(t,a);try{let o=[];for(let r=0;r<localStorage.length;r++){let l=localStorage.key(r);l&&l.startsWith(Fr)&&o.push(l)}o.length>=fi&&o.map(l=>{try{return{k:l,t:JSON.parse(localStorage.getItem(l)).savedAt||0}}catch(n){return{k:l,t:0}}}).sort((l,n)=>l.t-n.t).slice(0,Math.ceil(fi*.2)).forEach(({k:l})=>localStorage.removeItem(l)),localStorage.setItem(vs(e),JSON.stringify(Se(ne({},a),{savedAt:Date.now()})))}catch(o){console.warn("TTS cache full, clearing oldest entries");try{let r=[];for(let l=0;l<localStorage.length;l++){let n=localStorage.key(l);n&&n.startsWith(Fr)&&r.push(n)}r.slice(0,Math.ceil(r.length/2)).forEach(l=>localStorage.removeItem(l)),localStorage.setItem(vs(e),JSON.stringify(Se(ne({},a),{savedAt:Date.now()})))}catch(r){}}},um=()=>{let e=0;for(let a=0;a<localStorage.length;a++)(localStorage.key(a)||"").startsWith(Fr)&&e++;return e};var __pcmToWavBlob=function(__pcm,__rate){var __pb=__pcm.byteLength;var __ab=new ArrayBuffer(44+__pb);var __v=new DataView(__ab);var __wstr=function(__o,__s){for(var __i=0;__i<__s.length;__i++)__v.setUint8(__o+__i,__s.charCodeAt(__i))};__wstr(0,"RIFF");__v.setUint32(4,36+__pb,true);__wstr(8,"WAVE");__wstr(12,"fmt ");__v.setUint32(16,16,true);__v.setUint16(20,1,true);__v.setUint16(22,1,true);__v.setUint32(24,__rate,true);__v.setUint32(28,__rate*2,true);__v.setUint16(32,2,true);__v.setUint16(34,16,true);__wstr(36,"data");__v.setUint32(40,__pb,true);new Uint8Array(__ab).set(new Uint8Array(__pcm),44);return new Blob([__ab],{type:"audio/wav"});};var __audioBufferToWavBlob=function(__abuf){var __ch=__abuf.numberOfChannels||1;var __sr=__abuf.sampleRate||24000;var __len=__abuf.length;var __interleaved=new Int16Array(__len*__ch);for(var __c=0;__c<__ch;__c++){var __cd=__abuf.getChannelData(__c);for(var __i=0;__i<__len;__i++){var __s=Math.max(-1,Math.min(1,__cd[__i]));__interleaved[__i*__ch+__c]=__s<0?__s*0x8000:__s*0x7FFF;}}var __pb=__interleaved.byteLength;var __ab=new ArrayBuffer(44+__pb);var __v=new DataView(__ab);var __wstr=function(__o,__s){for(var __i=0;__i<__s.length;__i++)__v.setUint8(__o+__i,__s.charCodeAt(__i))};__wstr(0,"RIFF");__v.setUint32(4,36+__pb,true);__wstr(8,"WAVE");__wstr(12,"fmt ");__v.setUint32(16,16,true);__v.setUint16(20,1,true);__v.setUint16(22,__ch,true);__v.setUint32(24,__sr,true);__v.setUint32(28,__sr*__ch*2,true);__v.setUint16(32,__ch*2,true);__v.setUint16(34,16,true);__wstr(36,"data");__v.setUint32(40,__pb,true);new Uint8Array(__ab).set(new Uint8Array(__interleaved.buffer),44);return new Blob([__ab],{type:"audio/wav"});};var __sharedAudioEl=null;var __getAudioEl=function(){if(window.__sharedHTMLAudio){__sharedAudioEl=window.__sharedHTMLAudio}if(!__sharedAudioEl){try{__sharedAudioEl=document.createElement("audio");__sharedAudioEl.preload="auto";__sharedAudioEl.setAttribute("playsinline","");__sharedAudioEl.setAttribute("webkit-playsinline","");__sharedAudioEl.style.display="none";document.body.appendChild(__sharedAudioEl);window.__sharedHTMLAudio=__sharedAudioEl;}catch(_){return null}}return __sharedAudioEl;};var __playViaHTMLAudio=function(__blob){return new Promise(function(__resolve,__reject){var __el=__getAudioEl();if(!__el){return __reject(new Error("no audio element"))}var __url=URL.createObjectURL(__blob);var __done=false;var __releaseNowPlaying=function(){try{__el.pause()}catch(_){}try{__el.removeAttribute("src")}catch(_){}try{__el.src=""}catch(_){}try{__el.load()}catch(_){}try{if("mediaSession" in navigator){navigator.mediaSession.metadata=null;try{navigator.mediaSession.playbackState="none"}catch(_){}}}catch(_){}};var __cleanup=function(){if(__done)return;__done=true;try{URL.revokeObjectURL(__url)}catch(_){}__el.onended=null;__el.onerror=null;__el.onpause=null;__releaseNowPlaying();};try{__el.pause();__el.currentTime=0}catch(_){}__el.onended=function(){__cleanup();__resolve()};__el.onerror=function(){__cleanup();__reject(new Error("audio element error code "+(__el.error&&__el.error.code)))};__el.src=__url;try{__el.volume=1.0;__el.muted=false}catch(_){}var __p;try{__p=__el.play()}catch(__pe){return __cleanup(),__reject(__pe)}if(__p&&typeof __p.catch==="function"){__p.catch(function(__er){__cleanup();__reject(__er)})}});};window.__stopHTMLAudio=function(){try{var __el=__sharedAudioEl||window.__sharedHTMLAudio;if(__el){__el.pause();__el.onended=null;__el.onerror=null;try{__el.removeAttribute("src")}catch(_){}try{__el.src=""}catch(_){}try{__el.load()}catch(_){}try{if("mediaSession" in navigator){navigator.mediaSession.metadata=null;try{navigator.mediaSession.playbackState="none"}catch(_){}}}catch(_){}}}catch(_){}};Er=()=>{if(!Dt||Dt.state==="closed"){var __Cx=window.AudioContext||window.webkitAudioContext;try{Dt=new __Cx({latencyHint:"playback"})}catch(_){try{Dt=new __Cx()}catch(__){return null}}}if(Dt.state==="suspended"){try{Dt.resume()}catch(_){}}return Dt;},im=e=>{let a=atob(e),t=new ArrayBuffer(a.length),o=new Uint8Array(t);for(let r=0;r<a.length;r++)o[r]=a.charCodeAt(r);return t},dm=e=>{let a=Er(),t=new Int16Array(e),o=new Float32Array(t.length);for(let n=0;n<t.length;n++)o[n]=t[n]/32768;let r=a.createBuffer(1,o.length,24e3);r.copyToChannel(o,0);let l=a.createBufferSource();return l.buffer=r,l.connect(a.destination),new Promise(n=>{l.onended=n,l.start(0)})},dmRate=function(e,rate){let a=Er();let t=new Int16Array(e);let o=new Float32Array(t.length);for(let n=0;n<t.length;n++)o[n]=t[n]/32768;let r=a.createBuffer(1,o.length,rate||24000);r.copyToChannel(o,0);let l=a.createBufferSource();l.buffer=r;l.connect(a.destination);return new Promise(function(resolve){l.onended=resolve;l.start(0)})},fm=e=>{let a=Er(),t=a.createBufferSource();return t.buffer=e,t.connect(a.destination),new Promise(o=>{t.onended=o,t.start(0)})},cm=["gemini-3.1-flash-tts-preview","gemini-2.5-flash-preview-tts"],__ttsState={loading:false,error:null,set:function(l,e){this.loading=l;this.error=e;window.dispatchEvent(new CustomEvent("ttsstate",{detail:{loading:l,error:e}}))}};window.__ttsState=__ttsState,pm=async e=>{var t,o,r,l;let __keys=[];try{__keys=_AK(hs)}catch(_){__keys=hs?[hs]:[]}if(!__keys.length)return null;let a=sm(e);if(a)return a;let __errors=[];
 let __ttsModels=cm.slice();
 try{
   let __working=localStorage.getItem("__tts_working_model__");
@@ -1230,6 +1610,7 @@ for(let __ki=0;__ki<__keys.length;__ki++){
     let __ac=new AbortController();let __to=setTimeout(function(){__ac.abort()},10000);
     let __prompt=__isPt?("Leia em português brasileiro natural, com voz clara e amigável, sem ler esta instrução: "+e):e;
     let u=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${n}:generateContent?key=${encodeURIComponent(__key)}`,{method:"POST",headers:{"Content-Type":"application/json"},signal:__ac.signal,body:JSON.stringify({contents:[{parts:[{text:__prompt}]}],generationConfig:{responseModalities:["AUDIO"],speechConfig:{voiceConfig:{prebuiltVoiceConfig:{voiceName:__voice}}}}})}).finally(function(){clearTimeout(__to)});
+    if(!u||typeof u.ok==="undefined"){let errMsg=`key ${__ki+1}/${__keys.length} fetch retornou resposta vazia/null no modelo ${n}`;__errors.push(errMsg);console.warn("Gemini TTS",errMsg);continue;}
     if(!u.ok){let errBody=await u.text().catch(()=>"");let errMsg=`key ${__ki+1}/${__keys.length} HTTP ${u.status} no modelo ${n}`;if(u.status===400)errMsg+=": Modelo não suporta TTS ou request inválido";else if(u.status===403)errMsg+=": Permissão negada — verifique a chave Gemini";else if(u.status===404){errMsg+=": Modelo não encontrado ou descontinuado";try{let __d=JSON.parse(localStorage.getItem("__tts_dead_models__")||"{}");__d[n]=Date.now();localStorage.setItem("__tts_dead_models__",JSON.stringify(__d))}catch(_){}}else if(u.status===429)errMsg+=": Limite de requests atingido";else errMsg+=`: ${errBody.slice(0,120)}`;__errors.push(errMsg);console.warn("Gemini TTS",errMsg);continue;}
     let json=await u.json().catch(e=>{__errors.push(`Resposta inválida do modelo ${n}: ${e.message}`);return null;});if(!json){continue;}
     let c=(l=(r=(o=(t=json.candidates)==null?void 0:t[0])==null?void 0:o.content)==null?void 0:r.parts)==null?void 0:l.find(m=>{var x;return(x=m.inlineData)==null?void 0:x.data});
@@ -1588,7 +1969,7 @@ _DCE=(e,a)=>{let t=Date.now(),o=He("diaryErrors")||[];Array.isArray(o)||(o=[]);l
 _DFREQ=e=>{let a=Date.now()-30*864e5,t={};(Array.isArray(e)?e:[]).filter(o=>(o.ts||0)>=a).forEach(o=>{let r=o.type||"other";t[r]=(t[r]||0)+1});return Object.entries(t).sort((o,r)=>r[1]-o[1]).slice(0,5).map(([o,r])=>({type:o,count:r}))},
 _DA=async(e,a,t)=>{let o=String(e||"").trim();if(!o)throw new Error("Escreva um texto em inglês antes de corrigir.");let r="cache_diary_"+_HS(o),l=He(r);if(l&&Date.now()-(l.ts||0)<2592e6)return Se(ne({},l.value),{_cached:!0});let n=`Corrija este diário em inglês escrito por um brasileiro nível ${a}. Responda SOMENTE com JSON válido: {"errors":[{"type":"grammatical|lexical|collocation|register|spelling","original":"trecho original","correction":"correção","explanation":"explicação curta em PT-BR"}],"correctedMinimal":"versão corrigida com intervenção mínima","nativeVersion":"versão natural como um nativo escreveria","quickAdvicePt":"conselho curto em português"}. Texto do aluno: ${o.slice(0,3500)}`;let u=await rm(n,t);pa(r,{ts:Date.now(),value:u});_DCE(o,u);return u},
 _DPS=async(e,a)=>{let t=He("diaryErrors")||[],o=Date.now(),r=He("diaryPatternSummary");if(r&&o-(r.ts||0)<14*864e5)return r.value;if(!Array.isArray(t)||!t.length)return null;let l=t.filter(i=>o-(i.ts||0)<=30*864e5).slice(0,120);if(!l.length)return null;let n=`Analise estes erros de diário de um brasileiro aprendendo inglês. Identifique os 5 padrões de erro mais frequentes e gere recomendações de estudo. Responda SOMENTE JSON: {"patterns":[{"type":"...","count":0,"pattern":"descrição","recommendation":"recomendação prática"}],"summaryPt":"resumo curto em PT-BR"}. Erros: ${JSON.stringify(l).slice(0,12000)}`;try{let u=await _RV(n,a);pa("diaryPatternSummary",{ts:o,value:u});pa("diaryPatternLastRun",xs());return u}catch(u){console.warn("Resumo de padrões do diário indisponível:",u.message);return r?r.value:null}},
-__avTok=e=>String(e||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").match(/[a-z']+/g)||[],__avStem=e=>{e=String(e||"").toLowerCase();let a={ran:"run",running:"run",runs:"run",studies:"study",studied:"study",studying:"study"};if(a[e])return a[e];return e.endsWith("ies")&&e.length>4?e.slice(0,-3)+"y":e.endsWith("ing")&&e.length>5?e.slice(0,-3).replace(/([a-z])\1$/,"$1"):e.endsWith("ed")&&e.length>4?e.slice(0,-2):e.endsWith("es")&&e.length>4?e.slice(0,-2):e.endsWith("s")&&e.length>3?e.slice(0,-1):e},__avHash=e=>{let a=2166136261;for(let t=0;t<String(e||"").length;t++)a^=String(e).charCodeAt(t),a=Math.imul(a,16777619);return(a>>>0).toString(36)},__trackActiveVocabulary=async(e,a,t)=>{try{if(!e||!Array.isArray(a)||!a.length||typeof t!="function")return a;let o="fluency_activeUse_"+__avHash(e);if(He(o))return a;pa(o,Date.now());let r=Date.now(),l=new Set(__avTok(e)),n=[...l].map(__avStem),u=new Set(n),i=String(e||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9' ]+/g," ").replace(/\s+/g," "),c=!1,g=a.map(m=>{if(!m||!m.word||m.graduated)return m;let x=String(m.word).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9' ]+/g," ").trim(),h=!1;if(x.includes(" "))h=i.includes(x);else{let L=__avStem(x);h=l.has(x)||u.has(L)}if(!h)return m;let L=(m.activeUsageCount||0)+1,I=L>=3,y=I?Se(ne({},m),{activeUsageCount:L,lastActiveUse:r,graduated:!0,nextReview:r+60*864e5}):Se(ne({},m),{activeUsageCount:L,lastActiveUse:r,graduated:!!m.graduated});return c=!0,y});return c&&(t(g),await we("flashcards",g)),g}catch(o){return console.warn("active vocab tracking failed",o),a}};Cm=({profile:e,completedLessons:a,flashcards:t,setProfile:o,apiKey:r,setApiKey:l})=>{var I;let n=a.length,u=a.filter(y=>y.level===e.level).length,i=Math.min(100,Math.round(u/Math.max(1,_LT(e.level))*100)),c=a.reduce((y,f)=>(y[f.skill]=(y[f.skill]||0)+1,y),{}),g=t.filter(y=>(y.seen||0)>=3&&y.lastLevel!=="hard").length,__active=t.filter(y=>y&&y.graduated).length,__total=t.length,m=async(y,extra)=>{let f=Se(ne({},e),Se({level:y},extra||{}));await we("profile",f),o(f)},x=rt.indexOf(e.level),h=rt[Math.min(rt.length-1,x+1)],L=[];for(let y=27;y>=0;y--){let f=new Date;f.setDate(f.getDate()-y);let d=`${f.getFullYear()}-${Bt(f.getMonth()+1)}-${Bt(f.getDate())}`;L.push({key:d,studied:a.some(p=>p.date===d)||(Array.isArray(e.studyDays)&&e.studyDays.includes(d)),weekday:f.getDay()})}let U=_UG(),K=_AK(r).join("\n");return s.default.createElement("div",{className:"max-w-3xl mx-auto px-4 md:px-6 py-6 pb-24"},s.default.createElement("div",{className:"anim-rise"},s.default.createElement("div",{className:"fx-body text-xs uppercase tracking-[0.28em]",style:{color:"var(--muted)"}},"Seu progresso"),s.default.createElement("h1",{className:"fx-display text-4xl md:text-5xl mt-1",style:{fontWeight:600}},"Voc\xEA est\xE1 ",s.default.createElement("span",{className:"fx-serif-italic",style:{color:"var(--accent)"}},"indo longe"),".")),s.default.createElement("div",{className:"mt-7 card-paper rounded-2xl p-6 anim-rise"},s.default.createElement("div",{className:"flex items-start justify-between"},s.default.createElement("div",null,s.default.createElement("div",{className:"section-label mb-1"},"N\xEDvel atual"),s.default.createElement("div",{className:"flex items-baseline gap-3 mt-1"},s.default.createElement("div",{className:"fx-display text-5xl",style:{fontWeight:700,background:"linear-gradient(135deg,var(--ink),var(--accent))",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}},e.level),s.default.createElement("div",{className:"fx-serif-italic text-xl",style:{color:"var(--accent)"}},Et[e.level]))),s.default.createElement("div",{className:"w-12 h-12 rounded-2xl flex items-center justify-center",style:{background:"rgba(244,200,66,0.1)",border:"1px solid rgba(244,200,66,0.2)"}},s.default.createElement(xo,{size:24,style:{color:"var(--gold)"}}))),s.default.createElement("p",{className:"fx-body text-sm mt-3 px-3 py-2 rounded-xl",style:{color:"var(--accent)",background:"rgba(91,156,246,0.07)",border:"1px solid rgba(91,156,246,0.15)"}},Im(e.level,u)),s.default.createElement("div",{className:"mt-4"},s.default.createElement("div",{className:"flex items-center justify-between fx-body text-xs mb-2",style:{color:"var(--muted)"}},s.default.createElement("span",{style:{color:"var(--ink-soft)"}},e.level," \u2192 ",h),s.default.createElement("span",null,s.default.createElement("strong",{style:{color:"var(--ink)"}},u),"/",_LT(e.level)," aulas completas")),s.default.createElement("div",{className:"h-2.5 rounded-full overflow-hidden",style:{background:"rgba(255,255,255,0.06)"}},s.default.createElement("div",{className:"h-full rounded-full transition-all",style:{width:`${i}%`,background:"linear-gradient(90deg,var(--accent),var(--purple))"}}))),_LDn(a,e.level)&&e.level!=="C2"&&s.default.createElement("button",{onClick:()=>_LTRun(e,h,m),className:"btn-primary mt-4 px-5 py-2.5 rounded-xl fx-body text-sm flex items-center gap-2 w-full justify-center"},s.default.createElement(Ue,{size:14})," Avan\xE7ar para ",h," \u2014 ",Et[h])),wo[e.level]&&s.default.createElement("div",{className:"mt-4 card-paper rounded-2xl p-5 anim-rise",style:{animationDelay:".05s"}},s.default.createElement("div",{className:"flex items-center gap-2 mb-4"},s.default.createElement("div",{className:"w-8 h-8 rounded-xl flex items-center justify-center",style:{background:"rgba(52,211,153,0.12)",border:"1px solid rgba(52,211,153,0.25)"}},s.default.createElement(Ke,{size:16,style:{color:"var(--sage)"}})),s.default.createElement("div",null,s.default.createElement("div",{className:"section-label"},"O que voc\xEA j\xE1 consegue fazer"),s.default.createElement("div",{className:"fx-body text-xs",style:{color:"var(--muted)"}},"N\xEDvel ",e.level," desbloqueado"))),s.default.createElement("ul",{className:"space-y-2.5"},wo[e.level].unlocked.map((y,f)=>s.default.createElement("li",{key:f,className:"flex items-start gap-3"},s.default.createElement("span",{className:"flex-shrink-0 mt-0.5 w-5 h-5 rounded-full flex items-center justify-center",style:{background:"rgba(52,211,153,0.12)",border:"1px solid rgba(52,211,153,0.3)"}},s.default.createElement(ca,{size:11,style:{color:"var(--sage)"}})),s.default.createElement("span",{className:"fx-body text-sm",style:{color:"var(--ink-soft)",lineHeight:1.6}},y)))),e.level!=="C2"&&s.default.createElement("div",{className:"mt-4 pt-4",style:{borderTop:"1px solid rgba(255,255,255,0.07)"}},s.default.createElement("div",{className:"flex items-start gap-3"},s.default.createElement("span",{className:"flex-shrink-0 mt-0.5 w-5 h-5 rounded-full flex items-center justify-center",style:{background:"rgba(91,156,246,0.1)",border:"1px solid rgba(91,156,246,0.2)"}},s.default.createElement(Ja,{size:11,style:{color:"var(--accent)"}})),s.default.createElement("span",{className:"fx-body text-sm",style:{color:"var(--muted)",lineHeight:1.6}},s.default.createElement("strong",{style:{color:"var(--accent)"}},"Pr\xF3ximo objetivo:")," ",wo[e.level].next)))),wo[e.level]&&s.default.createElement("div",{className:"mt-4 card-paper rounded-2xl p-5 anim-rise",style:{animationDelay:".10s"}},s.default.createElement("div",{className:"flex items-center gap-2 mb-3"},s.default.createElement("div",{className:"w-8 h-8 rounded-xl flex items-center justify-center",style:{background:"rgba(244,200,66,0.1)",border:"1px solid rgba(244,200,66,0.2)"}},s.default.createElement(Tt,{size:15,style:{color:"var(--gold)"}})),s.default.createElement("div",{className:"section-label"},"Seu caminho de estudos")),s.default.createElement("p",{className:"fx-body text-sm",style:{color:"var(--ink-soft)",lineHeight:1.7}},wo[e.level].path),s.default.createElement("div",{className:"mt-4 grid grid-cols-5 gap-1.5"},rt.map((y,f)=>{let d=rt.indexOf(e.level),p=f<d,v=f===d;return s.default.createElement("div",{key:y,className:"text-center"},s.default.createElement("div",{className:"h-1.5 rounded-full mb-1",style:{background:p?"var(--sage)":v?"var(--accent)":"rgba(255,255,255,0.08)"}}),s.default.createElement("span",{className:"fx-body text-xs",style:{color:p?"var(--sage)":v?"var(--accent)":"var(--muted)",fontWeight:v?700:400}},y))})),s.default.createElement("p",{className:"fx-body text-xs mt-3",style:{color:"var(--muted)"}},"\u{1F4C5} Uma aula por dia (seg\u2013sex) \xB7 ~10 semanas por n\xEDvel \xB7 sistema define o cronograma automaticamente")),s.default.createElement("div",{className:"grid grid-cols-2 md:grid-cols-4 gap-2 mt-4 anim-rise"},s.default.createElement("div",{className:"card-paper rounded-xl p-4"},s.default.createElement("div",{className:"flex items-center gap-1.5",style:{color:"var(--accent)"}},s.default.createElement(wt,{size:13}),s.default.createElement("span",{className:"fx-body text-xs uppercase tracking-[0.2em]"},"Ofensiva")),s.default.createElement("div",{className:"fx-display text-3xl mt-1",style:{fontWeight:700}},e.streak||0),s.default.createElement("div",{className:"fx-body text-xs",style:{color:"var(--muted)"}},"dias seguidos")),s.default.createElement("div",{className:"card-paper rounded-xl p-4"},s.default.createElement("div",{className:"flex items-center gap-1.5",style:{color:"var(--accent)"}},s.default.createElement(kt,{size:13}),s.default.createElement("span",{className:"fx-body text-xs uppercase tracking-[0.2em]"},"Aulas")),s.default.createElement("div",{className:"fx-display text-3xl mt-1",style:{fontWeight:700}},n),s.default.createElement("div",{className:"fx-body text-xs",style:{color:"var(--muted)"}},"no total")),s.default.createElement("div",{className:"card-paper rounded-xl p-4"},s.default.createElement("div",{className:"flex items-center gap-1.5",style:{color:"var(--sage)"}},s.default.createElement(ze,{size:13}),s.default.createElement("span",{className:"fx-body text-xs uppercase tracking-[0.2em]"},"Cartas")),s.default.createElement("div",{className:"fx-display text-3xl mt-1",style:{fontWeight:700}},t.length),s.default.createElement("div",{className:"fx-body text-xs",style:{color:"var(--muted)"}},g," dominadas")),s.default.createElement("div",{className:"card-paper rounded-xl p-4"},s.default.createElement("div",{className:"flex items-center gap-1.5",style:{color:"var(--gold)"}},s.default.createElement(Io,{size:13}),s.default.createElement("span",{className:"fx-body text-xs uppercase tracking-[0.2em]"},"Desde")),s.default.createElement("div",{className:"fx-display text-lg mt-1",style:{fontWeight:700}},((I=e.createdAt)==null?void 0:I.slice(5).replace("-","/"))||"\u2014"),s.default.createElement("div",{className:"fx-body text-xs",style:{color:"var(--muted)"}},"voc\xEA come\xE7ou"))),s.default.createElement("div",{className:"mt-6 card-paper rounded-sm p-5 anim-rise"},s.default.createElement("div",{className:"fx-body text-xs uppercase tracking-[0.22em] mb-3",style:{color:"var(--muted)"}},"\xDAltimos 28 dias"),s.default.createElement("div",{className:"grid grid-cols-14 gap-1",style:{gridTemplateColumns:"repeat(14, 1fr)"}},L.map(({key:y,studied:f,weekday:d})=>s.default.createElement("div",{key:y,title:y,className:"aspect-square rounded-sm",style:{background:f?"var(--accent)":d===0?"var(--line-soft)":"var(--bg-2)",opacity:f?1:.6,border:"1px solid var(--line)"}}))),s.default.createElement("div",{className:"flex items-center gap-3 mt-3 fx-body text-[10px]",style:{color:"var(--muted)"}},s.default.createElement("div",{className:"flex items-center gap-1"},s.default.createElement("div",{className:"w-2.5 h-2.5 rounded-sm",style:{background:"var(--accent)"}})," estudou"),s.default.createElement("div",{className:"flex items-center gap-1"},s.default.createElement("div",{className:"w-2.5 h-2.5 rounded-sm",style:{background:"var(--bg-2)",border:"1px solid var(--line)"}})," dia \xFAtil"),s.default.createElement("div",{className:"flex items-center gap-1"},s.default.createElement("div",{className:"w-2.5 h-2.5 rounded-sm",style:{background:"var(--line-soft)"}})," fim de semana"))),s.default.createElement("div",{className:"mt-6 card-paper rounded-sm p-5 anim-rise"},s.default.createElement("div",{className:"fx-body text-xs uppercase tracking-[0.22em] mb-3",style:{color:"var(--muted)"}},"Por pilar"),s.default.createElement("div",{className:"space-y-3"},["grammar","reading","writing","listening","review"].map(y=>{let f=c[y]||0,d=Math.max(1,...Object.values(c)),p=f/d*100,v={grammar:Ya,reading:wa,writing:ot,listening:et,review:Pa}[y];return s.default.createElement("div",{key:y,className:"flex items-center gap-3"},s.default.createElement(v,{size:14,style:{color:"var(--ink-soft)"}}),s.default.createElement("div",{className:"fx-body text-sm w-24",style:{color:"var(--ink)"}},Dr[y]),s.default.createElement("div",{className:"flex-1 h-2 rounded-full overflow-hidden",style:{background:"var(--line-soft)"}},s.default.createElement("div",{className:"h-full",style:{width:`${p}%`,background:"var(--ink-soft)"}})),s.default.createElement("div",{className:"fx-body text-xs w-8 text-right",style:{color:"var(--muted)"}},f))}))),s.default.createElement("div",{className:"mt-6 card-paper rounded-sm p-5 anim-rise"},s.default.createElement("div",{className:"fx-body text-xs uppercase tracking-[0.22em] mb-3",style:{color:"var(--muted)"}},"Ajustar n\xEDvel"),s.default.createElement("p",{className:"fx-body text-sm mb-3",style:{color:"var(--accent)"}},"Sentindo que as aulas est\xE3o f\xE1ceis ou dif\xEDceis? Mude seu n\xEDvel a qualquer momento."),s.default.createElement("div",{className:"flex flex-wrap gap-1.5"},rt.map(y=>s.default.createElement("button",{key:y,onClick:()=>m(y),className:"px-3 py-1.5 rounded-sm fx-display text-sm border transition",style:{fontWeight:600,background:e.level===y?"var(--ink)":"var(--paper)",color:e.level===y?"var(--paper)":"var(--ink)",borderColor:e.level===y?"var(--ink)":"var(--line)"}},y)))),s.default.createElement("div",{className:"mt-6 card-paper rounded-sm p-5 anim-rise"},s.default.createElement("div",{className:"fx-body text-xs uppercase tracking-[0.22em] mb-1",style:{color:"var(--muted)"}},"Uso da IA"),s.default.createElement("p",{className:"fx-body text-sm",style:{color:"var(--accent)"}},"Chamadas IA hoje: ",U.flash||0," / 1.500 (Flash) · ",U.pro||0," / 100 (Pro)"),s.default.createElement("p",{className:"fx-body text-sm mt-2",style:{color:"var(--accent)"}},"Vocabulário ativo: ",__active," palavras (das ",__total," totais)"),s.default.createElement("label",{className:"fx-body text-xs mt-3 flex items-center gap-2",style:{color:"var(--muted)"}},s.default.createElement("input",{type:"checkbox",defaultChecked:He("validateLessons")!==!1,onChange:y=>pa("validateLessons",y.target.checked)}),"Validar aulas automaticamente (Pro se disponível; senão Flash)"),s.default.createElement("div",{className:"mt-4 pt-4",style:{borderTop:"1px solid rgba(255,255,255,0.08)"}},s.default.createElement("div",{className:"fx-body text-xs uppercase tracking-[0.18em] mb-2",style:{color:"var(--muted)"}},"Padrões de erro recorrentes — últimos 30 dias"),(_DFREQ(He("diaryErrors")||[]).length?_DFREQ(He("diaryErrors")||[]).map((__p,__idx)=>s.default.createElement("p",{key:__idx,className:"fx-body text-sm",style:{color:"var(--accent)"}},__p.type,": ",__p.count)):s.default.createElement("p",{className:"fx-body text-sm",style:{color:"var(--muted)"}},"Ainda sem dados do diário.")))),s.default.createElement("div",{className:"mt-6 card-paper rounded-sm p-5 anim-rise"},s.default.createElement("div",{className:"fx-body text-xs uppercase tracking-[0.22em] mb-1",style:{color:"var(--muted)"}},"Chaves da IA (Gemini)"),s.default.createElement("p",{className:"fx-body text-sm mb-3",style:{color:"var(--accent)"}},_AK(r).length?"✅ "+_AK(r).length+" chave(s) configurada(s). O app tenta a próxima se uma bater limite.":"⚠️ Sem chave — usando aulas padrão."),s.default.createElement("textarea",{className:"input-paper w-full fx-body text-sm",rows:5,placeholder:"Cole até 5 chaves, uma por linha: AIza...",defaultValue:K,onChange:y=>l(y.target.value)}),s.default.createElement("div",{className:"flex gap-2 flex-wrap mt-3"},s.default.createElement("button",{className:"btn-primary px-4 py-2 rounded-xl fx-body text-sm flex items-center gap-2",onClick:async()=>{let y=_AK(r);await we("geminiKeys",y),await we("geminiKey",y[0]||""),xi(y[0]||""),alert("Chaves salvas! Total: "+y.length)}},s.default.createElement(ca,{size:14})," Salvar chaves"),s.default.createElement("button",{className:"btn-ghost px-4 py-2 rounded-xl fx-body text-sm flex items-center gap-2",onClick:async()=>{let y=_AK(r);if(!y.length){alert("Configure ao menos uma chave primeiro.");return}await we("availableModels",null),await we("availableModelsAt",null),await we("workingGeminiModel",null);let d=[];for(let p=0;p<y.length;p++)try{let v=await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(y[p])}`),w=v.ok?"models OK":"models erro "+v.status,P=[];try{P=await tm(y[p])}catch(U){P=[]}(!P||!P.length)&&(P=["gemini-2.5-flash","gemini-2.0-flash-001","gemini-1.5-flash"]);let R=!1,N="";for(let U of P.slice(0,4))try{let G=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${U}:generateContent?key=${encodeURIComponent(y[p])}`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({contents:[{parts:[{text:"Responda somente OK."}]}],generationConfig:{maxOutputTokens:8,temperature:0}})});if(G.ok){R=!0;N=U;break}else N=U+" HTTP "+G.status+" "+(await G.text()).slice(0,80)}catch(G){N=U+" "+G.message}d.push(R?`✅ Chave ${p+1}: OK generate (${N})`:`❌ Chave ${p+1}: ${w}; generate falhou: ${N}`)}catch(v){d.push(`❌ Chave ${p+1}: ${v.message}`)}alert(d.join("\n"))}},"Testar chaves")),He("workingGeminiModel")&&s.default.createElement("p",{className:"fx-body text-xs mt-3",style:{color:"var(--muted)"}},"Modelo em uso: ",s.default.createElement("strong",null,He("workingGeminiModel")))),s.default.createElement(ym,{profile:e}),s.default.createElement("div",{className:"mt-8 text-center fx-body text-xs flex items-center justify-center gap-1.5",style:{color:"var(--muted)"}},He("firebaseConfig")?s.default.createElement(s.default.Fragment,null,s.default.createElement(ka,{size:11})," Dados sincronizados na nuvem \xB7 ol\xE1, ",e.name):s.default.createElement(s.default.Fragment,null,s.default.createElement("span",null,"\u{1F4BE}")," Dados salvos localmente \xB7 ol\xE1, ",e.name),s.default.createElement("span",{style:{marginLeft:8,color:"var(--muted)"}},"\xB7"),s.default.createElement("span",{className:"fx-body text-xs",style:{color:"var(--muted)"}},"\u{1F50A} ",um()," \xE1udios em cache")))},Ar={A1:[{text:"Hello, my name is Maria.",focus:"Apresenta\xE7\xE3o",tip:"'hello' = HEH-loh \xB7 'name' = neym"},{text:"I am from Brazil.",focus:"Origem",tip:"'from' = frum (curto) \xB7 'Brazil' = bruh-ZIL"},{text:"How are you today?",focus:"Cumprimento",tip:"'how' = hau \xB7 'today' = tuh-DAY"},{text:"I would like some water, please.",focus:"Pedido",tip:"'would' = wud \xB7 'water' = WAH-ter"},{text:"The weather is very nice.",focus:"Clima",tip:"'weather' = WEH-ther (th suave, n\xE3o 'd')"},{text:"Can you help me, please?",focus:"Ajuda",tip:"'can' = k\xE6n \xB7 'help' = h\u025Blp"}],A2:[{text:"I usually wake up at seven o'clock.",focus:"Rotina",tip:"'usually' = YU-zhuh-lee \xB7 'o'clock' = uh-KLOK"},{text:"Do you have any recommendations?",focus:"Recomenda\xE7\xE3o",tip:"'recommendations' = reh-kom-en-DAY-shunz"},{text:"I've been learning English for two years.",focus:"Tempo",tip:"'I've been' = ayv bin (r\xE1pido e fluido)"},{text:"Could you speak more slowly, please?",focus:"Comunica\xE7\xE3o",tip:"'slowly' = SLOH-lee \xB7 'could' = kud (sem L)"},{text:"What time does the bus arrive?",focus:"Transporte",tip:"'arrive' = uh-RYVE \xB7 'does' = duz"},{text:"I'm really enjoying this trip.",focus:"Viagem",tip:"'enjoying' = en-JOY-ing \xB7 'really' = REE-lee"}],B1:[{text:"I've been working on this project for three months.",focus:"Present Perfect Continuous",tip:"'working' = WUR-king \xB7 conecte 'been working' sem pausas"},{text:"If I had more time, I would travel the world.",focus:"Condicional",tip:"'would' = wud \xB7 'travel' = TRAV-el"},{text:"Could you explain what you mean by that?",focus:"Clareza",tip:"'explain' = ek-SPLAYN \xB7 'mean' = meen"},{text:"The presentation went better than I expected.",focus:"Compara\xE7\xE3o",tip:"'presentation' = preh-zen-TAY-shun \xB7 'expected' = ek-SPEK-tid"},{text:"I'm not sure whether that's a good idea.",focus:"D\xFAvida",tip:"'whether' = WEH-ther (igual a 'weather'!)"},{text:"She's been promoted to senior manager.",focus:"Not\xEDcia",tip:"'promoted' = pruh-MOH-tid \xB7 'senior' = SEE-nyor"}],B2:[{text:"The proposal has been thoroughly reviewed by the committee.",focus:"Passiva",tip:"'thoroughly' = THUR-oh-lee \xB7 'committee' = kuh-MIT-ee"},{text:"Despite the challenges, we managed to meet the deadline.",focus:"Contraste",tip:"'despite' = deh-SPYTE \xB7 'challenges' = CHAL-en-jez"},{text:"It's worth considering all the implications beforehand.",focus:"Express\xE3o",tip:"'worth' = wurth \xB7 'implications' = im-plih-KAY-shunz"},{text:"I'd rather deal with this sooner rather than later.",focus:"Prefer\xEAncia",tip:"'rather' = RATH-er (th suave) \xB7 'deal' = deel"},{text:"The findings suggest a correlation between the two variables.",focus:"Acad\xEAmico",tip:"'findings' = FYND-ingz \xB7 'correlation' = kor-uh-LAY-shun"},{text:"We should look into this matter more carefully.",focus:"Phrasal verb",tip:"'look into' = LOOK in-too (phrasal verb: investigar)"}],C1:[{text:"The ramifications of this decision remain to be seen.",focus:"Vocabul\xE1rio sofisticado",tip:"'ramifications' = ram-ih-fih-KAY-shunz \xB7 'remain' = rih-MAYN"},{text:"She articulated her concerns with remarkable clarity.",focus:"Flu\xEAncia",tip:"'articulated' = ar-TIK-yoo-lay-tid \xB7 ritmo natural"},{text:"Notwithstanding the difficulties, progress has been made.",focus:"Formal",tip:"'notwithstanding' = not-with-STAND-ing \xB7 tom acad\xEAmico"},{text:"The nuanced approach yielded unprecedented results.",focus:"Vocabul\xE1rio alto n\xEDvel",tip:"'nuanced' = NYOO-anst \xB7 'unprecedented' = un-PRES-ih-den-tid"},{text:"It's imperative that we address this issue immediately.",focus:"Urg\xEAncia",tip:"'imperative' = im-PER-uh-tiv \xB7 'address' = uh-DRES (verbo)"},{text:"The implications are far more complex than they appear.",focus:"An\xE1lise",tip:"'implications' = im-plih-KAY-shunz \xB7 entona\xE7\xE3o descendente no final"}],C2:[{text:"The philosophical underpinnings of this argument are questionable.",focus:"Acad\xEAmico avan\xE7ado",tip:"'underpinnings' = un-der-PIN-ingz \xB7 ritmo fluido como nativo"},{text:"Her eloquence was nothing short of extraordinary.",focus:"Elogio formal",tip:"'eloquence' = EL-oh-kwens \xB7 'extraordinary' = ek-STROR-dih-ner-ee"},{text:"The intricacies of language acquisition fascinate linguists.",focus:"Lingu\xEDstica",tip:"'intricacies' = IN-trih-kuh-seez \xB7 'acquisition' = ak-wih-ZI-shun"},{text:"One ought to consider the broader socioeconomic context.",focus:"Formal brit\xE2nico",tip:"'ought to' = AWT too \xB7 'socioeconomic' = soh-see-oh-ee-kuh-NOM-ik"},{text:"It remains to be seen whether this paradigm will persist.",focus:"Previs\xE3o acad\xEAmica",tip:"'paradigm' = PAR-uh-dym \xB7 'persist' = per-SIST"},{text:"The ostensible simplicity belies profound complexity.",focus:"Sofisticado",tip:"'ostensible' = os-TEN-sih-bul \xB7 'belies' = bih-LYZ"}]},Sm=e=>`Voc\xEA \xE9 professor de ingl\xEAs. Gere 6 frases em ingl\xEAs para pr\xE1tica de pron\xFAncia para aluno n\xEDvel ${e} (${Et[e]}).
+__avTok=e=>String(e||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").match(/[a-z']+/g)||[],__avStem=e=>{e=String(e||"").toLowerCase();let a={ran:"run",running:"run",runs:"run",studies:"study",studied:"study",studying:"study"};if(a[e])return a[e];return e.endsWith("ies")&&e.length>4?e.slice(0,-3)+"y":e.endsWith("ing")&&e.length>5?e.slice(0,-3).replace(/([a-z])\1$/,"$1"):e.endsWith("ed")&&e.length>4?e.slice(0,-2):e.endsWith("es")&&e.length>4?e.slice(0,-2):e.endsWith("s")&&e.length>3?e.slice(0,-1):e},__avHash=e=>{let a=2166136261;for(let t=0;t<String(e||"").length;t++)a^=String(e).charCodeAt(t),a=Math.imul(a,16777619);return(a>>>0).toString(36)},__trackActiveVocabulary=async(e,a,t)=>{try{if(!e||!Array.isArray(a)||!a.length||typeof t!="function")return a;let o="fluency_activeUse_"+__avHash(e);if(He(o))return a;pa(o,Date.now());let r=Date.now(),l=new Set(__avTok(e)),n=[...l].map(__avStem),u=new Set(n),i=String(e||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9' ]+/g," ").replace(/\s+/g," "),c=!1,g=a.map(m=>{if(!m||!m.word||m.graduated)return m;let x=String(m.word).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9' ]+/g," ").trim(),h=!1;if(x.includes(" "))h=i.includes(x);else{let L=__avStem(x);h=l.has(x)||u.has(L)}if(!h)return m;let L=(m.activeUsageCount||0)+1,I=L>=3,y=I?Se(ne({},m),{activeUsageCount:L,lastActiveUse:r,graduated:!0,nextReview:r+60*864e5}):Se(ne({},m),{activeUsageCount:L,lastActiveUse:r,graduated:!!m.graduated});return c=!0,y});return c&&(t(g),await we("flashcards",g)),g}catch(o){return console.warn("active vocab tracking failed",o),a}};Cm=({profile:e,completedLessons:a,flashcards:t,setProfile:o,apiKey:r,setApiKey:l})=>{var I;let n=a.length,u=a.filter(y=>y.level===e.level).length,i=Math.min(100,Math.round(u/Math.max(1,_LT(e.level))*100)),c=a.reduce((y,f)=>(y[f.skill]=(y[f.skill]||0)+1,y),{}),g=t.filter(y=>(y.seen||0)>=3&&y.lastLevel!=="hard").length,__active=t.filter(y=>y&&y.graduated).length,__total=t.length,m=async(y,extra)=>{let f=Se(ne({},e),Se({level:y},extra||{}));await we("profile",f),o(f)},x=rt.indexOf(e.level),h=rt[Math.min(rt.length-1,x+1)],L=[];for(let y=27;y>=0;y--){let f=new Date;f.setDate(f.getDate()-y);let d=`${f.getFullYear()}-${Bt(f.getMonth()+1)}-${Bt(f.getDate())}`;L.push({key:d,studied:a.some(p=>p.date===d)||(Array.isArray(e.studyDays)&&e.studyDays.includes(d)),weekday:f.getDay()})}let U=_UG(),K=_AK(r).join("\n");return s.default.createElement("div",{className:"max-w-3xl mx-auto px-4 md:px-6 py-6",style:{paddingBottom:"calc(180px + env(safe-area-inset-bottom, 0px))"}},s.default.createElement("div",{className:"anim-rise"},s.default.createElement("div",{className:"fx-body text-xs uppercase tracking-[0.28em]",style:{color:"var(--muted)"}},"Seu progresso"),s.default.createElement("h1",{className:"fx-display text-4xl md:text-5xl mt-1",style:{fontWeight:600}},"Voc\xEA est\xE1 ",s.default.createElement("span",{className:"fx-serif-italic",style:{color:"var(--accent)"}},"indo longe"),".")),s.default.createElement("div",{className:"mt-7 card-paper rounded-2xl p-6 anim-rise"},s.default.createElement("div",{className:"flex items-start justify-between"},s.default.createElement("div",null,s.default.createElement("div",{className:"section-label mb-1"},"N\xEDvel atual"),s.default.createElement("div",{className:"flex items-baseline gap-3 mt-1"},s.default.createElement("div",{className:"fx-display text-5xl",style:{fontWeight:700,background:"linear-gradient(135deg,var(--ink),var(--accent))",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}},e.level),s.default.createElement("div",{className:"fx-serif-italic text-xl",style:{color:"var(--accent)"}},Et[e.level]))),s.default.createElement("div",{className:"w-12 h-12 rounded-2xl flex items-center justify-center",style:{background:"rgba(244,200,66,0.1)",border:"1px solid rgba(244,200,66,0.2)"}},s.default.createElement(xo,{size:24,style:{color:"var(--gold)"}}))),s.default.createElement("p",{className:"fx-body text-sm mt-3 px-3 py-2 rounded-xl",style:{color:"var(--accent)",background:"rgba(91,156,246,0.07)",border:"1px solid rgba(91,156,246,0.15)"}},Im(e.level,u)),s.default.createElement("div",{className:"mt-4"},s.default.createElement("div",{className:"flex items-center justify-between fx-body text-xs mb-2",style:{color:"var(--muted)"}},s.default.createElement("span",{style:{color:"var(--ink-soft)"}},e.level," \u2192 ",h),s.default.createElement("span",null,s.default.createElement("strong",{style:{color:"var(--ink)"}},u),"/",_LT(e.level)," aulas completas")),s.default.createElement("div",{className:"h-2.5 rounded-full overflow-hidden",style:{background:"rgba(255,255,255,0.06)"}},s.default.createElement("div",{className:"h-full rounded-full transition-all",style:{width:`${i}%`,background:"linear-gradient(90deg,var(--accent),var(--purple))"}}))),_LDn(a,e.level)&&e.level!=="C2"&&s.default.createElement("button",{onClick:()=>_LTRun(e,h,m),className:"btn-primary mt-4 px-5 py-2.5 rounded-xl fx-body text-sm flex items-center gap-2 w-full justify-center"},s.default.createElement(Ue,{size:14})," Avan\xE7ar para ",h," \u2014 ",Et[h])),wo[e.level]&&s.default.createElement("div",{className:"mt-4 card-paper rounded-2xl p-5 anim-rise",style:{animationDelay:".05s"}},s.default.createElement("div",{className:"flex items-center gap-2 mb-4"},s.default.createElement("div",{className:"w-8 h-8 rounded-xl flex items-center justify-center",style:{background:"rgba(52,211,153,0.12)",border:"1px solid rgba(52,211,153,0.25)"}},s.default.createElement(Ke,{size:16,style:{color:"var(--sage)"}})),s.default.createElement("div",null,s.default.createElement("div",{className:"section-label"},"O que voc\xEA j\xE1 consegue fazer"),s.default.createElement("div",{className:"fx-body text-xs",style:{color:"var(--muted)"}},"N\xEDvel ",e.level," desbloqueado"))),s.default.createElement("ul",{className:"space-y-2.5"},wo[e.level].unlocked.map((y,f)=>s.default.createElement("li",{key:f,className:"flex items-start gap-3"},s.default.createElement("span",{className:"flex-shrink-0 mt-0.5 w-5 h-5 rounded-full flex items-center justify-center",style:{background:"rgba(52,211,153,0.12)",border:"1px solid rgba(52,211,153,0.3)"}},s.default.createElement(ca,{size:11,style:{color:"var(--sage)"}})),s.default.createElement("span",{className:"fx-body text-sm",style:{color:"var(--ink-soft)",lineHeight:1.6}},y)))),e.level!=="C2"&&s.default.createElement("div",{className:"mt-4 pt-4",style:{borderTop:"1px solid rgba(255,255,255,0.07)"}},s.default.createElement("div",{className:"flex items-start gap-3"},s.default.createElement("span",{className:"flex-shrink-0 mt-0.5 w-5 h-5 rounded-full flex items-center justify-center",style:{background:"rgba(91,156,246,0.1)",border:"1px solid rgba(91,156,246,0.2)"}},s.default.createElement(Ja,{size:11,style:{color:"var(--accent)"}})),s.default.createElement("span",{className:"fx-body text-sm",style:{color:"var(--muted)",lineHeight:1.6}},s.default.createElement("strong",{style:{color:"var(--accent)"}},"Pr\xF3ximo objetivo:")," ",wo[e.level].next)))),wo[e.level]&&s.default.createElement("div",{className:"mt-4 card-paper rounded-2xl p-5 anim-rise",style:{animationDelay:".10s"}},s.default.createElement("div",{className:"flex items-center gap-2 mb-3"},s.default.createElement("div",{className:"w-8 h-8 rounded-xl flex items-center justify-center",style:{background:"rgba(244,200,66,0.1)",border:"1px solid rgba(244,200,66,0.2)"}},s.default.createElement(Tt,{size:15,style:{color:"var(--gold)"}})),s.default.createElement("div",{className:"section-label"},"Seu caminho de estudos")),s.default.createElement("p",{className:"fx-body text-sm",style:{color:"var(--ink-soft)",lineHeight:1.7}},wo[e.level].path),s.default.createElement("div",{className:"mt-4 grid grid-cols-5 gap-1.5"},rt.map((y,f)=>{let d=rt.indexOf(e.level),p=f<d,v=f===d;return s.default.createElement("div",{key:y,className:"text-center"},s.default.createElement("div",{className:"h-1.5 rounded-full mb-1",style:{background:p?"var(--sage)":v?"var(--accent)":"rgba(255,255,255,0.08)"}}),s.default.createElement("span",{className:"fx-body text-xs",style:{color:p?"var(--sage)":v?"var(--accent)":"var(--muted)",fontWeight:v?700:400}},y))})),s.default.createElement("p",{className:"fx-body text-xs mt-3",style:{color:"var(--muted)"}},"\u{1F4C5} Uma aula por dia (seg\u2013sex) \xB7 ~10 semanas por n\xEDvel \xB7 sistema define o cronograma automaticamente")),s.default.createElement("div",{className:"grid grid-cols-2 md:grid-cols-4 gap-2 mt-4 anim-rise"},s.default.createElement("div",{className:"card-paper rounded-xl p-4"},s.default.createElement("div",{className:"flex items-center gap-1.5",style:{color:"var(--accent)"}},s.default.createElement(wt,{size:13}),s.default.createElement("span",{className:"fx-body text-xs uppercase tracking-[0.2em]"},"Ofensiva")),s.default.createElement("div",{className:"fx-display text-3xl mt-1",style:{fontWeight:700}},e.streak||0),s.default.createElement("div",{className:"fx-body text-xs",style:{color:"var(--muted)"}},"dias seguidos")),s.default.createElement("div",{className:"card-paper rounded-xl p-4"},s.default.createElement("div",{className:"flex items-center gap-1.5",style:{color:"var(--accent)"}},s.default.createElement(kt,{size:13}),s.default.createElement("span",{className:"fx-body text-xs uppercase tracking-[0.2em]"},"Aulas")),s.default.createElement("div",{className:"fx-display text-3xl mt-1",style:{fontWeight:700}},n),s.default.createElement("div",{className:"fx-body text-xs",style:{color:"var(--muted)"}},"no total")),s.default.createElement("div",{className:"card-paper rounded-xl p-4"},s.default.createElement("div",{className:"flex items-center gap-1.5",style:{color:"var(--sage)"}},s.default.createElement(ze,{size:13}),s.default.createElement("span",{className:"fx-body text-xs uppercase tracking-[0.2em]"},"Cartas")),s.default.createElement("div",{className:"fx-display text-3xl mt-1",style:{fontWeight:700}},t.length),s.default.createElement("div",{className:"fx-body text-xs",style:{color:"var(--muted)"}},g," dominadas")),s.default.createElement("div",{className:"card-paper rounded-xl p-4"},s.default.createElement("div",{className:"flex items-center gap-1.5",style:{color:"var(--gold)"}},s.default.createElement(Io,{size:13}),s.default.createElement("span",{className:"fx-body text-xs uppercase tracking-[0.2em]"},"Desde")),s.default.createElement("div",{className:"fx-display text-lg mt-1",style:{fontWeight:700}},((I=e.createdAt)==null?void 0:I.slice(5).replace("-","/"))||"\u2014"),s.default.createElement("div",{className:"fx-body text-xs",style:{color:"var(--muted)"}},"voc\xEA come\xE7ou"))),s.default.createElement("div",{className:"mt-6 card-paper rounded-sm p-5 anim-rise"},s.default.createElement("div",{className:"fx-body text-xs uppercase tracking-[0.22em] mb-3",style:{color:"var(--muted)"}},"\xDAltimos 28 dias"),s.default.createElement("div",{className:"grid grid-cols-14 gap-1",style:{gridTemplateColumns:"repeat(14, 1fr)"}},L.map(({key:y,studied:f,weekday:d})=>s.default.createElement("div",{key:y,title:y,className:"aspect-square rounded-sm",style:{background:f?"var(--accent)":d===0?"var(--line-soft)":"var(--bg-2)",opacity:f?1:.6,border:"1px solid var(--line)"}}))),s.default.createElement("div",{className:"flex items-center gap-3 mt-3 fx-body text-[10px]",style:{color:"var(--muted)"}},s.default.createElement("div",{className:"flex items-center gap-1"},s.default.createElement("div",{className:"w-2.5 h-2.5 rounded-sm",style:{background:"var(--accent)"}})," estudou"),s.default.createElement("div",{className:"flex items-center gap-1"},s.default.createElement("div",{className:"w-2.5 h-2.5 rounded-sm",style:{background:"var(--bg-2)",border:"1px solid var(--line)"}})," dia \xFAtil"),s.default.createElement("div",{className:"flex items-center gap-1"},s.default.createElement("div",{className:"w-2.5 h-2.5 rounded-sm",style:{background:"var(--line-soft)"}})," fim de semana"))),s.default.createElement("div",{className:"mt-6 card-paper rounded-sm p-5 anim-rise"},s.default.createElement("div",{className:"fx-body text-xs uppercase tracking-[0.22em] mb-3",style:{color:"var(--muted)"}},"Por pilar"),s.default.createElement("div",{className:"space-y-3"},["grammar","reading","writing","listening","review"].map(y=>{let f=c[y]||0,d=Math.max(1,...Object.values(c)),p=f/d*100,v={grammar:Ya,reading:wa,writing:ot,listening:et,review:Pa}[y];return s.default.createElement("div",{key:y,className:"flex items-center gap-3"},s.default.createElement(v,{size:14,style:{color:"var(--ink-soft)"}}),s.default.createElement("div",{className:"fx-body text-sm w-24",style:{color:"var(--ink)"}},Dr[y]),s.default.createElement("div",{className:"flex-1 h-2 rounded-full overflow-hidden",style:{background:"var(--line-soft)"}},s.default.createElement("div",{className:"h-full",style:{width:`${p}%`,background:"var(--ink-soft)"}})),s.default.createElement("div",{className:"fx-body text-xs w-8 text-right",style:{color:"var(--muted)"}},f))}))),s.default.createElement("div",{className:"mt-6 card-paper rounded-sm p-5 anim-rise"},s.default.createElement("div",{className:"fx-body text-xs uppercase tracking-[0.22em] mb-3",style:{color:"var(--muted)"}},"Ajustar n\xEDvel"),s.default.createElement("p",{className:"fx-body text-sm mb-3",style:{color:"var(--accent)"}},"Sentindo que as aulas est\xE3o f\xE1ceis ou dif\xEDceis? Mude seu n\xEDvel a qualquer momento."),s.default.createElement("div",{className:"flex flex-wrap gap-1.5"},rt.map(y=>s.default.createElement("button",{key:y,onClick:()=>m(y),className:"px-3 py-1.5 rounded-sm fx-display text-sm border transition",style:{fontWeight:600,background:e.level===y?"var(--ink)":"var(--paper)",color:e.level===y?"var(--paper)":"var(--ink)",borderColor:e.level===y?"var(--ink)":"var(--line)"}},y)))),s.default.createElement("div",{className:"mt-6 card-paper rounded-sm p-5 anim-rise"},s.default.createElement("div",{className:"fx-body text-xs uppercase tracking-[0.22em] mb-1",style:{color:"var(--muted)"}},"Uso da IA"),s.default.createElement("p",{className:"fx-body text-sm",style:{color:"var(--accent)"}},"Chamadas IA hoje: ",U.flash||0," / 1.500 (Flash) · ",U.pro||0," / 100 (Pro)"),s.default.createElement("p",{className:"fx-body text-sm mt-2",style:{color:"var(--accent)"}},"Vocabulário ativo: ",__active," palavras (das ",__total," totais)"),s.default.createElement("label",{className:"fx-body text-xs mt-3 flex items-center gap-2",style:{color:"var(--muted)"}},s.default.createElement("input",{type:"checkbox",defaultChecked:He("validateLessons")!==!1,onChange:y=>pa("validateLessons",y.target.checked)}),"Validar aulas automaticamente (Pro se disponível; senão Flash)"),s.default.createElement("div",{className:"mt-4 pt-4",style:{borderTop:"1px solid rgba(255,255,255,0.08)"}},s.default.createElement("div",{className:"fx-body text-xs uppercase tracking-[0.18em] mb-2",style:{color:"var(--muted)"}},"Padrões de erro recorrentes — últimos 30 dias"),(_DFREQ(He("diaryErrors")||[]).length?_DFREQ(He("diaryErrors")||[]).map((__p,__idx)=>s.default.createElement("p",{key:__idx,className:"fx-body text-sm",style:{color:"var(--accent)"}},__p.type,": ",__p.count)):s.default.createElement("p",{className:"fx-body text-sm",style:{color:"var(--muted)"}},"Ainda sem dados do diário.")))),s.default.createElement("div",{className:"mt-6 card-paper rounded-sm p-5 anim-rise"},s.default.createElement("div",{className:"fx-body text-xs uppercase tracking-[0.22em] mb-1",style:{color:"var(--muted)"}},"Chaves da IA (Gemini)"),s.default.createElement("p",{className:"fx-body text-sm mb-3",style:{color:"var(--accent)"}},_AK(r).length?"✅ "+_AK(r).length+" chave(s) configurada(s). O app tenta a próxima se uma bater limite.":"⚠️ Sem chave — usando aulas padrão."),s.default.createElement("textarea",{className:"input-paper w-full fx-body text-sm",rows:5,placeholder:"Cole até 5 chaves, uma por linha: AIza...",defaultValue:K,onChange:y=>l(y.target.value)}),s.default.createElement("div",{className:"flex gap-2 flex-wrap mt-3"},s.default.createElement("button",{className:"btn-primary px-4 py-2 rounded-xl fx-body text-sm flex items-center gap-2",onClick:async()=>{let y=_AK(r);await we("geminiKeys",y),await we("geminiKey",y[0]||""),xi(y[0]||""),alert("Chaves salvas! Total: "+y.length)}},s.default.createElement(ca,{size:14})," Salvar chaves"),s.default.createElement("button",{className:"btn-ghost px-4 py-2 rounded-xl fx-body text-sm flex items-center gap-2",onClick:async()=>{let y=_AK(r);if(!y.length){alert("Configure ao menos uma chave primeiro.");return}await we("availableModels",null),await we("availableModelsAt",null),await we("workingGeminiModel",null);let d=[];for(let p=0;p<y.length;p++)try{let v=await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(y[p])}`),w=v.ok?"models OK":"models erro "+v.status,P=[];try{P=await tm(y[p])}catch(U){P=[]}(!P||!P.length)&&(P=["gemini-2.5-flash","gemini-2.0-flash-001","gemini-1.5-flash"]);let R=!1,N="";for(let U of P.slice(0,4))try{let G=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${U}:generateContent?key=${encodeURIComponent(y[p])}`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({contents:[{parts:[{text:"Responda somente OK."}]}],generationConfig:{maxOutputTokens:8,temperature:0}})});if(G.ok){R=!0;N=U;break}else N=U+" HTTP "+G.status+" "+(await G.text()).slice(0,80)}catch(G){N=U+" "+G.message}d.push(R?`✅ Chave ${p+1}: OK generate (${N})`:`❌ Chave ${p+1}: ${w}; generate falhou: ${N}`)}catch(v){d.push(`❌ Chave ${p+1}: ${v.message}`)}alert(d.join("\n"))}},"Testar chaves")),He("workingGeminiModel")&&s.default.createElement("p",{className:"fx-body text-xs mt-3",style:{color:"var(--muted)"}},"Modelo em uso: ",s.default.createElement("strong",null,He("workingGeminiModel")))),s.default.createElement(ym,{profile:e}),s.default.createElement("div",{className:"mt-8 text-center fx-body text-xs flex items-center justify-center gap-1.5",style:{color:"var(--muted)"}},He("firebaseConfig")?s.default.createElement(s.default.Fragment,null,s.default.createElement(ka,{size:11})," Dados sincronizados na nuvem \xB7 ol\xE1, ",e.name):s.default.createElement(s.default.Fragment,null,s.default.createElement("span",null,"\u{1F4BE}")," Dados salvos localmente \xB7 ol\xE1, ",e.name),s.default.createElement("span",{style:{marginLeft:8,color:"var(--muted)"}},"\xB7"),s.default.createElement("span",{className:"fx-body text-xs",style:{color:"var(--muted)"}},"\u{1F50A} ",um()," \xE1udios em cache")))},Ar={A1:[{text:"Hello, my name is Maria.",focus:"Apresenta\xE7\xE3o",tip:"'hello' = HEH-loh \xB7 'name' = neym"},{text:"I am from Brazil.",focus:"Origem",tip:"'from' = frum (curto) \xB7 'Brazil' = bruh-ZIL"},{text:"How are you today?",focus:"Cumprimento",tip:"'how' = hau \xB7 'today' = tuh-DAY"},{text:"I would like some water, please.",focus:"Pedido",tip:"'would' = wud \xB7 'water' = WAH-ter"},{text:"The weather is very nice.",focus:"Clima",tip:"'weather' = WEH-ther (th suave, n\xE3o 'd')"},{text:"Can you help me, please?",focus:"Ajuda",tip:"'can' = k\xE6n \xB7 'help' = h\u025Blp"}],A2:[{text:"I usually wake up at seven o'clock.",focus:"Rotina",tip:"'usually' = YU-zhuh-lee \xB7 'o'clock' = uh-KLOK"},{text:"Do you have any recommendations?",focus:"Recomenda\xE7\xE3o",tip:"'recommendations' = reh-kom-en-DAY-shunz"},{text:"I've been learning English for two years.",focus:"Tempo",tip:"'I've been' = ayv bin (r\xE1pido e fluido)"},{text:"Could you speak more slowly, please?",focus:"Comunica\xE7\xE3o",tip:"'slowly' = SLOH-lee \xB7 'could' = kud (sem L)"},{text:"What time does the bus arrive?",focus:"Transporte",tip:"'arrive' = uh-RYVE \xB7 'does' = duz"},{text:"I'm really enjoying this trip.",focus:"Viagem",tip:"'enjoying' = en-JOY-ing \xB7 'really' = REE-lee"}],B1:[{text:"I've been working on this project for three months.",focus:"Present Perfect Continuous",tip:"'working' = WUR-king \xB7 conecte 'been working' sem pausas"},{text:"If I had more time, I would travel the world.",focus:"Condicional",tip:"'would' = wud \xB7 'travel' = TRAV-el"},{text:"Could you explain what you mean by that?",focus:"Clareza",tip:"'explain' = ek-SPLAYN \xB7 'mean' = meen"},{text:"The presentation went better than I expected.",focus:"Compara\xE7\xE3o",tip:"'presentation' = preh-zen-TAY-shun \xB7 'expected' = ek-SPEK-tid"},{text:"I'm not sure whether that's a good idea.",focus:"D\xFAvida",tip:"'whether' = WEH-ther (igual a 'weather'!)"},{text:"She's been promoted to senior manager.",focus:"Not\xEDcia",tip:"'promoted' = pruh-MOH-tid \xB7 'senior' = SEE-nyor"}],B2:[{text:"The proposal has been thoroughly reviewed by the committee.",focus:"Passiva",tip:"'thoroughly' = THUR-oh-lee \xB7 'committee' = kuh-MIT-ee"},{text:"Despite the challenges, we managed to meet the deadline.",focus:"Contraste",tip:"'despite' = deh-SPYTE \xB7 'challenges' = CHAL-en-jez"},{text:"It's worth considering all the implications beforehand.",focus:"Express\xE3o",tip:"'worth' = wurth \xB7 'implications' = im-plih-KAY-shunz"},{text:"I'd rather deal with this sooner rather than later.",focus:"Prefer\xEAncia",tip:"'rather' = RATH-er (th suave) \xB7 'deal' = deel"},{text:"The findings suggest a correlation between the two variables.",focus:"Acad\xEAmico",tip:"'findings' = FYND-ingz \xB7 'correlation' = kor-uh-LAY-shun"},{text:"We should look into this matter more carefully.",focus:"Phrasal verb",tip:"'look into' = LOOK in-too (phrasal verb: investigar)"}],C1:[{text:"The ramifications of this decision remain to be seen.",focus:"Vocabul\xE1rio sofisticado",tip:"'ramifications' = ram-ih-fih-KAY-shunz \xB7 'remain' = rih-MAYN"},{text:"She articulated her concerns with remarkable clarity.",focus:"Flu\xEAncia",tip:"'articulated' = ar-TIK-yoo-lay-tid \xB7 ritmo natural"},{text:"Notwithstanding the difficulties, progress has been made.",focus:"Formal",tip:"'notwithstanding' = not-with-STAND-ing \xB7 tom acad\xEAmico"},{text:"The nuanced approach yielded unprecedented results.",focus:"Vocabul\xE1rio alto n\xEDvel",tip:"'nuanced' = NYOO-anst \xB7 'unprecedented' = un-PRES-ih-den-tid"},{text:"It's imperative that we address this issue immediately.",focus:"Urg\xEAncia",tip:"'imperative' = im-PER-uh-tiv \xB7 'address' = uh-DRES (verbo)"},{text:"The implications are far more complex than they appear.",focus:"An\xE1lise",tip:"'implications' = im-plih-KAY-shunz \xB7 entona\xE7\xE3o descendente no final"}],C2:[{text:"The philosophical underpinnings of this argument are questionable.",focus:"Acad\xEAmico avan\xE7ado",tip:"'underpinnings' = un-der-PIN-ingz \xB7 ritmo fluido como nativo"},{text:"Her eloquence was nothing short of extraordinary.",focus:"Elogio formal",tip:"'eloquence' = EL-oh-kwens \xB7 'extraordinary' = ek-STROR-dih-ner-ee"},{text:"The intricacies of language acquisition fascinate linguists.",focus:"Lingu\xEDstica",tip:"'intricacies' = IN-trih-kuh-seez \xB7 'acquisition' = ak-wih-ZI-shun"},{text:"One ought to consider the broader socioeconomic context.",focus:"Formal brit\xE2nico",tip:"'ought to' = AWT too \xB7 'socioeconomic' = soh-see-oh-ee-kuh-NOM-ik"},{text:"It remains to be seen whether this paradigm will persist.",focus:"Previs\xE3o acad\xEAmica",tip:"'paradigm' = PAR-uh-dym \xB7 'persist' = per-SIST"},{text:"The ostensible simplicity belies profound complexity.",focus:"Sofisticado",tip:"'ostensible' = os-TEN-sih-bul \xB7 'belies' = bih-LYZ"}]},Sm=e=>`Voc\xEA \xE9 professor de ingl\xEAs. Gere 6 frases em ingl\xEAs para pr\xE1tica de pron\xFAncia para aluno n\xEDvel ${e} (${Et[e]}).
 
 Responda SOMENTE com JSON v\xE1lido:
 {
@@ -1943,7 +2324,6 @@ window.__AppComponent=Cs;window.React=Qa();window.ReactDOM=zc();})();
     css();var data=currentData();var el=document.getElementById("__usage_modal__");if(el)el.remove();
     el=document.createElement("div");el.id="__usage_modal__";el.className="__usage_modal";
     el.innerHTML='<div class="__usage_panel"><div class="__usage_row"><div><div style="font-weight:900;font-size:22px;letter-spacing:-.03em">Configurações</div><div class="__usage_small">Consumo local estimado de Gemini, Gemini TTS e Azure. Os números são contados neste aparelho/navegador.</div></div><button class="__usage_btn secondary" id="__usage_close__">×</button></div>'+
-      '<div class="__usage_box"><b>Diagnósticos da tela</b><div class="__usage_small">Você pode esconder ou mostrar os painéis “Áudio” e “IA Conversa”.</div><div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"><button class="__usage_btn secondary" id="__usage_hide_debug__">Esconder diagnósticos</button><button class="__usage_btn secondary" id="__usage_show_debug__">Mostrar diagnósticos</button></div><div class="__usage_small" style="margin-top:8px">Status atual: '+(debugHidden()?'ocultos':'visíveis')+'</div></div>'+
       '<div class="__usage_box"><b>Gemini — chamadas de texto hoje</b><table class="__usage_table"><tr><td><b>Chave</b></td><td><b>Chamadas</b></td><td><b>Modelos</b></td></tr>'+rows(data.day.gemini,data.keys)+'</table></div>'+
       '<div class="__usage_box"><b>Gemini TTS — áudio natural hoje</b><table class="__usage_table"><tr><td><b>Chave</b></td><td><b>Chamadas</b></td><td><b>Modelos</b></td></tr>'+rows(data.day.tts,data.keys)+'</table><div class="__usage_small">Se o TTS Gemini falhar, o app ainda pode cair na voz do navegador. Último erro TTS: '+String((window.__ttsLastErrors&&window.__ttsLastErrors[0])||"—").replace(/[<>&]/g,function(c){return {"<":"&lt;",">":"&gt;","&":"&amp;"}[c]})+'</div></div>'+
       '<div class="__usage_box"><b>Azure Pronunciation — estimativa</b><div class="__usage_small">Hoje: '+((data.day.azure&&data.day.azure.total)||0)+' avaliação(ões) / token(s). Mês: '+((data.month.azure&&data.month.azure.total)||0)+'.</div><div class="__usage_small">Com F0, trate como estimativa local. A confirmação real fica no portal Azure de cada conta.</div></div>'+
@@ -1952,8 +2332,6 @@ window.__AppComponent=Cs;window.React=Qa();window.ReactDOM=zc();})();
     document.body.appendChild(el);
     document.getElementById("__usage_close__").onclick=function(){el.remove()};
     el.onclick=function(ev){if(ev.target===el)el.remove()};
-    document.getElementById("__usage_hide_debug__").onclick=function(){setDebugHidden(true);el.remove();openSettings()};
-    document.getElementById("__usage_show_debug__").onclick=function(){setDebugHidden(false);el.remove();openSettings()};
     document.getElementById("__usage_reset_today__").onclick=function(){var d=read();d.days=d.days||{};delete d.days[day()];save(d);el.remove();openSettings()};
     document.getElementById("__usage_reset_all__").onclick=function(){if(confirm("Zerar todo o histórico local de consumo?")){save({});el.remove();openSettings()}};
   }
@@ -1975,7 +2353,7 @@ window.__AppComponent=Cs;window.React=Qa();window.ReactDOM=zc();})();
     var card=document.createElement("div");card.id="__usage_settings_card__";card.className="card-paper rounded-sm p-5 anim-rise";
     card.style.marginTop="24px";
     card.style.marginBottom="32px";
-    card.innerHTML='<div class="fx-body text-xs uppercase tracking-[0.22em] mb-2" style="color:var(--muted)">Configurações</div><p class="fx-body text-sm mb-3" style="color:var(--accent)">Veja consumo por key Gemini, Gemini TTS, Azure e controle os painéis de diagnóstico.</p><button class="__usage_btn" id="__open_usage_settings__">Configurações</button>';
+    card.innerHTML='<div class="fx-body text-xs uppercase tracking-[0.22em] mb-2" style="color:var(--muted)">Configurações</div><p class="fx-body text-sm mb-3" style="color:var(--accent)">Veja consumo por key Gemini, Gemini TTS e Azure.</p><button class="__usage_btn" id="__open_usage_settings__">Configurações</button>';
     main.appendChild(card);
     var btn=document.getElementById("__open_usage_settings__");if(btn)btn.onclick=openSettings;
   }
@@ -2739,7 +3117,7 @@ lucide-react/dist/esm/lucide-react.mjs:
     function errResp(code,msg){return new Response(JSON.stringify({error:{code:code,status:'LESSON_GENERATION_FAILED',message:msg}}),{status:code,headers:{'Content-Type':'application/json'}})}
     function okResp(txt){return new Response(txt,{status:200,headers:{'Content-Type':'application/json'}})}
     if(!oldFetch){return}
-    window.fetch=async function(input,init){var url='';try{url=typeof input==='string'?input:(input&&input.url)||''}catch(_){}var raw=bodyOf(init);if(!isGemini(url)||!isRealLesson(raw))return oldFetch(input,init);var k=key();if(!k){log('sem key exclusiva de aulas configurada.','err');return errResp(400,'Configure a key Gemini de aulas.')}var prompt=extractPrompt(raw);log('V15 assumiu a geração: chamada direta ao gemini-2.5-pro, sem responseSchema e sem V14.','pro');var lastRaw='',lastErr='';for(var attempt=1;attempt<=4;attempt++){try{log('tentativa '+attempt+'/4 usando '+MODEL+' com JSON direto.','pro');var res=await callGemini(apiUrl(k),makePayload(prompt,attempt,lastRaw));var txt=await res.text();if(!res.ok){lastErr='HTTP '+res.status+': '+String(txt).slice(0,220);log(lastErr,'err');await new Promise(function(r){setTimeout(r,1200*attempt)});continue}var inner=textFromApi(txt);lastRaw=inner;var lesson=parseJson(inner);var v=valid(lesson);if(v.ok){log('aula aprovada. Tamanho '+v.length+', seções '+v.lesson.sections.length+', exercícios '+v.lesson.exercises.length+'.','ok');return okResp(wrap(txt,v.lesson))}lastErr=v.errors.slice(0,5).join('; ');log('Pro respondeu, mas estrutura ainda falhou: '+lastErr+'. Vou pedir reparo completo.','warn');await new Promise(function(r){setTimeout(r,900)})}catch(e){lastErr=String(e&&e.message||e);log('falha de rede/API: '+lastErr.slice(0,160),'err');await new Promise(function(r){setTimeout(r,1300*attempt)})}}
+    window.fetch=async function(input,init){var url='';try{url=typeof input==='string'?input:(input&&input.url)||''}catch(_){}var raw=bodyOf(init);if(!isGemini(url)||!isRealLesson(raw))return oldFetch(input,init);var k=key();if(!k){log('sem key exclusiva de aulas configurada.','err');return errResp(400,'Configure a key Gemini de aulas.')}var prompt=extractPrompt(raw);log('V15 assumiu a geração: chamada direta ao gemini-2.5-pro, sem responseSchema e sem V14.','pro');var lastRaw='',lastErr='';for(var attempt=1;attempt<=4;attempt++){try{log('tentativa '+attempt+'/4 usando '+MODEL+' com JSON direto.','pro');var res=await callGemini(apiUrl(k),makePayload(prompt,attempt,lastRaw));if(!res||typeof res.ok==='undefined'){lastErr='fetch retornou null/undefined antes da aula';log(lastErr,'err');await new Promise(function(r){setTimeout(r,1200*attempt)});continue}var txt=await res.text();if(!res.ok){lastErr='HTTP '+res.status+': '+String(txt).slice(0,220);log(lastErr,'err');await new Promise(function(r){setTimeout(r,1200*attempt)});continue}var inner=textFromApi(txt);lastRaw=inner;var lesson=parseJson(inner);var v=valid(lesson);if(v.ok){log('aula aprovada. Tamanho '+v.length+', seções '+v.lesson.sections.length+', exercícios '+v.lesson.exercises.length+'.','ok');return okResp(wrap(txt,v.lesson))}lastErr=v.errors.slice(0,5).join('; ');log('Pro respondeu, mas estrutura ainda falhou: '+lastErr+'. Vou pedir reparo completo.','warn');await new Promise(function(r){setTimeout(r,900)})}catch(e){lastErr=String(e&&e.message||e);log('falha de rede/API: '+lastErr.slice(0,160),'err');await new Promise(function(r){setTimeout(r,1300*attempt)})}}
       log('falhou após 4 tentativas. Último detalhe: '+lastErr,'err');return errResp(500,'Gemini Pro não devolveu aula JSON válida. Último detalhe: '+lastErr)};
     setTimeout(function(){try{localStorage.setItem('fluency_lessonGeminiModel',MODEL);localStorage.setItem('fluency_lessonModel',MODEL);localStorage.setItem('fluency_preferredLessonModel',MODEL)}catch(_){}log('Patch V15 ativo. Corrige o erro “não veio JSON de aula” fazendo chamada Pro direta e restrita à geração real de aula.','ok')},900);
   }catch(e){try{console.warn('Patch V15 failed',e)}catch(_){}}
@@ -2865,7 +3243,7 @@ lucide-react/dist/esm/lucide-react.mjs:
     if(window.__fluencyLessonKeyProgressFixV191) return;
     window.__fluencyLessonKeyProgressFixV191 = true;
 
-    var VERSION = 'V19.1-LESSON-KEY-FIX';
+    var VERSION = 'V19.13-LESSON-KEYS-PANEL-PROGRESSO-FIX';
     var PRIMARY = 'fluency_lessonGeminiApiKey';
     var ALIASES = [
       'fluency_lessonGeminiApiKey',
@@ -2901,6 +3279,27 @@ lucide-react/dist/esm/lucide-react.mjs:
       return k.slice(0,8) + '...' + k.slice(-4);
     }
 
+    // V19.11: helpers locais do painel exclusivo de aulas.
+    // Corrige o ReferenceError: Can't find variable: uniq da V19.10.
+    var MULTI_KEYS = 'fluency_lessonGeminiApiKeys_v197';
+    var MULTI_KEYS_OLD = ['fluency_lessonGeminiApiKeys','fluency_lessonGeminiKeys','lessonGeminiApiKeys','lessonGeminiKeys','fluency_freeGeminiKeys','fluency_flashGeminiKeys'];
+    var LESSON_KEY_ALIASES = ['fluency_lessonGeminiApiKey','fluency_lessonGeminiKey','lessonGeminiApiKey','lessonGeminiKey','fluency_geminiLessonKey','fluency_aulasGeminiKey','fluency_lesson_key','fluency_lesson_api_key'];
+    var PRO_KEY_ALIASES = ['fluency_proLessonGeminiApiKey','fluency_geminiProKey','geminiProApiKey','fluency_paidGeminiKey','fluency_lessonPaidGeminiKey'];
+    function validKey(k){ return valid(k); }
+    function uniq(arr){
+      var out=[], seen={};
+      (arr||[]).forEach(function(k){
+        k = String(k || '').replace(/\s+/g,'').trim();
+        if(validKey(k) && !seen[k]){ seen[k]=1; out.push(k); }
+      });
+      return out;
+    }
+    function parseKeysText(v){
+      v = clean(v);
+      if(!v) return [];
+      return uniq(v.split(/[\n,;| ]+/).filter(Boolean));
+    }
+
     function getLessonKey(){
       try{
         for(var i=0;i<ALIASES.length;i++){
@@ -2930,409 +3329,197 @@ lucide-react/dist/esm/lucide-react.mjs:
     window.__fluencyGetLessonKeyV191 = getLessonKey;
     window.__fluencySetLessonKeyV191 = setLessonKey;
 
-    function findProgressCard(){
+    function findProgressRoot(){
       try{
-        var buttons = Array.prototype.slice.call(document.querySelectorAll('button'));
-        var saveBtn = buttons.find(function(b){ return /Salvar chaves/i.test((b.textContent || '').trim()); });
-        if(!saveBtn) return null;
-        var node = saveBtn.parentElement;
-        for(var i=0;i<5 && node && node.parentElement;i++){
-          var txt = node.innerText || '';
-          if(/Salvar chaves/i.test(txt) && /Testar chaves/i.test(txt)) return node;
-          node = node.parentElement;
+        var roots = Array.prototype.slice.call(document.querySelectorAll('.max-w-3xl.mx-auto, .max-w-3xl, main, [role="main"], body'));
+        var visibleRoots = roots.filter(function(el){ return visible(el); });
+        visibleRoots.sort(function(a,b){ var ar=a.getBoundingClientRect(), br=b.getBoundingClientRect(); return (ar.width*ar.height)-(br.width*br.height); });
+        var progress = visibleRoots.find(function(el){ var t=safeText(el); return /Seu progresso|Nível atual|Uso da IA|Chaves da IA/i.test(t); });
+        return progress || visibleRoots[0] || document.body;
+      }catch(_){ return document.body; }
+    }
+
+    function isInsideGenericAiKeysCard(el){
+      try{
+        var node = el && el.parentElement;
+        for(var i=0;i<8 && node && node !== document.body;i++,node=node.parentElement){
+          var t = safeText(node);
+          if(/Chaves da IA \(Gemini\)|Chaves da IA/i.test(t) && /Salvar chaves/i.test(t) && /Testar chaves/i.test(t)) return true;
         }
-        return saveBtn.parentElement;
-      }catch(_){ return null; }
-    }
-
-    function logDiag(msg, kind){
-      try{
-        var els = Array.prototype.slice.call(document.querySelectorAll('div'));
-        var p = els.find(function(el){
-          var t = el.innerText || '';
-          return t.indexOf('Vozes carregadas') !== -1 && t.indexOf('Saúde Azure') !== -1;
-        });
-        if(!p) return;
-        var root = document.getElementById('__fluency_lesson_key_v191_diag__');
-        if(!root){
-          root = document.createElement('div');
-          root.id = '__fluency_lesson_key_v191_diag__';
-          root.style.cssText = 'display:none';
-          // Chave de Aulas V19.1 painel desativado
-        }
-        var row = document.createElement('div');
-        row.style.color = kind === 'ok' ? '#86efac' : kind === 'warn' ? '#fbbf24' : '#93c5fd';
-        row.textContent = new Date().toLocaleTimeString() + ' ' + VERSION + ': ' + msg;
-        root.insertBefore(row, root.children[1] || null);
-        while(root.children.length > 10) root.removeChild(root.lastChild);
-      }catch(_){}
-    }
-
-    function sectionHtml(k){
-      var has = valid(k);
-      var status = has
-        ? '✅ Configurada — ' + mask(k) + ' · usando gemini-2.5-pro exclusivamente'
-        : '⚠️ Não configurada (usa chave principal)';
-      var btn = has ? '✏️ Alterar key de aulas' : '➕ Configurar key de aulas';
-      var remove = has ? '<button id="__lk_remove_btn__" style="padding:8px 16px;border-radius:10px;background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.3);color:#fca5a5;font-size:13px;cursor:pointer;font-family:inherit">🗑 Remover</button>' : '';
-      return ''+
-        '<div style="margin-top:20px;padding:16px;border-radius:12px;border:1px solid rgba(91,156,246,.25);background:rgba(91,156,246,.06)">'+
-          '<div style="font-size:10px;text-transform:uppercase;letter-spacing:.18em;color:rgba(180,190,220,.6);margin-bottom:4px">Chave Exclusiva de Aulas (V19.1 Pro)</div>'+
-          '<p style="font-size:13px;color:#93C5FD;margin:0 0 6px 0;line-height:1.55">Key separada para geração de aulas. Prioridade sobre a chave principal — útil para isolar consumo do modelo Pro.</p>'+
-          '<p id="__lk_status_text__" style="font-size:12px;color:'+(has?'#86efac':'rgba(180,190,220,.72)')+';margin:0 0 10px 0">'+status+'</p>'+
-          '<div style="display:flex;gap:8px;flex-wrap:wrap">'+
-            '<button id="__lk_config_btn__" style="padding:8px 16px;border-radius:10px;background:linear-gradient(135deg,rgba(91,156,246,.28),rgba(139,92,246,.2));border:1px solid rgba(91,156,246,.45);color:#e8eff8;font-size:13px;cursor:pointer;font-family:inherit">'+btn+'</button>'+remove+
-          '</div>'+
-        '</div>';
-    }
-
-    function bindButtons(){
-      var k = getLessonKey();
-      var cb = document.getElementById('__lk_config_btn__');
-      if(cb){
-        cb.onclick = function(ev){
-          try{ ev.preventDefault(); ev.stopPropagation(); }catch(_){}
-          var current = getLessonKey();
-          var input = prompt((current ? 'Key atual: ' + mask(current) + '\n\n' : '') + 'Cole sua Gemini API Key para aulas (AIza...):', current || '');
-          if(input === null) return;
-          input = clean(input);
-          if(!input) return;
-          if(!valid(input)){
-            alert('Essa key não parece uma Gemini API Key válida. Ela normalmente começa com AIza.');
-            return;
-          }
-          setLessonKey(input);
-          render(true);
-          logDiag('key exclusiva salva e sincronizada em todos os aliases locais.', 'ok');
-          alert('✅ Key de aulas salva! Usando gemini-2.5-pro exclusivamente.');
-          setTimeout(function(){ render(true); }, 50);
-          setTimeout(function(){ render(true); }, 400);
-        };
-      }
-      var rb = document.getElementById('__lk_remove_btn__');
-      if(rb){
-        rb.onclick = function(ev){
-          try{ ev.preventDefault(); ev.stopPropagation(); }catch(_){}
-          if(!confirm('Remover key exclusiva? O app voltará a usar a chave principal.')) return;
-          setLessonKey('');
-          render(true);
-          logDiag('key exclusiva removida.', 'warn');
-          alert('Key de aulas removida.');
-        };
-      }
-    }
-
-    function render(force){
-      try{
-        var card = findProgressCard();
-        if(!card) return false;
-        var sec = document.getElementById('__lk_prog_section__');
-        if(!sec){
-          sec = document.createElement('div');
-          sec.id = '__lk_prog_section__';
-          card.appendChild(sec);
-        }
-        var k = getLessonKey();
-        var html = sectionHtml(k);
-        if(force || sec.__lastLessonKeyHtml !== html){
-          sec.innerHTML = html;
-          sec.__lastLessonKeyHtml = html;
-        }
-        bindButtons();
-        return true;
-      }catch(_){ return false; }
-    }
-
-    function tick(){ render(false); }
-    if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function(){ render(true); });
-    else setTimeout(function(){ render(true); }, 0);
-    try{
-      var obs = new MutationObserver(function(){ tick(); });
-      obs.observe(document.documentElement || document.body, {childList:true, subtree:true});
-    }catch(_){}
-    setInterval(tick, 700);
-    setTimeout(function(){ render(true); logDiag('patch ativo. Status da key: ' + (getLessonKey() ? 'configurada' : 'não configurada') + '.', getLessonKey() ? 'ok' : 'warn'); }, 800);
-  }catch(e){ try{ console.warn('Fluency V19.1 lesson key fix failed', e); }catch(_){} }
-})();
-
-
-/* === FLUENCY PATCH V19.3 - AULAS COM FLASH 2.5 + FALLBACK PRO === */
-;(function(){
-  try{
-    if(window.__fluencyLessonDualModelKeysV193) return;
-    window.__fluencyLessonDualModelKeysV193 = true;
-
-    var VERSION = 'V19.3-DUAL-LESSON-KEYS-FLASH-PRO';
-    var FLASH_MODEL = 'gemini-2.5-flash';
-    var PRO_MODEL = 'gemini-2.5-pro';
-
-    var FLASH_ALIASES = [
-      'fluency_lessonFlashApiKey',
-      'fluency_lessonGeminiFlashKey',
-      'lessonGeminiFlashApiKey',
-      'lessonFlashKey',
-      'fluency_aulasFlashKey',
-      'fluency_freeLessonGeminiApiKey',
-      'fluency_lesson_free_key'
-    ];
-
-    var PRO_ALIASES = [
-      'fluency_lessonProApiKey',
-      'fluency_lessonGeminiProKey',
-      'lessonGeminiProApiKey',
-      'lessonProKey',
-      'fluency_aulasProKey',
-      'fluency_paidLessonGeminiApiKey',
-      'fluency_lesson_paid_key',
-      // aliases antigos para manter compatibilidade com V15/V19.1/V19.2
-      'fluency_lessonGeminiApiKey',
-      'fluency_lessonGeminiKey',
-      'lessonGeminiApiKey',
-      'lessonGeminiKey',
-      'fluency_geminiLessonKey',
-      'fluency_proLessonGeminiApiKey',
-      'fluency_aulasGeminiKey',
-      'fluency_lesson_key',
-      'fluency_lesson_api_key'
-    ];
-
-    var ALL_ALIASES = FLASH_ALIASES.concat(PRO_ALIASES);
-    var nativeGet = Storage.prototype.getItem;
-    var nativeSet = Storage.prototype.setItem;
-    var nativeRemove = Storage.prototype.removeItem;
-    var nativeFetch = window.fetch ? window.fetch.bind(window) : null;
-
-    function clean(v){
-      v = String(v || '').trim();
-      if(!v) return '';
-      try{
-        if((v[0] === '"' && v[v.length-1] === '"') || v[0] === '{' || v[0] === '['){
-          var p = JSON.parse(v);
-          if(typeof p === 'string') v = p;
-          else if(p && typeof p.key === 'string') v = p.key;
-          else if(p && typeof p.apiKey === 'string') v = p.apiKey;
-        }
-      }catch(_){}
-      return String(v || '').replace(/\s+/g,'').trim();
-    }
-    function valid(k){ k = clean(k); return /^AIza[0-9A-Za-z_\-]{20,}$/.test(k); }
-    function mask(k){ k = clean(k); return k ? k.slice(0,8) + '...' + k.slice(-4) : ''; }
-    function isFlashAlias(k){ return FLASH_ALIASES.indexOf(String(k || '')) !== -1; }
-    function isProAlias(k){ return PRO_ALIASES.indexOf(String(k || '')) !== -1; }
-    function isAnyAlias(k){ return ALL_ALIASES.indexOf(String(k || '')) !== -1; }
-
-    function readAliases(list){
-      try{
-        for(var s=0;s<2;s++){
-          var store = s === 0 ? localStorage : sessionStorage;
-          for(var i=0;i<list.length;i++){
-            var v = clean(nativeGet.call(store, list[i]));
-            if(valid(v)) return v;
-          }
-        }
-      }catch(_){}
-      return '';
-    }
-
-    function writeAliases(list, value){
-      value = clean(value);
-      try{
-        for(var s=0;s<2;s++){
-          var store = s === 0 ? localStorage : sessionStorage;
-          for(var i=0;i<list.length;i++){
-            if(valid(value)) nativeSet.call(store, list[i], value);
-            else nativeRemove.call(store, list[i]);
-          }
-        }
-      }catch(_){}
-      try{ nativeSet.call(localStorage, 'fluency___lessonDualKeysSavedAt', String(Date.now())); }catch(_){}
-      return valid(value) ? value : '';
-    }
-
-    function getFlashKey(){ return readAliases(FLASH_ALIASES); }
-    function getProKey(){ return readAliases(PRO_ALIASES); }
-    function setFlashKey(k){ return writeAliases(FLASH_ALIASES, k); }
-    function setProKey(k){ return writeAliases(PRO_ALIASES, k); }
-    function removeFlashKey(){ return writeAliases(FLASH_ALIASES, ''); }
-    function removeProKey(){ return writeAliases(PRO_ALIASES, ''); }
-
-    window.__fluencyGetLessonFlashKeyV193 = getFlashKey;
-    window.__fluencySetLessonFlashKeyV193 = setFlashKey;
-    window.__fluencyGetLessonProKeyV193 = getProKey;
-    window.__fluencySetLessonProKeyV193 = setProKey;
-    window.__fluencyLessonModelModeV193 = function(){
-      return {
-        version: VERSION,
-        flashModel: FLASH_MODEL,
-        proModel: PRO_MODEL,
-        flashConfigured: !!getFlashKey(),
-        flashMasked: mask(getFlashKey()),
-        proConfigured: !!getProKey(),
-        proMasked: mask(getProKey()),
-        strategy: 'Flash 2.5 primeiro; se quota/erro de API, fallback automático para Pro pago.'
-      };
-    };
-
-    // Compatibilidade: quando o código antigo pedir a key de aula, entrega Flash primeiro.
-    if(nativeGet && !Storage.prototype.getItem.__fluencyDualModelKeysV193){
-      Storage.prototype.getItem = function(k){
-        var v = nativeGet.apply(this, arguments);
-        try{
-          if(isFlashAlias(k)){
-            var f0 = clean(v) || getFlashKey();
-            return valid(f0) ? f0 : v;
-          }
-          if(isProAlias(k)){
-            var p0 = clean(v) || getProKey();
-            return valid(p0) ? p0 : v;
-          }
-          if(isAnyAlias(k)){
-            var f = getFlashKey();
-            if(valid(f)) return f;
-            var p = getProKey();
-            if(valid(p)) return p;
-          }
-        }catch(_){}
-        return v;
-      };
-      Storage.prototype.getItem.__fluencyDualModelKeysV193 = true;
-    }
-
-    if(nativeSet && !Storage.prototype.setItem.__fluencyDualModelKeysV193){
-      Storage.prototype.setItem = function(k,v){
-        try{
-          var c = clean(v);
-          if(valid(c)){
-            if(isFlashAlias(k)){ setFlashKey(c); return nativeSet.call(this,k,c); }
-            if(isProAlias(k)){ setProKey(c); return nativeSet.call(this,k,c); }
-          }
-        }catch(_){}
-        return nativeSet.apply(this, arguments);
-      };
-      Storage.prototype.setItem.__fluencyDualModelKeysV193 = true;
-    }
-
-    function looksLikeGeminiUrl(url){
-      return /generativelanguage\.googleapis\.com/i.test(String(url || '')) && /:generateContent|:streamGenerateContent/i.test(String(url || ''));
-    }
-    function looksLikeLessonBody(body){
-      try{
-        var s = typeof body === 'string' ? body : JSON.stringify(body || '');
-        return /aula|lesson|grammar|speaking|listening|reading|writing|review|sections|exercises|vocabulary|pilar|nivel|nível/i.test(s);
-      }catch(_){ return true; }
-    }
-    function urlWithKeyAndModel(url, key, model){
-      var out = String(url || '');
-      out = out.replace(/\/models\/[^/:?]+(:generateContent|:streamGenerateContent)/i, '/models/' + model + '$1');
-      if(/([?&])key=/.test(out)) out = out.replace(/([?&])key=[^&]*/,'$1key=' + encodeURIComponent(key));
-      else out += (out.indexOf('?') === -1 ? '?' : '&') + 'key=' + encodeURIComponent(key);
-      return out;
-    }
-    function cloneInit(init, body){
-      var out = {};
-      try{ for(var k in (init || {})) out[k] = init[k]; }catch(_){}
-      if(body !== undefined) out.body = body;
-      return out;
-    }
-    function shouldFallback(res){
-      try{
-        if(!res) return true;
-        if(res.status === 401 || res.status === 403 || res.status === 429 || res.status >= 500) return true;
-      }catch(_){}
+      }catch(_){ }
       return false;
     }
 
-    if(nativeFetch && !window.fetch.__fluencyDualModelKeysV193){
-      window.fetch = async function(input, init){
-        var originalUrl = typeof input === 'string' ? input : (input && input.url) || '';
-        var body = init && init.body;
-        try{ if(!body && input && input.clone) body = await input.clone().text().catch(function(){return '';}); }catch(_){}
-
-        if(looksLikeGeminiUrl(originalUrl) && looksLikeLessonBody(body)){
-          var flashKey = getFlashKey();
-          var proKey = getProKey();
-
-          // 1) Flash 2.5 gratuito/econômico primeiro.
-          if(valid(flashKey)){
-            var flashUrl = urlWithKeyAndModel(originalUrl, flashKey, FLASH_MODEL);
-            try{
-              var flashRes = await nativeFetch(flashUrl, cloneInit(init, body));
-              window.__fluencyLastLessonModelV193 = {model: FLASH_MODEL, key: mask(flashKey), status: flashRes.status, at: Date.now()};
-              if(!shouldFallback(flashRes) || !valid(proKey)) return flashRes;
-              try{ console.warn('[Fluency '+VERSION+'] Flash falhou/status '+flashRes.status+'. Tentando Pro pago como fallback.'); }catch(_){}
-            }catch(errFlash){
-              window.__fluencyLastLessonModelV193 = {model: FLASH_MODEL, key: mask(flashKey), error: String((errFlash&&errFlash.message)||errFlash), at: Date.now()};
-              if(!valid(proKey)) throw errFlash;
-              try{ console.warn('[Fluency '+VERSION+'] Flash erro. Tentando Pro pago como fallback.', errFlash); }catch(_){}
-            }
-          }
-
-          // 2) Pro pago como reserva quando Flash não estiver configurado ou falhar.
-          if(valid(proKey)){
-            var proUrl = urlWithKeyAndModel(originalUrl, proKey, PRO_MODEL);
-            var proRes = await nativeFetch(proUrl, cloneInit(init, body));
-            window.__fluencyLastLessonModelV193 = {model: PRO_MODEL, key: mask(proKey), status: proRes.status, at: Date.now(), fallbackFromFlash: !!flashKey};
-            return proRes;
-          }
-        }
-        return nativeFetch(input, init);
-      };
-      window.fetch.__fluencyDualModelKeysV193 = true;
+    function findGenericAiKeysCard(){
+      try{
+        var sec = document.getElementById('__lk193_dual_section__');
+        if(sec) sec.style.display = 'none';
+        var cards = Array.prototype.slice.call(document.querySelectorAll('div,section,article'));
+        var candidates = cards.filter(function(el){
+          if(!el || el.id === '__lk193_dual_section__') return false;
+          if(!visible(el)) return false;
+          var t = safeText(el);
+          return /Chaves da IA \(Gemini\)|Chaves da IA/i.test(t) && /Salvar chaves/i.test(t) && /Testar chaves/i.test(t);
+        });
+        if(sec) sec.style.display = '';
+        if(!candidates.length) return null;
+        candidates.sort(function(a,b){
+          var ar=a.getBoundingClientRect(), br=b.getBoundingClientRect();
+          return (ar.width*ar.height)-(br.width*br.height);
+        });
+        return candidates[0];
+      }catch(_){
+        try{ var s=document.getElementById('__lk193_dual_section__'); if(s) s.style.display=''; }catch(__){}
+        return null;
+      }
     }
 
     function findProgressCard(){
-      try{
-        var buttons = Array.prototype.slice.call(document.querySelectorAll('button'));
-        var saveBtn = buttons.find(function(b){ return /Salvar chaves/i.test((b.textContent || '').trim()); });
-        if(!saveBtn) return null;
-        var node = saveBtn.parentElement;
-        for(var i=0;i<6 && node && node.parentElement;i++){
-          var txt = node.innerText || '';
-          if(/Salvar chaves/i.test(txt) && /Testar chaves/i.test(txt)) return node;
-          node = node.parentElement;
-        }
-        return saveBtn.parentElement;
-      }catch(_){ return null; }
+      // V19.13: o painel de keys de AULAS só pode existir abaixo do card
+      // "Chaves da IA (Gemini)" dentro da aba Progresso. Se esse card não
+      // estiver visível, não injeta nada na tela principal/Hoje.
+      return findGenericAiKeysCard();
     }
 
     function styleButton(bg,border,color){
       return 'padding:8px 14px;border-radius:10px;background:'+bg+';border:1px solid '+border+';color:'+color+';font-size:13px;cursor:pointer;font-family:inherit;font-weight:800';
     }
 
+    var FLASH_MODEL = 'gemini-2.5-flash';
+    var PRO_MODEL = 'gemini-2.5-pro';
+
+    function saveMultiFlashKeysV198(keys){
+      keys = uniq(keys || []).slice(0,3);
+      try{ localStorage.setItem(MULTI_KEYS, keys.join('\\n')); }catch(_){ }
+      try{ sessionStorage.setItem(MULTI_KEYS, keys.join('\\n')); }catch(_){ }
+      try{
+        if(keys[0]) LESSON_KEY_ALIASES.forEach(function(a){ localStorage.setItem(a, keys[0]); });
+        else LESSON_KEY_ALIASES.forEach(function(a){ localStorage.removeItem(a); });
+      }catch(_){ }
+      return keys;
+    }
+
+    function readMultiFlashKeysV198(){
+      var keys = [];
+      try{ keys = keys.concat(parseKeysText(localStorage.getItem(MULTI_KEYS) || '')); }catch(_){ }
+      try{ keys = keys.concat(parseKeysText(sessionStorage.getItem(MULTI_KEYS) || '')); }catch(_){ }
+      try{ MULTI_KEYS_OLD.forEach(function(k){ keys = keys.concat(parseKeysText(localStorage.getItem(k) || sessionStorage.getItem(k) || '')); }); }catch(_){ }
+      try{ LESSON_KEY_ALIASES.forEach(function(a){ var v=localStorage.getItem(a) || sessionStorage.getItem(a) || ''; if(validKey(v)) keys.push(v); }); }catch(_){ }
+      return uniq(keys).slice(0,3);
+    }
+
+    function setMultiFlashKeyV198(index, key){
+      var keys = readMultiFlashKeysV198();
+      key = String(key || '').replace(/\s+/g,'').trim();
+      if(!validKey(key)) return keys;
+      keys[index] = key;
+      return saveMultiFlashKeysV198(keys);
+    }
+
+    function removeMultiFlashKeyV198(index){
+      var keys = readMultiFlashKeysV198();
+      keys.splice(index, 1);
+      return saveMultiFlashKeysV198(keys);
+    }
+
+    function getProKey(){
+      try{
+        for(var i=0;i<PRO_KEY_ALIASES.length;i++){
+          var v = localStorage.getItem(PRO_KEY_ALIASES[i]) || sessionStorage.getItem(PRO_KEY_ALIASES[i]) || '';
+          v = String(v || '').replace(/\s+/g,'').trim();
+          if(validKey(v)) return v;
+        }
+      }catch(_){ }
+      return '';
+    }
+
+    function setProKey(key){
+      key = String(key || '').replace(/\s+/g,'').trim();
+      try{
+        try{ if(validKey(key)) localStorage.setItem('fluency_pro_key_user_set_v39','1'); else localStorage.removeItem('fluency_pro_key_user_set_v39'); }catch(_){} PRO_KEY_ALIASES.forEach(function(a){ if(validKey(key)) localStorage.setItem(a,key); else localStorage.removeItem(a); });
+      }catch(_){ }
+      return validKey(key) ? key : '';
+    }
+
+    function removeProKey(){ return setProKey(''); }
+
+    window.__fluencyLessonModelModeV193 = function(){
+      var flashKeys = readMultiFlashKeysV198();
+      var pro = getProKey();
+      return {
+        version: VERSION,
+        flashModel: FLASH_MODEL,
+        proModel: PRO_MODEL,
+        flashConfigured: flashKeys.length > 0,
+        flashMasked: flashKeys.length ? flashKeys.map(mask).join(', ') : '',
+        flashCount: flashKeys.length,
+        proConfigured: !!pro,
+        proMasked: pro ? mask(pro) : '',
+        strategy: 'Flash/free em 3 blocos com rotação de até 3 keys exclusivas; Pro pago somente como último caso.',
+        protectedGenericAiKeysCard: true
+      };
+    };
+
+    window.__fluencyGetLessonFlashKeysV198 = readMultiFlashKeysV198;
+    window.__fluencySetLessonFlashKeyV198 = setMultiFlashKeyV198;
+    window.__fluencyGetLessonProKeyV193 = getProKey;
+    window.__fluencySetLessonProKeyV193 = setProKey;
+
     function sectionHtml(){
-      var fk = getFlashKey(), pk = getProKey();
+      var keys = readMultiFlashKeysV198();
+      var pk = getProKey();
+      function flashCard(i){
+        var k = keys[i] || '';
+        var label = (i+1)+') Key aulas Flash 2.5 '+(i===0?'principal':'reserva '+i);
+        return '<div style="padding:12px;border-radius:12px;background:rgba(15,23,42,.35);border:1px solid rgba(96,165,250,.24)">'+
+          '<div style="font-weight:900;color:#93c5fd;margin-bottom:5px">'+label+'</div>'+
+          '<div id="__lk198_flash_status_'+i+'__" style="font-size:12px;color:'+(k?'#86efac':'#fbbf24')+';margin-bottom:9px">'+(k?'✅ Configurada — '+mask(k)+' · modelo '+FLASH_MODEL:'⚠️ Não configurada · será pulada na rotação')+'</div>'+
+          '<button id="__lk198_set_flash_'+i+'__" style="'+styleButton('linear-gradient(135deg,rgba(59,130,246,.28),rgba(34,197,94,.18))','rgba(96,165,250,.45)','#e8eff8')+'">'+(k?'✏️ Alterar key '+(i+1):'➕ Adicionar key '+(i+1))+'</button> '+
+          (k?'<button id="__lk198_remove_flash_'+i+'__" style="'+styleButton('rgba(248,113,113,.08)','rgba(248,113,113,.32)','#fca5a5')+'">🗑 Remover</button>':'')+
+        '</div>';
+      }
       return ''+
       '<div style="margin-top:20px;padding:16px;border-radius:14px;border:1px solid rgba(34,197,94,.28);background:linear-gradient(135deg,rgba(34,197,94,.08),rgba(59,130,246,.06));box-shadow:0 12px 32px rgba(0,0,0,.16)">'+
-        '<div style="font-size:10px;text-transform:uppercase;letter-spacing:.18em;color:rgba(180,190,220,.65);margin-bottom:5px">Chaves Exclusivas de Aulas — V19.3 TESTE</div>'+
-        '<div style="font-weight:950;color:#e8eff8;margin-bottom:8px;font-size:15px">Flash 2.5 primeiro + Pro pago como reserva</div>'+
-        '<p style="font-size:13px;color:#bfdbfe;margin:0 0 12px 0;line-height:1.55">A geração da aula tenta usar <b>gemini-2.5-flash</b>. Se o Flash falhar por cota/erro, o sistema tenta automaticamente <b>gemini-2.5-pro</b> com a key paga.</p>'+
+        '<div style="font-size:10px;text-transform:uppercase;letter-spacing:.18em;color:rgba(180,190,220,.65);margin-bottom:5px">Chaves Exclusivas de Aulas — V19.13 blocos</div>'+
+        '<div style="font-weight:950;color:#e8eff8;margin-bottom:8px;font-size:15px">Flash/free em blocos + rotação de 3 keys exclusivas</div>'+
+        '<p style="font-size:13px;color:#bfdbfe;margin:0 0 12px 0;line-height:1.55">A geração real da aula está conectada ao sistema em <b>3 blocos</b>. Ela tenta <b>gemini-2.5-flash</b> com a key 1, depois key 2, depois key 3. Se todas falharem, a <b>key Pro paga</b> entra só como último caso. Este painel não altera a área <b>Chaves da IA (Gemini)</b>, que continua exclusiva para os outros sistemas do site.</p>'+
         '<div style="display:grid;grid-template-columns:1fr;gap:10px">'+
-          '<div style="padding:12px;border-radius:12px;background:rgba(15,23,42,.35);border:1px solid rgba(96,165,250,.24)">'+
-            '<div style="font-weight:900;color:#93c5fd;margin-bottom:5px">1) Key aulas Flash 2.5</div>'+
-            '<div id="__lk193_flash_status__" style="font-size:12px;color:'+(fk?'#86efac':'#fbbf24')+';margin-bottom:9px">'+(fk?'✅ Configurada — '+mask(fk)+' · modelo '+FLASH_MODEL:'⚠️ Não configurada · configure para tentar gerar grátis/econômico primeiro')+'</div>'+
-            '<button id="__lk193_set_flash__" style="'+styleButton('linear-gradient(135deg,rgba(59,130,246,.28),rgba(34,197,94,.18))','rgba(96,165,250,.45)','#e8eff8')+'">'+(fk?'✏️ Alterar Flash':'➕ Adicionar Flash')+'</button> '+
-            (fk?'<button id="__lk193_remove_flash__" style="'+styleButton('rgba(248,113,113,.08)','rgba(248,113,113,.32)','#fca5a5')+'">🗑 Remover</button>':'')+
-          '</div>'+
+          flashCard(0)+flashCard(1)+flashCard(2)+
           '<div style="padding:12px;border-radius:12px;background:rgba(15,23,42,.35);border:1px solid rgba(168,85,247,.24)">'+
-            '<div style="font-weight:900;color:#c4b5fd;margin-bottom:5px">2) Key aulas Pro pago reserva</div>'+
-            '<div id="__lk193_pro_status__" style="font-size:12px;color:'+(pk?'#86efac':'#fbbf24')+';margin-bottom:9px">'+(pk?'✅ Configurada — '+mask(pk)+' · modelo '+PRO_MODEL:'⚠️ Não configurada · se o Flash falhar, não haverá fallback pago')+'</div>'+
+            '<div style="font-weight:900;color:#c4b5fd;margin-bottom:5px">4) Key aulas Pro pago último caso</div>'+
+            '<div id="__lk193_pro_status__" style="font-size:12px;color:'+(pk?'#86efac':'#fbbf24')+';margin-bottom:9px">'+(pk?'✅ Configurada — '+mask(pk)+' · modelo '+PRO_MODEL:'⚠️ Não configurada · se todas as Flash falharem, não haverá fallback pago')+'</div>'+
             '<button id="__lk193_set_pro__" style="'+styleButton('linear-gradient(135deg,rgba(139,92,246,.28),rgba(59,130,246,.16))','rgba(168,85,247,.45)','#e8eff8')+'">'+(pk?'✏️ Alterar Pro':'➕ Adicionar Pro')+'</button> '+
             (pk?'<button id="__lk193_remove_pro__" style="'+styleButton('rgba(248,113,113,.08)','rgba(248,113,113,.32)','#fca5a5')+'">🗑 Remover</button>':'')+
           '</div>'+
         '</div>'+
-        '<div style="margin-top:10px;font-size:12px;color:#a7f3d0;line-height:1.45">Status: '+(fk?'Flash pronto':'Flash ausente')+' · '+(pk?'Pro reserva pronto':'Pro reserva ausente')+'</div>'+
+        '<div style="margin-top:10px;font-size:12px;color:#a7f3d0;line-height:1.45">Status: '+keys.length+' key(s) Flash/free na rotação · '+(pk?'Pro último caso pronto':'Pro último caso ausente')+'</div>'+
       '</div>';
     }
 
+    function promptFlashKey(index){
+      var keys = readMultiFlashKeysV198();
+      var current = keys[index] || '';
+      var input = prompt((current ? 'Key atual '+(index+1)+': '+mask(current)+'\n\n' : '') + 'Cole a Gemini API Key Flash/free '+(index+1)+' para aulas (AIza...):', current || '');
+      if(input === null) return;
+      input = clean(input);
+      if(!input) return;
+      if(!valid(input)){ alert('Essa key não parece válida. Ela normalmente começa com AIza.'); return; }
+      var saved = setMultiFlashKeyV198(index, input);
+      render(true);
+      diag('key Flash '+(index+1)+' salva: '+mask(input)+' · total na rotação: '+saved.length, 'ok');
+      alert('✅ Key Flash '+(index+1)+' salva na rotação.');
+    }
+
     function promptKey(kind){
-      var current = kind === 'flash' ? getFlashKey() : getProKey();
-      var label = kind === 'flash' ? 'Flash 2.5 para aulas' : 'Pro pago reserva para aulas';
+      if(kind === 'flash'){ promptFlashKey(0); return; }
+      var current = getProKey();
+      var label = 'Pro pago reserva para aulas';
       var input = prompt((current ? 'Key atual: '+mask(current)+'\n\n' : '') + 'Cole a Gemini API Key de '+label+' (AIza...):', current || '');
       if(input === null) return;
       input = clean(input);
       if(!input) return;
       if(!valid(input)){ alert('Essa key não parece válida. Ela normalmente começa com AIza.'); return; }
-      if(kind === 'flash') setFlashKey(input); else setProKey(input);
+      setProKey(input);
       render(true);
       diag(label + ' salva: ' + mask(input), 'ok');
       alert('✅ Key '+label+' salva.');
@@ -3340,9 +3527,17 @@ lucide-react/dist/esm/lucide-react.mjs:
 
     function bindButtons(){
       var b;
-      b = document.getElementById('__lk193_set_flash__'); if(b) b.onclick = function(e){ try{e.preventDefault();e.stopPropagation();}catch(_){} promptKey('flash'); };
+      for(var i=0;i<3;i++){
+        (function(idx){
+          b = document.getElementById('__lk198_set_flash_'+idx+'__');
+          if(b) b.onclick = function(e){ try{e.preventDefault();e.stopPropagation();}catch(_){} promptFlashKey(idx); };
+          b = document.getElementById('__lk198_remove_flash_'+idx+'__');
+          if(b) b.onclick = function(e){ try{e.preventDefault();e.stopPropagation();}catch(_){} if(confirm('Remover key Flash '+(idx+1)+' de aulas?')){ var left=removeMultiFlashKeyV198(idx); render(true); diag('key Flash '+(idx+1)+' removida. Restam '+left.length+' key(s).', 'warn'); } };
+        })(i);
+      }
+      b = document.getElementById('__lk193_set_flash__'); if(b) b.onclick = function(e){ try{e.preventDefault();e.stopPropagation();}catch(_){} promptFlashKey(0); };
       b = document.getElementById('__lk193_set_pro__'); if(b) b.onclick = function(e){ try{e.preventDefault();e.stopPropagation();}catch(_){} promptKey('pro'); };
-      b = document.getElementById('__lk193_remove_flash__'); if(b) b.onclick = function(e){ try{e.preventDefault();e.stopPropagation();}catch(_){} if(confirm('Remover key Flash de aulas?')){ removeFlashKey(); render(true); diag('key Flash removida.', 'warn'); } };
+      b = document.getElementById('__lk193_remove_flash__'); if(b) b.onclick = function(e){ try{e.preventDefault();e.stopPropagation();}catch(_){} if(confirm('Remover key Flash de aulas?')){ removeMultiFlashKeyV198(0); render(true); diag('key Flash removida.', 'warn'); } };
       b = document.getElementById('__lk193_remove_pro__'); if(b) b.onclick = function(e){ try{e.preventDefault();e.stopPropagation();}catch(_){} if(confirm('Remover key Pro reserva?')){ removeProKey(); render(true); diag('key Pro removida.', 'warn'); } };
     }
 
@@ -3351,10 +3546,32 @@ lucide-react/dist/esm/lucide-react.mjs:
         // Esconde o card antigo V19.1 para não confundir com "Pro exclusivamente".
         var old = document.getElementById('__lk_prog_section__');
         if(old) old.style.display = 'none';
-        var card = findProgressCard();
-        if(!card) return false;
+
         var sec = document.getElementById('__lk193_dual_section__');
-        if(!sec){ sec = document.createElement('div'); sec.id = '__lk193_dual_section__'; card.appendChild(sec); }
+        var generic = findGenericAiKeysCard();
+
+        // Se o card "Chaves da IA (Gemini)" não estiver visível, estamos fora da aba
+        // Progresso. Neste caso o painel exclusivo de aulas não deve aparecer na Home.
+        if(!generic){
+          if(sec) sec.style.display = 'none';
+          return false;
+        }
+
+        if(!sec){
+          sec = document.createElement('div');
+          sec.id = '__lk193_dual_section__';
+        }
+
+        sec.style.display = '';
+        sec.setAttribute('data-fluency-lesson-keys-panel','progress-only');
+
+        // Garante posição correta: logo depois do card geral de Gemini, nunca dentro dele
+        // e nunca no card/tela principal.
+        if(generic.parentElement && sec.previousElementSibling !== generic){
+          generic.parentElement.insertBefore(sec, generic.nextSibling);
+        }
+
+        // Garante que o card geral de IA continue intacto: não removemos textarea, botões nem valores dele.
         var html = sectionHtml();
         if(force || sec.__lastHtml !== html){ sec.innerHTML = html; sec.__lastHtml = html; }
         bindButtons();
@@ -3391,10 +3608,10 @@ lucide-react/dist/esm/lucide-react.mjs:
     try{ new MutationObserver(function(){ tick(); }).observe(document.documentElement || document.body, {childList:true, subtree:true}); }catch(_){}
     setInterval(tick, 900);
     setInterval(function(){
-      var st = window.__fluencyLessonModelModeV193();
+      var st = (typeof window.__fluencyLessonModelModeV193 === 'function' ? window.__fluencyLessonModelModeV193() : {flashConfigured:false,proConfigured:false,flashMasked:'',proMasked:''});
       diag('Flash: '+(st.flashConfigured?st.flashMasked:'não configurado')+' · Pro: '+(st.proConfigured?st.proMasked:'não configurado')+'.', st.flashConfigured || st.proConfigured ? 'ok' : 'warn');
     }, 12000);
-    setTimeout(function(){ render(true); var st = window.__fluencyLessonModelModeV193(); diag('patch ativo. Estratégia: Flash primeiro, Pro reserva.', st.flashConfigured || st.proConfigured ? 'ok' : 'warn'); }, 1200);
+    setTimeout(function(){ render(true); var st = (typeof window.__fluencyLessonModelModeV193 === 'function' ? window.__fluencyLessonModelModeV193() : {flashConfigured:false,proConfigured:false,flashMasked:'',proMasked:''}); diag('patch ativo. Estratégia: Flash primeiro, Pro reserva. Card Chaves da IA não é alterado.', st.flashConfigured || st.proConfigured ? 'ok' : 'warn'); }, 1200);
   }catch(e){ try{ console.warn('Fluency V19.3 dual lesson keys failed', e); }catch(_){} }
 })();
 
@@ -3505,4 +3722,1664 @@ lucide-react/dist/esm/lucide-react.mjs:
     window.__fluencyFixLessonOverlayV194 = guard;
     log('patch ativo. A aula completa agora só aparece quando a aba Aula está ativa.');
   }catch(e){ try{console.warn('Patch V19.4 overlay fix failed', e)}catch(_){} }
+})();
+
+/* === FLUENCY PATCH V19.16 - CORREÇÃO FINAL: DISPARO REAL + SCROLL PROGRESSO === */
+;(function(){
+  try{
+    if(window.__fluencyV1916FinalFix) return;
+    window.__fluencyV1916FinalFix = true;
+    var VERSION = 'V19.16-FINAL-DISPARO-SCROLL-PROGRESSO';
+    var MULTI_KEYS = 'fluency_lessonGeminiApiKeys_v197';
+    var MULTI_KEYS_OLD = ['fluency_lessonGeminiApiKeys','fluency_lessonGeminiKeys','lessonGeminiApiKeys','lessonGeminiKeys','fluency_freeGeminiKeys','fluency_flashGeminiKeys'];
+    var LESSON_KEY_ALIASES = ['fluency_lessonGeminiApiKey','fluency_lessonGeminiKey','lessonGeminiApiKey','lessonGeminiKey','fluency_geminiLessonKey','fluency_aulasGeminiKey','fluency_lesson_key','fluency_lesson_api_key'];
+    var PRO_KEY_ALIASES = ['fluency_proLessonGeminiApiKey','fluency_geminiProKey','geminiProApiKey','fluency_paidGeminiKey','fluency_lessonPaidGeminiKey'];
+    var FLASH_MODELS = ['gemini-2.5-flash','gemini-2.0-flash','gemini-1.5-flash'];
+    var PRO_MODELS = ['gemini-2.5-pro','gemini-1.5-pro'];
+    var previousFetch = typeof window.fetch === 'function' ? window.fetch.bind(window) : null;
+    var lastGenerateClick = 0;
+
+    var state = window.__fluencyV1916State = window.__fluencyV1916State || {
+      version: VERSION, running:false, phase:'pronto', logs:[], lastError:'', lastSuccess:'', keyCount:0, proCount:0,
+      block:'nenhum', completedBlocks:0, attempts:0, intercepted:0, lastHttp:'--', activeModel:'--', activeKey:'--'
+    };
+
+    function get(k){ try{return localStorage.getItem(k)||sessionStorage.getItem(k)||'';}catch(_){return '';} }
+    function set(k,v){ try{localStorage.setItem(k,v);}catch(_){ } try{sessionStorage.setItem(k,v);}catch(_){ } }
+    function clean(v){
+      v = String(v == null ? '' : v).trim();
+      try{
+        if((v[0]==='[' || v[0]==='{' || (v[0]==='"' && v[v.length-1]==='"'))){
+          var p = JSON.parse(v);
+          if(Array.isArray(p)) return p.join('\n');
+          if(typeof p === 'string') return p;
+          if(p && Array.isArray(p.keys)) return p.keys.join('\n');
+          if(p && typeof p.key === 'string') return p.key;
+          if(p && typeof p.apiKey === 'string') return p.apiKey;
+        }
+      }catch(_){ }
+      return v.replace(/\r/g,'\n').trim();
+    }
+    function valid(k){ k=String(k||'').replace(/\s+/g,'').trim(); return /^AIza[0-9A-Za-z_\-]{20,}$/.test(k); }
+    function mask(k){ k=String(k||'').replace(/\s+/g,'').trim(); return k ? k.slice(0,8)+'...'+k.slice(-4) : '--'; }
+    function uniq(arr){ var out=[], seen={}; (arr||[]).forEach(function(k){ k=String(k||'').replace(/\s+/g,'').trim(); if(valid(k)&&!seen[k]){seen[k]=1;out.push(k);} }); return out; }
+    function parseKeys(v){ return uniq(clean(v).split(/[\n,;| ]+/).filter(Boolean)); }
+    function readLessonKeys(){
+      var keys=[];
+      keys=keys.concat(parseKeys(get(MULTI_KEYS)));
+      MULTI_KEYS_OLD.forEach(function(k){ keys=keys.concat(parseKeys(get(k))); });
+      LESSON_KEY_ALIASES.forEach(function(k){ var v=get(k); if(valid(v)) keys.push(v); });
+      keys=uniq(keys).slice(0,3);
+      state.keyCount=keys.length;
+      return keys;
+    }
+    function readProKeys(){
+      var keys=[]; PRO_KEY_ALIASES.forEach(function(k){ var v=get(k); if(valid(v)) keys.push(v); });
+      keys=uniq(keys).slice(0,1); state.proCount=keys.length; return keys;
+    }
+    function esc(s){ return String(s||'').replace(/[&<>\"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+    function log(msg, kind){
+      try{
+        var it={at:new Date().toLocaleTimeString(), msg:String(msg||''), kind:kind||'info'};
+        state.logs.push(it); if(state.logs.length>140) state.logs.shift();
+        if(kind==='error'||kind==='warn') state.lastError=it.msg;
+        try{localStorage.setItem('fluency_v1916_diag_logs',JSON.stringify(state.logs.slice(-100)));}catch(_){ }
+        renderDiag();
+        try{console.warn('[Fluency '+VERSION+'] '+it.msg);}catch(_){ }
+      }catch(_){ }
+    }
+
+    function installBridgeKey(){
+      // O app original só inicia a geração se encontrar fluency_geminiKeys no boot.
+      // Esta ponte grava a primeira key de AULAS apenas quando não existe key geral configurada.
+      // Depois o fetch abaixo troca TODAS as chamadas de aula pelas keys exclusivas e bloqueia fallback genérico.
+      try{
+        var keys=readLessonKeys(); if(!keys.length) return false;
+        var gks=get('fluency_geminiKeys'), gk=get('fluency_geminiKey');
+        if(!gks && !gk){
+          localStorage.setItem('fluency_geminiKeys', JSON.stringify([keys[0]]));
+          sessionStorage.setItem('fluency_geminiKeys', JSON.stringify([keys[0]]));
+          localStorage.setItem('fluency___lessonBridgeOnly', '1');
+          return true;
+        }
+      }catch(_){ }
+      return false;
+    }
+    installBridgeKey();
+
+    function isGeminiUrl(url){ return /generativelanguage\.googleapis\.com/i.test(String(url||'')) && /:generateContent|:streamGenerateContent/i.test(String(url||'')); }
+    function replaceModelAndKey(url, model, key){
+      url=String(url||'');
+      url=url.replace(/\/models\/([^/:?]+)(:generateContent|:streamGenerateContent)/i,'/models/'+encodeURIComponent(model)+'$2');
+      if(/[?&]key=/.test(url)) url=url.replace(/([?&]key=)[^&]*/i,'$1'+encodeURIComponent(key));
+      else url += (url.indexOf('?')>=0?'&':'?')+'key='+encodeURIComponent(key);
+      return url;
+    }
+    function bodyText(body){
+      try{
+        var b=typeof body==='string'?JSON.parse(body):body, arr=[];
+        function walk(x){
+          if(!x) return;
+          if(typeof x==='string'){ arr.push(x); return; }
+          if(Array.isArray(x)){ x.forEach(walk); return; }
+          if(typeof x==='object'){ Object.keys(x).forEach(function(k){ if(k==='text' && typeof x[k]==='string') arr.push(x[k]); else walk(x[k]); }); }
+        }
+        walk(b); return arr.join('\n');
+      }catch(_){ return String(body||''); }
+    }
+    function likelyLesson(url, init){
+      var txt=bodyText(init && init.body).slice(0,25000);
+      return /aula|lesson|sections|seções|secoes|exercises|exercícios|vocabulary|vocabulário|grammar|speaking|listening|reading|writing|finalTip|estimatedMinutes/i.test(txt) && !(/text-to-speech|generateSpeech|tts|voice|voz/i.test(txt) && !/aula|lesson/i.test(txt));
+    }
+    function extractApiText(data){
+      try{ var parts=data.candidates[0].content.parts; return parts.map(function(p){return p.text||'';}).join('\n'); }catch(_){ return ''; }
+    }
+    function parseJson(s){
+      s=String(s||'').trim().replace(/^```(?:json)?\s*/i,'').replace(/```$/,'').trim();
+      try{return JSON.parse(s);}catch(_){ }
+      var a=s.indexOf('{'), b=s.lastIndexOf('}');
+      if(a>=0 && b>a){ var sub=s.slice(a,b+1); try{return JSON.parse(sub);}catch(_){ try{return JSON.parse(sub.replace(/,(\s*[}\]])/g,'$1'));}catch(__){} } }
+      throw new Error('JSON inválido retornado pela IA');
+    }
+    function buildBody(originalBody, blockName, instruction){
+      var body;
+      try{ body=typeof originalBody==='string'?JSON.parse(originalBody):JSON.parse(JSON.stringify(originalBody||{})); }
+      catch(_){ body={contents:[{role:'user',parts:[{text:String(originalBody||'')}]}]}; }
+      var original=bodyText(body);
+      body.contents=[{role:'user',parts:[{text:[
+        'Você é o gerador de aulas do Fluency. Responda somente JSON válido, sem markdown.',
+        'Patch '+VERSION+': gerar aula em 3 blocos usando SOMENTE as chaves exclusivas de aulas.',
+        'Bloco solicitado: '+blockName+'.', instruction,
+        'Use português claro nas explicações e inglês correto nos exemplos. Faça conteúdo completo e profundo.',
+        'Prompt original do app:', original
+      ].join('\n\n')}]}];
+      body.generationConfig=body.generationConfig||{};
+      body.generationConfig.temperature=0.35;
+      body.generationConfig.responseMimeType='application/json';
+      body.generationConfig.maxOutputTokens=Math.max(Number(body.generationConfig.maxOutputTokens||0), blockName==='BLOCO 1'?5200:blockName==='BLOCO 2'?5200:3600);
+      return JSON.stringify(body);
+    }
+    var BLOCKS=[
+      {name:'BLOCO 1', key:'core', instruction:'Retorne JSON com: title, subtitle, estimatedMinutes=40, intro com 650+ caracteres, sections exatamente 6 itens. Cada section deve ter heading, content com 700+ caracteres e examples exatamente 5 itens {en, pt}. Não inclua exercícios nem vocabulário neste bloco.'},
+      {name:'BLOCO 2', key:'practice', instruction:'Retorne JSON com: vocabulary exatamente 15 itens {word,pos,translation,example}; exercises exatamente 18 itens {type,question,options,answer,explanation}. Misture choice, fill, translate e desafio prático. Cada explanation deve ter 70+ caracteres.'},
+      {name:'BLOCO 3', key:'finish', instruction:'Retorne JSON com: tips exatamente 7 strings concretas; commonMistakes de 3 a 5 itens {mistake,why,avoid}; finalTip com 300+ caracteres; listeningText ou readingText quando fizer sentido, com texto natural adequado ao nível.'}
+    ];
+    function validate(obj, block){
+      if(!obj || typeof obj!=='object') throw new Error(block.name+' veio vazio');
+      if(block.key==='core' && (!obj.title || !Array.isArray(obj.sections) || obj.sections.length<3)) throw new Error('BLOCO 1 sem título/seções');
+      if(block.key==='practice' && (!Array.isArray(obj.vocabulary) || obj.vocabulary.length<5 || !Array.isArray(obj.exercises) || obj.exercises.length<5)) throw new Error('BLOCO 2 sem vocabulário/exercícios');
+      if(block.key==='finish' && (!Array.isArray(obj.tips) || obj.tips.length<2 || !obj.finalTip)) throw new Error('BLOCO 3 sem dicas/finalTip');
+    }
+    async function callBlock(url, init, block, lessonKeys, proKeys){
+      var candidates=[];
+      lessonKeys.forEach(function(k){ FLASH_MODELS.forEach(function(m){ candidates.push({key:k,model:m,paid:false}); }); });
+      proKeys.forEach(function(k){ PRO_MODELS.forEach(function(m){ candidates.push({key:k,model:m,paid:true}); }); });
+      if(!candidates.length) throw new Error('nenhuma key exclusiva de aulas válida configurada');
+      var lastErr='';
+      for(var i=0;i<candidates.length;i++){
+        var c=candidates[i];
+        state.attempts++; state.block=block.name; state.phase='gerando '+block.name; state.activeModel=c.model; state.activeKey=mask(c.key); renderDiag();
+        log(block.name+' tentando '+c.model+' com '+(c.paid?'Pro último caso':'Flash/free')+' '+mask(c.key),'info');
+        try{
+          var newUrl=replaceModelAndKey(url,c.model,c.key);
+          var newInit=Object.assign({},init||{}, {body:buildBody(init&&init.body, block.name, block.instruction)});
+          delete newInit.signal;
+          var res=await previousFetch(newUrl,newInit);
+          if(!res || typeof res.ok==='undefined') throw new Error('fetch Gemini retornou null/undefined antes de gerar '+block.name);
+          var raw=await res.text(); state.lastHttp='HTTP '+(res&&res.status);
+          if(!res.ok){ lastErr='HTTP '+res.status+': '+raw.slice(0,240); log(block.name+' falhou: '+lastErr,(res.status===429||res.status===403)?'warn':'error'); continue; }
+          var data=JSON.parse(raw), obj=parseJson(extractApiText(data));
+          validate(obj,block);
+          log(block.name+' concluído com '+c.model+' '+mask(c.key),'ok');
+          return obj;
+        }catch(e){ lastErr=String(e&&e.message||e); log(block.name+' erro: '+lastErr,'warn'); }
+      }
+      throw new Error(block.name+' não conseguiu gerar. Último erro: '+lastErr);
+    }
+    function merge(parts){
+      var a=parts[0]||{}, b=parts[1]||{}, c=parts[2]||{};
+      return {title:a.title||'Aula de inglês',subtitle:a.subtitle||'',estimatedMinutes:a.estimatedMinutes||40,intro:a.intro||'',sections:Array.isArray(a.sections)?a.sections:[],vocabulary:Array.isArray(b.vocabulary)?b.vocabulary:[],exercises:Array.isArray(b.exercises)?b.exercises:[],tips:Array.isArray(c.tips)?c.tips:[],commonMistakes:Array.isArray(c.commonMistakes)?c.commonMistakes:(Array.isArray(c.common_mistakes)?c.common_mistakes:[]),finalTip:'',listeningText:c.listeningText||c.listening_text||'',readingText:c.readingText||c.reading_text||'',_generatedBy:VERSION,_blocks:3,_keyCount:state.keyCount,_generatedAt:new Date().toISOString()};
+    }
+    function okResponse(lesson){
+      return new Response(JSON.stringify({candidates:[{content:{role:'model',parts:[{text:JSON.stringify(lesson)}]},finishReason:'STOP'}],usageMetadata:{promptTokenCount:0,candidatesTokenCount:0,totalTokenCount:0},fluencyPatch:{version:VERSION,blocks:3,keyCount:state.keyCount}}),{status:200,headers:{'Content-Type':'application/json'}});
+    }
+    async function generateBlocks(url, init){
+      if(state.running) return null;
+      state.running=true; state.phase='iniciando'; state.logs=[]; state.lastError=''; state.lastSuccess=''; state.completedBlocks=0; state.attempts=0; state.block='preparando';
+      var keys=readLessonKeys(), pro=readProKeys();
+      try{
+        if(!keys.length && !pro.length) throw new Error('configure pelo menos 1 key exclusiva de aulas');
+        log('geração iniciada em 3 blocos. Flash/free: '+keys.length+' · Pro último caso: '+pro.length,'info');
+        var parts=[];
+        for(var i=0;i<BLOCKS.length;i++){ parts[i]=await callBlock(url,init,BLOCKS[i],keys,pro); state.completedBlocks=i+1; renderDiag(); }
+        var lesson=merge(parts);
+        if(!lesson.sections.length || !lesson.exercises.length || !lesson.vocabulary.length) throw new Error('aula final incompleta após mesclar blocos');
+        state.phase='concluído'; state.lastSuccess='Aula completa gerada: '+lesson.sections.length+' seções, '+lesson.vocabulary.length+' vocabulários, '+lesson.exercises.length+' exercícios.';
+        log(state.lastSuccess,'ok');
+        try{localStorage.setItem('fluency_last_lesson_model_v197',JSON.stringify({model:'flash-blocks-v1916',keyCount:keys.length,blocks:3,at:Date.now()}));}catch(_){ }
+        return okResponse(lesson);
+      }catch(e){ state.phase='erro'; state.lastError=String(e&&e.message||e); log('falha final: '+state.lastError,'error'); return new Response(JSON.stringify({error:{code:500,status:'LESSON_GENERATION_FAILED',message:state.lastError},fluencyPatch:{version:VERSION}}),{status:500,headers:{'Content-Type':'application/json'}}); }
+      finally{ state.running=false; renderDiag(); }
+    }
+
+    if(previousFetch){
+      window.fetch = async function(input, init){
+        var url=''; try{ url=typeof input==='string'?input:(input&&input.url)||''; }catch(_){ }
+        if(isGeminiUrl(url)){
+          state.intercepted++; renderDiag();
+          if(likelyLesson(url,init||{})) return await generateBlocks(url,init||{});
+          log('chamada Gemini não-aula detectada e liberada para o fluxo original.','info');
+        }
+        return previousFetch.apply(this,arguments);
+      };
+      window.fetch.__fluencyV1916FinalFix = true;
+    }
+
+    function safeText(el){ try{return String(el && (el.innerText || el.textContent) || '');}catch(_){return '';} }
+    function visible(el){ try{ var r=el.getBoundingClientRect(), cs=getComputedStyle(el); return r.width>8 && r.height>8 && cs.display!=='none' && cs.visibility!=='hidden'; }catch(_){return false;} }
+    function findProgressPanel(){
+      try{
+        var els=Array.prototype.slice.call(document.querySelectorAll('main,section,aside,div'));
+        var c=els.filter(function(el){ var t=safeText(el); return /Vozes carregadas/i.test(t) && (/Saúde Azure|Speech destravado|Status/i.test(t)); }).filter(visible);
+        c.sort(function(a,b){ var ar=a.getBoundingClientRect(), br=b.getBoundingClientRect(); return (ar.width*ar.height)-(br.width*br.height); });
+        return c[0]||null;
+      }catch(_){ return null; }
+    }
+    function installScrollCss(){
+      if(document.getElementById('__fluency_v1916_scroll_css__')) return;
+      var st=document.createElement('style'); st.id='__fluency_v1916_scroll_css__';
+      st.textContent='[data-fluency-v1916-progress-scroll="1"]{max-height:none!important;height:auto!important;min-height:0!important;overflow-y:visible!important;overflow-x:hidden!important;padding-bottom:160px!important;scroll-behavior:auto!important;overscroll-behavior:auto!important;-webkit-overflow-scrolling:touch!important;} [data-fluency-v1916-page-scroll="1"]{overflow-y:auto!important;-webkit-overflow-scrolling:touch!important;touch-action:pan-y!important;scroll-behavior:auto!important;} #__fluency_v1916_diag_box__{scroll-margin-top:16px!important;}';
+      document.head.appendChild(st);
+    }
+    function fixScroll(){
+      try{
+        installScrollCss();
+        var p=findProgressPanel(); if(!p) return false;
+        p.setAttribute('data-fluency-v1916-progress-scroll','1');
+        var n=p;
+        for(var i=0;i<8 && n;i++,n=n.parentElement){
+          n.setAttribute && n.setAttribute('data-fluency-v1916-page-scroll','1');
+          n.style.webkitOverflowScrolling='touch';
+          n.style.scrollBehavior='auto';
+          var cs=getComputedStyle(n);
+          if(cs.overflowY==='hidden' || cs.overflow==='hidden'){ n.style.overflowY='auto'; n.style.overflowX='hidden'; }
+        }
+        document.documentElement.style.overflowY='auto'; document.body.style.overflowY='auto'; document.body.style.webkitOverflowScrolling='touch';
+        return true;
+      }catch(_){ return false; }
+    }
+    function renderDiag(){
+      // Painel de diagnóstico desativado por solicitação do usuário.
+      // Mantemos apenas as ações funcionais (bridge key e fix de scroll do Progresso).
+      try{ installBridgeKey(); fixScroll(); }catch(_){ }
+      try{
+        var box=document.getElementById('__fluency_v1916_diag_box__');
+        if(box && box.parentNode) box.parentNode.removeChild(box);
+      }catch(_){ }
+    }
+    function clickWatch(ev){
+      try{
+        var el=ev&&ev.target, text='';
+        for(var i=0;i<5 && el;i++,el=el.parentElement){ text=(safeText(el)||'').replace(/\s+/g,' ').trim(); if(text && text.length<120) break; }
+        if(/gerar nova|gerar aula|começar aula|comecar aula|nova aula/i.test(text)){
+          var now=Date.now(); if(now-lastGenerateClick<900) return; lastGenerateClick=now;
+          installBridgeKey(); state.phase='clique detectado'; log('clique detectado em "'+text+'". Aguardando chamada Gemini da aula…','info');
+          var before=state.intercepted;
+          setTimeout(function(){ if(state.intercepted===before && !state.running){ log('nenhuma chamada Gemini apareceu. Recarregue a página uma vez: a ponte de disparo já foi salva para o app iniciar a geração usando as keys exclusivas.','warn'); } },3800);
+        }
+      }catch(_){ }
+    }
+    window.addEventListener('click',clickWatch,true); window.addEventListener('touchend',clickWatch,true);
+    setTimeout(function(){ installBridgeKey(); fixScroll(); renderDiag(); log('patch final ativo: scroll do Progresso liberado e geração de aula preparada com keys exclusivas.','ok'); },250);
+    setInterval(function(){ fixScroll(); renderDiag(); },1600);
+    try{ new MutationObserver(function(){ setTimeout(function(){ fixScroll(); renderDiag(); },80); }).observe(document.documentElement||document.body,{childList:true,subtree:true}); }catch(_){ }
+    window.__fluencyV1916Status=function(){ return JSON.parse(JSON.stringify(state)); };
+  }catch(e){ try{console.warn('Patch V19.16 final failed',e);}catch(_){ } }
+})();
+
+/* === FLUENCY PATCH V19.20 - BLOQUEIO 1 AULA COMPLETA POR DIA === */
+;(function(){
+  try{
+    if(window.__fluencyOneCompleteLessonPerDayV1920) return;
+    window.__fluencyOneCompleteLessonPerDayV1920 = true;
+    var VERSION='V19.20-BLOQUEIO-1-AULA-COMPLETA-DIA';
+    var LOCK_KEY='fluency_daily_lesson_success_lock_v1920';
+    var LEGACY_LOCK_KEYS=['fluency_daily_lesson_success_lock_v1919','fluency_daily_lesson_success_lock'];
+    var nativeFetch=window.fetch?window.fetch.bind(window):null;
+    function today(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+    function get(k){try{return localStorage.getItem(k)||'';}catch(_){return '';}}
+    function set(k,v){try{localStorage.setItem(k,v);}catch(_){}}
+    function parse(v){try{return JSON.parse(v||'null');}catch(_){return null;}}
+    function esc(s){return String(s||'').replace(/[&<>\"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+    function nowTime(){try{return new Date().toLocaleTimeString();}catch(_){return '';}}
+    function bodyText(body){
+      try{var b=typeof body==='string'?JSON.parse(body):body,out=[];function walk(x){if(!x)return;if(typeof x==='string'){out.push(x);return;}if(Array.isArray(x)){x.forEach(walk);return;}if(typeof x==='object'){if(typeof x.text==='string')out.push(x.text);Object.keys(x).forEach(function(k){if(k!=='text')walk(x[k]);});}}walk(b&&b.contents?b.contents:b);return out.join('\n');}catch(_){return String(body||'');}
+    }
+    function isGeminiLesson(url,init){
+      try{if(!/generativelanguage\.googleapis\.com/i.test(url||''))return false;if(!/:generateContent|:streamGenerateContent/i.test(url||''))return false;var t=bodyText(init&&init.body).slice(0,22000);if(!/aula|lesson|sections|seções|secoes|exercises|exercícios|vocabulary|vocabulário|grammar|listening|speaking|reading|writing|finalTip/i.test(t))return false;if(/tts|audio|voice|voz|generateSpeech|text-to-speech/i.test(t)&&!/aula|lesson/i.test(t))return false;return true;}catch(_){return false;}
+    }
+    function currentLock(){var t=today(),keys=[LOCK_KEY].concat(LEGACY_LOCK_KEYS);for(var i=0;i<keys.length;i++){var l=parse(get(keys[i]));if(l&&l.date===t&&l.complete===true)return l;}return null;}
+    function clearOldLocks(){try{var l=parse(get(LOCK_KEY));if(l&&l.date&&l.date!==today())localStorage.removeItem(LOCK_KEY);}catch(_){}}
+    function log(kind,msg){
+      try{var s=window.__fluencyBlockLessonStateV197;if(s&&Array.isArray(s.logs)){s.logs.push({at:nowTime(),kind:kind||'info',msg:String(msg||'')});if(s.logs.length>120)s.logs=s.logs.slice(-120);if(kind==='error'||kind==='warn')s.lastError=String(msg||'');if(kind==='error')s.phase='bloqueado';}}
+      catch(_){} try{console.warn('[Fluency '+VERSION+'] '+msg);}catch(_){} try{if(window.__fluencyV1919DiagRender)window.__fluencyV1919DiagRender();}catch(_){}
+    }
+    function pick(o,ks){for(var i=0;i<ks.length;i++){var v=o&&o[ks[i]];if(v!=null&&String(v).trim())return v;}return '';}
+    function arr(x){return Array.isArray(x)?x:[];}
+    function normalizeLesson(x){
+      try{if(!x)return null;if(typeof x==='string'){var s=x.trim().replace(/^```(?:json)?\s*/i,'').replace(/```$/,'').trim();var a=s.indexOf('{'),b=s.lastIndexOf('}');if(a>=0&&b>a)s=s.slice(a,b+1);x=JSON.parse(s);}if(x.lessonData)x=x.lessonData;if(x.lesson)x=x.lesson;if(x.aula)x=x.aula;return x&&typeof x==='object'?x:null;}catch(_){return null;}
+    }
+    function lessonFromGeminiPayload(data){try{var parts=data&&data.candidates&&data.candidates[0]&&data.candidates[0].content&&data.candidates[0].content.parts;if(Array.isArray(parts))return normalizeLesson(parts.map(function(p){return p&&(p.text||'');}).join('\n'));}catch(_){}return null;}
+    function completeReport(L){
+      L=normalizeLesson(L);var missing=[];if(!L)return{ok:false,missing:['JSON da aula não encontrado']};
+      var title=pick(L,['title','titulo','título','name']),intro=pick(L,['intro','introduction','introducao','introdução','overview']),finalTip=pick(L,['finalTip','final_tip','conclusion','conclusao','conclusão','closing','resumoFinal']);
+      var sections=arr(L.sections&&L.sections.length?L.sections:(L.secoes||L.seções||L.parts||L.modules)),vocabulary=arr(L.vocabulary&&L.vocabulary.length?L.vocabulary:(L.vocabulario||L.vocabulário||L.words)),exercises=arr(L.exercises&&L.exercises.length?L.exercises:(L.exercicios||L.exercícios||L.questions||L.quiz)),tips=arr(L.tips&&L.tips.length?L.tips:(L.dicas||L.notes));
+      if(!title)missing.push('título'); if(String(intro||'').length<120)missing.push('introdução suficiente'); if(sections.length<3)missing.push('3 seções');
+      sections.slice(0,3).forEach(function(sec,i){if(!pick(sec,['heading','title','titulo','título','name']))missing.push('título da seção '+(i+1));if(String(pick(sec,['content','body','text','explicacao','explicação','explanation','description'])||'').length<160)missing.push('conteúdo da seção '+(i+1));});
+      if(vocabulary.length<5)missing.push('vocabulário'); if(exercises.length<5)missing.push('exercícios'); if(tips.length<2)missing.push('dicas'); if(String(finalTip||'').length<25)missing.push('dica final');
+      var chars=0;try{chars=JSON.stringify(L).length;}catch(_){}
+      return{ok:missing.length===0,missing:missing,summary:{title:title||'Aula de inglês',sections:sections.length,vocabulary:vocabulary.length,exercises:exercises.length,tips:tips.length,chars:chars}};
+    }
+    function saveLock(report){var l={date:today(),complete:true,at:new Date().toISOString(),version:VERSION,summary:report.summary||{}};set(LOCK_KEY,JSON.stringify(l));try{set('fluency_daily_lesson_success_lock',JSON.stringify(l));}catch(_){}log('ok','Aula completa validada. Bloqueio diário ativado até amanhã: '+(l.summary.title||'aula')+'.');renderLockCard();return l;}
+    function blockedResponse(lock){var msg='Você já gerou uma aula completa hoje. Bloqueio diário ativo para evitar cobrança duplicada. Volte amanhã para gerar outra aula.';return new Response(JSON.stringify({error:{code:429,status:'DAILY_LESSON_LIMIT',message:msg},fluencyPatch:{version:VERSION,dailyLessonBlocked:true,lock:lock}}),{status:429,headers:{'content-type':'application/json'}});}
+    function findButtonText(el){try{for(var i=0;i<8&&el;i++,el=el.parentElement){var t=String(el.innerText||el.textContent||'').replace(/\s+/g,' ').trim();if(t&&t.length<180)return t;}}catch(_){}return '';}
+    function clickBlocker(ev){try{var l=currentLock();if(!l)return;var t=findButtonText(ev&&ev.target);if(/gerar nova|gerar aula|começar aula|comecar aula|nova aula|continuar/i.test(t)){ev.preventDefault();ev.stopPropagation();if(ev.stopImmediatePropagation)ev.stopImmediatePropagation();log('warn','Geração bloqueada: aula completa de hoje já existe. Isso evita nova cobrança.');renderLockCard();try{alert('✅ Você já gerou uma aula completa hoje.\n\nPara evitar cobrança duplicada, o sistema bloqueou uma nova geração até amanhã.');}catch(_){}return false;}}catch(_){}}
+    function installFetchLock(){
+      if(!nativeFetch||window.fetch.__fluencyOneCompleteLessonPerDayV1920)return;var prev=window.fetch;
+      window.fetch=async function(input,init){var url='';try{url=typeof input==='string'?input:((input&&input.url)||'');}catch(_){}var lesson=isGeminiLesson(url,init||{});if(lesson){var l=currentLock();if(l){log('warn','Chamada Gemini bloqueada antes de gastar: aula completa de hoje já foi gerada.');return blockedResponse(l);}}
+        var res=await prev.apply(this,arguments);
+        if(lesson&&res&&res.ok){try{res.clone().text().then(function(raw){try{var data=JSON.parse(raw||'{}'),lessonObj=lessonFromGeminiPayload(data),rep=completeReport(lessonObj);if(rep.ok)saveLock(rep);else log('warn','Aula recebida, mas NÃO ativou bloqueio diário porque está incompleta: falta '+rep.missing.join(', ')+'.');}catch(e){log('warn','Não foi possível validar a aula para bloqueio diário: '+((e&&e.message)||e));}}).catch(function(){});}catch(_){}}
+        return res;};
+      window.fetch.__fluencyOneCompleteLessonPerDayV1920=true;
+    }
+    function css(){if(document.getElementById('__fluency_v1920_lock_css__'))return;var st=document.createElement('style');st.id='__fluency_v1920_lock_css__';st.textContent='#__fluency_v1920_lock_card__{margin:10px 0 12px 0;padding:12px;border-radius:16px;border:1px solid rgba(34,197,94,.35);background:linear-gradient(135deg,rgba(5,46,22,.82),rgba(15,23,42,.74));color:#dcfce7;font-family:inherit;box-shadow:0 12px 30px rgba(0,0,0,.18)}#__fluency_v1920_lock_card__.off{border-color:rgba(96,165,250,.28);background:linear-gradient(135deg,rgba(15,23,42,.84),rgba(30,64,175,.30));color:#dbeafe}#__fluency_v1920_lock_card__ .lk-title{font-weight:950;font-size:13px;margin-bottom:4px}#__fluency_v1920_lock_card__ .lk-sub{font-size:12px;line-height:1.45;opacity:.94}#__fluency_v1920_lock_card__ .lk-small{font-size:11px;margin-top:7px;opacity:.82}';document.head.appendChild(st);}
+    function renderLockCard(){try{css();clearOldLocks();var diag=document.getElementById('__fluency_v1919_diag_box__');if(!diag)return;var card=document.getElementById('__fluency_v1920_lock_card__');if(!card){card=document.createElement('div');card.id='__fluency_v1920_lock_card__';var head=diag.querySelector('.fd-head');if(head&&head.nextSibling)diag.insertBefore(card,head.nextSibling);else diag.insertBefore(card,diag.firstChild);}var l=currentLock();if(l){card.className='';var sm=l.summary||{};card.innerHTML='<div class="lk-title">🔒 Bloqueio diário ativo — 1 aula completa por dia</div><div class="lk-sub">A aula de hoje já foi gerada e validada como completa. O sistema vai bloquear novas gerações até amanhã para evitar cobrança duplicada.</div><div class="lk-small">Aula: <b>'+esc(sm.title||'aula completa')+'</b> · Seções: '+esc(sm.sections||0)+' · Vocabulário: '+esc(sm.vocabulary||0)+' · Exercícios: '+esc(sm.exercises||0)+'</div>';}else{card.className='off';card.innerHTML='<div class="lk-title">🛡️ Proteção diária pronta</div><div class="lk-sub">Quando uma aula vier completa, o sistema salvará o sucesso e impedirá novas gerações no mesmo dia. Se a aula vier com erro ou incompleta, você poderá tentar novamente.</div>';}}catch(_){}}
+    installFetchLock();window.addEventListener('click',clickBlocker,true);window.addEventListener('touchend',clickBlocker,true);setTimeout(function(){renderLockCard();log('ok','Bloqueio diário instalado: só marca o dia quando a aula completa passa na validação.');},900);setInterval(renderLockCard,1000);try{new MutationObserver(function(){setTimeout(renderLockCard,120);}).observe(document.documentElement||document.body,{childList:true,subtree:true});}catch(_){}
+    window.__fluencyV1920DailyLessonLockStatus=function(){return currentLock()||{date:today(),complete:false,version:VERSION};};
+    window.__fluencyV1920ClearDailyLessonLock=function(){try{localStorage.removeItem(LOCK_KEY);localStorage.removeItem('fluency_daily_lesson_success_lock');renderLockCard();log('warn','Bloqueio diário removido manualmente nesta sessão.');return true;}catch(_){return false;}};
+  }catch(e){try{console.warn('Patch V19.20 daily lesson lock failed',e);}catch(_){} }
+})();
+
+
+
+/* === FLUENCY PATCH V19.21 - CORREÇÃO DEFINITIVA DO SCROLL DA ABA PROGRESSO iOS === */
+;(function(){
+  try{
+    if(window.__fluencyProgressScrollFixV1921) return;
+    window.__fluencyProgressScrollFixV1921 = true;
+    var VERSION='V19.21-SCROLL-PROGRESSO-IOS';
+
+    function addCss(){
+      if(document.getElementById('__fluency_v1921_progress_scroll_css__')) return;
+      var st=document.createElement('style');
+      st.id='__fluency_v1921_progress_scroll_css__';
+      st.textContent = [
+        'html,body,#root{height:auto!important;min-height:100%!important;overflow-y:auto!important;overflow-x:hidden!important;-webkit-overflow-scrolling:touch!important;touch-action:pan-y!important;overscroll-behavior-y:auto!important;}',
+        'body{position:static!important;padding-bottom:calc(220px + env(safe-area-inset-bottom,0px))!important;}',
+        '#root{display:block!important;}',
+        '[data-fluency-v1921-progress-root="1"]{height:auto!important;min-height:calc(100vh - 90px)!important;max-height:none!important;overflow:visible!important;overflow-y:visible!important;padding-bottom:calc(260px + env(safe-area-inset-bottom,0px))!important;}',
+        '[data-fluency-v1921-progress-parent="1"]{height:auto!important;min-height:0!important;max-height:none!important;overflow:visible!important;overflow-y:visible!important;overscroll-behavior-y:auto!important;-webkit-overflow-scrolling:touch!important;}',
+        '[data-fluency-lesson-keys-panel="progress-only"],#__fluency_v1914_lesson_keys_panel__,#__lk193_dual_section__{position:relative!important;display:block!important;max-height:none!important;overflow:visible!important;margin-bottom:calc(180px + env(safe-area-inset-bottom,0px))!important;}',
+        'textarea,input,button{touch-action:manipulation;}',
+        '@supports (-webkit-touch-callout:none){html,body,#root{overflow-y:auto!important;} [data-fluency-v1921-progress-parent="1"]{transform:none!important;}}'
+      ].join('\n');
+      document.head.appendChild(st);
+    }
+    function text(el){try{return String(el&&(el.innerText||el.textContent)||'').replace(/\s+/g,' ').trim();}catch(_){return '';}}
+    function visible(el){try{var r=el.getBoundingClientRect(),cs=getComputedStyle(el);return r.width>40&&r.height>40&&cs.display!=='none'&&cs.visibility!=='hidden'&&Number(cs.opacity||1)>0.02;}catch(_){return false;}}
+    function looksProgress(t){return /Seu progresso|Nível atual|Nivel atual|Uso da IA|Chaves da IA \(Gemini\)|Chaves Exclusivas de Aulas/i.test(t||'');}
+    function findProgressRoot(){
+      try{
+        var nodes=Array.prototype.slice.call(document.querySelectorAll('main,section,article,div'));
+        var cand=[];
+        nodes.forEach(function(el){
+          if(!visible(el)) return;
+          var t=text(el);
+          if(!looksProgress(t)) return;
+          var score=0;
+          if(/Seu progresso/i.test(t)) score+=4;
+          if(/Chaves da IA/i.test(t)) score+=4;
+          if(/Chaves Exclusivas de Aulas/i.test(t)) score+=3;
+          if(/Uso da IA/i.test(t)) score+=2;
+          var r=el.getBoundingClientRect();
+          if(r.width>=250) score+=1;
+          cand.push({el:el,score:score,area:r.width*r.height,top:r.top});
+        });
+        if(!cand.length) return null;
+        cand.sort(function(a,b){
+          if(b.score!==a.score) return b.score-a.score;
+          return a.area-b.area;
+        });
+        var el=cand[0].el;
+        // Sobe até um container de tela útil, mas não até body/root, para liberar a aba inteira.
+        for(var i=0;i<5 && el && el.parentElement && el.parentElement!==document.body && el.parentElement.id!=='root';i++){
+          var pt=text(el.parentElement);
+          if(looksProgress(pt) && pt.length>=text(el).length) el=el.parentElement;
+        }
+        return el;
+      }catch(_){return null;}
+    }
+    function unlockNode(el, root){
+      try{
+        if(!el||!el.style) return;
+        el.setAttribute(root?'data-fluency-v1921-progress-root':'data-fluency-v1921-progress-parent','1');
+        el.style.height='auto';
+        el.style.minHeight=root?'calc(100vh - 90px)':'0';
+        el.style.maxHeight='none';
+        el.style.overflow='visible';
+        el.style.overflowY='visible';
+        el.style.overflowX='hidden';
+        el.style.webkitOverflowScrolling='touch';
+        el.style.overscrollBehaviorY='auto';
+        el.style.scrollBehavior='auto';
+      }catch(_){ }
+    }
+    function fix(){
+      try{
+        addCss();
+        document.documentElement.style.overflowY='auto';
+        document.documentElement.style.height='auto';
+        document.body.style.overflowY='auto';
+        document.body.style.height='auto';
+        document.body.style.minHeight='100%';
+        var rootEl=document.getElementById('root');
+        if(rootEl){ rootEl.style.height='auto'; rootEl.style.minHeight='100vh'; rootEl.style.overflowY='visible'; }
+
+        var root=findProgressRoot();
+        if(!root) return false;
+        unlockNode(root,true);
+        var n=root.parentElement;
+        for(var i=0;i<10 && n && n!==document.documentElement;i++,n=n.parentElement){
+          unlockNode(n,false);
+          if(n===document.body || n.id==='root') break;
+        }
+        var panels=['#__fluency_v1914_lesson_keys_panel__','#__lk193_dual_section__','[data-fluency-lesson-keys-panel="progress-only"]'];
+        panels.forEach(function(sel){
+          try{Array.prototype.slice.call(document.querySelectorAll(sel)).forEach(function(p){
+            p.style.position='relative'; p.style.maxHeight='none'; p.style.overflow='visible'; p.style.marginBottom='220px';
+          });}catch(_){ }
+        });
+        try{localStorage.setItem('fluency_progress_scroll_fix_v1921','ok '+new Date().toISOString());}catch(_){ }
+        return true;
+      }catch(e){try{console.warn('[Fluency '+VERSION+'] falhou',e);}catch(_){} return false;}
+    }
+    function schedule(){ setTimeout(fix,0); setTimeout(fix,80); setTimeout(fix,250); setTimeout(fix,700); }
+    if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', schedule); else schedule();
+    ['click','touchstart','touchend','scroll','focus','hashchange','popstate','resize','orientationchange'].forEach(function(ev){
+      window.addEventListener(ev,function(){setTimeout(fix,80);},true);
+    });
+    try{new MutationObserver(function(){setTimeout(fix,80);}).observe(document.documentElement||document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class','style','data-fluency-lesson-keys-panel']});}catch(_){ }
+    setInterval(fix,900);
+    window.__fluencyFixProgressScrollV1921=fix;
+    try{console.warn('[Fluency '+VERSION+'] ativo');}catch(_){ }
+  }catch(e){try{console.warn('Patch V19.21 progress scroll failed',e);}catch(_){} }
+})();
+
+/* === FLUENCY PATCH V40 - GERADOR DE AULA COM FETCH REAL ISOLADO === */
+;(function(){
+  try{
+    if(window.__fluencyV40RealLessonFetch) return;
+    window.__fluencyV40RealLessonFetch = true;
+    var VERSION='V40-REAL-FETCH-AULA-SEM-NULL';
+    var previousFetch = window.fetch ? window.fetch.bind(window) : null;
+    var STATE = window.__fluencyBlockLessonStateV197 = window.__fluencyBlockLessonStateV197 || {};
+    var FLASH_MODELS=['gemini-2.5-flash','gemini-2.0-flash','gemini-1.5-flash'];
+    var PRO_MODELS=['gemini-2.5-pro','gemini-1.5-pro'];
+    var MULTI_KEYS='fluency_lessonGeminiApiKeys_v197';
+    var FLASH_ALIASES=['fluency_lessonGeminiApiKey','fluency_lessonGeminiKey','lessonGeminiApiKey','lessonGeminiKey','fluency_geminiLessonKey','fluency_aulasGeminiKey','fluency_lesson_key','fluency_lesson_api_key'];
+    var PRO_ALIASES=['fluency_proLessonGeminiApiKey','fluency_geminiProKey','geminiProApiKey','fluency_paidGeminiKey','fluency_lessonPaidGeminiKey'];
+    function now(){try{return new Date().toLocaleTimeString()}catch(_){return String(Date.now())}}
+    function log(msg,kind){
+      try{
+        STATE.logs=Array.isArray(STATE.logs)?STATE.logs:[];
+        STATE.logs.push({at:now(),msg:String(msg||''),kind:kind||'info',version:VERSION});
+        if(STATE.logs.length>120) STATE.logs.shift();
+        if(kind==='error'||kind==='warn') STATE.lastError=String(msg||'');
+        try{ localStorage.setItem('fluency_v197_diag_logs', JSON.stringify(STATE.logs.slice(-80))); }catch(_){ }
+        try{ if(window.__diag_log) window.__diag_log(kind==='error'?'err':kind||'info','Aula '+VERSION+': '+msg); }catch(_){ }
+        try{ window.dispatchEvent(new CustomEvent('fluency-lesson-diag',{detail:STATE})); }catch(_){ }
+        try{ console.warn('[Fluency '+VERSION+'] '+msg); }catch(_){ }
+      }catch(_){ }
+    }
+    function clean(v){v=String(v||'').trim();try{if(v&&((v[0]==='[')||(v[0]==='{')||(v[0]==='"'&&v[v.length-1]==='"'))){var p=JSON.parse(v);if(Array.isArray(p))return p.join('\n');if(typeof p==='string')return p;if(p&&Array.isArray(p.keys))return p.keys.join('\n');if(p&&typeof p.key==='string')return p.key;if(p&&typeof p.apiKey==='string')return p.apiKey;}}catch(_){}return v.replace(/\r/g,'\n').trim();}
+    function valid(k){k=String(k||'').replace(/\s+/g,'').trim();return /^AIza[0-9A-Za-z_\-]{20,}$/.test(k)}
+    function mask(k){k=String(k||'').replace(/\s+/g,'').trim();return k?k.slice(0,8)+'...'+k.slice(-4):'--'}
+    function get(k){try{return localStorage.getItem(k)||sessionStorage.getItem(k)||''}catch(_){return ''}}
+    function uniq(a){var out=[],seen={};(a||[]).forEach(function(k){k=String(k||'').replace(/\s+/g,'').trim();if(valid(k)&&!seen[k]){seen[k]=1;out.push(k)}});return out;}
+    function parseKeys(v){return uniq(clean(v).split(/[\n,;| ]+/).filter(Boolean));}
+    function readFlashKeys(){var arr=[];arr=arr.concat(parseKeys(get(MULTI_KEYS)));FLASH_ALIASES.forEach(function(k){var v=get(k);if(valid(v))arr.push(v)});return uniq(arr).slice(0,3)}
+    function readProKeys(){var arr=[];PRO_ALIASES.forEach(function(k){var v=get(k);if(valid(v))arr.push(v)});return uniq(arr).slice(0,1)}
+    function isGeminiUrl(url){return /generativelanguage\.googleapis\.com/i.test(String(url||''))&&/:generateContent|:streamGenerateContent/i.test(String(url||''))}
+    function getPrompt(body){
+      try{var b=typeof body==='string'?JSON.parse(body):body,arr=[];function walk(x){if(!x)return;if(typeof x==='string'){arr.push(x);return}if(Array.isArray(x)){x.forEach(walk);return}if(typeof x==='object'){if(typeof x.text==='string')arr.push(x.text);Object.keys(x).forEach(function(k){if(k!=='text')walk(x[k])})}}walk(b&&b.contents?b.contents:b);return arr.join('\n')}catch(_){return String(body||'')}
+    }
+    function likelyLesson(url,init){
+      var txt=getPrompt(init&&init.body).slice(0,22000);
+      if(/Aula\s+IA\s+V40/i.test(txt)) return false;
+      if(/tts|text-to-speech|generateSpeech|voz|audio/i.test(txt) && !/aula|lesson/i.test(txt)) return false;
+      return /aula|lesson|sections|seções|secoes|exercises|exercícios|vocabulary|vocabulário|grammar|reading|writing|listening|speaking|finalTip|TOPICO|Aluno/i.test(txt);
+    }
+    function modelUrl(model,key){return 'https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(model)+':generateContent?key='+encodeURIComponent(key)}
+    function iframeFetch(){
+      try{
+        var f=document.getElementById('__fluency_v40_real_fetch_iframe__');
+        if(!f){f=document.createElement('iframe');f.id='__fluency_v40_real_fetch_iframe__';f.style.cssText='position:fixed;width:1px;height:1px;opacity:0;left:-9999px;top:-9999px;border:0;pointer-events:none;';(document.documentElement||document.body).appendChild(f)}
+        if(f.contentWindow&&typeof f.contentWindow.fetch==='function') return f.contentWindow.fetch.bind(f.contentWindow);
+      }catch(_){ }
+      return null;
+    }
+    function xhrPost(url,body,ms){
+      return new Promise(function(resolve,reject){
+        var x=new XMLHttpRequest(),done=false,to=setTimeout(function(){try{x.abort()}catch(_){};if(!done){done=true;reject(new Error('XHR timeout'))}},ms||300000);
+        try{x.open('POST',url,true);x.timeout=ms||300000;x.setRequestHeader('Content-Type','application/json');
+          x.onreadystatechange=function(){if(x.readyState===4&&!done){done=true;clearTimeout(to);resolve({ok:x.status>=200&&x.status<300,status:x.status,text:function(){return Promise.resolve(x.responseText||'')},json:function(){return Promise.resolve(JSON.parse(x.responseText||'{}'))},clone:function(){return this}})}};
+          x.onerror=function(){if(!done){done=true;clearTimeout(to);reject(new Error('XHR network error'))}};
+          x.ontimeout=function(){if(!done){done=true;clearTimeout(to);reject(new Error('XHR timeout'))}};
+          x.send(body);
+        }catch(e){clearTimeout(to);reject(e)}
+      });
+    }
+    async function realPost(url,body){
+      var f=iframeFetch();
+      if(f){try{var ctrl=new AbortController();var timer=setTimeout(function(){try{ctrl.abort()}catch(_){}},300000);var r=await f(url,{method:'POST',headers:{'Content-Type':'application/json'},body:body,signal:ctrl.signal});clearTimeout(timer);if(r&&typeof r.ok!=='undefined')return r;}catch(e){log('fetch real via iframe falhou; tentando XHR: '+String(e&&e.message||e).slice(0,120),'warn')}}
+      return xhrPost(url,body,300000);
+    }
+    function buildBody(originalBody,blockName,instruction){
+      var original=getPrompt(originalBody);
+      var prompt=[
+        'Aula IA V40. Responda APENAS JSON válido, sem markdown.',
+        'Gere o '+blockName+' de uma aula completa de inglês para brasileiro.',
+        instruction,
+        'Use português claro nas explicações e inglês correto nos exemplos.',
+        'Não gere conteúdo raso. Seja específico, didático e prático.',
+        'Prompt original do app:', original
+      ].join('\n\n');
+      return JSON.stringify({system_instruction:{parts:[{text:'Você é uma API JSON de aulas de inglês. A única saída permitida é JSON válido.'}]},contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{temperature:0.35,maxOutputTokens:8192,responseMimeType:'application/json'}});
+    }
+    function apiText(data){try{var parts=data&&data.candidates&&data.candidates[0]&&data.candidates[0].content&&data.candidates[0].content.parts;if(Array.isArray(parts))return parts.map(function(p){return p&&p.text||''}).join('\n')}catch(_){ }return ''}
+    function parseJson(s){s=String(s||'').trim().replace(/^```(?:json)?\s*/i,'').replace(/```$/,'').trim();var a=s.indexOf('{'),b=s.lastIndexOf('}');if(a>=0&&b>a)s=s.slice(a,b+1);try{return JSON.parse(s)}catch(e){try{return JSON.parse(s.replace(/,(\s*[}\]])/g,'$1'))}catch(_){throw e}}}
+    function validate(o,kind){if(!o||typeof o!=='object')throw new Error(kind+' vazio');if(kind==='BLOCO 1'&&(!o.title||!Array.isArray(o.sections)||o.sections.length<3))throw new Error('BLOCO 1 sem title/sections');if(kind==='BLOCO 2'&&(!Array.isArray(o.vocabulary)||o.vocabulary.length<5||!Array.isArray(o.exercises)||o.exercises.length<5))throw new Error('BLOCO 2 sem vocabulary/exercises');if(kind==='BLOCO 3'&&(!Array.isArray(o.tips)||o.tips.length<2))throw new Error('BLOCO 3 sem tips suficientes');return o}
+    var BLOCKS=[
+      {name:'BLOCO 1',instruction:'Retorne JSON com: title, subtitle, estimatedMinutes, intro com 4+ frases, sections exatamente 5 itens. Cada section deve ter heading, content com explicação completa e examples exatamente 4 itens {en, pt}. Não inclua exercícios nem vocabulário neste bloco.'},
+      {name:'BLOCO 2',instruction:'Retorne JSON com: vocabulary exatamente 12 itens {word,pos,translation,example}; exercises exatamente 12 itens {type,question,options,answer,explanation}. Misture choice, fill, translate e prática guiada.'},
+      {name:'BLOCO 3',instruction:'Retorne JSON com: tips exatamente 5 strings curtas e objetivas; commonMistakes de 3 a 5 itens {mistake,why,avoid}; quando fizer sentido, listeningText ou readingText. NÃO gere finalTip, mensagem motivacional, texto de parabéns, conclusão longa ou encerramento.'}
+    ];
+    async function callBlock(originalUrl,init,block,candidates){
+      var body=buildBody(init&&init.body,block.name,block.instruction),last='';
+      for(var i=0;i<candidates.length;i++){
+        var c=candidates[i];
+        try{
+          STATE.phase='gerando '+block.name;STATE.block=block.name;STATE.activeModel=c.model;STATE.activeKey=mask(c.key);STATE.running=true;
+          log(block.name+' tentando '+c.model+' com key '+mask(c.key)+(c.paid?' (Pro último caso)':' (Flash/free)'),'info');
+          var res=await realPost(modelUrl(c.model,c.key),body);
+          if(!res||typeof res.ok==='undefined') throw new Error('fetch real retornou null/undefined');
+          var raw=await res.text();STATE.lastHttp='HTTP '+res.status;
+          if(!res.ok){last='HTTP '+res.status+': '+raw.slice(0,260);log(block.name+' falhou: '+last,(res.status===429||res.status===403)?'warn':'error');continue;}
+          var obj=parseJson(apiText(JSON.parse(raw)));
+          validate(obj,block.name);
+          try{obj.__fluencyBlockMeta={block:block.name,model:c.model,keyType:c.paid?'pro':'flash',key:mask(c.key),at:new Date().toISOString()};}catch(_){}
+          log(block.name+' concluído com '+c.model+' ('+(c.paid?'Pro último caso':'Flash/free')+')','ok');
+          return obj;
+        }catch(e){last=String(e&&e.message||e);log(block.name+' erro: '+last,'warn')}
+      }
+      throw new Error(block.name+' falhou. Último erro: '+last);
+    }
+    function merge(p){var a=p[0]||{},b=p[1]||{},c=p[2]||{};return {title:a.title||'Aula de inglês',subtitle:a.subtitle||'',estimatedMinutes:a.estimatedMinutes||40,intro:a.intro||'',sections:Array.isArray(a.sections)?a.sections:[],vocabulary:Array.isArray(b.vocabulary)?b.vocabulary:[],exercises:Array.isArray(b.exercises)?b.exercises:[],tips:Array.isArray(c.tips)?c.tips:[],commonMistakes:Array.isArray(c.commonMistakes)?c.commonMistakes:(Array.isArray(c.common_mistakes)?c.common_mistakes:[]),finalTip:'',listeningText:c.listeningText||c.listening_text||'',readingText:c.readingText||c.reading_text||'',_generatedBy:VERSION,_blocks:3,_generatedAt:new Date().toISOString(),_blockMeta:{block1:a.__fluencyBlockMeta||null,block2:b.__fluencyBlockMeta||null,block3:c.__fluencyBlockMeta||null}}}
+    function geminiResponse(lesson){return new Response(JSON.stringify({candidates:[{content:{role:'model',parts:[{text:JSON.stringify(lesson)}]},finishReason:'STOP'}],usageMetadata:{promptTokenCount:0,candidatesTokenCount:0,totalTokenCount:0},fluencyPatch:{version:VERSION,mode:'real-fetch-isolated'}}),{status:200,headers:{'content-type':'application/json'}})}
+    async function generate(url,init){
+      if(STATE.running && STATE.block) return new Response(JSON.stringify({error:{code:409,status:'LESSON_ALREADY_RUNNING',message:'Já existe uma geração de aula em andamento.'},fluencyPatch:{version:VERSION}}),{status:409,headers:{'content-type':'application/json'}});
+      var flash=readFlashKeys(),pro=readProKeys(),cand=[];
+      flash.forEach(function(k){FLASH_MODELS.forEach(function(m){cand.push({key:k,model:m,paid:false})})});
+      pro.forEach(function(k){PRO_MODELS.forEach(function(m){cand.push({key:k,model:m,paid:true})})});
+      STATE.version=VERSION;STATE.running=true;STATE.phase='iniciando';STATE.logs=[];STATE.lastError='';STATE.completedBlocks=0;STATE.keyCount=flash.length;STATE.proKeyCount=pro.length;
+      try{
+        if(!cand.length) throw new Error('Nenhuma key exclusiva de aulas configurada. Adicione pelo menos a Key aulas Flash 1.');
+        log('geração V40 iniciada. Flash/free: '+flash.length+' · Pro último caso: '+pro.length,'info');
+        var parts=[];
+        for(var i=0;i<BLOCKS.length;i++){parts[i]=await callBlock(url,init,BLOCKS[i],cand);STATE.completedBlocks=i+1;}
+        var lesson=merge(parts);
+        if(!lesson.sections.length||!lesson.exercises.length||!lesson.vocabulary.length) throw new Error('aula final incompleta depois da mesclagem');
+        STATE.phase='concluído';STATE.lastSuccess='Aula gerada com fetch real isolado: '+lesson.sections.length+' seções, '+lesson.vocabulary.length+' vocabulários, '+lesson.exercises.length+' exercícios.';log(STATE.lastSuccess,'ok');
+        return geminiResponse(lesson);
+      }catch(e){
+        var msg=String(e&&e.message||e);STATE.phase='erro';STATE.lastError=msg;log('falha final da aula: '+msg,'error');
+        return new Response(JSON.stringify({error:{code:500,status:'LESSON_GENERATION_FAILED',message:msg},fluencyPatch:{version:VERSION}}),{status:500,headers:{'content-type':'application/json'}});
+      }finally{STATE.running=false;STATE.block='';}
+    }
+    if(previousFetch){
+      window.fetch=async function(input,init){
+        var url='';try{url=typeof input==='string'?input:(input&&input.url)||''}catch(_){ }
+        if(isGeminiUrl(url)&&likelyLesson(url,init||{})) return await generate(url,init||{});
+        return previousFetch.apply(this,arguments);
+      };
+      window.fetch.__fluencyV40RealLessonFetch=true;
+    }
+    try{localStorage.setItem('fluency_lesson_patch_version',VERSION)}catch(_){ }
+    log('patch ativo: chamadas de AULA usam iframe/XHR direto e não passam pelos hooks antigos que retornavam null.','ok');
+  }catch(e){try{console.warn('Patch V40 failed',e)}catch(_){ }}
+})();
+
+/* === FLUENCY PATCH V41 - AULA ATIVA REAL + CACHE/OVERLAY CIRÚRGICO === */
+;(function(){
+  try{
+    if(window.__fluencyActiveLessonV41) return;
+    window.__fluencyActiveLessonV41 = true;
+    var VERSION='V41-ACTIVE-LESSON-CACHE-FIX';
+    var ACTIVE_KEY='fluency_active_ai_lesson_v41';
+    var ACTIVE_ID='fluency_active_lesson_id_v41';
+    var LAST_KEY='fluency_last_ai_lesson';
+    var LAST_META='fluency_last_ai_lesson_meta_v41';
+    var DEBUG='fluency_v41_debug';
+    function today(){try{return new Date().toISOString().slice(0,10)}catch(_){return ''}}
+    function log(kind,msg,meta){try{var line={at:new Date().toLocaleTimeString(),kind:kind||'info',msg:String(msg||''),meta:meta||null,version:VERSION};var arr=[];try{arr=JSON.parse(localStorage.getItem(DEBUG)||'[]')||[]}catch(_){}arr.push(line);if(arr.length>80)arr=arr.slice(-80);localStorage.setItem(DEBUG,JSON.stringify(arr));if(window.__fluencyBlockLessonStateV197&&Array.isArray(window.__fluencyBlockLessonStateV197.logs)){window.__fluencyBlockLessonStateV197.logs.push({at:line.at,kind:kind||'info',msg:'Aula '+VERSION+': '+line.msg,meta:meta||null});if(window.__fluencyBlockLessonStateV197.logs.length>140)window.__fluencyBlockLessonStateV197.logs.shift()}try{console.warn('[Fluency '+VERSION+'] '+line.msg,meta||'')}catch(_){}}catch(_){}}
+    function txt(x){return String(x==null?'':x).trim()}
+    function arr(x){return Array.isArray(x)?x:[]}
+    function parse(v){try{if(v==null)return null;var x=typeof v==='string'?JSON.parse(v):v;if(typeof x==='string'){try{x=JSON.parse(x)}catch(_){}}return x}catch(_){return null}}
+    function pick(o,ks){o=o||{};for(var i=0;i<ks.length;i++){var v=o[ks[i]];if(v!=null&&txt(v))return v}return ''}
+    function normExample(e){if(typeof e==='string')return{en:e,pt:''};e=e||{};return{en:pick(e,['en','english','sentence','phrase','example','text']),pt:pick(e,['pt','portuguese','translation','traducao','tradução','meaning'])}}
+    function normalize(L){L=parse(L);if(!L||typeof L!=='object')return null;if(L.lessonData&&typeof L.lessonData==='object')L=L.lessonData;if(L.lesson&&typeof L.lesson==='object')L=L.lesson;if(L.aula&&typeof L.aula==='object')L=L.aula;if(L.data&&L.data.lesson&&typeof L.data.lesson==='object')L=L.data.lesson;var out={};Object.keys(L).forEach(function(k){if(k.charAt(0)==='_')out[k]=L[k]});out.title=pick(L,['title','titulo','título','name'])||'Aula de inglês';out.subtitle=pick(L,['subtitle','subtitulo','subtítulo']);out.estimatedMinutes=Number(L.estimatedMinutes||L.minutes||L.duration||40)||40;out.intro=pick(L,['intro','introduction','introducao','introdução','overview']);var secs=arr((L.sections&&L.sections.length?L.sections:(L.secoes||L.seções||L.parts||L.modules)));out.sections=secs.map(function(s,i){if(typeof s==='string')s={heading:'Seção '+(i+1),content:s};s=s||{};var ex=arr(s.examples&&s.examples.length?s.examples:(s.exemplos||s.sentences||s.frases)).map(normExample).filter(function(e){return txt(e.en)||txt(e.pt)});return{heading:pick(s,['heading','title','titulo','título','name'])||('Seção '+(i+1)),content:pick(s,['content','body','text','explicacao','explicação','explanation','description','conteudo']),examples:ex}}).filter(function(s){return txt(s.heading)||txt(s.content)||s.examples.length});var voc=arr(L.vocabulary&&L.vocabulary.length?L.vocabulary:(L.vocabulario||L.vocabulário||L.words));out.vocabulary=voc.map(function(v){if(typeof v==='string')return{word:v,pos:'',translation:'',example:''};v=v||{};return{word:pick(v,['word','palavra','term','english']),pos:pick(v,['pos','class','classe','type']),translation:pick(v,['translation','traducao','tradução','pt','meaning']),example:pick(v,['example','exemplo','sentence','phrase'])}}).filter(function(v){return txt(v.word)||txt(v.translation)});var exs=arr(L.exercises&&L.exercises.length?L.exercises:(L.exercicios||L.exercícios||L.questions||L.quiz));out.exercises=exs.map(function(e,i){if(typeof e==='string')e={question:e};e=e||{};return{type:pick(e,['type','tipo'])||'practice',question:pick(e,['question','pergunta','prompt','instruction','enunciado'])||('Exercício '+(i+1)),options:arr(e.options||e.opcoes||e.opções||e.choices).map(txt),answer:pick(e,['answer','resposta','correct','correctAnswer','expected']),explanation:pick(e,['explanation','explicacao','explicação','why','feedback'])}}).filter(function(e){return txt(e.question)||txt(e.answer)});out.tips=arr(L.tips&&L.tips.length?L.tips:(L.dicas||L.notes)).map(function(t){return typeof t==='string'?t:pick(t,['tip','text','content'])}).filter(Boolean);out.commonMistakes=arr(L.commonMistakes||L.common_mistakes||L.errosComuns||L.mistakes).map(function(m){m=m||{};return{mistake:pick(m,['mistake','erro','title']),why:pick(m,['why','porque','porquê','reason']),avoid:pick(m,['avoid','correction','comoEvitar','fix'])}}).filter(function(m){return txt(m.mistake)||txt(m.why)||txt(m.avoid)});out.finalTip=pick(L,['finalTip','final_tip','conclusion','conclusao','conclusão','closing','resumoFinal']);out.listeningText=pick(L,['listeningText','listening_text']);out.readingText=pick(L,['readingText','reading_text']);out._source='ai';out._activeBy=VERSION;out._activatedAt=new Date().toISOString();out._generatedBy=out._generatedBy||L._generatedBy||VERSION;out._generatedAt=out._generatedAt||L._generatedAt||new Date().toISOString();if(L._blockMeta)out._blockMeta=L._blockMeta;return out}
+    function complete(L){try{L=normalize(L);if(!L)return false;if(txt(L.title).length<6)return false;if(txt(L.intro).length<80)return false;if(!Array.isArray(L.sections)||L.sections.length<3)return false;if(!Array.isArray(L.exercises)||L.exercises.length<5)return false;if(!Array.isArray(L.vocabulary)||L.vocabulary.length<5)return false;return true}catch(_){return false}}
+    function lessonKey(k){k=String(k||'');return /^fluency_lesson/i.test(k)||/^lesson_v\d+_/i.test(k)||/^fluency_lesson_v/i.test(k)||/^fluency_lesson_/.test(k)}
+    function removeOldOverlay(){try{Array.prototype.slice.call(document.querySelectorAll('.fluency-v18-full-lesson-render')).forEach(function(el){el.remove()})}catch(_){}}
+    function saveActive(L,reason){L=normalize(L);if(!complete(L))return false;var id='ai-'+today()+'-'+Date.now();L.lessonId=L.lessonId||id;L.activeLessonId=L.lessonId;L._displayPriority=9999;var text=JSON.stringify(L);try{localStorage.setItem(ACTIVE_KEY,text);localStorage.setItem(LAST_KEY,text);localStorage.setItem(ACTIVE_ID,L.lessonId);localStorage.setItem('fluency_active_lesson_id',L.lessonId);localStorage.setItem('fluency_last_lesson_model_v197',JSON.stringify({at:Date.now(),version:VERSION,title:L.title,blocks:L._blockMeta||null,reason:reason||''}));localStorage.setItem(LAST_META,JSON.stringify({at:new Date().toISOString(),title:L.title,sections:L.sections.length,vocabulary:L.vocabulary.length,exercises:L.exercises.length,blockMeta:L._blockMeta||null,reason:reason||''}))}catch(_){}window.__fluencyActiveLessonV41Data=L;log('ok','aula ativa salva/substituída: '+L.title,{reason:reason,blockMeta:L._blockMeta||null});removeOldOverlay();return true}
+    function readActive(){try{var L=normalize(localStorage.getItem(ACTIVE_KEY)||localStorage.getItem(LAST_KEY));return complete(L)?L:null}catch(_){return null}}
+    function extractLessonFromGeminiText(t){var api=parse(t), text='';try{var parts=api&&api.candidates&&api.candidates[0]&&api.candidates[0].content&&api.candidates[0].content.parts;if(Array.isArray(parts))text=parts.map(function(p){return p&&p.text||''}).join('\n')}catch(_){}if(!text)return null;return normalize(text)}
+    function cloneResponse(res,text){try{return new Response(text,{status:res.status,statusText:res.statusText,headers:res.headers})}catch(_){return res}}
+    function isGeminiUrl(url){return /generativelanguage\.googleapis\.com/i.test(String(url||''))&&/:generateContent|:streamGenerateContent/i.test(String(url||''))}
+    function isLessonLike(init){try{var b=(init&&init.body)||'';if(typeof b!=='string')b=JSON.stringify(b);return /aula|lesson|sections|seções|exercises|vocabulary|vocabulário|grammar|reading|writing|listening|speaking/i.test(b)}catch(_){return true}}
+    var prevFetch=window.fetch&&window.fetch.bind(window);if(prevFetch&&!window.fetch.__fluencyActiveLessonV41){window.fetch=async function(input,init){var url='';try{url=typeof input==='string'?input:(input&&input.url)||''}catch(_){}var res=await prevFetch(input,init);try{if(isGeminiUrl(url)&&res&&res.ok&&isLessonLike(init)){var text=await res.clone().text();var L=extractLessonFromGeminiText(text);if(complete(L)){saveActive(L,'fetch-response');return cloneResponse(res,text)}}}catch(e){log('warn','não consegui marcar resposta como aula ativa: '+String(e&&e.message||e).slice(0,160))}return res};window.fetch.__fluencyActiveLessonV41=true}
+    var rawGet=Storage.prototype.getItem, rawSet=Storage.prototype.setItem;if(rawGet&&!rawGet.__fluencyActiveLessonV41){Storage.prototype.getItem=function(k){try{if(this===localStorage&&lessonKey(k)){var active=readActive();if(active)return JSON.stringify(active)}}catch(_){}return rawGet.apply(this,arguments)};Storage.prototype.getItem.__fluencyActiveLessonV41=true}
+    if(rawSet&&!rawSet.__fluencyActiveLessonV41){Storage.prototype.setItem=function(k,v){try{if(this===localStorage&&lessonKey(k)){var L=normalize(v);if(complete(L)){L._storedInKey=String(k||'');saveActive(L,'storage-set:'+k);v=JSON.stringify(normalize(L))}}}catch(_){}return rawSet.call(this,k,v)};Storage.prototype.setItem.__fluencyActiveLessonV41=true}
+    function injectCss(){try{if(document.getElementById('__fluency_v41_css__'))return;var st=document.createElement('style');st.id='__fluency_v41_css__';st.textContent='.fluency-v18-full-lesson-render{display:none!important}';document.head.appendChild(st)}catch(_){}}
+    injectCss();removeOldOverlay();try{window.__fluencyRenderFullLessonV18=function(){removeOldOverlay();return false}}catch(_){}try{new MutationObserver(function(){removeOldOverlay()}).observe(document.documentElement||document.body,{childList:true,subtree:true})}catch(_){}setInterval(removeOldOverlay,900);
+    window.__fluencyV41ActiveLessonStatus=function(){var L=readActive();return{version:VERSION,hasActive:!!L,title:L&&L.title,sections:L&&L.sections&&L.sections.length,vocabulary:L&&L.vocabulary&&L.vocabulary.length,exercises:L&&L.exercises&&L.exercises.length,blockMeta:L&&L._blockMeta||null,storedId:localStorage.getItem(ACTIVE_ID)||''}};
+    window.__fluencyV41ClearActiveLesson=function(){try{localStorage.removeItem(ACTIVE_KEY);localStorage.removeItem(LAST_KEY);localStorage.removeItem(ACTIVE_ID);localStorage.removeItem('fluency_active_lesson_id')}catch(_){}removeOldOverlay();return true};
+    try{localStorage.setItem('fluency_lesson_patch_version',VERSION)}catch(_){}log('ok','patch ativo: aula nova vira ativa, substitui cache antigo e remove sobreposição V18.');
+  }catch(e){try{console.warn('Patch V41 failed',e)}catch(_){} }
+})();
+
+/* === FLUENCY PATCH V42 - PRO APENAS APÓS FREE ESGOTAR DE VERDADE === */
+;(function(){
+  try{
+    if(window.__fluencyV42StrictProFallback) return;
+    window.__fluencyV42StrictProFallback = true;
+    var VERSION='V48-PRO-ULTIMO-CASO-REAL-STABLE';
+    var prevFetch = window.fetch ? window.fetch.bind(window) : null;
+    var STATE = window.__fluencyBlockLessonStateV197 = window.__fluencyBlockLessonStateV197 || {};
+    var MULTI_KEYS='fluency_lessonGeminiApiKeys_v197';
+    var FLASH_ALIASES=['fluency_lessonGeminiApiKey','fluency_lessonGeminiKey','lessonGeminiApiKey','lessonGeminiKey','fluency_geminiLessonKey','fluency_aulasGeminiKey','fluency_lesson_key','fluency_lesson_api_key'];
+    var PRO_ALIASES=['fluency_proLessonGeminiApiKey','fluency_geminiProKey','geminiProApiKey','fluency_paidGeminiKey','fluency_lessonPaidGeminiKey'];
+    var ALL_KEY_NAMES=[MULTI_KEYS].concat(FLASH_ALIASES).concat(PRO_ALIASES);
+    var FLASH_MODELS=['gemini-2.5-flash','gemini-2.5-flash-lite','gemini-2.0-flash','gemini-1.5-flash'];
+    var PRO_MODELS=['gemini-2.5-pro','gemini-1.5-pro'];
+    var FREE_ROUNDS=3;
+    var ROUND_DELAYS=[0,9000,22000];
+    function now(){try{return new Date().toLocaleTimeString()}catch(_){return String(Date.now())}}
+    function log(msg,kind,meta){
+      try{
+        STATE.logs=Array.isArray(STATE.logs)?STATE.logs:[];
+        STATE.logs.push({at:now(),msg:String(msg||''),kind:kind||'info',version:VERSION,meta:meta||null});
+        if(STATE.logs.length>160) STATE.logs.shift();
+        if(kind==='error'||kind==='warn') STATE.lastError=String(msg||'');
+        try{localStorage.setItem('fluency_v197_diag_logs',JSON.stringify(STATE.logs.slice(-100)))}catch(_){ }
+        try{if(window.__diag_log) window.__diag_log(kind==='error'?'err':kind||'info','Aula '+VERSION+': '+msg)}catch(_){ }
+        try{window.dispatchEvent(new CustomEvent('fluency-lesson-diag',{detail:STATE}))}catch(_){ }
+        try{console.warn('[Fluency '+VERSION+'] '+msg,meta||'')}catch(_){ }
+      }catch(_){ }
+    }
+    function sleep(ms){return new Promise(function(r){setTimeout(r,ms)})}
+    function clean(v){v=String(v==null?'':v).trim();try{if(v&&((v[0]==='[')||(v[0]==='{')||(v[0]==='"'&&v[v.length-1]==='"'))){var p=JSON.parse(v);if(Array.isArray(p))return p.join('\n');if(typeof p==='string')return p;if(p&&Array.isArray(p.keys))return p.keys.join('\n');if(p&&typeof p.key==='string')return p.key;if(p&&typeof p.apiKey==='string')return p.apiKey;}}catch(_){}return v.replace(/\r/g,'\n').trim()}
+    function valid(k){k=String(k||'').replace(/\s+/g,'').trim();return /^AIza[0-9A-Za-z_\-]{20,}$/.test(k)}
+    function mask(k){k=String(k||'').replace(/\s+/g,'').trim();return k?k.slice(0,8)+'...'+k.slice(-4):'--'}
+    function uniq(a){var out=[],seen={};(a||[]).forEach(function(k){k=String(k||'').replace(/\s+/g,'').trim();if(valid(k)&&!seen[k]){seen[k]=1;out.push(k)}});return out}
+    function parseKeys(v){return uniq(clean(v).split(/[\n,;| ]+/).filter(Boolean))}
+    function rawStorageGet(storage,k){
+      try{var v=storage && storage[k]; if(typeof v==='string' && v) return v;}catch(_){ }
+      try{var v2=storage && storage.getItem && storage.getItem(k); if(typeof v2==='string') return v2;}catch(_){ }
+      return '';
+    }
+    function getRaw(k){return rawStorageGet(localStorage,k)||rawStorageGet(sessionStorage,k)||''}
+    // Corrige um bug da V41: o interceptador de cache era amplo demais e podia devolver JSON de aula antiga
+    // quando o sistema pedia fluency_lessonGeminiApiKey. Para nomes de API key, sempre devolver o valor cru.
+    try{
+      var previousGet = Storage.prototype.getItem;
+      if(previousGet && !previousGet.__fluencyV42KeyBypass){
+        Storage.prototype.getItem=function(k){
+          try{if(ALL_KEY_NAMES.indexOf(String(k||''))!==-1){var direct=this&&this[k];return typeof direct==='string'?direct:null;}}
+          catch(_){ }
+          return previousGet.apply(this,arguments);
+        };
+        Storage.prototype.getItem.__fluencyV42KeyBypass=true;
+      }
+    }catch(_){ }
+    function readFlashKeys(){var arr=[];arr=arr.concat(parseKeys(getRaw(MULTI_KEYS)));FLASH_ALIASES.forEach(function(k){var v=getRaw(k);if(valid(v))arr.push(v)});return uniq(arr).slice(0,3)}
+    function readProKeys(){var arr=[];PRO_ALIASES.forEach(function(k){var v=getRaw(k);if(valid(v))arr.push(v)});return uniq(arr).slice(0,1)}
+    function isGeminiUrl(url){return /generativelanguage\.googleapis\.com/i.test(String(url||''))&&/:generateContent|:streamGenerateContent/i.test(String(url||''))}
+    function getPrompt(body){try{var b=typeof body==='string'?JSON.parse(body):body,arr=[];function walk(x){if(!x)return;if(typeof x==='string'){arr.push(x);return}if(Array.isArray(x)){x.forEach(walk);return}if(typeof x==='object'){if(typeof x.text==='string')arr.push(x.text);Object.keys(x).forEach(function(k){if(k!=='text')walk(x[k])})}}walk(b&&b.contents?b.contents:b);return arr.join('\n')}catch(_){return String(body||'')}}
+    function likelyLesson(url,init){var txt=getPrompt(init&&init.body).slice(0,22000);if(/Aula\s+IA\s+V42|Aula\s+IA\s+V40/i.test(txt))return false;if(/tts|text-to-speech|generateSpeech|voz|audio/i.test(txt)&&!/aula|lesson/i.test(txt))return false;return /aula|lesson|sections|seções|secoes|exercises|exercícios|vocabulary|vocabulário|grammar|reading|writing|listening|speaking|finalTip|TOPICO|Aluno/i.test(txt)}
+    function modelUrl(model,key){return 'https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(model)+':generateContent?key='+encodeURIComponent(key)}
+    function iframeFetch(){try{var f=document.getElementById('__fluency_v42_real_fetch_iframe__');if(!f){f=document.createElement('iframe');f.id='__fluency_v42_real_fetch_iframe__';f.style.cssText='position:fixed;width:1px;height:1px;opacity:0;left:-9999px;top:-9999px;border:0;pointer-events:none;';(document.documentElement||document.body).appendChild(f)}if(f.contentWindow&&typeof f.contentWindow.fetch==='function')return f.contentWindow.fetch.bind(f.contentWindow)}catch(_){ }return null}
+    function xhrPost(url,body,ms){return new Promise(function(resolve,reject){var x=new XMLHttpRequest(),done=false,to=setTimeout(function(){try{x.abort()}catch(_){};if(!done){done=true;reject(new Error('XHR timeout'))}},ms||300000);try{x.open('POST',url,true);x.timeout=ms||300000;x.setRequestHeader('Content-Type','application/json');x.onreadystatechange=function(){if(x.readyState===4&&!done){done=true;clearTimeout(to);resolve({ok:x.status>=200&&x.status<300,status:x.status,text:function(){return Promise.resolve(x.responseText||'')},json:function(){return Promise.resolve(JSON.parse(x.responseText||'{}'))},clone:function(){return this}})}};x.onerror=function(){if(!done){done=true;clearTimeout(to);reject(new Error('XHR network error'))}};x.ontimeout=function(){if(!done){done=true;clearTimeout(to);reject(new Error('XHR timeout'))}};x.send(body)}catch(e){clearTimeout(to);reject(e)}})}
+    async function realPost(url,body){var f=iframeFetch();if(f){try{var ctrl=new AbortController();var timer=setTimeout(function(){try{ctrl.abort()}catch(_){}},300000);var r=await f(url,{method:'POST',headers:{'Content-Type':'application/json'},body:body,signal:ctrl.signal});clearTimeout(timer);if(r&&typeof r.ok!=='undefined')return r}catch(e){log('fetch real via iframe falhou; tentando XHR: '+String(e&&e.message||e).slice(0,120),'warn')}}return xhrPost(url,body,300000)}
+    function buildBody(originalBody,blockName,instruction){var original=getPrompt(originalBody);var prompt=['Aula IA V42. Responda APENAS JSON válido, sem markdown.','Gere o '+blockName+' de uma aula completa de inglês para brasileiro.',instruction,'Use português claro nas explicações e inglês correto nos exemplos.','Não gere conteúdo raso. Seja específico, didático e prático.','Prompt original do app:',original].join('\n\n');return JSON.stringify({system_instruction:{parts:[{text:'Você é uma API JSON de aulas de inglês. A única saída permitida é JSON válido.'}]},contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{temperature:0.35,maxOutputTokens:8192,responseMimeType:'application/json'}})}
+    function apiText(data){try{var parts=data&&data.candidates&&data.candidates[0]&&data.candidates[0].content&&data.candidates[0].content.parts;if(Array.isArray(parts))return parts.map(function(p){return p&&p.text||''}).join('\n')}catch(_){ }return ''}
+    function parseJson(s){s=String(s||'').trim().replace(/^```(?:json)?\s*/i,'').replace(/```$/,'').trim();var a=s.indexOf('{'),b=s.lastIndexOf('}');if(a>=0&&b>a)s=s.slice(a,b+1);try{return JSON.parse(s)}catch(e){try{return JSON.parse(s.replace(/,(\s*[}\]])/g,'$1'))}catch(_){throw e}}}
+    function validate(o,kind){if(!o||typeof o!=='object')throw new Error(kind+' vazio');if(kind==='BLOCO 1'&&(!o.title||!Array.isArray(o.sections)||o.sections.length<3))throw new Error('BLOCO 1 sem title/sections');if(kind==='BLOCO 2'&&(!Array.isArray(o.vocabulary)||o.vocabulary.length<5||!Array.isArray(o.exercises)||o.exercises.length<5))throw new Error('BLOCO 2 sem vocabulary/exercises');if(kind==='BLOCO 3'&&(!Array.isArray(o.tips)||o.tips.length<2))throw new Error('BLOCO 3 sem tips suficientes');return o}
+    var BLOCKS=[{name:'BLOCO 1',instruction:'Retorne JSON com: title, subtitle, estimatedMinutes, intro com 4+ frases, sections exatamente 5 itens. Cada section deve ter heading, content com explicação completa e examples exatamente 4 itens {en, pt}. Não inclua exercícios nem vocabulário neste bloco.'},{name:'BLOCO 2',instruction:'Retorne JSON com: vocabulary exatamente 12 itens {word,pos,translation,example}; exercises exatamente 12 itens {type,question,options,answer,explanation}. Misture choice, fill, translate e prática guiada.'},{name:'BLOCO 3',instruction:'Retorne JSON com: tips exatamente 5 strings curtas e objetivas; commonMistakes de 3 a 5 itens {mistake,why,avoid}; quando fizer sentido, listeningText ou readingText. NÃO gere finalTip, mensagem motivacional, texto de parabéns, conclusão longa ou encerramento.'}];
+    function classifyHttp(status,raw,msg){var t=String(raw||msg||'');if(status===429||/RESOURCE_EXHAUSTED|quota|rate limit|Too Many Requests/i.test(t))return 'quota';if(status===403||/API_KEY_INVALID|permission|forbidden|PERMISSION_DENIED/i.test(t))return 'key';if(status===404||/not found|no longer available/i.test(t))return 'model';if(status>=500||/timeout|network/i.test(t))return 'transient';return 'other'}
+    async function tryCandidate(init,block,c){
+      var body=buildBody(init&&init.body,block.name,block.instruction);
+      STATE.phase='gerando '+block.name;STATE.block=block.name;STATE.activeModel=c.model;STATE.activeKey=mask(c.key);STATE.activeKeyType=c.paid?'pro':'flash';STATE.running=true;
+      log(block.name+' tentando '+c.model+' com key '+mask(c.key)+(c.paid?' (PRO: último caso absoluto)':' (Flash/free)'),'info');
+      var res=await realPost(modelUrl(c.model,c.key),body);
+      if(!res||typeof res.ok==='undefined'){var e0=new Error('fetch real retornou null/undefined');e0.kind='transient';throw e0}
+      var raw=await res.text();STATE.lastHttp='HTTP '+res.status;
+      if(!res.ok){var kind=classifyHttp(res.status,raw,'');var e=new Error('HTTP '+res.status+': '+raw.slice(0,300));e.status=res.status;e.kind=kind;throw e}
+      var obj=parseJson(apiText(JSON.parse(raw)));validate(obj,block.name);try{obj.__fluencyBlockMeta={block:block.name,model:c.model,keyType:c.paid?'pro':'flash',key:mask(c.key),at:new Date().toISOString(),fallbackPolicy:VERSION}}catch(_){};
+      log(block.name+' concluído com '+c.model+' ('+(c.paid?'PRO último caso':'Flash/free')+')','ok');
+      return obj;
+    }
+    async function callBlock(init,block,freeCand,proCand){
+      var last='', failures=[], quotaCount=0;
+      if(freeCand.length){
+        for(var round=0;round<FREE_ROUNDS;round++){
+          if(ROUND_DELAYS[round]){log(block.name+' recebeu erro/limite nas free. Aguardando '+Math.round(ROUND_DELAYS[round]/1000)+'s antes de repetir as Flash/free. Pro ainda bloqueada.','warn');await sleep(ROUND_DELAYS[round])}
+          log(block.name+' rodada Flash/free '+(round+1)+'/'+FREE_ROUNDS+' — tentando todas as keys free antes da Pro.','info');
+          for(var i=0;i<freeCand.length;i++){
+            try{return await tryCandidate(init,block,freeCand[i])}
+            catch(e){last=String(e&&e.message||e);var kind=e&&e.kind||classifyHttp(e&&e.status,'',last);if(kind==='quota')quotaCount++;failures.push({kind:kind,msg:last.slice(0,180),model:freeCand[i].model,key:mask(freeCand[i].key)});log(block.name+' Flash/free falhou ('+kind+'): '+last.slice(0,220),'warn');}
+          }
+        }
+      }
+      if(!proCand.length){throw new Error(block.name+' falhou nas Flash/free e não há Pro configurada. Último erro: '+last)}
+      log(block.name+' TODAS as Flash/free falharam em '+FREE_ROUNDS+' rodada(s), incluindo '+quotaCount+' erro(s) de quota/429. Só agora a Pro será liberada.','warn',{failures:failures.slice(-12)});
+      for(var p=0;p<proCand.length;p++){
+        try{return await tryCandidate(init,block,proCand[p])}
+        catch(e2){last=String(e2&&e2.message||e2);log(block.name+' Pro último caso falhou: '+last.slice(0,220),'error')}
+      }
+      throw new Error(block.name+' falhou até na Pro. Último erro: '+last);
+    }
+    function merge(p){var a=p[0]||{},b=p[1]||{},c=p[2]||{};return {title:a.title||'Aula de inglês',subtitle:a.subtitle||'',estimatedMinutes:a.estimatedMinutes||40,intro:a.intro||'',sections:Array.isArray(a.sections)?a.sections:[],vocabulary:Array.isArray(b.vocabulary)?b.vocabulary:[],exercises:Array.isArray(b.exercises)?b.exercises:[],tips:Array.isArray(c.tips)?c.tips:[],commonMistakes:Array.isArray(c.commonMistakes)?c.commonMistakes:(Array.isArray(c.common_mistakes)?c.common_mistakes:[]),finalTip:'',listeningText:c.listeningText||c.listening_text||'',readingText:c.readingText||c.reading_text||'',_source:'ai',_generatedBy:VERSION,_blocks:3,_generatedAt:new Date().toISOString(),_fallbackPolicy:'Pro só liberada depois de todas as Flash/free falharem em '+FREE_ROUNDS+' rodadas com espera.',_blockMeta:{block1:a.__fluencyBlockMeta||null,block2:b.__fluencyBlockMeta||null,block3:c.__fluencyBlockMeta||null}}}
+    function complete(L){return L&&L.title&&String(L.intro||'').length>50&&Array.isArray(L.sections)&&L.sections.length>=3&&Array.isArray(L.vocabulary)&&L.vocabulary.length>=5&&Array.isArray(L.exercises)&&L.exercises.length>=5}
+    function saveActive(L){try{if(!complete(L))return;var id='ai-'+new Date().toISOString().slice(0,10)+'-'+Date.now();L.lessonId=L.lessonId||id;L.activeLessonId=L.lessonId;L._displayPriority=9999;var text=JSON.stringify(L);localStorage.setItem('fluency_active_ai_lesson_v41',text);localStorage.setItem('fluency_last_ai_lesson_v41',text);localStorage.setItem('fluency_active_lesson_id_v41',L.lessonId);localStorage.setItem('fluency_active_lesson_id',L.lessonId);localStorage.setItem('fluency_last_lesson_model_v197',JSON.stringify({at:Date.now(),version:VERSION,title:L.title,blocks:L._blockMeta||null,policy:L._fallbackPolicy||''}));}catch(_){ }}
+    function geminiResponse(lesson){saveActive(lesson);return new Response(JSON.stringify({candidates:[{content:{role:'model',parts:[{text:JSON.stringify(lesson)}]},finishReason:'STOP'}],usageMetadata:{promptTokenCount:0,candidatesTokenCount:0,totalTokenCount:0},fluencyPatch:{version:VERSION,mode:'strict-free-first-pro-last',freeRounds:FREE_ROUNDS}}),{status:200,headers:{'content-type':'application/json'}})}
+    async function generate(url,init){
+      if(STATE.running&&STATE.block){return new Response(JSON.stringify({error:{code:409,status:'LESSON_ALREADY_RUNNING',message:'Já existe uma geração de aula em andamento.'},fluencyPatch:{version:VERSION}}),{status:409,headers:{'content-type':'application/json'}})}
+      var flash=readFlashKeys(),pro=readProKeys(),freeCand=[],proCand=[];
+      flash.forEach(function(k){FLASH_MODELS.forEach(function(m){freeCand.push({key:k,model:m,paid:false})})});
+      pro.forEach(function(k){PRO_MODELS.forEach(function(m){proCand.push({key:k,model:m,paid:true})})});
+      STATE.version=VERSION;STATE.running=true;STATE.phase='iniciando';STATE.logs=[];STATE.lastError='';STATE.completedBlocks=0;STATE.keyCount=flash.length;STATE.proKeyCount=pro.length;STATE.policy='free-first-strict';
+      try{
+        if(!freeCand.length&&!proCand.length) throw new Error('Nenhuma key exclusiva de aulas configurada. Adicione pelo menos a Key aulas Flash 1.');
+        log('geração V42 iniciada. Flash/free: '+flash.length+' key(s) · Pro último caso: '+pro.length+'. Regra: Pro bloqueada até todas as free falharem em '+FREE_ROUNDS+' rodadas.','info');
+        var parts=[];
+        for(var i=0;i<BLOCKS.length;i++){parts[i]=await callBlock(init,BLOCKS[i],freeCand,proCand);STATE.completedBlocks=i+1}
+        var lesson=merge(parts);if(!complete(lesson))throw new Error('aula final incompleta depois da mesclagem');
+        STATE.phase='concluído';STATE.lastSuccess='Aula gerada: '+lesson.sections.length+' seções, '+lesson.vocabulary.length+' vocabulários, '+lesson.exercises.length+' exercícios. Pro usada somente se aparecer em metadados do bloco.';log(STATE.lastSuccess,'ok');
+        return geminiResponse(lesson);
+      }catch(e){var msg=String(e&&e.message||e);STATE.phase='erro';STATE.lastError=msg;log('falha final da aula: '+msg,'error');return new Response(JSON.stringify({error:{code:500,status:'LESSON_GENERATION_FAILED',message:msg},fluencyPatch:{version:VERSION,policy:'strict-free-first-pro-last'}}),{status:500,headers:{'content-type':'application/json'}})}
+      finally{STATE.running=false;STATE.block=''}
+    }
+    if(prevFetch){window.fetch=async function(input,init){var url='';try{url=typeof input==='string'?input:(input&&input.url)||''}catch(_){ }if(isGeminiUrl(url)&&likelyLesson(url,init||{}))return await generate(url,init||{});return prevFetch.apply(this,arguments)};window.fetch.__fluencyV42StrictProFallback=true}
+    window.__fluencyV42KeyStatus=function(){return {version:VERSION,flash:readFlashKeys().map(mask),pro:readProKeys().map(mask),policy:'Pro só após todas as Flash/free falharem em '+FREE_ROUNDS+' rodadas com espera.'}}
+    try{localStorage.setItem('fluency_lesson_patch_version',VERSION)}catch(_){ }
+    log('patch ativo: keys de aula lidas sem cache antigo e Pro só entra depois das free esgotarem com retry.','ok');
+  }catch(e){try{console.warn('Patch V42 failed',e)}catch(_){ }}
+})();
+
+
+/* === FLUENCY PATCH V48 - ESTABILIZAÇÃO CIRÚRGICA: REMOVER OVERLAYS EXPERIMENTAIS E RESTAURAR ABAS === */
+;(function(){
+  try{
+    if(window.__fluencyV48StableScopeReset) return;
+    window.__fluencyV48StableScopeReset = true;
+    var VERSION='V48-STABLE-SCOPE-RESET';
+    var BAD_IDS=['__fluency_v43_full_lesson__','__fluency_v46_lesson_page__'];
+    var BAD_CSS=['__fluency_v43_full_lesson_css__','__fluency_v46_lesson_css__','__fluency_v47_scope_css__'];
+    function rm(id){try{var el=document.getElementById(id); if(el&&el.parentNode)el.parentNode.removeChild(el);}catch(_){}}
+    function cleanDom(){
+      try{
+        BAD_IDS.forEach(rm); BAD_CSS.forEach(rm);
+        try{document.documentElement.classList.remove('__fluency_v47_aula_active')}catch(_){}
+        try{document.body.classList.remove('__fluency_v47_aula_active')}catch(_){}
+        var root=document.getElementById('root');
+        if(root){root.style.display='';root.style.visibility='';root.style.opacity='';root.style.position='';root.style.pointerEvents='';}
+        Array.prototype.slice.call(document.querySelectorAll('main,section,article')).forEach(function(el){
+          try{el.style.display='';el.style.visibility='';el.style.opacity='';el.style.pointerEvents='';}catch(_){}
+        });
+      }catch(_){ }
+    }
+    function parse(v){try{if(!v)return null;var x=String(v).trim();if(!x)return null;var a=x.indexOf('{'),b=x.lastIndexOf('}');if(a>=0&&b>a)x=x.slice(a,b+1);x=JSON.parse(x);if(typeof x==='string')return parse(x);if(x&&x.lesson)x=x.lesson;if(x&&x.aula)x=x.aula;if(x&&x.lessonData)x=x.lessonData;return x&&typeof x==='object'?x:null}catch(_){return null}}
+    function scrubFinalTips(){
+      try{
+        var fields=['finalTip','final_tip','conclusion','conclusao','conclusão','closing','resumoFinal'];
+        for(var i=0;i<localStorage.length;i++){
+          var k=localStorage.key(i)||'';
+          if(!/(lesson|aula)/i.test(k)) continue;
+          if(/api|key|gemini|azure|logs|model|version|active_lesson_id/i.test(k)) continue;
+          var raw=localStorage.getItem(k); var obj=parse(raw); if(!obj) continue;
+          var changed=false; fields.forEach(function(f){if(obj[f]){delete obj[f];changed=true;}});
+          if(changed) localStorage.setItem(k,JSON.stringify(obj));
+        }
+      }catch(_){ }
+    }
+    window.__fluencyV43RenderLesson=function(){cleanDom();return false};
+    window.__fluencyV46RenderLesson=function(){cleanDom();return false};
+    window.__fluencyV47ScopeStatus=function(){return {version:VERSION,disabledExperimentalOverlays:true}};
+    window.__fluencyV48StableStatus=function(){return {version:VERSION,removedOverlays:true,root:!!document.getElementById('root')}};
+    function tick(){cleanDom();scrubFinalTips();}
+    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',tick); else setTimeout(tick,0);
+    setTimeout(tick,250); setTimeout(tick,900); setTimeout(tick,1800); setInterval(cleanDom,1200);
+    ['click','touchstart','touchend','focus','hashchange','popstate','visibilitychange'].forEach(function(ev){window.addEventListener(ev,function(){setTimeout(tick,60);setTimeout(cleanDom,350)},true)});
+    try{new MutationObserver(function(){setTimeout(cleanDom,80)}).observe(document.documentElement||document.body,{childList:true,subtree:true,attributes:true});}catch(_){ }
+    try{console.warn('[Fluency '+VERSION+'] overlays experimentais removidos; renderização voltou para o fluxo nativo por aba.')}catch(_){ }
+  }catch(e){try{console.warn('Patch V48 failed',e)}catch(_){}}
+})();
+
+
+/* === FLUENCY PATCH V51 - RENDER SEGURO DA AULA IA, SEM QUEBRAR ABAS === */
+;(function(){
+  try{
+    if(window.__fluencyV51SafeAiLessonRender) return;
+    window.__fluencyV51SafeAiLessonRender = true;
+    var VERSION='V51-AI-LESSON-SAFE-RENDER';
+    var ACTIVE_KEYS=['fluency_active_ai_lesson_v51','fluency_active_ai_lesson_v41','fluency_last_ai_lesson_v41','fluency_last_ai_lesson'];
+    var LESSON_KEY_RE=/^fluency_lesson_v\d+_/i;
+    var rawSet=Storage.prototype.setItem, rawGet=Storage.prototype.getItem, rawRemove=Storage.prototype.removeItem;
+    function today(){var d=new Date(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');return d.getFullYear()+'-'+m+'-'+day;}
+    function log(msg,kind){try{var st=window.__fluencyBlockLessonStateV197||{};st.logs=st.logs||[];st.logs.push({at:new Date().toLocaleTimeString(),msg:'Aula '+VERSION+': '+msg,kind:kind||'info'});if(st.logs.length>120)st.logs.shift();window.__fluencyBlockLessonStateV197=st;localStorage.setItem('fluency_v197_diag_logs',JSON.stringify(st.logs.slice(-80)));}catch(_){} }
+    function parse(v){try{if(!v)return null;var x=typeof v==='string'?JSON.parse(v):v;if(typeof x==='string')x=JSON.parse(x);return x;}catch(_){return null}}
+    function txt(v){return String(v==null?'':v).trim()} function arr(x){return Array.isArray(x)?x:[]}
+    function pick(o,ks){o=o||{};for(var i=0;i<ks.length;i++){var v=o[ks[i]];if(txt(v))return v;}return ''}
+    function normEx(e){if(typeof e==='string')return{en:e,pt:''};e=e||{};return{en:pick(e,['en','english','sentence','phrase','example','text']),pt:pick(e,['pt','portuguese','translation','traducao','tradução','meaning'])}}
+    function normalize(L){
+      L=parse(L); if(!L||typeof L!=='object')return null; if(L.value)L=parse(L.value)||L; if(L.lessonData)L=L.lessonData; if(L.lesson)L=L.lesson; if(L.aula)L=L.aula; if(L.data&&L.data.lesson)L=L.data.lesson;
+      var out={}; out.title=pick(L,['title','titulo','título','name'])||'Aula gerada pela IA'; out.subtitle=pick(L,['subtitle','subtitulo','subtítulo'])||''; out.estimatedMinutes=Number(L.estimatedMinutes||L.minutes||L.duration||45)||45; out.intro=pick(L,['intro','introduction','introducao','introdução','overview'])||''; out.readingText=pick(L,['readingText','reading_text','textoLeitura','texto_para_leitura','text']); out.listeningText=pick(L,['listeningText','listening_text','audioText','transcript']); out.speakingPractice=L.speakingPractice||L.speaking_practice||null;
+      var secs=arr(L.sections&&L.sections.length?L.sections:(L.secoes||L.seções||L.parts||L.modules)); out.sections=secs.map(function(s,i){s=s||{};var ex=arr(s.examples&&s.examples.length?s.examples:(s.exemplos||s.sentences||s.frases));return{heading:pick(s,['heading','title','titulo','título','name'])||('Seção '+(i+1)),content:pick(s,['content','body','text','explicacao','explicação','explanation','description'])||'',examples:ex.map(normEx).filter(function(x){return txt(x.en)||txt(x.pt)})}}).filter(function(s){return txt(s.heading)||txt(s.content)||s.examples.length});
+      var voc=arr(L.vocabulary&&L.vocabulary.length?L.vocabulary:(L.vocabulario||L.vocabulário||L.words)); out.vocabulary=voc.map(function(v){v=v||{};return{word:pick(v,['word','palavra','term','english']),pos:pick(v,['pos','class','classe','type']),translation:pick(v,['translation','traducao','tradução','pt','meaning']),example:pick(v,['example','exemplo','sentence','phrase'])}}).filter(function(v){return txt(v.word)||txt(v.translation)});
+      var exs=arr(L.exercises&&L.exercises.length?L.exercises:(L.exercicios||L.exercícios||L.questions||L.quiz)); out.exercises=exs.map(function(e,i){e=e||{};return{type:pick(e,['type','tipo'])||'practice',question:pick(e,['question','pergunta','prompt','instruction','enunciado'])||('Exercício '+(i+1)),options:arr(e.options||e.opcoes||e.opções||e.choices),answer:pick(e,['answer','resposta','correct','correctAnswer','expected']),explanation:pick(e,['explanation','explicacao','explicação','why','feedback'])}}).filter(function(e){return txt(e.question)});
+      out.tips=arr(L.tips||L.dicas).map(txt).filter(Boolean).filter(function(t){return !/parab[eé]ns|continue explorando|jornada/i.test(t)}); out.commonMistakes=arr(L.commonMistakes||L.common_mistakes||L.errosComuns||L.mistakes).map(function(m){m=m||{};return{mistake:pick(m,['mistake','erro','title']),why:pick(m,['why','porQue','porque','reason']),avoid:pick(m,['avoid','comoEvitar','fix','correction'])}}).filter(function(m){return txt(m.mistake)||txt(m.why)||txt(m.avoid)}); out.finalTip=''; out.lessonId=L.lessonId||L.activeLessonId||('ai-'+Date.now()); out.generatedAt=L.generatedAt||L._generatedAt||new Date().toISOString(); out._fluencyDate=L._fluencyDate||today(); out._generatedBy=L._generatedBy||VERSION; out._blockMeta=L._blockMeta||L.blockMeta||null; return out;
+    }
+    function complete(L){L=normalize(L);return !!(L&&txt(L.title).length>6&&txt(L.intro).length>80&&arr(L.sections).length>=3&&arr(L.vocabulary).length>=5&&arr(L.exercises).length>=5)}
+    function saveActive(L,why){try{L=normalize(L);if(!complete(L))return false;L._fluencyDate=today();var s=JSON.stringify(L);['fluency_active_ai_lesson_v51','fluency_active_ai_lesson_v41','fluency_last_ai_lesson_v41','fluency_last_ai_lesson'].forEach(function(k){rawSet.call(localStorage,k,s)});rawSet.call(localStorage,'fluency_active_lesson_id',L.lessonId);rawSet.call(localStorage,'fluency_active_lesson_id_v41',L.lessonId);rawSet.call(localStorage,'fluency_v51_active_meta',JSON.stringify({at:new Date().toISOString(),why:why||'',title:L.title,sections:L.sections.length,vocabulary:L.vocabulary.length,exercises:L.exercises.length}));window.__fluencyV51ActiveLesson=L;log('aula IA salva como ativa: '+L.title+' ('+L.sections.length+' seções, '+L.exercises.length+' exercícios)','ok');return true}catch(e){return false}}
+    function readActive(){try{if(window.__fluencyV51ActiveLesson&&complete(window.__fluencyV51ActiveLesson))return normalize(window.__fluencyV51ActiveLesson)}catch(_){} var best=null; for(var i=0;i<ACTIVE_KEYS.length;i++){try{var L=normalize(rawGet.call(localStorage,ACTIVE_KEYS[i]));if(complete(L)){best=L;break}}catch(_){}} if(!best){try{for(var j=0;j<localStorage.length;j++){var k=localStorage.key(j)||'';if(LESSON_KEY_RE.test(k)){var L2=normalize(rawGet.call(localStorage,k));if(complete(L2)&&/IA|gemini|block|Aula V/i.test(JSON.stringify(L2).slice(0,600))){best=L2;break}}}}catch(_){}} if(best){saveActive(best,'read-recovery');return normalize(best)} return null;}
+    function esc(s){return txt(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+    function isLessonTab(){try{var btns=[].slice.call(document.querySelectorAll('button'));for(var i=0;i<btns.length;i++){var b=btns[i],t=(b.innerText||b.textContent||'').replace(/\s+/g,' ').trim();if(t==='Aula'){var hasLine=!!b.querySelector('span[style*="linear-gradient"]');var sty=(b.getAttribute('style')||'')+getComputedStyle(b).color;if(hasLine||/accent|91, 156, 246|112, 166, 255|var\(--accent\)/i.test(sty))return true}}}catch(_){} return false}
+    function removeMount(){var m=document.getElementById('__fluency_v51_ai_mount__');if(m)m.remove()}
+    function nativeAlreadyShows(L){try{var m=document.getElementById('__fluency_v51_ai_mount__');if(m)m.remove();var body=(document.body.innerText||'').replace(/\s+/g,' ');return body.indexOf(L.title.slice(0,24))>=0&&!/Preparando sua aula|A tinta está secando|A tinta esta secando/i.test(body)}catch(_){return false}}
+    function render(){try{if(!isLessonTab()){removeMount();return false}var L=readActive(); if(!L){removeMount();return false} if(nativeAlreadyShows(L)){removeMount();return true} var root=document.getElementById('root');if(!root)return false;var m=document.getElementById('__fluency_v51_ai_mount__');if(!m){m=document.createElement('div');m.id='__fluency_v51_ai_mount__';m.setAttribute('data-fluency-ai-lesson','v51')}m.style.cssText='position:relative;z-index:5;max-width:768px;margin:0 auto;padding:24px 18px 110px;color:#E8EFF8;min-height:60vh;';
+      var html='<div style="font-size:12px;text-transform:uppercase;letter-spacing:.28em;color:#8fb8ff;margin-bottom:16px">Aula · Nível A1 · ≈ '+esc(L.estimatedMinutes)+' min</div><div style="display:inline-flex;border:1px solid rgba(52,211,153,.65);background:#d1fae5;color:#166534;border-radius:999px;padding:8px 14px;font-weight:900;margin-bottom:28px">✧ Gerada por IA</div><h1 style="font-family:Georgia,serif;font-size:clamp(42px,10vw,72px);line-height:.98;font-weight:800;margin:0 0 18px">'+esc(L.title)+'</h1>'+(L.subtitle?'<div style="font-size:24px;font-style:italic;color:#70A6FF;margin-bottom:34px">'+esc(L.subtitle)+'</div>':'')+'<p style="font-size:23px;line-height:1.75;color:#79A8FF;margin-bottom:28px">'+esc(L.intro)+'</p>';
+      var practice=L.readingText||L.listeningText;if(practice)html+='<section style="border:1px solid rgba(91,156,246,.35);background:rgba(91,156,246,.12);border-radius:18px;padding:22px;margin:28px 0"><div style="font-size:12px;text-transform:uppercase;letter-spacing:.25em;color:#a9c7ff;margin-bottom:14px;font-weight:900">Texto de prática</div><p style="font-family:Georgia,serif;font-size:26px;line-height:1.72;color:#f4f7ff">'+esc(practice)+'</p></section>';
+      html+=L.sections.map(function(sec){return '<section style="margin:34px 0"><h2 style="font-family:Georgia,serif;font-size:36px;line-height:1.1;margin:0 0 14px;color:#fff">§ '+esc(sec.heading)+'</h2><p style="font-size:21px;line-height:1.75;color:#80adff">'+esc(sec.content)+'</p>'+(sec.examples.length?'<div style="display:grid;gap:12px;margin-top:16px">'+sec.examples.map(function(ex){return '<div style="border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:14px;background:rgba(255,255,255,.05)"><b style="color:#fff">'+esc(ex.en)+'</b><br><span style="color:#9abfff;font-style:italic">'+esc(ex.pt)+'</span></div>'}).join('')+'</div>':'')+'</section>'}).join('');
+      if(L.vocabulary.length)html+='<section style="margin:34px 0"><h2 style="font-family:Georgia,serif;font-size:34px;color:#fff">Vocabulário</h2>'+L.vocabulary.map(function(v){return '<div style="border-bottom:1px solid rgba(255,255,255,.1);padding:14px 0"><b style="font-size:22px;color:#fff">'+esc(v.word)+'</b> <span style="color:#9abfff">'+esc(v.pos)+'</span><div style="color:#80adff;font-size:19px">'+esc(v.translation)+'</div>'+(v.example?'<div style="color:#dce8ff;font-style:italic;margin-top:5px">'+esc(v.example)+'</div>':'')+'</div>'}).join('')+'</section>';
+      if(L.commonMistakes.length)html+='<section style="margin:34px 0"><h2 style="font-family:Georgia,serif;font-size:34px;color:#fff">Erros comuns</h2>'+L.commonMistakes.map(function(v){return '<div style="border:1px solid rgba(248,113,113,.28);border-radius:14px;padding:14px;margin:12px 0;background:rgba(248,113,113,.08)"><b style="color:#fecaca">'+esc(v.mistake)+'</b><div style="color:#dbeafe">'+esc(v.why)+'</div><div style="color:#a7f3d0">Como evitar: '+esc(v.avoid)+'</div></div>'}).join('')+'</section>';
+      if(L.tips.length)html+='<section style="margin:34px 0"><h2 style="font-family:Georgia,serif;font-size:34px;color:#fff">Dicas rápidas</h2>'+L.tips.map(function(t){return '<div style="padding:12px 0;color:#a7f3d0;font-size:19px">✓ '+esc(t)+'</div>'}).join('')+'</section>';
+      if(L.exercises.length)html+='<section style="margin:34px 0"><h2 style="font-family:Georgia,serif;font-size:34px;color:#fff">Exercícios</h2>'+L.exercises.map(function(e,i){return '<div style="border:1px solid rgba(91,156,246,.28);border-radius:16px;padding:16px;margin:14px 0;background:rgba(91,156,246,.08)"><div style="color:#a9c7ff;font-size:13px;text-transform:uppercase;letter-spacing:.18em">Exercício '+(i+1)+' · '+esc(e.type)+'</div><div style="font-size:21px;color:#fff;margin:8px 0">'+esc(e.question)+'</div>'+(e.options&&e.options.length?'<div style="display:grid;gap:8px;margin:10px 0">'+e.options.map(function(o){return '<div style="border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:10px;color:#dbeafe">'+esc(o)+'</div>'}).join('')+'</div>':'')+'<details style="margin-top:10px"><summary style="color:#a7f3d0;font-weight:800">Ver resposta</summary><div style="color:#fff;margin-top:8px"><b>Resposta:</b> '+esc(e.answer)+'</div><div style="color:#9abfff">'+esc(e.explanation)+'</div></details></div>'}).join('')+'</section>';
+      html+='<button id="__fluency_v51_complete_btn__" style="width:100%;border:none;border-radius:18px;padding:18px;margin-top:22px;background:linear-gradient(135deg,#5B9CF6,#A78BFA);color:white;font-weight:950;font-size:18px">✓ Concluir aula</button>';m.innerHTML=html;var header=document.querySelector('header');if(header&&header.parentNode)header.parentNode.insertBefore(m,header.nextSibling);else root.appendChild(m);var btn=document.getElementById('__fluency_v51_complete_btn__');if(btn&&!btn.__b){btn.__b=true;btn.onclick=function(){try{localStorage.setItem('fluency_v51_completed_'+today(),'1')}catch(_){}alert('Aula concluída!')}}return true}catch(e){log('render falhou: '+(e&&e.message||e),'error');return false}}
+    if(rawSet&&!Storage.prototype.setItem.__fluencyV51Capture){Storage.prototype.setItem=function(k,v){try{if(this===localStorage){var key=String(k||'');if(LESSON_KEY_RE.test(key)||/active_ai_lesson|last_ai_lesson/i.test(key)){var L=normalize(v);if(complete(L))saveActive(L,'storage:'+key)}}}catch(_){}return rawSet.apply(this,arguments)};Storage.prototype.setItem.__fluencyV51Capture=true;}
+    var prevFetch=window.fetch&&window.fetch.bind(window); if(prevFetch&&!window.fetch.__fluencyV51Capture){window.fetch=async function(input,init){var res=await prevFetch(input,init);try{var url=typeof input==='string'?input:(input&&input.url)||'';if(/generativelanguage\.googleapis\.com/i.test(url)&&res&&res.ok){res.clone().json().then(function(data){try{var parts=data&&data.candidates&&data.candidates[0]&&data.candidates[0].content&&data.candidates[0].content.parts;var text=Array.isArray(parts)?parts.map(function(p){return p&&p.text||''}).join('\n'):'';var obj=parse(text.replace(/^```(?:json)?/i,'').replace(/```$/,'').trim());if(complete(obj))saveActive(obj,'fetch-gemini')}catch(_){}}).catch(function(){})}}catch(_){}return res};window.fetch.__fluencyV51Capture=true;}
+    window.__fluencyLessonIsComplete=function(L){return complete(L)}; window.__fluencyV51Status=function(){var L=readActive();return{version:VERSION,tab:isLessonTab(),hasActive:!!L,activeTitle:L&&L.title,mount:!!document.getElementById('__fluency_v51_ai_mount__')}}; window.__fluencyV51Render=function(){return render()};
+    setInterval(render,900); ['click','touchend','hashchange','popstate','focus'].forEach(function(ev){window.addEventListener(ev,function(){setTimeout(render,120);setTimeout(render,800)},true)}); setTimeout(render,600); setTimeout(render,1600); setTimeout(render,3200);
+  }catch(e){try{console.warn('Fluency V51 patch failed',e)}catch(_){} }
+})();
+
+
+/* === FLUENCY PATCH V52 - RENDERIZAÇÃO ÚNICA E COMPLETA DA AULA (DARK THEME) === */
+/* Resolve o problema de aulas que aparecem cortadas na aba "Aula" devido ao conflito
+   entre vários patches anteriores (V18, V41, V48, V51). Toma posse da aba quando há
+   uma aula ativa, esconde a renderização parcial do React, e injeta uma renderização
+   completa, polida e responsiva (mobile first) com TODAS as seções, vocabulário,
+   exercícios, dicas e erros comuns. */
+;(function(){
+  try{
+    if(window.__fluencyV52UnifiedLessonRender) return;
+    window.__fluencyV52UnifiedLessonRender = true;
+    var VERSION = 'V52-UNIFIED-LESSON-RENDER';
+    var MOUNT_ID = '__fluency_v52_lesson_root__';
+    var STYLE_ID = '__fluency_v52_style__';
+    var HIDE_REACT_CLASS = '__fluency_v52_hide_react_lesson__';
+
+    /* ---- Helpers ---- */
+    function todayStr(){ var d=new Date(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0'); return d.getFullYear()+'-'+m+'-'+day; }
+    function txt(v){ return String(v == null ? '' : v).trim(); }
+    function arr(x){ return Array.isArray(x) ? x : []; }
+    function esc(v){
+      return txt(v).replace(/[&<>"']/g, function(c){
+        return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+      });
+    }
+    function pick(o, ks){
+      o = o || {};
+      for(var i=0;i<ks.length;i++){ var v=o[ks[i]]; if(v!=null && txt(v)) return v; }
+      return '';
+    }
+    function log(msg, kind){
+      try{
+        console.warn('[Fluency '+VERSION+'] '+msg);
+        var st = window.__fluencyBlockLessonStateV197;
+        if(st && Array.isArray(st.logs)){
+          st.logs.push({at:new Date().toLocaleTimeString(), kind:kind||'info', msg:'Aula '+VERSION+': '+msg});
+          if(st.logs.length>140) st.logs.shift();
+        }
+      }catch(_){}
+    }
+
+    function parseLesson(raw){
+      try{
+        if(raw == null) return null;
+        var x = raw;
+        if(typeof x === 'string'){
+          var s = x.trim().replace(/^```(?:json)?\s*/i,'').replace(/```$/,'').trim();
+          var a = s.indexOf('{'), b = s.lastIndexOf('}');
+          if(a>=0 && b>a) s = s.slice(a, b+1);
+          x = JSON.parse(s);
+        }
+        if(typeof x === 'string'){ try{ x = JSON.parse(x); }catch(_){} }
+        if(x && typeof x.value === 'string'){ try{ var inner = JSON.parse(x.value); if(inner && typeof inner === 'object') x = inner; }catch(_){} }
+        if(x && x.lessonData && typeof x.lessonData === 'object') x = x.lessonData;
+        if(x && x.lesson && typeof x.lesson === 'object') x = x.lesson;
+        if(x && x.aula && typeof x.aula === 'object') x = x.aula;
+        if(x && x.data && x.data.lesson && typeof x.data.lesson === 'object') x = x.data.lesson;
+        return x && typeof x === 'object' ? x : null;
+      }catch(_){ return null; }
+    }
+
+    function normalizeExample(e){
+      if(typeof e === 'string') return {en:e, pt:''};
+      e = e || {};
+      return {
+        en: pick(e, ['en','english','sentence','phrase','example','text']),
+        pt: pick(e, ['pt','portuguese','translation','traducao','tradução','meaning'])
+      };
+    }
+
+    function normalize(L){
+      L = parseLesson(L);
+      if(!L || typeof L !== 'object') return null;
+      var out = {};
+      // Preserve underscore-keys (metadata) so we don't drop _generatedBy / _fallback / _validation etc.
+      Object.keys(L).forEach(function(k){ if(k && k.charAt(0) === '_') out[k] = L[k]; });
+
+      out.title = pick(L, ['title','titulo','título','name']) || '';
+      out.subtitle = pick(L, ['subtitle','subtitulo','subtítulo']) || '';
+      out.estimatedMinutes = Number(L.estimatedMinutes || L.minutes || L.duration || 40) || 40;
+      out.intro = pick(L, ['intro','introduction','introducao','introdução','overview']) || '';
+      out.readingText = pick(L, ['readingText','reading_text','textoLeitura','texto_para_leitura','text']) || '';
+      out.listeningText = pick(L, ['listeningText','listening_text','audioText','transcript']) || '';
+
+      var secsRaw = arr(L.sections && L.sections.length ? L.sections : (L.secoes || L.seções || L.parts || L.modules));
+      out.sections = secsRaw.map(function(s, i){
+        if(typeof s === 'string') s = { heading:'Seção '+(i+1), content:s };
+        s = s || {};
+        var ex = arr(s.examples && s.examples.length ? s.examples : (s.exemplos || s.sentences || s.frases))
+          .map(normalizeExample)
+          .filter(function(e){ return txt(e.en) || txt(e.pt); });
+        return {
+          heading: pick(s, ['heading','title','titulo','título','name']) || ('Seção '+(i+1)),
+          content: pick(s, ['content','body','text','explicacao','explicação','explanation','description','conteudo']) || '',
+          examples: ex
+        };
+      }).filter(function(s){ return txt(s.heading) || txt(s.content) || s.examples.length; });
+
+      var vocRaw = arr(L.vocabulary && L.vocabulary.length ? L.vocabulary : (L.vocabulario || L.vocabulário || L.words));
+      out.vocabulary = vocRaw.map(function(v){
+        if(typeof v === 'string') return { word:v, pos:'', translation:'', example:'' };
+        v = v || {};
+        return {
+          word: pick(v, ['word','palavra','term','english']),
+          pos: pick(v, ['pos','class','classe','type']) || '',
+          translation: pick(v, ['translation','traducao','tradução','pt','meaning']),
+          example: pick(v, ['example','exemplo','sentence','phrase']) || ''
+        };
+      }).filter(function(v){ return txt(v.word) || txt(v.translation); });
+
+      var exRaw = arr(L.exercises && L.exercises.length ? L.exercises : (L.exercicios || L.exercícios || L.questions || L.quiz));
+      out.exercises = exRaw.map(function(e, i){
+        if(typeof e === 'string') e = { question:e };
+        e = e || {};
+        return {
+          type: pick(e, ['type','tipo']) || 'practice',
+          question: pick(e, ['question','pergunta','prompt','instruction','enunciado']) || ('Exercício '+(i+1)),
+          options: arr(e.options || e.opcoes || e.opções || e.choices).map(txt),
+          answer: pick(e, ['answer','resposta','correct','correctAnswer','expected']) || '',
+          explanation: pick(e, ['explanation','explicacao','explicação','why','feedback']) || ''
+        };
+      }).filter(function(e){ return txt(e.question); });
+
+      out.tips = arr(L.tips && L.tips.length ? L.tips : (L.dicas || L.notes))
+        .map(function(t){ return typeof t === 'string' ? t : pick(t, ['tip','text','content']); })
+        .filter(function(t){ return txt(t); });
+
+      out.commonMistakes = arr(L.commonMistakes || L.common_mistakes || L.errosComuns || L.mistakes).map(function(m){
+        m = m || {};
+        return {
+          mistake: pick(m, ['mistake','erro','title']),
+          why: pick(m, ['why','porque','porquê','reason']),
+          avoid: pick(m, ['avoid','correction','comoEvitar','fix'])
+        };
+      }).filter(function(m){ return txt(m.mistake) || txt(m.why) || txt(m.avoid); });
+
+      out.finalTip = pick(L, ['finalTip','final_tip','conclusion','closing']) || '';
+      out.lessonId = L.lessonId || L.activeLessonId || ('ai-'+Date.now());
+      out._generatedBy = L._generatedBy || VERSION;
+      out._generatedAt = L._generatedAt || new Date().toISOString();
+      out._fluencyDate = L._fluencyDate || todayStr();
+      if(L._blockMeta) out._blockMeta = L._blockMeta;
+      if(L._fallback) out._fallback = L._fallback;
+      if(L._fallbackReason) out._fallbackReason = L._fallbackReason;
+      if(L._validation) out._validation = L._validation;
+      return out;
+    }
+
+    function lessonHasContent(L){
+      L = normalize(L);
+      if(!L) return false;
+      // We accept partial lessons (e.g. only title+intro) so the user always sees something —
+      // but we use this to decide whether V52 should take over the screen at all.
+      return !!(txt(L.title) || txt(L.intro) || L.sections.length || L.exercises.length || L.vocabulary.length || txt(L.readingText) || txt(L.listeningText));
+    }
+
+    /* ---- Storage: read the active lesson from any of the known keys ---- */
+    var ACTIVE_KEYS = [
+      'fluency_active_ai_lesson_v51',
+      'fluency_active_ai_lesson_v41',
+      'fluency_last_ai_lesson_v41',
+      'fluency_last_ai_lesson'
+    ];
+    function rawGetItem(k){ try{ var fn = (Storage.prototype.getItem.__fluencyV41ActiveLesson || Storage.prototype.getItem.__fluencyV51Capture) ? null : Storage.prototype.getItem; return localStorage.getItem(k); }catch(_){ return null; } }
+
+    function readActiveLesson(){
+      // 1) explicit active keys
+      for(var i=0;i<ACTIVE_KEYS.length;i++){
+        var raw = localStorage.getItem(ACTIVE_KEYS[i]);
+        if(raw){
+          var L = normalize(raw);
+          if(lessonHasContent(L)) return L;
+        }
+      }
+      // 2) any fluency_lesson_v* key — pick the one with the most content
+      var best = null, bestScore = -1;
+      try{
+        for(var j=0;j<localStorage.length;j++){
+          var k = localStorage.key(j) || '';
+          if(!/^fluency_lesson_v\d+_/i.test(k)) continue;
+          var L2 = normalize(localStorage.getItem(k));
+          if(!lessonHasContent(L2)) continue;
+          var sc = (txt(L2.title).length>0?100:0) + (txt(L2.intro).length>0?80:0) + L2.sections.length*40 + L2.exercises.length*15 + L2.vocabulary.length*8 + (txt(L2.readingText).length>0?20:0);
+          if(sc > bestScore){ best = L2; bestScore = sc; }
+        }
+      }catch(_){}
+      return best;
+    }
+
+    /* ---- Tab detection ---- */
+    function isLessonTab(){
+      try{
+        var btns = document.querySelectorAll('button');
+        for(var i=0;i<btns.length;i++){
+          var b = btns[i];
+          var t = (b.innerText || b.textContent || '').replace(/\s+/g,' ').trim();
+          if(t === 'Aula'){
+            // Active tab has an underline span (linear-gradient) or accent color
+            var hasUnderline = !!b.querySelector('span[style*="linear-gradient"]');
+            var styleStr = (b.getAttribute('style') || '') + ' ' + getComputedStyle(b).color;
+            if(hasUnderline || /91, ?156, ?246|112, ?166, ?255|var\(--accent\)|rgb\(91/.test(styleStr)) return true;
+          }
+        }
+      }catch(_){}
+      return false;
+    }
+
+    /* ---- Styles for V52 mount: full dark theme matching the screenshots ---- */
+    function injectStyles(){
+      if(document.getElementById(STYLE_ID)) return;
+      var st = document.createElement('style');
+      st.id = STYLE_ID;
+      st.textContent = ''
+        + '/* Hide the React-rendered lesson page when V52 is active. We hide the SCROLLER,'
+        + '   not the header (which contains the tabs). */'
+        + '.'+HIDE_REACT_CLASS+' > .max-w-3xl.mx-auto.px-4.md\\:px-6.py-6.pb-24,'
+        + '.'+HIDE_REACT_CLASS+' > .max-w-3xl.mx-auto.px-4.md\\:px-6.py-16,'
+        + '.'+HIDE_REACT_CLASS+' > .max-w-3xl.mx-auto.px-4.md\\:px-6.py-12 {'
+        + '  display: none !important;'
+        + '}'
+        + '#'+MOUNT_ID+' {'
+        + '  position: relative; z-index: 5; max-width: 768px; margin: 0 auto;'
+        + '  padding: 18px 16px 120px; color: #E8EFF8;'
+        + '  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;'
+        + '}'
+        + '#'+MOUNT_ID+' .v52-meta { font-size:11px; letter-spacing:.28em; text-transform:uppercase; color:#8FB8FF; margin-bottom:12px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }'
+        + '#'+MOUNT_ID+' .v52-pill-ai { display:inline-flex; align-items:center; gap:6px; border:1px solid rgba(52,211,153,.55); background:rgba(52,211,153,.12); color:#A7F3D0; border-radius:999px; padding:5px 12px; font-weight:700; font-size:11px; letter-spacing:.05em; }'
+        + '#'+MOUNT_ID+' .v52-pill-fb { display:inline-flex; align-items:center; gap:6px; border:1px solid rgba(245,158,11,.55); background:rgba(245,158,11,.12); color:#FCD34D; border-radius:999px; padding:5px 12px; font-weight:700; font-size:11px; letter-spacing:.05em; }'
+        + '#'+MOUNT_ID+' h1.v52-title { font-family:Georgia,"Times New Roman",serif; font-size:34px; line-height:1.05; font-weight:700; margin:6px 0 8px; color:#F5F8FF; letter-spacing:-0.01em; }'
+        + '#'+MOUNT_ID+' .v52-subtitle { font-family:Georgia,serif; font-style:italic; font-size:18px; color:#79A8FF; margin-bottom:18px; line-height:1.35; }'
+        + '#'+MOUNT_ID+' .v52-intro { font-size:16px; line-height:1.7; color:#9EBCFF; margin-bottom:24px; }'
+        + '#'+MOUNT_ID+' .v52-card { border:1px solid rgba(91,156,246,.22); background:linear-gradient(180deg, rgba(91,156,246,.10), rgba(91,156,246,.04)); border-radius:18px; padding:18px 18px 20px; margin:18px 0; }'
+        + '#'+MOUNT_ID+' .v52-card-reading { background:linear-gradient(180deg, rgba(91,156,246,.14), rgba(91,156,246,.05)); }'
+        + '#'+MOUNT_ID+' .v52-card-listen { background:linear-gradient(180deg, rgba(167,139,250,.14), rgba(167,139,250,.05)); border-color:rgba(167,139,250,.28); }'
+        + '#'+MOUNT_ID+' .v52-card-mistake { background:rgba(248,113,113,.10); border:1px solid rgba(248,113,113,.30); }'
+        + '#'+MOUNT_ID+' .v52-section-label { display:flex; align-items:center; gap:10px; margin-bottom:12px; }'
+        + '#'+MOUNT_ID+' .v52-section-label .v52-label-text { font-size:11px; letter-spacing:.25em; text-transform:uppercase; color:#A9C7FF; font-weight:700; }'
+        + '#'+MOUNT_ID+' .v52-section-label .v52-label-line { flex:1; height:1px; background:linear-gradient(90deg, rgba(91,156,246,.3), transparent); }'
+        + '#'+MOUNT_ID+' .v52-section-label .v52-count { font-size:11px; padding:2px 8px; border-radius:999px; background:rgba(91,156,246,.15); border:1px solid rgba(91,156,246,.35); color:#A9C7FF; font-weight:700; }'
+        + '#'+MOUNT_ID+' .v52-section h2 { font-family:Georgia,serif; font-size:24px; line-height:1.18; margin:0 0 10px; color:#F5F8FF; font-weight:700; }'
+        + '#'+MOUNT_ID+' .v52-section h2 .v52-section-mark { color:#5B9CF6; margin-right:6px; }'
+        + '#'+MOUNT_ID+' .v52-section .v52-section-body { font-size:15.5px; line-height:1.75; color:#9EBCFF; white-space:pre-wrap; }'
+        + '#'+MOUNT_ID+' .v52-examples { display:grid; gap:10px; margin-top:14px; }'
+        + '#'+MOUNT_ID+' .v52-example { display:flex; align-items:flex-start; gap:10px; padding:11px 13px; border-radius:12px; border:1px solid rgba(255,255,255,.10); background:rgba(255,255,255,.04); }'
+        + '#'+MOUNT_ID+' .v52-example .v52-example-text { flex:1; min-width:0; }'
+        + '#'+MOUNT_ID+' .v52-example .v52-en { font-size:15px; color:#F5F8FF; font-weight:600; line-height:1.4; }'
+        + '#'+MOUNT_ID+' .v52-example .v52-pt { font-size:13px; color:#A9C7FF; font-style:italic; margin-top:3px; line-height:1.4; }'
+        + '#'+MOUNT_ID+' .v52-tts-btn { flex-shrink:0; width:34px; height:34px; border-radius:50%; border:1px solid rgba(91,156,246,.4); background:rgba(91,156,246,.10); color:#A9C7FF; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; font-size:14px; padding:0; }'
+        + '#'+MOUNT_ID+' .v52-tts-btn:active { transform:scale(0.96); }'
+        + '#'+MOUNT_ID+' .v52-tts-btn-pill { display:inline-flex; align-items:center; gap:6px; padding:5px 11px; border-radius:999px; border:1px solid rgba(91,156,246,.35); background:rgba(91,156,246,.10); color:#A9C7FF; cursor:pointer; font-size:12px; font-weight:600; }'
+        + '#'+MOUNT_ID+' .v52-reading-text { font-family:Georgia,serif; font-size:18px; line-height:1.7; color:#F5F8FF; margin-top:4px; }'
+        + '#'+MOUNT_ID+' .v52-vocab-grid { display:grid; grid-template-columns:1fr; gap:10px; }'
+        + '@media (min-width:520px){ #'+MOUNT_ID+' .v52-vocab-grid { grid-template-columns:1fr 1fr; } }'
+        + '#'+MOUNT_ID+' .v52-vocab-card { padding:13px; border-radius:13px; border:1px solid rgba(255,255,255,.10); background:rgba(255,255,255,.045); }'
+        + '#'+MOUNT_ID+' .v52-vocab-head { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }'
+        + '#'+MOUNT_ID+' .v52-vocab-word { font-size:16px; font-weight:700; color:#F5F8FF; }'
+        + '#'+MOUNT_ID+' .v52-vocab-meta { font-size:12px; color:#A9C7FF; margin-top:2px; }'
+        + '#'+MOUNT_ID+' .v52-vocab-example { font-size:13px; color:#9EBCFF; font-style:italic; margin-top:7px; line-height:1.45; }'
+        + '#'+MOUNT_ID+' .v52-exercise { padding:16px; border-radius:14px; border:1px solid rgba(91,156,246,.22); background:rgba(91,156,246,.06); margin-bottom:12px; }'
+        + '#'+MOUNT_ID+' .v52-exercise.v52-ex-correct { border-color:rgba(52,211,153,.45); background:rgba(52,211,153,.07); }'
+        + '#'+MOUNT_ID+' .v52-exercise.v52-ex-wrong { border-color:rgba(248,113,113,.40); background:rgba(248,113,113,.06); }'
+        + '#'+MOUNT_ID+' .v52-ex-head { display:flex; align-items:flex-start; gap:11px; }'
+        + '#'+MOUNT_ID+' .v52-ex-num { flex-shrink:0; width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; background:rgba(91,156,246,.18); border:1px solid rgba(91,156,246,.40); color:#A9C7FF; }'
+        + '#'+MOUNT_ID+' .v52-exercise.v52-ex-correct .v52-ex-num { background:rgba(52,211,153,.20); border-color:rgba(52,211,153,.50); color:#A7F3D0; }'
+        + '#'+MOUNT_ID+' .v52-exercise.v52-ex-wrong .v52-ex-num { background:rgba(248,113,113,.20); border-color:rgba(248,113,113,.50); color:#FCA5A5; }'
+        + '#'+MOUNT_ID+' .v52-ex-question { flex:1; min-width:0; font-size:15.5px; line-height:1.55; color:#F5F8FF; }'
+        + '#'+MOUNT_ID+' .v52-ex-options { display:grid; grid-template-columns:1fr; gap:8px; margin-top:11px; }'
+        + '#'+MOUNT_ID+' .v52-ex-opt { display:flex; align-items:center; gap:10px; padding:11px 13px; border-radius:11px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.045); color:#DBEAFE; font-size:14px; cursor:pointer; text-align:left; line-height:1.45; transition:background .15s, border-color .15s; }'
+        + '#'+MOUNT_ID+' .v52-ex-opt:hover { background:rgba(91,156,246,.10); border-color:rgba(91,156,246,.30); }'
+        + '#'+MOUNT_ID+' .v52-ex-opt.v52-opt-selected { background:rgba(91,156,246,.18); border-color:rgba(91,156,246,.50); }'
+        + '#'+MOUNT_ID+' .v52-ex-opt.v52-opt-correct { background:rgba(52,211,153,.18); border-color:rgba(52,211,153,.50); color:#D1FAE5; }'
+        + '#'+MOUNT_ID+' .v52-ex-opt.v52-opt-wrong { background:rgba(248,113,113,.15); border-color:rgba(248,113,113,.45); color:#FECACA; }'
+        + '#'+MOUNT_ID+' .v52-ex-opt[disabled] { cursor:default; }'
+        + '#'+MOUNT_ID+' .v52-ex-opt-letter { width:22px; height:22px; border-radius:50%; background:rgba(255,255,255,.10); color:#9EBCFF; font-size:11px; font-weight:700; display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; }'
+        + '#'+MOUNT_ID+' .v52-ex-input-row { display:flex; gap:8px; margin-top:11px; }'
+        + '#'+MOUNT_ID+' .v52-ex-input { flex:1; min-width:0; padding:10px 12px; border-radius:11px; border:1px solid rgba(255,255,255,.18); background:rgba(0,0,0,.20); color:#F5F8FF; font-size:14px; font-family:inherit; }'
+        + '#'+MOUNT_ID+' .v52-ex-input:focus { outline:none; border-color:rgba(91,156,246,.55); }'
+        + '#'+MOUNT_ID+' .v52-ex-verify { padding:10px 14px; border-radius:11px; border:none; background:linear-gradient(135deg,#5B9CF6,#A78BFA); color:#fff; font-weight:700; font-size:13px; cursor:pointer; flex-shrink:0; }'
+        + '#'+MOUNT_ID+' .v52-ex-explanation { margin-top:11px; padding:11px 13px; border-radius:10px; font-size:13.5px; line-height:1.6; }'
+        + '#'+MOUNT_ID+' .v52-ex-explanation.v52-expl-correct { background:rgba(52,211,153,.10); border:1px solid rgba(52,211,153,.32); color:#D1FAE5; }'
+        + '#'+MOUNT_ID+' .v52-ex-explanation.v52-expl-wrong { background:rgba(248,113,113,.08); border:1px solid rgba(248,113,113,.28); color:#FECACA; }'
+        + '#'+MOUNT_ID+' .v52-ex-expl-label { font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:.1em; margin-bottom:5px; }'
+        + '#'+MOUNT_ID+' .v52-ex-expl-answer { font-style:italic; }'
+        + '#'+MOUNT_ID+' .v52-tips { display:grid; gap:9px; }'
+        + '#'+MOUNT_ID+' .v52-tip { display:flex; align-items:flex-start; gap:10px; padding:12px 14px; border-radius:12px; background:rgba(252,211,77,.06); border:1px solid rgba(252,211,77,.25); color:#FEF3C7; font-size:14px; line-height:1.55; }'
+        + '#'+MOUNT_ID+' .v52-tip-bullet { color:#FCD34D; font-weight:900; flex-shrink:0; }'
+        + '#'+MOUNT_ID+' .v52-mistake { padding:13px; }'
+        + '#'+MOUNT_ID+' .v52-mistake-title { font-weight:700; color:#FECACA; font-size:14.5px; margin-bottom:5px; }'
+        + '#'+MOUNT_ID+' .v52-mistake-why { font-size:13.5px; color:#DBEAFE; line-height:1.55; }'
+        + '#'+MOUNT_ID+' .v52-mistake-fix { font-size:13.5px; color:#A7F3D0; margin-top:6px; line-height:1.55; }'
+        + '#'+MOUNT_ID+' .v52-conclude-card { margin-top:32px; padding:22px; border-radius:18px; text-align:center; border:1px solid rgba(91,156,246,.30); background:linear-gradient(180deg, rgba(91,156,246,.10), rgba(167,139,250,.06)); }'
+        + '#'+MOUNT_ID+' .v52-score { font-size:13px; color:#A9C7FF; margin-bottom:14px; }'
+        + '#'+MOUNT_ID+' .v52-score.v52-score-pass { color:#A7F3D0; }'
+        + '#'+MOUNT_ID+' .v52-conclude-btn { width:100%; max-width:340px; padding:14px 20px; border-radius:14px; border:none; background:linear-gradient(135deg,#5B9CF6,#A78BFA); color:#fff; font-weight:800; font-size:15px; cursor:pointer; box-shadow:0 8px 24px rgba(91,156,246,.25); }'
+        + '#'+MOUNT_ID+' .v52-conclude-btn:active { transform:scale(.98); }'
+        + '#'+MOUNT_ID+' .v52-conclude-btn[disabled] { opacity:.55; cursor:default; }'
+        + '#'+MOUNT_ID+' .v52-conclude-done { color:#A7F3D0; font-weight:700; font-size:15px; }'
+        + '#'+MOUNT_ID+' .v52-empty { padding:60px 20px; text-align:center; color:#A9C7FF; }'
+        + '#'+MOUNT_ID+' .v52-empty h2 { font-family:Georgia,serif; font-size:24px; color:#F5F8FF; margin:0 0 10px; }'
+        + '#'+MOUNT_ID+' .v52-empty p { font-size:14px; line-height:1.55; }'
+        + '#'+MOUNT_ID+' .v52-fallback-note { padding:12px 14px; border-radius:12px; background:rgba(245,158,11,.10); border:1px solid rgba(245,158,11,.35); color:#FCD34D; font-size:13px; line-height:1.5; margin-bottom:18px; }';
+      document.head.appendChild(st);
+    }
+
+    /* ---- TTS using browser speech synthesis (works on iOS Safari) ---- */
+    var __ttsCurrent = null;
+    function tts(text){
+      try{
+        if(!text || !text.trim()) return;
+        var sy = window.speechSynthesis;
+        if(!sy) return;
+        if(__ttsCurrent){ sy.cancel(); __ttsCurrent = null; return; }
+        var u = new SpeechSynthesisUtterance(text);
+        u.lang = 'en-US';
+        u.rate = 0.95;
+        u.onend = function(){ __ttsCurrent = null; };
+        u.onerror = function(){ __ttsCurrent = null; };
+        __ttsCurrent = u;
+        sy.speak(u);
+      }catch(_){}
+    }
+
+    /* ---- HTML builders ---- */
+    function htmlHeader(L){
+      var pill = L._fallback
+        ? '<span class="v52-pill-fb">⚠ Aula padrão (IA indisponível)</span>'
+        : '<span class="v52-pill-ai">✦ Gerada por IA</span>';
+      var fb = L._fallback && L._fallbackReason
+        ? '<div class="v52-fallback-note"><b>Por que a IA não gerou esta aula?</b><br>'+esc(L._fallbackReason)+'</div>'
+        : '';
+      var meta = '<div class="v52-meta">'
+        + '<span>Aula · ≈ '+esc(L.estimatedMinutes)+' min</span>'
+        + pill
+        + '</div>';
+      var subtitle = L.subtitle ? '<div class="v52-subtitle">'+esc(L.subtitle)+'</div>' : '';
+      var intro = L.intro ? '<p class="v52-intro">'+esc(L.intro)+'</p>' : '';
+      return meta + (L.title ? '<h1 class="v52-title">'+esc(L.title)+'</h1>' : '') + subtitle + intro + fb;
+    }
+
+    function htmlReading(L){
+      if(!L.readingText) return '';
+      return '<section class="v52-card v52-card-reading">'
+        + '<div class="v52-section-label" style="margin-bottom:10px;">'
+        +   '<span class="v52-label-text">Texto para leitura</span>'
+        +   '<span class="v52-label-line"></span>'
+        +   '<button class="v52-tts-btn-pill" data-v52-tts="reading">▶ Ouvir</button>'
+        + '</div>'
+        + '<p class="v52-reading-text">'+esc(L.readingText)+'</p>'
+        + '</section>';
+    }
+
+    function htmlListening(L){
+      if(!L.listeningText) return '';
+      return '<section class="v52-card v52-card-listen">'
+        + '<div class="v52-section-label" style="margin-bottom:10px;">'
+        +   '<span class="v52-label-text">Primeiro, escute</span>'
+        +   '<span class="v52-label-line"></span>'
+        +   '<button class="v52-tts-btn-pill" data-v52-tts="listening">▶ Ouvir</button>'
+        + '</div>'
+        + '<details style="margin-top:8px;">'
+        +   '<summary style="cursor:pointer;color:#A9C7FF;font-size:13px;font-weight:600;">Ver transcrição</summary>'
+        +   '<p class="v52-reading-text" style="margin-top:10px;font-size:15.5px;">'+esc(L.listeningText)+'</p>'
+        + '</details>'
+        + '</section>';
+    }
+
+    function htmlSections(L){
+      if(!L.sections.length) return '';
+      var inner = L.sections.map(function(sec, i){
+        var examples = sec.examples.map(function(ex, j){
+          return '<div class="v52-example">'
+            + '<button class="v52-tts-btn" data-v52-tts="ex" data-v52-text="'+esc(ex.en)+'">▶</button>'
+            + '<div class="v52-example-text">'
+            +   (ex.en ? '<div class="v52-en">'+esc(ex.en)+'</div>' : '')
+            +   (ex.pt ? '<div class="v52-pt">'+esc(ex.pt)+'</div>' : '')
+            + '</div>'
+            + '</div>';
+        }).join('');
+        return '<section class="v52-section v52-card" style="margin:18px 0;">'
+          + '<h2><span class="v52-section-mark">§</span>'+esc(sec.heading)+'</h2>'
+          + (sec.content ? '<div class="v52-section-body">'+esc(sec.content)+'</div>' : '')
+          + (examples ? '<div class="v52-examples">'+examples+'</div>' : '')
+          + '</section>';
+      }).join('');
+      return inner;
+    }
+
+    function htmlVocabulary(L){
+      if(!L.vocabulary.length) return '';
+      var cards = L.vocabulary.map(function(v, i){
+        return '<div class="v52-vocab-card">'
+          + '<div class="v52-vocab-head">'
+          +   '<div>'
+          +     '<div class="v52-vocab-word">'+esc(v.word)+'</div>'
+          +     '<div class="v52-vocab-meta">'+esc(v.pos)+(v.pos&&v.translation?' · ':'')+esc(v.translation)+'</div>'
+          +   '</div>'
+          +   '<button class="v52-tts-btn" data-v52-tts="word" data-v52-text="'+esc(v.word)+'">▶</button>'
+          + '</div>'
+          + (v.example ? '<div class="v52-vocab-example">"'+esc(v.example)+'"</div>' : '')
+          + '</div>';
+      }).join('');
+      return '<section style="margin:24px 0;">'
+        + '<div class="v52-section-label">'
+        +   '<span class="v52-label-text">Vocabulário</span>'
+        +   '<span class="v52-label-line"></span>'
+        +   '<span class="v52-count">'+L.vocabulary.length+'</span>'
+        + '</div>'
+        + '<div class="v52-vocab-grid">'+cards+'</div>'
+        + '</section>';
+    }
+
+    function htmlExercises(L, state){
+      if(!L.exercises.length) return '';
+      var items = L.exercises.map(function(ex, i){
+        var ans = state.answers[i] || '';
+        var checked = !!state.checked[i];
+        var correctAns = String(ex.answer || '').trim().toLowerCase();
+        var isCorrect = checked && String(ans).trim().toLowerCase() === correctAns;
+        var clsExtra = checked ? (isCorrect ? ' v52-ex-correct' : ' v52-ex-wrong') : '';
+        var hasOptions = Array.isArray(ex.options) && ex.options.length > 0 && (ex.type !== 'translate');
+        var inner;
+        if(hasOptions){
+          var opts = ex.options.map(function(o, k){
+            var letter = String.fromCharCode(65 + k);
+            var oVal = String(o);
+            var oCls = 'v52-ex-opt';
+            if(checked){
+              if(String(oVal).trim().toLowerCase() === correctAns) oCls += ' v52-opt-correct';
+              else if(oVal === ans) oCls += ' v52-opt-wrong';
+            } else if(oVal === ans){
+              oCls += ' v52-opt-selected';
+            }
+            return '<button class="'+oCls+'" data-v52-ex="'+i+'" data-v52-opt="'+esc(oVal)+'"'+(checked?' disabled':'')+'>'
+              + '<span class="v52-ex-opt-letter">'+letter+'</span>'
+              + '<span>'+esc(oVal)+'</span>'
+              + '</button>';
+          }).join('');
+          inner = '<div class="v52-ex-options">'+opts+'</div>';
+        } else {
+          inner = '<div class="v52-ex-input-row">'
+            + '<input class="v52-ex-input" type="text" placeholder="Digite sua resposta em inglês…" data-v52-ex-input="'+i+'" value="'+esc(ans)+'"'+(checked?' disabled':'')+' />'
+            + (checked ? '' : '<button class="v52-ex-verify" data-v52-ex-verify="'+i+'">Verificar</button>')
+            + '</div>';
+        }
+        var explanationHtml = '';
+        if(checked){
+          var lbl = isCorrect ? '✓ Correto!' : ('✗ Resposta: '+esc(ex.answer));
+          explanationHtml = '<div class="v52-ex-explanation '+(isCorrect?'v52-expl-correct':'v52-expl-wrong')+'">'
+            + '<div class="v52-ex-expl-label">'+lbl+'</div>'
+            + (ex.explanation ? '<div class="v52-ex-expl-answer">'+esc(ex.explanation)+'</div>' : '')
+            + '</div>';
+        }
+        var marker = checked ? (isCorrect ? '✓' : '✗') : String(i+1);
+        return '<div class="v52-exercise'+clsExtra+'">'
+          + '<div class="v52-ex-head">'
+          +   '<div class="v52-ex-num">'+marker+'</div>'
+          +   '<div style="flex:1;">'
+          +     '<div class="v52-ex-question">'+esc(ex.question)+'</div>'
+          +     inner
+          +     explanationHtml
+          +   '</div>'
+          + '</div>'
+          + '</div>';
+      }).join('');
+      var answeredCount = L.exercises.filter(function(ex,i){ return !!state.checked[i]; }).length;
+      var correctCount = L.exercises.filter(function(ex,i){ return state.checked[i] && String(state.answers[i]||'').trim().toLowerCase() === String(ex.answer||'').trim().toLowerCase(); }).length;
+      return '<section style="margin:24px 0;">'
+        + '<div class="v52-section-label">'
+        +   '<span class="v52-label-text">Exercícios</span>'
+        +   '<span class="v52-label-line"></span>'
+        +   '<span class="v52-count">'+correctCount+'/'+L.exercises.length+'</span>'
+        + '</div>'
+        + items
+        + '</section>';
+    }
+
+    function htmlMistakes(L){
+      if(!L.commonMistakes.length) return '';
+      var items = L.commonMistakes.map(function(m){
+        return '<div class="v52-card v52-card-mistake v52-mistake">'
+          + (m.mistake ? '<div class="v52-mistake-title">'+esc(m.mistake)+'</div>' : '')
+          + (m.why ? '<div class="v52-mistake-why">'+esc(m.why)+'</div>' : '')
+          + (m.avoid ? '<div class="v52-mistake-fix">Como evitar: '+esc(m.avoid)+'</div>' : '')
+          + '</div>';
+      }).join('');
+      return '<section style="margin:24px 0;">'
+        + '<div class="v52-section-label">'
+        +   '<span class="v52-label-text">Erros comuns</span>'
+        +   '<span class="v52-label-line"></span>'
+        + '</div>'
+        + items
+        + '</section>';
+    }
+
+    function htmlTips(L){
+      if(!L.tips.length) return '';
+      var items = L.tips.map(function(t){
+        return '<div class="v52-tip"><span class="v52-tip-bullet">•</span><span>'+esc(t)+'</span></div>';
+      }).join('');
+      return '<section style="margin:24px 0;">'
+        + '<div class="v52-section-label">'
+        +   '<span class="v52-label-text">Dicas</span>'
+        +   '<span class="v52-label-line"></span>'
+        + '</div>'
+        + '<div class="v52-tips">'+items+'</div>'
+        + '</section>';
+    }
+
+    function htmlConclude(L, state, alreadyDoneToday){
+      var ex = L.exercises;
+      var answered = ex.filter(function(_, i){ return !!state.checked[i]; }).length;
+      var correct = ex.filter(function(b, i){ return state.checked[i] && String(state.answers[i]||'').trim().toLowerCase() === String(b.answer||'').trim().toLowerCase(); }).length;
+      var pct = ex.length ? Math.round(correct/ex.length*100) : 100;
+      var pass = pct >= 80;
+      var scoreLine = ex.length
+        ? '<div class="v52-score'+(pass && answered===ex.length ? ' v52-score-pass' : '')+'">Pontuação: '+correct+'/'+ex.length+' ('+pct+'%). Para concluir: 80%+.</div>'
+        : '';
+      if(alreadyDoneToday){
+        return '<div class="v52-conclude-card">'
+          + (L.finalTip ? '<div style="font-style:italic;font-family:Georgia,serif;font-size:17px;color:#9EBCFF;margin-bottom:12px;">"'+esc(L.finalTip)+'"</div>' : '')
+          + '<div class="v52-conclude-done">✓ Aula concluída</div>'
+          + '</div>';
+      }
+      return '<div class="v52-conclude-card">'
+        + (L.finalTip ? '<div style="font-style:italic;font-family:Georgia,serif;font-size:17px;color:#9EBCFF;margin-bottom:14px;">"'+esc(L.finalTip)+'"</div>' : '')
+        + scoreLine
+        + '<button class="v52-conclude-btn" data-v52-conclude="1">✓ Concluir aula de hoje</button>'
+        + '</div>';
+    }
+
+    function buildLessonHtml(L, state, alreadyDoneToday){
+      if(!L) return '<div class="v52-empty"><h2>Sem aula ativa</h2><p>Volte para a aba Hoje e toque em "Começar aula".</p></div>';
+      return ''
+        + htmlHeader(L)
+        + htmlReading(L)
+        + htmlListening(L)
+        + htmlSections(L)
+        + htmlVocabulary(L)
+        + htmlExercises(L, state)
+        + htmlMistakes(L)
+        + htmlTips(L)
+        + htmlConclude(L, state, alreadyDoneToday);
+    }
+
+    /* ---- Per-lesson interactive state (kept in memory keyed by lesson title) ---- */
+    var __state = { title:'', answers:{}, checked:{} };
+    function ensureStateFor(L){
+      if(!L) return __state;
+      if(__state.title !== (L.title||'')){
+        __state = { title: L.title||'', answers:{}, checked:{} };
+      }
+      return __state;
+    }
+
+    /* ---- Lesson completion (write to completedLessons + flashcards) ---- */
+    function getCompletedLessonsToday(){
+      try{
+        var raw = localStorage.getItem('fluency_completedLessons');
+        if(!raw) return [];
+        var arr = JSON.parse(raw);
+        return Array.isArray(arr) ? arr : [];
+      }catch(_){ return []; }
+    }
+    function isLessonDoneToday(){
+      var t = todayStr();
+      return getCompletedLessonsToday().some(function(c){ return c && c.date === t; });
+    }
+    function concludeLesson(L, state){
+      var ex = arr(L.exercises);
+      var answered = ex.filter(function(_, i){ return !!state.checked[i]; }).length;
+      var correct = ex.filter(function(b, i){ return state.checked[i] && String(state.answers[i]||'').trim().toLowerCase() === String(b.answer||'').trim().toLowerCase(); }).length;
+      var pct = ex.length ? Math.round(correct/ex.length*100) : 100;
+      if(ex.length && answered < ex.length){
+        alert('Responda e verifique todos os exercícios antes de concluir a aula.');
+        return false;
+      }
+      if(ex.length && pct < 80){
+        alert('Você acertou '+pct+'%. Revise os exercícios errados antes de concluir. Meta: 80% ou mais.');
+        return false;
+      }
+      try{
+        var t = todayStr();
+        var cur = getCompletedLessonsToday();
+        if(!cur.some(function(c){ return c && c.date === t; })){
+          cur.push({ id: t+'_v52', date: t, skill:'reading', level:'A1', title: L.title || 'Aula', score: pct });
+          localStorage.setItem('fluency_completedLessons', JSON.stringify(cur));
+        }
+        // Mark V51 completion (keeps existing systems happy)
+        localStorage.setItem('fluency_v51_completed_'+t, '1');
+      }catch(e){
+        log('falha ao salvar conclusão: '+(e&&e.message||e), 'error');
+      }
+      alert('Aula concluída! Você acertou '+pct+'%.');
+      return true;
+    }
+
+    /* ---- React lesson hider: tag the root container so CSS hides the broken render ---- */
+    function findLessonContainer(){
+      // The React lesson page is the .max-w-3xl div directly under the .min-h-screen wrapper
+      var screens = document.querySelectorAll('.min-h-screen.paper-grain');
+      for(var i=0;i<screens.length;i++){ return screens[i]; }
+      return null;
+    }
+    function hideReactLesson(){
+      var c = findLessonContainer();
+      if(c) c.classList.add(HIDE_REACT_CLASS);
+    }
+    function unhideReactLesson(){
+      var c = findLessonContainer();
+      if(c) c.classList.remove(HIDE_REACT_CLASS);
+    }
+
+    /* ---- Disable older overlay renderers so they don't fight us ---- */
+    function neutralizeOldRenderers(){
+      try{ window.__fluencyRenderFullLessonV18 = function(){ return false; }; }catch(_){}
+      try{ window.__fluencyV43RenderLesson = function(){ return false; }; }catch(_){}
+      try{ window.__fluencyV46RenderLesson = function(){ return false; }; }catch(_){}
+      // V51's mount: remove if present (V52 takes over)
+      try{ var m = document.getElementById('__fluency_v51_ai_mount__'); if(m) m.remove(); }catch(_){}
+      try{ var m18 = document.querySelector('.fluency-v18-full-lesson-render'); if(m18) m18.remove(); }catch(_){}
+    }
+
+    /* ---- Main render loop ---- */
+    function render(){
+      try{
+        // V52.1: evita redesenhar a aula enquanto um input/textarea/select está focado no iOS.
+        // O render automático destruía o campo no momento do toque e o teclado não abria.
+        try{
+          var active = document.activeElement;
+          var mountFocus = document.getElementById(MOUNT_ID);
+          if(mountFocus && active && mountFocus.contains(active) && /^(INPUT|TEXTAREA|SELECT)$/i.test(active.tagName || "")){
+            return;
+          }
+        }catch(_focusGuard){}
+        if(!isLessonTab()){
+          var m0 = document.getElementById(MOUNT_ID);
+          if(m0) m0.remove();
+          unhideReactLesson();
+          return;
+        }
+        // Don't fight while React is showing the loader
+        var bodyTxt = document.body ? (document.body.innerText || '') : '';
+        if(/A tinta está secando|A tinta esta secando|Preparando sua aula/i.test(bodyTxt) && !readActiveLesson()){
+          var mLoad = document.getElementById(MOUNT_ID);
+          if(mLoad) mLoad.remove();
+          return;
+        }
+        neutralizeOldRenderers();
+        var L = readActiveLesson();
+        if(!L){
+          // Nothing to render; let React show whatever it has
+          var m1 = document.getElementById(MOUNT_ID);
+          if(m1) m1.remove();
+          unhideReactLesson();
+          return;
+        }
+        var state = ensureStateFor(L);
+        var done = isLessonDoneToday();
+        hideReactLesson();
+        var mount = document.getElementById(MOUNT_ID);
+        if(!mount){
+          mount = document.createElement('div');
+          mount.id = MOUNT_ID;
+          var header = document.querySelector('header');
+          if(header && header.parentNode){
+            header.parentNode.insertBefore(mount, header.nextSibling);
+          } else {
+            (document.getElementById('root') || document.body).appendChild(mount);
+          }
+        }
+        mount.innerHTML = buildLessonHtml(L, state, done);
+        attachInteractions(mount, L, state);
+      }catch(e){
+        log('render falhou: '+(e&&e.message||e), 'error');
+      }
+    }
+
+    /* ---- Interactions on the V52 mount ---- */
+    function attachInteractions(mount, L, state){
+      // Delegate clicks
+      if(mount.__v52Wired) return;
+      mount.__v52Wired = true;
+
+      mount.addEventListener('click', function(ev){
+        var t = ev.target;
+        // Walk up to find element with data-v52-* attributes
+        while(t && t !== mount && !(t.dataset && (t.dataset.v52Tts || t.dataset.v52Ex !== undefined || t.dataset.v52ExVerify !== undefined || t.dataset.v52Conclude))){
+          t = t.parentElement;
+        }
+        if(!t || t === mount) return;
+        try{
+          if(t.dataset.v52Tts){
+            ev.preventDefault();
+            if(t.dataset.v52Tts === 'reading') tts(L.readingText);
+            else if(t.dataset.v52Tts === 'listening') tts(L.listeningText);
+            else tts(t.dataset.v52Text || '');
+            return;
+          }
+          if(t.dataset.v52Conclude){
+            ev.preventDefault();
+            var ok = concludeLesson(L, state);
+            if(ok) render();
+            return;
+          }
+          if(t.dataset.v52Ex !== undefined){
+            ev.preventDefault();
+            var i = parseInt(t.dataset.v52Ex, 10);
+            if(state.checked[i]) return;
+            state.answers[i] = t.dataset.v52Opt;
+            state.checked[i] = true;
+            render();
+            return;
+          }
+          if(t.dataset.v52ExVerify !== undefined){
+            ev.preventDefault();
+            var i2 = parseInt(t.dataset.v52ExVerify, 10);
+            // read input value
+            var input = mount.querySelector('input[data-v52-ex-input="'+i2+'"]');
+            var val = input ? input.value : '';
+            if(!val.trim()){ alert('Digite sua resposta antes de verificar.'); return; }
+            state.answers[i2] = val;
+            state.checked[i2] = true;
+            render();
+            return;
+          }
+        }catch(e){
+          log('click handler falhou: '+(e&&e.message||e), 'error');
+        }
+      }, true);
+
+      // Sync input values into state on input (so render() doesn't lose them)
+      mount.addEventListener('input', function(ev){
+        var t = ev.target;
+        if(t && t.dataset && t.dataset.v52ExInput !== undefined){
+          state.answers[parseInt(t.dataset.v52ExInput,10)] = t.value;
+        }
+      });
+    }
+
+    /* ---- Test injection: drop a lesson into the same place the AI puts it ---- */
+    function saveLessonAsActive(lesson){
+      var n = normalize(lesson);
+      if(!n){ return false; }
+      n.lessonId = n.lessonId || ('test-'+Date.now());
+      n._fluencyDate = todayStr();
+      var s = JSON.stringify(n);
+      ACTIVE_KEYS.forEach(function(k){
+        try{ localStorage.setItem(k, s); }catch(_){}
+      });
+      try{
+        // Also drop a synthetic per-day cache key so React's path also picks it up
+        var key = 'fluency_lesson_v4_'+(n.title||'untitled').toLowerCase().replace(/\s+/g,'-').slice(0,40);
+        localStorage.setItem(key, s);
+      }catch(_){}
+      return true;
+    }
+
+    window.__fluencyInjectTestLesson = function(lesson){
+      if(!lesson || typeof lesson !== 'object'){ console.warn('[V52] lesson inválida'); return false; }
+      var ok = saveLessonAsActive(lesson);
+      log('test lesson injetada: '+(lesson.title||'sem título'), ok ? 'ok' : 'error');
+      // Reset state and render
+      __state = { title:'', answers:{}, checked:{} };
+      setTimeout(render, 50);
+      setTimeout(render, 350);
+      return ok;
+    };
+    window.__fluencyV52Status = function(){
+      var L = readActiveLesson();
+      return {
+        version: VERSION,
+        onLessonTab: isLessonTab(),
+        hasActive: !!L,
+        title: L && L.title,
+        sections: L && L.sections.length,
+        vocabulary: L && L.vocabulary.length,
+        exercises: L && L.exercises.length,
+        readingText: L && !!L.readingText,
+        listeningText: L && !!L.listeningText,
+        tips: L && L.tips.length,
+        commonMistakes: L && L.commonMistakes.length,
+        mountInDom: !!document.getElementById(MOUNT_ID)
+      };
+    };
+    window.__fluencyV52Render = render;
+
+    /* ---- Boot ---- */
+    injectStyles();
+    setTimeout(function(){ neutralizeOldRenderers(); render(); }, 250);
+    setTimeout(render, 900);
+    setTimeout(render, 2200);
+    setInterval(render, 900);
+    ['click','touchend','hashchange','popstate','focus','visibilitychange'].forEach(function(ev){
+      window.addEventListener(ev, function(){ setTimeout(render, 80); setTimeout(render, 380); }, true);
+    });
+    log('patch ativo. Aba Aula passou a renderizar pela V52.', 'ok');
+  }catch(e){
+    try{ console.warn('Fluency V52 patch failed', e); }catch(_){}
+  }
 })();
