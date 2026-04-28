@@ -97,7 +97,7 @@ button {
 <script>
 // Register service worker for PWA / offline
 // Versão atual: APP_VERSION é checada e se mudar, força reload + cache clear
-var APP_VERSION = 'v35';
+var APP_VERSION = 'v38';
 var savedVersion = null;
 try { savedVersion = localStorage.getItem('__app_version__'); } catch(e) {}
 
@@ -324,7 +324,7 @@ window.__ttsState = window.__ttsState || {
 <script src="azure-pronunciation.js?v=5"></script>
 
 <!-- bundle.js define window.React, window.ReactDOM e window.__AppComponent -->
-<script src="bundle.js?v=33"></script>
+<script src="bundle.js?v=38"></script>
 
 <!-- Renderização em script separado, garantindo execução após bundle.js -->
 <script>
@@ -886,6 +886,13 @@ window.__ttsState = window.__ttsState || {
       if (typeof body === 'string' && body.includes('AUDIO')) {
         logMsg('info', 'Gemini TTS request →');
         return origFetch.apply(this, arguments).then(function(resp) {
+          if (!resp || typeof resp.ok === 'undefined') {
+            logMsg('err', 'Gemini TTS retornou resposta vazia (fetch null)');
+            return new Response(JSON.stringify({ error: { message: 'Gemini TTS retornou resposta vazia' } }), {
+              status: 599,
+              headers: { 'content-type': 'application/json' }
+            });
+          }
           if (resp.ok) {
             logMsg('ok', 'Gemini TTS ' + resp.status);
             // Inspeciona resposta para logar mimeType
@@ -941,7 +948,7 @@ window.__ttsState = window.__ttsState || {
 
   // ── 1. BUILD / VERSÃO ──────────────────────────────────────
   // Marca a build do index.html para identificar versão antiga em cache.
-  var __FLUENCY_BUILD__ = '2026-04-28-v2';
+  var __FLUENCY_BUILD__ = '2026-04-28-v4-lesson-fetch-fix';
   if (buildEl) buildEl.textContent = __FLUENCY_BUILD__;
   logMsg('info', 'Build ' + __FLUENCY_BUILD__);
 
@@ -1166,6 +1173,19 @@ window.__ttsState = window.__ttsState || {
         logMsg('info', 'Gemini text → ' + model);
         return prevFetchTextGen(url, opts).then(function(resp) {
           var dt = Date.now() - t0;
+          if (!resp || typeof resp.ok === 'undefined') {
+            logMsg('err', 'Gemini retornou resposta vazia/null · ' + model + ' · ' + dt + 'ms');
+            return new Response(JSON.stringify({
+              error: {
+                code: 599,
+                status: 'FETCH_NULL',
+                message: 'A chamada Gemini não devolveu Response. O diagnóstico impediu o erro resp.ok.'
+              }
+            }), {
+              status: 599,
+              headers: { 'content-type': 'application/json' }
+            });
+          }
           if (resp.ok) {
             logMsg('ok', 'Gemini ' + resp.status + ' · ' + model + ' · ' + dt + 'ms');
           } else {
@@ -1188,6 +1208,37 @@ window.__ttsState = window.__ttsState || {
     };
     newFetchTextGen.__fluencyDiagTextGen = true;
     try { window.fetch = newFetchTextGen; } catch(e) {}
+  }
+
+
+  // ── 8.1. FETCH HARDENER ───────────────────────────────────
+  // Correção V36: impede que qualquer hook de fetch retorne null/undefined.
+  // Isso elimina o erro iOS: "null is not an object (evaluating 'resp.ok')".
+  try {
+    var __safeFetchBase = window.fetch;
+    if (__safeFetchBase && !__safeFetchBase.__fluencyNeverNull) {
+      var __safeFetchBound = __safeFetchBase.bind(window);
+      var __safeFetch = function() {
+        return Promise.resolve(__safeFetchBound.apply(window, arguments)).then(function(resp) {
+          if (resp && typeof resp.ok !== 'undefined') return resp;
+          try { logMsg('err', 'fetch retornou null/undefined — convertido para HTTP 599'); } catch(e) {}
+          return new Response(JSON.stringify({
+            error: {
+              code: 599,
+              status: 'FETCH_NULL',
+              message: 'Fetch retornou null/undefined e foi convertido em resposta segura.'
+            }
+          }), {
+            status: 599,
+            headers: { 'content-type': 'application/json' }
+          });
+        });
+      };
+      __safeFetch.__fluencyNeverNull = true;
+      window.fetch = __safeFetch;
+    }
+  } catch(e) {
+    try { logMsg('err', 'fetch hardener falhou: ' + (e.message || e)); } catch(_) {}
   }
 
   // ── 9. LOCALSTORAGE QUOTA ──────────────────────────────────
@@ -1363,6 +1414,11 @@ window.__ttsState = window.__ttsState || {
           window.__diagPron.setMode(hasAudio ? 'gemini-audio' : 'gemini-stt');
         }
         return origFetch.apply(this, arguments).then(function(resp) {
+          if (!resp || typeof resp.ok === 'undefined') {
+            if (window.__diag_log) window.__diag_log('err', '🎤 Pron API retornou resposta vazia/null');
+            if (window.__diagPron) window.__diagPron.setReason('Fetch retornou null na API Gemini');
+            return new Response(JSON.stringify({ error: { code: 599, status: 'FETCH_NULL', message: 'Pron API retornou resposta vazia/null' } }), { status: 599, headers: { 'content-type': 'application/json' } });
+          }
           if (!resp.ok) {
             if (window.__diag_log) window.__diag_log('err', '🎤 Pron API erro ' + resp.status);
             if (window.__diagPron) window.__diagPron.setReason('HTTP ' + resp.status + ' da API Gemini');
