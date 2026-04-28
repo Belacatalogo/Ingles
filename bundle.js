@@ -5,7 +5,7 @@
     if(window.__fluencyLessonKeysPanelV1914) return;
     window.__fluencyLessonKeysPanelV1914 = true;
 
-    var VERSION = 'V19.15-KEYS-AULAS-ISOLADAS';
+    var VERSION = 'V19.16-KEYS-AULAS-ISOLADAS-PRO-SEPARADO';
     var MULTI_KEYS = 'fluency_lessonGeminiApiKeys_v197';
     var MULTI_KEYS_OLD = ['fluency_lessonGeminiApiKeys','fluency_lessonGeminiKeys','lessonGeminiApiKeys','lessonGeminiKeys','fluency_freeGeminiKeys','fluency_flashGeminiKeys'];
     var LESSON_KEY_ALIASES = ['fluency_lessonGeminiApiKey','fluency_lessonGeminiKey','lessonGeminiApiKey','lessonGeminiKey','fluency_geminiLessonKey','fluency_aulasGeminiKey','fluency_lesson_key','fluency_lesson_api_key'];
@@ -60,8 +60,8 @@
       for(var i=0;i<PRO_KEY_ALIASES.length;i++){ var v=get(PRO_KEY_ALIASES[i]); if(valid(v)) return String(v).replace(/\s+/g,'').trim(); }
       return '';
     }
-    function saveProKey(k){ PRO_KEY_ALIASES.forEach(function(a){ set(a,k); }); return k; }
-    function removeProKey(){ PRO_KEY_ALIASES.forEach(remove); }
+    function saveProKey(k){ try{localStorage.setItem('fluency_pro_key_user_set_v39','1');}catch(_){} PRO_KEY_ALIASES.forEach(function(a){ set(a,k); }); return k; }
+    function removeProKey(){ try{localStorage.removeItem('fluency_pro_key_user_set_v39');}catch(_){} PRO_KEY_ALIASES.forEach(remove); }
 
     function isProgressActive(){
       try{
@@ -218,7 +218,7 @@
     if(window.__fluencyBlocksMultiKeysV1912) return;
     window.__fluencyBlocksMultiKeysV1912 = true;
 
-    var VERSION = 'V19.15-DIAG-TEMPO-REAL-BLOCOS-KEYS-ISOLADAS';
+    var VERSION = 'V19.16-DIAG-TEMPO-REAL-BLOCOS-KEYS-ISOLADAS';
     var MULTI_KEYS = 'fluency_lessonGeminiApiKeys_v197';
     var MULTI_KEYS_OLD = ['fluency_lessonGeminiApiKeys','fluency_lessonGeminiKeys','lessonGeminiApiKeys','lessonGeminiKeys','fluency_freeGeminiKeys','fluency_flashGeminiKeys'];
     var LESSON_KEY_ALIASES = ['fluency_lessonGeminiApiKey','fluency_lessonGeminiKey','lessonGeminiApiKey','lessonGeminiKey','fluency_geminiLessonKey','fluency_aulasGeminiKey','fluency_lesson_key','fluency_lesson_api_key'];
@@ -587,30 +587,43 @@
     try{ new MutationObserver(function(){ setTimeout(tick,120); }).observe(document.documentElement || document.body, {childList:true, subtree:true}); }catch(_){ }
   }catch(e){ try{ console.warn('Fluency V19.7 blocks/multikeys failed', e); }catch(_){ } }
 })();
-/* === FLUENCY PATCH V19.2 - RELAY DEFINITIVO DA KEY EXCLUSIVA PARA AULAS === */
+/* === FLUENCY PATCH V19.2.1 - RELAY CORRIGIDO: FLASH NÃO ALTERA PRO === */
 ;(function(){
   try{
-    if(window.__fluencyLessonKeyRelayV192) return;
-    window.__fluencyLessonKeyRelayV192 = true;
-    var VERSION='V19.2-LESSON-KEY-RELAY';
-    var ALIASES=['fluency_lessonGeminiApiKey','fluency_lessonGeminiKey','lessonGeminiApiKey','lessonGeminiKey','fluency_geminiLessonKey','fluency_proLessonGeminiApiKey','fluency_aulasGeminiKey','fluency_lesson_key','fluency_lesson_api_key'];
+    if(window.__fluencyLessonKeyRelayV1921) return;
+    window.__fluencyLessonKeyRelayV1921 = true;
+    var VERSION='V19.2.1-LESSON-KEY-RELAY-NO-PRO-MIX';
+    // IMPORTANTE: aqui ficam SOMENTE aliases da key Flash/principal de aulas.
+    // A key Pro foi removida deste relay porque o V19.2 copiava a key 1 para fluency_proLessonGeminiApiKey.
+    var ALIASES=['fluency_lessonGeminiApiKey','fluency_lessonGeminiKey','lessonGeminiApiKey','lessonGeminiKey','fluency_geminiLessonKey','fluency_aulasGeminiKey','fluency_lesson_key','fluency_lesson_api_key'];
+    var PRO_ALIASES=['fluency_proLessonGeminiApiKey','fluency_geminiProKey','geminiProApiKey','fluency_paidGeminiKey','fluency_lessonPaidGeminiKey'];
     function isAlias(k){return ALIASES.indexOf(String(k||''))!==-1;}
     function clean(v){v=String(v||'').trim();if(!v)return '';try{if((v[0]==='"'&&v[v.length-1]==='"')||v[0]==='{'||v[0]==='['){var p=JSON.parse(v);if(typeof p==='string')v=p;else if(p&&typeof p.key==='string')v=p.key;else if(p&&typeof p.apiKey==='string')v=p.apiKey;}}catch(_){}return String(v||'').replace(/\s+/g,'').trim();}
     function valid(k){k=clean(k);return /^AIza[0-9A-Za-z_\-]{20,}$/.test(k);}
     function mask(k){k=clean(k);return k?k.slice(0,8)+'...'+k.slice(-4):'';}
-    var nativeGet=Storage.prototype.getItem,nativeSet=Storage.prototype.setItem;
-    function scan(storage){try{for(var i=0;i<ALIASES.length;i++){var v=clean(nativeGet.call(storage,ALIASES[i]));if(valid(v))return v;}}catch(_){}return '';}
-    function getKey(){var k='';try{k=scan(localStorage)||scan(sessionStorage);}catch(_){}return valid(k)?k:'';}
+    var nativeGet=Storage.prototype.getItem,nativeSet=Storage.prototype.setItem,nativeRemove=Storage.prototype.removeItem;
+    function scan(storage, aliases){try{for(var i=0;i<aliases.length;i++){var v=clean(nativeGet.call(storage,aliases[i]));if(valid(v))return v;}}catch(_){}return '';}
+    function getKey(){var k='';try{k=scan(localStorage,ALIASES)||scan(sessionStorage,ALIASES);}catch(_){}return valid(k)?k:'';}
+    function getProKey(){var k='';try{k=scan(localStorage,PRO_ALIASES)||scan(sessionStorage,PRO_ALIASES);}catch(_){}return valid(k)?k:'';}
     function sync(k){k=clean(k||getKey());if(!valid(k))return '';try{for(var i=0;i<ALIASES.length;i++)nativeSet.call(localStorage,ALIASES[i],k);}catch(_){}try{for(var j=0;j<ALIASES.length;j++)nativeSet.call(sessionStorage,ALIASES[j],k);}catch(_){}try{nativeSet.call(localStorage,'fluency___lessonKeySavedAt',String(Date.now()));}catch(_){}return k;}
+    function cleanupAccidentalProClone(){
+      try{
+        var flash=getKey(), pro=getProKey();
+        if(valid(flash)&&valid(pro)&&flash===pro && !nativeGet.call(localStorage,'fluency_pro_key_user_set_v39')){
+          for(var i=0;i<PRO_ALIASES.length;i++){nativeRemove.call(localStorage,PRO_ALIASES[i]);nativeRemove.call(sessionStorage,PRO_ALIASES[i]);}
+          nativeSet.call(localStorage,'fluency_v39_removed_cloned_pro_key','1');
+        }
+      }catch(_){}
+    }
     if(getKey())sync(getKey());
+    cleanupAccidentalProClone();
     window.__fluencyGetLessonKeyV192=function(){return getKey();};
     window.__fluencySetLessonKeyV192=function(k){return sync(k);};
-    window.__fluencyLessonKeyStatusV192=function(){var k=getKey();return {configured:!!k,masked:mask(k),aliases:ALIASES.slice()};};
-    if(nativeGet&&!Storage.prototype.getItem.__fluencyLessonKeyRelayV192){Storage.prototype.getItem=function(k){var v=nativeGet.apply(this,arguments);try{if(isAlias(k)){var c=clean(v);if(valid(c))return c;var r=getKey();if(valid(r))return r;}}catch(_){}return v;};Storage.prototype.getItem.__fluencyLessonKeyRelayV192=true;}
-    if(nativeSet&&!Storage.prototype.setItem.__fluencyLessonKeyRelayV192){Storage.prototype.setItem=function(k,v){try{if(isAlias(k)){var c=clean(v);if(valid(c)){var r=nativeSet.apply(this,[k,c]);sync(c);return r;}}}catch(_){}return nativeSet.apply(this,arguments);};Storage.prototype.setItem.__fluencyLessonKeyRelayV192=true;}
-    function diag(msg,kind){/* Chave de Aulas V19.2 painel desativado */}
-    setTimeout(function(){var k=sync();diag(k?'key detectada e entregue para V15: '+mask(k):'nenhuma key de aulas encontrada nos aliases.',k?'ok':'warn');},1000);
-  }catch(e){try{console.warn('Fluency V19.2 lesson key relay failed',e)}catch(_){}}
+    window.__fluencyLessonKeyStatusV192=function(){var k=getKey();return {configured:!!k,masked:mask(k),aliases:ALIASES.slice(),proSeparated:true,version:VERSION};};
+    if(nativeGet&&!Storage.prototype.getItem.__fluencyLessonKeyRelayV1921){Storage.prototype.getItem=function(k){var v=nativeGet.apply(this,arguments);try{if(isAlias(k)){var c=clean(v);if(valid(c))return c;var r=getKey();if(valid(r))return r;}}catch(_){}return v;};Storage.prototype.getItem.__fluencyLessonKeyRelayV1921=true;}
+    if(nativeSet&&!Storage.prototype.setItem.__fluencyLessonKeyRelayV1921){Storage.prototype.setItem=function(k,v){try{if(isAlias(k)){var c=clean(v);if(valid(c)){var r=nativeSet.apply(this,[k,c]);sync(c);return r;}} if(PRO_ALIASES.indexOf(String(k||''))!==-1){try{nativeSet.call(localStorage,'fluency_pro_key_user_set_v39','1');}catch(__){}}}catch(_){}return nativeSet.apply(this,arguments);};Storage.prototype.setItem.__fluencyLessonKeyRelayV1921=true;}
+    setTimeout(function(){cleanupAccidentalProClone();},600);
+  }catch(e){try{console.warn('Fluency V19.2.1 lesson key relay failed',e)}catch(_){}}
 })();
 /* === FLUENCY PATCH V18 - RENDERIZAÇÃO COMPLETA DA AULA NA ABA AULA === */
 ;(function(){
@@ -3423,7 +3436,7 @@ lucide-react/dist/esm/lucide-react.mjs:
     function setProKey(key){
       key = String(key || '').replace(/\s+/g,'').trim();
       try{
-        PRO_KEY_ALIASES.forEach(function(a){ if(validKey(key)) localStorage.setItem(a,key); else localStorage.removeItem(a); });
+        try{ if(validKey(key)) localStorage.setItem('fluency_pro_key_user_set_v39','1'); else localStorage.removeItem('fluency_pro_key_user_set_v39'); }catch(_){} PRO_KEY_ALIASES.forEach(function(a){ if(validKey(key)) localStorage.setItem(a,key); else localStorage.removeItem(a); });
       }catch(_){ }
       return validKey(key) ? key : '';
     }
