@@ -5213,7 +5213,7 @@ lucide-react/dist/esm/lucide-react.mjs:
         try{
           var active = document.activeElement;
           var mountFocus = document.getElementById(MOUNT_ID);
-          if(mountFocus && active && mountFocus.contains(active) && /^(INPUT|TEXTAREA|SELECT) i.test(active.tagName || "")){
+          if(mountFocus && active && mountFocus.contains(active) && /^(INPUT|TEXTAREA|SELECT)$/i.test(active.tagName || "")){
             return;
           }
         }catch(_focusGuard){}
