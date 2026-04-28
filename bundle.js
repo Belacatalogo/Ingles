@@ -4492,7 +4492,7 @@ lucide-react/dist/esm/lucide-react.mjs:
   try{
     if(window.__fluencyV43FullLessonRenderer) return;
     window.__fluencyV43FullLessonRenderer = true;
-    var VERSION='V44-FULL-LESSON-SEM-PARABENS';
+    var VERSION='V45-FULL-LESSON-SEM-PARABENS-SEGURO';
     var ACTIVE_KEYS=['fluency_active_ai_lesson_v43','fluency_active_ai_lesson_v41','fluency_last_ai_lesson_v43','fluency_last_ai_lesson_v41','fluency_last_ai_lesson','fluency_generated_lesson','fluency_today_lesson'];
     var ROOT_ID='__fluency_v43_full_lesson__';
     var CSS_ID='__fluency_v43_full_lesson_css__';
@@ -4698,12 +4698,14 @@ lucide-react/dist/esm/lucide-react.mjs:
 })();
 
 
-/* === FLUENCY PATCH V44 - REMOVER TEXTO DE PARABÉNS / CONCLUSÃO DA AULA === */
+
+/* === FLUENCY PATCH V45 - REMOVER PARABÉNS SEM APAGAR A AULA === */
 ;(function(){
   try{
-    if(window.__fluencyV44RemoveCongratsFinal) return;
-    window.__fluencyV44RemoveCongratsFinal = true;
-    var VERSION='V44-REMOVE-PARABENS-CONCLUSAO';
+    if(window.__fluencyV45SafeRemoveCongratsFinal) return;
+    window.__fluencyV45SafeRemoveCongratsFinal = true;
+    var VERSION='V45-SAFE-REMOVE-PARABENS-SEM-BLANK';
+    var RENDER_ROOT='__fluency_v43_full_lesson__';
     var NEEDLES=[
       'Parabéns por completar mais esta etapa',
       'Parabens por completar mais esta etapa',
@@ -4713,51 +4715,83 @@ lucide-react/dist/esm/lucide-react.mjs:
       'Sua jornada no inglês está apenas começando',
       'Sua jornada no ingles esta apenas comecando'
     ];
-    function norm(s){return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[“”"']/g,'').replace(/\s+/g,' ').trim().toLowerCase();}
+    function norm(s){
+      return String(s||'')
+        .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+        .replace(/[“”"']/g,'')
+        .replace(/\s+/g,' ')
+        .trim().toLowerCase();
+    }
     var N=NEEDLES.map(norm);
     function hit(t){t=norm(t);return N.some(function(n){return n && t.indexOf(n)>=0;});}
-    function isImportantRoot(el){
+    function text(el){try{return String(el&&((el.innerText||el.textContent)||''))}catch(_){return ''}}
+    function important(el){
       if(!el) return true;
-      if(el.id==='root' || el.tagName==='BODY' || el.tagName==='HTML') return true;
-      if(el.id==='__fluency_v43_full_lesson_render__') return true;
+      if(el.id==='root'||el.id===RENDER_ROOT||el.tagName==='BODY'||el.tagName==='HTML'||el.tagName==='MAIN') return true;
+      if(el.closest && el.closest('#'+RENDER_ROOT)) return true;
+      var t=text(el);
+      if(/\bHoje\b[\s\S]*\bAula\b[\s\S]*\bFlashcards\b|\bSpeaking\b/.test(t)) return true;
+      if(/LOGS EM TEMPO REAL|SISTEMA[\s\S]*ÁUDIO|Chaves Exclusivas de Aulas/i.test(t)) return true;
       return false;
     }
-    function pickRemovalNode(el){
-      var cur=el, best=el;
-      for(var i=0;i<5 && cur && !isImportantRoot(cur);i++,cur=cur.parentElement){
-        var txt=String(cur.innerText||cur.textContent||'');
-        var r; try{r=cur.getBoundingClientRect()}catch(_){r={width:0,height:0}}
-        // Prefer the visible card containing only the congratulation/final message.
-        if(hit(txt) && txt.length<1800 && r.width>120 && r.height>40) best=cur;
-      }
-      return best;
+    function restoreBadV44(){
+      try{
+        Array.prototype.slice.call(document.querySelectorAll('[data-fluency-v44-removed-congrats]')).forEach(function(el){
+          el.removeAttribute('data-fluency-v44-removed-congrats');
+          el.removeAttribute('data-fluency-v45-safe-hidden');
+          el.style.display='';
+          el.style.height='';
+          el.style.minHeight='';
+          el.style.margin='';
+          el.style.padding='';
+          el.style.overflow='';
+        });
+      }catch(_){ }
+    }
+    function hideNode(el){
+      try{
+        el.setAttribute('data-fluency-v45-safe-hidden','true');
+        el.style.display='none';
+      }catch(_){ }
     }
     function clean(){
+      restoreBadV44();
       try{
-        var nodes=Array.prototype.slice.call(document.querySelectorAll('section,article,div,p,blockquote'));
+        var nodes=Array.prototype.slice.call(document.querySelectorAll('p,blockquote,div,section,article'));
         nodes.forEach(function(el){
-          if(isImportantRoot(el)) return;
-          var t=String(el.innerText||el.textContent||'');
+          if(important(el)) return;
+          var t=text(el);
           if(!hit(t)) return;
-          // Do not remove the whole generated lesson renderer; V44 already does not render finalTip there.
-          if(el.closest && el.closest('#__fluency_v43_full_lesson_render__')) return;
-          var target=pickRemovalNode(el);
-          if(target && !isImportantRoot(target)){
-            target.setAttribute('data-fluency-v44-removed-congrats','true');
-            target.style.display='none';
-            target.style.height='0px';
-            target.style.minHeight='0px';
-            target.style.margin='0px';
-            target.style.padding='0px';
-            target.style.overflow='hidden';
-          }
+          // Nunca esconda um container grande da aula. Se algum filho também contém o texto,
+          // deixe o filho ser tratado; isso impede a tela em branco.
+          var childHit=false;
+          try{
+            childHit=Array.prototype.slice.call(el.children||[]).some(function(ch){return hit(text(ch));});
+          }catch(_){childHit=false;}
+          if(childHit) return;
+          if(t.length>1700) return;
+          if(el.querySelector && el.querySelector('button,a,input,textarea,select,[role="tab"]')) return;
+          var target=el;
+          // Se o cartão pai contém praticamente só esse texto final, esconda o cartão;
+          // caso contrário, esconda apenas o parágrafo/texto.
+          try{
+            var p=el.parentElement;
+            if(p && !important(p)){
+              var pt=text(p);
+              var same=hit(pt) && pt.length<=t.length+120 && !(p.querySelector&&p.querySelector('button,a,input,textarea,select,[role="tab"]'));
+              if(same) target=p;
+            }
+          }catch(_){ }
+          if(!important(target)) hideNode(target);
         });
-      }catch(e){try{console.warn('[Fluency '+VERSION+'] limpeza falhou',e)}catch(_){}}
+      }catch(e){try{console.warn('[Fluency '+VERSION+'] limpeza segura falhou',e)}catch(_){}}
     }
     window.__fluencyV44RemoveCongratsNow=clean;
-    function tick(){clean()}
+    window.__fluencyV45SafeRemoveCongratsNow=clean;
+    function tick(){clean(); try{ if(window.__fluencyV43RenderLesson) window.__fluencyV43RenderLesson(); }catch(_){} }
     if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',tick); else setTimeout(tick,0);
-    setTimeout(tick,300); setTimeout(tick,1000); setInterval(tick,1200);
-    try{new MutationObserver(function(){setTimeout(tick,80)}).observe(document.documentElement||document.body,{childList:true,subtree:true,characterData:true})}catch(_){ }
-  }catch(e){try{console.warn('Patch V44 remove congrats failed',e)}catch(_){}}
+    setTimeout(tick,250); setTimeout(tick,900); setTimeout(tick,1800); setInterval(clean,1600);
+    ['click','touchend','focus','hashchange','popstate','visibilitychange'].forEach(function(ev){window.addEventListener(ev,function(){setTimeout(tick,120);},true)});
+    try{new MutationObserver(function(){setTimeout(clean,90)}).observe(document.documentElement||document.body,{childList:true,subtree:true,characterData:true})}catch(_){ }
+  }catch(e){try{console.warn('Patch V45 safe remove congrats failed',e)}catch(_){}}
 })();
