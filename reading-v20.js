@@ -4,7 +4,7 @@
     if(window.__fluencyReadingTakeoverV202) return;
     window.__fluencyReadingTakeoverV202 = true;
 
-    var VERSION = 'V20.4-READING-ACTIVE-LESSON-ONLY';
+    var VERSION = 'V20.6-READING-TAKEOVER-DETECT-FIX';
     var mountedKey = '';
     var running = false;
 
@@ -492,18 +492,21 @@
     function currentVisibleLessonIsReading(){
       var sig = visibleLessonSignature();
 
-      // Nunca assumir Reading só porque existe "Texto para leitura".
-      // Aulas de gramática também podem ter leitura curta.
-      if(/gramatica|gramática|pronome|pronomes|verbo to be|saudacoes|saudações|ingles essencial|inglês essencial/.test(sig)){
+      // Bloqueio forte: não aplicar visual Reading em aulas claramente de Gramática.
+      // Aulas de Gramática podem ter "texto para leitura", então esse bloqueio vem primeiro.
+      if(/gramatica|gramática|pronome|pronomes|verbo to be|saudacoes|saudações|artigos indefinidos|a\/an|simple present|present simple/.test(sig)){
         return false;
       }
 
-      // Precisa haver sinal explícito de habilidade Reading na aula visível.
-      if(/(^|\s)(reading|leitura)(\s|$)/.test(sig) && /reading practice|reading lesson|compreensao de leitura|compreensão de leitura|estrategias de leitura|estratégias de leitura|skimming|scanning/.test(sig)){
+      // V20.6: aceitar Reading quando a aula visível declara Reading no título/subtítulo.
+      // Ex.: "Daily Routine Vocabulary and Reading"
+      if(/reading|leitura|compreensao de texto|compreensão de texto|compreensao do texto|compreensão do texto/.test(sig)){
         return true;
       }
 
-      if(/rotina matinal|daily routines and reading strategies|compreendendo textos|reading strategies/.test(sig)){
+      // Aceitar temas de Reading que a IA gera para terça-feira.
+      if(/rotina matinal|daily routine|daily routines|ana's morning routine|anas morning routine|morning routine|vocabulario essencial|vocabulário essencial|texto para leitura/.test(sig)){
+        // Para não sequestrar Gramática, exige que não haja sinais gramaticais fortes.
         return true;
       }
 
@@ -566,6 +569,17 @@
         if(!currentVisibleLessonIsReading()) return;
 
         var L = findVisibleMatchingStoredLesson();
+
+        // V20.6: se a aula visível é Reading mas o match por título falhou,
+        // permite usar a melhor aula Reading salva. Isso corrige casos em que
+        // a IA gerou título novo, mas o cache interno ficou com metadados diferentes.
+        if(!L && currentVisibleLessonIsReading()){
+          try{
+            var candidate = bestStoredLesson();
+            if(candidate && isReadingLesson(candidate)) L = candidate;
+          }catch(_){}
+        }
+
         if(!L || !isReadingLesson(L)) return;
         var key = L.__key + '|' + (L.title||'');
         var existing = document.querySelector('.fluency-reading-v202[data-key="'+CSS.escape(key)+'"]');

@@ -98,7 +98,7 @@ button {
 <script>
 // Register service worker for PWA / offline
 // Versão atual: APP_VERSION é checada e se mudar, força reload + cache clear
-var APP_VERSION = '2026-04-28-v20.4-reading-active-lesson-only';
+var APP_VERSION = '2026-04-28-v20.6-reading-takeover-detect-fix';
 var savedVersion = null;
 try { savedVersion = localStorage.getItem('__app_version__'); } catch(e) {}
 
@@ -329,7 +329,7 @@ window.__ttsState = window.__ttsState || {
 <!-- V20.3: saneamento de aulas antes do React montar.
      Corrige erro: Minified React error #31 object with keys {title,text} -->
 <script>
-window.__FLUENCY_BUILD_VERSION__ = '2026-04-28-v20.4-reading-active-lesson-only';
+window.__FLUENCY_BUILD_VERSION__ = '2026-04-28-v20.6-reading-takeover-detect-fix';
 (function() {
   try {
     if (window.__fluencyLessonSanitizerV203) return;
@@ -476,9 +476,191 @@ window.__FLUENCY_BUILD_VERSION__ = '2026-04-28-v20.4-reading-active-lesson-only'
 })();
 </script>
 
-<script src="bundle.js?v=2026-04-28-v20.4-reading-active-lesson-only"></script>
-<link rel="stylesheet" href="reading-v20.css?v=2026-04-28-v20.4-reading-active-lesson-only">
-<script src="reading-v20.js?v=2026-04-28-v20.4-reading-active-lesson-only"></script>
+
+<!-- V20.5: bloqueia cache de aula incompatível com a habilidade do dia -->
+<script>
+window.__FLUENCY_BUILD_VERSION__ = '2026-04-28-v20.6-reading-takeover-detect-fix';
+(function() {
+  try {
+    if (window.__fluencyActiveSkillCacheGuardV205) return;
+    window.__fluencyActiveSkillCacheGuardV205 = true;
+
+    var VERSION = '2026-04-28-v20.6-reading-takeover-detect-fix';
+    var DAY_SKILL = {
+      1: 'grammar',
+      2: 'reading',
+      3: 'writing',
+      4: 'listening',
+      5: 'speaking',
+      6: 'review'
+    };
+
+    function todayLocal() {
+      try {
+        var d = new Date();
+        var y = d.getFullYear();
+        var m = String(d.getMonth()+1).padStart(2,'0');
+        var da = String(d.getDate()).padStart(2,'0');
+        return y + '-' + m + '-' + da;
+      } catch(_) { return ''; }
+    }
+
+    function expectedSkill() {
+      try { return DAY_SKILL[(new Date()).getDay()] || ''; }
+      catch(_) { return ''; }
+    }
+
+    function norm(v) {
+      try {
+        return String(v || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim();
+      } catch(_) {
+        return String(v || '').toLowerCase();
+      }
+    }
+
+    function parse(v) {
+      try {
+        if (v == null) return null;
+        var x = typeof v === 'string' ? JSON.parse(v) : v;
+        if (typeof x === 'string') { try { x = JSON.parse(x); } catch(_) {} }
+        return x;
+      } catch(_) { return null; }
+    }
+
+    function flatten(x, depth) {
+      if (depth > 5 || x == null) return '';
+      if (typeof x === 'string' || typeof x === 'number' || typeof x === 'boolean') return String(x);
+      if (Array.isArray(x)) return x.map(function(i){ return flatten(i, depth+1); }).join('\n');
+      if (typeof x === 'object') {
+        var out = [];
+        ['skill','type','category','title','subtitle','intro','introduction','heading','content','text','body','question','answer','explanation','finalTip','readingText','listeningText'].forEach(function(k) {
+          if (x[k] != null) out.push(flatten(x[k], depth+1));
+        });
+        // fallback leve para objetos pequenos
+        if (!out.join('').trim()) {
+          try { out.push(JSON.stringify(x).slice(0,3000)); } catch(_) {}
+        }
+        return out.join('\n');
+      }
+      return String(x);
+    }
+
+    function isLessonKey(k) {
+      k = String(k || '');
+      return /^fluency_lesson/i.test(k) ||
+             /^lesson_v\d+_/i.test(k) ||
+             /^fluency_active_ai_lesson/i.test(k) ||
+             /^fluency_last_ai_lesson/i.test(k) ||
+             /^fluency_active_lesson_id/i.test(k);
+    }
+
+    function inferSkillFromText(t) {
+      t = norm(t);
+      if (!t) return '';
+
+      if (/verbo to be|pronome|pronomes|saudacoes|saudacao|gramatica|grammar|artigos indefinidos|a\/an|present simple|simple present/.test(t)) return 'grammar';
+      if (/reading practice|reading lesson|reading comprehension|compreensao de leitura|compreensao do texto|estrategias de leitura|skimming|scanning|rotina matinal|daily routines|compreendendo textos|texto para leitura/.test(t)) return 'reading';
+      if (/writing|escrita|write|redacao|redação|produza|escreva um texto|email|paragraph|paragrafo|parágrafo/.test(t)) return 'writing';
+      if (/listening|escuta|audio da aula|ouca primeiro|ouça primeiro|transcricao|transcrição|compreensao oral/.test(t)) return 'listening';
+      if (/speaking|pronuncia|pronúncia|fale em voz alta|repita em voz alta|microfone/.test(t)) return 'speaking';
+      if (/revisao|revisão|review|recap/.test(t)) return 'review';
+
+      return '';
+    }
+
+    function lessonSkill(v) {
+      var obj = parse(v);
+      if (!obj) return '';
+      if (obj.lessonData) obj = obj.lessonData;
+      if (obj.lesson) obj = obj.lesson;
+      if (obj.aula) obj = obj.aula;
+      if (obj.data && obj.data.lesson) obj = obj.data.lesson;
+
+      var explicit = norm(obj.skill || obj.type || obj.category || obj.focus || '');
+      if (/grammar|gramatica/.test(explicit)) return 'grammar';
+      if (/reading|leitura/.test(explicit)) return 'reading';
+      if (/writing|escrita/.test(explicit)) return 'writing';
+      if (/listening|escuta/.test(explicit)) return 'listening';
+      if (/speaking|fala|pronuncia/.test(explicit)) return 'speaking';
+      if (/review|revisao/.test(explicit)) return 'review';
+
+      return inferSkillFromText(flatten(obj, 0));
+    }
+
+    function keyIsProbablyToday(k) {
+      k = String(k || '');
+      var today = todayLocal();
+      if (today && k.indexOf(today) !== -1) return true;
+      if (/active|last_ai_lesson/i.test(k)) return true;
+      return false;
+    }
+
+    function shouldBlock(k, raw) {
+      if (!isLessonKey(k) || !raw) return false;
+      var expected = expectedSkill();
+      if (!expected) return false;
+
+      // Só bloqueia cache da data atual/ativo; não apaga histórico antigo à toa.
+      if (!keyIsProbablyToday(k)) return false;
+
+      var got = lessonSkill(raw);
+      if (!got) return false;
+
+      return got !== expected;
+    }
+
+    function purgeWrongActiveLessons() {
+      try {
+        var expected = expectedSkill();
+        if (!expected) return 0;
+        var removed = 0;
+        var keys = [];
+        for (var i=0;i<localStorage.length;i++) keys.push(localStorage.key(i));
+
+        keys.forEach(function(k) {
+          try {
+            var raw = localStorage.getItem(k);
+            if (shouldBlock(k, raw)) {
+              var got = lessonSkill(raw);
+              localStorage.removeItem(k);
+              removed++;
+              console.warn('[Fluency V20.5] removi aula incompatível:', k, 'esperado:', expected, 'encontrado:', got);
+              try { if (window.__diag_log) window.__diag_log('warn', 'Cache de aula removido: esperado '+expected+', veio '+got); } catch(_) {}
+            }
+          } catch(_) {}
+        });
+        return removed;
+      } catch(e) {
+        console.warn('[Fluency V20.5] purge falhou:', e);
+        return 0;
+      }
+    }
+
+    purgeWrongActiveLessons();
+
+    var nativeGet = Storage.prototype.getItem;
+    Storage.prototype.getItem = function(k) {
+      var v = nativeGet.call(this, k);
+      try {
+        if (this === localStorage && shouldBlock(k, v)) {
+          console.warn('[Fluency V20.5] bloqueei leitura de cache incompatível:', k, 'skill:', lessonSkill(v), 'esperado:', expectedSkill());
+          return null;
+        }
+      } catch(_) {}
+      return v;
+    };
+
+    window.__fluencyPurgeWrongSkillLessonsV205 = purgeWrongActiveLessons;
+    window.__fluencyExpectedSkillV205 = expectedSkill;
+  } catch(e) {
+    console.warn('[Fluency V20.5] ActiveSkillCacheGuard erro:', e);
+  }
+})();
+</script>
+
+<script src="bundle.js?v=2026-04-28-v20.6-reading-takeover-detect-fix"></script>
+<link rel="stylesheet" href="reading-v20.css?v=2026-04-28-v20.6-reading-takeover-detect-fix">
+<script src="reading-v20.js?v=2026-04-28-v20.6-reading-takeover-detect-fix"></script>
 
 <!-- Renderização em script separado, garantindo execução após bundle.js -->
 <script>
@@ -1596,16 +1778,16 @@ window.__FLUENCY_BUILD_VERSION__ = '2026-04-28-v20.4-reading-active-lesson-only'
 (function() {
   function setBuildVersionV203() {
     try {
-      window.__FLUENCY_BUILD_VERSION__ = '2026-04-28-v20.4-reading-active-lesson-only';
+      window.__FLUENCY_BUILD_VERSION__ = '2026-04-28-v20.6-reading-takeover-detect-fix';
       var el = document.getElementById('__diag_build__');
-      if (el) el.textContent = '2026-04-28-v20.4-reading-active-lesson-only';
+      if (el) el.textContent = '2026-04-28-v20.6-reading-takeover-detect-fix';
       var badge = document.getElementById('__fluency_build_badge_v202__');
       if (badge) badge.remove();
     } catch(e) {}
   }
   setBuildVersionV203();
   setInterval(setBuildVersionV203, 1000);
-  window.__FLUENCY_HTML_VERSION__ = '2026-04-28-v20.4-reading-active-lesson-only';
+  window.__FLUENCY_HTML_VERSION__ = '2026-04-28-v20.6-reading-takeover-detect-fix';
 })();
 </script>
 
