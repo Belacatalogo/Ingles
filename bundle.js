@@ -4899,3 +4899,54 @@ lucide-react/dist/esm/lucide-react.mjs:
     try{new MutationObserver(function(){setTimeout(tick,120)}).observe(document.documentElement||document.body,{childList:true,subtree:true,characterData:true})}catch(_){ }
   }catch(e){try{console.warn('Patch V46 failed',e)}catch(_){}}
 })();
+
+/* === FLUENCY PATCH V47 - AULA SÓ NA ABA AULA + RENDER POR FOCO === */
+;(function(){
+  try{
+    if(window.__fluencyV47LessonOnlyInsideAulaTab) return;
+    window.__fluencyV47LessonOnlyInsideAulaTab = true;
+    var VERSION='V47-AULA-SOMENTE-NA-ABA-AULA';
+    var PAGE_ID='__fluency_v46_lesson_page__';
+    var CSS_ID='__fluency_v47_scope_css__';
+    var tabs=['Hoje','Aula','Flashcards','Speaking'];
+    function txt(el){try{return String(el&&(el.innerText||el.textContent)||'').replace(/\s+/g,' ').trim()}catch(_){return ''}}
+    function visible(el){try{var r=el.getBoundingClientRect(), cs=getComputedStyle(el);return r.width>8&&r.height>8&&cs.display!=='none'&&cs.visibility!=='hidden'&&Number(cs.opacity||1)>0.05}catch(_){return false}}
+    function rgbScore(color){try{var m=String(color||'').match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/i); if(!m)return 0; var r=+m[1],g=+m[2],b=+m[3]; return (b+g-r)+(Math.max(r,g,b)-Math.min(r,g,b));}catch(_){return 0}}
+    function candidatesFor(label){
+      return Array.prototype.slice.call(document.querySelectorAll('button,a,[role="tab"],nav *,header *,div,span')).filter(function(el){
+        if(!visible(el))return false; if(txt(el)!==label)return false; var r=el.getBoundingClientRect();
+        return r.top>=55 && r.top<=235 && r.left>=0 && r.right<=window.innerWidth+50;
+      });
+    }
+    function tabScore(el){
+      try{var cs=getComputedStyle(el), r=el.getBoundingClientRect(), s=0;
+        if(el.getAttribute('aria-selected')==='true')s+=1000;
+        if(/active|selected|current/i.test(String(el.className||'')))s+=180;
+        s+=rgbScore(cs.color); var fw=parseInt(cs.fontWeight||'0',10); if(fw>=600)s+=60;
+        var bw=parseFloat(cs.borderBottomWidth||'0'); if(bw>0)s+=80+rgbScore(cs.borderBottomColor);
+        var near=Array.prototype.slice.call(document.querySelectorAll('div,span'));
+        for(var i=0;i<near.length;i++){var n=near[i]; if(!visible(n))continue; var nr=n.getBoundingClientRect();
+          if(nr.height<=6 && nr.width>20 && Math.abs((nr.left+nr.right)/2-(r.left+r.right)/2)<50 && nr.top>=r.bottom-4 && nr.top<=r.bottom+20){s+=220+rgbScore(getComputedStyle(n).backgroundColor||getComputedStyle(n).borderBottomColor)}
+        }
+        return s;
+      }catch(_){return 0}
+    }
+    function activeTab(){
+      var best={name:'',score:-999};
+      tabs.forEach(function(label){candidatesFor(label).forEach(function(el){var s=tabScore(el); if(s>best.score)best={name:label,score:s}})});
+      if(best.score<120){var body=txt(document.body).slice(0,3500); if(/FLASHCARD\s+\d+\s+DE/i.test(body))return 'Flashcards'; if(/TERÇA|SEGUNDA|QUARTA|QUINTA|SEXTA/i.test(body)&&!/AULA\s*·|Gerada por IA/i.test(body))return 'Hoje'}
+      return best.name||'';
+    }
+    function isAula(){return activeTab()==='Aula'}
+    function installCss(){if(document.getElementById(CSS_ID))return; var st=document.createElement('style'); st.id=CSS_ID; st.textContent='html:not(.__fluency_v47_aula_active) #'+PAGE_ID+'{display:none!important;pointer-events:none!important} html.__fluency_v47_aula_active #'+PAGE_ID+'{display:block!important;pointer-events:auto!important}'; document.head.appendChild(st)}
+    function apply(){
+      try{installCss(); var on=isAula(); document.documentElement.classList.toggle('__fluency_v47_aula_active',on); document.body.classList.toggle('__fluency_v47_aula_active',on); var p=document.getElementById(PAGE_ID); if(!on){if(p&&p.parentNode)p.parentNode.removeChild(p); return false} if(on&&typeof window.__fluencyV46RenderLesson==='function')setTimeout(function(){try{window.__fluencyV46RenderLesson()}catch(_){}},30); return on}catch(e){try{console.warn('[Fluency '+VERSION+'] scope falhou',e)}catch(_){} return false}
+    }
+    window.__fluencyV47ActiveTab=activeTab;
+    window.__fluencyV47ScopeStatus=function(){return {version:VERSION,activeTab:activeTab(),aulaActive:isAula(),pageVisible:!!document.getElementById(PAGE_ID)}};
+    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',apply);else setTimeout(apply,0);
+    setTimeout(apply,250); setTimeout(apply,900); setInterval(apply,500);
+    ['click','touchstart','touchend','focus','hashchange','popstate','visibilitychange'].forEach(function(ev){window.addEventListener(ev,function(){setTimeout(apply,30);setTimeout(apply,180);setTimeout(apply,650)},true)});
+    try{new MutationObserver(function(){setTimeout(apply,80)}).observe(document.documentElement||document.body,{childList:true,subtree:true,attributes:true,characterData:true})}catch(_){ }
+  }catch(e){try{console.warn('Patch V47 failed',e)}catch(_){} }
+})();
