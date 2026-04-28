@@ -4736,3 +4736,135 @@ lucide-react/dist/esm/lucide-react.mjs:
     window.__fluencyV1920ClearDailyLessonLock=function(){try{localStorage.removeItem(LOCK_KEY);localStorage.removeItem('fluency_daily_lesson_success_lock');renderLockCard();log('warn','Bloqueio diário removido manualmente nesta sessão.');return true;}catch(_){return false;}};
   }catch(e){try{console.warn('Patch V19.20 daily lesson lock failed',e);}catch(_){} }
 })();
+
+/* === FLUENCY PATCH V19.21 - DIAGNOSTICO EXCLUSIVO SEM CONFLITO COM PAINEL ANTIGO === */
+;(function(){
+  try{
+    if(window.__fluencyV1921ExclusiveDiagFix) return;
+    window.__fluencyV1921ExclusiveDiagFix = true;
+    var VERSION='V19.21-DIAG-EXCLUSIVO-SEM-PAINEL-ANTIGO';
+
+    function txt(el){try{return String(el&&(el.innerText||el.textContent)||'');}catch(_){return '';}}
+    function vis(el){try{var r=el.getBoundingClientRect(),cs=getComputedStyle(el);return r.width>20&&r.height>20&&cs.display!=='none'&&cs.visibility!=='hidden'&&Number(cs.opacity||1)>0.03;}catch(_){return false;}}
+    function installCss(){
+      if(document.getElementById('__fluency_v1921_diag_exclusive_css__')) return;
+      var st=document.createElement('style');
+      st.id='__fluency_v1921_diag_exclusive_css__';
+      st.textContent=[
+        '[data-fluency-v1921-diag-shell="1"]{',
+        '  max-height:78vh!important;',
+        '  overflow-y:auto!important;',
+        '  overflow-x:hidden!important;',
+        '  -webkit-overflow-scrolling:touch!important;',
+        '  touch-action:pan-y!important;',
+        '  overscroll-behavior:contain!important;',
+        '  padding:14px!important;',
+        '  box-sizing:border-box!important;',
+        '}',
+        '[data-fluency-v1921-diag-shell="1"] > :not(#__fluency_v1919_diag_box__){',
+        '  display:none!important;',
+        '  visibility:hidden!important;',
+        '  height:0!important;',
+        '  max-height:0!important;',
+        '  margin:0!important;',
+        '  padding:0!important;',
+        '  border:0!important;',
+        '  overflow:hidden!important;',
+        '}',
+        '[data-fluency-v1921-diag-shell="1"] #__fluency_v1919_diag_box__{',
+        '  display:block!important;',
+        '  visibility:visible!important;',
+        '  width:100%!important;',
+        '  max-width:100%!important;',
+        '  margin:0!important;',
+        '  box-sizing:border-box!important;',
+        '}',
+        '#__fluency_v1921_conflict_badge__{',
+        '  margin-top:10px;padding:9px 10px;border-radius:12px;',
+        '  border:1px solid rgba(34,197,94,.22);',
+        '  background:rgba(6,78,59,.20);',
+        '  color:#bbf7d0;font-size:11px;line-height:1.35;',
+        '}',
+        '@media(max-width:560px){[data-fluency-v1921-diag-shell="1"]{padding:10px!important;max-height:80vh!important;}#__fluency_v1919_diag_box__ .fd-title{font-size:18px!important}}'
+      ].join('\n');
+      document.head.appendChild(st);
+    }
+    function findCurrentBox(){return document.getElementById('__fluency_v1919_diag_box__');}
+    function findShellFromBox(box){
+      try{
+        var best=null,n=box&&box.parentElement;
+        for(var i=0;i<12&&n&&n!==document.body&&n!==document.documentElement;i++,n=n.parentElement){
+          if(!vis(n)) continue;
+          var t=txt(n);
+          var hasOld=/Vozes carregadas|Speech destravado|Saúde Azure|Azure key ativa|Última voz usada|Modo análise pron|Áudio capturado/i.test(t);
+          var hasDiag=/Painel de Diagnóstico|Diagnóstico|Diagnostico/i.test(t);
+          if(hasOld||hasDiag) best=n;
+        }
+        return best || (box&&box.parentElement) || null;
+      }catch(_){return box&&box.parentElement;}
+    }
+    function findShellWithoutBox(){
+      try{
+        var els=Array.prototype.slice.call(document.querySelectorAll('aside,section,div,main'));
+        var c=els.filter(function(el){
+          if(!vis(el)) return false;
+          var t=txt(el);
+          if(!/Vozes carregadas|Speech destravado|Saúde Azure|Azure key ativa|Última voz usada/i.test(t)) return false;
+          if(!/Status|pronto|diagnóstico|diagnostico|Azure|IA usada/i.test(t)) return false;
+          var r=el.getBoundingClientRect();
+          if(r.width<240||r.height<220) return false;
+          if(r.width>window.innerWidth*0.98 && r.height>window.innerHeight*0.90) return false;
+          return true;
+        });
+        c.sort(function(a,b){var ar=a.getBoundingClientRect(),br=b.getBoundingClientRect();return (br.width*br.height)-(ar.width*ar.height);});
+        return c[0]||null;
+      }catch(_){return null;}
+    }
+    function protectShell(){
+      try{
+        installCss();
+        var box=findCurrentBox();
+        var shell=box?findShellFromBox(box):findShellWithoutBox();
+        if(!shell) return false;
+        shell.setAttribute('data-fluency-v1921-diag-shell','1');
+        shell.style.maxHeight='80vh';
+        shell.style.overflowY='auto';
+        shell.style.overflowX='hidden';
+        shell.style.webkitOverflowScrolling='touch';
+        shell.style.touchAction='pan-y';
+        shell.style.overscrollBehavior='contain';
+        shell.style.boxSizing='border-box';
+        if(box && box.parentElement!==shell) shell.insertBefore(box, shell.firstChild);
+        else if(box && shell.firstChild!==box) shell.insertBefore(box, shell.firstChild);
+        if(box){
+          var badge=document.getElementById('__fluency_v1921_conflict_badge__');
+          if(!badge){badge=document.createElement('div');badge.id='__fluency_v1921_conflict_badge__';box.appendChild(badge);}
+          badge.innerHTML='✅ '+VERSION+': painel antigo ocultado. Agora este diagnóstico ocupa o card inteiro e evita conflito visual.';
+        }
+        try{ if(window.__fluencyV1919DiagRender) window.__fluencyV1919DiagRender(); }catch(_){ }
+        return true;
+      }catch(_){return false;}
+    }
+    function removeFloatingOldFragments(){
+      try{
+        // Alguns trechos antigos ficam fora do container detectado no iOS. Esconde apenas fragmentos visíveis que parecem ser linhas do diagnóstico antigo.
+        var olds=Array.prototype.slice.call(document.querySelectorAll('div,span,p'));
+        olds.forEach(function(el){
+          if(!vis(el)) return;
+          if(el.closest && el.closest('#__fluency_v1919_diag_box__')) return;
+          if(el.closest && el.closest('[data-fluency-v1921-diag-shell="1"]')) return;
+          var t=txt(el).replace(/\s+/g,' ').trim();
+          if(/^(Vozes carregadas|Speech destravado|Última voz usada|Modo análise pron\.|Áudio capturado|IA usada|Azure key ativa|Saúde Azure)$/i.test(t)){
+            el.style.display='none';el.style.visibility='hidden';
+          }
+        });
+      }catch(_){ }
+    }
+    function tick(){protectShell();removeFloatingOldFragments();}
+    setTimeout(tick,50);setTimeout(tick,250);setTimeout(tick,800);setTimeout(tick,1600);
+    setInterval(tick,600);
+    ['click','touchend','pointerup','focus','hashchange','popstate','resize','orientationchange'].forEach(function(ev){window.addEventListener(ev,function(){setTimeout(tick,80);setTimeout(tick,350);},true);});
+    try{new MutationObserver(function(){setTimeout(tick,60);}).observe(document.documentElement||document.body,{childList:true,subtree:true,attributes:false});}catch(_){ }
+    window.__fluencyV1921FixDiagConflict=tick;
+  }catch(e){try{console.warn('Patch V19.21 diag exclusive failed',e);}catch(_){}}
+})();
