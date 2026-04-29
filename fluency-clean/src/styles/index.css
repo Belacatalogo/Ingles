@@ -65,6 +65,11 @@ p { color: var(--muted); line-height: 1.65; }
 .lesson-generator-panel { background: linear-gradient(135deg, rgba(91,156,246,.14), rgba(15,23,42,.78)); }
 .lesson-generator-panel label { display: block; margin-top: 12px; margin-bottom: 8px; color: #dbeafe; font-size: 13px; font-weight: 850; }
 .generator-message { margin: 10px 0 0; font-size: 13px; color: #bfdbfe; }
+.generation-status-box { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 14px 0; }
+.generation-status-box > div { padding: 12px; border-radius: 16px; border: 1px solid rgba(148,163,184,.14); background: rgba(2,6,23,.24); }
+.generation-status-box span { display: block; color: var(--muted); font-size: 12px; }
+.generation-status-box strong { display: block; margin-top: 4px; color: #dbeafe; font-size: 13px; }
+.inline-warning { display: flex; align-items: center; gap: 8px; margin: 10px 0; padding: 10px 12px; border-radius: 15px; border: 1px solid rgba(251,191,36,.25); background: rgba(251,191,36,.08); color: #fde68a; font-size: 13px; }
 .card-heading { display: flex; justify-content: space-between; gap: 12px; }
 .card-body { margin-top: 12px; }
 .card-body p { margin: 0; }
@@ -179,7 +184,7 @@ textarea:focus { border-color: rgba(91, 156, 246, 0.72); box-shadow: 0 0 0 4px r
   .app-shell { padding-top: 12px; }
   .hero-card { align-items: flex-start; padding: 19px; border-radius: 24px; }
   .hero-orb { width: 52px; height: 52px; border-radius: 18px; }
-  .status-strip, .stats-grid, .lesson-intro-grid, .reading-study-steps, .reading-grid, .vocabulary-grid, .answer-actions, .lesson-key-status, .key-form > div, .audio-actions { grid-template-columns: 1fr; }
+  .status-strip, .stats-grid, .lesson-intro-grid, .reading-study-steps, .reading-grid, .vocabulary-grid, .answer-actions, .lesson-key-status, .key-form > div, .audio-actions, .generation-status-box { grid-template-columns: 1fr; }
   .diagnostic-panel { position: static; width: 100%; margin: 14px 0; max-height: none; }
   .bottom-nav { overflow-x: auto; justify-content: flex-start; }
   .nav-item { min-width: 72px; }
