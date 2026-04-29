@@ -92,13 +92,20 @@ Não mexer na `main` durante a reconstrução. Tudo deve acontecer nesta branch 
 - Workflow usa `npm install` e `npm run build`, sem depender de lockfile inexistente.
 - Não consegui rodar build local nesta sessão por erro de DNS/clonagem do GitHub no ambiente, então a validação real ficará com o GitHub Actions.
 
-## Próximo bloco recomendado
+### Bloco 5.3 — Preview por link sem merge
+- Workflow `.github/workflows/fluency-clean-publish-preview.yml` criado.
+- Ele builda `fluency-clean` e copia `dist/` para `preview-clean/` dentro da branch `rewrite-fluency-clean`.
+- Isso não mexe na `main`.
+- Isso não altera a branch atual do GitHub Pages (`1Elegante` apareceu como Pages no print do usuário).
+- A ideia é abrir o preview por link estático apontando para `preview-clean/index.html` na branch.
 
-### Bloco 5.3 — Verificar resultado do GitHub Actions / corrigir build
-- Abrir a aba Actions do repositório.
-- Rodar ou conferir o workflow "Fluency Clean Preview".
-- Se falhar, corrigir import/build antes de áudio.
-- Se passar, baixar/ver artifact `fluency-clean-dist` ou preparar deploy de preview.
+## Próximo passo recomendado
+
+### Verificar workflow de publicação do preview
+- Abrir Actions.
+- Procurar `Publish Fluency Clean Branch Preview`.
+- Se ficar verde, abrir o preview pelo link estático da pasta `preview-clean`.
+- Se ficar vermelho, corrigir o erro antes de continuar para áudio.
 
 ## Blocos restantes
 
