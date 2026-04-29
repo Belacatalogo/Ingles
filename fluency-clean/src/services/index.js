@@ -7,3 +7,4 @@ export { getFirebaseApp, getFirebaseAuth, getFirebaseStatus, hasFirebaseConfig }
 export { subscribeAuth, signInWithGoogle, logout } from './auth.js';
 export { getAccessSession, setAccessSession, clearAccessSession, validateAccessCode } from './accessCode.js';
 export { getLessonFlashKeys, saveLessonFlashKeys, addLessonFlashKey, removeLessonFlashKey, getLessonProKey, saveLessonProKey, clearLessonProKey, getLessonKeysStatus, buildLessonKeyPlan } from './lessonKeys.js';
+export { getCurrentLesson, saveCurrentLesson, clearCurrentLesson, getLessonHistory, getLessonPromptDraft, saveLessonPromptDraft } from './lessonStore.js';
