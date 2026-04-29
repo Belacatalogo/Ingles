@@ -80,7 +80,7 @@ export function buildLessonKeyPlan() {
       key,
       masked: maskApiKey(key),
       slot: index + 1,
-      models: ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'],
+      models: ['gemini-2.5-flash', 'gemini-2.0-flash'],
       paid: false,
     })),
     pro: status.proKey
@@ -88,7 +88,7 @@ export function buildLessonKeyPlan() {
           key: status.proKey,
           masked: maskApiKey(status.proKey),
           slot: 'pro',
-          models: ['gemini-2.5-pro', 'gemini-1.5-pro'],
+          models: ['gemini-2.5-pro'],
           paid: true,
         }]
       : [],
