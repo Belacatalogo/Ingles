@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import {
   ChevronRight,
+  Headphones,
   Info,
   Mic,
   Play,
@@ -28,6 +29,30 @@ const messages = [
   { who: 'ai', text: 'Sounds nice! Was the weather good?' },
 ];
 
+const immersionScenes = [
+  {
+    label: 'Café',
+    title: 'Pedindo um café em Londres',
+    level: 'A1 · viagem',
+    line: 'Could I have a coffee and a sandwich, please?',
+    tip: 'Use “Could I have...” para pedir algo com educação.',
+  },
+  {
+    label: 'Hotel',
+    title: 'Check-in na recepção',
+    level: 'A1 · viagem',
+    line: 'I have a reservation under the name Luis.',
+    tip: '“Under the name...” é natural para reserva em hotel/restaurante.',
+  },
+  {
+    label: 'Rua',
+    title: 'Pedindo informação',
+    level: 'A1 · sobrevivência',
+    line: 'Excuse me, where is the nearest subway station?',
+    tip: 'Comece com “Excuse me” para soar educado antes de perguntar.',
+  },
+];
+
 const wordScores = [
   { word: 'I', score: 100 },
   { word: 'have', score: 95 },
@@ -45,10 +70,12 @@ function scoreClass(score) {
 
 export function SpeakingScreen() {
   const [mode, setMode] = useState('conversation');
+  const [activeScene, setActiveScene] = useState(0);
   const [recording, setRecording] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
   const [result, setResult] = useState(null);
   const [message, setMessage] = useState('Toque para responder em inglês.');
+  const scene = immersionScenes[activeScene];
 
   async function handleSpeak(text = pronunciationText) {
     setMessage('Reproduzindo áudio...');
@@ -106,7 +133,7 @@ export function SpeakingScreen() {
       <header className="speaking-reference-header">
         <div>
           <h1>Speaking</h1>
-          <p>Conversa guiada por IA</p>
+          <p>{mode === 'immersion' ? 'Imersão guiada por cenário' : 'Conversa guiada por IA'}</p>
         </div>
         <div className="speaking-mode-switch" role="tablist" aria-label="Modo de speaking">
           <button
@@ -122,6 +149,13 @@ export function SpeakingScreen() {
             onClick={() => setMode('pronunciation')}
           >
             Pronúncia
+          </button>
+          <button
+            type="button"
+            className={mode === 'immersion' ? 'active' : ''}
+            onClick={() => setMode('immersion')}
+          >
+            Imersão
           </button>
         </div>
       </header>
@@ -190,7 +224,9 @@ export function SpeakingScreen() {
             <small>{message}</small>
           </section>
         </>
-      ) : (
+      ) : null}
+
+      {mode === 'pronunciation' ? (
         <>
           <section className="speaking-pronunciation-hero">
             <p>Repita a frase</p>
@@ -241,7 +277,62 @@ export function SpeakingScreen() {
 
           <p className="speaking-status-line">{message}</p>
         </>
-      )}
+      ) : null}
+
+      {mode === 'immersion' ? (
+        <>
+          <section className="speaking-immersion-hero">
+            <div className="speaking-chip-row">
+              <span className="speaking-chip teal"><Headphones size={11} /> Imersão</span>
+              <span className="speaking-chip">situações reais</span>
+            </div>
+            <strong>Treine inglês como se estivesse lá</strong>
+            <p>Escolha uma situação, escute a frase natural e responda falando em inglês.</p>
+          </section>
+
+          <section className="speaking-immersion-scenes" aria-label="Cenários de imersão">
+            {immersionScenes.map((item, index) => (
+              <button
+                className={`speaking-immersion-scene ${activeScene === index ? 'active' : ''}`}
+                key={item.title}
+                type="button"
+                onClick={() => setActiveScene(index)}
+              >
+                <span>{item.label}</span>
+                <strong>{item.title}</strong>
+                <small>{item.level}</small>
+              </button>
+            ))}
+          </section>
+
+          <section className="speaking-immersion-card">
+            <div className="speaking-immersion-card-top">
+              <span>{scene.level}</span>
+              <button type="button" onClick={() => handleSpeak(scene.line)}>
+                <Volume2 size={13} /> Ouvir
+              </button>
+            </div>
+            <h2>“{scene.line}”</h2>
+            <p>{scene.tip}</p>
+          </section>
+
+          <section className="speaking-mic-card immersion">
+            <button
+              className={recording ? 'speaking-main-mic recording' : 'speaking-main-mic'}
+              type="button"
+              onClick={() => handleRecordToggle(scene.line)}
+              disabled={analyzing}
+              aria-label={recording ? 'Parar gravação' : 'Começar gravação'}
+            >
+              {recording ? <Square size={30} /> : <Mic size={32} />}
+            </button>
+            <strong>{recording ? 'Gravando resposta…' : analyzing ? 'Analisando…' : 'Responder no cenário'}</strong>
+            {recording ? <div className="speaking-wave"><span /><span /><span /><span /><span /></div> : null}
+            <p>Fale como se estivesse na situação real.</p>
+            <small>{message}</small>
+          </section>
+        </>
+      ) : null}
     </section>
   );
 }
