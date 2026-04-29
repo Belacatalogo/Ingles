@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Fluency">
+  <defs>
+    <linearGradient id="bg" x1="80" y1="40" x2="432" y2="472" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#68A1FF"/>
+      <stop offset="0.52" stop-color="#8B7CFF"/>
+      <stop offset="1" stop-color="#A48CFF"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(160 132) rotate(52) scale(330)">
+      <stop stop-color="#E7F0FF" stop-opacity="0.72"/>
+      <stop offset="1" stop-color="#E7F0FF" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="512" height="512" rx="116" fill="#050B18"/>
+  <rect x="34" y="34" width="444" height="444" rx="94" fill="url(#bg)"/>
+  <rect x="34" y="34" width="444" height="444" rx="94" fill="url(#glow)"/>
+  <path d="M154 335V176c0-22 17-39 39-39h141c14 0 25 11 25 25v6c0 14-11 25-25 25H221v58h94c14 0 25 11 25 25v5c0 14-11 25-25 25h-94v29c0 19-15 34-34 34s-33-15-33-34Z" fill="white"/>
+  <circle cx="364" cy="344" r="36" fill="#050B18" fill-opacity="0.78"/>
+  <path d="M348 344h32M364 328v32" stroke="white" stroke-width="16" stroke-linecap="round"/>
+</svg>
