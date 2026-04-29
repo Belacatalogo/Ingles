@@ -4,6 +4,7 @@ import { Card } from '../components/ui/Card.jsx';
 import { ProgressPill } from '../components/ui/ProgressPill.jsx';
 import { playGeminiTtsAudio } from '../services/geminiTts.js';
 import { diagnostics } from '../services/diagnostics.js';
+import { completeLesson, getLessonDraft, isLessonCompleted, saveLessonDraft } from '../services/progressStore.js';
 
 const fallbackParagraphs = [
   'Every morning, Ana opens her notebook and writes three simple goals for the day. She likes short tasks because they help her feel focused and calm.',
@@ -123,6 +124,9 @@ export function ReadingLesson({ lesson }) {
   const [audioState, setAudioState] = useState('idle');
   const [audioMessage, setAudioMessage] = useState('Gemini TTS natural disponível quando houver key de aula.');
   const [selectedAnswers, setSelectedAnswers] = useState({});
+  const [writtenAnswer, setWrittenAnswer] = useState('');
+  const [completionMessage, setCompletionMessage] = useState('');
+  const [completed, setCompleted] = useState(false);
   const paragraphs = useMemo(() => normalizeReadingParagraphs(lesson), [lesson]);
   const vocabulary = useMemo(() => normalizeVocabulary(lesson), [lesson]);
   const comprehension = useMemo(() => normalizeComprehension(lesson), [lesson]);
@@ -133,10 +137,29 @@ export function ReadingLesson({ lesson }) {
 
   useEffect(() => {
     setSelectedAnswers({});
-  }, [lesson?.title, lesson?.listeningText]);
+    setWrittenAnswer(getLessonDraft(lesson?.id || lesson?.title || 'reading'));
+    setCompleted(isLessonCompleted(lesson));
+    setCompletionMessage(isLessonCompleted(lesson) ? 'Esta aula já foi concluída.' : '');
+  }, [lesson?.id, lesson?.title, lesson?.listeningText]);
 
   function handleSelectAnswer(questionIndex, option) {
     setSelectedAnswers((current) => ({ ...current, [questionIndex]: option }));
+  }
+
+  function handleSaveDraft() {
+    saveLessonDraft({ lesson, answer: writtenAnswer });
+    setCompletionMessage('Rascunho salvo.');
+  }
+
+  function handleCompleteLesson() {
+    const result = completeLesson({
+      lesson,
+      answers: selectedAnswers,
+      writtenAnswer,
+    });
+
+    setCompleted(true);
+    setCompletionMessage(result.alreadyCompleted ? 'Aula já estava concluída. Progresso mantido.' : '+25 XP. Aula concluída e progresso salvo.');
   }
 
   async function handleListen() {
@@ -168,7 +191,7 @@ export function ReadingLesson({ lesson }) {
       <Card
         eyebrow={`Reading · ${lesson.level}`}
         title={lesson.title}
-        action={<ProgressPill current={1} total={5} label="Aula" />}
+        action={<ProgressPill current={completed ? 5 : 1} total={5} label={completed ? 'Concluída' : 'Aula'} />}
       >
         <div className="lesson-intro-grid">
           <div>
@@ -290,11 +313,14 @@ export function ReadingLesson({ lesson }) {
           autoCorrect="on"
           spellCheck="true"
           placeholder="Write your answer in English..."
+          value={writtenAnswer}
+          onChange={(event) => setWrittenAnswer(event.target.value)}
         />
         <div className="answer-actions">
-          <button type="button" className="secondary-button"><PencilLine size={16} /> Salvar rascunho</button>
-          <button type="button" className="primary-button"><CheckCircle2 size={16} /> Concluir Reading</button>
+          <button type="button" className="secondary-button" onClick={handleSaveDraft}><PencilLine size={16} /> Salvar rascunho</button>
+          <button type="button" className="primary-button" onClick={handleCompleteLesson}><CheckCircle2 size={16} /> {completed ? 'Aula concluída' : 'Concluir Reading'}</button>
         </div>
+        {completionMessage ? <p className="generator-message completion-message">{completionMessage}</p> : null}
       </section>
     </article>
   );
