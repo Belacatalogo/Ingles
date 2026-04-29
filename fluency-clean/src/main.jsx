@@ -1,5 +1,6 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
+import { registerPwaServiceWorker } from './services/pwa.js';
 import './styles/index.css';
 import './styles/access.css';
 import './styles/lessons.css';
@@ -34,6 +35,8 @@ function showBootError(error) {
 
 async function bootstrap() {
   try {
+    registerPwaServiceWorker();
+
     const [{ App }, { ErrorBoundary }] = await Promise.all([
       import('./App.jsx'),
       import('./components/system/ErrorBoundary.jsx'),
