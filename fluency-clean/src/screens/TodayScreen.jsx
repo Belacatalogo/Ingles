@@ -1,4 +1,5 @@
 import { BookOpen, Brain, CheckCircle2, Clock3, Flame, Sparkles } from 'lucide-react';
+import { LessonGeneratorPanel } from '../components/lesson/LessonGeneratorPanel.jsx';
 import { Card } from '../components/ui/Card.jsx';
 import { StatCard } from '../components/ui/StatCard.jsx';
 import { SectionHeader } from '../components/ui/SectionHeader.jsx';
@@ -23,6 +24,8 @@ export function TodayScreen() {
         <StatCard label="Nível atual" value="A1" hint="base inicial" icon={CheckCircle2} />
         <StatCard label="Tempo hoje" value="0 min" hint="aguardando integração" icon={Clock3} />
       </div>
+
+      <LessonGeneratorPanel />
 
       <Card eyebrow="Roteiro" title="Plano recomendado para hoje">
         <div className="routine-list">
