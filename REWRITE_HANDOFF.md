@@ -15,20 +15,21 @@ Não fazer rollback, force push, update_file ou qualquer mudança fora da branch
 
 A branch `rewrite-fluency-clean` virou ponto seguro/backup após voltar a carregar em guia anônima no preview RawGitHack.
 
-## REGRA DE ORGANIZAÇÃO DO PREVIEW — SEM REMENDOS
-A partir do LAB-BUILD-1, o objetivo é parar de empilhar remendos manuais em `preview-clean/index.html`.
+## REGRA DE ORGANIZAÇÃO — SEM BUNDLE DE PATCHES
+O objetivo do rewrite é evitar repetir o problema do projeto antigo: um `bundle.js` cheio de blocos `FLUENCY PATCH V...`, DOM injection, interceptação global, MutationObserver e correções empilhadas por cima do app.
 
-Regra nova:
-- mudanças visuais devem ser feitas nos arquivos reais em `fluency-clean/src/`;
-- CSS visual compartilhado da lab deve ficar em `fluency-clean/src/styles/lab-polish.css` ou arquivos reais equivalentes;
-- `preview-clean/` deve ser tratado como saída de build do Vite;
-- não adicionar novos scripts de DOM injection/runtime para mudar textos, classes ou telas no preview;
-- não usar `preview-clean/index.html` como fonte de UI;
-- se o preview antigo não refletir o código real, fazer bloco de build limpo em vez de remendar HTML compilado.
+Regra correta:
+- cada função deve morar no seu arquivo real dentro de `fluency-clean/src/`;
+- telas devem ser componentes React reais;
+- serviços devem ficar em `fluency-clean/src/services/`;
+- componentes reutilizáveis devem ficar em `fluency-clean/src/components/`;
+- estilos devem ficar em arquivos CSS reais em `fluency-clean/src/styles/`;
+- não criar novos scripts de DOM injection/runtime para trocar textos, classes, botões ou telas;
+- não usar `preview-clean/index.html` como fonte da UI;
+- não transformar `preview-clean` em produto final separado;
+- o objetivo final é mergear a branch validada para `main` e acessar o site normalmente pela `main`.
 
-Configuração criada para isso:
-- `fluency-clean/vite.config.js` usa `base: './'` e `build.outDir: '../preview-clean'`;
-- `fluency-clean/package.json` possui `npm run build:preview`.
+O preview da lab é apenas ferramenta de teste temporária. Ele pode existir para validação no iPhone, mas não deve virar local de remendos nem fonte principal do app.
 
 ## Motivo da branch lab
 Durante o Bloco 7.5, mudanças visuais grandes e tentativas de recovery/watchdog deixaram o preview instável e geraram tela branca/cache confuso no iPhone. Para evitar novas dores de cabeça:
@@ -72,7 +73,7 @@ Reconstruir o app Fluency em React modular, sem continuar empilhando patches no 
 - Não usar DOM injection para UI principal.
 - Toda nova tela deve ser componente React real.
 - A aparência deve seguir a referência Fluency premium escura enviada pelo usuário.
-- O app deve ficar organizado, com preview gerado por build e não por remendos manuais.
+- O app deve ficar organizado para merge final na `main`.
 
 ## Blocos concluídos importantes
 
@@ -125,10 +126,11 @@ Reconstruir o app Fluency em React modular, sem continuar empilhando patches no 
 - `fluency-clean/src/main.jsx` importa `lab-polish.css`.
 - `fluency-clean/src/screens/SpeakingScreen.jsx` recebeu card superior e textos/classes melhores sem alterar Azure/backend.
 
-### LAB-BUILD-1 — Caminho de preview limpo iniciado
-- `fluency-clean/vite.config.js` ajustado para gerar build em `../preview-clean`.
-- `fluency-clean/package.json` ganhou script `build:preview`.
-- Próximo passo recomendado: gerar build real e substituir `preview-clean` pela saída do Vite, sem remendos manuais.
+### Correção de rota — preview/build
+- A ideia de workflow para gerar `preview-clean` automaticamente foi removida por desalinhamento com o objetivo do usuário.
+- `fluency-clean/vite.config.js` voltou para `outDir: 'dist'`.
+- `fluency-clean/package.json` voltou sem `build:preview`.
+- O foco agora é organização do app em `src/`, para merge final em `main`, não criar produto paralelo em `preview-clean`.
 
 ## Nova estratégia de segurança
 
@@ -144,19 +146,19 @@ Toda resposta após alteração deve listar:
 - branch usada;
 - arquivos alterados;
 - commit gerado;
-- link de preview da branch lab.
+- link de preview se houver algo testável no preview da lab.
 
 ### Regra 3 — Sem tocar na branch protegida
 Antes de qualquer tool call de escrita, conferir mentalmente:
 
 `branch === rewrite-fluency-clean-lab`
 
-### Regra 4 — Preview antes de continuar
-Depois de cada bloco, o usuário testa no iPhone. Só avançar se ele confirmar.
+### Regra 4 — Teste antes de continuar
+Depois de cada bloco, o usuário testa o que for testável no iPhone. Só avançar se ele confirmar ou se a mudança for apenas organização interna sem reflexo visual imediato.
 
-### Regra 5 — Infraestrutura somente para preview limpo
-Mudanças em Vite, build e `preview-clean` são permitidas quando o objetivo for remover remendos e fazer o preview refletir o código real.
-Não usar infraestrutura para hacks visuais.
+### Regra 5 — Infraestrutura com cuidado
+Não criar workflow, build paralelo ou produto em `preview-clean` sem o usuário pedir explicitamente.
+O app final deve ser acessado pela `main` depois do merge.
 
 ### Regra 6 — Se der tela branca
 Não continuar tentando layout.
@@ -168,28 +170,17 @@ Procedimento:
 
 ## Próximos blocos remodelados — ordem segura
 
-### LAB-BUILD-1.1 — Gerar preview limpo
-Objetivo: fazer `preview-clean/` refletir o código real em `fluency-clean/src/`.
-
-Ações:
-- rodar build do Vite localmente quando possível;
-- publicar saída em `preview-clean/` na branch lab;
-- remover dependência de remendos manuais no `preview-clean/index.html`;
-- manter fallback de boot/log.
-
-Critério:
-- RawGitHack abre a lab sem tela branca e mostra mudanças reais do `src`.
-
 ### Bloco LAB-7 — Speaking visual
 Objetivo: alinhar Speaking com referência.
 
 Ações:
 - visual somente;
 - não mexer no contrato Azure;
-- não alterar backend.
+- não alterar backend;
+- manter código em `SpeakingScreen.jsx` e CSS real.
 
 Critério:
-- tela abre, botão de fala continua disponível.
+- tela abre, botão de fala continua disponível quando testável.
 
 ### Bloco LAB-8 — Flashcards visual
 Objetivo: aproximar Flashcards da referência enviada.
@@ -286,7 +277,7 @@ Definir mínimos por tipo:
 ## Como continuar em outro chat
 Mensagem recomendada para o próximo chat:
 
-"Continue a reconstrução do Fluency usando SOMENTE a branch `rewrite-fluency-clean-lab`. Leia `REWRITE_HANDOFF.md`. Siga a regra nova: sem remendos no preview; mudanças devem ir para `fluency-clean/src/` e o `preview-clean/` deve ser gerado por build. Não mexa na `main` nem na `rewrite-fluency-clean`."
+"Continue a reconstrução do Fluency usando SOMENTE a branch `rewrite-fluency-clean-lab`. Leia `REWRITE_HANDOFF.md`. Siga a regra nova: sem bundle de patches, sem DOM injection, sem remendos no HTML; cada função deve ficar no arquivo correto dentro de `fluency-clean/src/`. Não mexa na `main` nem na `rewrite-fluency-clean`."
 
 ## Última orientação operacional
 A partir deste handoff, qualquer alteração fora de `rewrite-fluency-clean-lab` deve ser considerada erro, salvo pedido explícito do usuário.
