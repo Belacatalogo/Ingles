@@ -37,17 +37,21 @@ Não mexer na `main` durante a reconstrução. Tudo deve acontecer nesta branch 
 - Reading continua usando renderização condicional por tipo, sem sobreposição com aula antiga.
 - CSS expandido para dashboard, cards, progresso, speaking, flashcards, ajustes e responsividade mobile.
 
-### Bloco 2 — Aula Reading nova — próximo
-- Transformar `ReadingLesson` em layout completo de aula real.
-- Separar blocos: introdução, texto, vocabulário, compreensão, resposta guiada, revisão e concluir aula.
-- Garantir foco correto em textarea/input no iOS para chamar teclado.
-- Não sobrepor aula antiga; usar apenas renderização condicional.
+### Bloco 2 — Aula Reading nova — concluído visualmente
+- `ReadingLesson` transformado em layout completo.
+- Aula dividida em introdução, objetivo, etapas de estudo, texto principal, escuta guiada, vocabulário, compreensão e resposta guiada.
+- Campo de resposta usa `textarea` com `inputMode`, `autoCapitalize`, `autoCorrect` e `spellCheck` para iOS.
+- Botões de salvar rascunho e concluir Reading posicionados no componente real.
+- Novo componente `ProgressPill` criado.
+- CSS específico criado para Reading v2, vocabulário, questões, opções, resposta e responsividade.
+- Ainda não há integração real com storage, IA, áudio ou conclusão de aula. Isso vem nos próximos blocos.
 
-### Bloco 3 — Serviços limpos
-- `storage.js`.
-- `diagnostics.js`.
-- `geminiLessons.js`.
-- `azurePronunciation.js` apenas como cliente do backend existente.
+### Bloco 3 — Serviços limpos — próximo
+- Criar `storage.js`.
+- Criar `diagnostics.js`.
+- Criar `lessonTypes.js` / normalização de aula.
+- Criar `geminiLessons.js` como fachada futura, sem ligar API real ainda.
+- Criar `azurePronunciation.js` apenas como cliente do backend existente, sem alterar backend.
 
 ### Bloco 4 — Firebase / Google
 - Migrar inicialização Firebase.
