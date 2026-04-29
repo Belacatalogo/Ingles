@@ -15,6 +15,21 @@ Não fazer rollback, force push, update_file ou qualquer mudança fora da branch
 
 A branch `rewrite-fluency-clean` virou ponto seguro/backup após voltar a carregar em guia anônima no preview RawGitHack.
 
+## REGRA DE ORGANIZAÇÃO DO PREVIEW — SEM REMENDOS
+A partir do LAB-BUILD-1, o objetivo é parar de empilhar remendos manuais em `preview-clean/index.html`.
+
+Regra nova:
+- mudanças visuais devem ser feitas nos arquivos reais em `fluency-clean/src/`;
+- CSS visual compartilhado da lab deve ficar em `fluency-clean/src/styles/lab-polish.css` ou arquivos reais equivalentes;
+- `preview-clean/` deve ser tratado como saída de build do Vite;
+- não adicionar novos scripts de DOM injection/runtime para mudar textos, classes ou telas no preview;
+- não usar `preview-clean/index.html` como fonte de UI;
+- se o preview antigo não refletir o código real, fazer bloco de build limpo em vez de remendar HTML compilado.
+
+Configuração criada para isso:
+- `fluency-clean/vite.config.js` usa `base: './'` e `build.outDir: '../preview-clean'`;
+- `fluency-clean/package.json` possui `npm run build:preview`.
+
 ## Motivo da branch lab
 Durante o Bloco 7.5, mudanças visuais grandes e tentativas de recovery/watchdog deixaram o preview instável e geraram tela branca/cache confuso no iPhone. Para evitar novas dores de cabeça:
 
@@ -57,6 +72,7 @@ Reconstruir o app Fluency em React modular, sem continuar empilhando patches no 
 - Não usar DOM injection para UI principal.
 - Toda nova tela deve ser componente React real.
 - A aparência deve seguir a referência Fluency premium escura enviada pelo usuário.
+- O app deve ficar organizado, com preview gerado por build e não por remendos manuais.
 
 ## Blocos concluídos importantes
 
@@ -92,6 +108,28 @@ Reconstruir o app Fluency em React modular, sem continuar empilhando patches no 
 - App voltou a carregar em guia anônima.
 - Nova branch lab criada a partir do estado carregável.
 
+### LAB-1 a LAB-5 — Validação visual inicial da lab
+- Branch lab identificada.
+- Botão Continuar agora corrigido no preview.
+- Hero da Home confirmado limpo.
+- Seletor técnico da Aula reduzido.
+- Card superior da Aula melhorado.
+
+### LAB-6 / LAB-6R — Progresso visual
+- Primeira tentativa com runtime amplo causou tela branca e foi revertida.
+- LAB-6R passou a priorizar CSS estático e mudanças em fonte real.
+- Reforço: não repetir DOM injection amplo.
+
+### LAB-7 — Speaking visual iniciado
+- `fluency-clean/src/styles/lab-polish.css` criado como fonte real dos polimentos visuais.
+- `fluency-clean/src/main.jsx` importa `lab-polish.css`.
+- `fluency-clean/src/screens/SpeakingScreen.jsx` recebeu card superior e textos/classes melhores sem alterar Azure/backend.
+
+### LAB-BUILD-1 — Caminho de preview limpo iniciado
+- `fluency-clean/vite.config.js` ajustado para gerar build em `../preview-clean`.
+- `fluency-clean/package.json` ganhou script `build:preview`.
+- Próximo passo recomendado: gerar build real e substituir `preview-clean` pela saída do Vite, sem remendos manuais.
+
 ## Nova estratégia de segurança
 
 ### Regra 1 — Um bloco = uma mudança pequena
@@ -116,8 +154,9 @@ Antes de qualquer tool call de escrita, conferir mentalmente:
 ### Regra 4 — Preview antes de continuar
 Depois de cada bloco, o usuário testa no iPhone. Só avançar se ele confirmar.
 
-### Regra 5 — Evitar mudanças de infraestrutura
-Não mexer em workflow, Vite, preview-clean ou HTML, a menos que seja exclusivamente necessário para recuperar preview quebrado e com autorização clara.
+### Regra 5 — Infraestrutura somente para preview limpo
+Mudanças em Vite, build e `preview-clean` são permitidas quando o objetivo for remover remendos e fazer o preview refletir o código real.
+Não usar infraestrutura para hacks visuais.
 
 ### Regra 6 — Se der tela branca
 Não continuar tentando layout.
@@ -129,93 +168,17 @@ Procedimento:
 
 ## Próximos blocos remodelados — ordem segura
 
-### Bloco LAB-0 — Confirmar preview da lab
-Objetivo: garantir que a branch lab carrega antes de qualquer mudança nova.
+### LAB-BUILD-1.1 — Gerar preview limpo
+Objetivo: fazer `preview-clean/` refletir o código real em `fluency-clean/src/`.
 
 Ações:
-- abrir link da lab com cache buster;
-- entrar em modo visual;
-- testar navegação básica;
-- não alterar UI ainda.
-
-Critério de conclusão:
-- usuário confirma que `rewrite-fluency-clean-lab` abriu normal.
-
-### Bloco LAB-1 — Trava de segurança visual
-Objetivo: adicionar uma identificação discreta de que o usuário está na branch lab.
-
-Alteração pequena sugerida:
-- mudar apenas o texto do rodapé/versão para algo como:
-  `rewrite-clean-lab · seguro para testes`
-
-Arquivos prováveis:
-- `fluency-clean/src/App.jsx`
+- rodar build do Vite localmente quando possível;
+- publicar saída em `preview-clean/` na branch lab;
+- remover dependência de remendos manuais no `preview-clean/index.html`;
+- manter fallback de boot/log.
 
 Critério:
-- app carrega e mostra versão lab no rodapé.
-
-### Bloco LAB-2 — Corrigir botão “Continuar agora” sem mexer no resto
-Objetivo: garantir contraste branco e formato correto do botão da Home.
-
-Alteração pequena:
-- mexer somente em CSS relacionado ao botão.
-- não alterar estrutura da Home.
-
-Arquivos prováveis:
-- `fluency-clean/src/styles/reference.css` ou `hotfix.css`, se existir.
-
-Critério:
-- botão legível, branco, sem quebrar layout.
-
-### Bloco LAB-3 — Remover/confirmar botão de relatório do hero
-Objetivo: manter Home limpa.
-
-Opção segura:
-- se o botão pequeno do relatório estiver estranho, remover do hero.
-- acesso ao progresso fica pela bottom nav.
-
-Arquivos prováveis:
-- `fluency-clean/src/screens/TodayScreen.jsx`
-- CSS apenas se necessário.
-
-Critério:
-- Home carrega sem overflow e sem botão estranho.
-
-### Bloco LAB-4 — Aula: esconder seletor temporário sem redesenhar toda tela
-Objetivo: reduzir aparência de ambiente técnico na aba Aula sem refazer o layout.
-
-Alteração pequena:
-- transformar seletor de layout em `<details>` recolhido; ou
-- mover seletor para final da tela.
-
-Proibido neste bloco:
-- refazer hero inteiro da Aula;
-- trocar estrutura completa de `LessonScreen`;
-- mexer em `ReadingLesson`.
-
-Critério:
-- aba Aula abre normalmente e fica menos poluída.
-
-### Bloco LAB-5 — Aula: card superior no estilo referência, em mudança mínima
-Objetivo: aproximar a aba Aula da referência sem quebrar.
-
-Alteração segura:
-- alterar somente textos/classes do card superior existente;
-- não criar lógica nova complexa;
-- não adicionar imports novos desnecessários.
-
-Critério:
-- Aula carrega no iPhone e o card fica visualmente melhor.
-
-### Bloco LAB-6 — Progresso visual
-Objetivo: validar visual da aba Progresso.
-
-Ações:
-- ajustar cards, espaçamento e textos;
-- não mexer na lógica de salvamento.
-
-Critério:
-- histórico, XP e streak continuam aparecendo.
+- RawGitHack abre a lab sem tela branca e mostra mudanças reais do `src`.
 
 ### Bloco LAB-7 — Speaking visual
 Objetivo: alinhar Speaking com referência.
@@ -323,7 +286,7 @@ Definir mínimos por tipo:
 ## Como continuar em outro chat
 Mensagem recomendada para o próximo chat:
 
-"Continue a reconstrução do Fluency usando SOMENTE a branch `rewrite-fluency-clean-lab`. Leia `REWRITE_HANDOFF.md`. Primeiro confirme o preview da lab e siga os blocos LAB em ordem. Não mexa na `main` nem na `rewrite-fluency-clean`."
+"Continue a reconstrução do Fluency usando SOMENTE a branch `rewrite-fluency-clean-lab`. Leia `REWRITE_HANDOFF.md`. Siga a regra nova: sem remendos no preview; mudanças devem ir para `fluency-clean/src/` e o `preview-clean/` deve ser gerado por build. Não mexa na `main` nem na `rewrite-fluency-clean`."
 
 ## Última orientação operacional
 A partir deste handoff, qualquer alteração fora de `rewrite-fluency-clean-lab` deve ser considerada erro, salvo pedido explícito do usuário.
