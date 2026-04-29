@@ -11,3 +11,4 @@ export { getCurrentLesson, saveCurrentLesson, clearCurrentLesson, getLessonHisto
 export { unlockAudioForIOS, isAudioUnlocked, getAudioContext } from './audioUnlock.js';
 export { speakText, stopSpeech, getAvailableVoices } from './tts.js';
 export { startRecording, stopRecording, cancelRecording, isRecording } from './recorder.js';
+export { generateGeminiTtsAudio, playGeminiTtsAudio } from './geminiTts.js';
