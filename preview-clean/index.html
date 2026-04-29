@@ -15,25 +15,6 @@
       .static-boot-card button { margin-top: 16px; min-height: 46px; border: 0; border-radius: 16px; padding: 0 16px; color: white; font-weight: 900; background: linear-gradient(135deg,#65a5ff,#a58aff); }
       .static-boot-card pre { white-space: pre-wrap; word-break: break-word; margin: 16px 0 0; padding: 14px; max-height: 280px; overflow: auto; border-radius: 16px; background: rgba(2,6,23,.72); color: #bfdbfe; font-size: 12px; line-height: 1.45; }
       .static-boot-card small { display: block; margin-top: 16px; color: #8f9ab9; }
-      .reference-continue-button {
-        color: #ffffff !important;
-        border: 0 !important;
-        text-shadow: 0 1px 10px rgba(0,0,0,.20);
-        overflow: hidden;
-      }
-      .reference-continue-button span,
-      .today-progress-hero .reference-continue-button span {
-        display: inline-flex !important;
-        margin-top: 0 !important;
-        color: #ffffff !important;
-        font-size: inherit !important;
-        line-height: 1 !important;
-        white-space: nowrap;
-      }
-      .reference-continue-button svg {
-        flex: 0 0 auto;
-        color: #ffffff !important;
-      }
     </style>
     <script>
       window.__FLUENCY_BOOT_LOGS__ = [];
@@ -88,6 +69,33 @@
     </script>
     <script type="module" crossorigin src="./assets/index-DUoCBAiU.js"></script>
     <link rel="stylesheet" crossorigin href="./assets/index-aqNRHn6c.css">
+    <style id="lab-continue-button-fix">
+      .reference-continue-button,
+      .today-progress-hero .reference-continue-button {
+        color: #ffffff !important;
+        border: 0 !important;
+        text-shadow: 0 1px 10px rgba(0,0,0,.22) !important;
+        overflow: hidden !important;
+      }
+      .reference-continue-button span,
+      .today-progress-hero .reference-continue-button span {
+        display: inline-flex !important;
+        margin: 0 !important;
+        color: #ffffff !important;
+        font-size: inherit !important;
+        font-weight: 950 !important;
+        line-height: 1 !important;
+        text-transform: none !important;
+        letter-spacing: -.01em !important;
+        white-space: nowrap !important;
+      }
+      .reference-continue-button svg,
+      .today-progress-hero .reference-continue-button svg {
+        flex: 0 0 auto !important;
+        color: #ffffff !important;
+        stroke: #ffffff !important;
+      }
+    </style>
   </head>
   <body>
     <div id="root">
@@ -104,12 +112,26 @@
     <script>
       (function () {
         var label = 'rewrite-clean-lab · seguro para testes';
+        var fixCss = '.reference-continue-button,.today-progress-hero .reference-continue-button{color:#fff!important;border:0!important;text-shadow:0 1px 10px rgba(0,0,0,.22)!important;overflow:hidden!important}.reference-continue-button span,.today-progress-hero .reference-continue-button span{display:inline-flex!important;margin:0!important;color:#fff!important;font-size:inherit!important;font-weight:950!important;line-height:1!important;text-transform:none!important;letter-spacing:-.01em!important;white-space:nowrap!important}.reference-continue-button svg,.today-progress-hero .reference-continue-button svg{flex:0 0 auto!important;color:#fff!important;stroke:#fff!important}';
+        function ensureLateStyle() {
+          var style = document.getElementById('lab-continue-button-runtime-fix');
+          if (!style) {
+            style = document.createElement('style');
+            style.id = 'lab-continue-button-runtime-fix';
+            document.head.appendChild(style);
+          }
+          if (style.textContent !== fixCss) style.textContent = fixCss;
+        }
         function applyLabLabel() {
           var footer = document.querySelector('.preview-version-footer');
           if (footer && footer.textContent !== label) footer.textContent = label;
         }
+        ensureLateStyle();
         applyLabLabel();
-        setInterval(applyLabLabel, 700);
+        setInterval(function () {
+          ensureLateStyle();
+          applyLabLabel();
+        }, 700);
       })();
     </script>
   </body>
