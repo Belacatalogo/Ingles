@@ -102,6 +102,7 @@ Não mexer na `main` durante a reconstrução. Tudo deve acontecer nesta branch 
 - O Diagnóstico mostra em qual bloco a geração está.
 - O plano de keys/modelos foi preservado: Flash/free primeiro e Pro somente como fallback.
 - Erros 429 continuam pulando a key afetada; erros temporários continuam tentando o próximo modelo/key.
+- Validado no preview real: aula `My Family` gerada com sucesso via `gemini-2.5-flash-lite`.
 
 ### Bloco 7.1.2 — Correção após diagnóstico real Gemini
 - Diagnóstico real mostrou 503, 429 e 404.
@@ -134,15 +135,7 @@ Não mexer na `main` durante a reconstrução. Tudo deve acontecer nesta branch 
 
 ## Próximo passo recomendado
 
-### Retestar geração no preview atualizado
-- Abrir novamente o link RawGitHack depois que `preview-clean` atualizar.
-- Limpar/recarregar a página se o arquivo antigo ficar em cache.
-- Em Progresso, manter keys de aula configuradas.
-- Em Hoje, clicar em Gerar aula.
-- Confirmar no Diagnóstico que o plano não usa mais `gemini-2.0-flash`.
-- Se `gemini-2.5-flash` estiver em alta demanda, o app deve tentar `gemini-2.5-flash-lite`.
-
-### Depois: Bloco 7.2 — Validar Firebase/Google real
+### Bloco 7.2 — Validar Firebase/Google real
 - Configurar no ambiente do preview: `VITE_FIREBASE_API_KEY`, `VITE_FIREBASE_AUTH_DOMAIN`, `VITE_FIREBASE_PROJECT_ID`, `VITE_FIREBASE_STORAGE_BUCKET`, `VITE_FIREBASE_MESSAGING_SENDER_ID`, `VITE_FIREBASE_APP_ID` e `VITE_ACCESS_CODE`.
 - Abrir o preview no iPhone.
 - Confirmar se o status do gate mostra Firebase configurado.
@@ -170,6 +163,18 @@ Não mexer na `main` durante a reconstrução. Tudo deve acontecer nesta branch 
 
 ### Bloco 7.6 — Decidir se substitui a main
 - Só depois de validação completa e aprovação do usuário.
+
+### Bloco 8 — Reestruturação profunda das aulas
+- Reestruturar as aulas depois da validação/migração segura.
+- Objetivo: nenhuma aula curta, rasa ou com poucos exercícios.
+- Criar contratos mínimos por tipo de aula: tamanho mínimo de conteúdo, quantidade mínima de exercícios, profundidade de explicação, revisão, prática guiada e prática independente.
+- Reading deve ter texto mais completo, vocabulário robusto, compreensão, produção escrita, revisão e desafio final.
+- Grammar deve ter explicação séria, exemplos, erros comuns, comparação português/inglês, exercícios variados e produção própria.
+- Listening deve ter áudio/texto separados, pré-escuta, escuta guiada, checagem de compreensão e prática de shadowing.
+- Speaking deve ter roteiro, modelo, gravação, feedback e repetição orientada.
+- Atualizar `geminiLessons.js` para gerar aulas mais profundas em mais blocos se necessário.
+- Atualizar validações para rejeitar aula curta, vocabulário fraco ou poucos exercícios.
+- Esse bloco deve ser feito após o app estar estável para não misturar reestruturação pedagógica com correções críticas de login/progresso.
 
 ## Como continuar em outro chat
 Diga: "continue a reconstrução do Fluency na branch `rewrite-fluency-clean`, leia o arquivo `REWRITE_HANDOFF.md` e siga do próximo bloco".
