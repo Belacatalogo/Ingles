@@ -71,77 +71,69 @@ Bloco concluído:
 Bloco concluído:
 - `LAB-PROGRESSO-1` — Progresso visual.
 
-Resultado: visual premium aprovado com jornada, CEFR, métricas, heatmap, habilidades, conquistas e histórico. Usuário confirmou: “ficou perfeito”.
-
-### Ajustes/Configurações — CHAVES MOVIDAS
-Ajuste concluído antes do `LAB-AJUSTES-1B`:
-- painel de **Chaves de aulas** removido de Progresso;
-- painel movido para **Ajustes > Chaves de aulas**;
-- criada aba **IA geral** para guardar keys futuras de Speaking/Imersão/outras áreas;
-- storage separado criado em `fluency-clean/src/services/aiKeys.js`;
-- nenhuma integração pesada foi feita ainda em Speaking/Imersão/Azure/Gemini.
-
-Arquivos principais:
-- `fluency-clean/src/screens/ProgressScreen.jsx`
-- `fluency-clean/src/screens/SettingsScreen.jsx`
-- `fluency-clean/src/components/settings/GeneralAiKeysPanel.jsx`
-- `fluency-clean/src/services/aiKeys.js`
-- `fluency-clean/src/styles/settings-polish.css`
-- `fluency-clean/src/main.jsx`
+### Ajustes/Configurações — APROVADO/ORGANIZADO
+Blocos concluídos:
+- chaves movidas de Progresso para Ajustes > Chaves de aulas;
+- aba **IA geral** criada para chaves futuras de Speaking/Imersão/outras áreas;
+- `LAB-AJUSTES-1B` — tela de Ajustes organizada com perfil, categorias e painéis.
 
 ## Estado atual para teste
 
-### Ajustes/Configurações — `LAB-AJUSTES-1B` IMPLEMENTADO, AGUARDANDO TESTE DO USUÁRIO
-Bloco feito com base no ZIP de referência enviado pelo usuário.
+### Imersão — `LAB-IMERSAO-1` IMPLEMENTADO, AGUARDANDO TESTE DO USUÁRIO
+Pedido do usuário:
+- se a aba Imersão não existisse, colocar Imersão dentro da aba Speaking com um botão ao lado de **Pronúncia**.
+
+Verificação feita:
+- foi pesquisado no repositório por Imersão/Immersion/ImmersionScreen e não havia tela real existente.
 
 Arquivos alterados:
-- `fluency-clean/src/screens/SettingsScreen.jsx`
-- `fluency-clean/src/styles/settings-polish.css`
+- `fluency-clean/src/screens/SpeakingScreen.jsx`
+- `fluency-clean/src/styles/lab-polish.css`
 - `REWRITE_HANDOFF.md`
 
-Último commit confirmado deste bloco:
-- `2aa21a3d43b8955310533914321d9aa03f3a64a8` — remove variável não usada após organizar Ajustes.
+Commit confirmado deste bloco:
+- `413fe010d28cda1917519c3ccf70de30f004d94e` — adiciona estilos de imersão.
 
 O que foi implementado:
-- cartão de perfil no topo;
-- categorias clicáveis em Ajustes:
-  - Conta e acesso;
-  - Plano de estudos;
-  - Chaves de aulas;
-  - Áudio;
-  - Aparência;
-  - Dados;
-- categoria **Chaves de aulas** mantém as duas abas:
-  - **Chaves de aulas**;
-  - **IA geral**;
-- categoria **Conta e acesso** com linhas organizadas;
-- categoria **Plano de estudos** com meta, lembrete, nível e foco;
-- categoria **Áudio** com voz, Azure e toggle visual de autoplay;
-- categoria **Aparência** com tema, navegação e toggle visual de modo compacto;
-- categoria **Dados** com lembrete diário, histórico local e diagnóstico;
-- bloco “Sobre” no fim;
-- CSS próprio atualizado em `settings-polish.css`.
+- Speaking agora tem 3 modos no seletor superior:
+  - **Conversa**;
+  - **Pronúncia**;
+  - **Imersão**;
+- Imersão foi adicionada dentro de Speaking, sem criar aba fantasma na navbar;
+- modo Imersão tem:
+  - hero explicativo;
+  - cenários reais: Café, Hotel e Rua;
+  - cartão com frase natural do cenário;
+  - botão **Ouvir** usando o TTS existente;
+  - botão grande de microfone usando o mesmo fluxo seguro de gravação/análise Azure já usado no Speaking;
+  - estilos próprios no `lab-polish.css`;
+- não foi feita integração pesada com IA geral neste bloco;
+- não foi mexido em Aula, Hoje, Cartas, Progresso, Ajustes, Firebase, Gemini, Azure backend, HTML ou bundle.
 
 Limites intencionais:
-- os toggles visuais são estado local seguro neste bloco;
-- não foi criada integração pesada com notificações, exportação, Azure ou backend;
-- não foi alterada a lógica das chaves de aulas nem da IA geral;
-- não foi mexido em Aula, Hoje, Speaking, Cartas, Progresso visual, Firebase, Gemini, Azure, backend, HTML ou bundle.
+- Imersão usa cenários estáticos seguros por enquanto;
+- a futura geração dinâmica com IA geral deve ser feita em bloco próprio, depois do checklist, para não quebrar Speaking/Azure.
 
 ## Próximo bloco correto
 
-### Se Ajustes for aprovado no Vercel/iPhone
-Próximo: `LAB-IMERSAO-1 — localizar/criar Imersão apenas se existir estrutura real`.
+### Se Imersão for aprovada no Vercel/iPhone
+Próximo: `LAB-9 — Limpeza final da UI e arquivos de teste`.
 
-### Se Ajustes tiver problema
-Não avançar. Corrigir cirurgicamente apenas `LAB-AJUSTES-1B` na branch lab.
+Objetivo do LAB-9:
+- remover seletor temporário de pilares da Aula;
+- remover textos técnicos/lab expostos ao usuário final;
+- revisar botões de teste;
+- esconder/remover elementos temporários;
+- garantir que o app pareça produto final antes do checklist.
+
+### Se Imersão tiver problema
+Não avançar. Corrigir cirurgicamente apenas `LAB-IMERSAO-1` na branch lab.
 
 ## Ordem restante dos blocos de UI
 
-1. `LAB-IMERSAO-1` — localizar/criar Imersão apenas se existir estrutura real.
-2. `LAB-9` — limpeza final da UI e arquivos de teste, incluindo remoção do seletor temporário da Aula.
-3. `LAB-10` — checklist visual final da lab.
-4. `Bloco 8-LAB` — reestruturação profunda das aulas, só depois do checklist visual.
+1. `LAB-9` — limpeza final da UI e arquivos de teste, incluindo remoção do seletor temporário da Aula.
+2. `LAB-10` — checklist visual final da lab.
+3. `Bloco 8-LAB` — reestruturação profunda das aulas, só depois do checklist visual.
 
 ## Estratégia de segurança
 
@@ -172,7 +164,7 @@ Depois de cada bloco, o usuário testa no Vercel pelo iPhone. Só avançar se el
 ## Como continuar em outro chat
 Mensagem recomendada:
 
-"Continue a reconstrução do Fluency usando SOMENTE a branch `rewrite-fluency-clean-lab`. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. O teste é feito no Vercel preview da branch lab, pelo iPhone. Speaking, Hoje, Navbar, Aula, Cartas e Progresso estão aprovados. Ajustes foi reorganizado no `LAB-AJUSTES-1B` e está aguardando aprovação. A Aula tem preview temporário por pilares funcionando 100%, que será removido no LAB-9. Não mexa na `main`, não mexa na `rewrite-fluency-clean`, não use HTML remendado, DOM injection ou bundle patch. Continue modularmente em `fluency-clean/src/`."
+"Continue a reconstrução do Fluency usando SOMENTE a branch `rewrite-fluency-clean-lab`. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. O teste é feito no Vercel preview da branch lab, pelo iPhone. Speaking, Hoje, Navbar, Aula, Cartas, Progresso e Ajustes estão aprovados. O `LAB-IMERSAO-1` adicionou Imersão dentro de Speaking como terceira opção ao lado de Conversa/Pronúncia e está aguardando aprovação. A Aula tem preview temporário por pilares funcionando 100%, que será removido no LAB-9. Não mexa na `main`, não mexa na `rewrite-fluency-clean`, não use HTML remendado, DOM injection ou bundle patch. Continue modularmente em `fluency-clean/src/`."
 
 ## Última orientação operacional
 A partir deste handoff, qualquer alteração fora de `rewrite-fluency-clean-lab` deve ser considerada erro, salvo pedido explícito do usuário.
