@@ -2,19 +2,13 @@ import { diagnostics } from './diagnostics.js';
 import { playGeminiTtsAudio } from './geminiTts.js';
 import { speakText, stopSpeech } from './tts.js';
 
-function isIOSLike() {
-  if (typeof navigator === 'undefined') return false;
-  const platform = navigator.platform || '';
-  const ua = navigator.userAgent || '';
-  return /iPhone|iPad|iPod/i.test(platform) || (/Macintosh/i.test(ua) && navigator.maxTouchPoints > 1);
-}
-
 export async function playLearningAudio({
   text,
   label = 'áudio',
   voiceName = 'Kore',
   style = 'Natural, clear English teacher voice. Moderate pace and easy pronunciation.',
   preferNatural = true,
+  allowBrowserFallback = true,
 } = {}) {
   const cleanText = String(text ?? '').trim();
   diagnostics.log(`Botão Ouvir acionado: ${label}.`, 'info');
@@ -26,24 +20,32 @@ export async function playLearningAudio({
 
   stopSpeech();
 
-  const ios = isIOSLike();
-
-  if (ios) {
-    diagnostics.log(`iOS detectado em ${label}. Usando TTS do navegador primeiro para evitar bloqueio do Safari.`, 'info');
-    const browserResult = await speakText(cleanText, { rate: 0.9, pitch: 1, lang: 'en-US' });
-    return {
-      ok: Boolean(browserResult.ok),
-      source: 'browser-ios',
-      error: browserResult.error || null,
-    };
-  }
-
   if (preferNatural) {
-    const natural = await playGeminiTtsAudio({ text: cleanText, voiceName, style });
-    if (natural.ok) return natural;
-    diagnostics.log(`Gemini TTS falhou em ${label}. Tentando fallback do navegador.`, 'error');
+    diagnostics.log(`Tentando áudio natural Gemini primeiro: ${label}.`, 'info');
+    const natural = await playGeminiTtsAudio({ text: cleanText, voiceName, style, allowBrowserFallback });
+
+    if (natural.ok && (natural.source === 'gemini' || natural.source === 'cache')) {
+      diagnostics.log(`Áudio natural Gemini iniciado: ${label}.`, 'info');
+      return natural;
+    }
+
+    if (natural.ok && natural.source === 'browser-fallback') {
+      diagnostics.log(`Gemini não tocou em ${label}; fallback do navegador foi usado como último recurso.`, 'error');
+      return natural;
+    }
+
+    diagnostics.log(`Gemini TTS falhou em ${label}: ${natural.error || 'erro desconhecido'}`, 'error');
+
+    if (!allowBrowserFallback) {
+      return {
+        ok: false,
+        source: 'gemini-error',
+        error: natural.error || 'Áudio natural Gemini não pôde ser reproduzido.',
+      };
+    }
   }
 
+  diagnostics.log(`Usando TTS do navegador como fallback final: ${label}.`, 'info');
   const fallback = await speakText(cleanText, { rate: 0.9, pitch: 1, lang: 'en-US' });
   return {
     ok: Boolean(fallback.ok),
