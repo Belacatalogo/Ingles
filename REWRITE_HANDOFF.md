@@ -18,7 +18,39 @@ Não mexer no backend Azure privado.
 
 ## Estado atual para teste
 
-### Bloco 8-LAB-8B — PWA instalável no iOS IMPLEMENTADO, aguardando teste
+### Bloco 8-LAB-8C — Ícone PWA PNG para iOS IMPLEMENTADO, aguardando teste
+
+Objetivo:
+- garantir ícone próprio para iOS ao adicionar o Fluency à Tela de Início;
+- evitar dependência do SVG como `apple-touch-icon`;
+- manter o PWA instalável sem alterar a UI, backend, bundle ou fluxos principais.
+
+Arquivos alterados/criados:
+- `fluency-clean/public/apple-touch-icon.png`
+- `fluency-clean/public/manifest.webmanifest`
+- `fluency-clean/index.html`
+- `REWRITE_HANDOFF.md`
+
+O que foi implementado:
+- criado `apple-touch-icon.png` em 180x180 dentro de `fluency-clean/public/`;
+- `manifest.webmanifest` agora lista primeiro o PNG 180x180 e mantém o SVG como ícone adicional/maskable;
+- `index.html` agora usa `<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />`;
+- SVG permanece como favicon (`/pwa-icon.svg`), sem remover o acabamento anterior;
+- nenhuma tela foi refeita;
+- nenhuma alteração em `bundle.js`;
+- nenhuma alteração em `main`, `rewrite-fluency-clean` ou backend Azure.
+
+Teste recomendado no iPhone:
+1. esperar o deploy da branch lab ficar Ready;
+2. abrir o link da branch lab no Safari;
+3. remover o ícone antigo da Tela de Início, se já tinha sido adicionado antes;
+4. tocar em **Compartilhar > Adicionar à Tela de Início**;
+5. confirmar se o ícone aparece corretamente como PNG;
+6. abrir pelo ícone criado;
+7. confirmar modo tela cheia/standalone;
+8. testar login, Hoje, Aula, Diagnóstico e PWA básico.
+
+### Bloco 8-LAB-8B — PWA instalável no iOS IMPLEMENTADO
 
 Objetivo:
 - permitir que o usuário adicione o Fluency à Tela de Início do iPhone pelo Safari;
@@ -51,19 +83,7 @@ O que foi implementado:
 Observação:
 - PWA em iOS é instalado pelo Safari usando **Compartilhar > Adicionar à Tela de Início**;
 - não aparece botão automático de instalação como no Android/Chrome;
-- o ícone foi implementado como SVG;
-- se o iOS não mostrar o ícone corretamente/perfeito na Tela de Início, o próximo ajuste deve ser `BLOCO-8-LAB-8C — Ícone PWA PNG para iOS`, adicionando um `apple-touch-icon.png` 180x180 dentro de `fluency-clean/public/` e atualizando o manifest/metadados para apontar para esse PNG;
-- isso é apenas acabamento de instalação/ícone, não bloqueia o app funcionar como PWA.
-
-Teste recomendado no iPhone:
-1. esperar o deploy da branch lab ficar Ready;
-2. abrir o link no Safari;
-3. tocar no botão de compartilhar;
-4. escolher **Adicionar à Tela de Início**;
-5. confirmar o nome **Fluency**;
-6. abrir pelo ícone criado na Tela de Início;
-7. confirmar que abre em tela cheia/standalone;
-8. testar login, Hoje, Aula e Diagnóstico.
+- o Bloco 8-LAB-8C adicionou o PNG específico para iOS.
 
 ### Bloco 8-LAB-8 — Checklist funcional final antes da main APROVADO
 - usuário confirmou que tudo está funcionando;
@@ -94,13 +114,7 @@ Teste recomendado no iPhone:
 - usuário confirmou que o áudio natural Gemini funcionou;
 - fallback do navegador ficou apenas como último recurso.
 
-## Próximos blocos prováveis
-
-### `Bloco 8-LAB-8C — Ícone PWA PNG para iOS` — somente se necessário
-Objetivo:
-- adicionar `apple-touch-icon.png` 180x180 em `fluency-clean/public/`;
-- atualizar manifest/metadados para usar o PNG;
-- fazer apenas se o ícone SVG não aparecer bem no iPhone.
+## Próximo bloco provável
 
 ### `Bloco 8-LAB-9 — Preparação para promoção controlada`
 Objetivo:
@@ -122,10 +136,11 @@ Objetivo:
 - fazer plano de rollback;
 - validar domínio final, login Google/Firebase e PWA no domínio definitivo.
 
-Se o `Bloco 8-LAB-8B` tiver problema:
+Se o `Bloco 8-LAB-8C` tiver problema:
 - não avançar;
-- corrigir cirurgicamente apenas a falha encontrada na branch lab.
+- corrigir cirurgicamente apenas a falha encontrada na branch lab;
+- manter o escopo limitado a PWA/manifest/metadados/ícone.
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency usando SOMENTE a branch `rewrite-fluency-clean-lab`. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. O teste é feito no Vercel preview da branch lab, pelo iPhone. O `Bloco 8-LAB-8B` adicionou PWA instalável no iOS com manifest, service worker e metadados Safari. Se o ícone não aparecer perfeito, fazer o `BLOCO-8-LAB-8C` com PNG 180x180. Não mexa na `main`, não mexa na `rewrite-fluency-clean`, não use DOM injection ou bundle patch. Continue modularmente em `fluency-clean/src/`."
+"Continue a reconstrução do Fluency usando SOMENTE a branch `rewrite-fluency-clean-lab`. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. O teste é feito no Vercel preview da branch lab, pelo iPhone. O `Bloco 8-LAB-8C` adicionou `apple-touch-icon.png` 180x180 e atualizou manifest/metadados iOS. O próximo bloco provável é `BLOCO-8-LAB-9 — Preparação para promoção controlada`, sem tocar em `main` e sem promover nada sem confirmação explícita. Não mexa na `main`, não mexa na `rewrite-fluency-clean`, não mexa em `bundle.js`, não use DOM injection ou bundle patch. Continue modularmente em `fluency-clean/src/`, `fluency-clean/public/` ou configuração real quando necessário."
