@@ -2,8 +2,37 @@
   display: grid;
   gap: 14px;
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: hidden;
   padding: 4px 0 calc(112px + env(safe-area-inset-bottom));
   color: #e8ecf7;
+}
+
+.lesson-reference-screen *,
+.lesson-reference-screen *::before,
+.lesson-reference-screen *::after {
+  box-sizing: border-box;
+}
+
+.lesson-reference-hero,
+.lesson-stepper-card,
+.lesson-progress-strip,
+.lesson-reference-screen .reading-layout,
+.lesson-reference-screen .reading-grid,
+.lesson-reference-screen .reading-main-grid,
+.lesson-reference-screen .reading-text-panel,
+.lesson-reference-screen .reading-paper,
+.lesson-reference-screen .reading-paper-body,
+.lesson-reference-screen .reading-side-panel,
+.lesson-reference-screen .mini-card,
+.lesson-reference-screen .reading-section-card,
+.lesson-reference-screen .answer-card,
+.lesson-reference-screen .question-card,
+.lesson-reference-screen .vocab-card {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .lesson-reference-hero,
@@ -56,17 +85,21 @@
 
 .lesson-reference-hero h1 {
   margin: 0;
+  max-width: 100%;
   color: #ffffff;
   font-size: 26px;
   line-height: 1.05;
   letter-spacing: -.055em;
+  overflow-wrap: anywhere;
 }
 
 .lesson-reference-hero p {
   margin: 8px 0 0;
+  max-width: 100%;
   color: #9ca8ca;
   font-size: 13.5px;
   line-height: 1.5;
+  overflow-wrap: anywhere;
 }
 
 .lesson-reference-hero footer {
@@ -82,6 +115,7 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 14px;
+  min-width: 0;
 }
 
 .lesson-reference-hero footer span {
@@ -102,18 +136,24 @@
   border-radius: 13px;
   color: #dbeafe;
   background: rgba(255,255,255,.05);
+  flex: 0 0 auto;
 }
 
 .lesson-stepper-card {
   padding: 10px 8px;
   border-radius: 18px;
+  overflow: hidden;
 }
 
 .lesson-stepper-row {
   display: flex;
   gap: 4px;
+  width: 100%;
+  max-width: 100%;
   overflow-x: auto;
+  overflow-y: hidden;
   scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
 }
 
 .lesson-stepper-row::-webkit-scrollbar {
@@ -133,6 +173,7 @@
   background: transparent;
   font-size: 12.5px;
   font-weight: 850;
+  white-space: nowrap;
 }
 
 .lesson-stepper-row button.active {
@@ -161,6 +202,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  min-width: 0;
 }
 
 .lesson-progress-strip span {
@@ -196,6 +238,7 @@
 .lesson-reference-screen .reading-layout {
   display: grid;
   gap: 14px;
+  overflow-x: hidden;
 }
 
 .lesson-reference-screen .reading-layout > .card:first-child {
@@ -209,8 +252,9 @@
 .lesson-reference-screen .reading-grid,
 .lesson-reference-screen .reading-main-grid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   gap: 14px;
+  overflow-x: hidden;
 }
 
 .lesson-reference-screen .reading-text-panel,
@@ -218,6 +262,7 @@
 .lesson-reference-screen .reading-section-card,
 .lesson-reference-screen .answer-card,
 .lesson-reference-screen .question-card {
+  overflow: hidden;
   border: 1px solid rgba(147,160,213,.18);
   border-radius: 20px;
   background: rgba(11,18,38,.74);
@@ -233,25 +278,40 @@
 .lesson-reference-screen .panel-title {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 8px;
+  min-width: 0;
+  max-width: 100%;
   margin-bottom: 14px;
   color: #9ca8ca;
   font-size: 11px;
   font-weight: 950;
   letter-spacing: .16em;
   text-transform: uppercase;
+  overflow-wrap: anywhere;
+}
+
+.lesson-reference-screen .reading-paper-body {
+  display: grid;
+  gap: 12px;
+  overflow: hidden;
 }
 
 .lesson-reference-screen .reading-paper-body p {
+  margin: 0;
+  max-width: 100%;
   color: #dbeafe;
   font-size: 14.5px;
   line-height: 1.68;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: normal;
 }
 
 .lesson-reference-screen .reading-side-panel {
   display: grid;
   gap: 12px;
+  overflow: hidden;
 }
 
 .lesson-reference-screen .mini-card {
@@ -261,20 +321,26 @@
 .lesson-reference-screen .mini-card p,
 .lesson-reference-screen .reading-section-card p,
 .lesson-reference-screen .answer-label {
+  max-width: 100%;
   color: #9ca8ca;
+  overflow-wrap: anywhere;
 }
 
 .lesson-reference-screen .secondary-button,
 .lesson-reference-screen .primary-button {
+  max-width: 100%;
   min-height: 42px;
   border-radius: 14px;
   font-weight: 900;
+  white-space: normal;
 }
 
 .lesson-reference-screen .vocabulary-grid,
 .lesson-reference-screen .comprehension-list {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 10px;
+  max-width: 100%;
 }
 
 .lesson-reference-screen .vocab-card {
@@ -282,6 +348,15 @@
   border: 1px solid rgba(147,160,213,.14);
   border-radius: 15px;
   background: rgba(255,255,255,.035);
+  overflow: hidden;
+}
+
+.lesson-reference-screen .vocab-card strong,
+.lesson-reference-screen .vocab-card span,
+.lesson-reference-screen .vocab-card p {
+  display: block;
+  max-width: 100%;
+  overflow-wrap: anywhere;
 }
 
 .lesson-reference-screen .vocab-card strong {
@@ -306,19 +381,24 @@
 
 .lesson-reference-screen .question-card > strong {
   display: block;
+  max-width: 100%;
   margin-top: 8px;
   color: #ffffff;
   font-size: 16px;
   line-height: 1.4;
+  overflow-wrap: anywhere;
 }
 
 .lesson-reference-screen .option-list {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 8px;
   margin-top: 12px;
 }
 
 .lesson-reference-screen .option-button {
+  width: 100%;
+  max-width: 100%;
   min-height: 46px;
   padding: 12px 14px;
   border-radius: 13px;
@@ -326,15 +406,20 @@
   color: #dbeafe;
   background: rgba(255,255,255,.035);
   text-align: left;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .lesson-reference-screen textarea {
+  width: 100%;
+  max-width: 100%;
   min-height: 118px;
   border-radius: 16px;
 }
 
 .lesson-reference-screen .answer-actions {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 10px;
   margin-top: 12px;
 }
