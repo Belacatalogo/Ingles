@@ -8,7 +8,22 @@ export const AZURE_PRONUNCIATION_STATUS = {
   error: 'error',
 };
 
-export async function analyzePronunciation({ audioBlob, referenceText, endpoint, fetcher = fetch } = {}) {
+function getDefaultEndpoint() {
+  return import.meta.env.VITE_AZURE_PRONUNCIATION_ENDPOINT || '';
+}
+
+function normalizeAzureResult(data) {
+  return {
+    accuracyScore: data?.accuracyScore ?? data?.accuracy ?? data?.AccuracyScore ?? null,
+    fluencyScore: data?.fluencyScore ?? data?.fluency ?? data?.FluencyScore ?? null,
+    completenessScore: data?.completenessScore ?? data?.CompletenessScore ?? null,
+    pronunciationScore: data?.pronunciationScore ?? data?.PronunciationScore ?? null,
+    words: data?.words ?? data?.Words ?? [],
+    raw: data,
+  };
+}
+
+export async function analyzePronunciation({ audioBlob, referenceText, endpoint = getDefaultEndpoint(), fetcher = fetch } = {}) {
   diagnostics.setPhase('preparando análise de pronúncia', AZURE_PRONUNCIATION_STATUS.analyzing);
 
   if (!endpoint) {
@@ -29,18 +44,50 @@ export async function analyzePronunciation({ audioBlob, referenceText, endpoint,
     };
   }
 
-  diagnostics.log('Cliente Azure preparado. Chamada real será conectada preservando o backend privado existente.', 'info', {
-    endpoint,
-    referencePreview: String(referenceText ?? '').slice(0, 120),
-  });
+  try {
+    diagnostics.setPhase('analisando pronúncia', AZURE_PRONUNCIATION_STATUS.analyzing);
+    diagnostics.log('Enviando áudio para backend Azure existente.', 'info', {
+      endpoint,
+      referencePreview: String(referenceText ?? '').slice(0, 120),
+      audioSize: audioBlob.size,
+    });
 
-  // A chamada real será ligada no bloco de áudio/Azure.
-  // O backend privado não deve ser alterado; este cliente apenas preservará o contrato já existente.
-  void fetcher;
+    const form = new FormData();
+    form.append('audio', audioBlob, 'speech.webm');
+    form.append('referenceText', String(referenceText ?? ''));
 
-  return {
-    status: AZURE_PRONUNCIATION_STATUS.idle,
-    result: null,
-    error: null,
-  };
+    const response = await fetcher(endpoint, {
+      method: 'POST',
+      body: form,
+    });
+
+    if (!response.ok) {
+      const text = await response.text().catch(() => '');
+      throw new Error(`HTTP ${response.status} ${text.slice(0, 180)}`);
+    }
+
+    const data = await response.json();
+    const result = normalizeAzureResult(data);
+
+    diagnostics.setPhase('pronúncia analisada', AZURE_PRONUNCIATION_STATUS.success);
+    diagnostics.log('Análise Azure concluída.', 'info', {
+      pronunciationScore: result.pronunciationScore,
+      accuracyScore: result.accuracyScore,
+    });
+
+    return {
+      status: AZURE_PRONUNCIATION_STATUS.success,
+      result,
+      error: null,
+    };
+  } catch (error) {
+    diagnostics.setPhase('erro na análise de pronúncia', AZURE_PRONUNCIATION_STATUS.error);
+    diagnostics.log(`Erro Azure Pronunciation: ${error?.message || error}`, 'error');
+
+    return {
+      status: AZURE_PRONUNCIATION_STATUS.error,
+      result: null,
+      error: error?.message || String(error),
+    };
+  }
 }
