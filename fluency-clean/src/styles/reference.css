@@ -11,6 +11,14 @@
   --ref-green: #47dc84;
 }
 
+html,
+body,
+#root {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
 body {
   background:
     radial-gradient(circle at 52% -20%, rgba(126, 112, 255, .22), transparent 36%),
@@ -20,15 +28,19 @@ body {
 
 .fluency-reference-shell {
   width: min(820px, 100%);
-  padding: 30px 18px 118px;
+  max-width: 100%;
+  overflow-x: hidden;
+  padding: 30px 18px calc(132px + env(safe-area-inset-bottom));
 }
 
 .reference-topbar {
   gap: 10px;
   margin-bottom: 22px;
+  max-width: 100%;
 }
 
 .reference-brand-dot {
+  flex: 0 0 auto;
   width: 12px;
   height: 12px;
   border-radius: 99px;
@@ -47,6 +59,7 @@ body {
   display: flex;
   align-items: center;
   gap: 10px;
+  min-width: 0;
 }
 
 .reference-pill,
@@ -66,6 +79,7 @@ body {
 
 .reference-pill {
   padding: 0 14px;
+  white-space: nowrap;
 }
 
 .reference-pill span {
@@ -89,12 +103,14 @@ body {
 }
 
 .reference-settings-button {
+  flex: 0 0 auto;
   width: 48px;
   color: #cbd5f8;
 }
 
 .reference-today-screen {
   gap: 18px;
+  max-width: 100%;
 }
 
 .today-progress-hero,
@@ -102,6 +118,7 @@ body {
 .reference-task-row,
 .reference-week-card,
 .reference-quote-card {
+  max-width: 100%;
   border: 1px solid var(--ref-border);
   background: linear-gradient(135deg, rgba(19, 27, 57, .95), rgba(13, 19, 42, .76));
   box-shadow: 0 22px 70px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.03);
@@ -109,7 +126,7 @@ body {
 
 .today-progress-hero {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 126px;
+  grid-template-columns: minmax(0, 1fr) 112px;
   gap: 16px;
   align-items: center;
   padding: 28px;
@@ -133,6 +150,7 @@ body {
 .today-progress-hero > div:first-child {
   position: relative;
   z-index: 1;
+  min-width: 0;
 }
 
 .today-progress-hero p {
@@ -142,7 +160,7 @@ body {
 }
 
 .today-progress-hero h1 {
-  font-size: clamp(44px, 11vw, 62px);
+  font-size: clamp(38px, 10vw, 62px);
   line-height: .92;
   color: white;
 }
@@ -156,7 +174,7 @@ body {
 }
 
 .reference-continue-button {
-  width: min(100%, 530px);
+  width: 100%;
   min-height: 64px;
   margin-top: 24px;
   border-radius: 20px;
@@ -185,11 +203,13 @@ body {
 
 .today-mini-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 14px;
+  max-width: 100%;
 }
 
 .reference-mini-card {
+  min-width: 0;
   min-height: 148px;
   padding: 22px;
   border-radius: 24px;
@@ -209,8 +229,9 @@ body {
   display: block;
   margin-top: 18px;
   color: white;
-  font-size: 38px;
+  font-size: clamp(30px, 8vw, 38px);
   letter-spacing: -.05em;
+  overflow-wrap: anywhere;
 }
 
 .reference-mini-card small {
@@ -219,14 +240,15 @@ body {
 }
 
 .streak-boxes {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 7px;
   margin-top: 14px;
 }
 
 .streak-boxes i {
-  width: 28px;
-  height: 28px;
+  width: 100%;
+  aspect-ratio: 1;
   border-radius: 7px;
   background: rgba(147,160,213,.10);
 }
@@ -259,6 +281,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
   margin-top: 10px;
 }
 
@@ -307,11 +330,16 @@ body {
 .reference-task-icon.speaking { color: #49e0c3; background: rgba(73,224,195,.11); border-color: rgba(73,224,195,.28); }
 .reference-task-icon.diary { color: var(--ref-gold); background: rgba(244,189,78,.10); border-color: rgba(244,189,78,.28); }
 
+.reference-task-copy {
+  min-width: 0;
+}
+
 .reference-task-copy strong {
   display: block;
   color: white;
   font-size: 20px;
   letter-spacing: -.03em;
+  overflow-wrap: anywhere;
 }
 
 .reference-task-copy small {
@@ -324,6 +352,7 @@ body {
 .reference-task-time {
   color: #9ca8ca;
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  white-space: nowrap;
 }
 
 .task-done {
@@ -333,6 +362,7 @@ body {
 .reference-week-card {
   padding: 22px;
   border-radius: 26px;
+  overflow: hidden;
 }
 
 .reference-week-card > div:first-child strong {
@@ -359,7 +389,7 @@ body {
 
 .week-bars {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 14px;
   margin-top: 22px;
 }
@@ -368,6 +398,7 @@ body {
   display: grid;
   gap: 7px;
   justify-items: center;
+  min-width: 0;
 }
 
 .week-bars div::before {
@@ -424,6 +455,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
   margin-top: 22px;
 }
 
@@ -445,16 +477,22 @@ body {
 .bottom-nav {
   width: min(760px, calc(100vw - 28px));
   min-height: 76px;
+  bottom: max(14px, env(safe-area-inset-bottom));
   padding: 9px;
   border-radius: 34px;
-  background: rgba(8, 14, 31, .88);
+  background: rgba(8, 14, 31, .92);
   border-color: rgba(147,160,213,.18);
   box-shadow: 0 24px 80px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.03);
+  overflow-x: auto;
+  scrollbar-width: none;
 }
+
+.bottom-nav::-webkit-scrollbar { display: none; }
 
 .nav-item {
   border-radius: 25px;
   color: #8f9ab9;
+  min-width: 56px;
 }
 
 .nav-item span {
@@ -462,6 +500,7 @@ body {
 }
 
 .nav-item.active {
+  min-width: 126px;
   background: rgba(89, 101, 154, .62);
 }
 
@@ -472,16 +511,164 @@ body {
 }
 
 @media (max-width: 720px) {
-  .fluency-reference-shell { padding: 28px 18px 116px; }
-  .reference-brand-text strong { font-size: 24px; }
-  .reference-top-actions { gap: 8px; }
-  .reference-pill { min-height: 40px; padding: 0 12px; }
-  .reference-settings-button { width: 42px; min-height: 42px; }
-  .today-progress-hero { grid-template-columns: 1fr; padding: 24px; }
-  .progress-ring { width: 96px; height: 96px; justify-self: end; margin-top: -24px; }
-  .today-mini-grid { grid-template-columns: 1fr 1fr; }
-  .reference-task-row { grid-template-columns: 54px minmax(0, 1fr) auto; }
-  .reference-task-row > svg:not(.task-done) { display: none; }
-  .reference-task-time { font-size: 13px; }
-  .week-bars { gap: 8px; }
+  .fluency-reference-shell {
+    padding: 26px 18px calc(142px + env(safe-area-inset-bottom));
+  }
+
+  .reference-topbar {
+    gap: 8px;
+    margin-bottom: 18px;
+  }
+
+  .reference-brand-text strong {
+    font-size: 24px;
+  }
+
+  .reference-top-actions {
+    gap: 8px;
+  }
+
+  .reference-pill {
+    min-height: 40px;
+    padding: 0 12px;
+  }
+
+  .reference-settings-button {
+    width: 42px;
+    min-height: 42px;
+  }
+
+  .today-progress-hero {
+    grid-template-columns: 1fr;
+    padding: 24px;
+    gap: 18px;
+  }
+
+  .today-progress-hero h1 {
+    font-size: clamp(42px, 12vw, 56px);
+  }
+
+  .today-progress-hero span {
+    font-size: 17px;
+  }
+
+  .reference-continue-button {
+    min-height: 58px;
+    margin-top: 20px;
+    font-size: 17px;
+  }
+
+  .progress-ring {
+    width: 92px;
+    height: 92px;
+    justify-self: end;
+    margin-top: 0;
+  }
+
+  .progress-ring strong {
+    font-size: 24px;
+  }
+
+  .today-mini-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .reference-mini-card {
+    min-height: 128px;
+    padding: 20px;
+  }
+
+  .reference-mini-card strong {
+    margin-top: 12px;
+  }
+
+  .reference-task-row {
+    grid-template-columns: 54px minmax(0, 1fr) auto;
+    gap: 12px;
+    padding: 14px;
+  }
+
+  .reference-task-row > svg:not(.task-done) {
+    display: none;
+  }
+
+  .reference-task-icon {
+    width: 54px;
+    height: 54px;
+  }
+
+  .reference-task-copy strong {
+    font-size: 19px;
+  }
+
+  .reference-task-time {
+    font-size: 13px;
+  }
+
+  .reference-week-card > b {
+    float: none;
+    display: inline-flex;
+    margin: 14px 0 0;
+  }
+
+  .week-bars {
+    gap: 8px;
+  }
+
+  .bottom-nav {
+    width: min(742px, calc(100vw - 34px));
+    min-height: 72px;
+    padding: 8px;
+  }
+
+  .nav-item {
+    min-width: 54px;
+  }
+
+  .nav-item.active {
+    min-width: 120px;
+  }
+}
+
+@media (max-width: 390px) {
+  .fluency-reference-shell {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  .reference-brand-text strong {
+    font-size: 22px;
+  }
+
+  .reference-pill {
+    min-height: 38px;
+    padding: 0 10px;
+  }
+
+  .reference-settings-button {
+    width: 40px;
+    min-height: 40px;
+  }
+
+  .today-progress-hero {
+    padding: 20px;
+  }
+
+  .today-progress-hero h1 {
+    font-size: 40px;
+  }
+
+  .reference-task-row {
+    grid-template-columns: 50px minmax(0, 1fr);
+  }
+
+  .reference-task-time {
+    grid-column: 2;
+  }
+
+  .task-done {
+    grid-column: 1;
+    grid-row: 2;
+    justify-self: center;
+  }
 }
