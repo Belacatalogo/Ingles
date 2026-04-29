@@ -12,6 +12,7 @@ export const GEMINI_LESSON_STATUS = {
 const FLASH_MODELS = ['gemini-2.5-flash', 'gemini-2.5-flash-lite'];
 const PRO_MODELS = ['gemini-2.5-pro'];
 const RETRYABLE_STATUS = new Set([500, 502, 503, 504]);
+const BLOCK_RETRY_LIMIT = 2;
 
 const QUALITY_RULES = [
   'A aula deve ser longa, completa e aprofundada, mesmo em A1.',
@@ -29,6 +30,7 @@ const LESSON_BLUEPRINTS = {
     minVocabulary: 14,
     minExercises: 14,
     minPrompts: 5,
+    minSections: 6,
     blocks: [
       {
         id: 'structure',
@@ -108,6 +110,7 @@ const LESSON_BLUEPRINTS = {
     minVocabulary: 10,
     minExercises: 16,
     minPrompts: 5,
+    minSections: 7,
     blocks: [
       {
         id: 'structure',
@@ -171,6 +174,7 @@ const LESSON_BLUEPRINTS = {
     minVocabulary: 12,
     minExercises: 12,
     minPrompts: 5,
+    minSections: 6,
     blocks: [
       {
         id: 'structure',
@@ -240,6 +244,7 @@ const LESSON_BLUEPRINTS = {
     minVocabulary: 12,
     minExercises: 12,
     minPrompts: 6,
+    minSections: 7,
     blocks: [
       {
         id: 'structure',
@@ -394,9 +399,9 @@ function assertLessonBlock(block, data, blueprint) {
 
   if (block.id === 'structure') {
     if (!normalizeText(data.title)) throw new Error('Bloco estrutura veio sem título.');
-    if (!normalizeText(data.intro) || normalizeText(data.intro).length < 220) throw new Error('Bloco estrutura veio com introdução curta demais.');
+    if (!normalizeText(data.intro) || normalizeText(data.intro).length < 120) throw new Error('Bloco estrutura veio com introdução curta demais.');
     if (!normalizeText(data.objective)) throw new Error('Bloco estrutura veio sem objetivo.');
-    if (ensureArray(data.sections).length < 6) throw new Error('Bloco estrutura veio com poucas seções.');
+    if (ensureArray(data.sections).length < blueprint.minSections) throw new Error('Bloco estrutura veio com poucas seções.');
   }
 
   if (block.id === 'mainContent') {
@@ -437,8 +442,7 @@ function validateGeneratedLesson(lesson) {
 
   if (!hasCore) throw new Error('Aula sem título, tipo ou nível.');
   if (!hasStudyContent) throw new Error('Aula sem conteúdo de estudo suficiente.');
-  if (normalized.intro && normalized.intro.length < 180) throw new Error('Introdução curta demais.');
-  if (normalized.sections.length < 6) throw new Error('Aula com poucas seções explicativas.');
+  if (normalized.sections.length < blueprint.minSections) throw new Error('Aula com poucas seções explicativas.');
 
   if ((normalized.type === 'reading' || normalized.type === 'listening') && (!normalized.listeningText || normalized.listeningText.length < blueprint.minMainLength)) {
     throw new Error('Aula sem texto/transcrição principal suficiente.');
@@ -451,12 +455,14 @@ function validateGeneratedLesson(lesson) {
   return normalized;
 }
 
-function buildBlockPrompt({ block, blueprint, basePrompt, lessonType, partialLesson }) {
+function buildBlockPrompt({ block, blueprint, basePrompt, lessonType, partialLesson, retryReason = '' }) {
   return [
     'Você é o gerador de aulas do Fluency.',
     'Retorne APENAS JSON válido. Não use markdown. Não use **negrito**. Não use listas com asterisco.',
+    'O JSON deve ser completo, fechado corretamente e parseável por JSON.parse.',
     'Crie conteúdo para aluno brasileiro aprender inglês com uma aula séria, clara, profunda, longa e organizada.',
     'IMPORTANTE: esta aula NÃO pode ser curta. Se o tema for simples, aprofunde com exemplos, prática, repetição guiada e revisão.',
+    retryReason ? `Correção obrigatória da tentativa anterior: ${retryReason}` : '',
     `Tipo de aula escolhido pelo app: ${blueprint.label} (${lessonType}).`,
     'Nível padrão: A1, salvo se o pedido do app indicar outro nível claramente.',
     '',
@@ -476,7 +482,7 @@ async function callGeminiJson({ attempt, prompt, maxOutputTokens, fetcher }) {
   const body = {
     contents: [{ role: 'user', parts: [{ text: prompt }] }],
     generationConfig: {
-      temperature: 0.28,
+      temperature: 0.24,
       maxOutputTokens,
       responseMimeType: 'application/json',
     },
@@ -517,6 +523,38 @@ function composeLessonFromBlocks(blockResults, lessonType) {
   };
 }
 
+async function generateBlockWithRetry({ attempt, prompt, fetcher, lessonType, blueprint, block, blockResults, blockLabel }) {
+  let retryReason = '';
+
+  for (let retry = 0; retry <= BLOCK_RETRY_LIMIT; retry += 1) {
+    try {
+      if (retry > 0) diagnostics.log(`Regerando bloco ${blockLabel} por qualidade/JSON: ${retryReason}`, 'info');
+
+      const data = await callGeminiJson({
+        attempt,
+        prompt: buildBlockPrompt({
+          block,
+          blueprint,
+          lessonType,
+          basePrompt: prompt,
+          partialLesson: Object.keys(blockResults).length ? composeLessonFromBlocks(blockResults, lessonType) : null,
+          retryReason,
+        }),
+        maxOutputTokens: attempt.paid ? Math.max(block.maxOutputTokens, 5200) : block.maxOutputTokens,
+        fetcher,
+      });
+
+      assertLessonBlock(block, data, blueprint);
+      return data;
+    } catch (error) {
+      retryReason = error?.message || String(error);
+      if (retry >= BLOCK_RETRY_LIMIT) throw error;
+    }
+  }
+
+  throw new Error(`Bloco ${block.label} falhou após retries.`);
+}
+
 async function callGeminiInBlocks({ attempt, prompt, fetcher, lessonType }) {
   const blueprint = getBlueprint(lessonType);
   const blockResults = {};
@@ -527,20 +565,17 @@ async function callGeminiInBlocks({ attempt, prompt, fetcher, lessonType }) {
     diagnostics.setPhase(`gerando bloco ${blockLabel}`, GEMINI_LESSON_STATUS.generating);
     diagnostics.log(`Bloco ${blockLabel}: gerando ${block.label}.`, 'info');
 
-    const data = await callGeminiJson({
+    const data = await generateBlockWithRetry({
       attempt,
-      prompt: buildBlockPrompt({
-        block,
-        blueprint,
-        lessonType,
-        basePrompt: prompt,
-        partialLesson: Object.keys(blockResults).length ? composeLessonFromBlocks(blockResults, lessonType) : null,
-      }),
-      maxOutputTokens: attempt.paid ? Math.max(block.maxOutputTokens, 5200) : block.maxOutputTokens,
+      prompt,
       fetcher,
+      lessonType,
+      blueprint,
+      block,
+      blockResults,
+      blockLabel,
     });
 
-    assertLessonBlock(block, data, blueprint);
     blockResults[block.id] = data;
     diagnostics.log(`Bloco ${blockLabel} aprovado: ${block.label}.`, 'info');
   }
