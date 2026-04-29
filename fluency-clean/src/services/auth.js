@@ -8,6 +8,7 @@ import {
   signInWithRedirect,
   signOut,
 } from 'firebase/auth';
+import { configureCloudSyncUser } from './cloudSync.js';
 import { diagnostics } from './diagnostics.js';
 import { getFirebaseAuth } from './firebase.js';
 
@@ -27,7 +28,7 @@ function getReadableAuthError(error) {
   const message = error?.message || String(error || 'Erro desconhecido.');
 
   if (code.includes('unauthorized-domain')) {
-    return 'Domínio não autorizado no Firebase. Adicione raw.githack.com em Authentication > Settings > Authorized domains.';
+    return 'Domínio não autorizado no Firebase. Adicione o domínio do Vercel em Authentication > Settings > Authorized domains.';
   }
 
   if (code.includes('operation-not-allowed')) {
@@ -70,6 +71,7 @@ export function subscribeAuth(callback) {
   return onAuthStateChanged(auth, (user) => {
     const normalized = normalizeUser(user);
     diagnostics.log(normalized ? `Usuário autenticado: ${normalized.email}` : 'Usuário não autenticado.', 'info');
+    configureCloudSyncUser(normalized);
     callback(normalized);
   });
 }
@@ -92,6 +94,7 @@ export async function resolveGoogleRedirectResult() {
 
     const user = normalizeUser(result.user);
     diagnostics.log(`Retorno do Google capturado: ${user?.email || 'usuário sem email'}.`, 'info');
+    await configureCloudSyncUser(user);
     return { ok: true, user, empty: false, error: null };
   } catch (error) {
     const readable = getReadableAuthError(error);
@@ -125,6 +128,7 @@ export async function signInWithGoogle({ mode = 'redirect' } = {}) {
       const result = await signInWithPopup(auth, provider);
       const user = normalizeUser(result.user);
       diagnostics.log(`Login Google concluído via popup: ${user?.email || 'usuário sem email'}.`, 'info');
+      await configureCloudSyncUser(user);
       return { ok: true, user, redirect: false, error: null };
     }
 
@@ -146,10 +150,14 @@ export async function signInWithGoogle({ mode = 'redirect' } = {}) {
 
 export async function logout() {
   const auth = getFirebaseAuth();
-  if (!auth) return { ok: true };
+  if (!auth) {
+    await configureCloudSyncUser(null);
+    return { ok: true };
+  }
 
   try {
     await signOut(auth);
+    await configureCloudSyncUser(null);
     diagnostics.log('Logout concluído.', 'info');
     return { ok: true };
   } catch (error) {
