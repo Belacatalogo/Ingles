@@ -9,8 +9,6 @@ export const GEMINI_LESSON_STATUS = {
   error: 'error',
 };
 
-// Modelos inválidos/indisponíveis geram 404 e desperdiçam tentativa.
-// Mantemos apenas modelos Flash atuais usados para geração de texto.
 const FLASH_MODELS = ['gemini-2.5-flash', 'gemini-2.0-flash'];
 const PRO_MODELS = ['gemini-2.5-pro'];
 const RETRYABLE_STATUS = new Set([500, 502, 503, 504]);
@@ -118,14 +116,35 @@ function validateGeneratedLesson(lesson) {
 function buildPrompt(basePrompt) {
   return [
     'Você é o gerador de aulas do Fluency.',
-    'Retorne APENAS JSON válido, sem markdown.',
-    'Crie uma aula completa, profunda e organizada para o aluno brasileiro aprender inglês.',
-    'Campos obrigatórios: type, level, title, intro, sections, vocabulary, exercises, tips, listeningText.',
-    'Use type como um destes valores: reading, grammar, listening, speaking, writing, vocabulary.',
-    'Explique em português quando necessário, mas use exemplos em inglês natural.',
+    'Retorne APENAS JSON válido. Não use markdown. Não use **negrito**. Não use listas com asterisco.',
+    'Crie uma aula completa e organizada para aluno brasileiro aprender inglês.',
+    '',
+    'IMPORTANTE PARA READING:',
+    '- O texto principal em inglês deve ficar SOMENTE em listeningText.',
+    '- Não coloque instruções, dicas ou explicações dentro de listeningText.',
+    '- listeningText deve conter apenas o texto em inglês que o aluno vai ler/ouvir.',
+    '- intro deve ser uma introdução curta em português.',
+    '- objective deve ser o objetivo da aula em português.',
+    '- tips deve conter dicas curtas de leitura em português.',
+    '- sections deve conter explicações ou notas, nunca o texto principal completo.',
+    '',
+    'Formato obrigatório:',
+    '{',
+    '  "type": "reading",',
+    '  "level": "A1",',
+    '  "title": "Título curto",',
+    '  "intro": "Introdução curta em português",',
+    '  "objective": "Objetivo claro da aula",',
+    '  "listeningText": "Texto principal em inglês, sem instruções",',
+    '  "sections": [{ "title": "Explicação", "content": "Explicação curta em português" }],',
+    '  "vocabulary": [{ "word": "morning", "meaning": "manhã", "example": "I study in the morning." }],',
+    '  "exercises": [{ "question": "Pergunta", "options": ["A", "B", "C"], "answer": "A" }],',
+    '  "tips": ["Dica 1", "Dica 2", "Dica 3"]',
+    '}',
+    '',
     'Prompt do app:',
     String(basePrompt ?? 'Gerar uma aula de inglês A1 do dia.'),
-  ].join('\n\n');
+  ].join('\n');
 }
 
 async function callGemini({ attempt, prompt, fetcher }) {
@@ -133,7 +152,7 @@ async function callGemini({ attempt, prompt, fetcher }) {
   const body = {
     contents: [{ role: 'user', parts: [{ text: buildPrompt(prompt) }] }],
     generationConfig: {
-      temperature: 0.45,
+      temperature: 0.35,
       maxOutputTokens: attempt.paid ? 8000 : 5000,
       responseMimeType: 'application/json',
     },
