@@ -144,9 +144,10 @@ export async function generateGeminiTtsAudio({
   style = '',
   fetcher = fetch,
   useCache = true,
+  allowBrowserFallback = true,
 } = {}) {
   const cleanText = String(text ?? '').trim();
-  diagnostics.log('Botão de áudio acionado: preparando Gemini TTS.', 'info');
+  diagnostics.log('Botão de áudio acionado: preparando Gemini TTS natural.', 'info');
 
   if (!cleanText) return { ok: false, audioUrl: '', source: 'none', error: 'Texto vazio.' };
 
@@ -157,26 +158,28 @@ export async function generateGeminiTtsAudio({
     const cached = storage.get(key, null);
     if (cached?.base64) {
       const blob = pcmToWavBlob(base64ToUint8Array(cached.base64));
-      diagnostics.log('Áudio Gemini TTS carregado do cache.', 'info');
+      diagnostics.log('Áudio natural Gemini carregado do cache.', 'info');
       return { ok: true, audioUrl: URL.createObjectURL(blob), source: 'cache', error: null };
     }
   }
 
   const attempts = buildAttempts({ flashKeys: getLessonFlashKeys(), proKey: getLessonProKey() });
-  diagnostics.log(`Gemini TTS: ${attempts.length} tentativa(s) preparada(s).`, 'info');
+  diagnostics.log(`Gemini TTS natural: ${attempts.length} tentativa(s) preparada(s).`, 'info');
 
   if (!attempts.length) {
-    diagnostics.log('Gemini TTS sem keys de aula. Usando TTS do navegador como fallback.', 'info');
+    const error = 'Nenhuma key de aulas disponível para Gemini TTS natural.';
+    diagnostics.log(error, 'error');
+    if (!allowBrowserFallback) return { ok: false, audioUrl: '', source: 'missing-keys', error };
     await speakText(cleanText);
-    return { ok: true, audioUrl: '', source: 'browser-fallback', error: null };
+    return { ok: true, audioUrl: '', source: 'browser-fallback', error };
   }
 
   let lastError = null;
-  diagnostics.setPhase('gerando áudio Gemini TTS', 'tts');
+  diagnostics.setPhase('gerando áudio Gemini TTS natural', 'tts');
 
   for (let index = 0; index < attempts.length; index += 1) {
     const attempt = attempts[index];
-    diagnostics.log(`Gemini TTS tentativa ${index + 1}/${attempts.length}: ${attempt.model} com ${attempt.masked}`, 'info');
+    diagnostics.log(`Gemini TTS natural tentativa ${index + 1}/${attempts.length}: ${attempt.model} com ${attempt.masked}`, 'info');
 
     try {
       const inline = await callGeminiTts({
@@ -190,17 +193,22 @@ export async function generateGeminiTtsAudio({
 
       storage.set(key, { base64: inline.base64, mimeType: inline.mimeType, savedAt: new Date().toISOString() });
       const blob = pcmToWavBlob(base64ToUint8Array(inline.base64));
-      diagnostics.log(`Áudio Gemini TTS gerado com ${attempt.model}.`, 'info');
+      diagnostics.log(`Áudio natural Gemini gerado com ${attempt.model}.`, 'info');
       return { ok: true, audioUrl: URL.createObjectURL(blob), source: 'gemini', error: null };
     } catch (error) {
       lastError = error;
-      diagnostics.log(`Falha Gemini TTS: ${error?.message || error}`, attempt.paid ? 'error' : 'info');
+      diagnostics.log(`Falha Gemini TTS natural: ${error?.message || error}`, attempt.paid ? 'error' : 'info');
     }
   }
 
-  diagnostics.log('Gemini TTS falhou em todas as tentativas. Usando TTS do navegador como fallback.', 'error');
+  const error = lastError?.message || 'Gemini TTS natural falhou em todas as tentativas.';
+  diagnostics.log(`Gemini TTS natural falhou em todas as tentativas: ${error}`, 'error');
+
+  if (!allowBrowserFallback) return { ok: false, audioUrl: '', source: 'gemini-error', error };
+
+  diagnostics.log('Usando TTS do navegador apenas como último recurso.', 'error');
   await speakText(cleanText);
-  return { ok: true, audioUrl: '', source: 'browser-fallback', error: lastError?.message || null };
+  return { ok: true, audioUrl: '', source: 'browser-fallback', error };
 }
 
 export async function playGeminiTtsAudio(options = {}) {
@@ -219,9 +227,13 @@ export async function playGeminiTtsAudio(options = {}) {
       currentAudio.preload = 'auto';
 
       await currentAudio.play();
-      diagnostics.log('Reprodução do áudio Gemini iniciada.', 'info');
+      diagnostics.log('Reprodução do áudio natural Gemini iniciada.', 'info');
     } catch (error) {
-      diagnostics.log(`Safari bloqueou/erro ao tocar áudio Gemini: ${error?.message || error}. Usando fallback.`, 'error');
+      diagnostics.log(`Safari bloqueou/erro ao tocar áudio natural Gemini: ${error?.message || error}.`, 'error');
+      if (options.allowBrowserFallback === false) {
+        return { ...result, ok: false, source: 'gemini-playback-error', error: error?.message || String(error) };
+      }
+      diagnostics.log('Usando TTS do navegador apenas como último recurso.', 'error');
       await speakText(options.text);
       return { ...result, source: 'browser-fallback', error: error?.message || String(error) };
     }
