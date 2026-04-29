@@ -15,7 +15,7 @@ export function LessonGeneratorPanel({ onGenerated }) {
   async function handleGenerate() {
     setVersion((value) => value + 1);
     setLoading(true);
-    setMessage('Gerando aula... acompanhe o diagnóstico abaixo.');
+    setMessage('Gerando aula em blocos pedagógicos... acompanhe o diagnóstico.');
     saveLessonPromptDraft(prompt);
     diagnostics.log('Botão Gerar aula acionado.', 'info');
 
@@ -24,7 +24,7 @@ export function LessonGeneratorPanel({ onGenerated }) {
       const proKey = getLessonProKey();
 
       if (!flashKeys.length && !proKey) {
-        const error = 'Adicione pelo menos uma key de aula na aba Progresso antes de gerar.';
+        const error = 'Adicione pelo menos uma key em Ajustes > Chaves de aulas antes de gerar.';
         diagnostics.log(error, 'error');
         setMessage(error);
         return;
@@ -56,7 +56,7 @@ export function LessonGeneratorPanel({ onGenerated }) {
   return (
     <section className="lesson-generator-panel">
       <div className="panel-title"><Sparkles size={18} /> Gerar aula por IA</div>
-      <p>Use as chaves exclusivas da aba Progresso. O sistema tenta Flash/free primeiro e usa Pro só em último caso.</p>
+      <p>Escolha no pedido se quer Reading, Grammar, Listening ou Writing. O sistema monta a aula em blocos pedagógicos e valida antes de salvar.</p>
 
       <div className="generation-status-box">
         <div>
@@ -72,7 +72,7 @@ export function LessonGeneratorPanel({ onGenerated }) {
       {!keyStatus.hasAnyKey ? (
         <div className="inline-warning">
           <AlertCircle size={16} />
-          <span>Adicione uma key de aula em Progresso antes de gerar.</span>
+          <span>Adicione uma key em Ajustes &gt; Chaves de aulas antes de gerar.</span>
         </div>
       ) : null}
 
@@ -81,7 +81,7 @@ export function LessonGeneratorPanel({ onGenerated }) {
         id="lesson-prompt"
         value={prompt}
         onChange={(event) => setPrompt(event.target.value)}
-        placeholder="Descreva a aula que você quer gerar..."
+        placeholder="Ex.: Gere uma aula de Grammar A1 sobre Simple Present com explicação profunda e prática."
         inputMode="text"
         autoCapitalize="sentences"
         autoCorrect="on"
