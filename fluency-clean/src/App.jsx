@@ -1,4 +1,4 @@
-import { BookOpen, Brain, Flame, Home, LineChart, Mic, Settings, Sparkles } from 'lucide-react';
+import { BookOpen, Brain, CalendarDays, Flame, Home, LineChart, Mic, Settings, Sparkles } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { BottomNav } from './components/layout/BottomNav.jsx';
 import { DiagnosticPanel } from './components/system/DiagnosticPanel.jsx';
@@ -25,12 +25,23 @@ export function App() {
 
   return (
     <main className="app-shell">
+      <header className="topbar">
+        <div className="brand-mark">F</div>
+        <div>
+          <strong>Fluency</strong>
+          <span>Clean Rewrite</span>
+        </div>
+        <button className="ghost-pill" type="button">
+          <CalendarDays size={16} /> A1
+        </button>
+      </header>
+
       <section className="hero-card">
         <div>
-          <p className="eyebrow">Fluency Clean Rewrite</p>
-          <h1>Aprenda inglês com IA sem gambiarra.</h1>
+          <p className="eyebrow">Bloco 1 · Interface base</p>
+          <h1>Um app limpo para estudar inglês todos os dias.</h1>
           <p className="hero-text">
-            Nova base modular em React. A main antiga continua intacta enquanto migramos tudo em blocos.
+            Estrutura visual modular, pronta para receber Firebase, Gemini, Azure e as aulas por tipo sem remendos no bundle.
           </p>
         </div>
         <div className="hero-orb" aria-hidden="true">
@@ -41,13 +52,13 @@ export function App() {
       <section className="status-strip">
         <div>
           <Flame size={17} />
-          <span>Branch segura</span>
-          <strong>rewrite-fluency-clean</strong>
+          <span>Streak</span>
+          <strong>0 dias</strong>
         </div>
         <div>
           <Sparkles size={17} />
-          <span>Modo</span>
-          <strong>Bloco 0</strong>
+          <span>Status</span>
+          <strong>Visual limpo</strong>
         </div>
       </section>
 
