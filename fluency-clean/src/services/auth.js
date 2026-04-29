@@ -35,16 +35,20 @@ function getReadableAuthError(error) {
     return 'Login Google não está ativado no Firebase Authentication > Sign-in method.';
   }
 
-  if (code.includes('popup-blocked')) {
-    return 'Popup bloqueado pelo navegador. Use a opção Entrar com redirecionamento.';
+  if (code.includes('popup-blocked') || code.includes('popup-closed-by-user')) {
+    return 'O popup do Google foi bloqueado ou fechado pelo navegador. No iPhone, use Entrar com Google por redirecionamento.';
   }
 
-  if (code.includes('popup-closed-by-user')) {
-    return 'Janela de login fechada antes de concluir.';
+  if (code.includes('cancelled-popup-request')) {
+    return 'Uma tentativa de popup foi cancelada. Tente novamente usando redirecionamento.';
   }
 
   if (code.includes('web-storage-unsupported')) {
     return 'O navegador bloqueou armazenamento necessário para login. Desative modo privado/bloqueio de cookies e tente novamente.';
+  }
+
+  if (code.includes('network-request-failed')) {
+    return 'Falha de rede ao abrir o login Google. Verifique a conexão e tente novamente.';
   }
 
   return message;
@@ -120,11 +124,13 @@ export async function signInWithGoogle({ mode = 'redirect' } = {}) {
   provider.setCustomParameters({ prompt: 'select_account' });
 
   try {
-    await prepareAuthPersistence(auth);
     diagnostics.setPhase(`login Google ${mode}`, 'authenticating');
     diagnostics.log(`Iniciando login Google via ${mode}.`, 'info');
 
     if (mode === 'popup') {
+      // Importante no iPhone/Safari: não colocar nenhum await antes do popup.
+      // O popup precisa nascer diretamente do toque do usuário, senão o Safari
+      // pode apenas piscar a tela e bloquear a janela silenciosamente.
       const result = await signInWithPopup(auth, provider);
       const user = normalizeUser(result.user);
       diagnostics.log(`Login Google concluído via popup: ${user?.email || 'usuário sem email'}.`, 'info');
@@ -132,6 +138,7 @@ export async function signInWithGoogle({ mode = 'redirect' } = {}) {
       return { ok: true, user, redirect: false, error: null };
     }
 
+    await prepareAuthPersistence(auth);
     await signInWithRedirect(auth, provider);
     diagnostics.log('Redirect Google solicitado ao navegador.', 'info');
     return { ok: true, user: null, redirect: true, error: null };
