@@ -46,16 +46,19 @@ Não mexer na `main` durante a reconstrução. Tudo deve acontecer nesta branch 
 - CSS específico criado para Reading v2, vocabulário, questões, opções, resposta e responsividade.
 - Ainda não há integração real com storage, IA, áudio ou conclusão de aula. Isso vem nos próximos blocos.
 
-### Bloco 3 — Serviços limpos — próximo
-- Criar `storage.js`.
-- Criar `diagnostics.js`.
-- Criar `lessonTypes.js` / normalização de aula.
-- Criar `geminiLessons.js` como fachada futura, sem ligar API real ainda.
-- Criar `azurePronunciation.js` apenas como cliente do backend existente, sem alterar backend.
+### Bloco 3 — Serviços limpos — concluído
+- `storage.js` criado para centralizar `localStorage` com prefixo `fluency.clean.`.
+- `diagnostics.js` criado para logs e fases do sistema sem espalhar console/localStorage pelo app.
+- `lessonTypes.js` criado para normalizar tipos de aula: reading, grammar, listening, speaking, writing, vocabulary e default.
+- `geminiLessons.js` criado como fachada futura para geração de aulas, validação/máscara de keys e normalização de chaves. A chamada real ainda não foi ligada.
+- `azurePronunciation.js` criado como cliente/fachada para preservar o backend Azure privado existente. A chamada real ainda não foi ligada.
+- `services/index.js` criado para exportação centralizada.
 
-### Bloco 4 — Firebase / Google
-- Migrar inicialização Firebase.
-- Migrar login/acesso sem alterar regras do backend.
+### Bloco 4 — Firebase / Google — próximo
+- Criar `firebase.js`.
+- Criar `auth.js` / camada de login.
+- Migrar configuração Firebase sem expor segredo novo.
+- Manter fluxo atual de acesso/código até entendermos exatamente como ele está no app antigo.
 
 ### Bloco 5 — Geração de aulas
 - Chaves exclusivas de aulas.
