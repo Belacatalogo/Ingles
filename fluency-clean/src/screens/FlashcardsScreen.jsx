@@ -1,5 +1,6 @@
 import { Brain, CheckCircle2, Clock3, Layers3, Plus, RotateCcw, Sparkles, Volume2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import { playLearningAudio } from '../services/audioPlayback.js';
 
 const decks = [
   { id: 'due', label: 'Vencendo', count: 8 },
@@ -54,6 +55,7 @@ export function FlashcardsScreen() {
   const [flipped, setFlipped] = useState(false);
   const [cardIndex, setCardIndex] = useState(0);
   const [sessionStats, setSessionStats] = useState({ correct: 5, missed: 1 });
+  const [audioMessage, setAudioMessage] = useState('');
 
   const currentCard = reviewCards[cardIndex % reviewCards.length];
   const sessionPosition = (cardIndex % 8) + 1;
@@ -70,6 +72,18 @@ export function FlashcardsScreen() {
       if (tone === 'rose') return { ...stats, missed: stats.missed + 1 };
       return { ...stats, correct: stats.correct + 1 };
     });
+  }
+
+  async function handleCardAudio(text, event) {
+    event.stopPropagation();
+    setAudioMessage('Preparando áudio...');
+    const result = await playLearningAudio({
+      text,
+      label: 'Flashcards',
+      voiceName: 'Kore',
+      style: 'Clear dictionary-style English pronunciation. Slightly slow and easy to repeat.',
+    });
+    setAudioMessage(result.ok ? 'Áudio iniciado.' : result.error || 'Não foi possível reproduzir áudio.');
   }
 
   return (
@@ -125,7 +139,7 @@ export function FlashcardsScreen() {
             <div className="cards-card-center">
               <span className="cards-phonetic">{currentCard.pos} · {currentCard.phonetic}</span>
               <strong className="cards-word">{currentCard.word}</strong>
-              <span className="cards-audio-pill" onClick={(event) => event.stopPropagation()} role="presentation">
+              <span className="cards-audio-pill" onClick={(event) => handleCardAudio(currentCard.word, event)} role="button" tabIndex={0}>
                 <Volume2 size={14} /> Ouvir
               </span>
             </div>
@@ -141,12 +155,14 @@ export function FlashcardsScreen() {
             <blockquote>{currentCard.example}</blockquote>
             <p className="cards-translation">{currentCard.translation}</p>
 
-            <span className="cards-audio-pill cards-audio-left" onClick={(event) => event.stopPropagation()} role="presentation">
+            <span className="cards-audio-pill cards-audio-left" onClick={(event) => handleCardAudio(currentCard.example, event)} role="button" tabIndex={0}>
               <Volume2 size={14} /> Ouvir frase
             </span>
           </article>
         </button>
       </div>
+
+      {audioMessage ? <p className="generator-message cards-audio-message">{audioMessage}</p> : null}
 
       {flipped ? (
         <div className="cards-srs-grid" aria-label="Classificar dificuldade da carta">
