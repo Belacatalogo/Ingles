@@ -2,9 +2,19 @@
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <meta name="theme-color" content="#060D1F" />
-    <title>Fluency Clean</title>
+    <meta name="color-scheme" content="dark" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Fluency" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="application-name" content="Fluency" />
+    <meta name="description" content="App de inglês com aulas guiadas por IA, áudio natural Gemini, revisão adaptativa e progresso por conta." />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" href="/pwa-icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/pwa-icon.svg" />
+    <title>Fluency</title>
     <style>
       html, body, #root { min-height: 100%; margin: 0; background: #050b18; }
       .static-boot-fallback { min-height: 100vh; display: grid; place-items: center; padding: 24px; color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', Inter, system-ui, sans-serif; background: radial-gradient(circle at 50% 0%, rgba(126,112,255,.22), transparent 35%), linear-gradient(180deg,#080f22,#050b18); }
@@ -12,71 +22,17 @@
       .static-boot-card span { color: #93c5fd; font-size: 12px; font-weight: 900; letter-spacing: .14em; text-transform: uppercase; }
       .static-boot-card h1 { margin: 12px 0 8px; font-size: 30px; line-height: 1; }
       .static-boot-card p { margin: 0; color: #9ca8ca; line-height: 1.5; }
-      .static-boot-card button { margin-top: 16px; min-height: 46px; border: 0; border-radius: 16px; padding: 0 16px; color: white; font-weight: 900; background: linear-gradient(135deg,#65a5ff,#a58aff); }
-      .static-boot-card pre { white-space: pre-wrap; word-break: break-word; margin: 16px 0 0; padding: 14px; max-height: 280px; overflow: auto; border-radius: 16px; background: rgba(2,6,23,.72); color: #bfdbfe; font-size: 12px; line-height: 1.45; }
       .static-boot-card small { display: block; margin-top: 16px; color: #8f9ab9; }
     </style>
-    <script>
-      window.__FLUENCY_BOOT_LOGS__ = [];
-      function fluencyBootLog(type, data) {
-        try {
-          window.__FLUENCY_BOOT_LOGS__.push({
-            time: new Date().toISOString(),
-            type: type,
-            data: data
-          });
-          window.localStorage.setItem('fluency:boot-logs', JSON.stringify(window.__FLUENCY_BOOT_LOGS__));
-        } catch (error) {}
-      }
-      fluencyBootLog('html-start', {
-        href: window.location.href,
-        userAgent: navigator.userAgent,
-        online: navigator.onLine
-      });
-      window.addEventListener('error', function (event) {
-        fluencyBootLog('window-error', {
-          message: event.message,
-          source: event.filename,
-          line: event.lineno,
-          column: event.colno,
-          stack: event.error && event.error.stack ? event.error.stack : ''
-        });
-      });
-      window.addEventListener('unhandledrejection', function (event) {
-        var reason = event.reason || {};
-        fluencyBootLog('unhandled-rejection', {
-          message: reason.message || String(reason),
-          stack: reason.stack || ''
-        });
-      });
-      window.__FLUENCY_SHOW_BOOT_LOG__ = function () {
-        var root = document.getElementById('root');
-        if (!root) return;
-        var logs = window.__FLUENCY_BOOT_LOGS__ || [];
-        var text = JSON.stringify(logs, null, 2);
-        root.innerHTML = '<div class="static-boot-fallback"><section class="static-boot-card"><span>Fluency Clean</span><h1>Log do preview</h1><p>Copie este log e envie no chat para eu localizar o erro real.</p><button type="button" onclick="navigator.clipboard && navigator.clipboard.writeText(document.getElementById(\'bootlog\').textContent)">Copiar log</button><pre id="bootlog"></pre><small>rewrite-clean · debug boot</small></section></div>';
-        document.getElementById('bootlog').textContent = text || '[]';
-      };
-      setTimeout(function () {
-        var root = document.getElementById('root');
-        if (!root) return;
-        var text = (root.textContent || '').trim();
-        if (!text || text.includes('Carregando preview seguro')) {
-          fluencyBootLog('timeout-no-app-content', { rootText: text });
-          window.__FLUENCY_SHOW_BOOT_LOG__();
-        }
-      }, 5000);
-    </script>
   </head>
   <body>
     <div id="root">
       <div class="static-boot-fallback">
         <section class="static-boot-card">
-          <span>Fluency Clean</span>
-          <h1>Carregando preview seguro</h1>
-          <p>Se esta mensagem não sumir, o log de erro aparecerá automaticamente em alguns segundos.</p>
-          <button type="button" onclick="window.__FLUENCY_SHOW_BOOT_LOG__ && window.__FLUENCY_SHOW_BOOT_LOG__()">Mostrar log agora</button>
-          <small>rewrite-clean · debug boot</small>
+          <span>Fluency</span>
+          <h1>Carregando app</h1>
+          <p>Preparando seu ambiente de estudos.</p>
+          <small>rewrite-clean · pwa ready</small>
         </section>
       </div>
     </div>
