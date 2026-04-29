@@ -49,8 +49,8 @@ Não mexer na `main` durante a reconstrução. Tudo deve acontecer nesta branch 
 - `storage.js` criado para centralizar `localStorage` com prefixo `fluency.clean.`.
 - `diagnostics.js` criado para logs e fases do sistema sem espalhar console/localStorage pelo app.
 - `lessonTypes.js` criado para normalizar tipos de aula: reading, grammar, listening, speaking, writing, vocabulary e default.
-- `geminiLessons.js` criado como fachada futura para geração de aulas, validação/máscara de keys e normalização de chaves. A chamada real ainda não foi ligada.
-- `azurePronunciation.js` criado como cliente/fachada para preservar o backend Azure privado existente. A chamada real ainda não foi ligada.
+- `geminiLessons.js` criado como fachada futura para geração de aulas, validação/máscara de keys e normalização de chaves.
+- `azurePronunciation.js` criado como cliente/fachada para preservar o backend Azure privado existente.
 - `services/index.js` criado para exportação centralizada.
 
 ### Bloco 4 — Firebase / Google — concluído estruturalmente
@@ -64,15 +64,19 @@ Não mexer na `main` durante a reconstrução. Tudo deve acontecer nesta branch 
 - CSS do gate de acesso criado.
 - A configuração real do Firebase ainda precisa ser fornecida via ambiente/deploy; nenhuma chave nova foi gravada diretamente no código.
 
-### Bloco 5 — Geração de aulas — próximo
-- Chaves exclusivas de aulas.
-- Multikeys.
-- Flash primeiro.
-- Pro apenas como fallback.
-- Diagnóstico real em tela.
-- Ligar a fachada `geminiLessons.js` com chamadas reais, mantendo validação forte.
+### Bloco 5 — Geração de aulas — concluído estruturalmente
+- `lessonKeys.js` criado para chaves exclusivas de aulas.
+- Suporte a até 3 keys Flash/free exclusivas de aulas.
+- Suporte a 1 key Pro paga como último fallback.
+- `geminiLessons.js` agora monta plano real de tentativas: Flash primeiro e Pro apenas no final.
+- `geminiLessons.js` faz chamada real ao endpoint Gemini, parse de JSON e validação básica da aula.
+- `LessonKeysPanel.jsx` criado e anexado à aba Progresso.
+- `ProgressScreen.jsx` recebeu o painel de chaves exclusivas de aulas no lugar correto.
+- `services/index.js` exporta funções de chaves de aulas.
+- CSS do painel de chaves criado.
+- Ainda falta conectar botão real de gerar aula na tela Hoje/Aula e persistir aula gerada. Isso deve vir antes do primeiro teste real.
 
-### Bloco 6 — Áudio / Pronúncia / iOS
+### Bloco 6 — Áudio / Pronúncia / iOS — próximo
 - TTS.
 - Unlock iOS.
 - Azure Pronunciation via backend privado.
