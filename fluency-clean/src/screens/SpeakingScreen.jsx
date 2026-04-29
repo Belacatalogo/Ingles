@@ -284,10 +284,9 @@ export function SpeakingScreen() {
           <section className="speaking-immersion-hero">
             <div className="speaking-chip-row">
               <span className="speaking-chip teal"><Headphones size={11} /> Imersão</span>
-              <span className="speaking-chip">situações reais</span>
             </div>
             <strong>Treine inglês como se estivesse lá</strong>
-            <p>Escolha uma situação, escute a frase natural e responda falando em inglês.</p>
+            <p>Escolha um cenário, escute a frase natural e responda falando em inglês.</p>
           </section>
 
           <section className="speaking-immersion-scenes" aria-label="Cenários de imersão">
@@ -299,8 +298,10 @@ export function SpeakingScreen() {
                 onClick={() => setActiveScene(index)}
               >
                 <span>{item.label}</span>
-                <strong>{item.title}</strong>
-                <small>{item.level}</small>
+                <div>
+                  <strong>{item.title}</strong>
+                  <small>{item.level}</small>
+                </div>
               </button>
             ))}
           </section>
