@@ -19,6 +19,29 @@ function normalizeUser(user) {
   };
 }
 
+function getReadableAuthError(error) {
+  const code = error?.code || '';
+  const message = error?.message || String(error || 'Erro desconhecido.');
+
+  if (code.includes('unauthorized-domain')) {
+    return 'Domínio não autorizado no Firebase. Adicione raw.githack.com em Authentication > Settings > Authorized domains.';
+  }
+
+  if (code.includes('operation-not-allowed')) {
+    return 'Login Google não está ativado no Firebase Authentication > Sign-in method.';
+  }
+
+  if (code.includes('popup-blocked')) {
+    return 'Popup bloqueado pelo navegador. Use a opção Entrar com redirecionamento.';
+  }
+
+  if (code.includes('popup-closed-by-user')) {
+    return 'Janela de login fechada antes de concluir.';
+  }
+
+  return message;
+}
+
 export function subscribeAuth(callback) {
   const auth = getFirebaseAuth();
   if (!auth) {
@@ -33,7 +56,7 @@ export function subscribeAuth(callback) {
   });
 }
 
-export async function signInWithGoogle({ preferRedirect = false } = {}) {
+export async function signInWithGoogle({ mode = 'redirect' } = {}) {
   const auth = getFirebaseAuth();
   if (!auth) {
     diagnostics.log('Login Google indisponível: Firebase não configurado.', 'error');
@@ -44,18 +67,29 @@ export async function signInWithGoogle({ preferRedirect = false } = {}) {
   provider.setCustomParameters({ prompt: 'select_account' });
 
   try {
-    diagnostics.setPhase('login com Google', 'authenticating');
+    diagnostics.setPhase(`login Google ${mode}`, 'authenticating');
+    diagnostics.log(`Iniciando login Google via ${mode}.`, 'info');
 
-    if (preferRedirect) {
-      await signInWithRedirect(auth, provider);
-      return { ok: true, user: null, redirect: true, error: null };
+    if (mode === 'popup') {
+      const result = await signInWithPopup(auth, provider);
+      const user = normalizeUser(result.user);
+      diagnostics.log(`Login Google concluído via popup: ${user?.email || 'usuário sem email'}.`, 'info');
+      return { ok: true, user, redirect: false, error: null };
     }
 
-    const result = await signInWithPopup(auth, provider);
-    return { ok: true, user: normalizeUser(result.user), redirect: false, error: null };
+    await signInWithRedirect(auth, provider);
+    diagnostics.log('Redirect Google solicitado ao navegador.', 'info');
+    return { ok: true, user: null, redirect: true, error: null };
   } catch (error) {
-    diagnostics.log(`Erro no login Google: ${error?.message || error}`, 'error');
-    return { ok: false, user: null, error: error?.message || String(error) };
+    const readable = getReadableAuthError(error);
+    diagnostics.log(`Erro no login Google: ${readable}`, 'error');
+    return {
+      ok: false,
+      user: null,
+      error: readable,
+      code: error?.code || '',
+      rawError: error?.message || String(error),
+    };
   }
 }
 
