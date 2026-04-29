@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { CheckCircle2, Headphones, ListChecks, MessageSquareText, Pause, Play, Repeat2, Volume2 } from 'lucide-react';
-import { playGeminiTtsAudio } from '../services/geminiTts.js';
+import { playLearningAudio, stopLearningAudio } from '../services/audioPlayback.js';
+import { diagnostics } from '../services/diagnostics.js';
 import { completeLesson, getLessonDraft, saveLessonDraft } from '../services/progressStore.js';
 
 const fallbackTranscript = [
@@ -28,7 +29,7 @@ function splitTranscript(value) {
   if (!clean) return fallbackTranscript;
   const paragraphs = clean.split(/\n\s*\n+/).map((item) => item.trim()).filter(Boolean);
   if (paragraphs.length > 1) return paragraphs;
-  return clean.split(/(?<=[.!?])\s+/).map((item) => item.trim()).filter(Boolean).slice(0, 8);
+  return clean.split(/(?<=[.!?])\s+/).map((item) => item.trim()).filter(Boolean).slice(0, 12);
 }
 
 function normalizeQuestions(lesson) {
@@ -48,6 +49,7 @@ function normalizePrompts(lesson) {
 
 export function ListeningLesson({ lesson }) {
   const [message, setMessage] = useState('Ouça o áudio antes de abrir a transcrição.');
+  const [audioState, setAudioState] = useState('idle');
   const [answer, setAnswer] = useState(() => getLessonDraft(lesson?.id || lesson?.title || 'listening'));
   const transcript = useMemo(() => splitTranscript(lesson?.listeningText), [lesson?.listeningText]);
   const questions = useMemo(() => normalizeQuestions(lesson), [lesson]);
@@ -55,13 +57,25 @@ export function ListeningLesson({ lesson }) {
   const audioText = transcript.join(' ');
 
   async function handleListen() {
-    setMessage('Preparando áudio natural...');
-    const result = await playGeminiTtsAudio({
+    diagnostics.log('Clique recebido no botão Ouvir da aula Listening.', 'info');
+    setAudioState('loading');
+    setMessage('Preparando áudio...');
+
+    const result = await playLearningAudio({
       text: audioText,
+      label: 'Listening · transcrição',
       voiceName: 'Kore',
       style: 'Natural teacher voice, clear A1 listening practice.',
     });
-    setMessage(result.source === 'gemini' ? 'Áudio natural reproduzido.' : result.error || 'Áudio reproduzido com fallback.');
+
+    setAudioState('idle');
+    if (result.ok) setMessage(result.source === 'browser-ios' ? 'Áudio iniciado pelo TTS do iPhone.' : 'Áudio iniciado.');
+    else setMessage(result.error || 'Não foi possível reproduzir áudio.');
+  }
+
+  function handleStop() {
+    stopLearningAudio();
+    setMessage('Áudio interrompido.');
   }
 
   function handleSave() {
@@ -81,9 +95,9 @@ export function ListeningLesson({ lesson }) {
         <h2>{lesson?.title || 'Listening — A morning routine'}</h2>
         <p>{cleanText(lesson?.intro || 'Ouça primeiro sem ler. Depois use a transcrição para confirmar detalhes e repetir em voz alta.')}</p>
         <div className="listening-player">
-          <button type="button" onClick={handleListen}><Play size={20} /></button>
+          <button type="button" onClick={handleListen} disabled={audioState === 'loading'}><Play size={20} /></button>
           <div><span /><span /><span /><span /><span /><span /></div>
-          <button type="button"><Pause size={18} /></button>
+          <button type="button" onClick={handleStop}><Pause size={18} /></button>
         </div>
         <small>{message}</small>
       </section>
