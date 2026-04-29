@@ -1,7 +1,18 @@
 import { useState } from 'react';
-import { Headphones, Mic, Radio, ShieldCheck, Square, Volume2, Waves } from 'lucide-react';
+import {
+  CheckCircle2,
+  Headphones,
+  Mic,
+  Radio,
+  Repeat2,
+  ShieldCheck,
+  Sparkles,
+  Square,
+  Target,
+  Volume2,
+  Waves,
+} from 'lucide-react';
 import { Card } from '../components/ui/Card.jsx';
-import { StatCard } from '../components/ui/StatCard.jsx';
 import { SectionHeader } from '../components/ui/SectionHeader.jsx';
 import { analyzePronunciation } from '../services/azurePronunciation.js';
 import { unlockAudioForIOS } from '../services/audioUnlock.js';
@@ -9,6 +20,14 @@ import { startRecording, stopRecording } from '../services/recorder.js';
 import { speakText, stopSpeech } from '../services/tts.js';
 
 const referenceText = 'I usually study English in the morning because I feel focused and calm.';
+
+const speakingSteps = [
+  'Ouça o modelo uma vez sem repetir.',
+  'Repita em voz alta prestando atenção no ritmo.',
+  'Grave sua resposta e compare com o modelo.',
+];
+
+const focusWords = ['usually', 'English', 'morning', 'focused', 'calm'];
 
 export function SpeakingScreen() {
   const [recording, setRecording] = useState(false);
@@ -22,9 +41,9 @@ export function SpeakingScreen() {
   }
 
   async function handleSpeak() {
-    setMessage('Reproduzindo frase...');
+    setMessage('Reproduzindo frase modelo...');
     const response = await speakText(referenceText);
-    setMessage(response.ok ? 'Reprodução finalizada.' : response.error || 'Erro no TTS.');
+    setMessage(response.ok ? 'Modelo finalizado. Agora repita em voz alta.' : response.error || 'Erro no TTS.');
   }
 
   async function handleRecordToggle() {
@@ -36,7 +55,7 @@ export function SpeakingScreen() {
       }
       setResult(null);
       setRecording(true);
-      setMessage('Gravando... toque novamente para parar.');
+      setMessage('Gravando... fale a frase completa e toque novamente para analisar.');
       return;
     }
 
@@ -65,64 +84,118 @@ export function SpeakingScreen() {
     }
 
     setResult(analyzed.result);
-    setMessage('Análise concluída.');
+    setMessage('Análise concluída. Veja seu feedback abaixo.');
   }
 
   const score = result?.pronunciationScore ?? result?.accuracyScore ?? '—';
+  const practiced = result ? 1 : 0;
 
   return (
     <section className="screen-stack speaking-screen-stack">
       <div className="speaking-hero-card">
         <SectionHeader
-          eyebrow="Speaking"
-          title="Treine sua fala com segurança"
-          description="Ouça o modelo, grave sua resposta e receba feedback quando o Azure estiver disponível. O backend privado permanece intacto."
+          eyebrow="Speaking · A1"
+          title="Pratique sua fala com um roteiro claro"
+          description="Escute, repita, grave e receba feedback de pronúncia sem alterar o backend Azure privado."
         />
       </div>
 
-      <div className="stats-grid">
-        <StatCard label="Modo" value="Azure" hint="backend preservado" icon={ShieldCheck} />
-        <StatCard label="Sessão" value={recording ? 'gravando' : 'pronto'} hint="microfone" icon={Mic} />
-        <StatCard label="Score" value={String(score)} hint={result ? 'última análise' : 'sem análise'} icon={Waves} />
+      <div className="speaking-metrics-grid">
+        <article className="speaking-metric-card">
+          <ShieldCheck size={22} />
+          <span>Modo</span>
+          <strong>Azure</strong>
+          <small>backend preservado</small>
+        </article>
+        <article className="speaking-metric-card">
+          <Mic size={22} />
+          <span>Sessão</span>
+          <strong>{recording ? 'gravando' : analyzing ? 'analisando' : 'pronto'}</strong>
+          <small>microfone</small>
+        </article>
+        <article className="speaking-metric-card">
+          <Waves size={22} />
+          <span>Score</span>
+          <strong>{score}</strong>
+          <small>{result ? 'última análise' : 'sem análise'}</small>
+        </article>
       </div>
 
-      <Card eyebrow="Preparação" title="Liberar áudio e ouvir modelo">
-        <div className="speaking-prompt">
-          <p>“{referenceText}”</p>
+      <Card eyebrow="Roteiro" title="Como praticar agora">
+        <div className="speaking-step-list">
+          {speakingSteps.map((step, index) => (
+            <div className="speaking-step" key={step}>
+              <b>{index + 1}</b>
+              <span>{step}</span>
+            </div>
+          ))}
         </div>
-        <div className="audio-actions">
+      </Card>
+
+      <Card eyebrow="Frase principal" title="Leia em voz alta">
+        <div className="speaking-main-prompt">
+          <span>Modelo</span>
+          <p>{referenceText}</p>
+        </div>
+        <div className="speaking-focus-row">
+          {focusWords.map((word) => (
+            <span key={word}>{word}</span>
+          ))}
+        </div>
+      </Card>
+
+      <Card eyebrow="Preparação" title="Ouça antes de gravar">
+        <div className="audio-actions speaking-audio-grid">
           <button className="secondary-button" type="button" onClick={handleUnlockAudio}>
             <Headphones size={17} /> Liberar áudio iOS
           </button>
           <button className="secondary-button" type="button" onClick={handleSpeak}>
-            <Volume2 size={17} /> Ouvir frase
+            <Volume2 size={17} /> Ouvir modelo
           </button>
           <button className="secondary-button" type="button" onClick={stopSpeech}>
-            Parar áudio
+            <Square size={16} /> Parar áudio
           </button>
         </div>
       </Card>
 
-      <Card eyebrow="Gravação" title="Leia e grave sua resposta">
-        <div className="speaking-prompt">
-          <p>{referenceText}</p>
+      <Card eyebrow="Gravação" title="Grave sua resposta">
+        <div className="speaking-record-panel">
+          <div>
+            <span>{practiced}/1 prática concluída</span>
+            <strong>{recording ? 'Estamos ouvindo você' : 'Toque para começar'}</strong>
+          </div>
+          <button className="record-button" type="button" onClick={handleRecordToggle} disabled={analyzing}>
+            {recording ? <Square size={18} /> : <Radio size={18} />}
+            {recording ? 'Parar e analisar' : analyzing ? 'Analisando...' : 'Iniciar gravação'}
+          </button>
         </div>
-        <button className="record-button" type="button" onClick={handleRecordToggle} disabled={analyzing}>
-          {recording ? <Square size={18} /> : <Radio size={18} />}
-          {recording ? 'Parar e analisar' : analyzing ? 'Analisando...' : 'Iniciar gravação'}
-        </button>
         <p className="generator-message">{message}</p>
       </Card>
 
-      <Card eyebrow="Diagnóstico" title="Resultado da pronúncia">
-        <div className="score-preview">
+      <Card eyebrow="Feedback" title="Resultado da pronúncia">
+        <div className="score-preview speaking-score-card">
           <span>Pronunciation Score</span>
           <strong>{score}</strong>
           <p>
             {result
               ? `Precisão: ${result.accuracyScore ?? '—'} · Fluência: ${result.fluencyScore ?? '—'} · Completude: ${result.completenessScore ?? '—'}`
-              : 'Configure o endpoint Azure no deploy para receber análise real. Sem endpoint, o app mostra erro claro no diagnóstico.'}
+              : 'Grave a frase para receber score, precisão, fluência e completude quando o Azure estiver disponível.'}
           </p>
+        </div>
+      </Card>
+
+      <Card eyebrow="Desafio final" title="Fale sem ler">
+        <div className="speaking-challenge-card">
+          <Target size={22} />
+          <div>
+            <strong>Apresente sua rotina da manhã em 20 segundos.</strong>
+            <p>Use pelo menos duas palavras do foco: usually, morning, focused, calm.</p>
+          </div>
+        </div>
+        <div className="speaking-tip-list">
+          <span><CheckCircle2 size={15} /> Fale devagar primeiro.</span>
+          <span><Repeat2 size={15} /> Repita a mesma frase 3 vezes.</span>
+          <span><Sparkles size={15} /> Depois tente com suas próprias palavras.</span>
         </div>
       </Card>
     </section>
