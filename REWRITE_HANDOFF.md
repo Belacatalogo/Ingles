@@ -84,53 +84,79 @@ Blocos concluídos:
 
 ## Estado atual para teste
 
-### Limpeza final — `LAB-9` IMPLEMENTADO, AGUARDANDO TESTE DO USUÁRIO
+### Checklist final — `LAB-10` IMPLEMENTADO, AGUARDANDO TESTE DO USUÁRIO
 Objetivo do bloco:
-- remover seletor temporário de pilares da Aula;
-- remover textos técnicos/lab expostos ao usuário final;
-- revisar aparência de produto final antes do checklist.
+- fazer checklist visual final da lab antes do Bloco 8-LAB;
+- garantir que não sobrou rodapé/texto técnico de lab visível;
+- não fazer reestruturação profunda ainda.
 
 Arquivos alterados:
-- `fluency-clean/src/screens/LessonScreen.jsx`
-- `fluency-clean/src/screens/SettingsScreen.jsx`
+- `fluency-clean/src/App.jsx`
 - `REWRITE_HANDOFF.md`
 
-Commits confirmados deste bloco:
-- `f065f786ec282dd0297ed433da621d77a9cda941` — remove seletor temporário da Aula;
-- `93cd9fb6ddc84a3107464b77c6233c70dbe6b80c` — remove textos lab visíveis em Ajustes.
+Commit confirmado deste bloco:
+- `c0049bfab01e142290dfa5da58940491019e2f75` — remove rodapé lab escondido.
 
-O que foi implementado:
-- removido o bloco **Lab preview / Ver UI por pilar** da Aula;
-- Aula agora usa diretamente a aula real salva quando existir;
-- quando não houver aula salva, usa fallback inicial seguro, sem texto de preview/lab;
-- chips da Aula agora mostram **Gerada por IA** ou **Aula inicial**, tipo da aula e nível;
-- removidos textos visíveis de Ajustes como `Fluency Clean Lab`, `rewrite-clean-lab` e `Vercel lab`;
-- Ajustes agora mostra textos finais: `A1 · Plano ativo`, `Sessão ativa`, `Seu app de inglês diário`;
-- varredura feita por termos temporários principais: `Lab preview`, `Ver UI por pilar`, `Preview seguro`, `Fluency Clean Lab`, `rewrite-clean-lab`, `Vercel lab`, `layout-preview`, sem resultados.
+Checklist de arquivos/telas revisados:
+- `App.jsx` — tabs principais, topbar, diagnóstico, navbar e AccessGate;
+- `TodayScreen.jsx` — Hoje/Home já aprovado;
+- `LessonScreen.jsx` — Aula sem seletor temporário de pilares;
+- `SpeakingScreen.jsx` — Conversa, Pronúncia e Imersão dentro de Speaking;
+- `FlashcardsScreen.jsx` — Cartas/Flashcards;
+- `ProgressScreen.jsx` — Progresso;
+- `SettingsScreen.jsx` — Ajustes/Configurações.
+
+O que foi limpo no LAB-10:
+- removido `PREVIEW_VERSION` de `App.jsx`;
+- removido o `<footer className="preview-version-footer">` que ainda existia escondido por CSS;
+- nova varredura feita por termos temporários principais:
+  - `rewrite-clean-lab`;
+  - `Fluency Clean Lab`;
+  - `Vercel lab`;
+  - `Lab preview`;
+  - `Ver UI por pilar`;
+  - `Preview seguro`;
+  - `layout-preview`;
+  - `preview-version-footer`;
+- resultado da varredura: sem resultados.
 
 Limites intencionais:
-- não removeu ferramenta interna de diagnóstico;
-- não mexeu em backend, Azure, Firebase, Gemini, HTML, bundle ou integrações;
-- não reestruturou conteúdo pedagógico profundo das aulas ainda.
+- diagnóstico lateral foi mantido porque ainda é útil para testes reais;
+- não houve alteração em backend, Azure, Firebase, Gemini, HTML ou bundle;
+- não houve integração das chaves gerais de IA com Speaking/Imersão ainda;
+- não houve reestruturação profunda do conteúdo pedagógico das aulas ainda.
 
 ## Próximo bloco correto
 
-### Se LAB-9 for aprovado no Vercel/iPhone
-Próximo: `LAB-10 — checklist visual final da lab`.
+### Se LAB-10 for aprovado no Vercel/iPhone
+Próximo: `Bloco 8-LAB — reestruturação profunda das aulas/conteúdo pedagógico`.
 
-Objetivo do LAB-10:
-- revisar visualmente Hoje, Aula, Speaking/Imersão, Cartas, Progresso e Ajustes;
-- confirmar rolagem, navbar, diagnóstico e ausência de tela branca;
-- listar qualquer ajuste visual residual antes do Bloco 8-LAB;
-- não fazer reestruturação profunda ainda.
+Objetivo do Bloco 8-LAB:
+- mexer na profundidade pedagógica das aulas;
+- organizar os tipos de aula gerados por IA;
+- melhorar renderização do conteúdo real da aula;
+- manter o sistema modular em `fluency-clean/src/`;
+- não mexer em backend Azure privado sem necessidade.
 
-### Se LAB-9 tiver problema
-Não avançar. Corrigir cirurgicamente apenas `LAB-9` na branch lab.
+### Se LAB-10 tiver problema
+Não avançar. Corrigir cirurgicamente apenas o problema visual encontrado na branch lab.
 
-## Ordem restante dos blocos de UI
+## Checklist manual para o usuário no Vercel/iPhone
 
-1. `LAB-10` — checklist visual final da lab.
-2. `Bloco 8-LAB` — reestruturação profunda das aulas, só depois do checklist visual.
+1. Abrir **Hoje** e confirmar rolagem, cards e gerador de aula recolhido.
+2. Abrir **Aula** e confirmar que não existe mais seletor temporário de pilares.
+3. Abrir **Speaking** e testar os três modos: Conversa, Pronúncia e Imersão.
+4. Abrir **Cartas** e virar a carta.
+5. Abrir **Progresso** e rolar até o final.
+6. Abrir **Ajustes** e testar categorias + Chaves de aulas/IA geral.
+7. Tocar no diagnóstico lateral e fechar.
+8. Confirmar que não há tela branca nem texto técnico visível.
+
+## Ordem restante dos blocos
+
+1. `Bloco 8-LAB` — reestruturação profunda das aulas.
+2. Checklist funcional real: login, áudio, Azure, Gemini, geração/conclusão de aula e persistência.
+3. Só depois, considerar promoção/merge para branch estável, se o usuário pedir explicitamente.
 
 ## Estratégia de segurança
 
@@ -161,7 +187,7 @@ Depois de cada bloco, o usuário testa no Vercel pelo iPhone. Só avançar se el
 ## Como continuar em outro chat
 Mensagem recomendada:
 
-"Continue a reconstrução do Fluency usando SOMENTE a branch `rewrite-fluency-clean-lab`. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. O teste é feito no Vercel preview da branch lab, pelo iPhone. Speaking, Hoje, Navbar, Aula, Cartas, Progresso, Ajustes e Imersão estão aprovados/organizados. O `LAB-9` removeu o seletor temporário da Aula e limpou textos técnicos visíveis, aguardando aprovação. Não mexa na `main`, não mexa na `rewrite-fluency-clean`, não use HTML remendado, DOM injection ou bundle patch. Continue modularmente em `fluency-clean/src/`."
+"Continue a reconstrução do Fluency usando SOMENTE a branch `rewrite-fluency-clean-lab`. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. O teste é feito no Vercel preview da branch lab, pelo iPhone. Speaking, Hoje, Navbar, Aula, Cartas, Progresso, Ajustes e Imersão estão aprovados/organizados. O `LAB-10` fez o checklist final visual e removeu o rodapé lab escondido; está aguardando aprovação. Próximo bloco correto depois da aprovação é `Bloco 8-LAB — reestruturação profunda das aulas`. Não mexa na `main`, não mexa na `rewrite-fluency-clean`, não use HTML remendado, DOM injection ou bundle patch. Continue modularmente em `fluency-clean/src/`."
 
 ## Última orientação operacional
 A partir deste handoff, qualquer alteração fora de `rewrite-fluency-clean-lab` deve ser considerada erro, salvo pedido explícito do usuário.
