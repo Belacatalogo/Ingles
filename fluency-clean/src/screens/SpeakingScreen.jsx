@@ -71,12 +71,14 @@ export function SpeakingScreen() {
   const score = result?.pronunciationScore ?? result?.accuracyScore ?? '—';
 
   return (
-    <section className="screen-stack">
-      <SectionHeader
-        eyebrow="Speaking"
-        title="Prática oral com feedback confiável"
-        description="Áudio, gravação e Azure ficam em serviços separados. O backend privado permanece intacto."
-      />
+    <section className="screen-stack speaking-screen-stack">
+      <div className="speaking-hero-card">
+        <SectionHeader
+          eyebrow="Speaking"
+          title="Treine sua fala com segurança"
+          description="Ouça o modelo, grave sua resposta e receba feedback quando o Azure estiver disponível. O backend privado permanece intacto."
+        />
+      </div>
 
       <div className="stats-grid">
         <StatCard label="Modo" value="Azure" hint="backend preservado" icon={ShieldCheck} />
