@@ -1,4 +1,5 @@
 import { diagnostics } from './diagnostics.js';
+import { markCurriculumLessonComplete } from './curriculumPlan.js';
 import { normalizeLesson } from './lessonTypes.js';
 import { storage } from './storage.js';
 
@@ -26,6 +27,10 @@ export function saveCurrentLesson(lesson) {
   return normalized;
 }
 
+export function completeCurrentLessonInCurriculum(lesson) {
+  return markCurriculumLessonComplete(lesson);
+}
+
 export function clearCurrentLesson() {
   storage.remove(CURRENT_LESSON_KEY);
   diagnostics.log('Aula atual removida.', 'info');
@@ -38,7 +43,7 @@ export function getLessonHistory() {
 export function getLessonPromptDraft() {
   return storage.getText(
     LESSON_DRAFT_PROMPT_KEY,
-    'Gere uma aula de Reading A1 completa, com texto natural, vocabulário, exercícios, respostas guiadas e prática final.'
+    'Gerar a próxima aula do cronograma Fluency automaticamente, respeitando pré-requisitos, nível atual e ordem pedagógica.'
   );
 }
 
