@@ -31,6 +31,7 @@ export function AccessGate({ children }) {
   const [firebaseVersion, setFirebaseVersion] = useState(0);
   const [firebaseForm, setFirebaseForm] = useState(() => getInitialFirebaseForm());
   const [message, setMessage] = useState('');
+  const [authMode, setAuthMode] = useState('');
   const firebase = useMemo(() => getFirebaseStatus(), [firebaseVersion]);
   const expectedAccessCode = useMemo(() => getExpectedAccessCode(), []);
   const hasAccessCode = Boolean(expectedAccessCode);
@@ -51,18 +52,30 @@ export function AccessGate({ children }) {
 
   if (session?.unlocked || user) return children;
 
-  async function handleGoogleLogin() {
-    setMessage('Abrindo login com Google...');
-    const result = await signInWithGoogle({ preferRedirect: true });
+  async function handleGoogleLogin(mode) {
+    setAuthMode(mode);
+    setMessage(mode === 'popup' ? 'Abrindo Google por popup...' : 'Abrindo Google por redirecionamento...');
+    diagnostics.log(`Botão Google acionado no AccessGate: ${mode}.`, 'info');
+
+    const result = await signInWithGoogle({ mode });
 
     if (!result.ok) {
       setMessage(result.error || 'Não foi possível iniciar o login com Google.');
+      setAuthMode('');
+      return;
+    }
+
+    if (result.user) {
+      const nextSession = setAccessSession('google');
+      setSession(nextSession);
       return;
     }
 
     if (result.redirect) {
-      setMessage('Login iniciado. Ao voltar do Google, o app deve liberar automaticamente.');
+      setMessage('Redirect solicitado. Se nada abrir, teste a opção popup ou confira domínio autorizado no Firebase.');
     }
+
+    setAuthMode('');
   }
 
   function handleAccessCodeSubmit(event) {
@@ -148,9 +161,14 @@ export function AccessGate({ children }) {
           </div>
         </div>
 
-        <button type="button" className="primary-button" onClick={handleGoogleLogin} disabled={!firebase.configured}>
-          Entrar com Google
-        </button>
+        <div className="google-auth-actions">
+          <button type="button" className="primary-button" onClick={() => handleGoogleLogin('redirect')} disabled={!firebase.configured || Boolean(authMode)}>
+            {authMode === 'redirect' ? 'Abrindo Google...' : 'Entrar com Google'}
+          </button>
+          <button type="button" className="secondary-button" onClick={() => handleGoogleLogin('popup')} disabled={!firebase.configured || Boolean(authMode)}>
+            {authMode === 'popup' ? 'Abrindo popup...' : 'Tentar Google por popup'}
+          </button>
+        </div>
 
         <form className="access-code-form" onSubmit={handleAccessCodeSubmit}>
           <label htmlFor="access-code">Código de acesso</label>
@@ -206,7 +224,7 @@ export function AccessGate({ children }) {
           Reiniciar acesso
         </button>
 
-        {message ? <p className="generator-message">{message}</p> : null}
+        {message ? <p className="generator-message auth-message">{message}</p> : null}
       </section>
     </main>
   );
