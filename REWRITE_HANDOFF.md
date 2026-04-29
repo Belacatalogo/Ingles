@@ -86,17 +86,25 @@ Não mexer na `main` durante a reconstrução. Tudo deve acontecer nesta branch 
 - Faz cache local por texto/voz/estilo.
 - Usa Web Speech API como fallback se Gemini TTS falhar ou não houver key.
 - `ReadingLesson.jsx` agora usa Gemini TTS no botão “Ouvir texto”.
-- `services/index.js` exporta `generateGeminiTtsAudio` e `playGeminiTtsAudio`.
+
+### Bloco 7.1 — Validação real da geração Gemini
+- `App.jsx` agora passa `onLessonGenerated` e `lessonRevision` para as telas.
+- Quando a aula é gerada, o app muda automaticamente para a aba Aula.
+- `TodayScreen.jsx` passa o callback para `LessonGeneratorPanel`.
+- `LessonGeneratorPanel.jsx` mostra status das keys, alerta se não houver key, loga clique e erros com mais clareza.
+- `LessonScreen.jsx` recarrega a aula salva quando `lessonRevision` muda.
+- `index.css` recebeu estilos para `generation-status-box` e `inline-warning`.
 
 ## Próximo passo recomendado
 
-### Verificar preview atualizado
+### Testar geração de aula real no preview
 - Esperar o workflow publicar `preview-clean` novamente.
-- Abrir o mesmo link do preview.
-- Adicionar key de aula na aba Progresso.
-- Abrir Aula > Reading.
-- Tocar em “Ouvir texto”.
-- Se o Gemini TTS falhar, o app deve usar TTS do navegador e mostrar logs no diagnóstico.
+- Abrir o preview.
+- Ir em Progresso e confirmar que uma key de aula está salva.
+- Ir em Hoje e clicar em Gerar aula.
+- Acompanhar o painel Diagnóstico.
+- O app deve mudar sozinho para a aba Aula quando terminar.
+- Testar “Ouvir texto” na aula gerada.
 
 ## Blocos restantes
 
