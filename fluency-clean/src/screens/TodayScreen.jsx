@@ -68,8 +68,6 @@ export function TodayScreen({ onLessonGenerated, onNavigate }) {
         })}
       </div>
 
-      <LessonGeneratorPanel onGenerated={onLessonGenerated} />
-
       <section className="reference-week-card">
         <div>
           <span>Esta semana</span>
@@ -96,6 +94,11 @@ export function TodayScreen({ onLessonGenerated, onNavigate }) {
           <button type="button"><Sparkles size={17} /> Ouvir</button>
         </footer>
       </section>
+
+      <details className="reference-generator-details">
+        <summary><Sparkles size={17} /> Gerar nova aula por IA</summary>
+        <LessonGeneratorPanel onGenerated={onLessonGenerated} />
+      </details>
     </section>
   );
 }
