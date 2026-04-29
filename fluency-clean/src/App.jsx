@@ -1,5 +1,6 @@
 import { BookOpen, Brain, CalendarDays, Flame, Home, LineChart, Mic, Settings, Sparkles } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import { AccessGate } from './components/auth/AccessGate.jsx';
 import { BottomNav } from './components/layout/BottomNav.jsx';
 import { DiagnosticPanel } from './components/system/DiagnosticPanel.jsx';
 import { TodayScreen } from './screens/TodayScreen.jsx';
@@ -18,7 +19,7 @@ const tabs = [
   { id: 'settings', label: 'Ajustes', icon: Settings, component: SettingsScreen },
 ];
 
-export function App() {
+function AppContent() {
   const [activeTab, setActiveTab] = useState('today');
   const current = useMemo(() => tabs.find((tab) => tab.id === activeTab) ?? tabs[0], [activeTab]);
   const Screen = current.component;
@@ -38,10 +39,10 @@ export function App() {
 
       <section className="hero-card">
         <div>
-          <p className="eyebrow">Bloco 1 · Interface base</p>
+          <p className="eyebrow">Bloco 4 · Firebase / Google</p>
           <h1>Um app limpo para estudar inglês todos os dias.</h1>
           <p className="hero-text">
-            Estrutura visual modular, pronta para receber Firebase, Gemini, Azure e as aulas por tipo sem remendos no bundle.
+            Estrutura modular com camada de autenticação separada, pronta para receber Firebase, Gemini, Azure e aulas por tipo sem remendos no bundle.
           </p>
         </div>
         <div className="hero-orb" aria-hidden="true">
@@ -58,7 +59,7 @@ export function App() {
         <div>
           <Sparkles size={17} />
           <span>Status</span>
-          <strong>Visual limpo</strong>
+          <strong>Auth preparado</strong>
         </div>
       </section>
 
@@ -67,5 +68,13 @@ export function App() {
       <DiagnosticPanel />
       <BottomNav tabs={tabs} activeTab={activeTab} onChange={setActiveTab} />
     </main>
+  );
+}
+
+export function App() {
+  return (
+    <AccessGate>
+      <AppContent />
+    </AccessGate>
   );
 }
