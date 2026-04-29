@@ -1,6 +1,6 @@
 export function BottomNav({ tabs, activeTab, onChange }) {
   return (
-    <nav className="bottom-nav" aria-label="Navegação principal">
+    <nav className="bottom-nav reference-bottom-nav" aria-label="Navegação principal">
       {tabs.map((tab) => {
         const Icon = tab.icon;
         const active = tab.id === activeTab;
@@ -10,8 +10,9 @@ export function BottomNav({ tabs, activeTab, onChange }) {
             type="button"
             className={active ? 'nav-item active' : 'nav-item'}
             onClick={() => onChange(tab.id)}
+            aria-label={tab.label}
           >
-            <Icon size={19} />
+            <Icon size={21} />
             <span>{tab.label}</span>
           </button>
         );
