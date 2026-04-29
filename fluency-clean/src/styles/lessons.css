@@ -1,3 +1,9 @@
+.layout-preview-switcher { display: grid; gap: 12px; padding: 14px; border: 1px solid rgba(251,191,36,.22); border-radius: 20px; background: rgba(251,191,36,.07); }
+.layout-preview-switcher span { display: flex; align-items: center; gap: 7px; color: #fde68a; font-weight: 900; font-size: 13px; }
+.layout-preview-switcher p { margin: 6px 0 0; font-size: 12px; line-height: 1.45; }
+.layout-preview-actions { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; }
+.layout-preview-actions button { flex: 0 0 auto; min-height: 38px; padding: 0 12px; border-radius: 999px; border: 1px solid rgba(148,163,184,.16); color: #dbeafe; background: rgba(15,23,42,.62); font-weight: 850; }
+.layout-preview-actions button.active { color: white; border-color: rgba(91,156,246,.48); background: linear-gradient(135deg, rgba(91,156,246,.36), rgba(167,139,250,.26)); }
 .grammar-layout { display: grid; gap: 14px; }
 .grammar-study-grid { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(240px, .85fr); gap: 14px; }
 .grammar-main-panel,
