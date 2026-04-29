@@ -10,7 +10,8 @@ Todas as próximas alterações devem acontecer SOMENTE na branch:
 `rewrite-fluency-clean-lab`
 
 Não alterar `main`.
-Não alterar `rewrite-fluency-clean`.
+Não alterar `rewrite-fluency-clean` sem confirmação explícita de promoção.
+Não deletar `rewrite-fluency-clean-lab` após merge.
 Não mexer em `bundle.js`.
 Não usar DOM injection.
 Não criar bundle patch.
@@ -18,7 +19,89 @@ Não mexer no backend Azure privado.
 
 ## Estado atual para teste
 
-### Bloco 8-LAB-8C — Ícone PWA PNG para iOS IMPLEMENTADO, aguardando teste
+### Bloco 8-LAB-9 — Preparação para promoção controlada IMPLEMENTADO
+
+Objetivo:
+- revisar o estado da lab antes de qualquer promoção;
+- preparar uma promoção controlada para `rewrite-fluency-clean` sem tocar em `main`;
+- listar escopo, riscos, checklist e rollback;
+- deixar claro que a promoção só acontece com confirmação explícita do usuário.
+
+Resultado da revisão:
+- comparação feita: `rewrite-fluency-clean` → `rewrite-fluency-clean-lab`;
+- estado: lab está à frente da estável e não está atrás;
+- não há divergência nova na branch estável que precise ser preservada antes da promoção;
+- a promoção futura pode ser feita de forma controlada da lab para `rewrite-fluency-clean`;
+- `main` permanece intocada;
+- `bundle.js` permanece intocado;
+- backend Azure privado permanece intocado.
+
+Escopo que será promovido para `rewrite-fluency-clean` somente se o usuário pedir explicitamente:
+- nova UI principal aprovada;
+- áudio natural Gemini com fallback;
+- cronograma profundo A1 → C2;
+- travas pedagógicas e domínio por pilar;
+- revisão adaptativa de sábado;
+- sync Google + Firebase/Firestore;
+- checklist funcional LAB-8;
+- PWA iOS com manifest, service worker e metadados;
+- ícone PWA PNG 180x180 para iOS;
+- arquivos modulares em `fluency-clean/src/`, `fluency-clean/public/` e configurações reais.
+
+Arquivos/famílias relevantes no delta lab → estável:
+- `fluency-clean/src/` com componentes, telas, serviços e estilos modularizados;
+- `fluency-clean/public/manifest.webmanifest`;
+- `fluency-clean/public/pwa-icon.svg`;
+- `fluency-clean/public/apple-touch-icon.png`;
+- `fluency-clean/public/sw.js`;
+- `fluency-clean/index.html`;
+- `fluency-clean/vercel.json`;
+- `REWRITE_HANDOFF.md`.
+
+Riscos controlados antes da promoção:
+- Vercel pode gerar outro preview para a branch estável após merge;
+- o preview da lab deve continuar existindo enquanto a branch `rewrite-fluency-clean-lab` não for deletada;
+- PWA no iOS pode manter cache antigo, então em teste pode ser necessário remover o ícone antigo e adicionar novamente;
+- service worker pode manter cache temporário, então validar em Safari após deploy Ready;
+- login Google/Firebase precisa ser testado no domínio/preview da branch promovida porque domínios autorizados podem variar;
+- nenhum dado real deve ser apagado, pois sync usa Firestore/localStorage, mas login/progresso deve ser conferido após o merge.
+
+Checklist obrigatório antes de pedir promoção:
+1. confirmar que o preview da branch lab está Ready no Vercel;
+2. abrir no iPhone pelo Safari;
+3. testar login Google/código de acesso;
+4. testar Hoje;
+5. gerar/abrir Aula;
+6. testar áudio natural;
+7. testar Progresso;
+8. testar Diagnóstico;
+9. instalar como PWA e abrir em modo app web;
+10. confirmar que o ícone PNG aparece corretamente;
+11. confirmar que nada importante foi quebrado.
+
+Plano de promoção futura para `rewrite-fluency-clean`:
+1. manter `rewrite-fluency-clean-lab` viva;
+2. criar PR ou merge controlado de `rewrite-fluency-clean-lab` → `rewrite-fluency-clean`;
+3. não marcar opção de deletar branch lab;
+4. aguardar deploy/preview da branch estável ficar Ready;
+5. testar a branch estável pelo iPhone;
+6. se aprovado, manter `rewrite-fluency-clean` como versão estável;
+7. só depois planejar qualquer ida para `main`, em bloco separado e com confirmação explícita.
+
+Plano de rollback se a branch estável quebrar após promoção:
+- não mexer em `main`;
+- manter o commit anterior da `rewrite-fluency-clean` anotado antes da promoção;
+- reverter a promoção na `rewrite-fluency-clean` para o commit anterior estável;
+- manter `rewrite-fluency-clean-lab` para correção cirúrgica;
+- corrigir somente o problema encontrado na lab;
+- testar novamente no preview lab antes de tentar nova promoção.
+
+Status:
+- LAB-9 concluído como preparação documental e técnica;
+- nenhuma promoção foi feita;
+- próxima ação só deve acontecer com confirmação explícita do usuário.
+
+### Bloco 8-LAB-8C — Ícone PWA PNG para iOS IMPLEMENTADO/APROVADO VISUALMENTE
 
 Objetivo:
 - garantir ícone próprio para iOS ao adicionar o Fluency à Tela de Início;
@@ -40,15 +123,11 @@ O que foi implementado:
 - nenhuma alteração em `bundle.js`;
 - nenhuma alteração em `main`, `rewrite-fluency-clean` ou backend Azure.
 
-Teste recomendado no iPhone:
-1. esperar o deploy da branch lab ficar Ready;
-2. abrir o link da branch lab no Safari;
-3. remover o ícone antigo da Tela de Início, se já tinha sido adicionado antes;
-4. tocar em **Compartilhar > Adicionar à Tela de Início**;
-5. confirmar se o ícone aparece corretamente como PNG;
-6. abrir pelo ícone criado;
-7. confirmar modo tela cheia/standalone;
-8. testar login, Hoje, Aula, Diagnóstico e PWA básico.
+Resultado do teste visual:
+- usuário enviou imagem do iPhone mostrando o fluxo “Adicionar à Tela de Início”;
+- nome `Fluency` apareceu correto;
+- ícone apareceu corretamente;
+- opção “Abrir como app web” apareceu ativada.
 
 ### Bloco 8-LAB-8B — PWA instalável no iOS IMPLEMENTADO
 
@@ -114,33 +193,26 @@ Observação:
 - usuário confirmou que o áudio natural Gemini funcionou;
 - fallback do navegador ficou apenas como último recurso.
 
-## Próximo bloco provável
-
-### `Bloco 8-LAB-9 — Preparação para promoção controlada`
-Objetivo:
-- revisar build/preview final;
-- preparar plano de promoção para branch estável;
-- não mexer em main automaticamente;
-- listar exatamente o que será promovido, riscos e rollback;
-- só promover se o usuário pedir explicitamente.
+## Próximo bloco possível
 
 ### `Bloco 8-LAB-10 — Promoção para branch estável` — somente com confirmação explícita
 Objetivo:
-- promover a versão aprovada da lab para `rewrite-fluency-clean` ou outra branch estável definida pelo usuário;
-- não tocar em `main` sem pedido explícito;
-- testar novamente o preview estável.
+- promover a versão aprovada da lab para `rewrite-fluency-clean`;
+- não deletar `rewrite-fluency-clean-lab`;
+- não tocar em `main`;
+- testar novamente o preview estável no iPhone.
 
-### `Bloco 8-LAB-11 — Promoção para main` — somente com confirmação explícita
+### `Bloco 8-LAB-11 — Promoção para main` — somente com confirmação explícita posterior
 Objetivo:
 - levar o sistema aprovado para produção/main;
 - fazer plano de rollback;
 - validar domínio final, login Google/Firebase e PWA no domínio definitivo.
 
-Se o `Bloco 8-LAB-8C` tiver problema:
-- não avançar;
+Se houver qualquer problema antes da promoção:
+- não promover;
 - corrigir cirurgicamente apenas a falha encontrada na branch lab;
-- manter o escopo limitado a PWA/manifest/metadados/ícone.
+- manter escopo limitado ao problema encontrado.
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency usando SOMENTE a branch `rewrite-fluency-clean-lab`. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. O teste é feito no Vercel preview da branch lab, pelo iPhone. O `Bloco 8-LAB-8C` adicionou `apple-touch-icon.png` 180x180 e atualizou manifest/metadados iOS. O próximo bloco provável é `BLOCO-8-LAB-9 — Preparação para promoção controlada`, sem tocar em `main` e sem promover nada sem confirmação explícita. Não mexa na `main`, não mexa na `rewrite-fluency-clean`, não mexa em `bundle.js`, não use DOM injection ou bundle patch. Continue modularmente em `fluency-clean/src/`, `fluency-clean/public/` ou configuração real quando necessário."
+"Continue a reconstrução do Fluency usando SOMENTE a branch `rewrite-fluency-clean-lab`. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. O teste é feito no Vercel preview da branch lab, pelo iPhone. O `Bloco 8-LAB-9` preparou a promoção controlada: a lab está à frente da `rewrite-fluency-clean` e não está atrás; nenhuma promoção foi feita. O próximo bloco possível é `BLOCO-8-LAB-10 — Promoção para branch estável`, somente com confirmação explícita. Não mexa na `main`, não delete a branch lab, não mexa em `bundle.js`, não use DOM injection ou bundle patch. Continue modularmente em `fluency-clean/src/`, `fluency-clean/public/` ou configuração real quando necessário."
