@@ -1,6 +1,6 @@
 import { LockKeyhole, Mail, ShieldCheck, UserCheck } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
-import { logout, signInWithGoogle, subscribeAuth } from '../../services/auth.js';
+import { logout, resolveGoogleRedirectResult, signInWithGoogle, subscribeAuth } from '../../services/auth.js';
 import { clearAccessSession, getAccessSession, setAccessSession, validateAccessCode } from '../../services/accessCode.js';
 import { diagnostics } from '../../services/diagnostics.js';
 import {
@@ -35,6 +35,38 @@ export function AccessGate({ children }) {
   const firebase = useMemo(() => getFirebaseStatus(), [firebaseVersion]);
   const expectedAccessCode = useMemo(() => getExpectedAccessCode(), []);
   const hasAccessCode = Boolean(expectedAccessCode);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function resolveRedirect() {
+      if (!firebase.configured) return;
+      setMessage('Verificando retorno do Google...');
+      const result = await resolveGoogleRedirectResult();
+
+      if (cancelled) return;
+
+      if (!result.ok) {
+        setMessage(result.error || 'Erro ao verificar retorno do Google.');
+        return;
+      }
+
+      if (result.user) {
+        const nextSession = setAccessSession('google-redirect');
+        setUser(result.user);
+        setSession(nextSession);
+        return;
+      }
+
+      setMessage('');
+    }
+
+    resolveRedirect();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [firebase.configured, firebaseVersion]);
 
   useEffect(() => {
     const unsubscribe = subscribeAuth((nextUser) => {
