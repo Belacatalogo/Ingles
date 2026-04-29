@@ -1,5 +1,3 @@
-import { scheduleCloudSync } from './cloudSync.js';
-
 const PREFIX = 'fluency.clean.';
 
 function safeJsonParse(value, fallback) {
@@ -19,10 +17,11 @@ function shouldSync(name) {
   return !String(name || '').startsWith('cloud.sync.') && !String(name || '').startsWith('diagnostics.');
 }
 
-function notifySync(name) {
+async function notifySync(name) {
   if (!shouldSync(name)) return;
   try {
-    scheduleCloudSync(`storage:${name}`);
+    const module = await import('./cloudSync.js');
+    module.scheduleCloudSync?.(`storage:${name}`);
   } catch {
     // Sync is best-effort; local storage remains the fallback.
   }
