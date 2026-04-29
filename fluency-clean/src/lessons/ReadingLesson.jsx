@@ -1,21 +1,23 @@
-import { BookOpen, CheckCircle2, Headphones, Lightbulb, ListChecks, MessageSquareText, PencilLine, Sparkles, Target } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { BookOpen, CheckCircle2, Headphones, Lightbulb, ListChecks, Loader2, MessageSquareText, PencilLine, Sparkles, Target } from 'lucide-react';
 import { Card } from '../components/ui/Card.jsx';
 import { ProgressPill } from '../components/ui/ProgressPill.jsx';
+import { playGeminiTtsAudio } from '../services/geminiTts.js';
 
-const paragraphs = [
+const fallbackParagraphs = [
   'Every morning, Ana opens her notebook and writes three simple goals for the day. She likes short tasks because they help her feel focused and calm.',
   'After breakfast, she reads a small text in English. She does not understand every word, but she marks the new words and tries to guess the meaning from context.',
   'At night, Ana reviews the words again. She writes one sentence with each word and says the sentences out loud. This small habit helps her remember vocabulary and feel more confident.',
 ];
 
-const vocabulary = [
+const fallbackVocabulary = [
   { word: 'goal', meaning: 'meta, objetivo', example: 'My goal is to study English every day.' },
   { word: 'focused', meaning: 'concentrado', example: 'I feel focused in the morning.' },
   { word: 'context', meaning: 'contexto', example: 'Guess the meaning from context.' },
   { word: 'habit', meaning: 'hábito', example: 'Reading is a good habit.' },
 ];
 
-const comprehension = [
+const fallbackComprehension = [
   {
     question: 'What does Ana write in her notebook?',
     options: ['Three simple goals', 'A shopping list', 'A long story'],
@@ -39,7 +41,51 @@ const steps = [
   'Responda às perguntas e escreva uma frase curta em inglês.',
 ];
 
+function normalizeReadingParagraphs(lesson) {
+  const sections = Array.isArray(lesson?.sections) ? lesson.sections : [];
+  const sectionTexts = sections
+    .map((section) => section?.text || section?.content || section?.body || '')
+    .filter(Boolean);
+
+  if (sectionTexts.length) return sectionTexts;
+  if (lesson?.listeningText) return [lesson.listeningText];
+  if (lesson?.intro) return [lesson.intro, ...fallbackParagraphs.slice(1)];
+  return fallbackParagraphs;
+}
+
+function normalizeVocabulary(lesson) {
+  return Array.isArray(lesson?.vocabulary) && lesson.vocabulary.length ? lesson.vocabulary : fallbackVocabulary;
+}
+
+function normalizeComprehension(lesson) {
+  return Array.isArray(lesson?.exercises) && lesson.exercises.length ? lesson.exercises : fallbackComprehension;
+}
+
 export function ReadingLesson({ lesson }) {
+  const [audioState, setAudioState] = useState('idle');
+  const [audioMessage, setAudioMessage] = useState('Gemini TTS natural disponível quando houver key de aula.');
+  const paragraphs = useMemo(() => normalizeReadingParagraphs(lesson), [lesson]);
+  const vocabulary = useMemo(() => normalizeVocabulary(lesson), [lesson]);
+  const comprehension = useMemo(() => normalizeComprehension(lesson), [lesson]);
+  const readingText = paragraphs.join('\n\n');
+
+  async function handleListen() {
+    setAudioState('loading');
+    setAudioMessage('Preparando áudio natural...');
+
+    const result = await playGeminiTtsAudio({
+      text: readingText,
+      voiceName: 'Kore',
+      style: 'Natural American English teacher voice, calm and clear, moderate speed, ideal for A1 Brazilian learners.',
+    });
+
+    setAudioState('idle');
+    if (result.source === 'gemini') setAudioMessage('Áudio natural Gemini reproduzido.');
+    else if (result.source === 'cache') setAudioMessage('Áudio natural carregado do cache.');
+    else if (result.source === 'browser-fallback') setAudioMessage('Gemini TTS indisponível; usei o TTS do navegador como fallback.');
+    else setAudioMessage(result.error || 'Não foi possível reproduzir áudio.');
+  }
+
   return (
     <article className="reading-layout reading-lesson-v2">
       <Card
@@ -84,8 +130,12 @@ export function ReadingLesson({ lesson }) {
         <aside className="reading-side-panel">
           <div className="mini-card listening-card">
             <div className="panel-title"><Headphones size={18} /> Escuta guiada</div>
-            <p>O áudio será conectado no bloco de áudio. O botão já fica no lugar certo para evitar remendos depois.</p>
-            <button type="button" className="secondary-button">Ouvir texto</button>
+            <p>O botão usa Gemini TTS natural com fallback automático para TTS do navegador.</p>
+            <button type="button" className="secondary-button" onClick={handleListen} disabled={audioState === 'loading'}>
+              {audioState === 'loading' ? <Loader2 size={16} className="spin" /> : <Headphones size={16} />}
+              {audioState === 'loading' ? 'Gerando áudio...' : 'Ouvir texto'}
+            </button>
+            <p className="generator-message">{audioMessage}</p>
           </div>
 
           <div className="mini-card">
@@ -98,11 +148,11 @@ export function ReadingLesson({ lesson }) {
       <section className="reading-section-card">
         <div className="panel-title"><Sparkles size={18} /> Vocabulário importante</div>
         <div className="vocabulary-grid">
-          {vocabulary.map((item) => (
-            <article className="vocab-card" key={item.word}>
-              <strong>{item.word}</strong>
-              <span>{item.meaning}</span>
-              <p>{item.example}</p>
+          {vocabulary.map((item, index) => (
+            <article className="vocab-card" key={item.word || index}>
+              <strong>{item.word || item.term || 'word'}</strong>
+              <span>{item.meaning || item.translation || item.definition || '—'}</span>
+              <p>{item.example || item.sentence || ''}</p>
             </article>
           ))}
         </div>
@@ -112,11 +162,11 @@ export function ReadingLesson({ lesson }) {
         <div className="panel-title"><ListChecks size={18} /> Compreensão</div>
         <div className="comprehension-list">
           {comprehension.map((item, index) => (
-            <article className="question-card" key={item.question}>
+            <article className="question-card" key={item.question || index}>
               <span>Questão {index + 1}</span>
-              <strong>{item.question}</strong>
+              <strong>{item.question || item.prompt || 'Responda à questão.'}</strong>
               <div className="option-list">
-                {item.options.map((option) => (
+                {(item.options || item.choices || []).map((option) => (
                   <button className={option === item.answer ? 'option-button correct' : 'option-button'} type="button" key={option}>
                     {option}
                   </button>
