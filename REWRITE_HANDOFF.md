@@ -135,6 +135,13 @@ Não mexer na `main` durante a reconstrução. Tudo deve acontecer nesta branch 
 - Isso permite validar login Google sem precisar rebuildar o app com `.env` a cada teste.
 - `access.css` recebeu estilos próprios para o painel Firebase.
 
+### Bloco 7.2.2 — Diagnóstico de login Google no iPhone
+- `auth.js` agora diferencia login Google por redirect e por popup.
+- Erros comuns recebem mensagens legíveis: domínio não autorizado, método Google desativado, popup bloqueado ou janela fechada.
+- `AccessGate.jsx` agora mostra dois botões: “Entrar com Google” por redirect e “Tentar Google por popup”.
+- O clique no botão Google agora gera log explícito no Diagnóstico e mensagem visível na tela.
+- `access.css` recebeu estilos para os botões de fallback e mensagem de auth.
+
 ### Bloco 7.4.1 — Correção UX da compreensão Reading
 - `ReadingLesson.jsx` não revela mais a resposta correta antes da interação.
 - O aluno escolhe uma opção e só então recebe feedback visual.
@@ -145,12 +152,11 @@ Não mexer na `main` durante a reconstrução. Tudo deve acontecer nesta branch 
 
 ### Bloco 7.2 — Validar Firebase/Google real
 - Abrir o preview atualizado.
-- Na tela de acesso, abrir “Configurar Firebase neste preview”.
-- Colar a configuração Firebase Web App.
-- Salvar Firebase.
 - Confirmar status `Firebase configurado (runtime)`.
-- Testar login com Google.
-- Se o Google bloquear domínio, adicionar `raw.githack.com` nos domínios autorizados do Firebase Authentication.
+- Testar primeiro “Entrar com Google”.
+- Se nada abrir, testar “Tentar Google por popup”.
+- Se aparecer erro de domínio, adicionar `raw.githack.com` nos domínios autorizados do Firebase Authentication.
+- Se aparecer erro de método, ativar Google em Firebase Authentication > Sign-in method.
 - Confirmar se, ao voltar do Google, o app libera automaticamente.
 - Confirmar se “Reiniciar acesso” limpa a sessão local.
 
