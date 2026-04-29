@@ -36,7 +36,10 @@ export function getLessonHistory() {
 }
 
 export function getLessonPromptDraft() {
-  return storage.getText(LESSON_DRAFT_PROMPT_KEY, 'Gere uma aula de Reading A1 completa, com texto curto, vocabulário, perguntas e resposta guiada.');
+  return storage.getText(
+    LESSON_DRAFT_PROMPT_KEY,
+    'Gere uma aula de Reading A1 completa, com texto natural, vocabulário, exercícios, respostas guiadas e prática final.'
+  );
 }
 
 export function saveLessonPromptDraft(prompt) {
