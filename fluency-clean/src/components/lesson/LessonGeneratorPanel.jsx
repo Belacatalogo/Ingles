@@ -5,6 +5,7 @@ import { diagnostics } from '../../services/diagnostics.js';
 import { generateLessonDraft } from '../../services/geminiLessons.js';
 import { getLessonKeysStatus, getLessonFlashKeys, getLessonProKey } from '../../services/lessonKeys.js';
 import { saveCurrentLesson } from '../../services/lessonStore.js';
+import { buildSaturdayReviewLesson, shouldPrioritizeSaturdayReview } from '../../services/masteryStore.js';
 
 export function LessonGeneratorPanel({ onGenerated }) {
   const [loading, setLoading] = useState(false);
@@ -12,13 +13,14 @@ export function LessonGeneratorPanel({ onGenerated }) {
   const [version, setVersion] = useState(0);
   const keyStatus = useMemo(() => getLessonKeysStatus(), [version]);
   const curriculum = useMemo(() => getCurriculumSummary(), [version]);
-  const nextLesson = curriculum.nextLesson;
+  const saturdayReview = useMemo(() => shouldPrioritizeSaturdayReview() ? buildSaturdayReviewLesson() : null, [version]);
+  const nextLesson = saturdayReview || curriculum.nextLesson;
 
   async function handleGenerate() {
     setVersion((value) => value + 1);
     setLoading(true);
-    setMessage('Gerando a próxima aula do cronograma... acompanhe o diagnóstico.');
-    diagnostics.log('Botão Gerar próxima aula do cronograma acionado.', 'info');
+    setMessage(saturdayReview ? 'Gerando revisão adaptativa de sábado dos 4 pilares...' : 'Gerando a próxima aula do cronograma... acompanhe o diagnóstico.');
+    diagnostics.log(saturdayReview ? 'Botão Gerar revisão adaptativa de sábado acionado.' : 'Botão Gerar próxima aula do cronograma acionado.', 'info');
 
     try {
       const flashKeys = getLessonFlashKeys();
@@ -36,8 +38,10 @@ export function LessonGeneratorPanel({ onGenerated }) {
         return;
       }
 
-      setActiveCurriculumLesson(nextLesson.id);
-      const prompt = buildCurriculumPrompt(nextLesson);
+      if (!saturdayReview) {
+        setActiveCurriculumLesson(nextLesson.id);
+      }
+      const prompt = nextLesson.promptOverride || buildCurriculumPrompt(nextLesson);
 
       const result = await generateLessonDraft({
         prompt,
@@ -54,13 +58,18 @@ export function LessonGeneratorPanel({ onGenerated }) {
         ...result.lesson,
         id: nextLesson.id,
         curriculumId: nextLesson.id,
-        type: nextLesson.type,
+        type: nextLesson.type === 'review' ? result.lesson.type || 'reading' : nextLesson.type,
         level: nextLesson.level,
         unitTitle: nextLesson.unitTitle,
         prerequisites: nextLesson.prerequisites,
+        category: nextLesson.category,
+        checkpoint: nextLesson.checkpoint,
+        pillars: nextLesson.pillars,
+        weakPillars: nextLesson.weakPillars,
+        weakTopics: nextLesson.weakTopics,
       });
-      diagnostics.log(`Aula do cronograma pronta para abrir: ${saved.title}`, 'info');
-      setMessage('Próxima aula do cronograma gerada, salva e aberta na aba Aula.');
+      diagnostics.log(`${saturdayReview ? 'Revisão adaptativa' : 'Aula do cronograma'} pronta para abrir: ${saved.title}`, 'info');
+      setMessage(saturdayReview ? 'Revisão adaptativa de sábado gerada, salva e aberta na aba Aula.' : 'Próxima aula do cronograma gerada, salva e aberta na aba Aula.');
       onGenerated?.(saved);
     } catch (error) {
       diagnostics.log(`Erro inesperado ao gerar aula do cronograma: ${error?.message || error}`, 'error');
@@ -73,8 +82,8 @@ export function LessonGeneratorPanel({ onGenerated }) {
 
   return (
     <section className="lesson-generator-panel">
-      <div className="panel-title"><Sparkles size={18} /> Próxima aula do cronograma</div>
-      <p>Você não precisa escolher o conteúdo. O Fluency segue uma trilha A1 → C2 em ordem, com pré-requisitos e revisão antes de avançar.</p>
+      <div className="panel-title"><Sparkles size={18} /> {saturdayReview ? 'Revisão adaptativa de sábado' : 'Próxima aula do cronograma'}</div>
+      <p>{saturdayReview ? 'Hoje é sábado e há pontos fracos registrados. O Fluency vai revisar gramática, escrita, leitura e escuta antes de continuar a trilha.' : 'Você não precisa escolher o conteúdo. O Fluency segue uma trilha A1 → C2 em ordem, com pré-requisitos e revisão antes de avançar.'}</p>
 
       <div className="generation-status-box">
         <div>
@@ -91,7 +100,7 @@ export function LessonGeneratorPanel({ onGenerated }) {
         <div className="inline-warning curriculum-next-box">
           <Sparkles size={16} />
           <span>
-            Próxima: <b>{nextLesson.level}</b> · {nextLesson.type} · {nextLesson.title}
+            {saturdayReview ? 'Sábado: ' : 'Próxima: '}<b>{nextLesson.level}</b> · {nextLesson.type} · {nextLesson.title}
           </span>
         </div>
       ) : null}
@@ -116,7 +125,7 @@ export function LessonGeneratorPanel({ onGenerated }) {
 
       <button type="button" className="primary-button" onClick={handleGenerate} disabled={loading}>
         {loading ? <Loader2 size={16} className="spin" /> : <Sparkles size={16} />}
-        {loading ? 'Gerando aula...' : 'Gerar próxima aula'}
+        {loading ? 'Gerando aula...' : saturdayReview ? 'Gerar revisão de sábado' : 'Gerar próxima aula'}
       </button>
 
       {message ? <p className="generator-message">{message}</p> : null}
