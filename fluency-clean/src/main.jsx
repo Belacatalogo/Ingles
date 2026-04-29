@@ -4,6 +4,7 @@ import './styles/index.css';
 import './styles/access.css';
 import './styles/lessons.css';
 import './styles/reference.css';
+import './styles/lab-polish.css';
 
 const rootElement = document.getElementById('root');
 const root = createRoot(rootElement);
