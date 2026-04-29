@@ -173,26 +173,19 @@ Não mexer na `main` durante a reconstrução. Tudo deve acontecer nesta branch 
 - `ProgressScreen.jsx` agora mostra XP real, aulas da semana, streak e histórico recente.
 - `index.css` recebeu estilos para mensagem de conclusão e histórico.
 
+### Bloco 7.3 — Progresso/salvamento/conclusão validado no preview
+- Teste real confirmou que login continua persistente.
+- Salvamento/conclusão/progresso funcionaram corretamente no preview segundo retorno do usuário.
+
 ## Próximo passo recomendado
 
-### Bloco 7.3 — Validar progresso/salvamento/conclusão no preview
-- Abrir o preview atualizado.
-- Confirmar que login continua persistente.
-- Abrir a aba Aula.
-- Escrever uma resposta guiada.
-- Clicar em “Salvar rascunho”.
-- Recarregar a página e confirmar se o rascunho permanece.
-- Clicar em “Concluir Reading”.
-- Confirmar mensagem `+25 XP`.
-- Ir para Progresso e confirmar XP, aulas da semana, streak e histórico.
-- Recarregar e confirmar que o progresso permanece.
+### Bloco 7.4 — Corrigir layouts por tipo de aula
+- Começar por Grammar, porque já havia reclamação anterior de respostas aparecendo abertas e layout pouco sério.
+- Depois Listening.
+- Depois Speaking.
+- Reading já recebeu correção inicial de UX, mas ainda será revisado no bloco pedagógico profundo.
 
 ## Blocos restantes por ordem de segurança
-
-### Bloco 7.3 — Validar progresso/salvamento/conclusão de aula
-- Testar persistência real no preview.
-- Corrigir eventuais problemas de atualização imediata da aba Progresso sem recarregar.
-- Depois considerar sincronização Firebase se necessário.
 
 ### Bloco 7.4 — Corrigir layouts por tipo de aula
 - Reading UX iniciado antecipadamente.
@@ -215,6 +208,15 @@ Não mexer na `main` durante a reconstrução. Tudo deve acontecer nesta branch 
 - Atualizar `geminiLessons.js` para gerar aulas mais profundas em mais blocos se necessário.
 - Atualizar validações para rejeitar aula curta, vocabulário fraco ou poucos exercícios.
 - Esse bloco deve ser feito após o app estar estável para não misturar reestruturação pedagógica com correções críticas de login/progresso.
+
+### Bloco 9 — Limpeza final e polimento de produção
+- Remover textos grandes de versão/validação da Home.
+- Remover ou esconder botões de teste, fallback e diagnóstico que não devem aparecer para usuário final.
+- Revisar a aba Ajustes inteira.
+- Todo botão que permanecer em Ajustes deve ter função real.
+- Botões decorativos, duplicados ou sem utilidade devem ser removidos.
+- Trocar textos de preview por textos finais de produto.
+- Garantir que o app final não pareça ambiente de teste antes de substituir a `main`.
 
 ## Como continuar em outro chat
 Diga: "continue a reconstrução do Fluency na branch `rewrite-fluency-clean`, leia o arquivo `REWRITE_HANDOFF.md` e siga do próximo bloco".
