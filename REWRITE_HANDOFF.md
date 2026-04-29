@@ -13,6 +13,18 @@ Não alterar `main`.
 Não alterar `rewrite-fluency-clean`.
 Não fazer rollback, force push, update_file ou qualquer mudança fora da branch lab sem pedido explícito do usuário.
 
+## REGRA OPERACIONAL — SEMPRE ATUALIZAR O HANDOFF
+Quando o chat estiver ficando longo, quando o usuário disser que vai abrir outro chat, ou quando um bloco importante for concluído/aprovado, atualizar `REWRITE_HANDOFF.md` com:
+
+- onde paramos;
+- últimos blocos concluídos e aprovados pelo usuário;
+- arquivos principais alterados/criados;
+- próximo bloco correto;
+- pendências importantes;
+- regra de não mexer fora da branch lab.
+
+Isso é obrigatório para evitar perda de contexto e respostas desalinhadas no próximo chat.
+
 ## REGRA DE ORGANIZAÇÃO — SEM BUNDLE DE PATCHES
 O objetivo do rewrite é evitar repetir o problema do projeto antigo: `bundle.js` cheio de patches, DOM injection, interceptação global, MutationObserver e correções empilhadas por cima do app.
 
@@ -32,9 +44,7 @@ O preview de teste real está na Vercel, gerado a partir da branch:
 
 `rewrite-fluency-clean-lab`
 
-Link atual informado pelo usuário:
-
-`https://ingles-mnpzwr34i-belacatalogos-projects.vercel.app/`
+Links de preview variam por deploy. O usuário testa no iPhone usando o deploy mais recente da branch lab.
 
 Fluxo de teste:
 1. alterar um bloco na branch lab;
@@ -55,180 +65,125 @@ Reconstruir o app Fluency em React modular, sem continuar empilhando patches no 
 - A aparência deve seguir a referência Fluency premium escura enviada pelo usuário.
 - O app deve ficar organizado para merge final na `main`.
 
-## Regra de blocos de UI
-Cada UI deve ter seu próprio bloco. Não misturar várias abas no mesmo bloco.
+## Estado atual aprovado pelo usuário
 
-Ordem atual decidida com o usuário:
-1. finalizar Speaking seguindo a referência do ZIP;
-2. voltar para Hoje e refazer como referência;
-3. voltar para Aula e refazer como referência;
-4. seguir para outras UIs, uma por bloco;
-5. somente depois iniciar o Bloco 8 pedagógico.
+### Speaking — APROVADO
+Blocos concluídos:
+- `LAB-7D` — Speaking igual à referência do ZIP;
+- `LAB-7E` — ajuste fino de tamanho;
+- `LAB-7F` — fidelidade visual;
+- `LAB-7G` — limpeza da parte inferior, diagnóstico fora do fluxo e microfone maior.
 
-## Blocos concluídos importantes
+Arquivos principais:
+- `fluency-clean/src/screens/SpeakingScreen.jsx`
+- `fluency-clean/src/styles/lab-polish.css`
+- `fluency-clean/src/App.jsx`
 
-### Bloco 0 a 6 — Fundação, UI base, serviços, Firebase, Gemini, áudio e Azure
-- App React criado em `fluency-clean/`.
-- Serviços Gemini, Azure, Firebase, diagnóstico, chaves de aula e TTS criados.
-- Login Google/Firebase e modo visual implementados.
-- Geração de aula em blocos validada.
-- Azure preservado sem alterar backend privado.
+Resultado:
+- alternância Conversa / Pronúncia funcionando;
+- bolhas de chat e feedback visual;
+- modo Pronúncia com frase, fonética, score por palavra e dica;
+- microfone circular grande;
+- diagnóstico não fica mais poluindo a tela, abre por botão pequeno/modal;
+- usuário disse que ficou perfeito.
 
-### Bloco 7.1 — Gemini real
-- Geração real validada.
-- Aula `My Family` foi gerada com sucesso via `gemini-2.5-flash-lite`.
-- Diagnóstico mostra blocos e erros.
+### Hoje/Home — APROVADO
+Blocos concluídos:
+- `LAB-HOJE-1` — Home/Hoje igual à referência;
+- `LAB-HOJE-1B` — ajuste de largura para remover margens laterais duplicadas.
 
-### Bloco 7.2 — Firebase/Google
-- Firebase runtime configurado no RawGitHack.
-- Domínio autorizado.
-- Login por popup validado no iPhone.
-- Sessão persistiu após recarregar.
+Arquivos principais:
+- `fluency-clean/src/screens/TodayScreen.jsx`
+- `fluency-clean/src/styles/today-polish.css`
+- `fluency-clean/src/main.jsx`
 
-### Bloco 7.3 — Progresso/salvamento/conclusão
-- Progresso local criado.
-- Conclusão de Reading salva XP, streak, histórico e estado concluído.
-- Usuário confirmou funcionamento.
+Resultado:
+- hero de tarefas com progresso circular;
+- cards de ofensiva e nível;
+- tarefas do dia;
+- semana;
+- frase do dia;
+- gerador de aula recolhido;
+- usuário disse que ficou perfeito depois do ajuste de largura.
 
-### Bloco 7.4 — Realinhamento visual inicial
-- Home, topbar e bottom nav começaram a se aproximar da referência.
-- Flashcards/Speaking/Home têm base visual premium, mas ainda precisam de validação calma.
+### Navbar — APROVADA
+Bloco concluído:
+- `LAB-NAV-1` — navbar flutuante igual à referência.
 
-### Bloco 7.5-R — Rollback/estabilização
-- Tentativas instáveis do Bloco 7.5 foram revertidas/neutralizadas na branch protegida.
-- App voltou a carregar em guia anônima.
-- Nova branch lab criada a partir do estado carregável.
+Arquivos principais:
+- `fluency-clean/src/components/layout/BottomNav.jsx`
+- `fluency-clean/src/styles/nav-polish.css`
+- `fluency-clean/src/main.jsx`
 
-### LAB-1 a LAB-5 — Validação visual inicial da lab
-- Branch lab identificada.
-- Botão Continuar agora corrigido no preview antigo.
-- Hero da Home confirmado limpo.
-- Seletor técnico da Aula reduzido inicialmente.
-- Card superior da Aula melhorado inicialmente.
+Resultado:
+- navbar mais próxima da referência;
+- item ativo expandido com texto;
+- itens inativos compactos;
+- menos cobertura de conteúdo;
+- usuário disse que ficou lindo.
 
-### LAB-6 / LAB-6R — Progresso visual
-- Primeira tentativa com runtime amplo causou tela branca e foi revertida.
-- LAB-6R passou a priorizar CSS estático e mudanças em fonte real.
-- Reforço: não repetir DOM injection amplo.
+### Aula — APROVADA
+Blocos concluídos:
+- `LAB-AULA-1` — topo/casca da aula igual à referência;
+- `LAB-AULA-1B` — correção de overflow/corte horizontal;
+- `LAB-AULA-2` — preview seguro por pilar de aula.
 
-### LAB-7 inicial — Speaking visual iniciado
-- `fluency-clean/src/styles/lab-polish.css` criado como fonte real dos polimentos visuais.
-- `fluency-clean/src/main.jsx` importa `lab-polish.css`.
-- `fluency-clean/src/screens/SpeakingScreen.jsx` recebeu card superior e textos/classes melhores sem alterar Azure/backend.
+Arquivos principais:
+- `fluency-clean/src/screens/LessonScreen.jsx`
+- `fluency-clean/src/styles/lesson-polish.css`
+- `fluency-clean/src/lessons/ReadingLesson.jsx` já existia e continua sendo usado;
+- `fluency-clean/src/lessons/GrammarLesson.jsx` já existia e continua sendo usado;
+- `fluency-clean/src/lessons/ListeningLesson.jsx` criado;
+- `fluency-clean/src/lessons/WritingLesson.jsx` criado.
 
-### LAB-7B / LAB-7C — Correções recentes
-- `LessonScreen.jsx`: removido o controle visível “Opções avançadas de layout”.
-- `SpeakingScreen.jsx`: criada primeira versão de prática guiada com roteiro, frase principal, áudio, gravação, feedback e desafio final.
-- `lab-polish.css`: estilos reais adicionados para essa versão.
-- Usuário avisou que ainda quer Speaking no formato exato da referência do ZIP, não apenas inspirado.
+Resultado:
+- topo premium aprovado;
+- conteúdo da aula renderiza sem corte;
+- seletor temporário de pilares funciona;
+- previews de Leitura, Gramática, Escuta e Escrita funcionam;
+- usuário confirmou: “funcionou 100%”.
 
-### Correção de rota — preview/build
-- A ideia de workflow para gerar `preview-clean` automaticamente foi removida por desalinhamento com o objetivo do usuário.
-- `fluency-clean/vite.config.js` voltou para `outDir: 'dist'`.
-- `fluency-clean/package.json` voltou sem `build:preview`.
-- O foco agora é organização do app em `src/`, para merge final em `main`, não criar produto paralelo em `preview-clean`.
+Observação importante:
+- O seletor temporário `Lab preview — Ver UI por pilar` deve ficar por enquanto para teste das UIs de aula.
+- Ele deve ser removido no `LAB-9 — Limpeza final da UI e arquivos de teste`.
 
-## Nova estratégia de segurança
+## Próximo bloco correto
 
-### Regra 1 — Um bloco = uma UI ou uma mudança pequena
-Nada de reformular várias telas ao mesmo tempo.
-Cada bloco deve alterar no máximo:
-- 1 UI principal; ou
-- 1 arquivo CSS compartilhado associado à UI; ou
-- 1 comportamento isolado.
+### Próximo: `LAB-CARTAS-1 — Flashcards/Cartas igual à referência`
+O usuário enviou novo ZIP de referência para continuar nesse bloco.
 
-### Regra 2 — Sempre informar arquivos alterados
-Toda resposta após alteração deve listar:
-- branch usada;
-- arquivos alterados;
-- commit gerado;
-- link de preview Vercel quando houver algo testável.
+Escopo do próximo bloco:
+- refazer a UI da aba Cartas/Flashcards seguindo o ZIP de referência;
+- manter lógica simples e segura;
+- não mexer em Aula, Hoje ou Speaking;
+- criar/ajustar CSS em arquivo real, de preferência próprio se fizer sentido;
+- sem HTML remendado;
+- sem bundle patch;
+- manter o seletor temporário da Aula para remoção só no LAB-9.
 
-### Regra 3 — Sem tocar na branch protegida
-Antes de qualquer tool call de escrita, conferir mentalmente:
+Antes de escrever código no próximo chat:
+1. ler `REWRITE_HANDOFF.md`;
+2. confirmar branch `rewrite-fluency-clean-lab`;
+3. localizar os arquivos atuais da aba Cartas;
+4. ler o ZIP de referência enviado pelo usuário;
+5. aplicar só o bloco `LAB-CARTAS-1`.
 
-`branch === rewrite-fluency-clean-lab`
-
-### Regra 4 — Teste antes de continuar
-Depois de cada bloco, o usuário testa no iPhone. Só avançar se ele confirmar.
-
-### Regra 5 — Infraestrutura com cuidado
-Não criar workflow, build paralelo ou produto em `preview-clean` sem o usuário pedir explicitamente.
-O app final deve ser acessado pela `main` depois do merge.
-
-### Regra 6 — Se der tela branca
-Não continuar tentando layout.
-Procedimento:
-1. parar;
-2. revisar último commit da lab;
-3. reverter somente o último bloco na lab;
-4. preservar branch protegida intacta.
-
-## Próximos blocos organizados — nova ordem
-
-### LAB-7D — Speaking igual à referência do ZIP
-Objetivo: refazer Speaking para seguir a estrutura da referência enviada no ZIP, em React real.
-
-Ações previstas:
-- criar alternância interna `Conversa` / `Pronúncia`;
-- modo Conversa com card/bolhas de chat, contexto e microfone circular grande;
-- modo Pronúncia com frase para repetir, transcrição/fonética visual, foco em palavras, score por palavra e dica;
-- botões `Ouvir`, `Gravar`, `Tentar de novo`, `Próxima` quando aplicável;
-- preservar funções atuais de TTS, gravação e Azure;
-- não mexer no backend privado;
-- não criar DOM injection;
-- manter tudo em `SpeakingScreen.jsx` e CSS real.
-
-Critério:
-- preview Vercel abre sem tela branca;
-- Speaking parece a referência, não apenas uma versão genérica;
-- botões principais continuam disponíveis.
-
-### LAB-7E — Ajuste fino Speaking
-Só fazer se o usuário testar o LAB-7D e pedir ajustes.
-
-Possíveis ações:
-- corrigir espaçamento mobile;
-- ajustar tamanho do microfone circular;
-- ajustar bolhas/score/palavras;
-- remover excesso de texto.
-
-### LAB-HOJE-1 — Home/Hoje igual à referência
-Objetivo: voltar para a aba Hoje e refazer de acordo com a referência.
-
-Ações previstas:
-- hero de tarefas do dia;
-- progresso circular;
-- ofensiva/streak;
-- nível;
-- cards de rotina;
-- sem botões falsos.
-
-Critério:
-- Home parece produto final e não painel técnico.
-
-### LAB-AULA-1 — Aula igual à referência
-Objetivo: voltar para aba Aula e alinhar layout base com referência.
-
-Ações previstas:
-- remover qualquer resíduo técnico;
-- criar layout de aula real por tipo;
-- organizar progresso da aula;
-- manter Reading/Grammar separados por componente;
-- não iniciar ainda profundidade pedagógica do Bloco 8.
-
-Critério:
-- Aula visualmente segue referência e continua renderizando aula real.
+## Ordem restante dos blocos de UI
 
 ### LAB-CARTAS-1 — Flashcards/Cartas visual
 Objetivo: aproximar Cartas da referência.
 
 Ações:
-- visual do card, botões de dificuldade e sessão;
-- sem mexer em lógica pesada.
+- visual do card;
+- botões de dificuldade;
+- sessão de revisão;
+- evitar overflow/corte;
+- não mexer em lógica pesada.
 
 Critério:
-- aba Cartas abre sem corte/overflow.
+- aba Cartas abre sem corte/overflow;
+- visual combina com o resto do app;
+- usuário testa e aprova.
 
 ### LAB-PROGRESSO-1 — Progresso visual
 Objetivo: refazer Progresso com segurança, sem repetir tela branca.
@@ -263,6 +218,24 @@ Ações:
 Critério:
 - não criar aba fantasma; só implementar com estrutura real.
 
+### LAB-9 — Limpeza final da UI e arquivos de teste
+Objetivo: remover tudo que existe apenas para teste/lab.
+
+Remover ou esconder corretamente:
+- seletor temporário de pilares da Aula;
+- textos “Preview seguro”, “Lab preview”, “seguro para testes”, se não forem necessários no produto final;
+- botões usados só para teste;
+- cards temporários;
+- informações técnicas visíveis ao usuário final;
+- arquivos/imports não usados;
+- qualquer botão sem função real;
+- qualquer resíduo de diagnóstico exposto demais.
+
+Critério:
+- app parece produto final;
+- sem UI técnica exposta;
+- sem seletor lab.
+
 ### LAB-10 — Checklist visual final da lab
 Objetivo: testar navegação completa antes do Bloco 8.
 
@@ -275,6 +248,10 @@ Checklist:
 - Ajustes;
 - Imersão se existir;
 - login se necessário;
+- geração de aula;
+- conclusão de aula;
+- áudio;
+- microfone;
 - recarregar página;
 - iPhone/Safari/Vercel preview.
 
@@ -291,53 +268,53 @@ Objetivo pedagógico:
 - validação anti-aula-rasa.
 
 Sub-blocos seguros:
+- `8-LAB.1` — contrato mínimo da aula;
+- `8-LAB.2` — Reading profunda;
+- `8-LAB.3` — Grammar profunda;
+- `8-LAB.4` — Listening profunda;
+- `8-LAB.5` — Speaking profundo;
+- `8-LAB.6` — validação anti-aula-curta.
 
-#### 8-LAB.1 — Contrato mínimo da aula
-Definir mínimos por tipo:
-- tamanho do conteúdo;
-- número de exercícios;
-- vocabulário;
-- exemplos;
-- prática guiada;
-- produção própria.
+## Estratégia de segurança
 
-#### 8-LAB.2 — Reading profunda
-- texto maior;
-- vocabulário robusto;
-- compreensão;
-- produção escrita;
-- desafio final.
+### Regra 1 — Um bloco = uma UI ou uma mudança pequena
+Nada de reformular várias telas ao mesmo tempo.
+Cada bloco deve alterar no máximo:
+- 1 UI principal; ou
+- 1 arquivo CSS compartilhado associado à UI; ou
+- 1 comportamento isolado.
 
-#### 8-LAB.3 — Grammar profunda
-- explicação séria;
-- exemplos;
-- erros comuns;
-- comparação PT/EN;
-- exercícios variados.
+### Regra 2 — Sempre informar arquivos alterados
+Toda resposta após alteração deve listar:
+- branch usada;
+- arquivos alterados;
+- commit gerado;
+- o que testar.
 
-#### 8-LAB.4 — Listening profunda
-- pré-escuta;
-- áudio/transcrição separados;
-- compreensão;
-- shadowing.
+### Regra 3 — Sem tocar na branch protegida
+Antes de qualquer tool call de escrita, conferir:
 
-#### 8-LAB.5 — Speaking profundo
-- roteiro;
-- modelo;
-- gravação;
-- feedback;
-- repetição guiada.
+`branch === rewrite-fluency-clean-lab`
 
-#### 8-LAB.6 — Validação anti-aula-curta
-- rejeitar aula rasa;
-- rejeitar pouco exercício;
-- rejeitar vocabulário fraco;
-- pedir regeneração do bloco ruim.
+### Regra 4 — Teste antes de continuar
+Depois de cada bloco, o usuário testa no iPhone. Só avançar se ele confirmar.
+
+### Regra 5 — Infraestrutura com cuidado
+Não criar workflow, build paralelo ou produto em `preview-clean` sem o usuário pedir explicitamente.
+O app final deve ser acessado pela `main` depois do merge.
+
+### Regra 6 — Se der tela branca
+Não continuar tentando layout.
+Procedimento:
+1. parar;
+2. revisar último commit da lab;
+3. reverter somente o último bloco na lab;
+4. preservar branch protegida intacta.
 
 ## Como continuar em outro chat
 Mensagem recomendada para o próximo chat:
 
-"Continue a reconstrução do Fluency usando SOMENTE a branch `rewrite-fluency-clean-lab`. Leia `REWRITE_HANDOFF.md`. Siga a nova ordem: LAB-7D Speaking igual à referência do ZIP, depois Hoje, depois Aula, depois as outras UIs. Sem bundle de patches, sem DOM injection, sem remendos no HTML; cada função deve ficar no arquivo correto dentro de `fluency-clean/src/`. Não mexa na `main` nem na `rewrite-fluency-clean`."
+"Continue a reconstrução do Fluency usando SOMENTE a branch `rewrite-fluency-clean-lab`. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. Estamos com Speaking, Hoje, Navbar e Aula aprovados. A Aula tem preview temporário por pilares funcionando 100%, que será removido no LAB-9. O próximo bloco é `LAB-CARTAS-1 — Flashcards/Cartas igual à referência`. Use o ZIP de referência que enviei neste novo chat. Não mexa na `main`, não mexa na `rewrite-fluency-clean`, não use HTML remendado, não use DOM injection e não crie bundle patch. Cada função deve ficar no arquivo correto dentro de `fluency-clean/src/`. Ao terminar, atualize o handoff informando onde paramos."
 
 ## Última orientação operacional
 A partir deste handoff, qualquer alteração fora de `rewrite-fluency-clean-lab` deve ser considerada erro, salvo pedido explícito do usuário.
