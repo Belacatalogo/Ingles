@@ -127,6 +127,14 @@ Não mexer na `main` durante a reconstrução. Tudo deve acontecer nesta branch 
 - `access.css` criado para estilos do gate sem inflar o CSS principal.
 - `.env.example` documenta `VITE_ACCESS_CODE`.
 
+### Bloco 7.2.1 — Configuração Firebase runtime para preview
+- `firebase.js` agora lê configuração Firebase por env ou por configuração salva localmente no navegador.
+- `AccessGate.jsx` recebeu painel “Configurar Firebase neste preview”.
+- O usuário pode colar `apiKey`, `authDomain`, `projectId`, `storageBucket`, `messagingSenderId` e `appId` direto no preview RawGitHack.
+- A configuração fica salva apenas no navegador/localStorage do preview.
+- Isso permite validar login Google sem precisar rebuildar o app com `.env` a cada teste.
+- `access.css` recebeu estilos próprios para o painel Firebase.
+
 ### Bloco 7.4.1 — Correção UX da compreensão Reading
 - `ReadingLesson.jsx` não revela mais a resposta correta antes da interação.
 - O aluno escolhe uma opção e só então recebe feedback visual.
@@ -136,18 +144,20 @@ Não mexer na `main` durante a reconstrução. Tudo deve acontecer nesta branch 
 ## Próximo passo recomendado
 
 ### Bloco 7.2 — Validar Firebase/Google real
-- Configurar no ambiente do preview: `VITE_FIREBASE_API_KEY`, `VITE_FIREBASE_AUTH_DOMAIN`, `VITE_FIREBASE_PROJECT_ID`, `VITE_FIREBASE_STORAGE_BUCKET`, `VITE_FIREBASE_MESSAGING_SENDER_ID`, `VITE_FIREBASE_APP_ID` e `VITE_ACCESS_CODE`.
-- Abrir o preview no iPhone.
-- Confirmar se o status do gate mostra Firebase configurado.
-- Testar entrada com código de acesso.
-- Testar login com Google e retorno do redirect.
-- Confirmar se o app libera automaticamente após autenticação.
+- Abrir o preview atualizado.
+- Na tela de acesso, abrir “Configurar Firebase neste preview”.
+- Colar a configuração Firebase Web App.
+- Salvar Firebase.
+- Confirmar status `Firebase configurado (runtime)`.
+- Testar login com Google.
+- Se o Google bloquear domínio, adicionar `raw.githack.com` nos domínios autorizados do Firebase Authentication.
+- Confirmar se, ao voltar do Google, o app libera automaticamente.
 - Confirmar se “Reiniciar acesso” limpa a sessão local.
 
 ## Blocos restantes por ordem de segurança
 
 ### Bloco 7.2 — Validar Firebase/Google
-- Validar env real, Google redirect, código de acesso e sessão local.
+- Validar runtime Firebase, Google redirect, código de acesso e sessão local.
 
 ### Bloco 7.3 — Validar progresso/salvamento/conclusão de aula
 - Confirmar que a aula gerada persiste ao recarregar.
