@@ -27,17 +27,15 @@ Não mexer na `main` durante a reconstrução. Tudo deve acontecer nesta branch 
 - Pasta `fluency-clean/` criada.
 - Vite + React configurados.
 - `index.html`, `main.jsx`, `App.jsx` e CSS base criados.
-- Sem tocar no root atual.
 
 ### Bloco 1 — Estrutura visual
-- Shell do app refinado com topbar, hero e status strip.
+- Shell do app refinado.
 - Navegação inferior criada.
-- Componentes reutilizáveis criados: `Card`, `StatCard`, `SectionHeader`, `BottomNav`, `DiagnosticPanel`.
-- Telas principais estruturadas visualmente: Hoje, Aula, Progresso, Speaking, Flashcards e Ajustes.
+- Componentes reutilizáveis criados.
+- Telas principais estruturadas visualmente.
 
 ### Bloco 2 — Aula Reading nova
 - `ReadingLesson` transformado em layout completo.
-- Aula dividida em introdução, objetivo, etapas de estudo, texto principal, escuta guiada, vocabulário, compreensão e resposta guiada.
 - Campo de resposta preparado para iOS.
 
 ### Bloco 3 — Serviços limpos
@@ -69,25 +67,36 @@ Não mexer na `main` durante a reconstrução. Tudo deve acontecer nesta branch 
 - Não mexe na `main` nem na branch Pages atual.
 
 ### Bloco 6 — Áudio / Pronúncia / iOS
-- `audioUnlock.js` criado para liberar áudio em iOS por gesto do usuário.
+- `audioUnlock.js` criado para liberar áudio em iOS.
 - `tts.js` criado usando Web Speech API.
 - `recorder.js` criado com MediaRecorder/getUserMedia.
-- `SpeakingScreen.jsx` agora tem liberar áudio iOS, ouvir frase, parar áudio, gravar, parar/analisar e score.
+- `SpeakingScreen.jsx` conectado.
 
 ### Bloco 6.1 — Contrato Azure preservado
-- O app antigo usa backend privado apenas para entregar token Azure; a avaliação acontece no navegador com Azure Speech SDK.
+- O app antigo usa backend privado apenas para entregar token Azure.
 - `azurePronunciation.js` foi corrigido para preservar esse contrato.
 - O novo app carrega o Azure Speech SDK no navegador, busca token no backend existente e analisa o áudio gravado localmente.
 - Não houve alteração no backend privado.
-- Se nenhuma variável de ambiente for definida, o serviço usa a mesma URL pública de token já usada no app antigo.
+
+### Bloco 6.2 — Gemini TTS natural para aulas
+- `geminiTts.js` criado.
+- Usa Gemini TTS com `responseModalities: ['AUDIO']`, voz prebuilt e áudio inline.
+- Converte PCM base64 para WAV para tocar no navegador.
+- Usa chaves exclusivas de aulas já salvas em `lessonKeys.js`.
+- Faz cache local por texto/voz/estilo.
+- Usa Web Speech API como fallback se Gemini TTS falhar ou não houver key.
+- `ReadingLesson.jsx` agora usa Gemini TTS no botão “Ouvir texto”.
+- `services/index.js` exporta `generateGeminiTtsAudio` e `playGeminiTtsAudio`.
 
 ## Próximo passo recomendado
 
 ### Verificar preview atualizado
 - Esperar o workflow publicar `preview-clean` novamente.
 - Abrir o mesmo link do preview.
-- Testar Speaking: liberar áudio, ouvir frase, gravar e parar/analisar.
-- Agora a análise deve tentar usar o contrato real de token Azure.
+- Adicionar key de aula na aba Progresso.
+- Abrir Aula > Reading.
+- Tocar em “Ouvir texto”.
+- Se o Gemini TTS falhar, o app deve usar TTS do navegador e mostrar logs no diagnóstico.
 
 ## Blocos restantes
 
@@ -95,6 +104,7 @@ Não mexer na `main` durante a reconstrução. Tudo deve acontecer nesta branch 
 - Testes manuais por aba.
 - Configurar Firebase/Google real no ambiente.
 - Validar geração Gemini com keys reais.
+- Validar Gemini TTS real.
 - Validar Azure real.
 - Só depois considerar substituir a `main`.
 
