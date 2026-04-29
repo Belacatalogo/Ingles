@@ -1,4 +1,5 @@
 import { diagnostics } from './diagnostics.js';
+import { markCurriculumLessonComplete } from './curriculumPlan.js';
 import { storage } from './storage.js';
 
 const PROGRESS_KEY = 'progress.summary';
@@ -87,6 +88,7 @@ export function completeLesson({ lesson, answers = {}, writtenAnswer = '' }) {
 
   const completion = {
     lessonId,
+    curriculumId: lesson?.curriculumId || lesson?.raw?.curriculumId || lessonId,
     title: lesson?.title || 'Aula',
     type: lesson?.type || 'lesson',
     level: lesson?.level || 'A1',
@@ -118,6 +120,10 @@ export function completeLesson({ lesson, answers = {}, writtenAnswer = '' }) {
   storage.set(LESSON_COMPLETIONS_KEY, nextCompletions);
   storage.set(PROGRESS_KEY, nextProgress);
   saveLessonDraft({ lesson, answer: writtenAnswer });
+
+  if (!alreadyCompleted) {
+    markCurriculumLessonComplete(lesson);
+  }
 
   diagnostics.setPhase('aula concluída', 'success');
   diagnostics.log(`${alreadyCompleted ? 'Aula já estava concluída' : 'Aula concluída'}: ${completion.title}`, 'info');
