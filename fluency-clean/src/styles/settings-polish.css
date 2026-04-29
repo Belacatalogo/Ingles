@@ -1,0 +1,177 @@
+.settings-screen {
+  width: min(100%, 430px);
+  margin: 0 auto;
+}
+
+.settings-category-list {
+  gap: 10px;
+}
+
+.settings-category-row {
+  width: 100%;
+  min-height: 92px;
+  text-align: left;
+  border: 1px solid rgba(148, 163, 184, 0.13);
+  color: inherit;
+  transition: border-color .2s ease, background .2s ease, transform .2s ease;
+}
+
+.settings-category-row.active {
+  border-color: rgba(147,197,253,.38);
+  background: linear-gradient(135deg, rgba(91,156,246,.16), rgba(15,23,42,.42));
+}
+
+.settings-category-row:active {
+  transform: scale(.992);
+}
+
+.settings-key-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  margin: 2px 0 14px;
+  padding: 5px;
+  border: 1px solid rgba(148,163,184,.14);
+  border-radius: 17px;
+  background: rgba(2,6,23,.25);
+}
+
+.settings-key-tabs button {
+  min-height: 42px;
+  border: 0;
+  border-radius: 13px;
+  color: #9fb0c8;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.settings-key-tabs button.active {
+  color: #f8fbff;
+  background: linear-gradient(135deg, rgba(91,156,246,.28), rgba(167,139,250,.22));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+}
+
+.settings-key-panel-wrap {
+  display: grid;
+  gap: 12px;
+}
+
+.settings-key-panel-wrap .lesson-keys-panel,
+.settings-key-panel {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.settings-key-panel-wrap .lesson-keys-panel .panel-title {
+  display: none;
+}
+
+.settings-key-panel-title {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.settings-key-panel-title > svg {
+  flex: 0 0 auto;
+  width: 38px;
+  height: 38px;
+  padding: 9px;
+  border-radius: 14px;
+  color: #bfdbfe;
+  background: rgba(91,156,246,.14);
+}
+
+.settings-key-panel-title strong {
+  display: block;
+  color: white;
+  font-size: 18px;
+  line-height: 1.1;
+}
+
+.settings-key-panel-title span {
+  display: block;
+  margin-top: 5px;
+  color: #9fb0c8;
+  font-size: 12.5px;
+  line-height: 1.35;
+}
+
+.settings-key-panel p,
+.settings-key-panel-wrap .lesson-keys-panel p {
+  margin: 0 0 12px;
+  color: #9fb0c8;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.settings-key-status {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 14px 0;
+}
+
+.settings-key-status > div {
+  display: grid;
+  grid-template-columns: 24px 1fr;
+  gap: 6px 9px;
+  padding: 13px;
+  border-radius: 16px;
+  border: 1px solid rgba(148,163,184,.14);
+  background: rgba(2,6,23,.24);
+}
+
+.settings-key-status span {
+  color: #9fb0c8;
+  font-size: 12px;
+}
+
+.settings-key-status strong {
+  grid-column: 2;
+  color: #dbeafe;
+  font-size: 13px;
+}
+
+.settings-key-panel-wrap .key-form > div,
+.settings-key-panel .key-form > div {
+  grid-template-columns: 1fr;
+}
+
+.settings-key-panel-wrap .key-form button,
+.settings-key-panel .key-form button,
+.settings-key-panel-wrap .danger-button,
+.settings-key-panel .danger-button {
+  width: 100%;
+}
+
+.settings-key-panel-wrap input,
+.settings-key-panel input {
+  min-width: 0;
+}
+
+.settings-placeholder-panel {
+  padding: 15px;
+  border: 1px solid rgba(148,163,184,.13);
+  border-radius: 18px;
+  background: rgba(2,6,23,.24);
+}
+
+.settings-placeholder-panel p {
+  margin: 0;
+  color: #9fb0c8;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+@media (max-width: 380px) {
+  .settings-key-status {
+    grid-template-columns: 1fr;
+  }
+}
