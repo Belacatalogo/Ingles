@@ -107,11 +107,16 @@ Não mexer na `main` durante a reconstrução. Tudo deve acontecer nesta branch 
 - Diagnóstico real mostrou 503, 429 e 404.
 - `gemini-1.5-flash` removido do plano porque retornou 404 na API v1beta.
 - `gemini-1.5-pro` removido do fallback.
-- Plano atual usa `gemini-2.5-flash`, `gemini-2.0-flash` e, se houver key Pro, `gemini-2.5-pro`.
 - Se uma key retornar 429, próximas tentativas com a mesma key são puladas.
 - Erros 503 recebem pequena espera antes da próxima tentativa.
 - Mensagem final agora diferencia quota, alta demanda e modelo indisponível.
 - `lessonKeys.js` atualizado para refletir a lista correta de modelos.
+
+### Bloco 7.1.3 — Segurança de modelos Gemini após preview real
+- Preview mostrou `gemini-2.5-flash` com 503 por alta demanda e `gemini-2.0-flash` como indisponível.
+- `gemini-2.0-flash` foi removido do plano de geração de aulas.
+- Plano atual de aulas usa `gemini-2.5-flash`, `gemini-2.5-flash-lite` e, se houver key Pro, `gemini-2.5-pro`.
+- Objetivo: manter fallback Flash/free válido antes de acionar Pro.
 
 ### Bloco 7.2.0 — Segurança antes da validação Firebase/Google
 - `AccessGate.jsx` agora assina o estado real do Firebase Auth com `subscribeAuth`.
@@ -129,7 +134,15 @@ Não mexer na `main` durante a reconstrução. Tudo deve acontecer nesta branch 
 
 ## Próximo passo recomendado
 
-### Bloco 7.2 — Validar Firebase/Google real
+### Retestar geração no preview atualizado
+- Abrir novamente o link RawGitHack depois que `preview-clean` atualizar.
+- Limpar/recarregar a página se o arquivo antigo ficar em cache.
+- Em Progresso, manter keys de aula configuradas.
+- Em Hoje, clicar em Gerar aula.
+- Confirmar no Diagnóstico que o plano não usa mais `gemini-2.0-flash`.
+- Se `gemini-2.5-flash` estiver em alta demanda, o app deve tentar `gemini-2.5-flash-lite`.
+
+### Depois: Bloco 7.2 — Validar Firebase/Google real
 - Configurar no ambiente do preview: `VITE_FIREBASE_API_KEY`, `VITE_FIREBASE_AUTH_DOMAIN`, `VITE_FIREBASE_PROJECT_ID`, `VITE_FIREBASE_STORAGE_BUCKET`, `VITE_FIREBASE_MESSAGING_SENDER_ID`, `VITE_FIREBASE_APP_ID` e `VITE_ACCESS_CODE`.
 - Abrir o preview no iPhone.
 - Confirmar se o status do gate mostra Firebase configurado.
