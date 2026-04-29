@@ -1,5 +1,6 @@
 import { diagnostics } from './diagnostics.js';
 import { markCurriculumLessonComplete } from './curriculumPlan.js';
+import { recordLessonMastery } from './masteryStore.js';
 import { storage } from './storage.js';
 
 const PROGRESS_KEY = 'progress.summary';
@@ -86,6 +87,10 @@ export function completeLesson({ lesson, answers = {}, writtenAnswer = '' }) {
   else if (isYesterday(progress.lastStudyDate, date)) nextStreak = (progress.streakDays || 0) + 1;
   else nextStreak = 1;
 
+  const masteryProfile = recordLessonMastery({ lesson, answers, writtenAnswer });
+  const lessonPillar = String(lesson?.type || 'reading').toLowerCase();
+  const masteryScore = masteryProfile?.pillars?.[lessonPillar]?.score || 0;
+
   const completion = {
     lessonId,
     curriculumId: lesson?.curriculumId || lesson?.raw?.curriculumId || lessonId,
@@ -96,6 +101,7 @@ export function completeLesson({ lesson, answers = {}, writtenAnswer = '' }) {
     answers,
     writtenAnswer,
     xp: xpGain,
+    masteryScore,
   };
 
   const nextCompletions = alreadyCompleted
@@ -121,12 +127,13 @@ export function completeLesson({ lesson, answers = {}, writtenAnswer = '' }) {
   storage.set(PROGRESS_KEY, nextProgress);
   saveLessonDraft({ lesson, answer: writtenAnswer });
 
-  if (!alreadyCompleted) {
+  if (!alreadyCompleted && lesson?.checkpoint !== 'saturday-adaptive-review') {
     markCurriculumLessonComplete(lesson);
   }
 
   diagnostics.setPhase('aula concluída', 'success');
   diagnostics.log(`${alreadyCompleted ? 'Aula já estava concluída' : 'Aula concluída'}: ${completion.title}`, 'info');
+  diagnostics.log(`Domínio atualizado para ${lesson?.type || 'pilar'}: ${masteryScore}/100.`, 'info');
 
   return {
     completion,
