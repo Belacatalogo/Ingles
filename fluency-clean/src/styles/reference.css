@@ -117,7 +117,8 @@ body {
 .reference-mini-card,
 .reference-task-row,
 .reference-week-card,
-.reference-quote-card {
+.reference-quote-card,
+.reference-generator-details {
   max-width: 100%;
   border: 1px solid var(--ref-border);
   background: linear-gradient(135deg, rgba(19, 27, 57, .95), rgba(13, 19, 42, .76));
@@ -472,6 +473,35 @@ body {
   background: transparent;
   color: #e5eaff;
   font-weight: 900;
+}
+
+.reference-generator-details {
+  border-radius: 22px;
+  padding: 4px;
+  overflow: hidden;
+}
+
+.reference-generator-details summary {
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 18px;
+  color: #dbeafe;
+  font-size: 18px;
+  font-weight: 900;
+  cursor: pointer;
+  list-style: none;
+}
+
+.reference-generator-details summary::-webkit-details-marker { display: none; }
+.reference-generator-details .lesson-generator-panel {
+  margin: 0;
+  border: 0;
+  border-top: 1px solid rgba(147,160,213,.14);
+  border-radius: 0 0 18px 18px;
+  box-shadow: none;
+  background: rgba(8,14,31,.40);
 }
 
 .bottom-nav {
