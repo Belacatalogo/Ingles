@@ -20,6 +20,40 @@ Não mexer no backend Azure privado.
 
 ## Estado atual
 
+### Bloco 8-LAB-11E — Correção do npm install da Vercel IMPLEMENTADA
+
+Contexto:
+- deploy da produção/main falhou na Vercel com:
+  - `Command "cd fluency-clean && npm install" exited with 1`;
+- `fluency-clean/package.json` usava `latest` em todas as dependências;
+- não havia `package-lock.json`;
+- isso deixava o install instável em produção, pois a Vercel podia resolver versões novas/incompatíveis.
+
+Correção aplicada:
+- `fluency-clean/package.json` agora usa versões fixas estáveis;
+- adicionada faixa de Node em `engines`;
+- correção aplicada em:
+  - `rewrite-fluency-clean-lab`;
+  - `rewrite-fluency-clean`;
+  - `main`.
+
+Versões fixadas:
+- `@vitejs/plugin-react`: `4.3.4`;
+- `vite`: `5.4.19`;
+- `react`: `18.3.1`;
+- `react-dom`: `18.3.1`;
+- `firebase`: `10.14.1`;
+- `lucide-react`: `0.468.0`.
+
+Commits relevantes:
+- `main`: `576cc3818e80f42dfbc91c49493406911e03941c`;
+- `rewrite-fluency-clean`: `175865b3225f08ee867313d4db984a12352e2bef`.
+
+Próximo passo:
+- fazer/repetir Redeploy da `main` na Vercel;
+- se falhar novamente, abrir a aba Logs do deployment e capturar a primeira mensagem real do `npm install`;
+- se o deploy ficar Ready, testar produção no iPhone.
+
 ### Bloco 8-LAB-11D — Merge controlado para main CONCLUÍDO
 
 Resultado:
@@ -32,13 +66,6 @@ Resultado:
 
 Rollback se main quebrar:
 - voltar `main` para `5047bae031f20ddd9604953dcd3fd821655e56fa`.
-
-Status Vercel após merge:
-- check da Vercel apareceu como falho;
-- status aponta para `upgradeToPro=build-rate-limit`;
-- interpretação atual: provável limite de build/deploy da Vercel, não erro confirmado do código;
-- GitHub também mostrou “This branch has not been deployed / No deployments” no PR;
-- próximo passo é aguardar/liberar limite da Vercel ou acionar novo deploy manual quando disponível.
 
 Configuração Vercel previamente confirmada por print:
 - Framework Preset: `Other`;
@@ -54,18 +81,17 @@ Conclusão da configuração:
 - o `index.html` antigo e o `bundle.js` antigo da raiz não devem ser usados como saída final do deploy.
 
 Checklist pós-merge pendente:
-1. resolver/aguardar limite de build da Vercel;
-2. gerar deploy da main/produção;
-3. abrir link de produção no iPhone;
-4. confirmar domínio de produção autorizado no Firebase;
-5. testar login Google;
-6. testar Hoje;
-7. testar Aula;
-8. testar áudio natural;
-9. testar Progresso;
-10. testar Diagnóstico;
-11. testar PWA;
-12. só depois considerar a main aprovada.
+1. gerar deploy da main/produção;
+2. abrir link de produção no iPhone;
+3. confirmar domínio de produção autorizado no Firebase;
+4. testar login Google;
+5. testar Hoje;
+6. testar Aula;
+7. testar áudio natural;
+8. testar Progresso;
+9. testar Diagnóstico;
+10. testar PWA;
+11. só depois considerar a main aprovada.
 
 ### Bloco 8-LAB-11B — Vercel Build/Output confirmado como seguro para fluency-clean
 
@@ -88,15 +114,6 @@ Conclusão:
 - o deploy deve publicar `fluency-clean/dist`;
 - o `index.html` antigo e o `bundle.js` antigo da raiz não devem ser usados como saída final do deploy.
 
-### Bloco 8-LAB-11A — Preparação segura para main criada como PR draft
-
-Ação feita:
-- criado PR draft #21: `rewrite-fluency-clean` → `main`;
-- título: `Promover Fluency Clean para main com controle`;
-- PR foi usado para promoção controlada;
-- `bundle.js` permaneceu intocado;
-- backend Azure privado permaneceu intocado.
-
 ### Bloco 8-LAB-10D — Login Google validado na branch estável / correção sincronizada
 
 Contexto:
@@ -111,11 +128,11 @@ Resultado:
 
 ## Próximo bloco possível
 
-### `Bloco 8-LAB-11E — Resolver deploy Vercel da main / validar produção`
+### `Bloco 8-LAB-11F — Redeploy da main e validação produção`
 Objetivo:
-- lidar com o check Vercel falho por aparente build-rate-limit;
-- acionar redeploy quando possível;
-- testar link de produção no iPhone;
+- acionar redeploy da `main` na Vercel;
+- se falhar, ler logs reais do install/build;
+- se ficar Ready, testar link de produção no iPhone;
 - confirmar login Google/Firebase no domínio de produção;
 - validar Hoje, Aula, áudio natural, Progresso, Diagnóstico e PWA.
 
@@ -126,4 +143,4 @@ Se o deploy da main quebrar por código:
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. O PR #21 foi mesclado em `main` com merge commit `7c9427be54ffc4bb62f4009d261ee09d5e53ff6f`. A Vercel falhou com link de status `upgradeToPro=build-rate-limit`, aparentemente limite de build, não bug confirmado do código. Não delete `rewrite-fluency-clean-lab` nem `rewrite-fluency-clean`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch. Rollback da main: `5047bae031f20ddd9604953dcd3fd821655e56fa`. Próximo bloco: resolver/aguardar deploy Vercel da main e validar produção no iPhone."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. O PR #21 foi mesclado em `main`. O deploy da main falhou no `cd fluency-clean && npm install`; foi corrigido fixando dependências no `package.json` em lab, estável e main. Commit atual da main com correção: `576cc3818e80f42dfbc91c49493406911e03941c`. Não delete `rewrite-fluency-clean-lab` nem `rewrite-fluency-clean`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch. Rollback da main: `5047bae031f20ddd9604953dcd3fd821655e56fa`. Próximo bloco: redeploy da main e validar produção no iPhone."
