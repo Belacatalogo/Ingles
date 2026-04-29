@@ -4585,12 +4585,6 @@ lucide-react/dist/esm/lucide-react.mjs:
 
 
 /* === FLUENCY PATCH V53 - REDESIGN ELEGANTE DA ABA AULA + IA PARA RESPOSTAS === */
-/* Substitui o V52. Melhorias:
-   1. Visual completamente redesenhado — elegante, editorial, dark refined
-   2. Layout especial para Reading (texto em destaque, parágrafo a parágrafo)
-   3. Verificação de respostas escritas via IA (tolerante a pontuação/maiúscula)
-   4. Áudio Gemini TTS para textos de leitura
-   5. Mantém toda a compatibilidade com o sistema de storage do V52 */
 ;(function(){
   try{
     if(window.__fluencyV53) return;
@@ -4600,7 +4594,6 @@ lucide-react/dist/esm/lucide-react.mjs:
     var STYLE_ID = '__fluency_v53_style__';
     var HIDE_CLASS = '__fluency_v53_hide_react__';
 
-    /* ─── Helpers ─────────────────────────────────────────────── */
     function todayStr(){ var d=new Date(),m=String(d.getMonth()+1).padStart(2,'0'),dy=String(d.getDate()).padStart(2,'0'); return d.getFullYear()+'-'+m+'-'+dy; }
     function txt(v){ return String(v==null?'':v).trim(); }
     function arr(x){ return Array.isArray(x)?x:[]; }
@@ -4608,7 +4601,6 @@ lucide-react/dist/esm/lucide-react.mjs:
     function pick(o,ks){ o=o||{}; for(var i=0;i<ks.length;i++){var v=o[ks[i]];if(v!=null&&txt(v))return v;} return ''; }
     function log(m){ try{console.warn('[Fluency V53] '+m);}catch(_){} }
 
-    /* ─── Parse & normalize (mesmo do V52, compatível) ────────── */
     function parseLesson(raw){
       try{
         if(raw==null)return null;
@@ -4623,8 +4615,7 @@ lucide-react/dist/esm/lucide-react.mjs:
       }catch(_){return null;}
     }
     function normalize(L){
-      L=parseLesson(L);
-      if(!L||typeof L!=='object')return null;
+      L=parseLesson(L); if(!L||typeof L!=='object')return null;
       var out={};
       Object.keys(L).forEach(function(k){if(k&&k.charAt(0)==='_')out[k]=L[k];});
       out.title=pick(L,['title','titulo','título','name'])||'';
@@ -4635,42 +4626,35 @@ lucide-react/dist/esm/lucide-react.mjs:
       out.listeningText=pick(L,['listeningText','listening_text','audioText','transcript'])||'';
       var secsRaw=arr(L.sections&&L.sections.length?L.sections:(L.secoes||L.seções||L.parts||L.modules));
       out.sections=secsRaw.map(function(s,i){
-        if(typeof s==='string')s={heading:'Seção '+(i+1),content:s};
-        s=s||{};
+        if(typeof s==='string')s={heading:'Seção '+(i+1),content:s}; s=s||{};
         var ex=arr(s.examples&&s.examples.length?s.examples:(s.exemplos||s.sentences||s.frases)).map(function(e){
-          if(typeof e==='string')return{en:e,pt:''};
-          e=e||{};
+          if(typeof e==='string')return{en:e,pt:''};e=e||{};
           return{en:pick(e,['en','english','sentence','phrase','example','text']),pt:pick(e,['pt','portuguese','translation','traducao','tradução','meaning'])};
         }).filter(function(e){return txt(e.en)||txt(e.pt);});
         return{heading:pick(s,['heading','title','titulo','título','name'])||('Seção '+(i+1)),content:pick(s,['content','body','text','explicacao','explicação','explanation','description','conteudo'])||'',examples:ex};
       }).filter(function(s){return txt(s.heading)||txt(s.content)||s.examples.length;});
       var vocRaw=arr(L.vocabulary&&L.vocabulary.length?L.vocabulary:(L.vocabulario||L.vocabulário||L.words));
       out.vocabulary=vocRaw.map(function(v){
-        if(typeof v==='string')return{word:v,pos:'',translation:'',example:''};
-        v=v||{};
+        if(typeof v==='string')return{word:v,pos:'',translation:'',example:''};v=v||{};
         return{word:pick(v,['word','palavra','term','english']),pos:pick(v,['pos','class','classe','type'])||'',translation:pick(v,['translation','traducao','tradução','pt','meaning']),example:pick(v,['example','exemplo','sentence','phrase'])||''};
       }).filter(function(v){return txt(v.word)||txt(v.translation);});
       var exRaw=arr(L.exercises&&L.exercises.length?L.exercises:(L.exercicios||L.exercícios||L.questions||L.quiz));
       out.exercises=exRaw.map(function(e,i){
-        if(typeof e==='string')e={question:e};
-        e=e||{};
+        if(typeof e==='string')e={question:e};e=e||{};
         return{type:pick(e,['type','tipo'])||'practice',question:pick(e,['question','pergunta','prompt','instruction','enunciado'])||('Exercício '+(i+1)),options:arr(e.options||e.opcoes||e.opções||e.choices).map(txt),answer:pick(e,['answer','resposta','correct','correctAnswer','expected'])||'',explanation:pick(e,['explanation','explicacao','explicação','why','feedback'])||''};
       }).filter(function(e){return txt(e.question);});
       out.tips=arr(L.tips&&L.tips.length?L.tips:(L.dicas||L.notes)).map(function(t){return typeof t==='string'?t:pick(t,['tip','text','content']);}).filter(function(t){return txt(t);});
       out.commonMistakes=arr(L.commonMistakes||L.common_mistakes||L.errosComuns||L.mistakes).map(function(m){m=m||{};return{mistake:pick(m,['mistake','erro','title']),why:pick(m,['why','porque','porquê','reason']),avoid:pick(m,['avoid','correction','comoEvitar','fix'])};}).filter(function(m){return txt(m.mistake)||txt(m.why)||txt(m.avoid);});
       out.finalTip=pick(L,['finalTip','final_tip','conclusion','closing'])||'';
       out.lessonId=L.lessonId||L.activeLessonId||('ai-'+Date.now());
-      out._fallback=L._fallback||false;
-      out._fallbackReason=L._fallbackReason||'';
+      out._fallback=L._fallback||false; out._fallbackReason=L._fallbackReason||'';
       return out;
     }
     function lessonHasContent(L){
-      L=normalize(L);
-      if(!L)return false;
+      L=normalize(L); if(!L)return false;
       return !!(txt(L.title)||txt(L.intro)||L.sections.length||L.exercises.length||L.vocabulary.length||txt(L.readingText)||txt(L.listeningText));
     }
 
-    /* ─── Storage ─────────────────────────────────────────────── */
     var ACTIVE_KEYS=['fluency_active_ai_lesson_v51','fluency_active_ai_lesson_v41','fluency_last_ai_lesson_v41','fluency_last_ai_lesson'];
     function readActiveLesson(){
       for(var i=0;i<ACTIVE_KEYS.length;i++){var raw=localStorage.getItem(ACTIVE_KEYS[i]);if(raw){var L=normalize(raw);if(lessonHasContent(L))return L;}}
@@ -4678,10 +4662,9 @@ lucide-react/dist/esm/lucide-react.mjs:
       try{for(var j=0;j<localStorage.length;j++){var k=localStorage.key(j)||'';if(!/^fluency_lesson_v\d+_/i.test(k))continue;var L2=normalize(localStorage.getItem(k));if(!lessonHasContent(L2))continue;var sc=(txt(L2.title).length>0?100:0)+(txt(L2.intro).length>0?80:0)+L2.sections.length*40+L2.exercises.length*15+L2.vocabulary.length*8+(txt(L2.readingText).length>0?20:0);if(sc>bestScore){best=L2;bestScore=sc;}}}catch(_){}
       return best;
     }
-    function getCompletedToday(){try{var r=localStorage.getItem('fluency_completedLessons');return Array.isArray(JSON.parse(r||'[]'))?JSON.parse(r):[]; }catch(_){return[];}}
+    function getCompletedToday(){try{var r=localStorage.getItem('fluency_completedLessons');var a=JSON.parse(r||'[]');return Array.isArray(a)?a:[];}catch(_){return[];}}
     function isDoneToday(){var t=todayStr();return getCompletedToday().some(function(c){return c&&c.date===t;});}
 
-    /* ─── Tab detection ───────────────────────────────────────── */
     function isLessonTab(){
       try{
         var btns=document.querySelectorAll('button');
@@ -4698,16 +4681,14 @@ lucide-react/dist/esm/lucide-react.mjs:
       return false;
     }
 
-    /* ─── TTS Gemini ──────────────────────────────────────────── */
-    var __ttsAudio=null;
-    var __ttsLoading=false;
+    /* ── TTS ── */
+    var __ttsAudio=null, __ttsLoading=false, __ttsBtnEl=null;
 
     function getGeminiKey(){
-      var keys=['fluency_lessonGeminiApiKeys_v197','fluency_geminiKeys','fluency_geminiKey','geminiKey'];
-      for(var i=0;i<keys.length;i++){
-        var raw=localStorage.getItem(keys[i])||'';
-        var parsed;
-        try{parsed=JSON.parse(raw);}catch(_){parsed=raw;}
+      var sources=['fluency_lessonGeminiApiKeys_v197','fluency_geminiKeys','fluency_geminiKey','geminiKey','fluency_lessonGeminiApiKey','fluency_lessonGeminiKey','lessonGeminiApiKey'];
+      for(var i=0;i<sources.length;i++){
+        var raw=localStorage.getItem(sources[i])||'';
+        var parsed; try{parsed=JSON.parse(raw);}catch(_){parsed=raw;}
         var list=Array.isArray(parsed)?parsed:[typeof parsed==='string'?parsed:''];
         for(var j=0;j<list.length;j++){
           var k=String(list[j]||'').replace(/\s+/g,'').trim();
@@ -4717,102 +4698,102 @@ lucide-react/dist/esm/lucide-react.mjs:
       return null;
     }
 
-    function ttsGemini(text, btnEl){
-      if(!text||!text.trim())return;
-      // stop if playing
-      if(__ttsAudio){try{__ttsAudio.pause();__ttsAudio.src='';}catch(_){}__ttsAudio=null;updateTtsBtn(btnEl,false);return;}
+    function icVol(sm){
+      if(sm)return '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>';
+      return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>';
+    }
+    function icPause(){return '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>';}
+    var WAVE='<span class="lx-wave"><i></i><i></i><i></i></span>';
+
+    function setBtnState(btn,state,sm){
+      if(!btn)return;
+      if(state==='loading'){btn.innerHTML=WAVE+' Carregando…';btn.setAttribute('data-lxstate','loading');}
+      else if(state==='playing'){btn.innerHTML=icPause()+' Parar';btn.setAttribute('data-lxstate','playing');}
+      else{btn.innerHTML=(sm?icVol(true):icVol(false)+' Ouvir');btn.removeAttribute('data-lxstate');}
+    }
+
+    function ttsStop(){
+      if(__ttsAudio){try{__ttsAudio.pause();__ttsAudio.src='';}catch(_){}__ttsAudio=null;}
+      try{if(window.speechSynthesis)window.speechSynthesis.cancel();}catch(_){}
+      if(__ttsBtnEl){setBtnState(__ttsBtnEl,'idle',__ttsBtnEl.classList.contains('lx-tts-sm'));__ttsBtnEl=null;}
+      __ttsLoading=false;
+    }
+
+    function ttsPlay(text,btnEl){
+      if(!text||!txt(text))return;
+      if(__ttsAudio||__ttsLoading){ttsStop();return;}
       var apiKey=getGeminiKey();
-      if(!apiKey){ ttsFallback(text); return; }
-      if(__ttsLoading)return;
-      __ttsLoading=true;
-      updateTtsBtn(btnEl,true);
+      if(!apiKey){ttsFallback(text);return;}
+      __ttsLoading=true; __ttsBtnEl=btnEl;
+      var sm=btnEl&&btnEl.classList.contains('lx-tts-sm');
+      setBtnState(btnEl,'loading',sm);
       var body=JSON.stringify({
-        contents:[{parts:[{text:'Read this English text naturally and clearly: '+text}]}],
+        contents:[{parts:[{text:'Read this English text aloud naturally and clearly: '+text}]}],
         generationConfig:{responseModalities:['AUDIO'],speechConfig:{voiceConfig:{prebuiltVoiceConfig:{voiceName:'Kore'}}}}
       });
-      fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key='+apiKey,{method:'POST',headers:{'Content-Type':'application/json'},body:body})
-        .then(function(r){return r.json();})
+      fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key='+apiKey,
+        {method:'POST',headers:{'Content-Type':'application/json'},body:body})
+        .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json();})
         .then(function(data){
           __ttsLoading=false;
-          var b64=data&&data.candidates&&data.candidates[0]&&data.candidates[0].content&&data.candidates[0].content.parts&&data.candidates[0].content.parts[0]&&data.candidates[0].content.parts[0].inlineData&&data.candidates[0].content.parts[0].inlineData.data;
-          if(!b64){updateTtsBtn(btnEl,false);ttsFallback(text);return;}
-          var mime=(data.candidates[0].content.parts[0].inlineData.mimeType)||'audio/mp3';
+          var part=data&&data.candidates&&data.candidates[0]&&data.candidates[0].content&&data.candidates[0].content.parts&&data.candidates[0].content.parts[0];
+          var b64=part&&part.inlineData&&part.inlineData.data;
+          if(!b64){setBtnState(btnEl,'idle',sm);__ttsBtnEl=null;ttsFallback(text);return;}
+          var mime=(part.inlineData.mimeType)||'audio/wav';
           var byteChars=atob(b64);
-          var byteNums=new Array(byteChars.length);
-          for(var i=0;i<byteChars.length;i++)byteNums[i]=byteChars.charCodeAt(i);
-          var blob=new Blob([new Uint8Array(byteNums)],{type:mime});
+          var bytes=new Uint8Array(byteChars.length);
+          for(var i=0;i<byteChars.length;i++)bytes[i]=byteChars.charCodeAt(i);
+          var blob=new Blob([bytes],{type:mime});
           var url=URL.createObjectURL(blob);
-          var au=document.createElement('audio');
-          au.src=url;
-          au.setAttribute('playsinline','');
-          au.onended=function(){__ttsAudio=null;updateTtsBtn(btnEl,false);URL.revokeObjectURL(url);};
-          au.onerror=function(){__ttsAudio=null;updateTtsBtn(btnEl,false);};
-          __ttsAudio=au;
-          au.play().catch(function(){updateTtsBtn(btnEl,false);});
-        }).catch(function(){__ttsLoading=false;updateTtsBtn(btnEl,false);ttsFallback(text);});
+          var au=new Audio(); au.src=url; au.setAttribute('playsinline','');
+          au.onended=function(){__ttsAudio=null;__ttsBtnEl=null;setBtnState(btnEl,'idle',sm);URL.revokeObjectURL(url);};
+          au.onerror=function(){__ttsAudio=null;__ttsBtnEl=null;setBtnState(btnEl,'idle',sm);};
+          __ttsAudio=au; setBtnState(btnEl,'playing',sm);
+          au.play().catch(function(e){log('play failed:'+e.message);__ttsAudio=null;__ttsBtnEl=null;setBtnState(btnEl,'idle',sm);ttsFallback(text);});
+        })
+        .catch(function(e){log('TTS err:'+e.message);__ttsLoading=false;__ttsBtnEl=null;setBtnState(btnEl,'idle',sm);ttsFallback(text);});
     }
 
     function ttsFallback(text){
-      try{
-        var sy=window.speechSynthesis;
-        if(!sy)return;
-        sy.cancel();
-        var u=new SpeechSynthesisUtterance(text);
-        u.lang='en-US';u.rate=0.92;
-        sy.speak(u);
-      }catch(_){}
+      try{var sy=window.speechSynthesis;if(!sy)return;sy.cancel();var u=new SpeechSynthesisUtterance(text);u.lang='en-US';u.rate=0.92;sy.speak(u);}catch(_){}
     }
 
-    function updateTtsBtn(btnEl, loading){
-      if(!btnEl)return;
-      if(loading){
-        btnEl.setAttribute('data-v53-playing','1');
-        btnEl.innerHTML='<span class="v53-tts-wave"><span></span><span></span><span></span></span>';
-      } else {
-        btnEl.removeAttribute('data-v53-playing');
-        var isCircle=btnEl.classList.contains('v53-tts-circle');
-        btnEl.innerHTML=isCircle?svgVolume():('<span class="v53-tts-icon">'+svgVolume()+'</span> Ouvir');
-      }
+    /* ── AI answer check ── */
+    function simpleCheck(correct,user){
+      function norm(s){return String(s||'').toLowerCase().replace(/[.,!?;:'"]/g,'').replace(/\s+/g,' ').trim();}
+      return{correct:norm(correct)===norm(user),feedback:''};
     }
-
-    function svgVolume(){
-      return '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>';
-    }
-
-    /* ─── AI answer checking ──────────────────────────────────── */
-    var __pendingChecks={};
-
-    function checkAnswerWithAI(exIndex, question, correctAnswer, userAnswer, callback){
+    function checkWithAI(idx,question,correctAnswer,userAnswer,cb){
       var apiKey=getGeminiKey();
-      if(!apiKey){ callback(simpleCheck(correctAnswer,userAnswer)); return; }
-      if(__pendingChecks[exIndex])return;
-      __pendingChecks[exIndex]=true;
-
-      var prompt='You are an English teacher correcting a student answer. Be lenient with punctuation, capitalization, and minor spelling. Focus on whether the meaning and key words are correct.\n\nQuestion: '+question+'\nExpected answer: '+correctAnswer+'\nStudent answer: '+userAnswer+'\n\nRespond ONLY with a JSON object like: {"correct":true,"feedback":"Great! Just note that..."} or {"correct":false,"feedback":"Almost! The correct answer is... because..."}\nBe encouraging. Keep feedback under 60 words.';
-
+      if(!apiKey){cb(simpleCheck(correctAnswer,userAnswer));return;}
+      var prompt='You are a lenient English teacher.\nQuestion: '+question+'\nExpected: '+correctAnswer+'\nStudent: '+userAnswer+'\nBe lenient with punctuation, capitalization, articles (a/an/the) and minor typos. Focus on core meaning.\nRespond ONLY with JSON: {"correct":true,"feedback":"Great!"} or {"correct":false,"feedback":"Almost! \'...\' because..."}. Max 40 words.';
       fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key='+apiKey,{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{temperature:0.2,maxOutputTokens:120}})
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{temperature:0.1,maxOutputTokens:80}})
       }).then(function(r){return r.json();})
         .then(function(data){
-          delete __pendingChecks[exIndex];
-          var raw=data&&data.candidates&&data.candidates[0]&&data.candidates[0].content&&data.candidates[0].content.parts&&data.candidates[0].content.parts[0]&&data.candidates[0].content.parts[0].text||'';
+          var raw=data&&data.candidates&&data.candidates[0]&&data.candidates[0].content&&data.candidates[0].content.parts&&data.candidates[0].content.parts[0]&&data.candidates[0].content.parts[0].text||'{}';
           var clean=raw.replace(/```json|```/g,'').trim();
-          var start=clean.indexOf('{'),end=clean.lastIndexOf('}');
-          if(start>=0&&end>start)clean=clean.slice(start,end+1);
-          try{var j=JSON.parse(clean);callback({correct:!!j.correct,feedback:j.feedback||''});}
-          catch(_){callback(simpleCheck(correctAnswer,userAnswer));}
-        }).catch(function(){delete __pendingChecks[exIndex];callback(simpleCheck(correctAnswer,userAnswer));});
+          var s=clean.indexOf('{'),e=clean.lastIndexOf('}');
+          if(s>=0&&e>s)clean=clean.slice(s,e+1);
+          try{var j=JSON.parse(clean);cb({correct:!!j.correct,feedback:j.feedback||''});}
+          catch(_){cb(simpleCheck(correctAnswer,userAnswer));}
+        }).catch(function(){cb(simpleCheck(correctAnswer,userAnswer));});
     }
 
-    function simpleCheck(correct,user){
-      // Normaliza: lowercase, sem pontuação final, trim
-      function norm(s){return String(s||'').toLowerCase().replace(/[.,!?;:'"]/g,'').replace(/\s+/g,' ').trim();}
-      return {correct:norm(correct)===norm(user),feedback:''};
+    /* ── State ── */
+    var __st={title:'',answers:{},checked:{},checking:{},results:{}};
+    function ensureState(L){
+      if(!L)return __st;
+      if(__st.title!==(L.title||'')){__st={title:L.title||'',answers:{},checked:{},checking:{},results:{}};}
+      return __st;
     }
 
-    /* ─── Styles V53 ──────────────────────────────────────────── */
+    /* ── Typing flag — impede re-render enquanto digita ── */
+    var __typing=false, __typingT=null;
+    function markTyping(){__typing=true;clearTimeout(__typingT);__typingT=setTimeout(function(){__typing=false;},3500);}
+
+    /* ── Styles ── */
     function injectStyles(){
       if(document.getElementById(STYLE_ID))return;
       var st=document.createElement('style');
@@ -4820,854 +4801,386 @@ lucide-react/dist/esm/lucide-react.mjs:
       st.textContent=`
         .${HIDE_CLASS} > .max-w-3xl.mx-auto.px-4.md\\:px-6.py-6.pb-24,
         .${HIDE_CLASS} > .max-w-3xl.mx-auto.px-4.md\\:px-6.py-16,
-        .${HIDE_CLASS} > .max-w-3xl.mx-auto.px-4.md\\:px-6.py-12 { display:none!important; }
+        .${HIDE_CLASS} > .max-w-3xl.mx-auto.px-4.md\\:px-6.py-12
+        { display:none!important; }
 
-        /* ── Root ── */
         #${MOUNT_ID} {
           position:relative; z-index:5;
-          max-width:740px; margin:0 auto;
-          padding:0 0 120px;
-          color:#E8EFF8;
-          font-family: 'Georgia', 'Times New Roman', serif;
+          font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+          color:#E2ECF8; max-width:100%; padding-bottom:100px;
         }
 
-        /* ── Hero header ── */
-        #${MOUNT_ID} .v53-hero {
-          padding: 28px 20px 24px;
-          border-bottom: 1px solid rgba(255,255,255,0.07);
-          position: relative;
-        }
-        #${MOUNT_ID} .v53-badge-row {
-          display: flex; align-items: center; gap: 8px;
-          margin-bottom: 14px; flex-wrap: wrap;
-        }
-        #${MOUNT_ID} .v53-badge {
-          font-family: -apple-system, sans-serif;
-          font-size: 10px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase;
-          padding: 4px 10px; border-radius: 999px;
-        }
-        #${MOUNT_ID} .v53-badge-ai {
-          background: rgba(52,211,153,.15); border: 1px solid rgba(52,211,153,.4);
-          color: #6EE7B7;
-        }
-        #${MOUNT_ID} .v53-badge-fallback {
-          background: rgba(245,158,11,.12); border: 1px solid rgba(245,158,11,.4);
-          color: #FCD34D;
-        }
-        #${MOUNT_ID} .v53-badge-time {
-          background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12);
-          color: rgba(255,255,255,.5);
-        }
-        #${MOUNT_ID} .v53-hero-title {
-          font-size: clamp(28px, 6vw, 42px);
-          line-height: 1.05; font-weight: 700;
-          color: #F7F9FF; letter-spacing: -0.02em;
-          margin: 0 0 8px;
-        }
-        #${MOUNT_ID} .v53-hero-subtitle {
-          font-style: italic; font-size: 17px;
-          color: #7BAEFF; margin-bottom: 14px; line-height: 1.4;
-        }
-        #${MOUNT_ID} .v53-hero-intro {
-          font-family: -apple-system, sans-serif;
-          font-size: 15px; line-height: 1.7;
-          color: rgba(200,215,255,0.75); max-width: 600px;
-        }
+        /* HERO */
+        #${MOUNT_ID} .lx-hero { padding:32px 20px 30px; position:relative; }
+        #${MOUNT_ID} .lx-chips { display:flex; align-items:center; gap:7px; flex-wrap:wrap; margin-bottom:18px; }
+        #${MOUNT_ID} .lx-chip { font-size:10px; font-weight:700; letter-spacing:.18em; text-transform:uppercase; padding:4px 11px; border-radius:999px; }
+        #${MOUNT_ID} .lx-chip-ai { background:rgba(52,211,153,.13); border:1px solid rgba(52,211,153,.32); color:#6EE7B7; }
+        #${MOUNT_ID} .lx-chip-std { background:rgba(245,158,11,.11); border:1px solid rgba(245,158,11,.32); color:#FCD34D; }
+        #${MOUNT_ID} .lx-chip-time { background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1); color:rgba(255,255,255,.4); }
+        #${MOUNT_ID} .lx-title { font-family:Georgia,'Times New Roman',serif; font-size:clamp(28px,7vw,44px); line-height:1.05; font-weight:700; letter-spacing:-0.02em; color:#F5F9FF; margin:0 0 10px; }
+        #${MOUNT_ID} .lx-subtitle { font-family:Georgia,serif; font-style:italic; font-size:17px; color:#6B9FE4; margin-bottom:16px; line-height:1.4; }
+        #${MOUNT_ID} .lx-intro { font-size:15px; line-height:1.75; color:rgba(175,205,245,.7); max-width:580px; }
+        #${MOUNT_ID} .lx-hero::after { content:''; position:absolute; bottom:0; left:20px; right:20px; height:1px; background:linear-gradient(90deg,rgba(91,156,246,.22),rgba(167,139,250,.12),transparent); }
 
-        /* ── Section divider ── */
-        #${MOUNT_ID} .v53-divider {
-          display: flex; align-items: center; gap: 12px;
-          padding: 24px 20px 12px;
-        }
-        #${MOUNT_ID} .v53-divider-label {
-          font-family: -apple-system, sans-serif;
-          font-size: 10px; font-weight: 700; letter-spacing: .25em;
-          text-transform: uppercase; color: rgba(139,184,255,0.7);
-          white-space: nowrap;
-        }
-        #${MOUNT_ID} .v53-divider-line {
-          flex: 1; height: 1px;
-          background: linear-gradient(90deg, rgba(91,156,246,.25), transparent);
-        }
-        #${MOUNT_ID} .v53-divider-count {
-          font-family: -apple-system, sans-serif;
-          font-size: 11px; color: rgba(139,184,255,0.6);
-          background: rgba(91,156,246,.1); border: 1px solid rgba(91,156,246,.25);
-          padding: 2px 8px; border-radius: 999px;
-        }
+        /* SECTION HEADER */
+        #${MOUNT_ID} .lx-sh { display:flex; align-items:center; gap:12px; padding:28px 20px 14px; }
+        #${MOUNT_ID} .lx-sh-label { font-size:10px; font-weight:700; letter-spacing:.22em; text-transform:uppercase; color:rgba(115,160,225,.62); white-space:nowrap; }
+        #${MOUNT_ID} .lx-sh-line { flex:1; height:1px; background:linear-gradient(90deg,rgba(91,156,246,.18),transparent); }
+        #${MOUNT_ID} .lx-sh-count { font-size:11px; color:rgba(115,160,225,.58); background:rgba(91,156,246,.09); border:1px solid rgba(91,156,246,.18); padding:2px 9px; border-radius:999px; }
 
-        /* ── Reading block — special layout ── */
-        #${MOUNT_ID} .v53-reading-block {
-          margin: 0 16px 8px;
-          border-radius: 20px;
-          background: linear-gradient(160deg,
-            rgba(15,28,64,0.95) 0%,
-            rgba(10,20,50,0.95) 100%);
-          border: 1px solid rgba(91,156,246,.2);
-          overflow: hidden;
-        }
-        #${MOUNT_ID} .v53-reading-bar {
-          display: flex; align-items: center; justify-content: space-between;
-          padding: 14px 18px;
-          background: rgba(91,156,246,.08);
-          border-bottom: 1px solid rgba(91,156,246,.15);
-        }
-        #${MOUNT_ID} .v53-reading-bar-label {
-          font-family: -apple-system, sans-serif;
-          font-size: 11px; font-weight: 700; letter-spacing: .2em;
-          text-transform: uppercase; color: #7BAEFF;
-        }
-        #${MOUNT_ID} .v53-tts-pill {
-          display: inline-flex; align-items: center; gap: 7px;
-          padding: 7px 14px; border-radius: 999px;
-          border: 1px solid rgba(91,156,246,.4);
-          background: rgba(91,156,246,.12);
-          color: #A9C7FF; cursor: pointer;
-          font-family: -apple-system, sans-serif;
-          font-size: 12px; font-weight: 600;
-          transition: background .15s, border-color .15s;
-        }
-        #${MOUNT_ID} .v53-tts-pill:hover { background: rgba(91,156,246,.2); }
-        #${MOUNT_ID} .v53-tts-pill[data-v53-playing] {
-          border-color: rgba(52,211,153,.5);
-          background: rgba(52,211,153,.12);
-          color: #6EE7B7;
-        }
-        #${MOUNT_ID} .v53-reading-body {
-          padding: 20px 20px 22px;
-          font-size: 18px; line-height: 1.85;
-          color: #EBF1FF;
-          font-family: Georgia, serif;
-        }
-        #${MOUNT_ID} .v53-reading-para {
-          margin-bottom: 16px;
-        }
-        #${MOUNT_ID} .v53-reading-para:last-child { margin-bottom: 0; }
+        /* READING */
+        #${MOUNT_ID} .lx-reading { margin:0 16px 6px; border-radius:22px; border:1px solid rgba(91,156,246,.16); overflow:hidden; background:linear-gradient(170deg,rgba(13,26,65,.88),rgba(8,16,42,.92)); box-shadow:0 4px 28px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.055); }
+        #${MOUNT_ID} .lx-card-top { display:flex; align-items:center; justify-content:space-between; padding:14px 20px; border-bottom:1px solid rgba(91,156,246,.11); background:rgba(91,156,246,.055); }
+        #${MOUNT_ID} .lx-card-tag { display:flex; align-items:center; gap:9px; }
+        #${MOUNT_ID} .lx-card-icon { width:28px; height:28px; border-radius:8px; background:rgba(91,156,246,.17); border:1px solid rgba(91,156,246,.28); display:flex; align-items:center; justify-content:center; font-size:14px; }
+        #${MOUNT_ID} .lx-card-lbl { font-size:11px; font-weight:700; letter-spacing:.17em; text-transform:uppercase; color:#7BAEFF; }
+        #${MOUNT_ID} .lx-tts-btn { display:inline-flex; align-items:center; gap:7px; padding:8px 16px; border-radius:999px; border:1px solid rgba(91,156,246,.32); background:rgba(91,156,246,.09); color:#9FC8FF; cursor:pointer; font-size:12px; font-weight:600; transition:all .18s; -webkit-tap-highlight-color:transparent; }
+        #${MOUNT_ID} .lx-tts-btn:hover { background:rgba(91,156,246,.18); }
+        #${MOUNT_ID} .lx-tts-btn[data-lxstate=loading],#${MOUNT_ID} .lx-tts-btn[data-lxstate=playing] { border-color:rgba(52,211,153,.42); background:rgba(52,211,153,.1); color:#6EE7B7; }
+        #${MOUNT_ID} .lx-reading-body { padding:22px 22px 26px; }
+        #${MOUNT_ID} .lx-reading-text { font-family:Georgia,serif; font-size:17px; line-height:1.9; color:#E8F0FC; }
+        #${MOUNT_ID} .lx-para { margin-bottom:18px; }
+        #${MOUNT_ID} .lx-para:last-child { margin-bottom:0; }
 
-        /* TTS wave animation */
-        #${MOUNT_ID} .v53-tts-wave {
-          display: inline-flex; align-items: center; gap: 3px; height: 14px;
-        }
-        #${MOUNT_ID} .v53-tts-wave span {
-          display: block; width: 3px; border-radius: 99px;
-          background: currentColor; animation: v53wave .8s ease-in-out infinite;
-        }
-        #${MOUNT_ID} .v53-tts-wave span:nth-child(1){ height:6px; animation-delay:0s; }
-        #${MOUNT_ID} .v53-tts-wave span:nth-child(2){ height:12px; animation-delay:.15s; }
-        #${MOUNT_ID} .v53-tts-wave span:nth-child(3){ height:8px; animation-delay:.3s; }
-        @keyframes v53wave {
-          0%,100%{ transform:scaleY(1); } 50%{ transform:scaleY(0.4); }
-        }
+        /* LISTENING */
+        #${MOUNT_ID} .lx-listening { margin:0 16px 6px; border-radius:22px; border:1px solid rgba(167,139,250,.16); overflow:hidden; background:linear-gradient(170deg,rgba(24,12,58,.88),rgba(14,8,38,.92)); box-shadow:0 4px 28px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.05); }
+        #${MOUNT_ID} .lx-card-top-purple { display:flex; align-items:center; justify-content:space-between; padding:14px 20px; border-bottom:1px solid rgba(167,139,250,.1); background:rgba(167,139,250,.05); }
+        #${MOUNT_ID} .lx-tts-btn-p { display:inline-flex; align-items:center; gap:7px; padding:8px 16px; border-radius:999px; border:1px solid rgba(167,139,250,.32); background:rgba(167,139,250,.09); color:#C4B5FD; cursor:pointer; font-size:12px; font-weight:600; transition:all .18s; -webkit-tap-highlight-color:transparent; }
+        #${MOUNT_ID} .lx-tts-btn-p:hover { background:rgba(167,139,250,.2); }
+        #${MOUNT_ID} .lx-tts-btn-p[data-lxstate=loading],#${MOUNT_ID} .lx-tts-btn-p[data-lxstate=playing] { border-color:rgba(52,211,153,.42); background:rgba(52,211,153,.1); color:#6EE7B7; }
+        #${MOUNT_ID} .lx-listen-body { padding:16px 20px; }
+        #${MOUNT_ID} .lx-tr-toggle { color:#A78BFA; font-size:13px; font-weight:600; cursor:pointer; }
+        #${MOUNT_ID} .lx-tr-txt { font-family:Georgia,serif; font-size:16px; line-height:1.8; color:#DDD6FE; margin-top:12px; }
 
-        /* ── Sections ── */
-        #${MOUNT_ID} .v53-section-card {
-          margin: 0 16px 12px;
-          padding: 20px;
-          border-radius: 18px;
-          border: 1px solid rgba(255,255,255,.08);
-          background: rgba(255,255,255,.035);
-        }
-        #${MOUNT_ID} .v53-section-heading {
-          font-size: 20px; font-weight: 700;
-          color: #F0F5FF; margin: 0 0 12px;
-          line-height: 1.2;
-        }
-        #${MOUNT_ID} .v53-section-heading .v53-mark {
-          color: #5B9CF6; font-size: 16px; margin-right: 6px;
-        }
-        #${MOUNT_ID} .v53-section-body {
-          font-family: -apple-system, sans-serif;
-          font-size: 15px; line-height: 1.75;
-          color: rgba(180,205,255,.85); white-space: pre-wrap;
-        }
-        #${MOUNT_ID} .v53-examples { margin-top: 14px; display: grid; gap: 8px; }
-        #${MOUNT_ID} .v53-example {
-          display: flex; align-items: flex-start; gap: 10px;
-          padding: 12px 14px; border-radius: 12px;
-          border: 1px solid rgba(255,255,255,.09);
-          background: rgba(0,0,0,.18);
-        }
-        #${MOUNT_ID} .v53-tts-circle {
-          flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%;
-          border: 1px solid rgba(91,156,246,.35);
-          background: rgba(91,156,246,.1);
-          color: #A9C7FF; cursor: pointer;
-          display: flex; align-items: center; justify-content: center;
-          transition: background .15s;
-        }
-        #${MOUNT_ID} .v53-tts-circle:hover { background: rgba(91,156,246,.2); }
-        #${MOUNT_ID} .v53-ex-en {
-          font-size: 15px; font-weight: 600; color: #F0F5FF; line-height: 1.4;
-        }
-        #${MOUNT_ID} .v53-ex-pt {
-          font-family: -apple-system, sans-serif;
-          font-size: 13px; color: #7BAEFF; font-style: italic;
-          margin-top: 3px; line-height: 1.4;
-        }
+        /* SECTIONS */
+        #${MOUNT_ID} .lx-sec-card { margin:0 16px 10px; padding:22px; border-radius:18px; border:1px solid rgba(255,255,255,.07); background:rgba(255,255,255,.03); }
+        #${MOUNT_ID} .lx-sec-h { font-family:Georgia,serif; font-size:21px; font-weight:700; color:#EDF3FF; margin:0 0 13px; line-height:1.2; }
+        #${MOUNT_ID} .lx-sec-mark { color:#5B9CF6; margin-right:6px; font-size:15px; }
+        #${MOUNT_ID} .lx-sec-body { font-size:15px; line-height:1.78; color:rgba(172,202,248,.78); white-space:pre-wrap; }
+        #${MOUNT_ID} .lx-examples { display:grid; gap:9px; margin-top:15px; }
+        #${MOUNT_ID} .lx-example { display:flex; align-items:flex-start; gap:11px; padding:13px 15px; border-radius:13px; border:1px solid rgba(255,255,255,.07); background:rgba(0,0,0,.15); }
+        #${MOUNT_ID} .lx-tts-sm { flex-shrink:0; width:30px; height:30px; border-radius:50%; border:1px solid rgba(91,156,246,.28); background:rgba(91,156,246,.08); color:#8FB8FF; cursor:pointer; display:flex; align-items:center; justify-content:center; -webkit-tap-highlight-color:transparent; transition:background .15s; }
+        #${MOUNT_ID} .lx-tts-sm:hover { background:rgba(91,156,246,.17); }
+        #${MOUNT_ID} .lx-tts-sm[data-lxstate=loading],#${MOUNT_ID} .lx-tts-sm[data-lxstate=playing] { border-color:rgba(52,211,153,.4); background:rgba(52,211,153,.1); color:#6EE7B7; }
+        #${MOUNT_ID} .lx-ex-en { font-size:15px; font-weight:600; color:#EDF3FF; line-height:1.4; }
+        #${MOUNT_ID} .lx-ex-pt { font-size:13px; color:#6B9FE4; font-style:italic; margin-top:3px; line-height:1.4; }
 
-        /* ── Vocabulary ── */
-        #${MOUNT_ID} .v53-vocab-grid {
-          display: grid; grid-template-columns: 1fr; gap: 10px;
-          padding: 0 16px;
-        }
-        @media(min-width:500px){
-          #${MOUNT_ID} .v53-vocab-grid { grid-template-columns: 1fr 1fr; }
-        }
-        #${MOUNT_ID} .v53-vocab-card {
-          padding: 14px 16px; border-radius: 14px;
-          border: 1px solid rgba(255,255,255,.09);
-          background: rgba(255,255,255,.04);
-        }
-        #${MOUNT_ID} .v53-vocab-top {
-          display: flex; align-items: flex-start; justify-content: space-between; gap: 10px;
-        }
-        #${MOUNT_ID} .v53-vocab-word {
-          font-size: 17px; font-weight: 700; color: #F0F5FF;
-        }
-        #${MOUNT_ID} .v53-vocab-meta {
-          font-family: -apple-system, sans-serif;
-          font-size: 12px; color: #7BAEFF; margin-top: 2px;
-        }
-        #${MOUNT_ID} .v53-vocab-example {
-          font-family: -apple-system, sans-serif;
-          font-size: 13px; color: rgba(160,195,255,.7);
-          font-style: italic; margin-top: 8px; line-height: 1.45;
-        }
+        /* VOCAB */
+        #${MOUNT_ID} .lx-vocab-grid { display:grid; grid-template-columns:1fr; gap:10px; padding:0 16px; }
+        @media(min-width:480px){ #${MOUNT_ID} .lx-vocab-grid { grid-template-columns:1fr 1fr; } }
+        #${MOUNT_ID} .lx-vcard { padding:15px 16px; border-radius:16px; border:1px solid rgba(255,255,255,.07); background:rgba(255,255,255,.035); transition:border-color .18s; }
+        #${MOUNT_ID} .lx-vcard:hover { border-color:rgba(91,156,246,.22); }
+        #${MOUNT_ID} .lx-vtop { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
+        #${MOUNT_ID} .lx-vword { font-size:17px; font-weight:700; color:#EDF3FF; }
+        #${MOUNT_ID} .lx-vmeta { font-size:12px; color:#6B9FE4; margin-top:3px; }
+        #${MOUNT_ID} .lx-veg { font-size:13px; color:rgba(135,180,255,.62); font-style:italic; margin-top:9px; line-height:1.45; }
 
-        /* ── Exercises ── */
-        #${MOUNT_ID} .v53-ex-list { display: grid; gap: 10px; padding: 0 16px; }
-        #${MOUNT_ID} .v53-exercise {
-          padding: 18px; border-radius: 16px;
-          border: 1px solid rgba(91,156,246,.2);
-          background: rgba(91,156,246,.05);
-          transition: border-color .2s, background .2s;
-        }
-        #${MOUNT_ID} .v53-exercise.v53-correct {
-          border-color: rgba(52,211,153,.45);
-          background: rgba(52,211,153,.06);
-        }
-        #${MOUNT_ID} .v53-exercise.v53-wrong {
-          border-color: rgba(248,113,113,.4);
-          background: rgba(248,113,113,.05);
-        }
-        #${MOUNT_ID} .v53-exercise.v53-checking {
-          border-color: rgba(245,158,11,.4);
-          background: rgba(245,158,11,.05);
-        }
-        #${MOUNT_ID} .v53-ex-header {
-          display: flex; align-items: flex-start; gap: 12px;
-        }
-        #${MOUNT_ID} .v53-ex-num {
-          flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%;
-          display: flex; align-items: center; justify-content: center;
-          font-family: -apple-system, sans-serif;
-          font-size: 12px; font-weight: 700;
-          background: rgba(91,156,246,.15); border: 1px solid rgba(91,156,246,.4);
-          color: #A9C7FF;
-        }
-        #${MOUNT_ID} .v53-correct .v53-ex-num {
-          background: rgba(52,211,153,.2); border-color: rgba(52,211,153,.5); color: #6EE7B7;
-        }
-        #${MOUNT_ID} .v53-wrong .v53-ex-num {
-          background: rgba(248,113,113,.2); border-color: rgba(248,113,113,.5); color: #FCA5A5;
-        }
-        #${MOUNT_ID} .v53-ex-question {
-          font-size: 15.5px; line-height: 1.55; color: #F0F5FF;
-          font-family: Georgia, serif;
-        }
-        #${MOUNT_ID} .v53-options { display: grid; gap: 8px; margin-top: 12px; }
-        #${MOUNT_ID} .v53-option {
-          display: flex; align-items: center; gap: 10px;
-          padding: 11px 14px; border-radius: 12px;
-          border: 1px solid rgba(255,255,255,.11);
-          background: rgba(255,255,255,.04);
-          color: #CBD5FF; cursor: pointer; text-align: left;
-          font-family: -apple-system, sans-serif; font-size: 14px; line-height: 1.4;
-          transition: background .12s, border-color .12s;
-        }
-        #${MOUNT_ID} .v53-option:hover:not([disabled]) { background: rgba(91,156,246,.12); border-color: rgba(91,156,246,.35); }
-        #${MOUNT_ID} .v53-option.v53-opt-selected { background: rgba(91,156,246,.18); border-color: rgba(91,156,246,.5); }
-        #${MOUNT_ID} .v53-option.v53-opt-correct { background: rgba(52,211,153,.18); border-color: rgba(52,211,153,.5); color: #D1FAE5; }
-        #${MOUNT_ID} .v53-option.v53-opt-wrong { background: rgba(248,113,113,.14); border-color: rgba(248,113,113,.45); color: #FECACA; }
-        #${MOUNT_ID} .v53-option[disabled] { cursor: default; }
-        #${MOUNT_ID} .v53-opt-letter {
-          width: 22px; height: 22px; border-radius: 50%;
-          background: rgba(255,255,255,.1); color: #8FB8FF;
-          font-size: 11px; font-weight: 700;
-          display: inline-flex; align-items: center; justify-content: center;
-          flex-shrink: 0;
-        }
-        #${MOUNT_ID} .v53-input-row { display: flex; gap: 8px; margin-top: 12px; }
-        #${MOUNT_ID} .v53-input {
-          flex: 1; min-width: 0;
-          padding: 11px 14px; border-radius: 12px;
-          border: 1px solid rgba(255,255,255,.18);
-          background: rgba(0,0,0,.25); color: #F0F5FF;
-          font-family: -apple-system, sans-serif; font-size: 14px;
-        }
-        #${MOUNT_ID} .v53-input:focus { outline: none; border-color: rgba(91,156,246,.6); }
-        #${MOUNT_ID} .v53-verify-btn {
-          padding: 11px 16px; border-radius: 12px; border: none;
-          background: linear-gradient(135deg, #5B9CF6, #A78BFA);
-          color: #fff; font-weight: 700; font-size: 13px; cursor: pointer;
-          font-family: -apple-system, sans-serif; white-space: nowrap;
-          transition: opacity .15s;
-        }
-        #${MOUNT_ID} .v53-verify-btn:disabled { opacity: .5; cursor: default; }
-        #${MOUNT_ID} .v53-checking-label {
-          display: flex; align-items: center; gap: 8px;
-          margin-top: 10px; color: #FCD34D;
-          font-family: -apple-system, sans-serif; font-size: 13px;
-        }
-        #${MOUNT_ID} .v53-spinner {
-          width: 14px; height: 14px; border: 2px solid rgba(252,211,77,.3);
-          border-top-color: #FCD34D; border-radius: 50%;
-          animation: v53spin .7s linear infinite;
-        }
-        @keyframes v53spin { to{ transform: rotate(360deg); } }
-        #${MOUNT_ID} .v53-feedback {
-          margin-top: 11px; padding: 12px 14px; border-radius: 12px;
-          font-family: -apple-system, sans-serif; font-size: 14px; line-height: 1.6;
-        }
-        #${MOUNT_ID} .v53-feedback.v53-fb-correct {
-          background: rgba(52,211,153,.1); border: 1px solid rgba(52,211,153,.35); color: #D1FAE5;
-        }
-        #${MOUNT_ID} .v53-feedback.v53-fb-wrong {
-          background: rgba(248,113,113,.08); border: 1px solid rgba(248,113,113,.3); color: #FECACA;
-        }
-        #${MOUNT_ID} .v53-feedback-label { font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: .1em; margin-bottom: 5px; }
+        /* EXERCISES */
+        #${MOUNT_ID} .lx-ex-list { display:grid; gap:11px; padding:0 16px; }
+        #${MOUNT_ID} .lx-exercise { padding:20px; border-radius:18px; border:1px solid rgba(91,156,246,.16); background:rgba(91,156,246,.04); transition:border-color .2s,background .2s; }
+        #${MOUNT_ID} .lx-exercise.lx-correct { border-color:rgba(52,211,153,.38); background:rgba(52,211,153,.05); }
+        #${MOUNT_ID} .lx-exercise.lx-wrong { border-color:rgba(248,113,113,.35); background:rgba(248,113,113,.042); }
+        #${MOUNT_ID} .lx-ex-top { display:flex; align-items:flex-start; gap:13px; }
+        #${MOUNT_ID} .lx-ex-num { flex-shrink:0; width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; background:rgba(91,156,246,.13); border:1px solid rgba(91,156,246,.36); color:#9BBFFF; }
+        #${MOUNT_ID} .lx-correct .lx-ex-num { background:rgba(52,211,153,.17); border-color:rgba(52,211,153,.42); color:#6EE7B7; }
+        #${MOUNT_ID} .lx-wrong .lx-ex-num { background:rgba(248,113,113,.17); border-color:rgba(248,113,113,.42); color:#FCA5A5; }
+        #${MOUNT_ID} .lx-ex-q { font-family:Georgia,serif; font-size:15.5px; line-height:1.55; color:#EDF3FF; }
+        #${MOUNT_ID} .lx-options { display:grid; gap:8px; margin-top:13px; }
+        #${MOUNT_ID} .lx-opt { display:flex; align-items:center; gap:10px; padding:12px 14px; border-radius:12px; border:1px solid rgba(255,255,255,.09); background:rgba(255,255,255,.038); color:#C5D8F5; cursor:pointer; text-align:left; font-size:14px; line-height:1.4; transition:background .13s,border-color .13s; -webkit-tap-highlight-color:transparent; }
+        #${MOUNT_ID} .lx-opt:hover:not([disabled]) { background:rgba(91,156,246,.1); border-color:rgba(91,156,246,.3); }
+        #${MOUNT_ID} .lx-opt.lx-sel { background:rgba(91,156,246,.17); border-color:rgba(91,156,246,.46); }
+        #${MOUNT_ID} .lx-opt.lx-ok { background:rgba(52,211,153,.15); border-color:rgba(52,211,153,.46); color:#D1FAE5; }
+        #${MOUNT_ID} .lx-opt.lx-xx { background:rgba(248,113,113,.12); border-color:rgba(248,113,113,.4); color:#FECACA; }
+        #${MOUNT_ID} .lx-opt[disabled] { cursor:default; }
+        #${MOUNT_ID} .lx-opt-l { width:22px; height:22px; border-radius:50%; flex-shrink:0; background:rgba(255,255,255,.08); color:#8FB8FF; font-size:11px; font-weight:700; display:flex; align-items:center; justify-content:center; }
+        /* INPUT - crítico para teclado iOS */
+        #${MOUNT_ID} .lx-input-row { display:flex; gap:9px; margin-top:13px; }
+        #${MOUNT_ID} .lx-input { flex:1; min-width:0; padding:12px 15px; border-radius:13px; border:1.5px solid rgba(255,255,255,.14); background:rgba(0,0,0,.26); color:#EDF3FF; font-size:15px; font-family:inherit; -webkit-appearance:none; appearance:none; }
+        #${MOUNT_ID} .lx-input:focus { outline:none; border-color:rgba(91,156,246,.62); background:rgba(0,0,0,.34); }
+        #${MOUNT_ID} .lx-input::placeholder { color:rgba(145,180,240,.32); }
+        #${MOUNT_ID} .lx-input[disabled] { opacity:.6; }
+        #${MOUNT_ID} .lx-verify { padding:12px 18px; border-radius:13px; border:none; background:linear-gradient(135deg,#5B9CF6,#A78BFA); color:#fff; font-weight:700; font-size:13px; cursor:pointer; font-family:inherit; white-space:nowrap; -webkit-tap-highlight-color:transparent; transition:opacity .15s; }
+        #${MOUNT_ID} .lx-verify:disabled { opacity:.42; cursor:default; }
+        #${MOUNT_ID} .lx-spin-row { display:flex; align-items:center; gap:8px; margin-top:11px; color:#FCD34D; font-size:13px; }
+        #${MOUNT_ID} .lx-spin { width:13px; height:13px; border:2px solid rgba(252,211,77,.28); border-top-color:#FCD34D; border-radius:50%; animation:lxspin .7s linear infinite; }
+        @keyframes lxspin{to{transform:rotate(360deg)}}
+        #${MOUNT_ID} .lx-feedback { margin-top:12px; padding:12px 15px; border-radius:12px; font-size:14px; line-height:1.6; }
+        #${MOUNT_ID} .lx-fb-ok { background:rgba(52,211,153,.08); border:1px solid rgba(52,211,153,.3); color:#D1FAE5; }
+        #${MOUNT_ID} .lx-fb-x { background:rgba(248,113,113,.07); border:1px solid rgba(248,113,113,.26); color:#FECACA; }
+        #${MOUNT_ID} .lx-fb-lbl { font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:.1em; margin-bottom:5px; }
 
-        /* ── Tips ── */
-        #${MOUNT_ID} .v53-tips { display: grid; gap: 8px; padding: 0 16px; }
-        #${MOUNT_ID} .v53-tip {
-          display: flex; align-items: flex-start; gap: 10px;
-          padding: 13px 15px; border-radius: 13px;
-          background: rgba(252,211,77,.05); border: 1px solid rgba(252,211,77,.2);
-          color: #FEF3C7;
-          font-family: -apple-system, sans-serif; font-size: 14px; line-height: 1.6;
-        }
-        #${MOUNT_ID} .v53-tip-dot { color: #FCD34D; font-weight: 900; flex-shrink: 0; }
+        /* TIPS */
+        #${MOUNT_ID} .lx-tips { display:grid; gap:8px; padding:0 16px; }
+        #${MOUNT_ID} .lx-tip { display:flex; align-items:flex-start; gap:10px; padding:13px 16px; border-radius:13px; background:rgba(252,211,77,.045); border:1px solid rgba(252,211,77,.16); color:#FEF3C7; font-size:14px; line-height:1.6; }
+        #${MOUNT_ID} .lx-tip-dot { color:#FCD34D; font-weight:900; flex-shrink:0; margin-top:1px; }
 
-        /* ── Common mistakes ── */
-        #${MOUNT_ID} .v53-mistakes { display: grid; gap: 10px; padding: 0 16px; }
-        #${MOUNT_ID} .v53-mistake-card {
-          padding: 15px; border-radius: 14px;
-          background: rgba(248,113,113,.08); border: 1px solid rgba(248,113,113,.25);
-        }
-        #${MOUNT_ID} .v53-mistake-title { font-weight: 700; color: #FECACA; font-size: 14.5px; margin-bottom: 6px; }
-        #${MOUNT_ID} .v53-mistake-why { font-family: -apple-system, sans-serif; font-size: 13.5px; color: #DBEAFE; line-height: 1.55; }
-        #${MOUNT_ID} .v53-mistake-fix { font-family: -apple-system, sans-serif; font-size: 13.5px; color: #A7F3D0; margin-top: 6px; line-height: 1.55; }
+        /* MISTAKES */
+        #${MOUNT_ID} .lx-mistakes { display:grid; gap:10px; padding:0 16px; }
+        #${MOUNT_ID} .lx-mistake { padding:16px; border-radius:15px; background:rgba(248,113,113,.065); border:1px solid rgba(248,113,113,.2); }
+        #${MOUNT_ID} .lx-m-title { font-weight:700; color:#FCA5A5; font-size:14.5px; margin-bottom:6px; }
+        #${MOUNT_ID} .lx-m-why { font-size:13.5px; color:#DBEAFE; line-height:1.55; }
+        #${MOUNT_ID} .lx-m-fix { font-size:13.5px; color:#A7F3D0; margin-top:7px; line-height:1.55; }
 
-        /* ── Conclude ── */
-        #${MOUNT_ID} .v53-conclude {
-          margin: 32px 16px 0;
-          padding: 24px; border-radius: 20px;
-          text-align: center;
-          border: 1px solid rgba(91,156,246,.25);
-          background: linear-gradient(160deg, rgba(91,156,246,.09), rgba(167,139,250,.05));
-        }
-        #${MOUNT_ID} .v53-final-tip {
-          font-style: italic; font-size: 17px;
-          color: rgba(160,195,255,.8); margin-bottom: 14px; line-height: 1.5;
-        }
-        #${MOUNT_ID} .v53-score-line {
-          font-family: -apple-system, sans-serif;
-          font-size: 13px; color: #A9C7FF; margin-bottom: 14px;
-        }
-        #${MOUNT_ID} .v53-score-line.v53-pass { color: #6EE7B7; }
-        #${MOUNT_ID} .v53-conclude-btn {
-          width: 100%; max-width: 320px;
-          padding: 15px 20px; border-radius: 14px; border: none;
-          background: linear-gradient(135deg, #5B9CF6, #A78BFA);
-          color: #fff; font-weight: 800; font-size: 15px; cursor: pointer;
-          font-family: -apple-system, sans-serif;
-          box-shadow: 0 8px 24px rgba(91,156,246,.25);
-          transition: transform .15s, opacity .15s;
-        }
-        #${MOUNT_ID} .v53-conclude-btn:active { transform: scale(.98); }
-        #${MOUNT_ID} .v53-conclude-btn:disabled { opacity: .5; cursor: default; }
-        #${MOUNT_ID} .v53-done-label {
-          font-family: -apple-system, sans-serif;
-          font-weight: 700; font-size: 16px; color: #6EE7B7;
-        }
-        #${MOUNT_ID} .v53-empty {
-          padding: 64px 20px; text-align: center;
-        }
-        #${MOUNT_ID} .v53-empty h2 {
-          font-size: 24px; color: #F0F5FF; margin-bottom: 10px;
-        }
-        #${MOUNT_ID} .v53-empty p {
-          font-family: -apple-system, sans-serif;
-          font-size: 14px; color: rgba(160,195,255,.7); line-height: 1.6;
-        }
-        #${MOUNT_ID} .v53-listening-block {
-          margin: 0 16px 8px;
-          border-radius: 20px;
-          border: 1px solid rgba(167,139,250,.2);
-          background: linear-gradient(160deg, rgba(30,15,64,.9), rgba(20,10,50,.9));
-          overflow: hidden;
-        }
-        #${MOUNT_ID} .v53-listening-bar {
-          display: flex; align-items: center; justify-content: space-between;
-          padding: 14px 18px;
-          background: rgba(167,139,250,.08);
-          border-bottom: 1px solid rgba(167,139,250,.15);
-        }
-        #${MOUNT_ID} .v53-listening-bar-label {
-          font-family: -apple-system, sans-serif;
-          font-size: 11px; font-weight: 700; letter-spacing: .2em;
-          text-transform: uppercase; color: #C4B5FD;
-        }
-        #${MOUNT_ID} .v53-tts-pill-purple {
-          display: inline-flex; align-items: center; gap: 7px;
-          padding: 7px 14px; border-radius: 999px;
-          border: 1px solid rgba(167,139,250,.4);
-          background: rgba(167,139,250,.12);
-          color: #C4B5FD; cursor: pointer;
-          font-family: -apple-system, sans-serif;
-          font-size: 12px; font-weight: 600;
-          transition: background .15s;
-        }
-        #${MOUNT_ID} .v53-tts-pill-purple:hover { background: rgba(167,139,250,.22); }
-        #${MOUNT_ID} .v53-listening-transcript {
-          padding: 16px 20px;
-        }
-        #${MOUNT_ID} .v53-transcript-toggle {
-          font-family: -apple-system, sans-serif;
-          font-size: 13px; font-weight: 600; color: #A78BFA;
-          cursor: pointer; list-style: none;
-        }
-        #${MOUNT_ID} .v53-transcript-toggle::marker { display: none; }
-        #${MOUNT_ID} .v53-transcript-text {
-          font-family: Georgia, serif;
-          font-size: 16px; line-height: 1.75; color: #E0D9FF;
-          margin-top: 12px;
-        }
+        /* CONCLUDE */
+        #${MOUNT_ID} .lx-conclude { margin:36px 16px 0; padding:28px 24px; border-radius:22px; text-align:center; border:1px solid rgba(91,156,246,.2); background:linear-gradient(160deg,rgba(91,156,246,.07),rgba(167,139,250,.045)); }
+        #${MOUNT_ID} .lx-final-tip { font-family:Georgia,serif; font-style:italic; font-size:17px; color:rgba(155,195,255,.72); margin-bottom:16px; line-height:1.5; }
+        #${MOUNT_ID} .lx-score { font-size:13px; color:#9BBFFF; margin-bottom:16px; }
+        #${MOUNT_ID} .lx-score.lx-pass { color:#6EE7B7; }
+        #${MOUNT_ID} .lx-conclude-btn { width:100%; max-width:320px; padding:16px 20px; border-radius:16px; border:none; background:linear-gradient(135deg,#5B9CF6,#A78BFA); color:#fff; font-weight:800; font-size:15px; cursor:pointer; font-family:inherit; box-shadow:0 10px 28px rgba(91,156,246,.2); transition:transform .15s,opacity .15s; -webkit-tap-highlight-color:transparent; }
+        #${MOUNT_ID} .lx-conclude-btn:active { transform:scale(.98); }
+        #${MOUNT_ID} .lx-conclude-btn:disabled { opacity:.42; cursor:default; }
+        #${MOUNT_ID} .lx-done { font-weight:700; font-size:16px; color:#6EE7B7; }
+
+        /* WAVE */
+        #${MOUNT_ID} .lx-wave { display:inline-flex; align-items:center; gap:3px; height:13px; }
+        #${MOUNT_ID} .lx-wave i { display:block; width:3px; border-radius:99px; background:currentColor; font-style:normal; animation:lxwave .8s ease-in-out infinite; }
+        #${MOUNT_ID} .lx-wave i:nth-child(1){height:5px;animation-delay:0s}
+        #${MOUNT_ID} .lx-wave i:nth-child(2){height:12px;animation-delay:.15s}
+        #${MOUNT_ID} .lx-wave i:nth-child(3){height:7px;animation-delay:.3s}
+        @keyframes lxwave{0%,100%{transform:scaleY(1)}50%{transform:scaleY(.35)}}
+
+        #${MOUNT_ID} .lx-empty { padding:64px 20px; text-align:center; }
+        #${MOUNT_ID} .lx-empty h2 { font-family:Georgia,serif; font-size:26px; color:#EDF3FF; margin-bottom:10px; }
+        #${MOUNT_ID} .lx-empty p { font-size:14px; color:rgba(145,180,255,.58); line-height:1.6; }
       `;
       document.head.appendChild(st);
     }
 
-    /* ─── HTML builders ───────────────────────────────────────── */
-
-    function buildHero(L){
-      var badge=L._fallback
-        ?'<span class="v53-badge v53-badge-fallback">⚠ Aula padrão</span>'
-        :'<span class="v53-badge v53-badge-ai">✦ IA</span>';
-      return `<div class="v53-hero">
-        <div class="v53-badge-row">
-          ${badge}
-          <span class="v53-badge v53-badge-time">≈ ${esc(L.estimatedMinutes)} min</span>
-        </div>
-        <h1 class="v53-hero-title">${esc(L.title)}</h1>
-        ${L.subtitle?`<div class="v53-hero-subtitle">${esc(L.subtitle)}</div>`:''}
-        ${L.intro?`<p class="v53-hero-intro">${esc(L.intro)}</p>`:''}
-        ${L._fallback&&L._fallbackReason?`<div style="margin-top:12px;padding:10px 14px;border-radius:10px;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);color:#FCD34D;font-family:-apple-system,sans-serif;font-size:13px;line-height:1.5;">${esc(L._fallbackReason)}</div>`:''}
-      </div>`;
+    /* ── HTML builders ── */
+    function bHero(L){
+      var badge=L._fallback?'<span class="lx-chip lx-chip-std">⚠ Aula padrão</span>':'<span class="lx-chip lx-chip-ai">✦ Gerada por IA</span>';
+      return '<div class="lx-hero"><div class="lx-chips">'+badge+'<span class="lx-chip lx-chip-time">≈ '+esc(String(L.estimatedMinutes))+' min</span></div><h1 class="lx-title">'+esc(L.title)+'</h1>'+(L.subtitle?'<div class="lx-subtitle">'+esc(L.subtitle)+'</div>':'')+(L.intro?'<p class="lx-intro">'+esc(L.intro)+'</p>':'')+'</div>';
     }
-
-    function buildReading(L){
+    function bReading(L){
       if(!L.readingText)return '';
-      // Split into paragraphs for better reading experience
-      var paras=L.readingText.split(/\n\n+/).filter(function(p){return p.trim();});
-      if(paras.length<=1) paras=[L.readingText];
-      var parasHtml=paras.map(function(p){
-        return '<p class="v53-reading-para">'+esc(p.trim())+'</p>';
-      }).join('');
-      return `
-        <div class="v53-divider">
-          <span class="v53-divider-label">Texto para leitura</span>
-          <span class="v53-divider-line"></span>
-        </div>
-        <div class="v53-reading-block">
-          <div class="v53-reading-bar">
-            <span class="v53-reading-bar-label">📖 Reading</span>
-            <button class="v53-tts-pill" data-v53-tts="reading">
-              <span class="v53-tts-icon">${svgVolume()}</span> Ouvir
-            </button>
-          </div>
-          <div class="v53-reading-body">${parasHtml}</div>
-        </div>`;
+      var paras=L.readingText.split(/\n\n+/).map(function(p){return p.trim();}).filter(Boolean);
+      if(!paras.length)paras=[L.readingText];
+      var ph=paras.map(function(p){return '<p class="lx-para">'+esc(p)+'</p>';}).join('');
+      return '<div class="lx-sh"><span class="lx-sh-label">Texto para leitura</span><span class="lx-sh-line"></span></div>'
+        +'<div class="lx-reading"><div class="lx-card-top"><div class="lx-card-tag"><div class="lx-card-icon">📖</div><span class="lx-card-lbl">Reading</span></div>'
+        +'<button class="lx-tts-btn" data-lxtts="reading">'+icVol(false)+' Ouvir</button></div>'
+        +'<div class="lx-reading-body"><div class="lx-reading-text">'+ph+'</div></div></div>';
     }
-
-    function buildListening(L){
+    function bListening(L){
       if(!L.listeningText)return '';
-      return `
-        <div class="v53-divider">
-          <span class="v53-divider-label">Áudio</span>
-          <span class="v53-divider-line"></span>
-        </div>
-        <div class="v53-listening-block">
-          <div class="v53-listening-bar">
-            <span class="v53-listening-bar-label">🎧 Listening</span>
-            <button class="v53-tts-pill-purple" data-v53-tts="listening">
-              <span class="v53-tts-icon">${svgVolume()}</span> Ouvir
-            </button>
-          </div>
-          <div class="v53-listening-transcript">
-            <details>
-              <summary class="v53-transcript-toggle">Ver transcrição</summary>
-              <p class="v53-transcript-text">${esc(L.listeningText)}</p>
-            </details>
-          </div>
-        </div>`;
+      return '<div class="lx-sh" style="padding-top:24px;"><span class="lx-sh-label">Áudio</span><span class="lx-sh-line"></span></div>'
+        +'<div class="lx-listening"><div class="lx-card-top-purple"><div class="lx-card-tag"><div class="lx-card-icon" style="background:rgba(167,139,250,.16);border-color:rgba(167,139,250,.28);">🎧</div><span class="lx-card-lbl" style="color:#C4B5FD;">Listening</span></div>'
+        +'<button class="lx-tts-btn-p" data-lxtts="listening">'+icVol(false)+' Ouvir</button></div>'
+        +'<div class="lx-listen-body"><details><summary class="lx-tr-toggle">Ver transcrição</summary><p class="lx-tr-txt">'+esc(L.listeningText)+'</p></details></div></div>';
     }
-
-    function buildSections(L){
+    function bSections(L){
       if(!L.sections.length)return '';
-      var cards=L.sections.map(function(sec,i){
-        var exHtml=sec.examples.map(function(ex){
-          return `<div class="v53-example">
-            <button class="v53-tts-circle" data-v53-tts="word" data-v53-text="${esc(ex.en)}">${svgVolume()}</button>
-            <div style="flex:1;min-width:0;">
-              ${ex.en?`<div class="v53-ex-en">${esc(ex.en)}</div>`:''}
-              ${ex.pt?`<div class="v53-ex-pt">${esc(ex.pt)}</div>`:''}
-            </div>
-          </div>`;
+      var cards=L.sections.map(function(sec){
+        var exh=sec.examples.map(function(ex){
+          return '<div class="lx-example"><button class="lx-tts-sm" data-lxtts="word" data-lxtext="'+esc(ex.en)+'">'+icVol(true)+'</button><div style="flex:1;min-width:0;">'+(ex.en?'<div class="lx-ex-en">'+esc(ex.en)+'</div>':'')+(ex.pt?'<div class="lx-ex-pt">'+esc(ex.pt)+'</div>':'')+'</div></div>';
         }).join('');
-        return `<div class="v53-section-card">
-          <h2 class="v53-section-heading"><span class="v53-mark">§</span>${esc(sec.heading)}</h2>
-          ${sec.content?`<div class="v53-section-body">${esc(sec.content)}</div>`:''}
-          ${exHtml?`<div class="v53-examples">${exHtml}</div>`:''}
-        </div>`;
+        return '<div class="lx-sec-card"><h2 class="lx-sec-h"><span class="lx-sec-mark">§</span>'+esc(sec.heading)+'</h2>'+(sec.content?'<div class="lx-sec-body">'+esc(sec.content)+'</div>':'')+(exh?'<div class="lx-examples">'+exh+'</div>':'')+'</div>';
       }).join('');
-      return `<div class="v53-divider">
-        <span class="v53-divider-label">Conteúdo</span>
-        <span class="v53-divider-line"></span>
-        <span class="v53-divider-count">${L.sections.length}</span>
-      </div>${cards}`;
+      return '<div class="lx-sh"><span class="lx-sh-label">Conteúdo</span><span class="lx-sh-line"></span><span class="lx-sh-count">'+L.sections.length+'</span></div>'+cards;
     }
-
-    function buildVocab(L){
+    function bVocab(L){
       if(!L.vocabulary.length)return '';
       var cards=L.vocabulary.map(function(v){
-        return `<div class="v53-vocab-card">
-          <div class="v53-vocab-top">
-            <div>
-              <div class="v53-vocab-word">${esc(v.word)}</div>
-              <div class="v53-vocab-meta">${esc(v.pos)}${v.pos&&v.translation?' · ':''}${esc(v.translation)}</div>
-            </div>
-            <button class="v53-tts-circle" data-v53-tts="word" data-v53-text="${esc(v.word)}">${svgVolume()}</button>
-          </div>
-          ${v.example?`<div class="v53-vocab-example">"${esc(v.example)}"</div>`:''}
-        </div>`;
+        return '<div class="lx-vcard"><div class="lx-vtop"><div><div class="lx-vword">'+esc(v.word)+'</div><div class="lx-vmeta">'+esc(v.pos)+(v.pos&&v.translation?' · ':'')+esc(v.translation)+'</div></div><button class="lx-tts-sm" data-lxtts="word" data-lxtext="'+esc(v.word)+'">'+icVol(true)+'</button></div>'+(v.example?'<div class="lx-veg">"'+esc(v.example)+'"</div>':'')+'</div>';
       }).join('');
-      return `<div class="v53-divider">
-        <span class="v53-divider-label">Vocabulário</span>
-        <span class="v53-divider-line"></span>
-        <span class="v53-divider-count">${L.vocabulary.length}</span>
-      </div>
-      <div class="v53-vocab-grid">${cards}</div>`;
+      return '<div class="lx-sh"><span class="lx-sh-label">Vocabulário</span><span class="lx-sh-line"></span><span class="lx-sh-count">'+L.vocabulary.length+'</span></div><div class="lx-vocab-grid">'+cards+'</div>';
     }
-
-    function buildExercises(L, state){
+    function bExercises(L,state){
       if(!L.exercises.length)return '';
-      var correctCount=0;
+      var correct=0;
       var items=L.exercises.map(function(ex,i){
         var ans=state.answers[i]||'';
         var checked=!!state.checked[i];
-        var aiResult=state.aiResults&&state.aiResults[i];
-        var isChecking=!!state.checking&&state.checking[i];
-        var isCorrect=checked&&aiResult&&aiResult.correct;
-        if(isCorrect)correctCount++;
-        var clsExtra=checked?(isCorrect?' v53-correct':' v53-wrong'):'';
+        var isChecking=!!(state.checking&&state.checking[i]);
+        var result=state.results&&state.results[i];
+        var isOk=checked&&result&&result.correct;
+        if(isOk)correct++;
+        var clx=checked?(isOk?' lx-correct':' lx-wrong'):'';
+        var marker=checked?(isOk?'✓':'✗'):String(i+1);
         var hasOpts=Array.isArray(ex.options)&&ex.options.length>0&&ex.type!=='translate';
-        var marker=checked?(isCorrect?'✓':'✗'):String(i+1);
-        var inputHtml='';
+        var inHtml='';
         if(hasOpts){
-          inputHtml='<div class="v53-options">'+ex.options.map(function(o,k){
+          var opts=ex.options.map(function(o,k){
             var letter=String.fromCharCode(65+k);
             var oVal=String(o);
-            var cls='v53-option';
+            var cls='lx-opt';
             if(checked){
-              if(aiResult&&aiResult.correct&&oVal===ans)cls+=' v53-opt-correct';
-              else if(!aiResult||!aiResult.correct){
-                var correctAns=String(ex.answer||'').trim().toLowerCase();
-                if(oVal.trim().toLowerCase()===correctAns)cls+=' v53-opt-correct';
-                else if(oVal===ans)cls+=' v53-opt-wrong';
-              }
-            } else if(oVal===ans){cls+=' v53-opt-selected';}
-            return `<button class="${cls}" data-v53-ex="${i}" data-v53-opt="${esc(oVal)}"${checked?' disabled':''}><span class="v53-opt-letter">${letter}</span><span>${esc(oVal)}</span></button>`;
-          }).join('')+'</div>';
+              var cl=String(ex.answer||'').trim().toLowerCase();
+              if(oVal.trim().toLowerCase()===cl)cls+=' lx-ok';
+              else if(oVal===ans)cls+=' lx-xx';
+            } else if(oVal===ans){cls+=' lx-sel';}
+            return '<button class="'+cls+'" data-lxex="'+i+'" data-lxopt="'+esc(oVal)+'"'+(checked?' disabled':'')+'><span class="lx-opt-l">'+letter+'</span><span>'+esc(oVal)+'</span></button>';
+          }).join('');
+          inHtml='<div class="lx-options">'+opts+'</div>';
         } else {
-          inputHtml=`<div class="v53-input-row">
-            <input class="v53-input" type="text" placeholder="Sua resposta em inglês…" data-v53-input="${i}" value="${esc(ans)}"${checked?' disabled':''}/>
-            ${!checked?`<button class="v53-verify-btn" data-v53-verify="${i}">Verificar</button>`:''}
-          </div>`;
+          inHtml='<div class="lx-input-row"><input class="lx-input" type="text" inputmode="text" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="Sua resposta em inglês…" data-lxinp="'+i+'" value="'+esc(ans)+'"'+(checked?' disabled':'')+'/>'+(!checked?'<button class="lx-verify" data-lxverify="'+i+'">Verificar</button>':'')+'</div>';
         }
-        var feedbackHtml='';
-        if(isChecking){
-          feedbackHtml='<div class="v53-checking-label"><span class="v53-spinner"></span> Verificando com IA…</div>';
-        } else if(checked&&aiResult){
-          var lbl=aiResult.correct?'✓ Correto!':'✗ Resposta incorreta';
-          if(!aiResult.correct&&ex.answer)lbl+=' — Esperado: '+esc(ex.answer);
-          feedbackHtml=`<div class="v53-feedback ${aiResult.correct?'v53-fb-correct':'v53-fb-wrong'}">
-            <div class="v53-feedback-label">${lbl}</div>
-            ${aiResult.feedback?`<div>${esc(aiResult.feedback)}</div>`:''}
-          </div>`;
+        var fbHtml='';
+        if(isChecking){fbHtml='<div class="lx-spin-row"><span class="lx-spin"></span> Verificando com IA…</div>';}
+        else if(checked&&result){
+          var lbl=result.correct?'✓ Correto!':'✗ Resposta incorreta';
+          if(!result.correct&&ex.answer)lbl+=' — Esperado: '+esc(ex.answer);
+          fbHtml='<div class="lx-feedback '+(result.correct?'lx-fb-ok':'lx-fb-x')+'"><div class="lx-fb-lbl">'+lbl+'</div>'+(result.feedback?'<div>'+esc(result.feedback)+'</div>':'')+'</div>';
         }
-        return `<div class="v53-exercise${clsExtra}" data-v53-ex-idx="${i}">
-          <div class="v53-ex-header">
-            <div class="v53-ex-num">${marker}</div>
-            <div style="flex:1;min-width:0;">
-              <div class="v53-ex-question">${esc(ex.question)}</div>
-              ${inputHtml}
-              ${feedbackHtml}
-            </div>
-          </div>
-        </div>`;
+        return '<div class="lx-exercise'+clx+'"><div class="lx-ex-top"><div class="lx-ex-num">'+marker+'</div><div style="flex:1;min-width:0;"><div class="lx-ex-q">'+esc(ex.question)+'</div>'+inHtml+fbHtml+'</div></div></div>';
       }).join('');
-      return `<div class="v53-divider">
-        <span class="v53-divider-label">Exercícios</span>
-        <span class="v53-divider-line"></span>
-        <span class="v53-divider-count">${correctCount}/${L.exercises.length}</span>
-      </div>
-      <div class="v53-ex-list">${items}</div>`;
+      return '<div class="lx-sh"><span class="lx-sh-label">Exercícios</span><span class="lx-sh-line"></span><span class="lx-sh-count">'+correct+'/'+L.exercises.length+'</span></div><div class="lx-ex-list">'+items+'</div>';
     }
-
-    function buildTips(L){
+    function bTips(L){
       if(!L.tips.length)return '';
-      var items=L.tips.map(function(t){
-        return `<div class="v53-tip"><span class="v53-tip-dot">•</span><span>${esc(t)}</span></div>`;
-      }).join('');
-      return `<div class="v53-divider">
-        <span class="v53-divider-label">Dicas</span>
-        <span class="v53-divider-line"></span>
-      </div>
-      <div class="v53-tips">${items}</div>`;
+      return '<div class="lx-sh"><span class="lx-sh-label">Dicas</span><span class="lx-sh-line"></span></div><div class="lx-tips">'+L.tips.map(function(t){return'<div class="lx-tip"><span class="lx-tip-dot">•</span><span>'+esc(t)+'</span></div>';}).join('')+'</div>';
     }
-
-    function buildMistakes(L){
+    function bMistakes(L){
       if(!L.commonMistakes.length)return '';
-      var items=L.commonMistakes.map(function(m){
-        return `<div class="v53-mistake-card">
-          ${m.mistake?`<div class="v53-mistake-title">⚠ ${esc(m.mistake)}</div>`:''}
-          ${m.why?`<div class="v53-mistake-why">${esc(m.why)}</div>`:''}
-          ${m.avoid?`<div class="v53-mistake-fix">✓ Como evitar: ${esc(m.avoid)}</div>`:''}
-        </div>`;
-      }).join('');
-      return `<div class="v53-divider">
-        <span class="v53-divider-label">Erros comuns</span>
-        <span class="v53-divider-line"></span>
-      </div>
-      <div class="v53-mistakes">${items}</div>`;
+      return '<div class="lx-sh"><span class="lx-sh-label">Erros comuns</span><span class="lx-sh-line"></span></div><div class="lx-mistakes">'+L.commonMistakes.map(function(m){return'<div class="lx-mistake">'+(m.mistake?'<div class="lx-m-title">⚠ '+esc(m.mistake)+'</div>':'')+(m.why?'<div class="lx-m-why">'+esc(m.why)+'</div>':'')+(m.avoid?'<div class="lx-m-fix">✓ '+esc(m.avoid)+'</div>':'')+'</div>';}).join('')+'</div>';
     }
-
-    function buildConclude(L, state, done){
+    function bConclude(L,state,done){
       var ex=L.exercises;
       var answered=ex.filter(function(_,i){return !!state.checked[i];}).length;
-      var correct=ex.filter(function(_,i){
-        return state.checked[i]&&state.aiResults&&state.aiResults[i]&&state.aiResults[i].correct;
-      }).length;
+      var correct=ex.filter(function(_,i){return state.checked[i]&&state.results&&state.results[i]&&state.results[i].correct;}).length;
       var pct=ex.length?Math.round(correct/ex.length*100):100;
       var pass=pct>=80;
-      var scoreLine=ex.length
-        ?`<div class="v53-score-line${pass&&answered===ex.length?' v53-pass':''}">Pontuação: ${correct}/${ex.length} (${pct}%). Meta: 80%+.</div>`
-        :'';
-      if(done){
-        return `<div class="v53-conclude">
-          ${L.finalTip?`<div class="v53-final-tip">"${esc(L.finalTip)}"</div>`:''}
-          <div class="v53-done-label">✓ Aula concluída hoje</div>
-        </div>`;
-      }
-      return `<div class="v53-conclude">
-        ${L.finalTip?`<div class="v53-final-tip">"${esc(L.finalTip)}"</div>`:''}
-        ${scoreLine}
-        <button class="v53-conclude-btn" data-v53-conclude="1">✓ Concluir aula de hoje</button>
-      </div>`;
+      var sc=ex.length?'<div class="lx-score'+(pass&&answered===ex.length?' lx-pass':'')+'">Pontuação: '+correct+'/'+ex.length+' ('+pct+'%) — meta: 80%+</div>':'';
+      if(done)return '<div class="lx-conclude">'+(L.finalTip?'<div class="lx-final-tip">"'+esc(L.finalTip)+'"</div>':'')+'<div class="lx-done">✓ Aula concluída hoje</div></div>';
+      return '<div class="lx-conclude">'+(L.finalTip?'<div class="lx-final-tip">"'+esc(L.finalTip)+'"</div>':'')+sc+'<button class="lx-conclude-btn" data-lxconclude="1">✓ Concluir aula de hoje</button></div>';
+    }
+    function buildHTML(L,state,done){
+      if(!L)return '<div class="lx-empty"><h2>Sem aula ativa</h2><p>Vá para a aba Hoje e toque em "Começar aula".</p></div>';
+      return bHero(L)+bReading(L)+bListening(L)+bSections(L)+bVocab(L)+bExercises(L,state)+bMistakes(L)+bTips(L)+bConclude(L,state,done);
     }
 
-    function buildFullHTML(L, state, done){
-      if(!L) return `<div class="v53-empty"><h2>Sem aula ativa</h2><p>Vá para a aba Hoje e toque em "Começar aula".</p></div>`;
-      return buildHero(L)
-        + buildReading(L)
-        + buildListening(L)
-        + buildSections(L)
-        + buildVocab(L)
-        + buildExercises(L, state)
-        + buildMistakes(L)
-        + buildTips(L)
-        + buildConclude(L, state, done);
+    /* ── DOM helpers ── */
+    function findReactRoot(){var s=document.querySelectorAll('.min-h-screen.paper-grain');for(var i=0;i<s.length;i++)return s[i];return null;}
+    function hideReact(){var c=findReactRoot();if(c)c.classList.add(HIDE_CLASS);}
+    function showReact(){var c=findReactRoot();if(c)c.classList.remove(HIDE_CLASS);}
+    function silenceOld(){
+      try{window.__fluencyRenderFullLessonV18=function(){return false;};}catch(_){}
+      try{window.__fluencyV43RenderLesson=function(){return false;};}catch(_){}
+      try{window.__fluencyV52Render=function(){return false;};}catch(_){}
+      try{window.__fluencyV52UnifiedLessonRender=true;}catch(_){}
+      ['__fluency_v51_ai_mount__','__fluency_v52_lesson_root__'].forEach(function(id){try{var e=document.getElementById(id);if(e)e.remove();}catch(_){}});
+      try{var v18=document.querySelector('.fluency-v18-full-lesson-render');if(v18)v18.remove();}catch(_){}
     }
 
-    /* ─── State ───────────────────────────────────────────────── */
-    var __state={title:'',answers:{},checked:{},checking:{},aiResults:{}};
-    function ensureState(L){
-      if(!L)return __state;
-      if(__state.title!==(L.title||'')){
-        __state={title:L.title||'',answers:{},checked:{},checking:{},aiResults:{}};
-      }
-      return __state;
-    }
-
-    /* ─── Conclude lesson ─────────────────────────────────────── */
-    function concludeLesson(L, state){
+    /* ── Conclude ── */
+    function concludeLesson(L,state){
       var ex=arr(L.exercises);
       var answered=ex.filter(function(_,i){return !!state.checked[i];}).length;
-      var correct=ex.filter(function(_,i){return state.checked[i]&&state.aiResults&&state.aiResults[i]&&state.aiResults[i].correct;}).length;
+      var correct=ex.filter(function(_,i){return state.checked[i]&&state.results&&state.results[i]&&state.results[i].correct;}).length;
       var pct=ex.length?Math.round(correct/ex.length*100):100;
-      if(ex.length&&answered<ex.length){alert('Responda e verifique todos os exercícios antes de concluir.');return false;}
-      if(ex.length&&pct<80){alert('Você acertou '+pct+'%. Revise os exercícios errados antes de concluir. Meta: 80%.');return false;}
+      if(ex.length&&answered<ex.length){alert('Responda todos os exercícios antes de concluir.');return false;}
+      if(ex.length&&pct<80){alert('Você acertou '+pct+'%. Meta: 80%. Revise os erros!');return false;}
       try{
-        var t=todayStr();
-        var cur=getCompletedToday();
+        var t=todayStr();var cur=getCompletedToday();
         if(!cur.some(function(c){return c&&c.date===t;})){
           cur.push({id:t+'_v53',date:t,skill:'reading',level:'A1',title:L.title||'Aula',score:pct});
           localStorage.setItem('fluency_completedLessons',JSON.stringify(cur));
         }
         localStorage.setItem('fluency_v51_completed_'+t,'1');
-      }catch(e){log('erro ao salvar: '+(e&&e.message||e));}
-      alert('Parabéns! Aula concluída com '+pct+'%! 🎉');
+      }catch(e){log('save error:'+(e&&e.message||e));}
+      alert('Parabéns! '+pct+'% de acerto! 🎉');
       return true;
     }
 
-    /* ─── DOM helpers ─────────────────────────────────────────── */
-    function findReactContainer(){
-      var s=document.querySelectorAll('.min-h-screen.paper-grain');
-      for(var i=0;i<s.length;i++)return s[i];
-      return null;
-    }
-    function hideReact(){ var c=findReactContainer(); if(c)c.classList.add(HIDE_CLASS); }
-    function showReact(){ var c=findReactContainer(); if(c)c.classList.remove(HIDE_CLASS); }
-    function silenceOldPatches(){
-      try{window.__fluencyRenderFullLessonV18=function(){return false;};}catch(_){}
-      try{window.__fluencyV43RenderLesson=function(){return false;};}catch(_){}
-      try{window.__fluencyV46RenderLesson=function(){return false;};}catch(_){}
-      try{window.__fluencyV52Render=function(){return false;};}catch(_){}
-      // Remove V51 and V52 mounts
-      ['__fluency_v51_ai_mount__','__fluency_v52_lesson_root__'].forEach(function(id){
-        var el=document.getElementById(id);if(el)el.remove();
-      });
-      try{var v18=document.querySelector('.fluency-v18-full-lesson-render');if(v18)v18.remove();}catch(_){}
-    }
-
-    /* ─── Main render ─────────────────────────────────────────── */
+    /* ── Render ── */
     function render(){
       try{
-        if(!isLessonTab()){
-          var m0=document.getElementById(MOUNT_ID);
-          if(m0)m0.remove();
-          showReact();
-          return;
-        }
-        silenceOldPatches();
+        if(__typing)return;
+        if(!isLessonTab()){var m0=document.getElementById(MOUNT_ID);if(m0)m0.remove();showReact();return;}
+        silenceOld();
         var L=readActiveLesson();
-        if(!L){
-          var m1=document.getElementById(MOUNT_ID);
-          if(m1)m1.remove();
-          showReact();
-          return;
-        }
+        if(!L){var m1=document.getElementById(MOUNT_ID);if(m1)m1.remove();showReact();return;}
         var state=ensureState(L);
         var done=isDoneToday();
         hideReact();
         var mount=document.getElementById(MOUNT_ID);
         if(!mount){
-          mount=document.createElement('div');
-          mount.id=MOUNT_ID;
+          mount=document.createElement('div');mount.id=MOUNT_ID;
           var header=document.querySelector('header');
-          if(header&&header.parentNode){
-            header.parentNode.insertBefore(mount,header.nextSibling);
-          } else {
-            (document.getElementById('root')||document.body).appendChild(mount);
-          }
+          if(header&&header.parentNode){header.parentNode.insertBefore(mount,header.nextSibling);}
+          else{(document.getElementById('root')||document.body).appendChild(mount);}
         }
-        mount.innerHTML=buildFullHTML(L,state,done);
+        // Salva inputs antes de re-render
+        var sv={};
+        var olds=mount.querySelectorAll('input[data-lxinp]');
+        for(var ii=0;ii<olds.length;ii++){var inp=olds[ii];var idx=inp.getAttribute('data-lxinp');sv[idx]=inp.value;}
+        Object.keys(sv).forEach(function(k){if(!state.checked[k])state.answers[k]=sv[k]||state.answers[k]||'';});
+        var sy=window.scrollY||window.pageYOffset||0;
+        mount.__v53wired=false;
+        mount.innerHTML=buildHTML(L,state,done);
         wire(mount,L,state);
-      }catch(e){log('render error: '+(e&&e.message||e));}
+        try{window.scrollTo(0,sy);}catch(_){}
+      }catch(e){log('render err:'+(e&&e.message||e));}
     }
 
-    /* ─── Wire interactions ───────────────────────────────────── */
-    function wire(mount, L, state){
+    /* ── Wire ── */
+    function wire(mount,L,state){
       if(mount.__v53wired)return;
       mount.__v53wired=true;
-
+      mount.addEventListener('input',function(ev){
+        var t=ev.target;
+        if(t&&t.getAttribute&&t.getAttribute('data-lxinp')!==null){
+          markTyping();
+          state.answers[parseInt(t.getAttribute('data-lxinp'),10)]=t.value;
+        }
+      });
+      mount.addEventListener('focusin',function(ev){if(ev.target&&ev.target.tagName==='INPUT')markTyping();});
       mount.addEventListener('click',function(ev){
         var t=ev.target;
         while(t&&t!==mount){
-          if(t.dataset&&(
-            t.dataset.v53Tts!==undefined||
-            t.dataset.v53Ex!==undefined||
-            t.dataset.v53Verify!==undefined||
-            t.dataset.v53Conclude!==undefined
-          ))break;
+          if(t.getAttribute&&(t.getAttribute('data-lxtts')!==null||t.getAttribute('data-lxex')!==null||t.getAttribute('data-lxopt')!==null||t.getAttribute('data-lxverify')!==null||t.getAttribute('data-lxconclude')!==null))break;
           t=t.parentElement;
         }
         if(!t||t===mount)return;
-        ev.preventDefault();
-
         /* TTS */
-        if(t.dataset.v53Tts!==undefined){
-          var text='';
-          if(t.dataset.v53Tts==='reading')text=L.readingText;
-          else if(t.dataset.v53Tts==='listening')text=L.listeningText;
-          else text=t.dataset.v53Text||'';
-          ttsGemini(text,t);
-          return;
+        if(t.getAttribute('data-lxtts')!==null){
+          ev.preventDefault();
+          var tt=t.getAttribute('data-lxtts');
+          var tx=tt==='reading'?L.readingText:tt==='listening'?L.listeningText:(t.getAttribute('data-lxtext')||'');
+          ttsPlay(tx,t); return;
         }
-
-        /* Multiple choice */
-        if(t.dataset.v53Ex!==undefined&&t.dataset.v53Opt!==undefined){
-          var i=parseInt(t.dataset.v53Ex,10);
-          if(state.checked[i])return;
-          state.answers[i]=t.dataset.v53Opt;
-          state.checked[i]=true;
-          state.checking=state.checking||{};
-          state.aiResults=state.aiResults||{};
-          // For choice questions do simple check immediately
-          state.aiResults[i]=simpleCheck(L.exercises[i].answer,t.dataset.v53Opt);
-          render();
-          return;
+        /* Choice */
+        if(t.getAttribute('data-lxex')!==null&&t.getAttribute('data-lxopt')!==null){
+          ev.preventDefault();
+          var ei=parseInt(t.getAttribute('data-lxex'),10);
+          if(state.checked[ei])return;
+          state.answers[ei]=t.getAttribute('data-lxopt');
+          state.checked[ei]=true;
+          state.results=state.results||{};
+          state.results[ei]=simpleCheck(L.exercises[ei].answer,t.getAttribute('data-lxopt'));
+          __typing=false; render(); return;
         }
-
-        /* Text verify */
-        if(t.dataset.v53Verify!==undefined){
-          var i2=parseInt(t.dataset.v53Verify,10);
-          var input=mount.querySelector('input[data-v53-input="'+i2+'"]');
-          var val=input?input.value:'';
+        /* Verify text */
+        if(t.getAttribute('data-lxverify')!==null){
+          ev.preventDefault();
+          var vi=parseInt(t.getAttribute('data-lxverify'),10);
+          var inputEl=mount.querySelector('input[data-lxinp="'+vi+'"]');
+          var val=inputEl?inputEl.value:(state.answers[vi]||'');
           if(!val.trim()){alert('Digite sua resposta antes de verificar.');return;}
-          state.answers[i2]=val;
-          state.checked[i2]=true;
-          state.checking=state.checking||{};
-          state.aiResults=state.aiResults||{};
-          state.checking[i2]=true;
-          render(); // show spinner immediately
-          checkAnswerWithAI(i2,L.exercises[i2].question,L.exercises[i2].answer,val,function(result){
-            state.checking[i2]=false;
-            state.aiResults[i2]=result;
-            render();
-          });
-          return;
+          state.answers[vi]=val;state.checked[vi]=true;
+          state.checking=state.checking||{};state.results=state.results||{};
+          state.checking[vi]=true;__typing=false;render();
+          checkWithAI(vi,L.exercises[vi].question,L.exercises[vi].answer,val,function(r){
+            state.checking[vi]=false;state.results[vi]=r;render();
+          }); return;
         }
-
         /* Conclude */
-        if(t.dataset.v53Conclude!==undefined){
-          var ok=concludeLesson(L,state);
-          if(ok)render();
-          return;
+        if(t.getAttribute('data-lxconclude')!==null){
+          ev.preventDefault();__typing=false;
+          var ok=concludeLesson(L,state);if(ok)render(); return;
         }
       },true);
-
-      mount.addEventListener('input',function(ev){
-        var t=ev.target;
-        if(t&&t.dataset&&t.dataset.v53Input!==undefined){
-          state.answers[parseInt(t.dataset.v53Input,10)]=t.value;
-        }
-      });
     }
 
-    /* ─── Boot ────────────────────────────────────────────────── */
+    /* ── Boot ── */
     injectStyles();
-    // Desativa V52 flag para não conflitar
     window.__fluencyV52UnifiedLessonRender=true;
-    setTimeout(function(){silenceOldPatches();render();},200);
-    setTimeout(render,800);
-    setTimeout(render,2000);
-    setInterval(render,1200);
-    ['click','touchend','hashchange','popstate','focus','visibilitychange'].forEach(function(ev){
-      window.addEventListener(ev,function(){setTimeout(render,80);setTimeout(render,400);},true);
-    });
-    log('V53 ativo — redesign elegante + IA para respostas + Gemini TTS');
-  }catch(e){
-    try{console.warn('[Fluency V53] boot falhou',e);}catch(_){}
-  }
+    setTimeout(function(){silenceOld();render();},250);
+    setTimeout(render,900);
+    setTimeout(render,2400);
+    setInterval(function(){if(!__typing)render();},2000);
+    ['hashchange','popstate','visibilitychange'].forEach(function(ev){window.addEventListener(ev,function(){setTimeout(render,100);},false);});
+    ['click','touchend'].forEach(function(ev){window.addEventListener(ev,function(e){if(e.target&&e.target.tagName==='INPUT')return;setTimeout(function(){if(!__typing)render();},120);},true);});
+    log('V53 ativo');
+  }catch(e){try{console.warn('[Fluency V53] boot falhou',e);}catch(_){}}
 })();
