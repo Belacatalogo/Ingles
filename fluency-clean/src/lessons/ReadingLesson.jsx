@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { BookOpen, CheckCircle2, Headphones, Lightbulb, ListChecks, Loader2, MessageSquareText, PencilLine, Sparkles, Target } from 'lucide-react';
 import { Card } from '../components/ui/Card.jsx';
 import { ProgressPill } from '../components/ui/ProgressPill.jsx';
-import { playGeminiTtsAudio } from '../services/geminiTts.js';
+import { playLearningAudio } from '../services/audioPlayback.js';
 import { diagnostics } from '../services/diagnostics.js';
 import { completeLesson, getLessonDraft, isLessonCompleted, saveLessonDraft } from '../services/progressStore.js';
 
@@ -122,7 +122,7 @@ function isCorrectOption(option, answer) {
 
 export function ReadingLesson({ lesson }) {
   const [audioState, setAudioState] = useState('idle');
-  const [audioMessage, setAudioMessage] = useState('Gemini TTS natural disponível quando houver key de aula.');
+  const [audioMessage, setAudioMessage] = useState('Toque em Ouvir texto para reproduzir o áudio no iPhone.');
   const [selectedAnswers, setSelectedAnswers] = useState({});
   const [writtenAnswer, setWrittenAnswer] = useState('');
   const [completionMessage, setCompletionMessage] = useState('');
@@ -165,19 +165,21 @@ export function ReadingLesson({ lesson }) {
   async function handleListen() {
     diagnostics.log('Clique recebido no botão Ouvir texto da aula Reading.', 'info');
     setAudioState('loading');
-    setAudioMessage('Preparando áudio natural...');
+    setAudioMessage('Preparando áudio...');
 
     try {
-      const result = await playGeminiTtsAudio({
+      const result = await playLearningAudio({
         text: readingText,
+        label: 'Reading · texto principal',
         voiceName: 'Kore',
         style: 'Natural American English teacher voice, calm and clear, moderate speed, ideal for A1 Brazilian learners.',
       });
 
-      if (result.source === 'gemini') setAudioMessage('Áudio natural Gemini reproduzido.');
-      else if (result.source === 'cache') setAudioMessage('Áudio natural carregado do cache.');
-      else if (result.source === 'browser-fallback') setAudioMessage('Gemini TTS indisponível; usei o TTS do navegador como fallback.');
-      else setAudioMessage(result.error || 'Não foi possível reproduzir áudio.');
+      if (result.ok) {
+        setAudioMessage(result.source === 'browser-ios' ? 'Áudio iniciado pelo TTS do iPhone.' : 'Áudio iniciado.');
+      } else {
+        setAudioMessage(result.error || 'Não foi possível reproduzir áudio.');
+      }
     } catch (error) {
       diagnostics.log(`Erro inesperado no botão Ouvir texto: ${error?.message || error}`, 'error');
       setAudioMessage(error?.message || 'Erro inesperado ao tentar reproduzir áudio.');
@@ -227,10 +229,10 @@ export function ReadingLesson({ lesson }) {
         <aside className="reading-side-panel">
           <div className="mini-card listening-card">
             <div className="panel-title"><Headphones size={18} /> Escuta guiada</div>
-            <p>O botão usa Gemini TTS natural com fallback automático para TTS do navegador.</p>
+            <p>O botão usa áudio compatível com iPhone e registra erros no diagnóstico.</p>
             <button type="button" className="secondary-button" onClick={handleListen} disabled={audioState === 'loading'}>
               {audioState === 'loading' ? <Loader2 size={16} className="spin" /> : <Headphones size={16} />}
-              {audioState === 'loading' ? 'Gerando áudio...' : 'Ouvir texto'}
+              {audioState === 'loading' ? 'Preparando...' : 'Ouvir texto'}
             </button>
             <p className="generator-message">{audioMessage}</p>
           </div>
