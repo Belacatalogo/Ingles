@@ -95,7 +95,15 @@ Não mexer na `main` durante a reconstrução. Tudo deve acontecer nesta branch 
 - `LessonScreen.jsx` recarrega a aula salva quando `lessonRevision` muda.
 - `index.css` recebeu estilos para `generation-status-box` e `inline-warning`.
 
-### Bloco 7.1.1 — Correção após diagnóstico real Gemini
+### Bloco 7.1.1 — Geração de aula em blocos
+- `geminiLessons.js` deixou de depender de uma única resposta gigante.
+- A geração agora é montada em 4 blocos: estrutura, texto principal Reading, vocabulário e exercícios.
+- Cada bloco é validado antes de passar para o próximo.
+- O Diagnóstico mostra em qual bloco a geração está.
+- O plano de keys/modelos foi preservado: Flash/free primeiro e Pro somente como fallback.
+- Erros 429 continuam pulando a key afetada; erros temporários continuam tentando o próximo modelo/key.
+
+### Bloco 7.1.2 — Correção após diagnóstico real Gemini
 - Diagnóstico real mostrou 503, 429 e 404.
 - `gemini-1.5-flash` removido do plano porque retornou 404 na API v1beta.
 - `gemini-1.5-pro` removido do fallback.
@@ -105,7 +113,15 @@ Não mexer na `main` durante a reconstrução. Tudo deve acontecer nesta branch 
 - Mensagem final agora diferencia quota, alta demanda e modelo indisponível.
 - `lessonKeys.js` atualizado para refletir a lista correta de modelos.
 
-### Bloco 7.2 — Correção UX da compreensão Reading
+### Bloco 7.2.0 — Segurança antes da validação Firebase/Google
+- `AccessGate.jsx` agora assina o estado real do Firebase Auth com `subscribeAuth`.
+- Após login Google/redirect, uma sessão local é criada e o app libera automaticamente.
+- Foi adicionada entrada por código de acesso usando `VITE_ACCESS_CODE`.
+- Foi adicionada ação para reiniciar acesso local no preview.
+- `access.css` criado para estilos do gate sem inflar o CSS principal.
+- `.env.example` documenta `VITE_ACCESS_CODE`.
+
+### Bloco 7.4.1 — Correção UX da compreensão Reading
 - `ReadingLesson.jsx` não revela mais a resposta correta antes da interação.
 - O aluno escolhe uma opção e só então recebe feedback visual.
 - Resposta correta é revelada apenas após tentativa.
@@ -113,25 +129,34 @@ Não mexer na `main` durante a reconstrução. Tudo deve acontecer nesta branch 
 
 ## Próximo passo recomendado
 
-### Retestar preview após publicação automática
-- Verificar se os workflows publicaram `preview-clean` novamente.
-- Abrir o preview.
-- Ir na aba Aula e testar a compreensão Reading: nenhuma alternativa deve aparecer correta antes do clique.
-- Adicionar key em Progresso se necessário.
-- Ir em Hoje e clicar em Gerar aula.
-- Acompanhar o painel Diagnóstico.
-- O app deve mudar sozinho para a aba Aula quando terminar.
-- Testar “Ouvir texto” na aula gerada.
+### Bloco 7.2 — Validar Firebase/Google real
+- Configurar no ambiente do preview: `VITE_FIREBASE_API_KEY`, `VITE_FIREBASE_AUTH_DOMAIN`, `VITE_FIREBASE_PROJECT_ID`, `VITE_FIREBASE_STORAGE_BUCKET`, `VITE_FIREBASE_MESSAGING_SENDER_ID`, `VITE_FIREBASE_APP_ID` e `VITE_ACCESS_CODE`.
+- Abrir o preview no iPhone.
+- Confirmar se o status do gate mostra Firebase configurado.
+- Testar entrada com código de acesso.
+- Testar login com Google e retorno do redirect.
+- Confirmar se o app libera automaticamente após autenticação.
+- Confirmar se “Reiniciar acesso” limpa a sessão local.
 
-## Blocos restantes
+## Blocos restantes por ordem de segurança
 
-### Bloco 7 — Migração final
-- Testes manuais por aba.
-- Configurar Firebase/Google real no ambiente.
-- Validar geração Gemini com keys reais.
-- Validar Gemini TTS real.
-- Validar Azure real.
-- Só depois considerar substituir a `main`.
+### Bloco 7.2 — Validar Firebase/Google
+- Validar env real, Google redirect, código de acesso e sessão local.
+
+### Bloco 7.3 — Validar progresso/salvamento/conclusão de aula
+- Confirmar que a aula gerada persiste ao recarregar.
+- Transformar “Concluir Reading” em progresso real.
+- Registrar conclusão, tempo e rotina diária.
+
+### Bloco 7.4 — Corrigir layouts por tipo de aula
+- Reading UX iniciado antecipadamente.
+- Grammar, Listening e Speaking devem ser corrigidos um por vez.
+
+### Bloco 7.5 — Checklist final do preview
+- Testar app inteiro no iPhone antes de qualquer migração.
+
+### Bloco 7.6 — Decidir se substitui a main
+- Só depois de validação completa e aprovação do usuário.
 
 ## Como continuar em outro chat
 Diga: "continue a reconstrução do Fluency na branch `rewrite-fluency-clean`, leia o arquivo `REWRITE_HANDOFF.md` e siga do próximo bloco".
