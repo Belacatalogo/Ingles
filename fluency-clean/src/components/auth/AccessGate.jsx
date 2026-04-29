@@ -104,7 +104,8 @@ export function AccessGate({ children }) {
     }
 
     if (result.redirect) {
-      setMessage('Redirect solicitado. Se voltar para esta tela, use o botão de redirecionamento alternativo apenas para diagnóstico.');
+      setMessage('Redirecionamento iniciado. Se o Google não abrir, confirme o domínio autorizado no Firebase.');
+      return;
     }
 
     setAuthMode('');
@@ -194,11 +195,11 @@ export function AccessGate({ children }) {
         </div>
 
         <div className="google-auth-actions">
-          <button type="button" className="primary-button" onClick={() => handleGoogleLogin('popup')} disabled={!firebase.configured || Boolean(authMode)}>
-            {authMode === 'popup' ? 'Abrindo Google...' : 'Entrar com Google'}
+          <button type="button" className="primary-button" onClick={() => handleGoogleLogin('redirect')} disabled={!firebase.configured || Boolean(authMode)}>
+            {authMode === 'redirect' ? 'Abrindo Google...' : 'Entrar com Google'}
           </button>
-          <button type="button" className="secondary-button" onClick={() => handleGoogleLogin('redirect')} disabled={!firebase.configured || Boolean(authMode)}>
-            {authMode === 'redirect' ? 'Abrindo redirect...' : 'Tentar Google por redirecionamento'}
+          <button type="button" className="secondary-button" onClick={() => handleGoogleLogin('popup')} disabled={!firebase.configured || Boolean(authMode)}>
+            {authMode === 'popup' ? 'Abrindo popup...' : 'Tentar Google por popup'}
           </button>
         </div>
 
