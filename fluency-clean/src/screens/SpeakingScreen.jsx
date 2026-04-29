@@ -1,52 +1,64 @@
 import { useState } from 'react';
 import {
-  CheckCircle2,
-  Headphones,
+  ChevronRight,
+  Info,
   Mic,
-  Radio,
-  Repeat2,
-  ShieldCheck,
+  Play,
+  RefreshCw,
   Sparkles,
   Square,
-  Target,
   Volume2,
-  Waves,
 } from 'lucide-react';
-import { Card } from '../components/ui/Card.jsx';
-import { SectionHeader } from '../components/ui/SectionHeader.jsx';
 import { analyzePronunciation } from '../services/azurePronunciation.js';
 import { unlockAudioForIOS } from '../services/audioUnlock.js';
 import { startRecording, stopRecording } from '../services/recorder.js';
 import { speakText, stopSpeech } from '../services/tts.js';
 
-const referenceText = 'I usually study English in the morning because I feel focused and calm.';
+const conversationPrompt = 'Hi! Tell me about your weekend. What did you do?';
+const pronunciationText = 'I have already finished my homework.';
 
-const speakingSteps = [
-  'Ouça o modelo uma vez sem repetir.',
-  'Repita em voz alta prestando atenção no ritmo.',
-  'Grave sua resposta e compare com o modelo.',
+const messages = [
+  { who: 'ai', text: conversationPrompt },
+  {
+    who: 'you',
+    text: 'I went to the beach with my friends and we had lunch.',
+    score: 84,
+    errors: [{ word: 'had', note: "Considere 'we ate lunch' — mais natural." }],
+  },
+  { who: 'ai', text: 'Sounds nice! Was the weather good?' },
 ];
 
-const focusWords = ['usually', 'English', 'morning', 'focused', 'calm'];
+const wordScores = [
+  { word: 'I', score: 100 },
+  { word: 'have', score: 95 },
+  { word: 'already', score: 78 },
+  { word: 'finished', score: 62 },
+  { word: 'my', score: 100 },
+  { word: 'homework', score: 88 },
+];
+
+function scoreClass(score) {
+  if (score >= 85) return 'good';
+  if (score >= 70) return 'warn';
+  return 'bad';
+}
 
 export function SpeakingScreen() {
+  const [mode, setMode] = useState('conversation');
   const [recording, setRecording] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
   const [result, setResult] = useState(null);
-  const [message, setMessage] = useState('Pronto para praticar.');
+  const [message, setMessage] = useState('Toque para responder em inglês.');
 
-  async function handleUnlockAudio() {
-    const response = await unlockAudioForIOS();
-    setMessage(response.ok ? 'Áudio liberado para iOS.' : response.error || 'Falha ao liberar áudio.');
+  async function handleSpeak(text = pronunciationText) {
+    setMessage('Reproduzindo áudio...');
+    const unlocked = await unlockAudioForIOS();
+    if (!unlocked.ok) setMessage(unlocked.error || 'Não foi possível liberar o áudio no iOS.');
+    const response = await speakText(text);
+    setMessage(response.ok ? 'Áudio finalizado.' : response.error || 'Erro ao reproduzir áudio.');
   }
 
-  async function handleSpeak() {
-    setMessage('Reproduzindo frase modelo...');
-    const response = await speakText(referenceText);
-    setMessage(response.ok ? 'Modelo finalizado. Agora repita em voz alta.' : response.error || 'Erro no TTS.');
-  }
-
-  async function handleRecordToggle() {
+  async function handleRecordToggle(referenceText = pronunciationText) {
     if (!recording) {
       const started = await startRecording();
       if (!started.ok) {
@@ -55,7 +67,7 @@ export function SpeakingScreen() {
       }
       setResult(null);
       setRecording(true);
-      setMessage('Gravando... fale a frase completa e toque novamente para analisar.');
+      setMessage('Falando… grave sua resposta com calma.');
       return;
     }
 
@@ -84,120 +96,152 @@ export function SpeakingScreen() {
     }
 
     setResult(analyzed.result);
-    setMessage('Análise concluída. Veja seu feedback abaixo.');
+    setMessage('Análise concluída.');
   }
 
-  const score = result?.pronunciationScore ?? result?.accuracyScore ?? '—';
-  const practiced = result ? 1 : 0;
+  const pronunciationScore = result?.pronunciationScore ?? result?.accuracyScore ?? 87;
 
   return (
-    <section className="screen-stack speaking-screen-stack">
-      <div className="speaking-hero-card">
-        <SectionHeader
-          eyebrow="Speaking · A1"
-          title="Pratique sua fala com um roteiro claro"
-          description="Escute, repita, grave e receba feedback de pronúncia sem alterar o backend Azure privado."
-        />
-      </div>
+    <section className="speaking-reference-screen">
+      <header className="speaking-reference-header">
+        <div>
+          <h1>Speaking</h1>
+          <p>Conversa guiada por IA</p>
+        </div>
+        <div className="speaking-mode-switch" role="tablist" aria-label="Modo de speaking">
+          <button
+            type="button"
+            className={mode === 'conversation' ? 'active' : ''}
+            onClick={() => setMode('conversation')}
+          >
+            Conversa
+          </button>
+          <button
+            type="button"
+            className={mode === 'pronunciation' ? 'active' : ''}
+            onClick={() => setMode('pronunciation')}
+          >
+            Pronúncia
+          </button>
+        </div>
+      </header>
 
-      <div className="speaking-metrics-grid">
-        <article className="speaking-metric-card">
-          <ShieldCheck size={22} />
-          <span>Modo</span>
-          <strong>Azure</strong>
-          <small>backend preservado</small>
-        </article>
-        <article className="speaking-metric-card">
-          <Mic size={22} />
-          <span>Sessão</span>
-          <strong>{recording ? 'gravando' : analyzing ? 'analisando' : 'pronto'}</strong>
-          <small>microfone</small>
-        </article>
-        <article className="speaking-metric-card">
-          <Waves size={22} />
-          <span>Score</span>
-          <strong>{score}</strong>
-          <small>{result ? 'última análise' : 'sem análise'}</small>
-        </article>
-      </div>
-
-      <Card eyebrow="Roteiro" title="Como praticar agora">
-        <div className="speaking-step-list">
-          {speakingSteps.map((step, index) => (
-            <div className="speaking-step" key={step}>
-              <b>{index + 1}</b>
-              <span>{step}</span>
+      {mode === 'conversation' ? (
+        <>
+          <section className="speaking-scenario-card">
+            <div className="speaking-chip-row">
+              <span className="speaking-chip teal"><Sparkles size={11} /> Cenário</span>
+              <span className="speaking-chip">Casual · B1</span>
             </div>
-          ))}
-        </div>
-      </Card>
+            <strong>Falando do fim de semana</strong>
+            <p>Pratique past simple e past continuous em uma conversa do dia a dia.</p>
+          </section>
 
-      <Card eyebrow="Frase principal" title="Leia em voz alta">
-        <div className="speaking-main-prompt">
-          <span>Modelo</span>
-          <p>{referenceText}</p>
-        </div>
-        <div className="speaking-focus-row">
-          {focusWords.map((word) => (
-            <span key={word}>{word}</span>
-          ))}
-        </div>
-      </Card>
+          <section className="speaking-chat-list" aria-label="Conversa guiada">
+            {messages.map((item, index) => (
+              <article className={`speaking-chat-row ${item.who}`} key={`${item.who}-${index}`}>
+                <div className="speaking-chat-bubble-wrap">
+                  {item.who === 'ai' ? (
+                    <div className="speaking-ai-label">
+                      <span>F</span>
+                      Fluency
+                    </div>
+                  ) : null}
 
-      <Card eyebrow="Preparação" title="Ouça antes de gravar">
-        <div className="audio-actions speaking-audio-grid">
-          <button className="secondary-button" type="button" onClick={handleUnlockAudio}>
-            <Headphones size={17} /> Liberar áudio iOS
-          </button>
-          <button className="secondary-button" type="button" onClick={handleSpeak}>
-            <Volume2 size={17} /> Ouvir modelo
-          </button>
-          <button className="secondary-button" type="button" onClick={stopSpeech}>
-            <Square size={16} /> Parar áudio
-          </button>
-        </div>
-      </Card>
+                  <div className="speaking-chat-bubble">
+                    {item.text}
+                  </div>
 
-      <Card eyebrow="Gravação" title="Grave sua resposta">
-        <div className="speaking-record-panel">
-          <div>
-            <span>{practiced}/1 prática concluída</span>
-            <strong>{recording ? 'Estamos ouvindo você' : 'Toque para começar'}</strong>
+                  {item.who === 'ai' ? (
+                    <button className="speaking-listen-link" type="button" onClick={() => handleSpeak(item.text)}>
+                      <Volume2 size={11} /> Ouvir
+                    </button>
+                  ) : null}
+
+                  {item.score !== undefined ? (
+                    <div className="speaking-chat-feedback">
+                      <div>
+                        <strong>Pronúncia: {item.score}%</strong>
+                        <span>1 dica</span>
+                      </div>
+                      {item.errors.map((error) => (
+                        <p key={error.word}><b>{error.word}</b> · {error.note}</p>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
+              </article>
+            ))}
+          </section>
+
+          <section className="speaking-mic-card">
+            <button
+              className={recording ? 'speaking-main-mic recording' : 'speaking-main-mic'}
+              type="button"
+              onClick={() => handleRecordToggle(conversationPrompt)}
+              disabled={analyzing}
+              aria-label={recording ? 'Parar gravação' : 'Começar gravação'}
+            >
+              {recording ? <Square size={30} /> : <Mic size={32} />}
+            </button>
+            <strong>{recording ? 'Falando…' : analyzing ? 'Analisando…' : 'Toque para responder'}</strong>
+            {recording ? <div className="speaking-wave"><span /><span /><span /><span /><span /></div> : null}
+            <p>{recording ? 'Fale claramente em inglês' : 'Em inglês — toque para falar'}</p>
+            <small>{message}</small>
+          </section>
+        </>
+      ) : (
+        <>
+          <section className="speaking-pronunciation-hero">
+            <p>Repita a frase</p>
+            <h2>“{pronunciationText}”</h2>
+            <code>/aɪ hæv ɔːlˈredi ˈfɪnɪʃt maɪ ˈhoʊmwɜːrk/</code>
+            <button className="speaking-small-button" type="button" onClick={() => handleSpeak(pronunciationText)}>
+              <Volume2 size={13} /> Ouvir modelo
+            </button>
+          </section>
+
+          <section className="speaking-score-panel">
+            <div className="speaking-score-header">
+              <div>
+                <span>Sua tentativa</span>
+                <strong>
+                  <b>{pronunciationScore}</b>
+                  <em>/ 100</em>
+                </strong>
+              </div>
+              <button className="speaking-small-button ghost" type="button" onClick={stopSpeech}>
+                <Play size={12} /> Sua voz
+              </button>
+            </div>
+
+            <div className="speaking-word-score-row">
+              {wordScores.map((item) => (
+                <span className={scoreClass(item.score)} key={item.word}>{item.word}</span>
+              ))}
+            </div>
+
+            <div className="speaking-pronunciation-tip">
+              <div>
+                <Info size={13} />
+                <strong>Foco em “finished”</strong>
+              </div>
+              <p>O <b>-ed</b> aqui soa como <b>/t/</b>, não /id/. Pronuncie “finisht”.</p>
+            </div>
+          </section>
+
+          <div className="speaking-pronunciation-actions">
+            <button className="speaking-action-secondary" type="button" onClick={() => handleRecordToggle(pronunciationText)} disabled={analyzing}>
+              <RefreshCw size={14} /> {recording ? 'Parar e analisar' : 'Tentar de novo'}
+            </button>
+            <button className="speaking-action-primary" type="button" onClick={() => handleSpeak('She has already called her teacher.')}>
+              Próxima <ChevronRight size={14} />
+            </button>
           </div>
-          <button className="record-button" type="button" onClick={handleRecordToggle} disabled={analyzing}>
-            {recording ? <Square size={18} /> : <Radio size={18} />}
-            {recording ? 'Parar e analisar' : analyzing ? 'Analisando...' : 'Iniciar gravação'}
-          </button>
-        </div>
-        <p className="generator-message">{message}</p>
-      </Card>
 
-      <Card eyebrow="Feedback" title="Resultado da pronúncia">
-        <div className="score-preview speaking-score-card">
-          <span>Pronunciation Score</span>
-          <strong>{score}</strong>
-          <p>
-            {result
-              ? `Precisão: ${result.accuracyScore ?? '—'} · Fluência: ${result.fluencyScore ?? '—'} · Completude: ${result.completenessScore ?? '—'}`
-              : 'Grave a frase para receber score, precisão, fluência e completude quando o Azure estiver disponível.'}
-          </p>
-        </div>
-      </Card>
-
-      <Card eyebrow="Desafio final" title="Fale sem ler">
-        <div className="speaking-challenge-card">
-          <Target size={22} />
-          <div>
-            <strong>Apresente sua rotina da manhã em 20 segundos.</strong>
-            <p>Use pelo menos duas palavras do foco: usually, morning, focused, calm.</p>
-          </div>
-        </div>
-        <div className="speaking-tip-list">
-          <span><CheckCircle2 size={15} /> Fale devagar primeiro.</span>
-          <span><Repeat2 size={15} /> Repita a mesma frase 3 vezes.</span>
-          <span><Sparkles size={15} /> Depois tente com suas próprias palavras.</span>
-        </div>
-      </Card>
+          <p className="speaking-status-line">{message}</p>
+        </>
+      )}
     </section>
   );
 }
