@@ -21,9 +21,14 @@ export function TodayScreen({ onLessonGenerated, onNavigate }) {
           <p>Bom dia, Luis</p>
           <h1>{completed || 0} de 4 tarefas</h1>
           <span>{completed >= 4 ? 'Dia completo. Excelente consistência.' : 'Continue para fechar sua rotina de inglês.'}</span>
-          <button className="primary-button reference-continue-button" type="button" onClick={() => onNavigate?.('lesson')}>
-            <Zap size={18} /> Continuar agora
-          </button>
+          <div className="reference-hero-actions">
+            <button className="primary-button reference-continue-button" type="button" onClick={() => onNavigate?.('lesson')}>
+              <Zap size={18} /> Continuar agora
+            </button>
+            <button className="reference-progress-shortcut" type="button" onClick={() => onNavigate?.('progress')} aria-label="Abrir progresso">
+              <LineChart size={22} />
+            </button>
+          </div>
         </div>
         <div className="progress-ring" style={{ '--progress': `${percent}%` }}>
           <strong>{percent}%</strong>
