@@ -60,7 +60,6 @@ export function SettingsScreen() {
   const [dailyReminder, setDailyReminder] = useState(true);
   const [autoplayAudio, setAutoplayAudio] = useState(true);
   const [compactMode, setCompactMode] = useState(false);
-  const activeTitle = groups.find((group) => group.id === activeGroup)?.title || 'Configuração';
 
   return (
     <section className="screen-stack settings-screen">
