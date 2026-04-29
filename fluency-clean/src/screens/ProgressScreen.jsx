@@ -4,7 +4,6 @@ import {
   Brain,
   CheckCircle2,
   Flame,
-  KeyRound,
   Lock,
   Mic,
   Target,
@@ -13,7 +12,6 @@ import {
   Zap,
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
-import { LessonKeysPanel } from '../components/settings/LessonKeysPanel.jsx';
 import { getCurrentWeekStats, getLessonCompletions, getProgressSummary } from '../services/progressStore.js';
 
 const cefrLevels = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
@@ -257,18 +255,10 @@ export function ProgressScreen() {
         )}
       </section>
 
-      <section className="progress-keys-wrap">
-        <div className="progress-section-title progress-keys-title">
-          <span><KeyRound size={15} /> Chaves de aulas</span>
-          <small>mantidas no Progresso</small>
-        </div>
-        <LessonKeysPanel />
-      </section>
-
       <section className="progress-footer-focus">
         <div><Trophy size={18} /> Próximo marco</div>
         <strong>{5 - Math.min(5, week.completed || 0)} aulas para fechar a meta semanal</strong>
-        <p>Continue mantendo a rotina. A parte visual foi atualizada sem alterar a lógica de progresso ou as chaves.</p>
+        <p>Continue mantendo a rotina. As chaves agora ficam em Ajustes, dentro da categoria correta.</p>
         <small><Zap size={13} /> progresso seguro para testes no Vercel</small>
       </section>
     </section>
