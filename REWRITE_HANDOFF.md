@@ -25,19 +25,47 @@ Quando o chat estiver ficando longo, quando o usuário disser que vai abrir outr
 
 Isso é obrigatório para evitar perda de contexto e respostas desalinhadas no próximo chat.
 
-## REGRA DE ORGANIZAÇÃO — SEM BUNDLE DE PATCHES
+## REGRA DE TESTE — VERCEL PREVIEW
+O usuário testa as mudanças no **Vercel**, sempre no deploy/preview mais recente da branch:
+
+`rewrite-fluency-clean-lab`
+
+Não presumir que o usuário está testando localmente, RawGitHack, GitHub Pages ou `preview-clean`.
+
+Fluxo correto:
+1. fazer alterações somente na branch lab;
+2. usuário dispara/aguarda o deploy da Vercel da branch lab;
+3. usuário testa no iPhone pelo preview da Vercel;
+4. só avançar depois da confirmação do usuário.
+
+## REGRA DE ORGANIZAÇÃO — SEM GAMBIARRAS, SEM BUNDLE DE PATCHES
 O objetivo do rewrite é evitar repetir o problema do projeto antigo: `bundle.js` cheio de patches, DOM injection, interceptação global, MutationObserver e correções empilhadas por cima do app.
 
 Regra correta:
+- continuar montando o sistema como estamos fazendo aqui: React modular, arquivo certo para cada função e CSS real;
 - cada função deve morar no seu arquivo real dentro de `fluency-clean/src/`;
 - telas devem ser componentes React reais;
 - serviços devem ficar em `fluency-clean/src/services/`;
 - componentes reutilizáveis devem ficar em `fluency-clean/src/components/`;
 - estilos devem ficar em arquivos CSS reais em `fluency-clean/src/styles/`;
+- quando fizer uma UI nova, preferir CSS próprio quando fizer sentido, como `today-polish.css`, `nav-polish.css`, `lesson-polish.css`;
 - não criar novos scripts de DOM injection/runtime para trocar textos, classes, botões ou telas;
 - não usar `preview-clean/index.html` como fonte da UI;
 - não transformar `preview-clean` em produto final separado;
+- não fazer alterações rápidas no HTML só para “parecer funcionar”;
+- não criar bundle patch;
+- não empilhar remendos por cima do app;
 - o objetivo final é mergear a branch validada para `main` e acessar o site normalmente pela `main`.
+
+## REGRA DE ESCOPO — NÃO ACESSAR/ALTERAR ARQUIVOS FORA DO BLOCO
+Antes de qualquer alteração, identificar quais arquivos são necessários para o bloco atual.
+
+Não acessar nem alterar arquivos que não fazem parte do escopo do bloco, salvo necessidade real e explicada.
+
+Exemplos:
+- Se o bloco é `LAB-CARTAS-1`, não alterar Aula, Hoje, Speaking, Firebase, Gemini, Azure ou backend.
+- Se for necessário tocar em `main.jsx`, fazer apenas para importar CSS do bloco, sem alterar lógica global.
+- Não mexer em `main`, `rewrite-fluency-clean`, backend privado, arquivos de infraestrutura ou preview-clean sem pedido explícito.
 
 ## Preview oficial de teste da lab
 O preview de teste real está na Vercel, gerado a partir da branch:
@@ -183,7 +211,7 @@ Ações:
 Critério:
 - aba Cartas abre sem corte/overflow;
 - visual combina com o resto do app;
-- usuário testa e aprova.
+- usuário testa e aprova no Vercel.
 
 ### LAB-PROGRESSO-1 — Progresso visual
 Objetivo: refazer Progresso com segurança, sem repetir tela branca.
@@ -289,7 +317,7 @@ Toda resposta após alteração deve listar:
 - branch usada;
 - arquivos alterados;
 - commit gerado;
-- o que testar.
+- o que testar no Vercel.
 
 ### Regra 3 — Sem tocar na branch protegida
 Antes de qualquer tool call de escrita, conferir:
@@ -297,7 +325,7 @@ Antes de qualquer tool call de escrita, conferir:
 `branch === rewrite-fluency-clean-lab`
 
 ### Regra 4 — Teste antes de continuar
-Depois de cada bloco, o usuário testa no iPhone. Só avançar se ele confirmar.
+Depois de cada bloco, o usuário testa no Vercel pelo iPhone. Só avançar se ele confirmar.
 
 ### Regra 5 — Infraestrutura com cuidado
 Não criar workflow, build paralelo ou produto em `preview-clean` sem o usuário pedir explicitamente.
@@ -314,7 +342,7 @@ Procedimento:
 ## Como continuar em outro chat
 Mensagem recomendada para o próximo chat:
 
-"Continue a reconstrução do Fluency usando SOMENTE a branch `rewrite-fluency-clean-lab`. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. Estamos com Speaking, Hoje, Navbar e Aula aprovados. A Aula tem preview temporário por pilares funcionando 100%, que será removido no LAB-9. O próximo bloco é `LAB-CARTAS-1 — Flashcards/Cartas igual à referência`. Use o ZIP de referência que enviei neste novo chat. Não mexa na `main`, não mexa na `rewrite-fluency-clean`, não use HTML remendado, não use DOM injection e não crie bundle patch. Cada função deve ficar no arquivo correto dentro de `fluency-clean/src/`. Ao terminar, atualize o handoff informando onde paramos."
+"Continue a reconstrução do Fluency usando SOMENTE a branch `rewrite-fluency-clean-lab`. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. O teste é feito no Vercel preview da branch lab, pelo iPhone. Estamos com Speaking, Hoje, Navbar e Aula aprovados. A Aula tem preview temporário por pilares funcionando 100%, que será removido no LAB-9. O próximo bloco é `LAB-CARTAS-1 — Flashcards/Cartas igual à referência`. Use o ZIP de referência que enviei neste novo chat. Não mexa na `main`, não mexa na `rewrite-fluency-clean`, não acesse nem altere arquivos fora do escopo do bloco, não use HTML remendado, não use DOM injection e não crie bundle patch. Continue montando o sistema modularmente em `fluency-clean/src/`, como já estamos fazendo. Ao terminar, atualize o handoff informando onde paramos."
 
 ## Última orientação operacional
 A partir deste handoff, qualquer alteração fora de `rewrite-fluency-clean-lab` deve ser considerada erro, salvo pedido explícito do usuário.
