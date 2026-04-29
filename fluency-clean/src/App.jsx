@@ -11,8 +11,6 @@ import { FlashcardsScreen } from './screens/FlashcardsScreen.jsx';
 import { SettingsScreen } from './screens/SettingsScreen.jsx';
 import { getProgressSummary } from './services/progressStore.js';
 
-const PREVIEW_VERSION = 'rewrite-clean-lab · seguro para testes';
-
 const tabs = [
   { id: 'today', label: 'Hoje', icon: Home, component: TodayScreen },
   { id: 'lesson', label: 'Aula', icon: BookOpen, component: LessonScreen },
@@ -60,8 +58,6 @@ function AppContent() {
         onLessonGenerated={handleLessonGenerated}
         lessonRevision={lessonRevision}
       />
-
-      <footer className="preview-version-footer">{PREVIEW_VERSION}</footer>
 
       <button
         className="diagnostic-mini-button"
