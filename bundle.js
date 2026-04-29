@@ -4584,802 +4584,1090 @@ lucide-react/dist/esm/lucide-react.mjs:
 })();
 
 
-/* === FLUENCY PATCH V52 - RENDERIZAÇÃO ÚNICA E COMPLETA DA AULA (DARK THEME) === */
-/* Resolve o problema de aulas que aparecem cortadas na aba "Aula" devido ao conflito
-   entre vários patches anteriores (V18, V41, V48, V51). Toma posse da aba quando há
-   uma aula ativa, esconde a renderização parcial do React, e injeta uma renderização
-   completa, polida e responsiva (mobile first) com TODAS as seções, vocabulário,
-   exercícios, dicas e erros comuns. */
+/* === FLUENCY PATCH V53 - REDESIGN ELEGANTE DA ABA AULA + IA PARA RESPOSTAS === */
+/* Substitui o V52. Melhorias:
+   1. Visual completamente redesenhado — elegante, editorial, dark refined
+   2. Layout especial para Reading (texto em destaque, parágrafo a parágrafo)
+   3. Verificação de respostas escritas via IA (tolerante a pontuação/maiúscula)
+   4. Áudio Gemini TTS para textos de leitura
+   5. Mantém toda a compatibilidade com o sistema de storage do V52 */
 ;(function(){
   try{
-    if(window.__fluencyV52UnifiedLessonRender) return;
-    window.__fluencyV52UnifiedLessonRender = true;
-    var VERSION = 'V52-UNIFIED-LESSON-RENDER';
-    var MOUNT_ID = '__fluency_v52_lesson_root__';
-    var STYLE_ID = '__fluency_v52_style__';
-    var HIDE_REACT_CLASS = '__fluency_v52_hide_react_lesson__';
+    if(window.__fluencyV53) return;
+    window.__fluencyV53 = true;
+    var VERSION = 'V53-ELEGANT-LESSON';
+    var MOUNT_ID = '__fluency_v53_root__';
+    var STYLE_ID = '__fluency_v53_style__';
+    var HIDE_CLASS = '__fluency_v53_hide_react__';
 
-    /* ---- Helpers ---- */
-    function todayStr(){ var d=new Date(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0'); return d.getFullYear()+'-'+m+'-'+day; }
-    function txt(v){ return String(v == null ? '' : v).trim(); }
-    function arr(x){ return Array.isArray(x) ? x : []; }
-    function esc(v){
-      return txt(v).replace(/[&<>"']/g, function(c){
-        return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
-      });
-    }
-    function pick(o, ks){
-      o = o || {};
-      for(var i=0;i<ks.length;i++){ var v=o[ks[i]]; if(v!=null && txt(v)) return v; }
-      return '';
-    }
-    function log(msg, kind){
-      try{
-        console.warn('[Fluency '+VERSION+'] '+msg);
-        var st = window.__fluencyBlockLessonStateV197;
-        if(st && Array.isArray(st.logs)){
-          st.logs.push({at:new Date().toLocaleTimeString(), kind:kind||'info', msg:'Aula '+VERSION+': '+msg});
-          if(st.logs.length>140) st.logs.shift();
-        }
-      }catch(_){}
-    }
+    /* ─── Helpers ─────────────────────────────────────────────── */
+    function todayStr(){ var d=new Date(),m=String(d.getMonth()+1).padStart(2,'0'),dy=String(d.getDate()).padStart(2,'0'); return d.getFullYear()+'-'+m+'-'+dy; }
+    function txt(v){ return String(v==null?'':v).trim(); }
+    function arr(x){ return Array.isArray(x)?x:[]; }
+    function esc(v){ return txt(v).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+    function pick(o,ks){ o=o||{}; for(var i=0;i<ks.length;i++){var v=o[ks[i]];if(v!=null&&txt(v))return v;} return ''; }
+    function log(m){ try{console.warn('[Fluency V53] '+m);}catch(_){} }
 
+    /* ─── Parse & normalize (mesmo do V52, compatível) ────────── */
     function parseLesson(raw){
       try{
-        if(raw == null) return null;
-        var x = raw;
-        if(typeof x === 'string'){
-          var s = x.trim().replace(/^```(?:json)?\s*/i,'').replace(/```$/,'').trim();
-          var a = s.indexOf('{'), b = s.lastIndexOf('}');
-          if(a>=0 && b>a) s = s.slice(a, b+1);
-          x = JSON.parse(s);
-        }
-        if(typeof x === 'string'){ try{ x = JSON.parse(x); }catch(_){} }
-        if(x && typeof x.value === 'string'){ try{ var inner = JSON.parse(x.value); if(inner && typeof inner === 'object') x = inner; }catch(_){} }
-        if(x && x.lessonData && typeof x.lessonData === 'object') x = x.lessonData;
-        if(x && x.lesson && typeof x.lesson === 'object') x = x.lesson;
-        if(x && x.aula && typeof x.aula === 'object') x = x.aula;
-        if(x && x.data && x.data.lesson && typeof x.data.lesson === 'object') x = x.data.lesson;
-        return x && typeof x === 'object' ? x : null;
-      }catch(_){ return null; }
+        if(raw==null)return null;
+        var x=raw;
+        if(typeof x==='string'){var s=x.trim().replace(/^```(?:json)?\s*/i,'').replace(/```$/,'').trim();var a=s.indexOf('{'),b=s.lastIndexOf('}');if(a>=0&&b>a)s=s.slice(a,b+1);x=JSON.parse(s);}
+        if(typeof x==='string'){try{x=JSON.parse(x);}catch(_){}}
+        if(x&&typeof x.value==='string'){try{var inner=JSON.parse(x.value);if(inner&&typeof inner==='object')x=inner;}catch(_){}}
+        if(x&&x.lessonData&&typeof x.lessonData==='object')x=x.lessonData;
+        if(x&&x.lesson&&typeof x.lesson==='object')x=x.lesson;
+        if(x&&x.aula&&typeof x.aula==='object')x=x.aula;
+        return x&&typeof x==='object'?x:null;
+      }catch(_){return null;}
     }
-
-    function normalizeExample(e){
-      if(typeof e === 'string') return {en:e, pt:''};
-      e = e || {};
-      return {
-        en: pick(e, ['en','english','sentence','phrase','example','text']),
-        pt: pick(e, ['pt','portuguese','translation','traducao','tradução','meaning'])
-      };
-    }
-
     function normalize(L){
-      L = parseLesson(L);
-      if(!L || typeof L !== 'object') return null;
-      var out = {};
-      // Preserve underscore-keys (metadata) so we don't drop _generatedBy / _fallback / _validation etc.
-      Object.keys(L).forEach(function(k){ if(k && k.charAt(0) === '_') out[k] = L[k]; });
-
-      out.title = pick(L, ['title','titulo','título','name']) || '';
-      out.subtitle = pick(L, ['subtitle','subtitulo','subtítulo']) || '';
-      out.estimatedMinutes = Number(L.estimatedMinutes || L.minutes || L.duration || 40) || 40;
-      out.intro = pick(L, ['intro','introduction','introducao','introdução','overview']) || '';
-      out.readingText = pick(L, ['readingText','reading_text','textoLeitura','texto_para_leitura','text']) || '';
-      out.listeningText = pick(L, ['listeningText','listening_text','audioText','transcript']) || '';
-
-      var secsRaw = arr(L.sections && L.sections.length ? L.sections : (L.secoes || L.seções || L.parts || L.modules));
-      out.sections = secsRaw.map(function(s, i){
-        if(typeof s === 'string') s = { heading:'Seção '+(i+1), content:s };
-        s = s || {};
-        var ex = arr(s.examples && s.examples.length ? s.examples : (s.exemplos || s.sentences || s.frases))
-          .map(normalizeExample)
-          .filter(function(e){ return txt(e.en) || txt(e.pt); });
-        return {
-          heading: pick(s, ['heading','title','titulo','título','name']) || ('Seção '+(i+1)),
-          content: pick(s, ['content','body','text','explicacao','explicação','explanation','description','conteudo']) || '',
-          examples: ex
-        };
-      }).filter(function(s){ return txt(s.heading) || txt(s.content) || s.examples.length; });
-
-      var vocRaw = arr(L.vocabulary && L.vocabulary.length ? L.vocabulary : (L.vocabulario || L.vocabulário || L.words));
-      out.vocabulary = vocRaw.map(function(v){
-        if(typeof v === 'string') return { word:v, pos:'', translation:'', example:'' };
-        v = v || {};
-        return {
-          word: pick(v, ['word','palavra','term','english']),
-          pos: pick(v, ['pos','class','classe','type']) || '',
-          translation: pick(v, ['translation','traducao','tradução','pt','meaning']),
-          example: pick(v, ['example','exemplo','sentence','phrase']) || ''
-        };
-      }).filter(function(v){ return txt(v.word) || txt(v.translation); });
-
-      var exRaw = arr(L.exercises && L.exercises.length ? L.exercises : (L.exercicios || L.exercícios || L.questions || L.quiz));
-      out.exercises = exRaw.map(function(e, i){
-        if(typeof e === 'string') e = { question:e };
-        e = e || {};
-        return {
-          type: pick(e, ['type','tipo']) || 'practice',
-          question: pick(e, ['question','pergunta','prompt','instruction','enunciado']) || ('Exercício '+(i+1)),
-          options: arr(e.options || e.opcoes || e.opções || e.choices).map(txt),
-          answer: pick(e, ['answer','resposta','correct','correctAnswer','expected']) || '',
-          explanation: pick(e, ['explanation','explicacao','explicação','why','feedback']) || ''
-        };
-      }).filter(function(e){ return txt(e.question); });
-
-      out.tips = arr(L.tips && L.tips.length ? L.tips : (L.dicas || L.notes))
-        .map(function(t){ return typeof t === 'string' ? t : pick(t, ['tip','text','content']); })
-        .filter(function(t){ return txt(t); });
-
-      out.commonMistakes = arr(L.commonMistakes || L.common_mistakes || L.errosComuns || L.mistakes).map(function(m){
-        m = m || {};
-        return {
-          mistake: pick(m, ['mistake','erro','title']),
-          why: pick(m, ['why','porque','porquê','reason']),
-          avoid: pick(m, ['avoid','correction','comoEvitar','fix'])
-        };
-      }).filter(function(m){ return txt(m.mistake) || txt(m.why) || txt(m.avoid); });
-
-      out.finalTip = pick(L, ['finalTip','final_tip','conclusion','closing']) || '';
-      out.lessonId = L.lessonId || L.activeLessonId || ('ai-'+Date.now());
-      out._generatedBy = L._generatedBy || VERSION;
-      out._generatedAt = L._generatedAt || new Date().toISOString();
-      out._fluencyDate = L._fluencyDate || todayStr();
-      if(L._blockMeta) out._blockMeta = L._blockMeta;
-      if(L._fallback) out._fallback = L._fallback;
-      if(L._fallbackReason) out._fallbackReason = L._fallbackReason;
-      if(L._validation) out._validation = L._validation;
+      L=parseLesson(L);
+      if(!L||typeof L!=='object')return null;
+      var out={};
+      Object.keys(L).forEach(function(k){if(k&&k.charAt(0)==='_')out[k]=L[k];});
+      out.title=pick(L,['title','titulo','título','name'])||'';
+      out.subtitle=pick(L,['subtitle','subtitulo','subtítulo'])||'';
+      out.estimatedMinutes=Number(L.estimatedMinutes||L.minutes||L.duration||40)||40;
+      out.intro=pick(L,['intro','introduction','introducao','introdução','overview'])||'';
+      out.readingText=pick(L,['readingText','reading_text','textoLeitura','texto_para_leitura','text'])||'';
+      out.listeningText=pick(L,['listeningText','listening_text','audioText','transcript'])||'';
+      var secsRaw=arr(L.sections&&L.sections.length?L.sections:(L.secoes||L.seções||L.parts||L.modules));
+      out.sections=secsRaw.map(function(s,i){
+        if(typeof s==='string')s={heading:'Seção '+(i+1),content:s};
+        s=s||{};
+        var ex=arr(s.examples&&s.examples.length?s.examples:(s.exemplos||s.sentences||s.frases)).map(function(e){
+          if(typeof e==='string')return{en:e,pt:''};
+          e=e||{};
+          return{en:pick(e,['en','english','sentence','phrase','example','text']),pt:pick(e,['pt','portuguese','translation','traducao','tradução','meaning'])};
+        }).filter(function(e){return txt(e.en)||txt(e.pt);});
+        return{heading:pick(s,['heading','title','titulo','título','name'])||('Seção '+(i+1)),content:pick(s,['content','body','text','explicacao','explicação','explanation','description','conteudo'])||'',examples:ex};
+      }).filter(function(s){return txt(s.heading)||txt(s.content)||s.examples.length;});
+      var vocRaw=arr(L.vocabulary&&L.vocabulary.length?L.vocabulary:(L.vocabulario||L.vocabulário||L.words));
+      out.vocabulary=vocRaw.map(function(v){
+        if(typeof v==='string')return{word:v,pos:'',translation:'',example:''};
+        v=v||{};
+        return{word:pick(v,['word','palavra','term','english']),pos:pick(v,['pos','class','classe','type'])||'',translation:pick(v,['translation','traducao','tradução','pt','meaning']),example:pick(v,['example','exemplo','sentence','phrase'])||''};
+      }).filter(function(v){return txt(v.word)||txt(v.translation);});
+      var exRaw=arr(L.exercises&&L.exercises.length?L.exercises:(L.exercicios||L.exercícios||L.questions||L.quiz));
+      out.exercises=exRaw.map(function(e,i){
+        if(typeof e==='string')e={question:e};
+        e=e||{};
+        return{type:pick(e,['type','tipo'])||'practice',question:pick(e,['question','pergunta','prompt','instruction','enunciado'])||('Exercício '+(i+1)),options:arr(e.options||e.opcoes||e.opções||e.choices).map(txt),answer:pick(e,['answer','resposta','correct','correctAnswer','expected'])||'',explanation:pick(e,['explanation','explicacao','explicação','why','feedback'])||''};
+      }).filter(function(e){return txt(e.question);});
+      out.tips=arr(L.tips&&L.tips.length?L.tips:(L.dicas||L.notes)).map(function(t){return typeof t==='string'?t:pick(t,['tip','text','content']);}).filter(function(t){return txt(t);});
+      out.commonMistakes=arr(L.commonMistakes||L.common_mistakes||L.errosComuns||L.mistakes).map(function(m){m=m||{};return{mistake:pick(m,['mistake','erro','title']),why:pick(m,['why','porque','porquê','reason']),avoid:pick(m,['avoid','correction','comoEvitar','fix'])};}).filter(function(m){return txt(m.mistake)||txt(m.why)||txt(m.avoid);});
+      out.finalTip=pick(L,['finalTip','final_tip','conclusion','closing'])||'';
+      out.lessonId=L.lessonId||L.activeLessonId||('ai-'+Date.now());
+      out._fallback=L._fallback||false;
+      out._fallbackReason=L._fallbackReason||'';
       return out;
     }
-
     function lessonHasContent(L){
-      L = normalize(L);
-      if(!L) return false;
-      // We accept partial lessons (e.g. only title+intro) so the user always sees something —
-      // but we use this to decide whether V52 should take over the screen at all.
-      return !!(txt(L.title) || txt(L.intro) || L.sections.length || L.exercises.length || L.vocabulary.length || txt(L.readingText) || txt(L.listeningText));
+      L=normalize(L);
+      if(!L)return false;
+      return !!(txt(L.title)||txt(L.intro)||L.sections.length||L.exercises.length||L.vocabulary.length||txt(L.readingText)||txt(L.listeningText));
     }
 
-    /* ---- Storage: read the active lesson from any of the known keys ---- */
-    var ACTIVE_KEYS = [
-      'fluency_active_ai_lesson_v51',
-      'fluency_active_ai_lesson_v41',
-      'fluency_last_ai_lesson_v41',
-      'fluency_last_ai_lesson'
-    ];
-    function rawGetItem(k){ try{ var fn = (Storage.prototype.getItem.__fluencyV41ActiveLesson || Storage.prototype.getItem.__fluencyV51Capture) ? null : Storage.prototype.getItem; return localStorage.getItem(k); }catch(_){ return null; } }
-
+    /* ─── Storage ─────────────────────────────────────────────── */
+    var ACTIVE_KEYS=['fluency_active_ai_lesson_v51','fluency_active_ai_lesson_v41','fluency_last_ai_lesson_v41','fluency_last_ai_lesson'];
     function readActiveLesson(){
-      // 1) explicit active keys
-      for(var i=0;i<ACTIVE_KEYS.length;i++){
-        var raw = localStorage.getItem(ACTIVE_KEYS[i]);
-        if(raw){
-          var L = normalize(raw);
-          if(lessonHasContent(L)) return L;
-        }
-      }
-      // 2) any fluency_lesson_v* key — pick the one with the most content
-      var best = null, bestScore = -1;
-      try{
-        for(var j=0;j<localStorage.length;j++){
-          var k = localStorage.key(j) || '';
-          if(!/^fluency_lesson_v\d+_/i.test(k)) continue;
-          var L2 = normalize(localStorage.getItem(k));
-          if(!lessonHasContent(L2)) continue;
-          var sc = (txt(L2.title).length>0?100:0) + (txt(L2.intro).length>0?80:0) + L2.sections.length*40 + L2.exercises.length*15 + L2.vocabulary.length*8 + (txt(L2.readingText).length>0?20:0);
-          if(sc > bestScore){ best = L2; bestScore = sc; }
-        }
-      }catch(_){}
+      for(var i=0;i<ACTIVE_KEYS.length;i++){var raw=localStorage.getItem(ACTIVE_KEYS[i]);if(raw){var L=normalize(raw);if(lessonHasContent(L))return L;}}
+      var best=null,bestScore=-1;
+      try{for(var j=0;j<localStorage.length;j++){var k=localStorage.key(j)||'';if(!/^fluency_lesson_v\d+_/i.test(k))continue;var L2=normalize(localStorage.getItem(k));if(!lessonHasContent(L2))continue;var sc=(txt(L2.title).length>0?100:0)+(txt(L2.intro).length>0?80:0)+L2.sections.length*40+L2.exercises.length*15+L2.vocabulary.length*8+(txt(L2.readingText).length>0?20:0);if(sc>bestScore){best=L2;bestScore=sc;}}}catch(_){}
       return best;
     }
+    function getCompletedToday(){try{var r=localStorage.getItem('fluency_completedLessons');return Array.isArray(JSON.parse(r||'[]'))?JSON.parse(r):[]; }catch(_){return[];}}
+    function isDoneToday(){var t=todayStr();return getCompletedToday().some(function(c){return c&&c.date===t;});}
 
-    /* ---- Tab detection ---- */
+    /* ─── Tab detection ───────────────────────────────────────── */
     function isLessonTab(){
       try{
-        var btns = document.querySelectorAll('button');
+        var btns=document.querySelectorAll('button');
         for(var i=0;i<btns.length;i++){
-          var b = btns[i];
-          var t = (b.innerText || b.textContent || '').replace(/\s+/g,' ').trim();
-          if(t === 'Aula'){
-            // Active tab has an underline span (linear-gradient) or accent color
-            var hasUnderline = !!b.querySelector('span[style*="linear-gradient"]');
-            var styleStr = (b.getAttribute('style') || '') + ' ' + getComputedStyle(b).color;
-            if(hasUnderline || /91, ?156, ?246|112, ?166, ?255|var\(--accent\)|rgb\(91/.test(styleStr)) return true;
+          var b=btns[i];
+          var t=(b.innerText||b.textContent||'').replace(/\s+/g,' ').trim();
+          if(t==='Aula'){
+            var hasUnderline=!!b.querySelector('span[style*="linear-gradient"]');
+            var styleStr=(b.getAttribute('style')||'')+' '+getComputedStyle(b).color;
+            if(hasUnderline||/91,\s*156,\s*246|112,\s*166,\s*255|var\(--accent\)|rgb\(91/.test(styleStr))return true;
           }
         }
       }catch(_){}
       return false;
     }
 
-    /* ---- Styles for V52 mount: full dark theme matching the screenshots ---- */
-    function injectStyles(){
-      if(document.getElementById(STYLE_ID)) return;
-      var st = document.createElement('style');
-      st.id = STYLE_ID;
-      st.textContent = ''
-        + '/* Hide the React-rendered lesson page when V52 is active. We hide the SCROLLER,'
-        + '   not the header (which contains the tabs). */'
-        + '.'+HIDE_REACT_CLASS+' > .max-w-3xl.mx-auto.px-4.md\\:px-6.py-6.pb-24,'
-        + '.'+HIDE_REACT_CLASS+' > .max-w-3xl.mx-auto.px-4.md\\:px-6.py-16,'
-        + '.'+HIDE_REACT_CLASS+' > .max-w-3xl.mx-auto.px-4.md\\:px-6.py-12 {'
-        + '  display: none !important;'
-        + '}'
-        + '#'+MOUNT_ID+' {'
-        + '  position: relative; z-index: 5; max-width: 768px; margin: 0 auto;'
-        + '  padding: 18px 16px 120px; color: #E8EFF8;'
-        + '  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;'
-        + '}'
-        + '#'+MOUNT_ID+' .v52-meta { font-size:11px; letter-spacing:.28em; text-transform:uppercase; color:#8FB8FF; margin-bottom:12px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }'
-        + '#'+MOUNT_ID+' .v52-pill-ai { display:inline-flex; align-items:center; gap:6px; border:1px solid rgba(52,211,153,.55); background:rgba(52,211,153,.12); color:#A7F3D0; border-radius:999px; padding:5px 12px; font-weight:700; font-size:11px; letter-spacing:.05em; }'
-        + '#'+MOUNT_ID+' .v52-pill-fb { display:inline-flex; align-items:center; gap:6px; border:1px solid rgba(245,158,11,.55); background:rgba(245,158,11,.12); color:#FCD34D; border-radius:999px; padding:5px 12px; font-weight:700; font-size:11px; letter-spacing:.05em; }'
-        + '#'+MOUNT_ID+' h1.v52-title { font-family:Georgia,"Times New Roman",serif; font-size:34px; line-height:1.05; font-weight:700; margin:6px 0 8px; color:#F5F8FF; letter-spacing:-0.01em; }'
-        + '#'+MOUNT_ID+' .v52-subtitle { font-family:Georgia,serif; font-style:italic; font-size:18px; color:#79A8FF; margin-bottom:18px; line-height:1.35; }'
-        + '#'+MOUNT_ID+' .v52-intro { font-size:16px; line-height:1.7; color:#9EBCFF; margin-bottom:24px; }'
-        + '#'+MOUNT_ID+' .v52-card { border:1px solid rgba(91,156,246,.22); background:linear-gradient(180deg, rgba(91,156,246,.10), rgba(91,156,246,.04)); border-radius:18px; padding:18px 18px 20px; margin:18px 0; }'
-        + '#'+MOUNT_ID+' .v52-card-reading { background:linear-gradient(180deg, rgba(91,156,246,.14), rgba(91,156,246,.05)); }'
-        + '#'+MOUNT_ID+' .v52-card-listen { background:linear-gradient(180deg, rgba(167,139,250,.14), rgba(167,139,250,.05)); border-color:rgba(167,139,250,.28); }'
-        + '#'+MOUNT_ID+' .v52-card-mistake { background:rgba(248,113,113,.10); border:1px solid rgba(248,113,113,.30); }'
-        + '#'+MOUNT_ID+' .v52-section-label { display:flex; align-items:center; gap:10px; margin-bottom:12px; }'
-        + '#'+MOUNT_ID+' .v52-section-label .v52-label-text { font-size:11px; letter-spacing:.25em; text-transform:uppercase; color:#A9C7FF; font-weight:700; }'
-        + '#'+MOUNT_ID+' .v52-section-label .v52-label-line { flex:1; height:1px; background:linear-gradient(90deg, rgba(91,156,246,.3), transparent); }'
-        + '#'+MOUNT_ID+' .v52-section-label .v52-count { font-size:11px; padding:2px 8px; border-radius:999px; background:rgba(91,156,246,.15); border:1px solid rgba(91,156,246,.35); color:#A9C7FF; font-weight:700; }'
-        + '#'+MOUNT_ID+' .v52-section h2 { font-family:Georgia,serif; font-size:24px; line-height:1.18; margin:0 0 10px; color:#F5F8FF; font-weight:700; }'
-        + '#'+MOUNT_ID+' .v52-section h2 .v52-section-mark { color:#5B9CF6; margin-right:6px; }'
-        + '#'+MOUNT_ID+' .v52-section .v52-section-body { font-size:15.5px; line-height:1.75; color:#9EBCFF; white-space:pre-wrap; }'
-        + '#'+MOUNT_ID+' .v52-examples { display:grid; gap:10px; margin-top:14px; }'
-        + '#'+MOUNT_ID+' .v52-example { display:flex; align-items:flex-start; gap:10px; padding:11px 13px; border-radius:12px; border:1px solid rgba(255,255,255,.10); background:rgba(255,255,255,.04); }'
-        + '#'+MOUNT_ID+' .v52-example .v52-example-text { flex:1; min-width:0; }'
-        + '#'+MOUNT_ID+' .v52-example .v52-en { font-size:15px; color:#F5F8FF; font-weight:600; line-height:1.4; }'
-        + '#'+MOUNT_ID+' .v52-example .v52-pt { font-size:13px; color:#A9C7FF; font-style:italic; margin-top:3px; line-height:1.4; }'
-        + '#'+MOUNT_ID+' .v52-tts-btn { flex-shrink:0; width:34px; height:34px; border-radius:50%; border:1px solid rgba(91,156,246,.4); background:rgba(91,156,246,.10); color:#A9C7FF; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; font-size:14px; padding:0; }'
-        + '#'+MOUNT_ID+' .v52-tts-btn:active { transform:scale(0.96); }'
-        + '#'+MOUNT_ID+' .v52-tts-btn-pill { display:inline-flex; align-items:center; gap:6px; padding:5px 11px; border-radius:999px; border:1px solid rgba(91,156,246,.35); background:rgba(91,156,246,.10); color:#A9C7FF; cursor:pointer; font-size:12px; font-weight:600; }'
-        + '#'+MOUNT_ID+' .v52-reading-text { font-family:Georgia,serif; font-size:18px; line-height:1.7; color:#F5F8FF; margin-top:4px; }'
-        + '#'+MOUNT_ID+' .v52-vocab-grid { display:grid; grid-template-columns:1fr; gap:10px; }'
-        + '@media (min-width:520px){ #'+MOUNT_ID+' .v52-vocab-grid { grid-template-columns:1fr 1fr; } }'
-        + '#'+MOUNT_ID+' .v52-vocab-card { padding:13px; border-radius:13px; border:1px solid rgba(255,255,255,.10); background:rgba(255,255,255,.045); }'
-        + '#'+MOUNT_ID+' .v52-vocab-head { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }'
-        + '#'+MOUNT_ID+' .v52-vocab-word { font-size:16px; font-weight:700; color:#F5F8FF; }'
-        + '#'+MOUNT_ID+' .v52-vocab-meta { font-size:12px; color:#A9C7FF; margin-top:2px; }'
-        + '#'+MOUNT_ID+' .v52-vocab-example { font-size:13px; color:#9EBCFF; font-style:italic; margin-top:7px; line-height:1.45; }'
-        + '#'+MOUNT_ID+' .v52-exercise { padding:16px; border-radius:14px; border:1px solid rgba(91,156,246,.22); background:rgba(91,156,246,.06); margin-bottom:12px; }'
-        + '#'+MOUNT_ID+' .v52-exercise.v52-ex-correct { border-color:rgba(52,211,153,.45); background:rgba(52,211,153,.07); }'
-        + '#'+MOUNT_ID+' .v52-exercise.v52-ex-wrong { border-color:rgba(248,113,113,.40); background:rgba(248,113,113,.06); }'
-        + '#'+MOUNT_ID+' .v52-ex-head { display:flex; align-items:flex-start; gap:11px; }'
-        + '#'+MOUNT_ID+' .v52-ex-num { flex-shrink:0; width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; background:rgba(91,156,246,.18); border:1px solid rgba(91,156,246,.40); color:#A9C7FF; }'
-        + '#'+MOUNT_ID+' .v52-exercise.v52-ex-correct .v52-ex-num { background:rgba(52,211,153,.20); border-color:rgba(52,211,153,.50); color:#A7F3D0; }'
-        + '#'+MOUNT_ID+' .v52-exercise.v52-ex-wrong .v52-ex-num { background:rgba(248,113,113,.20); border-color:rgba(248,113,113,.50); color:#FCA5A5; }'
-        + '#'+MOUNT_ID+' .v52-ex-question { flex:1; min-width:0; font-size:15.5px; line-height:1.55; color:#F5F8FF; }'
-        + '#'+MOUNT_ID+' .v52-ex-options { display:grid; grid-template-columns:1fr; gap:8px; margin-top:11px; }'
-        + '#'+MOUNT_ID+' .v52-ex-opt { display:flex; align-items:center; gap:10px; padding:11px 13px; border-radius:11px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.045); color:#DBEAFE; font-size:14px; cursor:pointer; text-align:left; line-height:1.45; transition:background .15s, border-color .15s; }'
-        + '#'+MOUNT_ID+' .v52-ex-opt:hover { background:rgba(91,156,246,.10); border-color:rgba(91,156,246,.30); }'
-        + '#'+MOUNT_ID+' .v52-ex-opt.v52-opt-selected { background:rgba(91,156,246,.18); border-color:rgba(91,156,246,.50); }'
-        + '#'+MOUNT_ID+' .v52-ex-opt.v52-opt-correct { background:rgba(52,211,153,.18); border-color:rgba(52,211,153,.50); color:#D1FAE5; }'
-        + '#'+MOUNT_ID+' .v52-ex-opt.v52-opt-wrong { background:rgba(248,113,113,.15); border-color:rgba(248,113,113,.45); color:#FECACA; }'
-        + '#'+MOUNT_ID+' .v52-ex-opt[disabled] { cursor:default; }'
-        + '#'+MOUNT_ID+' .v52-ex-opt-letter { width:22px; height:22px; border-radius:50%; background:rgba(255,255,255,.10); color:#9EBCFF; font-size:11px; font-weight:700; display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; }'
-        + '#'+MOUNT_ID+' .v52-ex-input-row { display:flex; gap:8px; margin-top:11px; }'
-        + '#'+MOUNT_ID+' .v52-ex-input { flex:1; min-width:0; padding:10px 12px; border-radius:11px; border:1px solid rgba(255,255,255,.18); background:rgba(0,0,0,.20); color:#F5F8FF; font-size:14px; font-family:inherit; }'
-        + '#'+MOUNT_ID+' .v52-ex-input:focus { outline:none; border-color:rgba(91,156,246,.55); }'
-        + '#'+MOUNT_ID+' .v52-ex-verify { padding:10px 14px; border-radius:11px; border:none; background:linear-gradient(135deg,#5B9CF6,#A78BFA); color:#fff; font-weight:700; font-size:13px; cursor:pointer; flex-shrink:0; }'
-        + '#'+MOUNT_ID+' .v52-ex-explanation { margin-top:11px; padding:11px 13px; border-radius:10px; font-size:13.5px; line-height:1.6; }'
-        + '#'+MOUNT_ID+' .v52-ex-explanation.v52-expl-correct { background:rgba(52,211,153,.10); border:1px solid rgba(52,211,153,.32); color:#D1FAE5; }'
-        + '#'+MOUNT_ID+' .v52-ex-explanation.v52-expl-wrong { background:rgba(248,113,113,.08); border:1px solid rgba(248,113,113,.28); color:#FECACA; }'
-        + '#'+MOUNT_ID+' .v52-ex-expl-label { font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:.1em; margin-bottom:5px; }'
-        + '#'+MOUNT_ID+' .v52-ex-expl-answer { font-style:italic; }'
-        + '#'+MOUNT_ID+' .v52-tips { display:grid; gap:9px; }'
-        + '#'+MOUNT_ID+' .v52-tip { display:flex; align-items:flex-start; gap:10px; padding:12px 14px; border-radius:12px; background:rgba(252,211,77,.06); border:1px solid rgba(252,211,77,.25); color:#FEF3C7; font-size:14px; line-height:1.55; }'
-        + '#'+MOUNT_ID+' .v52-tip-bullet { color:#FCD34D; font-weight:900; flex-shrink:0; }'
-        + '#'+MOUNT_ID+' .v52-mistake { padding:13px; }'
-        + '#'+MOUNT_ID+' .v52-mistake-title { font-weight:700; color:#FECACA; font-size:14.5px; margin-bottom:5px; }'
-        + '#'+MOUNT_ID+' .v52-mistake-why { font-size:13.5px; color:#DBEAFE; line-height:1.55; }'
-        + '#'+MOUNT_ID+' .v52-mistake-fix { font-size:13.5px; color:#A7F3D0; margin-top:6px; line-height:1.55; }'
-        + '#'+MOUNT_ID+' .v52-conclude-card { margin-top:32px; padding:22px; border-radius:18px; text-align:center; border:1px solid rgba(91,156,246,.30); background:linear-gradient(180deg, rgba(91,156,246,.10), rgba(167,139,250,.06)); }'
-        + '#'+MOUNT_ID+' .v52-score { font-size:13px; color:#A9C7FF; margin-bottom:14px; }'
-        + '#'+MOUNT_ID+' .v52-score.v52-score-pass { color:#A7F3D0; }'
-        + '#'+MOUNT_ID+' .v52-conclude-btn { width:100%; max-width:340px; padding:14px 20px; border-radius:14px; border:none; background:linear-gradient(135deg,#5B9CF6,#A78BFA); color:#fff; font-weight:800; font-size:15px; cursor:pointer; box-shadow:0 8px 24px rgba(91,156,246,.25); }'
-        + '#'+MOUNT_ID+' .v52-conclude-btn:active { transform:scale(.98); }'
-        + '#'+MOUNT_ID+' .v52-conclude-btn[disabled] { opacity:.55; cursor:default; }'
-        + '#'+MOUNT_ID+' .v52-conclude-done { color:#A7F3D0; font-weight:700; font-size:15px; }'
-        + '#'+MOUNT_ID+' .v52-empty { padding:60px 20px; text-align:center; color:#A9C7FF; }'
-        + '#'+MOUNT_ID+' .v52-empty h2 { font-family:Georgia,serif; font-size:24px; color:#F5F8FF; margin:0 0 10px; }'
-        + '#'+MOUNT_ID+' .v52-empty p { font-size:14px; line-height:1.55; }'
-        + '#'+MOUNT_ID+' .v52-fallback-note { padding:12px 14px; border-radius:12px; background:rgba(245,158,11,.10); border:1px solid rgba(245,158,11,.35); color:#FCD34D; font-size:13px; line-height:1.5; margin-bottom:18px; }';
-      document.head.appendChild(st);
+    /* ─── TTS Gemini ──────────────────────────────────────────── */
+    var __ttsAudio=null;
+    var __ttsLoading=false;
+
+    function getGeminiKey(){
+      var keys=['fluency_lessonGeminiApiKeys_v197','fluency_geminiKeys','fluency_geminiKey','geminiKey'];
+      for(var i=0;i<keys.length;i++){
+        var raw=localStorage.getItem(keys[i])||'';
+        var parsed;
+        try{parsed=JSON.parse(raw);}catch(_){parsed=raw;}
+        var list=Array.isArray(parsed)?parsed:[typeof parsed==='string'?parsed:''];
+        for(var j=0;j<list.length;j++){
+          var k=String(list[j]||'').replace(/\s+/g,'').trim();
+          if(/^AIza[0-9A-Za-z_\-]{20,}$/.test(k))return k;
+        }
+      }
+      return null;
     }
 
-    /* ---- TTS using browser speech synthesis (works on iOS Safari) ---- */
-    var __ttsCurrent = null;
-    function tts(text){
+    function ttsGemini(text, btnEl){
+      if(!text||!text.trim())return;
+      // stop if playing
+      if(__ttsAudio){try{__ttsAudio.pause();__ttsAudio.src='';}catch(_){}__ttsAudio=null;updateTtsBtn(btnEl,false);return;}
+      var apiKey=getGeminiKey();
+      if(!apiKey){ ttsFallback(text); return; }
+      if(__ttsLoading)return;
+      __ttsLoading=true;
+      updateTtsBtn(btnEl,true);
+      var body=JSON.stringify({
+        contents:[{parts:[{text:'Read this English text naturally and clearly: '+text}]}],
+        generationConfig:{responseModalities:['AUDIO'],speechConfig:{voiceConfig:{prebuiltVoiceConfig:{voiceName:'Kore'}}}}
+      });
+      fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key='+apiKey,{method:'POST',headers:{'Content-Type':'application/json'},body:body})
+        .then(function(r){return r.json();})
+        .then(function(data){
+          __ttsLoading=false;
+          var b64=data&&data.candidates&&data.candidates[0]&&data.candidates[0].content&&data.candidates[0].content.parts&&data.candidates[0].content.parts[0]&&data.candidates[0].content.parts[0].inlineData&&data.candidates[0].content.parts[0].inlineData.data;
+          if(!b64){updateTtsBtn(btnEl,false);ttsFallback(text);return;}
+          var mime=(data.candidates[0].content.parts[0].inlineData.mimeType)||'audio/mp3';
+          var byteChars=atob(b64);
+          var byteNums=new Array(byteChars.length);
+          for(var i=0;i<byteChars.length;i++)byteNums[i]=byteChars.charCodeAt(i);
+          var blob=new Blob([new Uint8Array(byteNums)],{type:mime});
+          var url=URL.createObjectURL(blob);
+          var au=document.createElement('audio');
+          au.src=url;
+          au.setAttribute('playsinline','');
+          au.onended=function(){__ttsAudio=null;updateTtsBtn(btnEl,false);URL.revokeObjectURL(url);};
+          au.onerror=function(){__ttsAudio=null;updateTtsBtn(btnEl,false);};
+          __ttsAudio=au;
+          au.play().catch(function(){updateTtsBtn(btnEl,false);});
+        }).catch(function(){__ttsLoading=false;updateTtsBtn(btnEl,false);ttsFallback(text);});
+    }
+
+    function ttsFallback(text){
       try{
-        if(!text || !text.trim()) return;
-        var sy = window.speechSynthesis;
-        if(!sy) return;
-        if(__ttsCurrent){ sy.cancel(); __ttsCurrent = null; return; }
-        var u = new SpeechSynthesisUtterance(text);
-        u.lang = 'en-US';
-        u.rate = 0.95;
-        u.onend = function(){ __ttsCurrent = null; };
-        u.onerror = function(){ __ttsCurrent = null; };
-        __ttsCurrent = u;
+        var sy=window.speechSynthesis;
+        if(!sy)return;
+        sy.cancel();
+        var u=new SpeechSynthesisUtterance(text);
+        u.lang='en-US';u.rate=0.92;
         sy.speak(u);
       }catch(_){}
     }
 
-    /* ---- HTML builders ---- */
-    function htmlHeader(L){
-      var pill = L._fallback
-        ? '<span class="v52-pill-fb">⚠ Aula padrão (IA indisponível)</span>'
-        : '<span class="v52-pill-ai">✦ Gerada por IA</span>';
-      var fb = L._fallback && L._fallbackReason
-        ? '<div class="v52-fallback-note"><b>Por que a IA não gerou esta aula?</b><br>'+esc(L._fallbackReason)+'</div>'
-        : '';
-      var meta = '<div class="v52-meta">'
-        + '<span>Aula · ≈ '+esc(L.estimatedMinutes)+' min</span>'
-        + pill
-        + '</div>';
-      var subtitle = L.subtitle ? '<div class="v52-subtitle">'+esc(L.subtitle)+'</div>' : '';
-      var intro = L.intro ? '<p class="v52-intro">'+esc(L.intro)+'</p>' : '';
-      return meta + (L.title ? '<h1 class="v52-title">'+esc(L.title)+'</h1>' : '') + subtitle + intro + fb;
-    }
-
-    function htmlReading(L){
-      if(!L.readingText) return '';
-      return '<section class="v52-card v52-card-reading">'
-        + '<div class="v52-section-label" style="margin-bottom:10px;">'
-        +   '<span class="v52-label-text">Texto para leitura</span>'
-        +   '<span class="v52-label-line"></span>'
-        +   '<button class="v52-tts-btn-pill" data-v52-tts="reading">▶ Ouvir</button>'
-        + '</div>'
-        + '<p class="v52-reading-text">'+esc(L.readingText)+'</p>'
-        + '</section>';
-    }
-
-    function htmlListening(L){
-      if(!L.listeningText) return '';
-      return '<section class="v52-card v52-card-listen">'
-        + '<div class="v52-section-label" style="margin-bottom:10px;">'
-        +   '<span class="v52-label-text">Primeiro, escute</span>'
-        +   '<span class="v52-label-line"></span>'
-        +   '<button class="v52-tts-btn-pill" data-v52-tts="listening">▶ Ouvir</button>'
-        + '</div>'
-        + '<details style="margin-top:8px;">'
-        +   '<summary style="cursor:pointer;color:#A9C7FF;font-size:13px;font-weight:600;">Ver transcrição</summary>'
-        +   '<p class="v52-reading-text" style="margin-top:10px;font-size:15.5px;">'+esc(L.listeningText)+'</p>'
-        + '</details>'
-        + '</section>';
-    }
-
-    function htmlSections(L){
-      if(!L.sections.length) return '';
-      var inner = L.sections.map(function(sec, i){
-        var examples = sec.examples.map(function(ex, j){
-          return '<div class="v52-example">'
-            + '<button class="v52-tts-btn" data-v52-tts="ex" data-v52-text="'+esc(ex.en)+'">▶</button>'
-            + '<div class="v52-example-text">'
-            +   (ex.en ? '<div class="v52-en">'+esc(ex.en)+'</div>' : '')
-            +   (ex.pt ? '<div class="v52-pt">'+esc(ex.pt)+'</div>' : '')
-            + '</div>'
-            + '</div>';
-        }).join('');
-        return '<section class="v52-section v52-card" style="margin:18px 0;">'
-          + '<h2><span class="v52-section-mark">§</span>'+esc(sec.heading)+'</h2>'
-          + (sec.content ? '<div class="v52-section-body">'+esc(sec.content)+'</div>' : '')
-          + (examples ? '<div class="v52-examples">'+examples+'</div>' : '')
-          + '</section>';
-      }).join('');
-      return inner;
-    }
-
-    function htmlVocabulary(L){
-      if(!L.vocabulary.length) return '';
-      var cards = L.vocabulary.map(function(v, i){
-        return '<div class="v52-vocab-card">'
-          + '<div class="v52-vocab-head">'
-          +   '<div>'
-          +     '<div class="v52-vocab-word">'+esc(v.word)+'</div>'
-          +     '<div class="v52-vocab-meta">'+esc(v.pos)+(v.pos&&v.translation?' · ':'')+esc(v.translation)+'</div>'
-          +   '</div>'
-          +   '<button class="v52-tts-btn" data-v52-tts="word" data-v52-text="'+esc(v.word)+'">▶</button>'
-          + '</div>'
-          + (v.example ? '<div class="v52-vocab-example">"'+esc(v.example)+'"</div>' : '')
-          + '</div>';
-      }).join('');
-      return '<section style="margin:24px 0;">'
-        + '<div class="v52-section-label">'
-        +   '<span class="v52-label-text">Vocabulário</span>'
-        +   '<span class="v52-label-line"></span>'
-        +   '<span class="v52-count">'+L.vocabulary.length+'</span>'
-        + '</div>'
-        + '<div class="v52-vocab-grid">'+cards+'</div>'
-        + '</section>';
-    }
-
-    function htmlExercises(L, state){
-      if(!L.exercises.length) return '';
-      var items = L.exercises.map(function(ex, i){
-        var ans = state.answers[i] || '';
-        var checked = !!state.checked[i];
-        var correctAns = String(ex.answer || '').trim().toLowerCase();
-        var isCorrect = checked && String(ans).trim().toLowerCase() === correctAns;
-        var clsExtra = checked ? (isCorrect ? ' v52-ex-correct' : ' v52-ex-wrong') : '';
-        var hasOptions = Array.isArray(ex.options) && ex.options.length > 0 && (ex.type !== 'translate');
-        var inner;
-        if(hasOptions){
-          var opts = ex.options.map(function(o, k){
-            var letter = String.fromCharCode(65 + k);
-            var oVal = String(o);
-            var oCls = 'v52-ex-opt';
-            if(checked){
-              if(String(oVal).trim().toLowerCase() === correctAns) oCls += ' v52-opt-correct';
-              else if(oVal === ans) oCls += ' v52-opt-wrong';
-            } else if(oVal === ans){
-              oCls += ' v52-opt-selected';
-            }
-            return '<button class="'+oCls+'" data-v52-ex="'+i+'" data-v52-opt="'+esc(oVal)+'"'+(checked?' disabled':'')+'>'
-              + '<span class="v52-ex-opt-letter">'+letter+'</span>'
-              + '<span>'+esc(oVal)+'</span>'
-              + '</button>';
-          }).join('');
-          inner = '<div class="v52-ex-options">'+opts+'</div>';
-        } else {
-          inner = '<div class="v52-ex-input-row">'
-            + '<input class="v52-ex-input" type="text" placeholder="Digite sua resposta em inglês…" data-v52-ex-input="'+i+'" value="'+esc(ans)+'"'+(checked?' disabled':'')+' />'
-            + (checked ? '' : '<button class="v52-ex-verify" data-v52-ex-verify="'+i+'">Verificar</button>')
-            + '</div>';
-        }
-        var explanationHtml = '';
-        if(checked){
-          var lbl = isCorrect ? '✓ Correto!' : ('✗ Resposta: '+esc(ex.answer));
-          explanationHtml = '<div class="v52-ex-explanation '+(isCorrect?'v52-expl-correct':'v52-expl-wrong')+'">'
-            + '<div class="v52-ex-expl-label">'+lbl+'</div>'
-            + (ex.explanation ? '<div class="v52-ex-expl-answer">'+esc(ex.explanation)+'</div>' : '')
-            + '</div>';
-        }
-        var marker = checked ? (isCorrect ? '✓' : '✗') : String(i+1);
-        return '<div class="v52-exercise'+clsExtra+'">'
-          + '<div class="v52-ex-head">'
-          +   '<div class="v52-ex-num">'+marker+'</div>'
-          +   '<div style="flex:1;">'
-          +     '<div class="v52-ex-question">'+esc(ex.question)+'</div>'
-          +     inner
-          +     explanationHtml
-          +   '</div>'
-          + '</div>'
-          + '</div>';
-      }).join('');
-      var answeredCount = L.exercises.filter(function(ex,i){ return !!state.checked[i]; }).length;
-      var correctCount = L.exercises.filter(function(ex,i){ return state.checked[i] && String(state.answers[i]||'').trim().toLowerCase() === String(ex.answer||'').trim().toLowerCase(); }).length;
-      return '<section style="margin:24px 0;">'
-        + '<div class="v52-section-label">'
-        +   '<span class="v52-label-text">Exercícios</span>'
-        +   '<span class="v52-label-line"></span>'
-        +   '<span class="v52-count">'+correctCount+'/'+L.exercises.length+'</span>'
-        + '</div>'
-        + items
-        + '</section>';
-    }
-
-    function htmlMistakes(L){
-      if(!L.commonMistakes.length) return '';
-      var items = L.commonMistakes.map(function(m){
-        return '<div class="v52-card v52-card-mistake v52-mistake">'
-          + (m.mistake ? '<div class="v52-mistake-title">'+esc(m.mistake)+'</div>' : '')
-          + (m.why ? '<div class="v52-mistake-why">'+esc(m.why)+'</div>' : '')
-          + (m.avoid ? '<div class="v52-mistake-fix">Como evitar: '+esc(m.avoid)+'</div>' : '')
-          + '</div>';
-      }).join('');
-      return '<section style="margin:24px 0;">'
-        + '<div class="v52-section-label">'
-        +   '<span class="v52-label-text">Erros comuns</span>'
-        +   '<span class="v52-label-line"></span>'
-        + '</div>'
-        + items
-        + '</section>';
-    }
-
-    function htmlTips(L){
-      if(!L.tips.length) return '';
-      var items = L.tips.map(function(t){
-        return '<div class="v52-tip"><span class="v52-tip-bullet">•</span><span>'+esc(t)+'</span></div>';
-      }).join('');
-      return '<section style="margin:24px 0;">'
-        + '<div class="v52-section-label">'
-        +   '<span class="v52-label-text">Dicas</span>'
-        +   '<span class="v52-label-line"></span>'
-        + '</div>'
-        + '<div class="v52-tips">'+items+'</div>'
-        + '</section>';
-    }
-
-    function htmlConclude(L, state, alreadyDoneToday){
-      var ex = L.exercises;
-      var answered = ex.filter(function(_, i){ return !!state.checked[i]; }).length;
-      var correct = ex.filter(function(b, i){ return state.checked[i] && String(state.answers[i]||'').trim().toLowerCase() === String(b.answer||'').trim().toLowerCase(); }).length;
-      var pct = ex.length ? Math.round(correct/ex.length*100) : 100;
-      var pass = pct >= 80;
-      var scoreLine = ex.length
-        ? '<div class="v52-score'+(pass && answered===ex.length ? ' v52-score-pass' : '')+'">Pontuação: '+correct+'/'+ex.length+' ('+pct+'%). Para concluir: 80%+.</div>'
-        : '';
-      if(alreadyDoneToday){
-        return '<div class="v52-conclude-card">'
-          + (L.finalTip ? '<div style="font-style:italic;font-family:Georgia,serif;font-size:17px;color:#9EBCFF;margin-bottom:12px;">"'+esc(L.finalTip)+'"</div>' : '')
-          + '<div class="v52-conclude-done">✓ Aula concluída</div>'
-          + '</div>';
+    function updateTtsBtn(btnEl, loading){
+      if(!btnEl)return;
+      if(loading){
+        btnEl.setAttribute('data-v53-playing','1');
+        btnEl.innerHTML='<span class="v53-tts-wave"><span></span><span></span><span></span></span>';
+      } else {
+        btnEl.removeAttribute('data-v53-playing');
+        var isCircle=btnEl.classList.contains('v53-tts-circle');
+        btnEl.innerHTML=isCircle?svgVolume():('<span class="v53-tts-icon">'+svgVolume()+'</span> Ouvir');
       }
-      return '<div class="v52-conclude-card">'
-        + (L.finalTip ? '<div style="font-style:italic;font-family:Georgia,serif;font-size:17px;color:#9EBCFF;margin-bottom:14px;">"'+esc(L.finalTip)+'"</div>' : '')
-        + scoreLine
-        + '<button class="v52-conclude-btn" data-v52-conclude="1">✓ Concluir aula de hoje</button>'
-        + '</div>';
     }
 
-    function buildLessonHtml(L, state, alreadyDoneToday){
-      if(!L) return '<div class="v52-empty"><h2>Sem aula ativa</h2><p>Volte para a aba Hoje e toque em "Começar aula".</p></div>';
-      return ''
-        + htmlHeader(L)
-        + htmlReading(L)
-        + htmlListening(L)
-        + htmlSections(L)
-        + htmlVocabulary(L)
-        + htmlExercises(L, state)
-        + htmlMistakes(L)
-        + htmlTips(L)
-        + htmlConclude(L, state, alreadyDoneToday);
+    function svgVolume(){
+      return '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>';
     }
 
-    /* ---- Per-lesson interactive state (kept in memory keyed by lesson title) ---- */
-    var __state = { title:'', answers:{}, checked:{} };
-    function ensureStateFor(L){
-      if(!L) return __state;
-      if(__state.title !== (L.title||'')){
-        __state = { title: L.title||'', answers:{}, checked:{} };
+    /* ─── AI answer checking ──────────────────────────────────── */
+    var __pendingChecks={};
+
+    function checkAnswerWithAI(exIndex, question, correctAnswer, userAnswer, callback){
+      var apiKey=getGeminiKey();
+      if(!apiKey){ callback(simpleCheck(correctAnswer,userAnswer)); return; }
+      if(__pendingChecks[exIndex])return;
+      __pendingChecks[exIndex]=true;
+
+      var prompt='You are an English teacher correcting a student answer. Be lenient with punctuation, capitalization, and minor spelling. Focus on whether the meaning and key words are correct.\n\nQuestion: '+question+'\nExpected answer: '+correctAnswer+'\nStudent answer: '+userAnswer+'\n\nRespond ONLY with a JSON object like: {"correct":true,"feedback":"Great! Just note that..."} or {"correct":false,"feedback":"Almost! The correct answer is... because..."}\nBe encouraging. Keep feedback under 60 words.';
+
+      fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key='+apiKey,{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{temperature:0.2,maxOutputTokens:120}})
+      }).then(function(r){return r.json();})
+        .then(function(data){
+          delete __pendingChecks[exIndex];
+          var raw=data&&data.candidates&&data.candidates[0]&&data.candidates[0].content&&data.candidates[0].content.parts&&data.candidates[0].content.parts[0]&&data.candidates[0].content.parts[0].text||'';
+          var clean=raw.replace(/```json|```/g,'').trim();
+          var start=clean.indexOf('{'),end=clean.lastIndexOf('}');
+          if(start>=0&&end>start)clean=clean.slice(start,end+1);
+          try{var j=JSON.parse(clean);callback({correct:!!j.correct,feedback:j.feedback||''});}
+          catch(_){callback(simpleCheck(correctAnswer,userAnswer));}
+        }).catch(function(){delete __pendingChecks[exIndex];callback(simpleCheck(correctAnswer,userAnswer));});
+    }
+
+    function simpleCheck(correct,user){
+      // Normaliza: lowercase, sem pontuação final, trim
+      function norm(s){return String(s||'').toLowerCase().replace(/[.,!?;:'"]/g,'').replace(/\s+/g,' ').trim();}
+      return {correct:norm(correct)===norm(user),feedback:''};
+    }
+
+    /* ─── Styles V53 ──────────────────────────────────────────── */
+    function injectStyles(){
+      if(document.getElementById(STYLE_ID))return;
+      var st=document.createElement('style');
+      st.id=STYLE_ID;
+      st.textContent=`
+        .${HIDE_CLASS} > .max-w-3xl.mx-auto.px-4.md\\:px-6.py-6.pb-24,
+        .${HIDE_CLASS} > .max-w-3xl.mx-auto.px-4.md\\:px-6.py-16,
+        .${HIDE_CLASS} > .max-w-3xl.mx-auto.px-4.md\\:px-6.py-12 { display:none!important; }
+
+        /* ── Root ── */
+        #${MOUNT_ID} {
+          position:relative; z-index:5;
+          max-width:740px; margin:0 auto;
+          padding:0 0 120px;
+          color:#E8EFF8;
+          font-family: 'Georgia', 'Times New Roman', serif;
+        }
+
+        /* ── Hero header ── */
+        #${MOUNT_ID} .v53-hero {
+          padding: 28px 20px 24px;
+          border-bottom: 1px solid rgba(255,255,255,0.07);
+          position: relative;
+        }
+        #${MOUNT_ID} .v53-badge-row {
+          display: flex; align-items: center; gap: 8px;
+          margin-bottom: 14px; flex-wrap: wrap;
+        }
+        #${MOUNT_ID} .v53-badge {
+          font-family: -apple-system, sans-serif;
+          font-size: 10px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase;
+          padding: 4px 10px; border-radius: 999px;
+        }
+        #${MOUNT_ID} .v53-badge-ai {
+          background: rgba(52,211,153,.15); border: 1px solid rgba(52,211,153,.4);
+          color: #6EE7B7;
+        }
+        #${MOUNT_ID} .v53-badge-fallback {
+          background: rgba(245,158,11,.12); border: 1px solid rgba(245,158,11,.4);
+          color: #FCD34D;
+        }
+        #${MOUNT_ID} .v53-badge-time {
+          background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12);
+          color: rgba(255,255,255,.5);
+        }
+        #${MOUNT_ID} .v53-hero-title {
+          font-size: clamp(28px, 6vw, 42px);
+          line-height: 1.05; font-weight: 700;
+          color: #F7F9FF; letter-spacing: -0.02em;
+          margin: 0 0 8px;
+        }
+        #${MOUNT_ID} .v53-hero-subtitle {
+          font-style: italic; font-size: 17px;
+          color: #7BAEFF; margin-bottom: 14px; line-height: 1.4;
+        }
+        #${MOUNT_ID} .v53-hero-intro {
+          font-family: -apple-system, sans-serif;
+          font-size: 15px; line-height: 1.7;
+          color: rgba(200,215,255,0.75); max-width: 600px;
+        }
+
+        /* ── Section divider ── */
+        #${MOUNT_ID} .v53-divider {
+          display: flex; align-items: center; gap: 12px;
+          padding: 24px 20px 12px;
+        }
+        #${MOUNT_ID} .v53-divider-label {
+          font-family: -apple-system, sans-serif;
+          font-size: 10px; font-weight: 700; letter-spacing: .25em;
+          text-transform: uppercase; color: rgba(139,184,255,0.7);
+          white-space: nowrap;
+        }
+        #${MOUNT_ID} .v53-divider-line {
+          flex: 1; height: 1px;
+          background: linear-gradient(90deg, rgba(91,156,246,.25), transparent);
+        }
+        #${MOUNT_ID} .v53-divider-count {
+          font-family: -apple-system, sans-serif;
+          font-size: 11px; color: rgba(139,184,255,0.6);
+          background: rgba(91,156,246,.1); border: 1px solid rgba(91,156,246,.25);
+          padding: 2px 8px; border-radius: 999px;
+        }
+
+        /* ── Reading block — special layout ── */
+        #${MOUNT_ID} .v53-reading-block {
+          margin: 0 16px 8px;
+          border-radius: 20px;
+          background: linear-gradient(160deg,
+            rgba(15,28,64,0.95) 0%,
+            rgba(10,20,50,0.95) 100%);
+          border: 1px solid rgba(91,156,246,.2);
+          overflow: hidden;
+        }
+        #${MOUNT_ID} .v53-reading-bar {
+          display: flex; align-items: center; justify-content: space-between;
+          padding: 14px 18px;
+          background: rgba(91,156,246,.08);
+          border-bottom: 1px solid rgba(91,156,246,.15);
+        }
+        #${MOUNT_ID} .v53-reading-bar-label {
+          font-family: -apple-system, sans-serif;
+          font-size: 11px; font-weight: 700; letter-spacing: .2em;
+          text-transform: uppercase; color: #7BAEFF;
+        }
+        #${MOUNT_ID} .v53-tts-pill {
+          display: inline-flex; align-items: center; gap: 7px;
+          padding: 7px 14px; border-radius: 999px;
+          border: 1px solid rgba(91,156,246,.4);
+          background: rgba(91,156,246,.12);
+          color: #A9C7FF; cursor: pointer;
+          font-family: -apple-system, sans-serif;
+          font-size: 12px; font-weight: 600;
+          transition: background .15s, border-color .15s;
+        }
+        #${MOUNT_ID} .v53-tts-pill:hover { background: rgba(91,156,246,.2); }
+        #${MOUNT_ID} .v53-tts-pill[data-v53-playing] {
+          border-color: rgba(52,211,153,.5);
+          background: rgba(52,211,153,.12);
+          color: #6EE7B7;
+        }
+        #${MOUNT_ID} .v53-reading-body {
+          padding: 20px 20px 22px;
+          font-size: 18px; line-height: 1.85;
+          color: #EBF1FF;
+          font-family: Georgia, serif;
+        }
+        #${MOUNT_ID} .v53-reading-para {
+          margin-bottom: 16px;
+        }
+        #${MOUNT_ID} .v53-reading-para:last-child { margin-bottom: 0; }
+
+        /* TTS wave animation */
+        #${MOUNT_ID} .v53-tts-wave {
+          display: inline-flex; align-items: center; gap: 3px; height: 14px;
+        }
+        #${MOUNT_ID} .v53-tts-wave span {
+          display: block; width: 3px; border-radius: 99px;
+          background: currentColor; animation: v53wave .8s ease-in-out infinite;
+        }
+        #${MOUNT_ID} .v53-tts-wave span:nth-child(1){ height:6px; animation-delay:0s; }
+        #${MOUNT_ID} .v53-tts-wave span:nth-child(2){ height:12px; animation-delay:.15s; }
+        #${MOUNT_ID} .v53-tts-wave span:nth-child(3){ height:8px; animation-delay:.3s; }
+        @keyframes v53wave {
+          0%,100%{ transform:scaleY(1); } 50%{ transform:scaleY(0.4); }
+        }
+
+        /* ── Sections ── */
+        #${MOUNT_ID} .v53-section-card {
+          margin: 0 16px 12px;
+          padding: 20px;
+          border-radius: 18px;
+          border: 1px solid rgba(255,255,255,.08);
+          background: rgba(255,255,255,.035);
+        }
+        #${MOUNT_ID} .v53-section-heading {
+          font-size: 20px; font-weight: 700;
+          color: #F0F5FF; margin: 0 0 12px;
+          line-height: 1.2;
+        }
+        #${MOUNT_ID} .v53-section-heading .v53-mark {
+          color: #5B9CF6; font-size: 16px; margin-right: 6px;
+        }
+        #${MOUNT_ID} .v53-section-body {
+          font-family: -apple-system, sans-serif;
+          font-size: 15px; line-height: 1.75;
+          color: rgba(180,205,255,.85); white-space: pre-wrap;
+        }
+        #${MOUNT_ID} .v53-examples { margin-top: 14px; display: grid; gap: 8px; }
+        #${MOUNT_ID} .v53-example {
+          display: flex; align-items: flex-start; gap: 10px;
+          padding: 12px 14px; border-radius: 12px;
+          border: 1px solid rgba(255,255,255,.09);
+          background: rgba(0,0,0,.18);
+        }
+        #${MOUNT_ID} .v53-tts-circle {
+          flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%;
+          border: 1px solid rgba(91,156,246,.35);
+          background: rgba(91,156,246,.1);
+          color: #A9C7FF; cursor: pointer;
+          display: flex; align-items: center; justify-content: center;
+          transition: background .15s;
+        }
+        #${MOUNT_ID} .v53-tts-circle:hover { background: rgba(91,156,246,.2); }
+        #${MOUNT_ID} .v53-ex-en {
+          font-size: 15px; font-weight: 600; color: #F0F5FF; line-height: 1.4;
+        }
+        #${MOUNT_ID} .v53-ex-pt {
+          font-family: -apple-system, sans-serif;
+          font-size: 13px; color: #7BAEFF; font-style: italic;
+          margin-top: 3px; line-height: 1.4;
+        }
+
+        /* ── Vocabulary ── */
+        #${MOUNT_ID} .v53-vocab-grid {
+          display: grid; grid-template-columns: 1fr; gap: 10px;
+          padding: 0 16px;
+        }
+        @media(min-width:500px){
+          #${MOUNT_ID} .v53-vocab-grid { grid-template-columns: 1fr 1fr; }
+        }
+        #${MOUNT_ID} .v53-vocab-card {
+          padding: 14px 16px; border-radius: 14px;
+          border: 1px solid rgba(255,255,255,.09);
+          background: rgba(255,255,255,.04);
+        }
+        #${MOUNT_ID} .v53-vocab-top {
+          display: flex; align-items: flex-start; justify-content: space-between; gap: 10px;
+        }
+        #${MOUNT_ID} .v53-vocab-word {
+          font-size: 17px; font-weight: 700; color: #F0F5FF;
+        }
+        #${MOUNT_ID} .v53-vocab-meta {
+          font-family: -apple-system, sans-serif;
+          font-size: 12px; color: #7BAEFF; margin-top: 2px;
+        }
+        #${MOUNT_ID} .v53-vocab-example {
+          font-family: -apple-system, sans-serif;
+          font-size: 13px; color: rgba(160,195,255,.7);
+          font-style: italic; margin-top: 8px; line-height: 1.45;
+        }
+
+        /* ── Exercises ── */
+        #${MOUNT_ID} .v53-ex-list { display: grid; gap: 10px; padding: 0 16px; }
+        #${MOUNT_ID} .v53-exercise {
+          padding: 18px; border-radius: 16px;
+          border: 1px solid rgba(91,156,246,.2);
+          background: rgba(91,156,246,.05);
+          transition: border-color .2s, background .2s;
+        }
+        #${MOUNT_ID} .v53-exercise.v53-correct {
+          border-color: rgba(52,211,153,.45);
+          background: rgba(52,211,153,.06);
+        }
+        #${MOUNT_ID} .v53-exercise.v53-wrong {
+          border-color: rgba(248,113,113,.4);
+          background: rgba(248,113,113,.05);
+        }
+        #${MOUNT_ID} .v53-exercise.v53-checking {
+          border-color: rgba(245,158,11,.4);
+          background: rgba(245,158,11,.05);
+        }
+        #${MOUNT_ID} .v53-ex-header {
+          display: flex; align-items: flex-start; gap: 12px;
+        }
+        #${MOUNT_ID} .v53-ex-num {
+          flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%;
+          display: flex; align-items: center; justify-content: center;
+          font-family: -apple-system, sans-serif;
+          font-size: 12px; font-weight: 700;
+          background: rgba(91,156,246,.15); border: 1px solid rgba(91,156,246,.4);
+          color: #A9C7FF;
+        }
+        #${MOUNT_ID} .v53-correct .v53-ex-num {
+          background: rgba(52,211,153,.2); border-color: rgba(52,211,153,.5); color: #6EE7B7;
+        }
+        #${MOUNT_ID} .v53-wrong .v53-ex-num {
+          background: rgba(248,113,113,.2); border-color: rgba(248,113,113,.5); color: #FCA5A5;
+        }
+        #${MOUNT_ID} .v53-ex-question {
+          font-size: 15.5px; line-height: 1.55; color: #F0F5FF;
+          font-family: Georgia, serif;
+        }
+        #${MOUNT_ID} .v53-options { display: grid; gap: 8px; margin-top: 12px; }
+        #${MOUNT_ID} .v53-option {
+          display: flex; align-items: center; gap: 10px;
+          padding: 11px 14px; border-radius: 12px;
+          border: 1px solid rgba(255,255,255,.11);
+          background: rgba(255,255,255,.04);
+          color: #CBD5FF; cursor: pointer; text-align: left;
+          font-family: -apple-system, sans-serif; font-size: 14px; line-height: 1.4;
+          transition: background .12s, border-color .12s;
+        }
+        #${MOUNT_ID} .v53-option:hover:not([disabled]) { background: rgba(91,156,246,.12); border-color: rgba(91,156,246,.35); }
+        #${MOUNT_ID} .v53-option.v53-opt-selected { background: rgba(91,156,246,.18); border-color: rgba(91,156,246,.5); }
+        #${MOUNT_ID} .v53-option.v53-opt-correct { background: rgba(52,211,153,.18); border-color: rgba(52,211,153,.5); color: #D1FAE5; }
+        #${MOUNT_ID} .v53-option.v53-opt-wrong { background: rgba(248,113,113,.14); border-color: rgba(248,113,113,.45); color: #FECACA; }
+        #${MOUNT_ID} .v53-option[disabled] { cursor: default; }
+        #${MOUNT_ID} .v53-opt-letter {
+          width: 22px; height: 22px; border-radius: 50%;
+          background: rgba(255,255,255,.1); color: #8FB8FF;
+          font-size: 11px; font-weight: 700;
+          display: inline-flex; align-items: center; justify-content: center;
+          flex-shrink: 0;
+        }
+        #${MOUNT_ID} .v53-input-row { display: flex; gap: 8px; margin-top: 12px; }
+        #${MOUNT_ID} .v53-input {
+          flex: 1; min-width: 0;
+          padding: 11px 14px; border-radius: 12px;
+          border: 1px solid rgba(255,255,255,.18);
+          background: rgba(0,0,0,.25); color: #F0F5FF;
+          font-family: -apple-system, sans-serif; font-size: 14px;
+        }
+        #${MOUNT_ID} .v53-input:focus { outline: none; border-color: rgba(91,156,246,.6); }
+        #${MOUNT_ID} .v53-verify-btn {
+          padding: 11px 16px; border-radius: 12px; border: none;
+          background: linear-gradient(135deg, #5B9CF6, #A78BFA);
+          color: #fff; font-weight: 700; font-size: 13px; cursor: pointer;
+          font-family: -apple-system, sans-serif; white-space: nowrap;
+          transition: opacity .15s;
+        }
+        #${MOUNT_ID} .v53-verify-btn:disabled { opacity: .5; cursor: default; }
+        #${MOUNT_ID} .v53-checking-label {
+          display: flex; align-items: center; gap: 8px;
+          margin-top: 10px; color: #FCD34D;
+          font-family: -apple-system, sans-serif; font-size: 13px;
+        }
+        #${MOUNT_ID} .v53-spinner {
+          width: 14px; height: 14px; border: 2px solid rgba(252,211,77,.3);
+          border-top-color: #FCD34D; border-radius: 50%;
+          animation: v53spin .7s linear infinite;
+        }
+        @keyframes v53spin { to{ transform: rotate(360deg); } }
+        #${MOUNT_ID} .v53-feedback {
+          margin-top: 11px; padding: 12px 14px; border-radius: 12px;
+          font-family: -apple-system, sans-serif; font-size: 14px; line-height: 1.6;
+        }
+        #${MOUNT_ID} .v53-feedback.v53-fb-correct {
+          background: rgba(52,211,153,.1); border: 1px solid rgba(52,211,153,.35); color: #D1FAE5;
+        }
+        #${MOUNT_ID} .v53-feedback.v53-fb-wrong {
+          background: rgba(248,113,113,.08); border: 1px solid rgba(248,113,113,.3); color: #FECACA;
+        }
+        #${MOUNT_ID} .v53-feedback-label { font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: .1em; margin-bottom: 5px; }
+
+        /* ── Tips ── */
+        #${MOUNT_ID} .v53-tips { display: grid; gap: 8px; padding: 0 16px; }
+        #${MOUNT_ID} .v53-tip {
+          display: flex; align-items: flex-start; gap: 10px;
+          padding: 13px 15px; border-radius: 13px;
+          background: rgba(252,211,77,.05); border: 1px solid rgba(252,211,77,.2);
+          color: #FEF3C7;
+          font-family: -apple-system, sans-serif; font-size: 14px; line-height: 1.6;
+        }
+        #${MOUNT_ID} .v53-tip-dot { color: #FCD34D; font-weight: 900; flex-shrink: 0; }
+
+        /* ── Common mistakes ── */
+        #${MOUNT_ID} .v53-mistakes { display: grid; gap: 10px; padding: 0 16px; }
+        #${MOUNT_ID} .v53-mistake-card {
+          padding: 15px; border-radius: 14px;
+          background: rgba(248,113,113,.08); border: 1px solid rgba(248,113,113,.25);
+        }
+        #${MOUNT_ID} .v53-mistake-title { font-weight: 700; color: #FECACA; font-size: 14.5px; margin-bottom: 6px; }
+        #${MOUNT_ID} .v53-mistake-why { font-family: -apple-system, sans-serif; font-size: 13.5px; color: #DBEAFE; line-height: 1.55; }
+        #${MOUNT_ID} .v53-mistake-fix { font-family: -apple-system, sans-serif; font-size: 13.5px; color: #A7F3D0; margin-top: 6px; line-height: 1.55; }
+
+        /* ── Conclude ── */
+        #${MOUNT_ID} .v53-conclude {
+          margin: 32px 16px 0;
+          padding: 24px; border-radius: 20px;
+          text-align: center;
+          border: 1px solid rgba(91,156,246,.25);
+          background: linear-gradient(160deg, rgba(91,156,246,.09), rgba(167,139,250,.05));
+        }
+        #${MOUNT_ID} .v53-final-tip {
+          font-style: italic; font-size: 17px;
+          color: rgba(160,195,255,.8); margin-bottom: 14px; line-height: 1.5;
+        }
+        #${MOUNT_ID} .v53-score-line {
+          font-family: -apple-system, sans-serif;
+          font-size: 13px; color: #A9C7FF; margin-bottom: 14px;
+        }
+        #${MOUNT_ID} .v53-score-line.v53-pass { color: #6EE7B7; }
+        #${MOUNT_ID} .v53-conclude-btn {
+          width: 100%; max-width: 320px;
+          padding: 15px 20px; border-radius: 14px; border: none;
+          background: linear-gradient(135deg, #5B9CF6, #A78BFA);
+          color: #fff; font-weight: 800; font-size: 15px; cursor: pointer;
+          font-family: -apple-system, sans-serif;
+          box-shadow: 0 8px 24px rgba(91,156,246,.25);
+          transition: transform .15s, opacity .15s;
+        }
+        #${MOUNT_ID} .v53-conclude-btn:active { transform: scale(.98); }
+        #${MOUNT_ID} .v53-conclude-btn:disabled { opacity: .5; cursor: default; }
+        #${MOUNT_ID} .v53-done-label {
+          font-family: -apple-system, sans-serif;
+          font-weight: 700; font-size: 16px; color: #6EE7B7;
+        }
+        #${MOUNT_ID} .v53-empty {
+          padding: 64px 20px; text-align: center;
+        }
+        #${MOUNT_ID} .v53-empty h2 {
+          font-size: 24px; color: #F0F5FF; margin-bottom: 10px;
+        }
+        #${MOUNT_ID} .v53-empty p {
+          font-family: -apple-system, sans-serif;
+          font-size: 14px; color: rgba(160,195,255,.7); line-height: 1.6;
+        }
+        #${MOUNT_ID} .v53-listening-block {
+          margin: 0 16px 8px;
+          border-radius: 20px;
+          border: 1px solid rgba(167,139,250,.2);
+          background: linear-gradient(160deg, rgba(30,15,64,.9), rgba(20,10,50,.9));
+          overflow: hidden;
+        }
+        #${MOUNT_ID} .v53-listening-bar {
+          display: flex; align-items: center; justify-content: space-between;
+          padding: 14px 18px;
+          background: rgba(167,139,250,.08);
+          border-bottom: 1px solid rgba(167,139,250,.15);
+        }
+        #${MOUNT_ID} .v53-listening-bar-label {
+          font-family: -apple-system, sans-serif;
+          font-size: 11px; font-weight: 700; letter-spacing: .2em;
+          text-transform: uppercase; color: #C4B5FD;
+        }
+        #${MOUNT_ID} .v53-tts-pill-purple {
+          display: inline-flex; align-items: center; gap: 7px;
+          padding: 7px 14px; border-radius: 999px;
+          border: 1px solid rgba(167,139,250,.4);
+          background: rgba(167,139,250,.12);
+          color: #C4B5FD; cursor: pointer;
+          font-family: -apple-system, sans-serif;
+          font-size: 12px; font-weight: 600;
+          transition: background .15s;
+        }
+        #${MOUNT_ID} .v53-tts-pill-purple:hover { background: rgba(167,139,250,.22); }
+        #${MOUNT_ID} .v53-listening-transcript {
+          padding: 16px 20px;
+        }
+        #${MOUNT_ID} .v53-transcript-toggle {
+          font-family: -apple-system, sans-serif;
+          font-size: 13px; font-weight: 600; color: #A78BFA;
+          cursor: pointer; list-style: none;
+        }
+        #${MOUNT_ID} .v53-transcript-toggle::marker { display: none; }
+        #${MOUNT_ID} .v53-transcript-text {
+          font-family: Georgia, serif;
+          font-size: 16px; line-height: 1.75; color: #E0D9FF;
+          margin-top: 12px;
+        }
+      `;
+      document.head.appendChild(st);
+    }
+
+    /* ─── HTML builders ───────────────────────────────────────── */
+
+    function buildHero(L){
+      var badge=L._fallback
+        ?'<span class="v53-badge v53-badge-fallback">⚠ Aula padrão</span>'
+        :'<span class="v53-badge v53-badge-ai">✦ IA</span>';
+      return `<div class="v53-hero">
+        <div class="v53-badge-row">
+          ${badge}
+          <span class="v53-badge v53-badge-time">≈ ${esc(L.estimatedMinutes)} min</span>
+        </div>
+        <h1 class="v53-hero-title">${esc(L.title)}</h1>
+        ${L.subtitle?`<div class="v53-hero-subtitle">${esc(L.subtitle)}</div>`:''}
+        ${L.intro?`<p class="v53-hero-intro">${esc(L.intro)}</p>`:''}
+        ${L._fallback&&L._fallbackReason?`<div style="margin-top:12px;padding:10px 14px;border-radius:10px;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);color:#FCD34D;font-family:-apple-system,sans-serif;font-size:13px;line-height:1.5;">${esc(L._fallbackReason)}</div>`:''}
+      </div>`;
+    }
+
+    function buildReading(L){
+      if(!L.readingText)return '';
+      // Split into paragraphs for better reading experience
+      var paras=L.readingText.split(/\n\n+/).filter(function(p){return p.trim();});
+      if(paras.length<=1) paras=[L.readingText];
+      var parasHtml=paras.map(function(p){
+        return '<p class="v53-reading-para">'+esc(p.trim())+'</p>';
+      }).join('');
+      return `
+        <div class="v53-divider">
+          <span class="v53-divider-label">Texto para leitura</span>
+          <span class="v53-divider-line"></span>
+        </div>
+        <div class="v53-reading-block">
+          <div class="v53-reading-bar">
+            <span class="v53-reading-bar-label">📖 Reading</span>
+            <button class="v53-tts-pill" data-v53-tts="reading">
+              <span class="v53-tts-icon">${svgVolume()}</span> Ouvir
+            </button>
+          </div>
+          <div class="v53-reading-body">${parasHtml}</div>
+        </div>`;
+    }
+
+    function buildListening(L){
+      if(!L.listeningText)return '';
+      return `
+        <div class="v53-divider">
+          <span class="v53-divider-label">Áudio</span>
+          <span class="v53-divider-line"></span>
+        </div>
+        <div class="v53-listening-block">
+          <div class="v53-listening-bar">
+            <span class="v53-listening-bar-label">🎧 Listening</span>
+            <button class="v53-tts-pill-purple" data-v53-tts="listening">
+              <span class="v53-tts-icon">${svgVolume()}</span> Ouvir
+            </button>
+          </div>
+          <div class="v53-listening-transcript">
+            <details>
+              <summary class="v53-transcript-toggle">Ver transcrição</summary>
+              <p class="v53-transcript-text">${esc(L.listeningText)}</p>
+            </details>
+          </div>
+        </div>`;
+    }
+
+    function buildSections(L){
+      if(!L.sections.length)return '';
+      var cards=L.sections.map(function(sec,i){
+        var exHtml=sec.examples.map(function(ex){
+          return `<div class="v53-example">
+            <button class="v53-tts-circle" data-v53-tts="word" data-v53-text="${esc(ex.en)}">${svgVolume()}</button>
+            <div style="flex:1;min-width:0;">
+              ${ex.en?`<div class="v53-ex-en">${esc(ex.en)}</div>`:''}
+              ${ex.pt?`<div class="v53-ex-pt">${esc(ex.pt)}</div>`:''}
+            </div>
+          </div>`;
+        }).join('');
+        return `<div class="v53-section-card">
+          <h2 class="v53-section-heading"><span class="v53-mark">§</span>${esc(sec.heading)}</h2>
+          ${sec.content?`<div class="v53-section-body">${esc(sec.content)}</div>`:''}
+          ${exHtml?`<div class="v53-examples">${exHtml}</div>`:''}
+        </div>`;
+      }).join('');
+      return `<div class="v53-divider">
+        <span class="v53-divider-label">Conteúdo</span>
+        <span class="v53-divider-line"></span>
+        <span class="v53-divider-count">${L.sections.length}</span>
+      </div>${cards}`;
+    }
+
+    function buildVocab(L){
+      if(!L.vocabulary.length)return '';
+      var cards=L.vocabulary.map(function(v){
+        return `<div class="v53-vocab-card">
+          <div class="v53-vocab-top">
+            <div>
+              <div class="v53-vocab-word">${esc(v.word)}</div>
+              <div class="v53-vocab-meta">${esc(v.pos)}${v.pos&&v.translation?' · ':''}${esc(v.translation)}</div>
+            </div>
+            <button class="v53-tts-circle" data-v53-tts="word" data-v53-text="${esc(v.word)}">${svgVolume()}</button>
+          </div>
+          ${v.example?`<div class="v53-vocab-example">"${esc(v.example)}"</div>`:''}
+        </div>`;
+      }).join('');
+      return `<div class="v53-divider">
+        <span class="v53-divider-label">Vocabulário</span>
+        <span class="v53-divider-line"></span>
+        <span class="v53-divider-count">${L.vocabulary.length}</span>
+      </div>
+      <div class="v53-vocab-grid">${cards}</div>`;
+    }
+
+    function buildExercises(L, state){
+      if(!L.exercises.length)return '';
+      var correctCount=0;
+      var items=L.exercises.map(function(ex,i){
+        var ans=state.answers[i]||'';
+        var checked=!!state.checked[i];
+        var aiResult=state.aiResults&&state.aiResults[i];
+        var isChecking=!!state.checking&&state.checking[i];
+        var isCorrect=checked&&aiResult&&aiResult.correct;
+        if(isCorrect)correctCount++;
+        var clsExtra=checked?(isCorrect?' v53-correct':' v53-wrong'):'';
+        var hasOpts=Array.isArray(ex.options)&&ex.options.length>0&&ex.type!=='translate';
+        var marker=checked?(isCorrect?'✓':'✗'):String(i+1);
+        var inputHtml='';
+        if(hasOpts){
+          inputHtml='<div class="v53-options">'+ex.options.map(function(o,k){
+            var letter=String.fromCharCode(65+k);
+            var oVal=String(o);
+            var cls='v53-option';
+            if(checked){
+              if(aiResult&&aiResult.correct&&oVal===ans)cls+=' v53-opt-correct';
+              else if(!aiResult||!aiResult.correct){
+                var correctAns=String(ex.answer||'').trim().toLowerCase();
+                if(oVal.trim().toLowerCase()===correctAns)cls+=' v53-opt-correct';
+                else if(oVal===ans)cls+=' v53-opt-wrong';
+              }
+            } else if(oVal===ans){cls+=' v53-opt-selected';}
+            return `<button class="${cls}" data-v53-ex="${i}" data-v53-opt="${esc(oVal)}"${checked?' disabled':''}><span class="v53-opt-letter">${letter}</span><span>${esc(oVal)}</span></button>`;
+          }).join('')+'</div>';
+        } else {
+          inputHtml=`<div class="v53-input-row">
+            <input class="v53-input" type="text" placeholder="Sua resposta em inglês…" data-v53-input="${i}" value="${esc(ans)}"${checked?' disabled':''}/>
+            ${!checked?`<button class="v53-verify-btn" data-v53-verify="${i}">Verificar</button>`:''}
+          </div>`;
+        }
+        var feedbackHtml='';
+        if(isChecking){
+          feedbackHtml='<div class="v53-checking-label"><span class="v53-spinner"></span> Verificando com IA…</div>';
+        } else if(checked&&aiResult){
+          var lbl=aiResult.correct?'✓ Correto!':'✗ Resposta incorreta';
+          if(!aiResult.correct&&ex.answer)lbl+=' — Esperado: '+esc(ex.answer);
+          feedbackHtml=`<div class="v53-feedback ${aiResult.correct?'v53-fb-correct':'v53-fb-wrong'}">
+            <div class="v53-feedback-label">${lbl}</div>
+            ${aiResult.feedback?`<div>${esc(aiResult.feedback)}</div>`:''}
+          </div>`;
+        }
+        return `<div class="v53-exercise${clsExtra}" data-v53-ex-idx="${i}">
+          <div class="v53-ex-header">
+            <div class="v53-ex-num">${marker}</div>
+            <div style="flex:1;min-width:0;">
+              <div class="v53-ex-question">${esc(ex.question)}</div>
+              ${inputHtml}
+              ${feedbackHtml}
+            </div>
+          </div>
+        </div>`;
+      }).join('');
+      return `<div class="v53-divider">
+        <span class="v53-divider-label">Exercícios</span>
+        <span class="v53-divider-line"></span>
+        <span class="v53-divider-count">${correctCount}/${L.exercises.length}</span>
+      </div>
+      <div class="v53-ex-list">${items}</div>`;
+    }
+
+    function buildTips(L){
+      if(!L.tips.length)return '';
+      var items=L.tips.map(function(t){
+        return `<div class="v53-tip"><span class="v53-tip-dot">•</span><span>${esc(t)}</span></div>`;
+      }).join('');
+      return `<div class="v53-divider">
+        <span class="v53-divider-label">Dicas</span>
+        <span class="v53-divider-line"></span>
+      </div>
+      <div class="v53-tips">${items}</div>`;
+    }
+
+    function buildMistakes(L){
+      if(!L.commonMistakes.length)return '';
+      var items=L.commonMistakes.map(function(m){
+        return `<div class="v53-mistake-card">
+          ${m.mistake?`<div class="v53-mistake-title">⚠ ${esc(m.mistake)}</div>`:''}
+          ${m.why?`<div class="v53-mistake-why">${esc(m.why)}</div>`:''}
+          ${m.avoid?`<div class="v53-mistake-fix">✓ Como evitar: ${esc(m.avoid)}</div>`:''}
+        </div>`;
+      }).join('');
+      return `<div class="v53-divider">
+        <span class="v53-divider-label">Erros comuns</span>
+        <span class="v53-divider-line"></span>
+      </div>
+      <div class="v53-mistakes">${items}</div>`;
+    }
+
+    function buildConclude(L, state, done){
+      var ex=L.exercises;
+      var answered=ex.filter(function(_,i){return !!state.checked[i];}).length;
+      var correct=ex.filter(function(_,i){
+        return state.checked[i]&&state.aiResults&&state.aiResults[i]&&state.aiResults[i].correct;
+      }).length;
+      var pct=ex.length?Math.round(correct/ex.length*100):100;
+      var pass=pct>=80;
+      var scoreLine=ex.length
+        ?`<div class="v53-score-line${pass&&answered===ex.length?' v53-pass':''}">Pontuação: ${correct}/${ex.length} (${pct}%). Meta: 80%+.</div>`
+        :'';
+      if(done){
+        return `<div class="v53-conclude">
+          ${L.finalTip?`<div class="v53-final-tip">"${esc(L.finalTip)}"</div>`:''}
+          <div class="v53-done-label">✓ Aula concluída hoje</div>
+        </div>`;
+      }
+      return `<div class="v53-conclude">
+        ${L.finalTip?`<div class="v53-final-tip">"${esc(L.finalTip)}"</div>`:''}
+        ${scoreLine}
+        <button class="v53-conclude-btn" data-v53-conclude="1">✓ Concluir aula de hoje</button>
+      </div>`;
+    }
+
+    function buildFullHTML(L, state, done){
+      if(!L) return `<div class="v53-empty"><h2>Sem aula ativa</h2><p>Vá para a aba Hoje e toque em "Começar aula".</p></div>`;
+      return buildHero(L)
+        + buildReading(L)
+        + buildListening(L)
+        + buildSections(L)
+        + buildVocab(L)
+        + buildExercises(L, state)
+        + buildMistakes(L)
+        + buildTips(L)
+        + buildConclude(L, state, done);
+    }
+
+    /* ─── State ───────────────────────────────────────────────── */
+    var __state={title:'',answers:{},checked:{},checking:{},aiResults:{}};
+    function ensureState(L){
+      if(!L)return __state;
+      if(__state.title!==(L.title||'')){
+        __state={title:L.title||'',answers:{},checked:{},checking:{},aiResults:{}};
       }
       return __state;
     }
 
-    /* ---- Lesson completion (write to completedLessons + flashcards) ---- */
-    function getCompletedLessonsToday(){
-      try{
-        var raw = localStorage.getItem('fluency_completedLessons');
-        if(!raw) return [];
-        var arr = JSON.parse(raw);
-        return Array.isArray(arr) ? arr : [];
-      }catch(_){ return []; }
-    }
-    function isLessonDoneToday(){
-      var t = todayStr();
-      return getCompletedLessonsToday().some(function(c){ return c && c.date === t; });
-    }
+    /* ─── Conclude lesson ─────────────────────────────────────── */
     function concludeLesson(L, state){
-      var ex = arr(L.exercises);
-      var answered = ex.filter(function(_, i){ return !!state.checked[i]; }).length;
-      var correct = ex.filter(function(b, i){ return state.checked[i] && String(state.answers[i]||'').trim().toLowerCase() === String(b.answer||'').trim().toLowerCase(); }).length;
-      var pct = ex.length ? Math.round(correct/ex.length*100) : 100;
-      if(ex.length && answered < ex.length){
-        alert('Responda e verifique todos os exercícios antes de concluir a aula.');
-        return false;
-      }
-      if(ex.length && pct < 80){
-        alert('Você acertou '+pct+'%. Revise os exercícios errados antes de concluir. Meta: 80% ou mais.');
-        return false;
-      }
+      var ex=arr(L.exercises);
+      var answered=ex.filter(function(_,i){return !!state.checked[i];}).length;
+      var correct=ex.filter(function(_,i){return state.checked[i]&&state.aiResults&&state.aiResults[i]&&state.aiResults[i].correct;}).length;
+      var pct=ex.length?Math.round(correct/ex.length*100):100;
+      if(ex.length&&answered<ex.length){alert('Responda e verifique todos os exercícios antes de concluir.');return false;}
+      if(ex.length&&pct<80){alert('Você acertou '+pct+'%. Revise os exercícios errados antes de concluir. Meta: 80%.');return false;}
       try{
-        var t = todayStr();
-        var cur = getCompletedLessonsToday();
-        if(!cur.some(function(c){ return c && c.date === t; })){
-          cur.push({ id: t+'_v52', date: t, skill:'reading', level:'A1', title: L.title || 'Aula', score: pct });
-          localStorage.setItem('fluency_completedLessons', JSON.stringify(cur));
+        var t=todayStr();
+        var cur=getCompletedToday();
+        if(!cur.some(function(c){return c&&c.date===t;})){
+          cur.push({id:t+'_v53',date:t,skill:'reading',level:'A1',title:L.title||'Aula',score:pct});
+          localStorage.setItem('fluency_completedLessons',JSON.stringify(cur));
         }
-        // Mark V51 completion (keeps existing systems happy)
-        localStorage.setItem('fluency_v51_completed_'+t, '1');
-      }catch(e){
-        log('falha ao salvar conclusão: '+(e&&e.message||e), 'error');
-      }
-      alert('Aula concluída! Você acertou '+pct+'%.');
+        localStorage.setItem('fluency_v51_completed_'+t,'1');
+      }catch(e){log('erro ao salvar: '+(e&&e.message||e));}
+      alert('Parabéns! Aula concluída com '+pct+'%! 🎉');
       return true;
     }
 
-    /* ---- React lesson hider: tag the root container so CSS hides the broken render ---- */
-    function findLessonContainer(){
-      // The React lesson page is the .max-w-3xl div directly under the .min-h-screen wrapper
-      var screens = document.querySelectorAll('.min-h-screen.paper-grain');
-      for(var i=0;i<screens.length;i++){ return screens[i]; }
+    /* ─── DOM helpers ─────────────────────────────────────────── */
+    function findReactContainer(){
+      var s=document.querySelectorAll('.min-h-screen.paper-grain');
+      for(var i=0;i<s.length;i++)return s[i];
       return null;
     }
-    function hideReactLesson(){
-      var c = findLessonContainer();
-      if(c) c.classList.add(HIDE_REACT_CLASS);
-    }
-    function unhideReactLesson(){
-      var c = findLessonContainer();
-      if(c) c.classList.remove(HIDE_REACT_CLASS);
-    }
-
-    /* ---- Disable older overlay renderers so they don't fight us ---- */
-    function neutralizeOldRenderers(){
-      try{ window.__fluencyRenderFullLessonV18 = function(){ return false; }; }catch(_){}
-      try{ window.__fluencyV43RenderLesson = function(){ return false; }; }catch(_){}
-      try{ window.__fluencyV46RenderLesson = function(){ return false; }; }catch(_){}
-      // V51's mount: remove if present (V52 takes over)
-      try{ var m = document.getElementById('__fluency_v51_ai_mount__'); if(m) m.remove(); }catch(_){}
-      try{ var m18 = document.querySelector('.fluency-v18-full-lesson-render'); if(m18) m18.remove(); }catch(_){}
+    function hideReact(){ var c=findReactContainer(); if(c)c.classList.add(HIDE_CLASS); }
+    function showReact(){ var c=findReactContainer(); if(c)c.classList.remove(HIDE_CLASS); }
+    function silenceOldPatches(){
+      try{window.__fluencyRenderFullLessonV18=function(){return false;};}catch(_){}
+      try{window.__fluencyV43RenderLesson=function(){return false;};}catch(_){}
+      try{window.__fluencyV46RenderLesson=function(){return false;};}catch(_){}
+      try{window.__fluencyV52Render=function(){return false;};}catch(_){}
+      // Remove V51 and V52 mounts
+      ['__fluency_v51_ai_mount__','__fluency_v52_lesson_root__'].forEach(function(id){
+        var el=document.getElementById(id);if(el)el.remove();
+      });
+      try{var v18=document.querySelector('.fluency-v18-full-lesson-render');if(v18)v18.remove();}catch(_){}
     }
 
-    /* ---- Main render loop ---- */
+    /* ─── Main render ─────────────────────────────────────────── */
     function render(){
       try{
-        // V52.1: evita redesenhar a aula enquanto um input/textarea/select está focado no iOS.
-        // O render automático destruía o campo no momento do toque e o teclado não abria.
-        try{
-          var active = document.activeElement;
-          var mountFocus = document.getElementById(MOUNT_ID);
-          if(mountFocus && active && mountFocus.contains(active) && /^(INPUT|TEXTAREA|SELECT)$/i.test(active.tagName || "")){
-            return;
-          }
-        }catch(_focusGuard){}
         if(!isLessonTab()){
-          var m0 = document.getElementById(MOUNT_ID);
-          if(m0) m0.remove();
-          unhideReactLesson();
+          var m0=document.getElementById(MOUNT_ID);
+          if(m0)m0.remove();
+          showReact();
           return;
         }
-        // Don't fight while React is showing the loader
-        var bodyTxt = document.body ? (document.body.innerText || '') : '';
-        if(/A tinta está secando|A tinta esta secando|Preparando sua aula/i.test(bodyTxt) && !readActiveLesson()){
-          var mLoad = document.getElementById(MOUNT_ID);
-          if(mLoad) mLoad.remove();
-          return;
-        }
-        neutralizeOldRenderers();
-        var L = readActiveLesson();
+        silenceOldPatches();
+        var L=readActiveLesson();
         if(!L){
-          // Nothing to render; let React show whatever it has
-          var m1 = document.getElementById(MOUNT_ID);
-          if(m1) m1.remove();
-          unhideReactLesson();
+          var m1=document.getElementById(MOUNT_ID);
+          if(m1)m1.remove();
+          showReact();
           return;
         }
-        var state = ensureStateFor(L);
-        var done = isLessonDoneToday();
-        hideReactLesson();
-        var mount = document.getElementById(MOUNT_ID);
+        var state=ensureState(L);
+        var done=isDoneToday();
+        hideReact();
+        var mount=document.getElementById(MOUNT_ID);
         if(!mount){
-          mount = document.createElement('div');
-          mount.id = MOUNT_ID;
-          var header = document.querySelector('header');
-          if(header && header.parentNode){
-            header.parentNode.insertBefore(mount, header.nextSibling);
+          mount=document.createElement('div');
+          mount.id=MOUNT_ID;
+          var header=document.querySelector('header');
+          if(header&&header.parentNode){
+            header.parentNode.insertBefore(mount,header.nextSibling);
           } else {
-            (document.getElementById('root') || document.body).appendChild(mount);
+            (document.getElementById('root')||document.body).appendChild(mount);
           }
         }
-        mount.innerHTML = buildLessonHtml(L, state, done);
-        attachInteractions(mount, L, state);
-      }catch(e){
-        log('render falhou: '+(e&&e.message||e), 'error');
-      }
+        mount.innerHTML=buildFullHTML(L,state,done);
+        wire(mount,L,state);
+      }catch(e){log('render error: '+(e&&e.message||e));}
     }
 
-    /* ---- Interactions on the V52 mount ---- */
-    function attachInteractions(mount, L, state){
-      // Delegate clicks
-      if(mount.__v52Wired) return;
-      mount.__v52Wired = true;
+    /* ─── Wire interactions ───────────────────────────────────── */
+    function wire(mount, L, state){
+      if(mount.__v53wired)return;
+      mount.__v53wired=true;
 
-      mount.addEventListener('click', function(ev){
-        var t = ev.target;
-        // Walk up to find element with data-v52-* attributes
-        while(t && t !== mount && !(t.dataset && (t.dataset.v52Tts || t.dataset.v52Ex !== undefined || t.dataset.v52ExVerify !== undefined || t.dataset.v52Conclude))){
-          t = t.parentElement;
+      mount.addEventListener('click',function(ev){
+        var t=ev.target;
+        while(t&&t!==mount){
+          if(t.dataset&&(
+            t.dataset.v53Tts!==undefined||
+            t.dataset.v53Ex!==undefined||
+            t.dataset.v53Verify!==undefined||
+            t.dataset.v53Conclude!==undefined
+          ))break;
+          t=t.parentElement;
         }
-        if(!t || t === mount) return;
-        try{
-          if(t.dataset.v52Tts){
-            ev.preventDefault();
-            if(t.dataset.v52Tts === 'reading') tts(L.readingText);
-            else if(t.dataset.v52Tts === 'listening') tts(L.listeningText);
-            else tts(t.dataset.v52Text || '');
-            return;
-          }
-          if(t.dataset.v52Conclude){
-            ev.preventDefault();
-            var ok = concludeLesson(L, state);
-            if(ok) render();
-            return;
-          }
-          if(t.dataset.v52Ex !== undefined){
-            ev.preventDefault();
-            var i = parseInt(t.dataset.v52Ex, 10);
-            if(state.checked[i]) return;
-            state.answers[i] = t.dataset.v52Opt;
-            state.checked[i] = true;
-            render();
-            return;
-          }
-          if(t.dataset.v52ExVerify !== undefined){
-            ev.preventDefault();
-            var i2 = parseInt(t.dataset.v52ExVerify, 10);
-            // read input value
-            var input = mount.querySelector('input[data-v52-ex-input="'+i2+'"]');
-            var val = input ? input.value : '';
-            if(!val.trim()){ alert('Digite sua resposta antes de verificar.'); return; }
-            state.answers[i2] = val;
-            state.checked[i2] = true;
-            render();
-            return;
-          }
-        }catch(e){
-          log('click handler falhou: '+(e&&e.message||e), 'error');
-        }
-      }, true);
+        if(!t||t===mount)return;
+        ev.preventDefault();
 
-      // Sync input values into state on input (so render() doesn't lose them)
-      mount.addEventListener('input', function(ev){
-        var t = ev.target;
-        if(t && t.dataset && t.dataset.v52ExInput !== undefined){
-          state.answers[parseInt(t.dataset.v52ExInput,10)] = t.value;
+        /* TTS */
+        if(t.dataset.v53Tts!==undefined){
+          var text='';
+          if(t.dataset.v53Tts==='reading')text=L.readingText;
+          else if(t.dataset.v53Tts==='listening')text=L.listeningText;
+          else text=t.dataset.v53Text||'';
+          ttsGemini(text,t);
+          return;
+        }
+
+        /* Multiple choice */
+        if(t.dataset.v53Ex!==undefined&&t.dataset.v53Opt!==undefined){
+          var i=parseInt(t.dataset.v53Ex,10);
+          if(state.checked[i])return;
+          state.answers[i]=t.dataset.v53Opt;
+          state.checked[i]=true;
+          state.checking=state.checking||{};
+          state.aiResults=state.aiResults||{};
+          // For choice questions do simple check immediately
+          state.aiResults[i]=simpleCheck(L.exercises[i].answer,t.dataset.v53Opt);
+          render();
+          return;
+        }
+
+        /* Text verify */
+        if(t.dataset.v53Verify!==undefined){
+          var i2=parseInt(t.dataset.v53Verify,10);
+          var input=mount.querySelector('input[data-v53-input="'+i2+'"]');
+          var val=input?input.value:'';
+          if(!val.trim()){alert('Digite sua resposta antes de verificar.');return;}
+          state.answers[i2]=val;
+          state.checked[i2]=true;
+          state.checking=state.checking||{};
+          state.aiResults=state.aiResults||{};
+          state.checking[i2]=true;
+          render(); // show spinner immediately
+          checkAnswerWithAI(i2,L.exercises[i2].question,L.exercises[i2].answer,val,function(result){
+            state.checking[i2]=false;
+            state.aiResults[i2]=result;
+            render();
+          });
+          return;
+        }
+
+        /* Conclude */
+        if(t.dataset.v53Conclude!==undefined){
+          var ok=concludeLesson(L,state);
+          if(ok)render();
+          return;
+        }
+      },true);
+
+      mount.addEventListener('input',function(ev){
+        var t=ev.target;
+        if(t&&t.dataset&&t.dataset.v53Input!==undefined){
+          state.answers[parseInt(t.dataset.v53Input,10)]=t.value;
         }
       });
     }
 
-    /* ---- Test injection: drop a lesson into the same place the AI puts it ---- */
-    function saveLessonAsActive(lesson){
-      var n = normalize(lesson);
-      if(!n){ return false; }
-      n.lessonId = n.lessonId || ('test-'+Date.now());
-      n._fluencyDate = todayStr();
-      var s = JSON.stringify(n);
-      ACTIVE_KEYS.forEach(function(k){
-        try{ localStorage.setItem(k, s); }catch(_){}
-      });
-      try{
-        // Also drop a synthetic per-day cache key so React's path also picks it up
-        var key = 'fluency_lesson_v4_'+(n.title||'untitled').toLowerCase().replace(/\s+/g,'-').slice(0,40);
-        localStorage.setItem(key, s);
-      }catch(_){}
-      return true;
-    }
-
-    window.__fluencyInjectTestLesson = function(lesson){
-      if(!lesson || typeof lesson !== 'object'){ console.warn('[V52] lesson inválida'); return false; }
-      var ok = saveLessonAsActive(lesson);
-      log('test lesson injetada: '+(lesson.title||'sem título'), ok ? 'ok' : 'error');
-      // Reset state and render
-      __state = { title:'', answers:{}, checked:{} };
-      setTimeout(render, 50);
-      setTimeout(render, 350);
-      return ok;
-    };
-    window.__fluencyV52Status = function(){
-      var L = readActiveLesson();
-      return {
-        version: VERSION,
-        onLessonTab: isLessonTab(),
-        hasActive: !!L,
-        title: L && L.title,
-        sections: L && L.sections.length,
-        vocabulary: L && L.vocabulary.length,
-        exercises: L && L.exercises.length,
-        readingText: L && !!L.readingText,
-        listeningText: L && !!L.listeningText,
-        tips: L && L.tips.length,
-        commonMistakes: L && L.commonMistakes.length,
-        mountInDom: !!document.getElementById(MOUNT_ID)
-      };
-    };
-    window.__fluencyV52Render = render;
-
-    /* ---- Boot ---- */
+    /* ─── Boot ────────────────────────────────────────────────── */
     injectStyles();
-    setTimeout(function(){ neutralizeOldRenderers(); render(); }, 250);
-    setTimeout(render, 900);
-    setTimeout(render, 2200);
-    setInterval(render, 900);
+    // Desativa V52 flag para não conflitar
+    window.__fluencyV52UnifiedLessonRender=true;
+    setTimeout(function(){silenceOldPatches();render();},200);
+    setTimeout(render,800);
+    setTimeout(render,2000);
+    setInterval(render,1200);
     ['click','touchend','hashchange','popstate','focus','visibilitychange'].forEach(function(ev){
-      window.addEventListener(ev, function(){ setTimeout(render, 80); setTimeout(render, 380); }, true);
+      window.addEventListener(ev,function(){setTimeout(render,80);setTimeout(render,400);},true);
     });
-    log('patch ativo. Aba Aula passou a renderizar pela V52.', 'ok');
+    log('V53 ativo — redesign elegante + IA para respostas + Gemini TTS');
   }catch(e){
-    try{ console.warn('Fluency V52 patch failed', e); }catch(_){}
+    try{console.warn('[Fluency V53] boot falhou',e);}catch(_){}
   }
 })();
