@@ -19,91 +19,84 @@ Não mexer no backend Azure privado.
 
 ## Estado atual para teste
 
-### Bloco 8-LAB-5 — Expandir currículo e travas pedagógicas IMPLEMENTADO, aguardando teste
+### Bloco 8-LAB-6 — Travas de domínio real e revisão adaptativa de sábado IMPLEMENTADO, aguardando teste
 
-Motivo:
-- o usuário corrigiu a numeração dos blocos: o bloco de expansão curricular deve ser tratado como `BLOCO-8-LAB-5`, pois o áudio ficou como bloco funcional anterior;
-- o objetivo é transformar o cronograma em uma trilha mais completa, com ordem pedagógica, revisões, simulados e bloqueio de avanço.
+Objetivo:
+- não depender apenas de “aula concluída” para considerar domínio;
+- registrar desempenho por pilar;
+- detectar pontos fracos em grammar, writing, reading e listening;
+- aos sábados, priorizar uma revisão adaptativa completa dos 4 pilares antes da trilha normal.
 
-Arquivo alterado:
-- `fluency-clean/src/services/curriculumPlan.js`
+Arquivos alterados/criados:
+- `fluency-clean/src/services/masteryStore.js`
+- `fluency-clean/src/services/progressStore.js`
+- `fluency-clean/src/components/lesson/LessonGeneratorPanel.jsx`
+- `REWRITE_HANDOFF.md`
 
-Commit confirmado:
-- `cfed7308a2b6c578ae5d45b8c69f8dbc30a1a39e`
-
-O que foi feito:
-- A1 foi expandido para 32 aulas;
-- A2 foi expandido para 26 aulas;
-- B1 foi expandido para 18 aulas;
-- B2 foi expandido para 12 aulas;
-- C1 foi expandido para 8 aulas;
-- C2 foi expandido para 7 aulas;
-- adicionadas categorias pedagógicas, como:
-  - fundamentos;
-  - rotina;
-  - sobrevivência;
-  - gramática essencial;
-  - leitura;
-  - listening;
+O que foi implementado:
+- criado `masteryStore.js` para armazenar domínio por pilar;
+- pilares monitorados:
+  - grammar;
   - writing;
-  - revisão;
-  - produção final;
-  - simulado;
-- adicionados checkpoints:
-  - `mid-review`;
-  - `final-review`;
-  - `final-production`;
-  - `level-assessment`;
-- adicionadas travas de nível:
-  - A2 depende da consolidação A1;
-  - B1 depende da consolidação A2;
-  - B2 depende da consolidação B1;
-  - C1 depende da consolidação B2;
-  - C2 depende da consolidação C1;
-- `getNextCurriculumLesson()` agora respeita liberação de nível;
-- avanço de nível exige percentual mínimo e conclusão dos simulados/produções finais;
-- o prompt da IA agora recebe:
-  - nível CEFR;
-  - unidade;
-  - objetivo da unidade;
-  - categoria pedagógica;
-  - checkpoint;
-  - tema obrigatório;
-  - pré-requisitos;
-  - regras para revisão, simulado e produção final.
+  - reading;
+  - listening;
+- ao concluir aula, o sistema registra:
+  - acertos;
+  - erros;
+  - nota estimada;
+  - tópicos fracos;
+  - pilar afetado;
+- se a nota do pilar ficar abaixo de 85%, o pilar entra como fraco;
+- sábado passa a priorizar revisão adaptativa quando houver fraquezas;
+- a revisão de sábado cobre obrigatoriamente:
+  - Grammar;
+  - Writing;
+  - Reading;
+  - Listening;
+- a revisão usa erros/tópicos fracos da semana;
+- revisão de sábado não avança a trilha normal como se fosse aula regular;
+- diagnóstico registra atualização de domínio após concluir aula.
+
+Comportamento esperado:
+- em dias normais, o botão continua gerando a próxima aula da trilha;
+- aos sábados, se houver pontos fracos, o painel deve mostrar `Revisão adaptativa de sábado`;
+- ao gerar no sábado, a IA deve criar uma revisão dos 4 pilares;
+- depois de concluir aulas com erros, o perfil de domínio fica mais preciso.
 
 Teste recomendado no Vercel/iPhone:
-1. esperar deploy da branch lab ficar Ready;
-2. abrir **Progresso**;
-3. conferir se a trilha mostra mais aulas totais;
-4. conferir se A1 aparece como nível atual;
-5. conferir se A2+ aparecem bloqueados;
-6. abrir **Hoje** e gerar próxima aula;
-7. confirmar que a aula continua vindo da próxima etapa do cronograma;
-8. conferir se a geração continua longa e não volta para aula curta.
+1. esperar o deploy da branch lab ficar Ready;
+2. concluir uma aula com algumas respostas erradas;
+3. abrir diagnóstico e verificar log de domínio atualizado;
+4. em sábado, ou quando for possível simular pela data do aparelho, verificar se o painel muda para revisão adaptativa;
+5. gerar a revisão e conferir se ela cobre Grammar, Writing, Reading e Listening;
+6. confirmar que a trilha normal não é avançada indevidamente pela revisão de sábado.
 
-## Bloco anterior validado pelo usuário
+## Blocos recentes
+
+### Bloco 8-LAB-5B — Cronograma completo sem brechas para todos os níveis
+- currículo aprofundado em todos os níveis;
+- travas de conclusão muito mais rígidas;
+- `mastery-lock` antes de liberar próximo nível.
 
 ### Bloco 8-LAB-4B — Áudio natural Gemini primeiro FUNCIONOU
 - usuário confirmou que o áudio natural Gemini funcionou;
-- `audioPlayback.js` e `geminiTts.js` foram ajustados para tentar Gemini TTS natural primeiro;
 - fallback do navegador ficou apenas como último recurso.
 
 ## Próximo bloco correto
 
-Se o `Bloco 8-LAB-5` for aprovado:
+Se o `Bloco 8-LAB-6` for aprovado:
 
-### `Bloco 8-LAB-6 — Persistência real do currículo por conta`
+### `Bloco 8-LAB-7 — Persistência real por conta e sincronização Firebase`
 Objetivo provável:
-- garantir que cronograma, aula atual, progresso, conclusão e chaves não resetem;
+- garantir que domínio, cronograma, aula atual, progresso, conclusão e chaves não resetem;
 - revisar persistência com Google/Firebase;
 - manter fallback local apenas como suporte;
 - preparar o sistema para testes finais antes de main.
 
-Se o `Bloco 8-LAB-5` tiver problema:
+Se o `Bloco 8-LAB-6` tiver problema:
 - não avançar;
 - corrigir cirurgicamente apenas a falha encontrada na branch lab.
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency usando SOMENTE a branch `rewrite-fluency-clean-lab`. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. O teste é feito no Vercel preview da branch lab, pelo iPhone. O `Bloco 8-LAB-5` expandiu o currículo com revisões, simulados, pré-requisitos e travas pedagógicas. Está aguardando teste. Não mexa na `main`, não mexa na `rewrite-fluency-clean`, não use HTML remendado, DOM injection ou bundle patch. Continue modularmente em `fluency-clean/src/`."
+"Continue a reconstrução do Fluency usando SOMENTE a branch `rewrite-fluency-clean-lab`. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. O teste é feito no Vercel preview da branch lab, pelo iPhone. O `Bloco 8-LAB-6` adicionou domínio real por pilar e revisão adaptativa de sábado dos 4 pilares. Está aguardando teste. Não mexa na `main`, não mexa na `rewrite-fluency-clean`, não use HTML remendado, DOM injection ou bundle patch. Continue modularmente em `fluency-clean/src/`."
