@@ -39,122 +39,100 @@ Continuar montando o sistema como React modular em `fluency-clean/src/`:
 
 ## Estado aprovado pelo usuário
 
-### Speaking — APROVADO
-Blocos concluídos:
-- `LAB-7D` — Speaking igual à referência do ZIP;
-- `LAB-7E` — ajuste fino de tamanho;
-- `LAB-7F` — fidelidade visual;
-- `LAB-7G` — limpeza da parte inferior, diagnóstico fora do fluxo e microfone maior.
-
-### Hoje/Home — APROVADO
-Blocos concluídos:
-- `LAB-HOJE-1` — Home/Hoje igual à referência;
-- `LAB-HOJE-1B` — ajuste de largura para remover margens laterais duplicadas.
-
-### Navbar — APROVADA
-Bloco concluído:
-- `LAB-NAV-1` — navbar flutuante igual à referência.
-
-### Aula — APROVADA / LIMPA
-Blocos concluídos:
-- `LAB-AULA-1` — topo/casca da aula igual à referência;
-- `LAB-AULA-1B` — correção de overflow/corte horizontal;
-- `LAB-AULA-2` — preview seguro por pilar de aula;
-- `LAB-9` — seletor temporário de pilares removido.
-
-### Cartas/Flashcards — APROVADO
-Bloco concluído:
-- `LAB-CARTAS-1` — Flashcards/Cartas igual à referência.
-
-### Progresso — APROVADO
-Bloco concluído:
-- `LAB-PROGRESSO-1` — Progresso visual.
-
-### Ajustes/Configurações — APROVADO/ORGANIZADO
-Blocos concluídos:
-- chaves movidas de Progresso para Ajustes > Chaves de aulas;
-- aba **IA geral** criada para chaves futuras de Speaking/Imersão/outras áreas;
-- `LAB-AJUSTES-1B` — tela de Ajustes organizada com perfil, categorias e painéis;
-- `LAB-9` — textos técnicos/lab visíveis removidos.
-
-### Imersão — APROVADO EM ESTRUTURA / AJUSTADO
-Blocos concluídos:
-- `LAB-IMERSAO-1` — Imersão adicionada dentro de Speaking como terceira opção;
-- `LAB-IMERSAO-1B` — seletor e cards corrigidos para iPhone.
+### UI visual aprovada/organizada
+- Speaking aprovado: `LAB-7D`, `LAB-7E`, `LAB-7F`, `LAB-7G`.
+- Hoje/Home aprovado: `LAB-HOJE-1`, `LAB-HOJE-1B`.
+- Navbar aprovada: `LAB-NAV-1`.
+- Aula aprovada e limpa: `LAB-AULA-1`, `LAB-AULA-1B`, `LAB-AULA-2`, `LAB-9`.
+- Cartas/Flashcards aprovado: `LAB-CARTAS-1`.
+- Progresso aprovado: `LAB-PROGRESSO-1`.
+- Ajustes/Configurações aprovado/organizado: chaves movidas para Ajustes, aba IA geral criada, `LAB-AJUSTES-1B`, limpeza LAB-9.
+- Imersão adicionada dentro de Speaking e ajustada: `LAB-IMERSAO-1`, `LAB-IMERSAO-1B`.
+- Checklist visual final: `LAB-10` removeu o rodapé lab escondido e fez varredura por textos técnicos.
 
 ## Estado atual para teste
 
-### Checklist final — `LAB-10` IMPLEMENTADO, AGUARDANDO TESTE DO USUÁRIO
+### Bloco 8-LAB-1 — Motor pedagógico multi-tipo IMPLEMENTADO, aguardando teste do usuário
 Objetivo do bloco:
-- fazer checklist visual final da lab antes do Bloco 8-LAB;
-- garantir que não sobrou rodapé/texto técnico de lab visível;
-- não fazer reestruturação profunda ainda.
+- iniciar a reestruturação profunda das aulas/conteúdo pedagógico;
+- preparar a geração de aulas para mais de um tipo real;
+- melhorar o aproveitamento do conteúdo real gerado pela IA em Listening e Writing;
+- manter visual aprovado e backend intactos.
 
 Arquivos alterados:
-- `fluency-clean/src/App.jsx`
+- `fluency-clean/src/services/lessonTypes.js`
+- `fluency-clean/src/services/geminiLessons.js`
+- `fluency-clean/src/components/lesson/LessonGeneratorPanel.jsx`
+- `fluency-clean/src/lessons/ListeningLesson.jsx`
+- `fluency-clean/src/lessons/WritingLesson.jsx`
+- `fluency-clean/src/services/lessonStore.js`
 - `REWRITE_HANDOFF.md`
 
-Commit confirmado deste bloco:
-- `c0049bfab01e142290dfa5da58940491019e2f75` — remove rodapé lab escondido.
-
-Checklist de arquivos/telas revisados:
-- `App.jsx` — tabs principais, topbar, diagnóstico, navbar e AccessGate;
-- `TodayScreen.jsx` — Hoje/Home já aprovado;
-- `LessonScreen.jsx` — Aula sem seletor temporário de pilares;
-- `SpeakingScreen.jsx` — Conversa, Pronúncia e Imersão dentro de Speaking;
-- `FlashcardsScreen.jsx` — Cartas/Flashcards;
-- `ProgressScreen.jsx` — Progresso;
-- `SettingsScreen.jsx` — Ajustes/Configurações.
-
-O que foi limpo no LAB-10:
-- removido `PREVIEW_VERSION` de `App.jsx`;
-- removido o `<footer className="preview-version-footer">` que ainda existia escondido por CSS;
-- nova varredura feita por termos temporários principais:
-  - `rewrite-clean-lab`;
-  - `Fluency Clean Lab`;
-  - `Vercel lab`;
-  - `Lab preview`;
-  - `Ver UI por pilar`;
-  - `Preview seguro`;
-  - `layout-preview`;
-  - `preview-version-footer`;
-- resultado da varredura: sem resultados.
+O que foi implementado:
+- `lessonTypes.js` agora normaliza um schema mais rico de aula:
+  - `objective`;
+  - `focus`;
+  - `sections` com exemplos;
+  - `exercises` com explicação;
+  - `prompts` de produção;
+  - aliases e inferência de tipo por texto do pedido.
+- `geminiLessons.js` agora detecta o tipo de aula pelo prompt:
+  - Reading;
+  - Grammar;
+  - Listening;
+  - Writing.
+- O gerador passou a usar blueprints pedagógicos por tipo:
+  - Reading: estrutura, texto principal, vocabulário, exercícios e produção;
+  - Grammar: regra, exemplos, prática e produção;
+  - Listening: estrutura, transcrição, vocabulário, exercícios e shadowing;
+  - Writing: modelo, estrutura, roteiro, microprática e produção final.
+- O diagnóstico agora registra o tipo detectado e os blocos gerados.
+- `LessonGeneratorPanel.jsx` foi atualizado para orientar o usuário a pedir Reading/Grammar/Listening/Writing e aponta as chaves para Ajustes > Chaves de aulas.
+- `ListeningLesson.jsx` agora usa a transcrição real da IA (`listeningText`), exercícios reais e rascunho/conclusão real.
+- `WritingLesson.jsx` agora usa seções/prompts reais da IA, não apenas roteiro fixo.
+- `lessonStore.js` teve o prompt padrão atualizado para aula mais completa.
 
 Limites intencionais:
-- diagnóstico lateral foi mantido porque ainda é útil para testes reais;
-- não houve alteração em backend, Azure, Firebase, Gemini, HTML ou bundle;
-- não houve integração das chaves gerais de IA com Speaking/Imersão ainda;
-- não houve reestruturação profunda do conteúdo pedagógico das aulas ainda.
+- não mexeu em backend Azure privado;
+- não mexeu em Firebase;
+- não mexeu em HTML;
+- não mexeu em bundle;
+- não conectou IA geral de Speaking/Imersão ainda;
+- não alterou visual aprovado das telas principais;
+- não fez promoção/merge para branch estável.
+
+## Teste recomendado no Vercel/iPhone
+
+1. Abrir **Hoje**.
+2. Abrir o painel **Gerar nova aula por IA**.
+3. Gerar uma aula Reading A1 simples e confirmar se abre na aba Aula.
+4. Depois testar pelo menos uma aula Grammar A1 com prompt explícito:
+   - “Gere uma aula de Grammar A1 sobre Simple Present com explicação profunda e prática.”
+5. Opcionalmente testar Listening ou Writing:
+   - “Gere uma aula de Listening A1 sobre pedir café em uma cafeteria.”
+   - “Gere uma aula de Writing A1 sobre my daily routine.”
+6. Conferir no diagnóstico se aparece “Tipo de aula detectado”.
+7. Confirmar que não aparece tela branca.
+8. Confirmar que Aula renderiza o tipo gerado sem travar.
 
 ## Próximo bloco correto
 
-### Se LAB-10 for aprovado no Vercel/iPhone
-Próximo: `Bloco 8-LAB — reestruturação profunda das aulas/conteúdo pedagógico`.
+### Se Bloco 8-LAB-1 for aprovado
+Próximo: `Bloco 8-LAB-2 — aprofundar renderização pedagógica e conclusão por tipo`.
 
-Objetivo do Bloco 8-LAB:
-- mexer na profundidade pedagógica das aulas;
-- organizar os tipos de aula gerados por IA;
-- melhorar renderização do conteúdo real da aula;
-- manter o sistema modular em `fluency-clean/src/`;
-- não mexer em backend Azure privado sem necessidade.
+Objetivo provável:
+- melhorar Grammar com exemplos e explicações mais ricas;
+- melhorar Listening com perguntas sem revelar resposta antes da tentativa;
+- melhorar Writing com checklist e correção guiada;
+- padronizar conclusão/progresso por tipo;
+- manter sistema modular e seguro.
 
-### Se LAB-10 tiver problema
-Não avançar. Corrigir cirurgicamente apenas o problema visual encontrado na branch lab.
-
-## Checklist manual para o usuário no Vercel/iPhone
-
-1. Abrir **Hoje** e confirmar rolagem, cards e gerador de aula recolhido.
-2. Abrir **Aula** e confirmar que não existe mais seletor temporário de pilares.
-3. Abrir **Speaking** e testar os três modos: Conversa, Pronúncia e Imersão.
-4. Abrir **Cartas** e virar a carta.
-5. Abrir **Progresso** e rolar até o final.
-6. Abrir **Ajustes** e testar categorias + Chaves de aulas/IA geral.
-7. Tocar no diagnóstico lateral e fechar.
-8. Confirmar que não há tela branca nem texto técnico visível.
+### Se Bloco 8-LAB-1 tiver problema
+Não avançar. Corrigir cirurgicamente apenas o problema encontrado na branch lab.
 
 ## Ordem restante dos blocos
 
-1. `Bloco 8-LAB` — reestruturação profunda das aulas.
+1. `Bloco 8-LAB-2` — aprofundar renderização pedagógica e conclusão por tipo.
 2. Checklist funcional real: login, áudio, Azure, Gemini, geração/conclusão de aula e persistência.
 3. Só depois, considerar promoção/merge para branch estável, se o usuário pedir explicitamente.
 
@@ -187,7 +165,7 @@ Depois de cada bloco, o usuário testa no Vercel pelo iPhone. Só avançar se el
 ## Como continuar em outro chat
 Mensagem recomendada:
 
-"Continue a reconstrução do Fluency usando SOMENTE a branch `rewrite-fluency-clean-lab`. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. O teste é feito no Vercel preview da branch lab, pelo iPhone. Speaking, Hoje, Navbar, Aula, Cartas, Progresso, Ajustes e Imersão estão aprovados/organizados. O `LAB-10` fez o checklist final visual e removeu o rodapé lab escondido; está aguardando aprovação. Próximo bloco correto depois da aprovação é `Bloco 8-LAB — reestruturação profunda das aulas`. Não mexa na `main`, não mexa na `rewrite-fluency-clean`, não use HTML remendado, DOM injection ou bundle patch. Continue modularmente em `fluency-clean/src/`."
+"Continue a reconstrução do Fluency usando SOMENTE a branch `rewrite-fluency-clean-lab`. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. O teste é feito no Vercel preview da branch lab, pelo iPhone. A UI visual está aprovada/organizada. O `Bloco 8-LAB-1` implementou motor pedagógico multi-tipo para Reading, Grammar, Listening e Writing e está aguardando teste. Não mexa na `main`, não mexa na `rewrite-fluency-clean`, não use HTML remendado, DOM injection ou bundle patch. Continue modularmente em `fluency-clean/src/`."
 
 ## Última orientação operacional
 A partir deste handoff, qualquer alteração fora de `rewrite-fluency-clean-lab` deve ser considerada erro, salvo pedido explícito do usuário.
