@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { BookOpen, CheckCircle2, Headphones, Lightbulb, ListChecks, Loader2, MessageSquareText, PencilLine, Sparkles, Target } from 'lucide-react';
 import { Card } from '../components/ui/Card.jsx';
 import { ProgressPill } from '../components/ui/ProgressPill.jsx';
@@ -111,9 +111,18 @@ function getLessonSteps(lesson) {
   return cleanTips.length ? cleanTips : fallbackSteps;
 }
 
+function normalizeAnswer(value) {
+  return cleanGeneratedText(value).toLowerCase().replace(/\s+/g, ' ').trim();
+}
+
+function isCorrectOption(option, answer) {
+  return normalizeAnswer(option) === normalizeAnswer(answer);
+}
+
 export function ReadingLesson({ lesson }) {
   const [audioState, setAudioState] = useState('idle');
   const [audioMessage, setAudioMessage] = useState('Gemini TTS natural disponível quando houver key de aula.');
+  const [selectedAnswers, setSelectedAnswers] = useState({});
   const paragraphs = useMemo(() => normalizeReadingParagraphs(lesson), [lesson]);
   const vocabulary = useMemo(() => normalizeVocabulary(lesson), [lesson]);
   const comprehension = useMemo(() => normalizeComprehension(lesson), [lesson]);
@@ -121,6 +130,14 @@ export function ReadingLesson({ lesson }) {
   const objective = useMemo(() => getLessonObjective(lesson), [lesson]);
   const steps = useMemo(() => getLessonSteps(lesson), [lesson]);
   const readingText = paragraphs.join('\n\n');
+
+  useEffect(() => {
+    setSelectedAnswers({});
+  }, [lesson?.title, lesson?.listeningText]);
+
+  function handleSelectAnswer(questionIndex, option) {
+    setSelectedAnswers((current) => ({ ...current, [questionIndex]: option }));
+  }
 
   async function handleListen() {
     diagnostics.log('Clique recebido no botão Ouvir texto da aula Reading.', 'info');
@@ -218,19 +235,45 @@ export function ReadingLesson({ lesson }) {
       <section className="reading-section-card">
         <div className="panel-title"><ListChecks size={18} /> Compreensão</div>
         <div className="comprehension-list">
-          {comprehension.map((item, index) => (
-            <article className="question-card" key={item.question || index}>
-              <span>Questão {index + 1}</span>
-              <strong>{cleanGeneratedText(item.question || item.prompt || 'Responda à questão.')}</strong>
-              <div className="option-list">
-                {(item.options || item.choices || []).map((option) => (
-                  <button className={option === item.answer ? 'option-button correct' : 'option-button'} type="button" key={option}>
-                    {cleanGeneratedText(option)}
-                  </button>
-                ))}
-              </div>
-            </article>
-          ))}
+          {comprehension.map((item, index) => {
+            const selected = selectedAnswers[index];
+            const hasAnswered = typeof selected === 'string';
+            const selectedIsCorrect = hasAnswered && isCorrectOption(selected, item.answer);
+            const options = item.options || item.choices || [];
+
+            return (
+              <article className="question-card" key={item.question || index}>
+                <span>Questão {index + 1}</span>
+                <strong>{cleanGeneratedText(item.question || item.prompt || 'Responda à questão.')}</strong>
+                <div className="option-list">
+                  {options.map((option) => {
+                    const optionIsSelected = selected === option;
+                    const optionIsCorrect = isCorrectOption(option, item.answer);
+                    const revealClass = hasAnswered && optionIsCorrect ? ' correct' : '';
+                    const wrongClass = optionIsSelected && hasAnswered && !optionIsCorrect ? ' incorrect' : '';
+                    const selectedClass = optionIsSelected ? ' selected' : '';
+
+                    return (
+                      <button
+                        className={`option-button${selectedClass}${revealClass}${wrongClass}`}
+                        type="button"
+                        key={option}
+                        onClick={() => handleSelectAnswer(index, option)}
+                        aria-pressed={optionIsSelected}
+                      >
+                        {cleanGeneratedText(option)}
+                      </button>
+                    );
+                  })}
+                </div>
+                {hasAnswered ? (
+                  <p className={selectedIsCorrect ? 'question-feedback correct' : 'question-feedback incorrect'}>
+                    {selectedIsCorrect ? 'Correto. Boa leitura!' : `Quase. A resposta correta é: ${cleanGeneratedText(item.answer)}.`}
+                  </p>
+                ) : null}
+              </article>
+            );
+          })}
         </div>
       </section>
 
