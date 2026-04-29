@@ -20,16 +20,16 @@ Não mexer na `main` durante a reconstrução. Tudo deve acontecer nesta branch 
 3. Manter o app antigo funcionando até o novo estar testável.
 4. Substituir a renderização antiga apenas quando o novo app estiver estável.
 
-## Blocos
+## Blocos concluídos
 
-### Bloco 0 — Fundação segura — concluído
+### Bloco 0 — Fundação segura
 - Branch separada criada.
 - Pasta `fluency-clean/` criada.
 - Vite + React configurados.
 - `index.html`, `main.jsx`, `App.jsx` e CSS base criados.
 - Sem tocar no root atual.
 
-### Bloco 1 — Estrutura visual — concluído
+### Bloco 1 — Estrutura visual
 - Shell do app refinado com topbar, hero e status strip.
 - Navegação inferior criada.
 - Componentes reutilizáveis criados: `Card`, `StatCard`, `SectionHeader`, `BottomNav`, `DiagnosticPanel`.
@@ -37,7 +37,7 @@ Não mexer na `main` durante a reconstrução. Tudo deve acontecer nesta branch 
 - Reading continua usando renderização condicional por tipo, sem sobreposição com aula antiga.
 - CSS expandido para dashboard, cards, progresso, speaking, flashcards, ajustes e responsividade mobile.
 
-### Bloco 2 — Aula Reading nova — concluído visualmente
+### Bloco 2 — Aula Reading nova
 - `ReadingLesson` transformado em layout completo.
 - Aula dividida em introdução, objetivo, etapas de estudo, texto principal, escuta guiada, vocabulário, compreensão e resposta guiada.
 - Campo de resposta usa `textarea` com `inputMode`, `autoCapitalize`, `autoCorrect` e `spellCheck` para iOS.
@@ -45,7 +45,7 @@ Não mexer na `main` durante a reconstrução. Tudo deve acontecer nesta branch 
 - Novo componente `ProgressPill` criado.
 - CSS específico criado para Reading v2, vocabulário, questões, opções, resposta e responsividade.
 
-### Bloco 3 — Serviços limpos — concluído
+### Bloco 3 — Serviços limpos
 - `storage.js` criado para centralizar `localStorage` com prefixo `fluency.clean.`.
 - `diagnostics.js` criado para logs e fases do sistema sem espalhar console/localStorage pelo app.
 - `lessonTypes.js` criado para normalizar tipos de aula: reading, grammar, listening, speaking, writing, vocabulary e default.
@@ -53,7 +53,7 @@ Não mexer na `main` durante a reconstrução. Tudo deve acontecer nesta branch 
 - `azurePronunciation.js` criado como cliente/fachada para preservar o backend Azure privado existente.
 - `services/index.js` criado para exportação centralizada.
 
-### Bloco 4 — Firebase / Google — concluído estruturalmente
+### Bloco 4 — Firebase / Google
 - `.env.example` criado com variáveis `VITE_FIREBASE_*` e endpoint opcional do Azure.
 - `firebase.js` criado para inicializar Firebase somente se as variáveis estiverem configuradas.
 - `auth.js` criado com subscribeAuth, login Google e logout.
@@ -64,7 +64,7 @@ Não mexer na `main` durante a reconstrução. Tudo deve acontecer nesta branch 
 - CSS do gate de acesso criado.
 - A configuração real do Firebase ainda precisa ser fornecida via ambiente/deploy; nenhuma chave nova foi gravada diretamente no código.
 
-### Bloco 5 — Geração de aulas — concluído estruturalmente
+### Bloco 5 — Geração de aulas
 - `lessonKeys.js` criado para chaves exclusivas de aulas.
 - Suporte a até 3 keys Flash/free exclusivas de aulas.
 - Suporte a 1 key Pro paga como último fallback.
@@ -74,9 +74,28 @@ Não mexer na `main` durante a reconstrução. Tudo deve acontecer nesta branch 
 - `ProgressScreen.jsx` recebeu o painel de chaves exclusivas de aulas no lugar correto.
 - `services/index.js` exporta funções de chaves de aulas.
 - CSS do painel de chaves criado.
-- Ainda falta conectar botão real de gerar aula na tela Hoje/Aula e persistir aula gerada. Isso deve vir antes do primeiro teste real.
 
-### Bloco 6 — Áudio / Pronúncia / iOS — próximo
+### Bloco 5.1 — Conectar geração de aula na interface
+- `lessonStore.js` criado para salvar aula atual, histórico e prompt de geração.
+- `useDiagnostics.js` criado para componentes lerem logs reais.
+- `LessonGeneratorPanel.jsx` criado.
+- `TodayScreen.jsx` recebeu painel real de geração de aula.
+- `LessonScreen.jsx` agora tenta renderizar a aula salva antes da demo.
+- `DiagnosticPanel.jsx` agora mostra status, fase, último erro e logs reais.
+- `services/index.js` exporta lessonStore.
+- CSS de geração e logs criado.
+
+## Próximo bloco recomendado
+
+### Bloco 5.2 — Build/preview controlado antes de áudio
+- Configurar forma de testar o app limpo sem substituir a main.
+- Rodar build/validação do projeto se possível.
+- Corrigir erros de import/build antes de seguir para áudio.
+- Só depois seguir para Bloco 6.
+
+## Blocos restantes
+
+### Bloco 6 — Áudio / Pronúncia / iOS
 - TTS.
 - Unlock iOS.
 - Azure Pronunciation via backend privado.
