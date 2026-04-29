@@ -18,12 +18,39 @@ Não mexer no backend Azure privado.
 
 ## Estado atual para teste
 
-### Bloco 8-LAB-10C — Correção cirúrgica do login Google no iPhone IMPLEMENTADO, aguardando teste
+### Bloco 8-LAB-10D — Login Google validado na branch estável / correção sincronizada
 
 Contexto:
-- usuário informou que, ao tocar em “Entrar com Google” no iPhone/Safari, a tela piscava e nada acontecia;
+- após a promoção para `rewrite-fluency-clean`, o login Google no iPhone não concluía enquanto o domínio do preview não estava autorizado no Firebase;
+- usuário autorizou o domínio do preview Vercel no Firebase Authentication;
+- usuário confirmou que o login funcionou com o link:
+  - `https://ingles-git-rewrite-fluency-clean-belacatalogos-projects.vercel.app/`
+
+Resultado:
+- causa confirmada: domínio do Vercel precisava estar autorizado no Firebase;
+- domínio funcional autorizado: `ingles-git-rewrite-fluency-clean-belacatalogos-projects.vercel.app`;
+- correção de login iOS foi aplicada na lab e também sincronizada manualmente para `rewrite-fluency-clean`, preservando commit extra automático da estável;
+- `main` permanece intocada;
+- `bundle.js` permanece intocado;
+- backend Azure privado permanece intocado;
+- branch lab permanece viva.
+
+Checklist validado pelo usuário:
+- Firebase runtime/configuração OK;
+- Auth domain OK;
+- login Google funcionou no link estável da Vercel;
+- domínio Vercel autorizado no Firebase.
+
+Próximo passo seguro:
+- testar novamente na branch estável: Hoje, Aula, áudio natural, Progresso, Diagnóstico, PWA e sync;
+- se tudo estiver aprovado, preparar o `Bloco 8-LAB-11 — Promoção para main`, mas somente com confirmação explícita.
+
+### Bloco 8-LAB-10C — Correção cirúrgica do login Google no iPhone IMPLEMENTADO
+
+Contexto:
+- usuário informou que, ao tocar em “Entrar com Google” no iPhone/Safari, a tela piscava/minimizava e nada acontecia;
 - Firebase runtime estava configurado e Auth state aparecia verificado;
-- comportamento é compatível com popup bloqueado/falhando no Safari/iOS.
+- comportamento era compatível com popup bloqueado/falhando no Safari/iOS e/ou domínio não autorizado no Firebase.
 
 Arquivos alterados:
 - `fluency-clean/src/services/auth.js`
@@ -31,7 +58,7 @@ Arquivos alterados:
 - `REWRITE_HANDOFF.md`
 
 O que foi feito:
-- botão principal “Entrar com Google” agora usa `redirect` em vez de `popup`;
+- botão principal “Entrar com Google” passou a usar `redirect` em vez de `popup`;
 - botão secundário virou “Tentar Google por popup” apenas como alternativa;
 - no fluxo popup, removido `await prepareAuthPersistence(...)` antes de `signInWithPopup`, para não perder o gesto do toque no Safari;
 - mensagens de erro de popup foram ajustadas para orientar uso do redirecionamento no iPhone;
@@ -39,19 +66,6 @@ O que foi feito:
 - nenhuma alteração em `main`;
 - nenhuma alteração em `bundle.js`;
 - nenhuma alteração no backend Azure.
-
-Teste recomendado:
-1. aguardar deploy da branch `rewrite-fluency-clean-lab` ficar Ready;
-2. abrir no Safari do iPhone;
-3. confirmar Firebase configurado/runtime;
-4. tocar em “Entrar com Google”;
-5. deve sair para o fluxo Google por redirecionamento;
-6. ao voltar, o app deve liberar o acesso e sincronizar usuário;
-7. se ainda falhar, verificar se o domínio exato do preview Vercel está autorizado em Firebase Authentication > Settings > Authorized domains.
-
-Observação importante:
-- depois de aprovado na lab, sincronizar a correção para `rewrite-fluency-clean`;
-- não tocar na `main` ainda.
 
 ### Bloco 8-LAB-10 — Promoção para branch estável CONCLUÍDO
 
@@ -121,14 +135,14 @@ Resultado do teste visual:
 
 ## Próximo bloco possível
 
-### `Bloco 8-LAB-10D — Sincronizar correção do login para branch estável`
-Somente depois de validar na lab:
-- fast-forward `rewrite-fluency-clean` para o commit da lab com a correção de login;
-- não deletar lab;
-- não tocar em main;
-- testar preview/deploy estável novamente no iPhone.
+### `Bloco 8-LAB-10E — Validação funcional final da branch estável`
+Objetivo:
+- validar `rewrite-fluency-clean` no iPhone usando o domínio autorizado;
+- confirmar Hoje, Aula, áudio natural, Progresso, Diagnóstico, PWA e sync;
+- se houver problema, corrigir na lab e sincronizar novamente para a estável;
+- se tudo estiver aprovado, preparar o plano de ida para `main`.
 
-### `Bloco 8-LAB-11 — Promoção para main` — somente com confirmação explícita posterior
+### `Bloco 8-LAB-11 — Preparação/Promoção para main` — somente com confirmação explícita posterior
 Objetivo:
 - levar o sistema aprovado para produção/main;
 - fazer plano de rollback;
@@ -142,4 +156,4 @@ Se houver qualquer problema após promoção:
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. O `Bloco 8-LAB-10C` corrigiu o login Google no iPhone usando redirecionamento como fluxo principal e popup só como alternativa. Teste primeiro na branch `rewrite-fluency-clean-lab`; se aprovado, sincronizar para `rewrite-fluency-clean`. Não delete `rewrite-fluency-clean-lab`, não toque em `main`, não mexa em `bundle.js`, não use DOM injection ou bundle patch. Rollback da estável, se necessário: `a2e6ba07c41f3068d19162af974f4e933622453e`."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. O login Google funcionou no domínio autorizado `ingles-git-rewrite-fluency-clean-belacatalogos-projects.vercel.app` da branch `rewrite-fluency-clean`. O próximo bloco provável é `BLOCO-8-LAB-10E — Validação funcional final da branch estável`. Não delete `rewrite-fluency-clean-lab`, não toque em `main`, não mexa em `bundle.js`, não use DOM injection ou bundle patch. Rollback da estável, se necessário: `a2e6ba07c41f3068d19162af974f4e933622453e`."
