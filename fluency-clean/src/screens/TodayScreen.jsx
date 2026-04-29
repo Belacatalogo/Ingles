@@ -10,7 +10,7 @@ const routine = [
   { label: 'Speaking', status: '5 minutos', icon: Sparkles },
 ];
 
-export function TodayScreen() {
+export function TodayScreen({ onLessonGenerated }) {
   return (
     <section className="screen-stack">
       <SectionHeader
@@ -25,7 +25,7 @@ export function TodayScreen() {
         <StatCard label="Tempo hoje" value="0 min" hint="aguardando integração" icon={Clock3} />
       </div>
 
-      <LessonGeneratorPanel />
+      <LessonGeneratorPanel onGenerated={onLessonGenerated} />
 
       <Card eyebrow="Roteiro" title="Plano recomendado para hoje">
         <div className="routine-list">
