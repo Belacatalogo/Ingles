@@ -8,6 +8,7 @@ import './styles/lab-polish.css';
 import './styles/today-polish.css';
 import './styles/nav-polish.css';
 import './styles/lesson-polish.css';
+import './styles/flashcards-polish.css';
 
 const rootElement = document.getElementById('root');
 const root = createRoot(rootElement);
