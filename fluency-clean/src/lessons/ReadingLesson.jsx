@@ -36,7 +36,7 @@ const fallbackComprehension = [
   },
 ];
 
-const steps = [
+const fallbackSteps = [
   'Leia o texto sem traduzir palavra por palavra.',
   'Marque palavras importantes e tente entender pelo contexto.',
   'Responda às perguntas e escreva uma frase curta em inglês.',
@@ -62,12 +62,42 @@ function normalizeComprehension(lesson) {
   return Array.isArray(lesson?.exercises) && lesson.exercises.length ? lesson.exercises : fallbackComprehension;
 }
 
+function getLessonIntro(lesson, paragraphs) {
+  return (
+    lesson?.intro ||
+    lesson?.subtitle ||
+    paragraphs?.[0] ||
+    'Leia com calma, entenda a ideia principal e use o contexto para descobrir palavras novas.'
+  );
+}
+
+function getLessonObjective(lesson) {
+  return (
+    lesson?.objective ||
+    lesson?.goal ||
+    lesson?.raw?.objective ||
+    'Compreender o texto principal, aprender vocabulário novo e responder em inglês simples.'
+  );
+}
+
+function getLessonSteps(lesson) {
+  const tips = Array.isArray(lesson?.tips) ? lesson.tips : [];
+  const cleanTips = tips
+    .map((tip) => (typeof tip === 'string' ? tip : tip?.text || tip?.tip || ''))
+    .filter(Boolean)
+    .slice(0, 3);
+  return cleanTips.length ? cleanTips : fallbackSteps;
+}
+
 export function ReadingLesson({ lesson }) {
   const [audioState, setAudioState] = useState('idle');
   const [audioMessage, setAudioMessage] = useState('Gemini TTS natural disponível quando houver key de aula.');
   const paragraphs = useMemo(() => normalizeReadingParagraphs(lesson), [lesson]);
   const vocabulary = useMemo(() => normalizeVocabulary(lesson), [lesson]);
   const comprehension = useMemo(() => normalizeComprehension(lesson), [lesson]);
+  const intro = useMemo(() => getLessonIntro(lesson, paragraphs), [lesson, paragraphs]);
+  const objective = useMemo(() => getLessonObjective(lesson), [lesson]);
+  const steps = useMemo(() => getLessonSteps(lesson), [lesson]);
   const readingText = paragraphs.join('\n\n');
 
   async function handleListen() {
@@ -103,22 +133,19 @@ export function ReadingLesson({ lesson }) {
       >
         <div className="lesson-intro-grid">
           <div>
-            <p>
-              Leia com calma, entenda a ideia principal e use o contexto para descobrir palavras novas.
-              Esta estrutura foi criada para substituir a aula antiga de Reading sem sobreposição ou injeção de DOM.
-            </p>
+            <p>{intro}</p>
           </div>
           <div className="lesson-objective-card">
             <Target size={18} />
             <span>Objetivo</span>
-            <strong>Compreender um texto curto e responder em inglês simples.</strong>
+            <strong>{objective}</strong>
           </div>
         </div>
       </Card>
 
       <section className="reading-study-steps">
         {steps.map((step, index) => (
-          <div className="study-step" key={step}>
+          <div className="study-step" key={`${step}-${index}`}>
             <span>{index + 1}</span>
             <p>{step}</p>
           </div>
@@ -148,7 +175,7 @@ export function ReadingLesson({ lesson }) {
 
           <div className="mini-card">
             <div className="panel-title"><Lightbulb size={18} /> Estratégia</div>
-            <p>Não tente traduzir tudo. Primeiro encontre quem é a pessoa, o que ela faz e por que ela faz isso.</p>
+            <p>Primeiro entenda a ideia geral do texto. Depois volte para vocabulário, detalhes e perguntas.</p>
           </div>
         </aside>
       </section>
@@ -188,7 +215,7 @@ export function ReadingLesson({ lesson }) {
       <section className="answer-card guided-answer-card">
         <div className="panel-title"><MessageSquareText size={18} /> Resposta guiada</div>
         <label className="answer-label" htmlFor="reading-answer">
-          Responda em inglês: What does Ana do after breakfast?
+          Responda em inglês sobre o texto da aula.
         </label>
         <textarea
           id="reading-answer"
@@ -197,7 +224,7 @@ export function ReadingLesson({ lesson }) {
           autoCapitalize="sentences"
           autoCorrect="on"
           spellCheck="true"
-          placeholder="After breakfast, Ana..."
+          placeholder="Write your answer in English..."
         />
         <div className="answer-actions">
           <button type="button" className="secondary-button"><PencilLine size={16} /> Salvar rascunho</button>
