@@ -12,56 +12,60 @@ Todas as próximas alterações devem acontecer SOMENTE na branch:
 Não alterar `main`.
 Não alterar `rewrite-fluency-clean`.
 Não mexer em `bundle.js`.
-Não editar HTML para simular UI.
 Não usar DOM injection.
 Não criar bundle patch.
 Não mexer no backend Azure privado.
 
 ## Estado atual para teste
 
-### Bloco 8-LAB-8 — Checklist funcional final antes da main IMPLEMENTADO, aguardando teste
+### Bloco 8-LAB-8B — PWA instalável no iOS IMPLEMENTADO, aguardando teste
 
 Objetivo:
-- revisar o sistema antes de pensar em promoção para branch estável/main;
-- adicionar checklist interno de saúde do app;
-- melhorar diagnóstico para identificar problemas de Firebase, sync, keys, currículo, aula atual, progresso e domínio;
-- blindar risco de ciclo entre `storage.js` e `cloudSync.js`.
+- permitir que o usuário adicione o Fluency à Tela de Início do iPhone pelo Safari;
+- deixar o app com modo standalone, tema escuro e service worker básico;
+- preparar o uso como “app instalado” sem passar pela App Store.
 
 Arquivos alterados/criados:
-- `fluency-clean/src/services/systemHealth.js`
-- `fluency-clean/src/components/system/DiagnosticPanel.jsx`
-- `fluency-clean/src/styles/lab-polish.css`
-- `fluency-clean/src/services/storage.js`
+- `fluency-clean/public/manifest.webmanifest`
+- `fluency-clean/public/pwa-icon.svg`
+- `fluency-clean/public/sw.js`
+- `fluency-clean/src/services/pwa.js`
+- `fluency-clean/src/main.jsx`
+- `fluency-clean/index.html`
 - `REWRITE_HANDOFF.md`
 
 O que foi implementado:
-- criado `systemHealth.js` com checklist funcional;
-- o diagnóstico agora mostra um card **Checklist LAB-8**;
-- o checklist verifica:
-  - Firebase;
-  - Sync da conta;
-  - Keys de aulas;
-  - Currículo;
-  - Aula atual;
-  - Progresso;
-  - Domínio por pilar;
-  - Diagnóstico geral;
-- botão **Verificar** registra um log de checklist;
-- estilos do checklist adicionados em `lab-polish.css`;
-- `storage.js` deixou de importar `cloudSync.js` diretamente e passou a usar import dinâmico, reduzindo risco de erro por dependência circular no build;
-- segue sem mexer em HTML, bundle, main, branch estável ou backend Azure.
+- manifest PWA com `display: standalone`, nome Fluency, tema e escopo `/`;
+- ícone SVG do app em `public/pwa-icon.svg`;
+- service worker básico em `public/sw.js`;
+- registro do service worker no bootstrap do React;
+- metadados iOS no `index.html`:
+  - `apple-mobile-web-app-capable`;
+  - `apple-mobile-web-app-title`;
+  - `apple-mobile-web-app-status-bar-style`;
+  - `mobile-web-app-capable`;
+  - `manifest`;
+  - `theme-color`;
+  - `viewport-fit=cover`.
 
-Teste recomendado no Vercel/iPhone:
-1. esperar deploy da branch lab ficar Ready;
-2. abrir o app;
-3. abrir o botão de diagnóstico;
-4. conferir se aparece o card **Checklist LAB-8**;
-5. tocar em **Verificar**;
-6. conferir se aparecem status de Firebase, Sync, Keys, Currículo, Aula, Progresso e Domínio;
-7. navegar por Hoje, Aula, Cartas, Speaking, Progresso e Ajustes;
-8. atualizar a página no Safari;
-9. confirmar que não aparece erro de renderização;
-10. se houver aviso amarelo, verificar se é esperado, por exemplo: sem Firestore/regras, sem aula atual, sem key etc.
+Observação:
+- PWA em iOS é instalado pelo Safari usando **Compartilhar > Adicionar à Tela de Início**;
+- não aparece botão automático de instalação como no Android/Chrome;
+- o ícone foi implementado como SVG. Se o iOS não usar o ícone perfeitamente, um próximo ajuste pode adicionar um PNG 180x180 dentro de `fluency-clean/public/`.
+
+Teste recomendado no iPhone:
+1. esperar o deploy da branch lab ficar Ready;
+2. abrir o link no Safari;
+3. tocar no botão de compartilhar;
+4. escolher **Adicionar à Tela de Início**;
+5. confirmar o nome **Fluency**;
+6. abrir pelo ícone criado na Tela de Início;
+7. confirmar que abre em tela cheia/standalone;
+8. testar login, Hoje, Aula e Diagnóstico.
+
+### Bloco 8-LAB-8 — Checklist funcional final antes da main APROVADO
+- usuário confirmou que tudo está funcionando;
+- checklist funcional no diagnóstico aprovado.
 
 ## Blocos recentes
 
@@ -90,7 +94,7 @@ Teste recomendado no Vercel/iPhone:
 
 ## Próximo bloco correto
 
-Se o `Bloco 8-LAB-8` for aprovado:
+Se o `Bloco 8-LAB-8B` for aprovado:
 
 ### `Bloco 8-LAB-9 — Preparação para promoção controlada`
 Objetivo provável:
@@ -100,10 +104,10 @@ Objetivo provável:
 - listar exatamente o que será promovido, riscos e rollback;
 - só promover se o usuário pedir explicitamente.
 
-Se o `Bloco 8-LAB-8` tiver problema:
+Se o `Bloco 8-LAB-8B` tiver problema:
 - não avançar;
 - corrigir cirurgicamente apenas a falha encontrada na branch lab.
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency usando SOMENTE a branch `rewrite-fluency-clean-lab`. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. O teste é feito no Vercel preview da branch lab, pelo iPhone. O `Bloco 8-LAB-8` adicionou o checklist funcional final no diagnóstico e blindou ciclo storage/cloudSync. Está aguardando teste. Não mexa na `main`, não mexa na `rewrite-fluency-clean`, não use HTML remendado, DOM injection ou bundle patch. Continue modularmente em `fluency-clean/src/`."
+"Continue a reconstrução do Fluency usando SOMENTE a branch `rewrite-fluency-clean-lab`. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. O teste é feito no Vercel preview da branch lab, pelo iPhone. O `Bloco 8-LAB-8B` adicionou PWA instalável no iOS com manifest, service worker e metadados Safari. Está aguardando teste. Não mexa na `main`, não mexa na `rewrite-fluency-clean`, não use DOM injection ou bundle patch. Continue modularmente em `fluency-clean/src/`."
