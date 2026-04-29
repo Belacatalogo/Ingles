@@ -51,7 +51,9 @@ O que foi implementado:
 Observação:
 - PWA em iOS é instalado pelo Safari usando **Compartilhar > Adicionar à Tela de Início**;
 - não aparece botão automático de instalação como no Android/Chrome;
-- o ícone foi implementado como SVG. Se o iOS não usar o ícone perfeitamente, um próximo ajuste pode adicionar um PNG 180x180 dentro de `fluency-clean/public/`.
+- o ícone foi implementado como SVG;
+- se o iOS não mostrar o ícone corretamente/perfeito na Tela de Início, o próximo ajuste deve ser `BLOCO-8-LAB-8C — Ícone PWA PNG para iOS`, adicionando um `apple-touch-icon.png` 180x180 dentro de `fluency-clean/public/` e atualizando o manifest/metadados para apontar para esse PNG;
+- isso é apenas acabamento de instalação/ícone, não bloqueia o app funcionar como PWA.
 
 Teste recomendado no iPhone:
 1. esperar o deploy da branch lab ficar Ready;
@@ -92,17 +94,33 @@ Teste recomendado no iPhone:
 - usuário confirmou que o áudio natural Gemini funcionou;
 - fallback do navegador ficou apenas como último recurso.
 
-## Próximo bloco correto
+## Próximos blocos prováveis
 
-Se o `Bloco 8-LAB-8B` for aprovado:
+### `Bloco 8-LAB-8C — Ícone PWA PNG para iOS` — somente se necessário
+Objetivo:
+- adicionar `apple-touch-icon.png` 180x180 em `fluency-clean/public/`;
+- atualizar manifest/metadados para usar o PNG;
+- fazer apenas se o ícone SVG não aparecer bem no iPhone.
 
 ### `Bloco 8-LAB-9 — Preparação para promoção controlada`
-Objetivo provável:
+Objetivo:
 - revisar build/preview final;
 - preparar plano de promoção para branch estável;
 - não mexer em main automaticamente;
 - listar exatamente o que será promovido, riscos e rollback;
 - só promover se o usuário pedir explicitamente.
+
+### `Bloco 8-LAB-10 — Promoção para branch estável` — somente com confirmação explícita
+Objetivo:
+- promover a versão aprovada da lab para `rewrite-fluency-clean` ou outra branch estável definida pelo usuário;
+- não tocar em `main` sem pedido explícito;
+- testar novamente o preview estável.
+
+### `Bloco 8-LAB-11 — Promoção para main` — somente com confirmação explícita
+Objetivo:
+- levar o sistema aprovado para produção/main;
+- fazer plano de rollback;
+- validar domínio final, login Google/Firebase e PWA no domínio definitivo.
 
 Se o `Bloco 8-LAB-8B` tiver problema:
 - não avançar;
@@ -110,4 +128,4 @@ Se o `Bloco 8-LAB-8B` tiver problema:
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency usando SOMENTE a branch `rewrite-fluency-clean-lab`. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. O teste é feito no Vercel preview da branch lab, pelo iPhone. O `Bloco 8-LAB-8B` adicionou PWA instalável no iOS com manifest, service worker e metadados Safari. Está aguardando teste. Não mexa na `main`, não mexa na `rewrite-fluency-clean`, não use DOM injection ou bundle patch. Continue modularmente em `fluency-clean/src/`."
+"Continue a reconstrução do Fluency usando SOMENTE a branch `rewrite-fluency-clean-lab`. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. O teste é feito no Vercel preview da branch lab, pelo iPhone. O `Bloco 8-LAB-8B` adicionou PWA instalável no iOS com manifest, service worker e metadados Safari. Se o ícone não aparecer perfeito, fazer o `BLOCO-8-LAB-8C` com PNG 180x180. Não mexa na `main`, não mexa na `rewrite-fluency-clean`, não use DOM injection ou bundle patch. Continue modularmente em `fluency-clean/src/`."
