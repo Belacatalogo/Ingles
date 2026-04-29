@@ -1,4 +1,4 @@
-import { BookOpen, Brain, CheckCircle2, ChevronRight, Flame, LineChart, Mic, PencilLine, Quote, Sparkles, Zap } from 'lucide-react';
+import { BookOpen, Brain, CheckCircle2, ChevronRight, Mic, PencilLine, Quote, Sparkles, Zap } from 'lucide-react';
 import { LessonGeneratorPanel } from '../components/lesson/LessonGeneratorPanel.jsx';
 import { getProgressSummary } from '../services/progressStore.js';
 
@@ -21,12 +21,9 @@ export function TodayScreen({ onLessonGenerated, onNavigate }) {
           <p>Bom dia, Luis</p>
           <h1>{completed || 0} de 4 tarefas</h1>
           <span>{completed >= 4 ? 'Dia completo. Excelente consistência.' : 'Continue para fechar sua rotina de inglês.'}</span>
-          <div className="reference-hero-actions">
+          <div className="reference-hero-actions single-action">
             <button className="primary-button reference-continue-button" type="button" onClick={() => onNavigate?.('lesson')}>
-              <Zap size={18} /> Continuar agora
-            </button>
-            <button className="reference-progress-shortcut" type="button" onClick={() => onNavigate?.('progress')} aria-label="Abrir progresso">
-              <LineChart size={22} />
+              <Zap size={18} /> <span>Continuar agora</span>
             </button>
           </div>
         </div>
