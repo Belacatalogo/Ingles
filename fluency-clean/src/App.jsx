@@ -11,7 +11,7 @@ import { FlashcardsScreen } from './screens/FlashcardsScreen.jsx';
 import { SettingsScreen } from './screens/SettingsScreen.jsx';
 import { getProgressSummary } from './services/progressStore.js';
 
-const PREVIEW_VERSION = 'rewrite-clean · bloco 7.4.6 · flashcards visual';
+const PREVIEW_VERSION = 'rewrite-clean · bloco 7.5 · validação preview';
 
 const tabs = [
   { id: 'today', label: 'Hoje', icon: Home, component: TodayScreen },
