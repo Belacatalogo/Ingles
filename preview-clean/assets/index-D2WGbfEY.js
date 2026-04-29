@@ -16,5 +16,5 @@ Error generating stack: `+e.message+`
         <small style="display:block;margin-top:14px;color:#94a3b8;">rewrite-clean · safe bootstrap</small>
       </section>
     </main>
-  `}async function ie(){try{let[{App:e},{ErrorBoundary:t}]=await Promise.all([te(()=>import(`./App-BcYnwX8w.js`),[],import.meta.url),te(()=>import(`./ErrorBoundary-Cf2iG6i-.js`),[],import.meta.url)]);re.render((0,x.jsx)(_.StrictMode,{children:(0,x.jsx)(t,{children:(0,x.jsx)(e,{})})}))}catch(e){w(e)}}ie();export{u as n,c as r,b as t};
-//# sourceMappingURL=index-DUoCBAiU.js.map
+  `}async function ie(){try{let[{App:e},{ErrorBoundary:t}]=await Promise.all([te(()=>import(`./App-Bfv86Sdt.js`),[],import.meta.url),te(()=>import(`./ErrorBoundary-CxwfPzhf.js`),[],import.meta.url)]);re.render((0,x.jsx)(_.StrictMode,{children:(0,x.jsx)(t,{children:(0,x.jsx)(e,{})})}))}catch(e){w(e)}}ie();export{u as n,c as r,b as t};
+//# sourceMappingURL=index-D2WGbfEY.js.map
