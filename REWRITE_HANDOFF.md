@@ -20,6 +20,54 @@ Não mexer no backend Azure privado.
 
 ## Estado atual
 
+### Bloco 8-LAB-12 — Remoção de conteúdos fictícios nas telas IMPLEMENTADO, aguardando teste
+
+Contexto:
+- usuário identificou que a análise Azure já funcionava, mas algumas áreas ainda exibiam conteúdo mockado/fictício;
+- objetivo do bloco: exibir somente dados reais, estados vazios ou conteúdo pedagógico claramente estático, sem fingir histórico/progresso/cartas.
+
+Arquivos alterados:
+- `fluency-clean/src/screens/TodayScreen.jsx`
+- `fluency-clean/src/screens/ProgressScreen.jsx`
+- `fluency-clean/src/screens/FlashcardsScreen.jsx`
+- `fluency-clean/src/screens/SettingsScreen.jsx`
+- `REWRITE_HANDOFF.md`
+
+O que foi removido/corrigido:
+- Hoje:
+  - removido diário marcado como concluído sem dado real;
+  - removidas barras semanais fixas;
+  - tarefas agora derivam de aula atual, progresso real e histórico real;
+  - flashcards mostram “nenhum card real disponível” quando não há vocabulário da aula atual.
+- Progresso:
+  - removidas pontuações fake iniciais por habilidade;
+  - habilidades agora mostram `sem dados` até existirem aulas concluídas daquele tipo;
+  - removida estimativa fictícia de palavras/speaking;
+  - conquistas agora usam histórico real ou aparecem bloqueadas/zeradas.
+- Cartas:
+  - removidos baralhos fictícios, contagens falsas e cards mockados;
+  - cartas agora são geradas somente a partir do vocabulário real da aula atual;
+  - se não houver vocabulário real, mostra estado vazio claro.
+- Ajustes:
+  - removidos dados estáticos como se fossem reais, por exemplo perfil “Luis A1 plano ativo”, lembrete 19:30 e foco semanal fixo;
+  - tela agora mostra progresso real, aula atual real, semana atual e estado local/sync.
+
+Não foi alterado:
+- `main`;
+- `bundle.js`;
+- backend Azure privado;
+- estrutura visual geral;
+- DOM injection ou bundle patch.
+
+Teste recomendado:
+1. aguardar deploy da `rewrite-fluency-clean-lab` ficar Ready;
+2. abrir no iPhone;
+3. verificar Hoje com e sem aula gerada;
+4. verificar Cartas antes/depois de uma aula com vocabulário;
+5. verificar Progresso antes/depois de concluir aula;
+6. verificar Ajustes e confirmar que não há números ou status falsos;
+7. se aprovado, sincronizar para `rewrite-fluency-clean`.
+
 ### Bloco 8-LAB-11E — Correção do npm install da Vercel IMPLEMENTADA
 
 Contexto:
@@ -49,11 +97,6 @@ Commits relevantes:
 - `main`: `576cc3818e80f42dfbc91c49493406911e03941c`;
 - `rewrite-fluency-clean`: `175865b3225f08ee867313d4db984a12352e2bef`.
 
-Próximo passo:
-- fazer/repetir Redeploy da `main` na Vercel;
-- se falhar novamente, abrir a aba Logs do deployment e capturar a primeira mensagem real do `npm install`;
-- se o deploy ficar Ready, testar produção no iPhone.
-
 ### Bloco 8-LAB-11D — Merge controlado para main CONCLUÍDO
 
 Resultado:
@@ -80,40 +123,6 @@ Conclusão da configuração:
 - o deploy deve publicar `fluency-clean/dist`;
 - o `index.html` antigo e o `bundle.js` antigo da raiz não devem ser usados como saída final do deploy.
 
-Checklist pós-merge pendente:
-1. gerar deploy da main/produção;
-2. abrir link de produção no iPhone;
-3. confirmar domínio de produção autorizado no Firebase;
-4. testar login Google;
-5. testar Hoje;
-6. testar Aula;
-7. testar áudio natural;
-8. testar Progresso;
-9. testar Diagnóstico;
-10. testar PWA;
-11. só depois considerar a main aprovada.
-
-### Bloco 8-LAB-11B — Vercel Build/Output confirmado como seguro para fluency-clean
-
-Contexto:
-- usuário enviou prints da Vercel em Build and Deployment;
-- Root Directory aparece como `./`, não como `fluency-clean`;
-- porém os comandos de build/install/output estão explicitamente apontando para `fluency-clean`.
-
-Configuração observada nos prints:
-- Framework Preset: `Other`;
-- Root Directory: `./`;
-- Build Command: `cd fluency-clean && npm r...`;
-- Output Directory: `fluency-clean/dist`;
-- Install Command: `cd fluency-clean && npm in...`;
-- Include files outside root directory: Enabled.
-
-Conclusão:
-- esta configuração também é segura;
-- mesmo com Root Directory na raiz, a Vercel deve instalar/buildar o app novo dentro de `fluency-clean`;
-- o deploy deve publicar `fluency-clean/dist`;
-- o `index.html` antigo e o `bundle.js` antigo da raiz não devem ser usados como saída final do deploy.
-
 ### Bloco 8-LAB-10D — Login Google validado na branch estável / correção sincronizada
 
 Contexto:
@@ -128,13 +137,18 @@ Resultado:
 
 ## Próximo bloco possível
 
+### `Bloco 8-LAB-12B — Validação de dados reais na lab`
+Objetivo:
+- testar se Hoje, Cartas, Progresso, Ajustes e Speaking não exibem conteúdo falso;
+- corrigir qualquer texto/valor mockado que ainda apareça;
+- se aprovado, sincronizar para `rewrite-fluency-clean`.
+
 ### `Bloco 8-LAB-11F — Redeploy da main e validação produção`
 Objetivo:
-- acionar redeploy da `main` na Vercel;
+- aguardar limite da Vercel liberar;
+- acionar redeploy da `main`;
 - se falhar, ler logs reais do install/build;
-- se ficar Ready, testar link de produção no iPhone;
-- confirmar login Google/Firebase no domínio de produção;
-- validar Hoje, Aula, áudio natural, Progresso, Diagnóstico e PWA.
+- se ficar Ready, testar link de produção no iPhone.
 
 Se o deploy da main quebrar por código:
 - não mexer no backend Azure;
@@ -143,4 +157,4 @@ Se o deploy da main quebrar por código:
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. O PR #21 foi mesclado em `main`. O deploy da main falhou no `cd fluency-clean && npm install`; foi corrigido fixando dependências no `package.json` em lab, estável e main. Commit atual da main com correção: `576cc3818e80f42dfbc91c49493406911e03941c`. Não delete `rewrite-fluency-clean-lab` nem `rewrite-fluency-clean`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch. Rollback da main: `5047bae031f20ddd9604953dcd3fd821655e56fa`. Próximo bloco: redeploy da main e validar produção no iPhone."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. O BLOCO-8-LAB-12 removeu conteúdo fictício de Hoje, Progresso, Cartas e Ajustes na branch `rewrite-fluency-clean-lab`. Testar na lab antes de sincronizar para `rewrite-fluency-clean`. Não delete `rewrite-fluency-clean-lab` nem `rewrite-fluency-clean`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch. A main já recebeu PR #21, mas deploy de produção depende da Vercel liberar limite. Rollback da main: `5047bae031f20ddd9604953dcd3fd821655e56fa`."
