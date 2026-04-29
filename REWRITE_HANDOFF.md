@@ -37,13 +37,6 @@ Continuar montando o sistema como React modular em `fluency-clean/src/`:
 - não usar `preview-clean` como produto final;
 - não mexer no backend Azure privado.
 
-## REGRA DE ESCOPO
-Antes de alterar, identificar o bloco atual e mexer apenas nos arquivos necessários.
-
-Exemplos:
-- Se o bloco é Progresso, não alterar Aula, Hoje, Speaking, Cartas, Firebase, Gemini, Azure ou backend.
-- Se precisar tocar em `main.jsx`, usar apenas para importar CSS do bloco.
-
 ## Estado aprovado pelo usuário
 
 ### Speaking — APROVADO
@@ -112,63 +105,75 @@ Arquivos principais:
 
 Resultado: visual premium seguindo o ZIP de referência, chips horizontais de decks, sessão com barra de progresso, carta com efeito flip frente/verso, botão “Mostrar resposta”, botões SRS, estatísticas da sessão e card de próximo foco. Usuário confirmou: “ficou perfeito”.
 
+### Progresso — APROVADO
+Bloco concluído:
+- `LAB-PROGRESSO-1` — Progresso visual.
+
+Arquivos principais:
+- `fluency-clean/src/screens/ProgressScreen.jsx`
+- `fluency-clean/src/styles/progress-polish.css`
+- `fluency-clean/src/main.jsx`
+
+Resultado: visual premium aprovado com jornada, CEFR, métricas, heatmap, habilidades, conquistas e histórico. Usuário confirmou: “ficou perfeito”.
+
 ## Estado atual para teste
 
-### Progresso — `LAB-PROGRESSO-1` IMPLEMENTADO, AGUARDANDO TESTE DO USUÁRIO
-Bloco feito neste chat com base no ZIP de referência enviado pelo usuário.
+### Ajustes/Configurações — ajuste cirúrgico implementado, aguardando teste do usuário
+Pedido do usuário:
+- mover a aba/painel de **Chaves exclusivas de aulas** de Progresso para **Configurações/Ajustes**, dentro da função/categoria **Chaves de aulas**;
+- dentro dessa área, adicionar outra aba para **chaves gerais de IA**, que futuramente funcionarão para Speaking, Imersão e outras áreas que precisarem de IA.
 
 Arquivos alterados/criados:
 - `fluency-clean/src/screens/ProgressScreen.jsx`
-- `fluency-clean/src/styles/progress-polish.css`
-- `fluency-clean/src/main.jsx` apenas para importar `progress-polish.css`
+- `fluency-clean/src/screens/SettingsScreen.jsx`
+- `fluency-clean/src/components/settings/GeneralAiKeysPanel.jsx`
+- `fluency-clean/src/services/aiKeys.js`
+- `fluency-clean/src/styles/settings-polish.css`
+- `fluency-clean/src/main.jsx` apenas para importar `settings-polish.css`
 - `REWRITE_HANDOFF.md`
 
-Commits principais deste bloco:
-- `e9988a02cb60cfe97104bc8637390877b7ae8122` — refaz tela de progresso;
-- `60a5607bc134cb64781b032eca7e12fb846a6aa8` — adiciona CSS modular de progresso;
-- `4f2cd82272997e6695d1558ef564ffcb7c7ef31d` — importa CSS de progresso.
+Commits principais deste ajuste:
+- `4b473ccbebfad63ac4dc582850e67acc1c25c5fb` — adiciona storage de chaves gerais de IA;
+- `e785ccb03d55ce71c9b8b9b1a87f5b78dd72e261` — cria painel de chaves gerais de IA;
+- `b8a2c7797a029f2adaf1d8ad60fbd86682ae5e80` — importa CSS de Ajustes;
+- houve também commits de movimentação da UI em `ProgressScreen.jsx` e `SettingsScreen.jsx` neste mesmo ajuste.
 
 O que foi implementado:
-- cabeçalho “Sua jornada” com seletor visual 7d/30d/Tudo;
-- hero de nível estimado com linha CEFR A1 → C2;
-- grid premium de métricas: Aulas, XP total, Streak e Speaking;
-- heatmap de atividade dos últimos 30 dias usando histórico local;
-- barras de habilidades por área com base no histórico de aulas;
-- conquistas recentes;
-- histórico recente de aulas concluídas;
-- painel de chaves exclusivas de aulas preservado dentro da aba Progresso;
-- card de próximo marco semanal;
-- CSS próprio para evitar overflow/corte no iPhone.
+- Progresso não mostra mais o painel de chaves;
+- Ajustes agora abre com categoria **Chaves de aulas** selecionada;
+- dentro de **Chaves de aulas**, há duas abas:
+  - **Chaves de aulas**: reaproveita o `LessonKeysPanel`, mantendo a lógica isolada da geração de aulas;
+  - **IA geral**: novo painel `GeneralAiKeysPanel`, com storage próprio em `aiKeys.js`;
+- as chaves gerais de IA são salvas separadamente em `ai.gemini.generalKeys`;
+- nada foi integrado ainda em Speaking/Imersão/Azure/Gemini fora do painel, para não alterar lógica pesada neste ajuste;
+- CSS próprio `settings-polish.css` para categorias e abas.
 
-Limites intencionais do bloco:
-- não altera lógica de progresso;
-- não altera storage;
-- não altera chaves;
-- não mexe em Firebase, Gemini, Azure, backend, Aula, Hoje, Speaking ou Cartas;
-- apenas React/CSS real.
-
-Verificação feita:
-- arquivos conferidos na branch lab após os commits;
-- foi corrigido um import de ícone antes de finalizar para evitar tela branca;
-- o teste final deve ser pelo Vercel preview da branch lab.
+Limites intencionais:
+- não altera backend;
+- não altera Azure;
+- não altera geração de aulas;
+- não altera Speaking/Imersão ainda;
+- não mexe em HTML, DOM injection ou bundle;
+- apenas organização modular de Configurações e storage das chaves gerais.
 
 ## Próximo bloco correto
 
-### Se Progresso for aprovado no Vercel/iPhone
-Próximo: `LAB-AJUSTES-1 — Ajustes: inventário e limpeza`
+### Se Ajustes/Configurações for aprovado no Vercel/iPhone
+Próximo: `LAB-AJUSTES-1B` ou seguir para `LAB-IMERSAO-1`, dependendo do usuário.
 
-Objetivo:
-- mapear botões existentes na aba Ajustes;
-- remover/desativar visualmente os sem função;
-- deixar Ajustes confiável;
-- não adicionar funcionalidades grandes ainda.
+Sugestão segura:
+- testar primeiro se Ajustes abre sem tela branca;
+- testar se a categoria **Chaves de aulas** mostra as duas abas;
+- testar se as chaves de aulas antigas continuam aparecendo;
+- testar se dá para adicionar/remover uma key em **IA geral**;
+- testar se Progresso continua sem corte e sem painel de chaves.
 
-### Se Progresso tiver problema
-Não avançar. Corrigir cirurgicamente apenas `LAB-PROGRESSO-1` na branch lab.
+### Se Ajustes tiver problema
+Não avançar. Corrigir cirurgicamente apenas o ajuste de Configurações na branch lab.
 
 ## Ordem restante dos blocos de UI
 
-1. `LAB-AJUSTES-1` — Ajustes: inventário e limpeza.
+1. `LAB-AJUSTES-1B` — finalizar inventário/limpeza dos outros botões de Ajustes, se o usuário aprovar esta mudança.
 2. `LAB-IMERSAO-1` — localizar/criar Imersão apenas se existir estrutura real.
 3. `LAB-9` — limpeza final da UI e arquivos de teste, incluindo remoção do seletor temporário da Aula.
 4. `LAB-10` — checklist visual final da lab.
@@ -203,7 +208,7 @@ Depois de cada bloco, o usuário testa no Vercel pelo iPhone. Só avançar se el
 ## Como continuar em outro chat
 Mensagem recomendada:
 
-"Continue a reconstrução do Fluency usando SOMENTE a branch `rewrite-fluency-clean-lab`. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. O teste é feito no Vercel preview da branch lab, pelo iPhone. Speaking, Hoje, Navbar, Aula e Cartas estão aprovados. O bloco `LAB-PROGRESSO-1` foi implementado e está aguardando teste/aprovação no Vercel. A Aula tem preview temporário por pilares funcionando 100%, que será removido no LAB-9. Não mexa na `main`, não mexa na `rewrite-fluency-clean`, não use HTML remendado, DOM injection ou bundle patch. Continue modularmente em `fluency-clean/src/`."
+"Continue a reconstrução do Fluency usando SOMENTE a branch `rewrite-fluency-clean-lab`. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. O teste é feito no Vercel preview da branch lab, pelo iPhone. Speaking, Hoje, Navbar, Aula, Cartas e Progresso estão aprovados. O último ajuste moveu as chaves de aulas para Ajustes > Chaves de aulas e criou a aba IA geral para chaves usadas futuramente em Speaking/Imersão. A Aula tem preview temporário por pilares funcionando 100%, que será removido no LAB-9. Não mexa na `main`, não mexa na `rewrite-fluency-clean`, não use HTML remendado, DOM injection ou bundle patch. Continue modularmente em `fluency-clean/src/`."
 
 ## Última orientação operacional
 A partir deste handoff, qualquer alteração fora de `rewrite-fluency-clean-lab` deve ser considerada erro, salvo pedido explícito do usuário.
