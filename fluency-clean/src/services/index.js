@@ -8,3 +8,6 @@ export { subscribeAuth, signInWithGoogle, logout } from './auth.js';
 export { getAccessSession, setAccessSession, clearAccessSession, validateAccessCode } from './accessCode.js';
 export { getLessonFlashKeys, saveLessonFlashKeys, addLessonFlashKey, removeLessonFlashKey, getLessonProKey, saveLessonProKey, clearLessonProKey, getLessonKeysStatus, buildLessonKeyPlan } from './lessonKeys.js';
 export { getCurrentLesson, saveCurrentLesson, clearCurrentLesson, getLessonHistory, getLessonPromptDraft, saveLessonPromptDraft } from './lessonStore.js';
+export { unlockAudioForIOS, isAudioUnlocked, getAudioContext } from './audioUnlock.js';
+export { speakText, stopSpeech, getAvailableVoices } from './tts.js';
+export { startRecording, stopRecording, cancelRecording, isRecording } from './recorder.js';
