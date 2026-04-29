@@ -7,8 +7,8 @@ import {
   KeyRound,
   Lock,
   Mic,
-  Sparkles,
   Target,
+  TrendingUp,
   Trophy,
   Zap,
 } from 'lucide-react';
