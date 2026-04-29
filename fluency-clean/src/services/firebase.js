@@ -1,5 +1,6 @@
 import { initializeApp, getApps, deleteApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
+import { getFirestore } from 'firebase/firestore';
 import { diagnostics } from './diagnostics.js';
 import { storage } from './storage.js';
 
@@ -44,6 +45,7 @@ export function saveRuntimeFirebaseConfig(config) {
   storage.set(RUNTIME_FIREBASE_CONFIG_KEY, clean);
   cachedApp = null;
   cachedAuth = null;
+  cachedFirestore = null;
   diagnostics.log('Configuração Firebase runtime salva no preview.', 'info', {
     projectId: clean.projectId,
     authDomain: clean.authDomain,
@@ -54,6 +56,7 @@ export function saveRuntimeFirebaseConfig(config) {
 export async function clearRuntimeFirebaseConfig() {
   storage.remove(RUNTIME_FIREBASE_CONFIG_KEY);
   cachedAuth = null;
+  cachedFirestore = null;
 
   if (cachedApp) {
     try {
@@ -88,6 +91,7 @@ export function hasFirebaseConfig(config = readFirebaseConfig().config) {
 
 let cachedApp = null;
 let cachedAuth = null;
+let cachedFirestore = null;
 
 export function getFirebaseApp() {
   if (cachedApp) return cachedApp;
@@ -115,6 +119,15 @@ export function getFirebaseAuth() {
 
   cachedAuth = getAuth(app);
   return cachedAuth;
+}
+
+export function getFirebaseDb() {
+  if (cachedFirestore) return cachedFirestore;
+  const app = getFirebaseApp();
+  if (!app) return null;
+
+  cachedFirestore = getFirestore(app);
+  return cachedFirestore;
 }
 
 export function getFirebaseStatus() {
