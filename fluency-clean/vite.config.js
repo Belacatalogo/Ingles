@@ -5,7 +5,7 @@ export default defineConfig({
   plugins: [react()],
   base: './',
   build: {
-    outDir: '../preview-clean',
+    outDir: 'dist',
     emptyOutDir: true,
     sourcemap: true,
   },
