@@ -153,18 +153,27 @@ Não mexer na `main` durante a reconstrução. Tudo deve acontecer nesta branch 
 - Grammar usa o mesmo progresso real: salvar rascunho, concluir aula, +25 XP e histórico.
 - `lessons.css` criado para estilos específicos de layouts de aula, evitando inflar ainda mais `index.css`.
 
+### Bloco 7.4.3 — Seletor seguro temporário de layouts
+- `LessonScreen.jsx` recebeu um seletor temporário de teste: Aula real, Reading, Grammar, Listening e Speaking.
+- O seletor não altera a aula salva e não substitui o progresso real.
+- Grammar pode ser testado mesmo quando a aula real salva é Reading.
+- Listening e Speaking ainda mostram fallback enquanto seus layouts específicos não forem criados.
+- O seletor foi marcado como temporário e deve ser removido no Bloco 9.
+
 ## Próximo passo recomendado
 
-### Bloco 7.4 — Continuar layouts por tipo de aula
-- Testar se uma aula Grammar renderiza no novo layout quando `type: grammar`.
-- Depois criar layout específico para Listening.
-- Depois revisar Speaking.
-- Reading já recebeu correção inicial de UX, mas ainda será revisado no bloco pedagógico profundo.
+### Testar Grammar no preview
+- Abrir a aba Aula.
+- Usar o seletor temporário “Teste seguro de layout”.
+- Tocar em Grammar.
+- Verificar se o layout está sério, bonito e se as respostas não aparecem antes do clique.
+- Testar resposta escrita, salvar rascunho e concluir Grammar.
+- Confirmar que a aula real Reading continua preservada quando voltar para “Aula real”.
 
 ## Blocos restantes por ordem de segurança
 
 ### Bloco 7.4 — Corrigir layouts por tipo de aula
-- Grammar iniciado.
+- Grammar em teste.
 - Listening e Speaking devem ser corrigidos um por vez.
 
 ### Bloco 7.5 — Checklist final do preview
@@ -188,6 +197,7 @@ Não mexer na `main` durante a reconstrução. Tudo deve acontecer nesta branch 
 ### Bloco 9 — Limpeza final e polimento de produção
 - Remover textos grandes de versão/validação da Home.
 - Remover ou esconder botões de teste, fallback e diagnóstico que não devem aparecer para usuário final.
+- Remover o seletor temporário de layouts da aba Aula.
 - Revisar a aba Ajustes inteira.
 - Todo botão que permanecer em Ajustes deve ter função real.
 - Botões decorativos, duplicados ou sem utilidade devem ser removidos.
