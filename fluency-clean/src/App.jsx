@@ -21,8 +21,14 @@ const tabs = [
 
 function AppContent() {
   const [activeTab, setActiveTab] = useState('today');
+  const [lessonRevision, setLessonRevision] = useState(0);
   const current = useMemo(() => tabs.find((tab) => tab.id === activeTab) ?? tabs[0], [activeTab]);
   const Screen = current.component;
+
+  function handleLessonGenerated() {
+    setLessonRevision((value) => value + 1);
+    setActiveTab('lesson');
+  }
 
   return (
     <main className="app-shell">
@@ -39,10 +45,10 @@ function AppContent() {
 
       <section className="hero-card">
         <div>
-          <p className="eyebrow">Bloco 4 · Firebase / Google</p>
+          <p className="eyebrow">Bloco 7 · Validação real</p>
           <h1>Um app limpo para estudar inglês todos os dias.</h1>
           <p className="hero-text">
-            Estrutura modular com camada de autenticação separada, pronta para receber Firebase, Gemini, Azure e aulas por tipo sem remendos no bundle.
+            Agora o fluxo principal está conectado: keys de aula, geração Gemini, salvamento, renderização da aula e áudio natural.
           </p>
         </div>
         <div className="hero-orb" aria-hidden="true">
@@ -59,11 +65,15 @@ function AppContent() {
         <div>
           <Sparkles size={17} />
           <span>Status</span>
-          <strong>Auth preparado</strong>
+          <strong>Fluxo Gemini</strong>
         </div>
       </section>
 
-      <Screen />
+      <Screen
+        onNavigate={setActiveTab}
+        onLessonGenerated={handleLessonGenerated}
+        lessonRevision={lessonRevision}
+      />
 
       <DiagnosticPanel />
       <BottomNav tabs={tabs} activeTab={activeTab} onChange={setActiveTab} />
