@@ -101,10 +101,12 @@ export function LessonScreen({ lessonRevision = 0 }) {
         description="Cada tipo tem seu próprio componente. Reading, Grammar, Listening e Speaking não disputam o mesmo bloco de HTML."
       />
 
-      <div className="layout-preview-switcher">
+      <details className="layout-preview-switcher lesson-layout-details">
+        <summary>
+          <FlaskConical size={15} /> Opções avançadas de layout
+        </summary>
         <div>
-          <span><FlaskConical size={15} /> Teste seguro de layout</span>
-          <p>Temporário: não altera a aula salva nem o progresso real. Será removido no polimento final.</p>
+          <p>Área temporária de teste. Não altera a aula salva nem o progresso real.</p>
         </div>
         <div className="layout-preview-actions">
           {[
@@ -124,7 +126,7 @@ export function LessonScreen({ lessonRevision = 0 }) {
             </button>
           ))}
         </div>
-      </div>
+      </details>
 
       {usingPreview ? (
         <p className="inline-warning">Você está vendo uma prévia de layout. A aula real salva não foi substituída.</p>
