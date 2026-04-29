@@ -177,12 +177,17 @@ function normalizeAzureJson(json) {
   if (!best) throw new Error('Azure não retornou NBest.');
 
   const assessment = best.PronunciationAssessment || {};
+  const words = (best.Words || []).map(mapAzureWord);
   return {
+    recognizedText: best.Display || json.DisplayText || '',
     accuracyScore: round(assessment.AccuracyScore),
     fluencyScore: round(assessment.FluencyScore),
     completenessScore: round(assessment.CompletenessScore),
     pronunciationScore: round(assessment.PronScore),
-    words: (best.Words || []).map(mapAzureWord),
+    words,
+    lowestWord: words
+      .filter((word) => word.accuracyScore != null)
+      .sort((a, b) => a.accuracyScore - b.accuracyScore)[0] || null,
     raw: json,
   };
 }
