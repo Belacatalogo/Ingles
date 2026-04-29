@@ -94,12 +94,14 @@ export function LessonScreen({ lessonRevision = 0 }) {
   const usingPreview = previewType !== 'real';
 
   return (
-    <section className="screen-stack">
-      <SectionHeader
-        eyebrow="Aula"
-        title={usingGenerated ? 'Aula gerada pela IA' : 'Renderização por tipo de aula'}
-        description="Cada tipo tem seu próprio componente. Reading, Grammar, Listening e Speaking não disputam o mesmo bloco de HTML."
-      />
+    <section className="screen-stack lesson-screen-stack">
+      <div className="lesson-hero-card">
+        <SectionHeader
+          eyebrow="Aula de hoje"
+          title={usingGenerated ? 'Continue sua aula personalizada' : 'Sua próxima aula está pronta'}
+          description="Estude com explicação guiada, prática ativa e conclusão salva no seu progresso."
+        />
+      </div>
 
       <details className="layout-preview-switcher lesson-layout-details">
         <summary>
