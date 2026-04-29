@@ -65,6 +65,12 @@ p { color: var(--muted); line-height: 1.65; }
 .lesson-generator-panel { background: linear-gradient(135deg, rgba(91,156,246,.14), rgba(15,23,42,.78)); }
 .lesson-generator-panel label { display: block; margin-top: 12px; margin-bottom: 8px; color: #dbeafe; font-size: 13px; font-weight: 850; }
 .generator-message { margin: 10px 0 0; font-size: 13px; color: #bfdbfe; }
+.completion-message { padding: 10px 12px; border-radius: 14px; border: 1px solid rgba(52,211,153,.22); background: rgba(52,211,153,.08); color: #bbf7d0; }
+.completion-list { display: grid; gap: 9px; }
+.completion-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 13px; border-radius: 16px; border: 1px solid rgba(148,163,184,.14); background: rgba(2,6,23,.24); }
+.completion-row strong { display: block; color: white; }
+.completion-row span { display: block; margin-top: 4px; color: var(--muted); font-size: 12px; text-transform: capitalize; }
+.completion-row b { color: #bbf7d0; white-space: nowrap; }
 .generation-status-box { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 14px 0; }
 .generation-status-box > div { padding: 12px; border-radius: 16px; border: 1px solid rgba(148,163,184,.14); background: rgba(2,6,23,.24); }
 .generation-status-box span { display: block; color: var(--muted); font-size: 12px; }
@@ -190,6 +196,7 @@ textarea:focus { border-color: rgba(91, 156, 246, 0.72); box-shadow: 0 0 0 4px r
   .hero-card { align-items: flex-start; padding: 19px; border-radius: 24px; }
   .hero-orb { width: 52px; height: 52px; border-radius: 18px; }
   .status-strip, .stats-grid, .lesson-intro-grid, .reading-study-steps, .reading-grid, .vocabulary-grid, .answer-actions, .lesson-key-status, .key-form > div, .audio-actions, .generation-status-box { grid-template-columns: 1fr; }
+  .completion-row { align-items: flex-start; }
   .diagnostic-panel { position: static; width: 100%; margin: 14px 0; max-height: none; }
   .bottom-nav { overflow-x: auto; justify-content: flex-start; }
   .nav-item { min-width: 72px; }
