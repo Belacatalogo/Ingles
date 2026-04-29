@@ -42,15 +42,38 @@ const fallbackSteps = [
   'Responda às perguntas e escreva uma frase curta em inglês.',
 ];
 
+function cleanGeneratedText(value) {
+  return String(value ?? '')
+    .replace(/\*\*(.*?)\*\*/g, '$1')
+    .replace(/^\s*[-*]\s+/gm, '')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
+function splitParagraphs(value) {
+  const clean = cleanGeneratedText(value);
+  if (!clean) return [];
+  return clean
+    .split(/\n\s*\n+/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
 function normalizeReadingParagraphs(lesson) {
+  if (lesson?.listeningText) return splitParagraphs(lesson.listeningText);
+
   const sections = Array.isArray(lesson?.sections) ? lesson.sections : [];
-  const sectionTexts = sections
+  const readingSections = sections.filter((section) => {
+    const title = String(section?.title || '').toLowerCase();
+    return title.includes('texto') || title.includes('reading') || title.includes('main text');
+  });
+
+  const sectionTexts = readingSections
     .map((section) => section?.text || section?.content || section?.body || '')
+    .flatMap(splitParagraphs)
     .filter(Boolean);
 
   if (sectionTexts.length) return sectionTexts;
-  if (lesson?.listeningText) return [lesson.listeningText];
-  if (lesson?.intro) return [lesson.intro, ...fallbackParagraphs.slice(1)];
   return fallbackParagraphs;
 }
 
@@ -62,17 +85,16 @@ function normalizeComprehension(lesson) {
   return Array.isArray(lesson?.exercises) && lesson.exercises.length ? lesson.exercises : fallbackComprehension;
 }
 
-function getLessonIntro(lesson, paragraphs) {
-  return (
+function getLessonIntro(lesson) {
+  return cleanGeneratedText(
     lesson?.intro ||
     lesson?.subtitle ||
-    paragraphs?.[0] ||
     'Leia com calma, entenda a ideia principal e use o contexto para descobrir palavras novas.'
   );
 }
 
 function getLessonObjective(lesson) {
-  return (
+  return cleanGeneratedText(
     lesson?.objective ||
     lesson?.goal ||
     lesson?.raw?.objective ||
@@ -83,7 +105,7 @@ function getLessonObjective(lesson) {
 function getLessonSteps(lesson) {
   const tips = Array.isArray(lesson?.tips) ? lesson.tips : [];
   const cleanTips = tips
-    .map((tip) => (typeof tip === 'string' ? tip : tip?.text || tip?.tip || ''))
+    .map((tip) => cleanGeneratedText(typeof tip === 'string' ? tip : tip?.text || tip?.tip || ''))
     .filter(Boolean)
     .slice(0, 3);
   return cleanTips.length ? cleanTips : fallbackSteps;
@@ -95,7 +117,7 @@ export function ReadingLesson({ lesson }) {
   const paragraphs = useMemo(() => normalizeReadingParagraphs(lesson), [lesson]);
   const vocabulary = useMemo(() => normalizeVocabulary(lesson), [lesson]);
   const comprehension = useMemo(() => normalizeComprehension(lesson), [lesson]);
-  const intro = useMemo(() => getLessonIntro(lesson, paragraphs), [lesson, paragraphs]);
+  const intro = useMemo(() => getLessonIntro(lesson), [lesson]);
   const objective = useMemo(() => getLessonObjective(lesson), [lesson]);
   const steps = useMemo(() => getLessonSteps(lesson), [lesson]);
   const readingText = paragraphs.join('\n\n');
@@ -157,7 +179,7 @@ export function ReadingLesson({ lesson }) {
           <div className="panel-title"><BookOpen size={18} /> Texto principal</div>
           <div className="reading-paper-body">
             {paragraphs.map((paragraph, index) => (
-              <p key={index}>{paragraph}</p>
+              <p key={index}>{cleanGeneratedText(paragraph)}</p>
             ))}
           </div>
         </div>
@@ -185,9 +207,9 @@ export function ReadingLesson({ lesson }) {
         <div className="vocabulary-grid">
           {vocabulary.map((item, index) => (
             <article className="vocab-card" key={item.word || index}>
-              <strong>{item.word || item.term || 'word'}</strong>
-              <span>{item.meaning || item.translation || item.definition || '—'}</span>
-              <p>{item.example || item.sentence || ''}</p>
+              <strong>{cleanGeneratedText(item.word || item.term || 'word')}</strong>
+              <span>{cleanGeneratedText(item.meaning || item.translation || item.definition || '—')}</span>
+              <p>{cleanGeneratedText(item.example || item.sentence || '')}</p>
             </article>
           ))}
         </div>
@@ -199,11 +221,11 @@ export function ReadingLesson({ lesson }) {
           {comprehension.map((item, index) => (
             <article className="question-card" key={item.question || index}>
               <span>Questão {index + 1}</span>
-              <strong>{item.question || item.prompt || 'Responda à questão.'}</strong>
+              <strong>{cleanGeneratedText(item.question || item.prompt || 'Responda à questão.')}</strong>
               <div className="option-list">
                 {(item.options || item.choices || []).map((option) => (
                   <button className={option === item.answer ? 'option-button correct' : 'option-button'} type="button" key={option}>
-                    {option}
+                    {cleanGeneratedText(option)}
                   </button>
                 ))}
               </div>
