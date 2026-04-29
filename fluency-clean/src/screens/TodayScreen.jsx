@@ -1,9 +1,11 @@
 import { BookOpen, Brain, CheckCircle2, ChevronRight, Flame, LineChart, Mic, PencilLine, Quote, Sparkles, Target, Volume2, Zap } from 'lucide-react';
 import { LessonGeneratorPanel } from '../components/lesson/LessonGeneratorPanel.jsx';
+import { getCurrentLesson } from '../services/lessonStore.js';
+import { getLessonStats } from '../services/lessonStats.js';
 import { getProgressSummary } from '../services/progressStore.js';
 
-const tasks = [
-  { id: 'lesson', label: 'Aula de hoje', status: 'Reading gerada pela IA', time: '~12 min', icon: BookOpen, target: 'lesson', color: 'blue' },
+const baseTasks = [
+  { id: 'lesson', label: 'Aula de hoje', status: 'Aula guiada pela IA', icon: BookOpen, target: 'lesson', color: 'blue' },
   { id: 'cards', label: 'Revisar flashcards', status: 'Cartas vencendo hoje', time: '~5 min', icon: Brain, target: 'cards', color: 'violet' },
   { id: 'speaking', label: 'Conversação', status: 'Speaking guiado com IA', time: '~8 min', icon: Mic, target: 'speaking', color: 'teal' },
   { id: 'diary', label: 'Diário em inglês', status: '3 frases sobre seu dia', time: '~3 min', icon: PencilLine, target: 'lesson', color: 'amber', done: true },
@@ -24,8 +26,28 @@ function getGreeting() {
   return 'Boa noite';
 }
 
+function getLessonTypeStatus(lesson) {
+  const labels = {
+    reading: 'Reading gerada pela IA',
+    grammar: 'Grammar gerada pela IA',
+    listening: 'Listening gerada pela IA',
+    writing: 'Writing gerada pela IA',
+  };
+
+  return labels[lesson?.type] || 'Aula guiada pela IA';
+}
+
 export function TodayScreen({ onLessonGenerated, onNavigate }) {
   const progress = getProgressSummary();
+  const currentLesson = getCurrentLesson();
+  const lessonStats = getLessonStats(currentLesson);
+  const tasks = baseTasks.map((task) => task.id === 'lesson'
+    ? {
+        ...task,
+        status: getLessonTypeStatus(currentLesson),
+        time: `~${lessonStats.minutes} min`,
+      }
+    : task);
   const completed = Math.min(progress.completedLessons || 0, 4);
   const percent = Math.max(0, Math.min(100, Math.round((completed / 4) * 100)));
   const streak = progress.streakDays || 0;
