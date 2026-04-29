@@ -1,0 +1,48 @@
+name: Build lab preview
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - rewrite-fluency-clean-lab
+    paths:
+      - 'fluency-clean/**'
+      - '.github/workflows/lab-preview-build.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  build-preview:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/rewrite-fluency-clean-lab'
+    steps:
+      - name: Checkout lab branch
+        uses: actions/checkout@v4
+        with:
+          ref: rewrite-fluency-clean-lab
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        working-directory: fluency-clean
+        run: npm install
+
+      - name: Build preview-clean from source
+        working-directory: fluency-clean
+        run: npm run build:preview
+
+      - name: Commit generated preview
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add preview-clean
+          if git diff --cached --quiet; then
+            echo "No preview changes to commit."
+          else
+            git commit -m "LAB-BUILD-1.1: generate clean lab preview"
+            git push origin rewrite-fluency-clean-lab
+          fi
