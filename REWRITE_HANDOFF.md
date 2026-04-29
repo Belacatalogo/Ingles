@@ -170,13 +170,24 @@ Não mexer na `main` durante a reconstrução. Tudo deve acontecer nesta branch 
 - `reference.css` criado para concentrar o visual premium: fundo, pills, cards, topbar, home e bottom nav.
 - O objetivo agora é continuar trazendo Flashcards, Speaking, Aula e Ajustes para a mesma aparência.
 
+### Bloco 7.4.5 — Correção responsiva do realinhamento visual
+- Corrigido overflow horizontal global em `html`, `body`, `#root` e shell principal.
+- Hero da Home ajustado no mobile para não sobrepor círculo de progresso em cima do botão.
+- Círculo de progresso reposicionado em fluxo normal no mobile.
+- Cards Ofensiva/Nível agora empilham em mobile para evitar corte e esmagamento.
+- Streak boxes agora usam grid proporcional em vez de largura fixa.
+- Bottom nav recebeu ajuste de `safe-area-inset-bottom`, largura máxima e rolagem horizontal sem scrollbar.
+- Bloco “Gerar aula por IA” foi recolhido em `<details>` e movido para baixo da Home para não dominar o visual principal.
+
 ## Próximo passo recomendado
 
-### Testar Home realinhada no preview
-- Abrir o preview atualizado.
-- Conferir se o topo, cards, bottom nav e aba Hoje estão muito mais próximos da referência enviada.
-- Verificar se nada quebrou: login, navegação, aula real, progresso e geração.
-- Se a Home estiver aprovada, continuar realinhando Flashcards e Speaking com a referência.
+### Retestar Home no preview
+- Abrir o preview atualizado no iPhone.
+- Confirmar que não há overflow horizontal.
+- Confirmar que o círculo de progresso não invade o botão.
+- Confirmar que Ofensiva/Nível não ficam cortados.
+- Confirmar que a bottom nav não cobre conteúdo importante.
+- Confirmar que “Gerar nova aula por IA” está recolhido e não polui a Home.
 
 ## Blocos restantes por ordem de segurança
 
