@@ -1,5 +1,5 @@
 import { diagnostics } from './diagnostics.js';
-import { normalizeLesson } from './lessonTypes.js';
+import { inferLessonTypeFromText, normalizeLesson } from './lessonTypes.js';
 
 export const GEMINI_LESSON_STATUS = {
   idle: 'idle',
@@ -13,57 +13,223 @@ const FLASH_MODELS = ['gemini-2.5-flash', 'gemini-2.5-flash-lite'];
 const PRO_MODELS = ['gemini-2.5-pro'];
 const RETRYABLE_STATUS = new Set([500, 502, 503, 504]);
 
-const LESSON_BLOCKS = [
-  {
-    id: 'structure',
-    label: 'estrutura da aula',
-    maxOutputTokens: 1800,
-    instruction: [
-      'Crie somente a estrutura da aula Reading A1.',
-      'Retorne JSON com: type, level, title, intro, objective, sections e tips.',
-      'sections deve conter apenas explicações curtas em português, nunca o texto principal completo.',
-      'tips deve conter 3 dicas curtas em português.',
-    ].join('\n'),
+const LESSON_BLUEPRINTS = {
+  reading: {
+    label: 'Reading',
+    mainField: 'listeningText',
+    validationText: 'texto principal',
+    blocks: [
+      {
+        id: 'structure',
+        label: 'estrutura da aula Reading',
+        maxOutputTokens: 1900,
+        instruction: [
+          'Crie somente a estrutura da aula Reading A1.',
+          'Retorne JSON com: type="reading", level, title, intro, objective, focus, sections e tips.',
+          'sections deve conter 3 partes curtas em português: preparação, estratégia de leitura e prática guiada.',
+          'tips deve conter 3 dicas curtas em português.',
+        ].join('\n'),
+      },
+      {
+        id: 'mainContent',
+        label: 'texto principal Reading',
+        maxOutputTokens: 3000,
+        instruction: [
+          'Crie somente o texto principal da aula em inglês simples A1.',
+          'Retorne JSON com apenas a chave listeningText.',
+          'listeningText deve conter somente o texto em inglês para ler/ouvir.',
+          'Faça 4 a 6 parágrafos curtos, naturais e coerentes para aluno A1.',
+        ].join('\n'),
+      },
+      {
+        id: 'vocabulary',
+        label: 'vocabulário Reading',
+        maxOutputTokens: 2200,
+        instruction: [
+          'Crie somente o vocabulário importante da aula.',
+          'Retorne JSON com apenas a chave vocabulary.',
+          'vocabulary deve ter 8 a 10 itens com word, meaning e example.',
+          'word em inglês, meaning em português e example em inglês A1.',
+        ].join('\n'),
+      },
+      {
+        id: 'exercises',
+        label: 'exercícios Reading',
+        maxOutputTokens: 2600,
+        instruction: [
+          'Crie somente exercícios de compreensão.',
+          'Retorne JSON com apenas a chave exercises.',
+          'exercises deve ter 5 a 7 questões.',
+          'Cada exercício deve ter question, options, answer e explanation.',
+          'options deve ter 3 alternativas curtas; answer deve ser exatamente uma alternativa.',
+        ].join('\n'),
+      },
+      {
+        id: 'production',
+        label: 'produção Reading',
+        maxOutputTokens: 1200,
+        instruction: [
+          'Crie somente prompts de produção final.',
+          'Retorne JSON com apenas a chave prompts.',
+          'prompts deve ter 3 comandos curtos em inglês para o aluno responder usando ideias do texto.',
+        ].join('\n'),
+      },
+    ],
   },
-  {
-    id: 'readingText',
-    label: 'texto principal Reading',
-    maxOutputTokens: 2800,
-    instruction: [
-      'Crie somente o texto principal da aula em inglês simples A1.',
-      'Retorne JSON com apenas a chave listeningText.',
-      'listeningText deve conter somente o texto em inglês para ler/ouvir.',
-      'Não coloque instruções, traduções, markdown, título ou explicações dentro de listeningText.',
-      'Faça 3 a 5 parágrafos curtos, naturais e coerentes para aluno A1.',
-    ].join('\n'),
+  grammar: {
+    label: 'Grammar',
+    blocks: [
+      {
+        id: 'structure',
+        label: 'estrutura da aula Grammar',
+        maxOutputTokens: 2300,
+        instruction: [
+          'Crie uma aula Grammar A1 séria, clara e objetiva.',
+          'Retorne JSON com: type="grammar", level, title, intro, objective, focus, sections e tips.',
+          'sections deve ter 4 partes: regra principal, forma afirmativa, forma negativa/pergunta e erros comuns.',
+          'Cada section deve ter title, content e examples.',
+          'Não transforme a aula em jogo.',
+        ].join('\n'),
+      },
+      {
+        id: 'vocabulary',
+        label: 'vocabulário Grammar',
+        maxOutputTokens: 1500,
+        instruction: [
+          'Crie vocabulário útil para os exemplos da regra.',
+          'Retorne JSON com apenas a chave vocabulary.',
+          'vocabulary deve ter 5 a 8 itens com word, meaning e example.',
+        ].join('\n'),
+      },
+      {
+        id: 'exercises',
+        label: 'exercícios Grammar',
+        maxOutputTokens: 2800,
+        instruction: [
+          'Crie exercícios gramaticais sem revelar respostas antes da tentativa.',
+          'Retorne JSON com apenas a chave exercises.',
+          'exercises deve ter 6 a 8 questões.',
+          'Cada exercício deve ter question, options, answer e explanation.',
+          'options deve ter 3 alternativas; answer deve ser exatamente uma alternativa.',
+        ].join('\n'),
+      },
+      {
+        id: 'production',
+        label: 'produção Grammar',
+        maxOutputTokens: 1200,
+        instruction: [
+          'Crie produção própria para a regra.',
+          'Retorne JSON com apenas a chave prompts.',
+          'prompts deve ter 3 comandos curtos para o aluno criar frases em inglês usando a regra.',
+        ].join('\n'),
+      },
+    ],
   },
-  {
-    id: 'vocabulary',
-    label: 'vocabulário',
-    maxOutputTokens: 2200,
-    instruction: [
-      'Crie somente o vocabulário importante da aula.',
-      'Retorne JSON com apenas a chave vocabulary.',
-      'vocabulary deve ser uma lista com 6 a 10 itens.',
-      'Cada item deve ter word, meaning e example.',
-      'word em inglês, meaning em português e example em inglês A1.',
-    ].join('\n'),
+  listening: {
+    label: 'Listening',
+    mainField: 'listeningText',
+    validationText: 'transcrição',
+    blocks: [
+      {
+        id: 'structure',
+        label: 'estrutura da aula Listening',
+        maxOutputTokens: 1800,
+        instruction: [
+          'Crie somente a estrutura da aula Listening A1.',
+          'Retorne JSON com: type="listening", level, title, intro, objective, focus, sections e tips.',
+          'sections deve ensinar como ouvir primeiro, confirmar detalhes e repetir por shadowing.',
+        ].join('\n'),
+      },
+      {
+        id: 'mainContent',
+        label: 'transcrição Listening',
+        maxOutputTokens: 2600,
+        instruction: [
+          'Crie somente a transcrição do áudio em inglês A1.',
+          'Retorne JSON com apenas a chave listeningText.',
+          'listeningText deve ter uma conversa ou monólogo natural de 120 a 180 palavras.',
+          'Não coloque tradução, markdown ou instruções dentro de listeningText.',
+        ].join('\n'),
+      },
+      {
+        id: 'vocabulary',
+        label: 'vocabulário Listening',
+        maxOutputTokens: 1700,
+        instruction: [
+          'Crie vocabulário auditivo importante.',
+          'Retorne JSON com apenas a chave vocabulary.',
+          'vocabulary deve ter 6 a 8 itens com word, meaning e example.',
+        ].join('\n'),
+      },
+      {
+        id: 'exercises',
+        label: 'exercícios Listening',
+        maxOutputTokens: 2400,
+        instruction: [
+          'Crie exercícios de compreensão auditiva.',
+          'Retorne JSON com apenas a chave exercises.',
+          'exercises deve ter 4 a 6 perguntas com question, options, answer e explanation.',
+        ].join('\n'),
+      },
+      {
+        id: 'production',
+        label: 'shadowing Listening',
+        maxOutputTokens: 1000,
+        instruction: [
+          'Crie prompts de shadowing e resposta curta.',
+          'Retorne JSON com apenas a chave prompts.',
+          'prompts deve ter 3 comandos curtos.',
+        ].join('\n'),
+      },
+    ],
   },
-  {
-    id: 'exercises',
-    label: 'exercícios de compreensão',
-    maxOutputTokens: 2400,
-    instruction: [
-      'Crie somente os exercícios de compreensão da aula.',
-      'Retorne JSON com apenas a chave exercises.',
-      'exercises deve ter 4 a 6 questões.',
-      'Cada exercício deve ter question, options e answer.',
-      'options deve ter 3 alternativas curtas.',
-      'answer deve ser exatamente uma das alternativas.',
-      'Não revele explicação da resposta dentro das alternativas.',
-    ].join('\n'),
+  writing: {
+    label: 'Writing',
+    blocks: [
+      {
+        id: 'structure',
+        label: 'estrutura da aula Writing',
+        maxOutputTokens: 2200,
+        instruction: [
+          'Crie uma aula Writing A1 prática e guiada.',
+          'Retorne JSON com: type="writing", level, title, intro, objective, focus, sections e tips.',
+          'sections deve ter 4 partes: modelo, estrutura, frases úteis e checklist de correção.',
+          'Cada section deve ter title, content e examples.',
+        ].join('\n'),
+      },
+      {
+        id: 'vocabulary',
+        label: 'vocabulário Writing',
+        maxOutputTokens: 1700,
+        instruction: [
+          'Crie vocabulário e conectores para escrita A1.',
+          'Retorne JSON com apenas a chave vocabulary.',
+          'vocabulary deve ter 6 a 8 itens com word, meaning e example.',
+        ].join('\n'),
+      },
+      {
+        id: 'exercises',
+        label: 'microprática Writing',
+        maxOutputTokens: 2300,
+        instruction: [
+          'Crie micropráticas de escrita.',
+          'Retorne JSON com apenas a chave exercises.',
+          'exercises deve ter 4 a 6 questões com question, options, answer e explanation.',
+        ].join('\n'),
+      },
+      {
+        id: 'production',
+        label: 'produção Writing',
+        maxOutputTokens: 1400,
+        instruction: [
+          'Crie prompts de escrita final.',
+          'Retorne JSON com apenas a chave prompts.',
+          'prompts deve ter 4 comandos graduais para o aluno escrever frases e um parágrafo curto.',
+        ].join('\n'),
+      },
+    ],
   },
-];
+};
 
 export function maskApiKey(key) {
   const value = String(key ?? '').replace(/\s+/g, '').trim();
@@ -157,6 +323,10 @@ function ensureArray(value) {
   return Array.isArray(value) ? value : [];
 }
 
+function getBlueprint(type) {
+  return LESSON_BLUEPRINTS[type] || LESSON_BLUEPRINTS.reading;
+}
+
 function assertLessonBlock(block, data) {
   if (!data || typeof data !== 'object') throw new Error(`Bloco ${block.label} retornou JSON inválido.`);
 
@@ -166,9 +336,9 @@ function assertLessonBlock(block, data) {
     if (!normalizeText(data.objective)) throw new Error('Bloco estrutura veio sem objetivo.');
   }
 
-  if (block.id === 'readingText') {
+  if (block.id === 'mainContent') {
     const text = normalizeText(data.listeningText);
-    if (text.length < 350) throw new Error('Texto principal ficou curto demais.');
+    if (text.length < 220) throw new Error('Conteúdo principal ficou curto demais.');
   }
 
   if (block.id === 'vocabulary') {
@@ -178,8 +348,15 @@ function assertLessonBlock(block, data) {
   if (block.id === 'exercises') {
     const exercises = ensureArray(data.exercises);
     if (exercises.length < 3) throw new Error('Exercícios insuficientes.');
-    const hasInvalidAnswer = exercises.some((item) => !ensureArray(item?.options).includes(item?.answer));
+    const hasInvalidAnswer = exercises.some((item) => {
+      const options = ensureArray(item?.options);
+      return options.length && !options.includes(item?.answer);
+    });
     if (hasInvalidAnswer) throw new Error('Um exercício veio com resposta fora das alternativas.');
+  }
+
+  if (block.id === 'production') {
+    if (ensureArray(data.prompts).length < 2) throw new Error('Produção final insuficiente.');
   }
 }
 
@@ -191,29 +368,35 @@ function validateGeneratedLesson(lesson) {
     normalized.sections.length > 0 ||
     normalized.vocabulary.length > 0 ||
     normalized.exercises.length > 0 ||
-    normalized.listeningText;
+    normalized.listeningText ||
+    normalized.prompts.length > 0;
 
   if (!hasCore) throw new Error('Aula sem título, tipo ou nível.');
   if (!hasStudyContent) throw new Error('Aula sem conteúdo de estudo suficiente.');
-  if (!normalized.listeningText || normalized.listeningText.length < 350) throw new Error('Aula Reading sem texto principal suficiente.');
-  if (normalized.vocabulary.length < 4) throw new Error('Aula Reading com vocabulário insuficiente.');
-  if (normalized.exercises.length < 3) throw new Error('Aula Reading com exercícios insuficientes.');
+
+  if ((normalized.type === 'reading' || normalized.type === 'listening') && (!normalized.listeningText || normalized.listeningText.length < 220)) {
+    throw new Error('Aula sem texto/transcrição principal suficiente.');
+  }
+
+  if (normalized.vocabulary.length < 4) throw new Error('Aula com vocabulário insuficiente.');
+  if (normalized.exercises.length < 3) throw new Error('Aula com exercícios insuficientes.');
 
   return normalized;
 }
 
-function buildBlockPrompt({ block, basePrompt, partialLesson }) {
+function buildBlockPrompt({ block, blueprint, basePrompt, lessonType, partialLesson }) {
   return [
     'Você é o gerador de aulas do Fluency.',
     'Retorne APENAS JSON válido. Não use markdown. Não use **negrito**. Não use listas com asterisco.',
-    'Crie conteúdo para aluno brasileiro aprender inglês com uma aula séria, clara e organizada.',
-    'A aula atual deve ser Reading nível A1, salvo se o pedido do app exigir algo compatível com A1.',
+    'Crie conteúdo para aluno brasileiro aprender inglês com uma aula séria, clara, profunda e organizada.',
+    `Tipo de aula escolhido pelo app: ${blueprint.label} (${lessonType}).`,
+    'Nível padrão: A1, salvo se o pedido do app indicar outro nível claramente.',
     '',
     'Pedido original do app:',
     String(basePrompt ?? 'Gerar uma aula de inglês A1 do dia.'),
     '',
     partialLesson ? 'Conteúdo já aprovado nos blocos anteriores:' : '',
-    partialLesson ? JSON.stringify(partialLesson).slice(0, 5000) : '',
+    partialLesson ? JSON.stringify(partialLesson).slice(0, 6000) : '',
     '',
     `Bloco solicitado: ${block.label}`,
     block.instruction,
@@ -225,7 +408,7 @@ async function callGeminiJson({ attempt, prompt, maxOutputTokens, fetcher }) {
   const body = {
     contents: [{ role: 'user', parts: [{ text: prompt }] }],
     generationConfig: {
-      temperature: 0.35,
+      temperature: 0.32,
       maxOutputTokens,
       responseMimeType: 'application/json',
     },
@@ -237,9 +420,7 @@ async function callGeminiJson({ attempt, prompt, maxOutputTokens, fetcher }) {
     body: JSON.stringify(body),
   });
 
-  if (!response || typeof response.ok === 'undefined') {
-    throw new Error('Gemini retornou resposta vazia.');
-  }
+  if (!response || typeof response.ok === 'undefined') throw new Error('Gemini retornou resposta vazia.');
 
   if (!response.ok) {
     const text = await response.text().catch(() => '');
@@ -251,27 +432,30 @@ async function callGeminiJson({ attempt, prompt, maxOutputTokens, fetcher }) {
   return parseLessonJson(text);
 }
 
-function composeLessonFromBlocks(blockResults) {
+function composeLessonFromBlocks(blockResults, lessonType) {
   return {
-    type: blockResults.structure?.type || 'reading',
+    type: blockResults.structure?.type || lessonType,
     level: blockResults.structure?.level || 'A1',
-    title: blockResults.structure?.title || 'Reading A1',
+    title: blockResults.structure?.title || `${getBlueprint(lessonType).label} A1`,
     intro: blockResults.structure?.intro || '',
     objective: blockResults.structure?.objective || '',
+    focus: blockResults.structure?.focus || '',
     sections: ensureArray(blockResults.structure?.sections),
     tips: ensureArray(blockResults.structure?.tips),
-    listeningText: blockResults.readingText?.listeningText || '',
+    listeningText: blockResults.mainContent?.listeningText || '',
     vocabulary: ensureArray(blockResults.vocabulary?.vocabulary),
     exercises: ensureArray(blockResults.exercises?.exercises),
+    prompts: ensureArray(blockResults.production?.prompts),
   };
 }
 
-async function callGeminiInBlocks({ attempt, prompt, fetcher }) {
+async function callGeminiInBlocks({ attempt, prompt, fetcher, lessonType }) {
+  const blueprint = getBlueprint(lessonType);
   const blockResults = {};
 
-  for (let index = 0; index < LESSON_BLOCKS.length; index += 1) {
-    const block = LESSON_BLOCKS[index];
-    const blockLabel = `${index + 1}/${LESSON_BLOCKS.length}`;
+  for (let index = 0; index < blueprint.blocks.length; index += 1) {
+    const block = blueprint.blocks[index];
+    const blockLabel = `${index + 1}/${blueprint.blocks.length}`;
     diagnostics.setPhase(`gerando bloco ${blockLabel}`, GEMINI_LESSON_STATUS.generating);
     diagnostics.log(`Bloco ${blockLabel}: gerando ${block.label}.`, 'info');
 
@@ -279,10 +463,12 @@ async function callGeminiInBlocks({ attempt, prompt, fetcher }) {
       attempt,
       prompt: buildBlockPrompt({
         block,
+        blueprint,
+        lessonType,
         basePrompt: prompt,
-        partialLesson: Object.keys(blockResults).length ? composeLessonFromBlocks(blockResults) : null,
+        partialLesson: Object.keys(blockResults).length ? composeLessonFromBlocks(blockResults, lessonType) : null,
       }),
-      maxOutputTokens: attempt.paid ? Math.max(block.maxOutputTokens, 2600) : block.maxOutputTokens,
+      maxOutputTokens: attempt.paid ? Math.max(block.maxOutputTokens, 2800) : block.maxOutputTokens,
       fetcher,
     });
 
@@ -291,7 +477,7 @@ async function callGeminiInBlocks({ attempt, prompt, fetcher }) {
     diagnostics.log(`Bloco ${blockLabel} aprovado: ${block.label}.`, 'info');
   }
 
-  return validateGeneratedLesson(composeLessonFromBlocks(blockResults));
+  return validateGeneratedLesson(composeLessonFromBlocks(blockResults, lessonType));
 }
 
 function summarizeFinalError({ quotaKeys, modelErrors, lastError, attempts }) {
@@ -299,9 +485,7 @@ function summarizeFinalError({ quotaKeys, modelErrors, lastError, attempts }) {
     return 'Todas as keys de aula disponíveis bateram quota/limite. Adicione outra key ou tente novamente mais tarde.';
   }
 
-  if (modelErrors > 0 && !lastError) {
-    return 'Os modelos disponíveis não estão aceitando geração agora.';
-  }
+  if (modelErrors > 0 && !lastError) return 'Os modelos disponíveis não estão aceitando geração agora.';
 
   const status = getHttpStatus(lastError);
   if (status === 503) return 'O Gemini respondeu alta demanda temporária. Tente gerar novamente em alguns minutos.';
@@ -313,9 +497,12 @@ function summarizeFinalError({ quotaKeys, modelErrors, lastError, attempts }) {
 
 export async function generateLessonDraft({ prompt, keys = [], proKey = '', fetcher = fetch } = {}) {
   const attempts = buildAttempts({ keys, proKey });
+  const lessonType = inferLessonTypeFromText(prompt);
+  const blueprint = getBlueprint(lessonType);
 
   diagnostics.setPhase('preparando geração de aula em blocos', GEMINI_LESSON_STATUS.generating);
-  diagnostics.log(`Plano de geração em blocos: ${attempts.length} tentativa(s), ${LESSON_BLOCKS.length} bloco(s) por tentativa.`, 'info');
+  diagnostics.log(`Tipo de aula detectado: ${blueprint.label}.`, 'info');
+  diagnostics.log(`Plano de geração em blocos: ${attempts.length} tentativa(s), ${blueprint.blocks.length} bloco(s) por tentativa.`, 'info');
 
   if (!attempts.length) {
     diagnostics.log('Nenhuma key Gemini válida configurada para aulas.', 'error');
@@ -346,9 +533,9 @@ export async function generateLessonDraft({ prompt, keys = [], proKey = '', fetc
     );
 
     try {
-      const lesson = await callGeminiInBlocks({ attempt, prompt, fetcher });
+      const lesson = await callGeminiInBlocks({ attempt, prompt, fetcher, lessonType });
       diagnostics.setPhase('aula gerada em blocos', GEMINI_LESSON_STATUS.success);
-      diagnostics.log(`Aula completa gerada, montada e validada com ${attempt.model}.`, 'info');
+      diagnostics.log(`Aula ${blueprint.label} completa gerada, montada e validada com ${attempt.model}.`, 'info');
       return { status: GEMINI_LESSON_STATUS.success, lesson, error: null };
     } catch (error) {
       lastError = error;
