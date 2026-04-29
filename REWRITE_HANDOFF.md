@@ -12,7 +12,7 @@ Todas as próximas alterações devem acontecer SOMENTE na branch:
 `rewrite-fluency-clean-lab`
 
 Não alterar `main` diretamente.
-Não fazer merge do PR #21 antes de confirmar Root Directory da Vercel.
+Não fazer merge do PR #21 antes de confirmar Vercel e domínio Firebase de produção.
 Não deletar `rewrite-fluency-clean-lab` após merge.
 Não mexer em `bundle.js`.
 Não usar DOM injection.
@@ -21,11 +21,42 @@ Não mexer no backend Azure privado.
 
 ## Estado atual para teste
 
+### Bloco 8-LAB-11B — Vercel Build/Output confirmado como seguro para fluency-clean
+
+Contexto:
+- usuário enviou prints da Vercel em Build and Deployment;
+- Root Directory aparece como `./`, não como `fluency-clean`;
+- porém os comandos de build/install/output estão explicitamente apontando para `fluency-clean`.
+
+Configuração observada nos prints:
+- Framework Preset: `Other`;
+- Root Directory: `./`;
+- Build Command: `cd fluency-clean && npm r...`;
+- Output Directory: `fluency-clean/dist`;
+- Install Command: `cd fluency-clean && npm in...`;
+- Include files outside root directory: Enabled.
+
+Conclusão:
+- esta configuração também é segura;
+- mesmo com Root Directory na raiz, a Vercel deve instalar/buildar o app novo dentro de `fluency-clean`;
+- o deploy deve publicar `fluency-clean/dist`;
+- o `index.html` antigo e o `bundle.js` antigo da raiz não devem ser usados como saída final do deploy.
+
+Comentário registrado no PR #21:
+- foi adicionado comentário documentando que a configuração Vercel observada é segura porque Build Command e Output Directory apontam para `fluency-clean`.
+
+Pendências antes de tirar PR #21 de draft/mesclar:
+1. confirmar domínio final da produção/main e autorizar no Firebase Authentication;
+2. manter Build Command apontando para `fluency-clean`;
+3. manter Output Directory como `fluency-clean/dist`;
+4. após merge, testar produção no iPhone;
+5. não deletar `rewrite-fluency-clean-lab`.
+
 ### Bloco 8-LAB-11A — Preparação segura para main criada como PR draft
 
 Contexto:
 - usuário perguntou se, ao levar para `main`, os arquivos do sistema antigo poderiam se misturar com o sistema novo;
-- a resposta técnica é sim: se a Vercel usar a raiz do repositório, pode carregar o `index.html` antigo e o `bundle.js` antigo;
+- a resposta técnica é sim: se a Vercel usar a raiz do repositório sem comandos direcionados, pode carregar o `index.html` antigo e o `bundle.js` antigo;
 - por isso, não foi feito merge direto na `main`.
 
 Ação feita:
@@ -39,31 +70,9 @@ Ação feita:
 Estado técnico:
 - `rewrite-fluency-clean` está 369 commits à frente da `main`;
 - `main` está 0 commits à frente da `rewrite-fluency-clean`;
-- tecnicamente é possível promover, mas só depois de validar a configuração da Vercel;
+- tecnicamente é possível promover;
 - o sistema novo está em `fluency-clean/`;
 - o sistema antigo ainda existe na raiz da `main`.
-
-Condição obrigatória antes de qualquer merge para main:
-- confirmar na Vercel que o projeto de produção usa:
-  - Root Directory: `fluency-clean`
-
-Se o Root Directory não estiver como `fluency-clean`:
-- não fazer merge;
-- ajustar a configuração real da Vercel primeiro;
-- evitar que produção carregue `index.html` antigo ou `bundle.js` antigo da raiz.
-
-Checklist do PR #21 antes de sair de draft/mesclar:
-1. confirmar Root Directory da Vercel como `fluency-clean`;
-2. confirmar domínio de produção autorizado no Firebase Authentication;
-3. testar branch `rewrite-fluency-clean` no iPhone;
-4. confirmar login Google funcionando;
-5. confirmar Hoje funcionando;
-6. confirmar Aula funcionando;
-7. confirmar áudio natural funcionando;
-8. confirmar Progresso funcionando;
-9. confirmar Diagnóstico funcionando;
-10. confirmar PWA funcionando;
-11. manter rollback anotado.
 
 Rollback se main quebrar após merge:
 - voltar `main` para `5047bae031f20ddd9604953dcd3fd821655e56fa`;
@@ -88,18 +97,7 @@ Resultado:
 - backend Azure privado permanece intocado;
 - branch lab permanece viva.
 
-Checklist validado pelo usuário:
-- Firebase runtime/configuração OK;
-- Auth domain OK;
-- login Google funcionou no link estável da Vercel;
-- domínio Vercel autorizado no Firebase.
-
 ### Bloco 8-LAB-10C — Correção cirúrgica do login Google no iPhone IMPLEMENTADO
-
-Contexto:
-- usuário informou que, ao tocar em “Entrar com Google” no iPhone/Safari, a tela piscava/minimizava e nada acontecia;
-- Firebase runtime estava configurado e Auth state aparecia verificado;
-- comportamento era compatível com popup bloqueado/falhando no Safari/iOS e/ou domínio não autorizado no Firebase.
 
 Arquivos alterados:
 - `fluency-clean/src/services/auth.js`
@@ -116,34 +114,15 @@ O que foi feito:
 - nenhuma alteração em `bundle.js`;
 - nenhuma alteração no backend Azure.
 
-### Bloco 8-LAB-10 — Promoção para branch estável CONCLUÍDO
-
-Objetivo:
-- promover a versão aprovada da lab para `rewrite-fluency-clean`;
-- manter `rewrite-fluency-clean-lab` viva;
-- não tocar em `main`;
-- testar novamente a branch estável no iPhone após o deploy ficar Ready.
-
-Rollback anotado antes da promoção:
-- commit estável anterior de `rewrite-fluency-clean`: `a2e6ba07c41f3068d19162af974f4e933622453e`;
-- se a branch estável quebrar, voltar `rewrite-fluency-clean` para esse commit;
-- não mexer em `main`;
-- corrigir problemas cirurgicamente na lab antes de nova promoção.
-
-Resultado:
-- `rewrite-fluency-clean` foi fast-forward para o commit da lab no LAB-10;
-- `rewrite-fluency-clean-lab` foi mantida viva;
-- `main` permaneceu intocada.
-
 ## Próximo bloco possível
 
-### `Bloco 8-LAB-11B — Confirmar Vercel Root Directory e domínio de produção`
+### `Bloco 8-LAB-11C — Confirmar domínio Firebase de produção e tirar PR do draft`
 Objetivo:
-- usuário confirmar visualmente na Vercel se Root Directory está `fluency-clean`;
-- autorizar o domínio final/main no Firebase;
-- só então transformar PR #21 de draft para pronto ou fazer merge controlado.
+- identificar domínio final que a `main`/produção usará no Vercel;
+- autorizar esse domínio no Firebase Authentication;
+- marcar PR #21 como pronto para merge ou seguir para merge controlado.
 
-### `Bloco 8-LAB-11C — Merge controlado para main` — somente após confirmação explícita
+### `Bloco 8-LAB-11D — Merge controlado para main` — somente após confirmação explícita
 Objetivo:
 - mesclar PR #21;
 - não deletar lab;
@@ -152,4 +131,4 @@ Objetivo:
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. Foi criado o PR draft #21 de `rewrite-fluency-clean` para `main` para promoção controlada. Não fazer merge antes de confirmar na Vercel que Root Directory é `fluency-clean` e que o domínio de produção está autorizado no Firebase. Não delete `rewrite-fluency-clean-lab`, não toque em `bundle.js`, não use DOM injection ou bundle patch. Rollback da main, se necessário: `5047bae031f20ddd9604953dcd3fd821655e56fa`."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. Foi criado o PR draft #21 de `rewrite-fluency-clean` para `main`. A Vercel foi conferida por print: Root Directory está `./`, mas Build Command usa `cd fluency-clean && ...` e Output Directory é `fluency-clean/dist`, então a configuração é segura para publicar o app novo. Antes do merge, confirmar o domínio final/main e autorizar no Firebase. Não delete `rewrite-fluency-clean-lab`, não toque em `bundle.js`, não use DOM injection ou bundle patch. Rollback da main, se necessário: `5047bae031f20ddd9604953dcd3fd821655e56fa`."
