@@ -20,13 +20,22 @@ function weekKey(date = new Date()) {
   return `${copy.getUTCFullYear()}-W${String(weekNo).padStart(2, '0')}`;
 }
 
+function safeObject(value) {
+  return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+}
+
+function safeArray(value) {
+  return Array.isArray(value) ? value : [];
+}
+
 function normalizeProgress(value = {}) {
+  const data = safeObject(value);
   return {
-    xp: Number(value.xp || 0),
-    completedLessons: Number(value.completedLessons || 0),
-    streakDays: Number(value.streakDays || 0),
-    lastStudyDate: value.lastStudyDate || '',
-    weekly: value.weekly && typeof value.weekly === 'object' ? value.weekly : {},
+    xp: Number(data.xp || 0),
+    completedLessons: Number(data.completedLessons || 0),
+    streakDays: Number(data.streakDays || 0),
+    lastStudyDate: data.lastStudyDate || '',
+    weekly: data.weekly && typeof data.weekly === 'object' && !Array.isArray(data.weekly) ? data.weekly : {},
   };
 }
 
@@ -46,11 +55,11 @@ export function getProgressSummary() {
 }
 
 export function getLessonCompletions() {
-  return storage.get(LESSON_COMPLETIONS_KEY, []);
+  return safeArray(storage.get(LESSON_COMPLETIONS_KEY, []));
 }
 
 export function getLessonDrafts() {
-  return storage.get(LESSON_DRAFTS_KEY, {});
+  return safeObject(storage.get(LESSON_DRAFTS_KEY, {}));
 }
 
 export function getLessonDraft(lessonId) {
