@@ -1,4 +1,4 @@
-import { BookOpen, Brain, Flame, Home, LineChart, Mic, Settings, Target } from 'lucide-react';
+import { BookOpen, Brain, Flame, Home, LineChart, Mic, Settings } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { AccessGate } from './components/auth/AccessGate.jsx';
 import { BottomNav } from './components/layout/BottomNav.jsx';
@@ -10,6 +10,8 @@ import { SpeakingScreen } from './screens/SpeakingScreen.jsx';
 import { FlashcardsScreen } from './screens/FlashcardsScreen.jsx';
 import { SettingsScreen } from './screens/SettingsScreen.jsx';
 import { getProgressSummary } from './services/progressStore.js';
+
+const PREVIEW_VERSION = 'rewrite-clean · bloco 7.4.6 · flashcards visual';
 
 const tabs = [
   { id: 'today', label: 'Hoje', icon: Home, component: TodayScreen },
@@ -57,6 +59,8 @@ function AppContent() {
         onLessonGenerated={handleLessonGenerated}
         lessonRevision={lessonRevision}
       />
+
+      <footer className="preview-version-footer">{PREVIEW_VERSION}</footer>
 
       <DiagnosticPanel />
       <BottomNav tabs={tabs} activeTab={activeTab} onChange={setActiveTab} />
