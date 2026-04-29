@@ -44,7 +44,6 @@ Não mexer na `main` durante a reconstrução. Tudo deve acontecer nesta branch 
 - Botões de salvar rascunho e concluir Reading posicionados no componente real.
 - Novo componente `ProgressPill` criado.
 - CSS específico criado para Reading v2, vocabulário, questões, opções, resposta e responsividade.
-- Ainda não há integração real com storage, IA, áudio ou conclusão de aula. Isso vem nos próximos blocos.
 
 ### Bloco 3 — Serviços limpos — concluído
 - `storage.js` criado para centralizar `localStorage` com prefixo `fluency.clean.`.
@@ -54,18 +53,24 @@ Não mexer na `main` durante a reconstrução. Tudo deve acontecer nesta branch 
 - `azurePronunciation.js` criado como cliente/fachada para preservar o backend Azure privado existente. A chamada real ainda não foi ligada.
 - `services/index.js` criado para exportação centralizada.
 
-### Bloco 4 — Firebase / Google — próximo
-- Criar `firebase.js`.
-- Criar `auth.js` / camada de login.
-- Migrar configuração Firebase sem expor segredo novo.
-- Manter fluxo atual de acesso/código até entendermos exatamente como ele está no app antigo.
+### Bloco 4 — Firebase / Google — concluído estruturalmente
+- `.env.example` criado com variáveis `VITE_FIREBASE_*` e endpoint opcional do Azure.
+- `firebase.js` criado para inicializar Firebase somente se as variáveis estiverem configuradas.
+- `auth.js` criado com subscribeAuth, login Google e logout.
+- `accessCode.js` criado como fachada do fluxo de código/acesso local.
+- `AccessGate.jsx` criado para separar login/acesso da aplicação principal.
+- `App.jsx` agora usa `AccessGate`, mas ainda permite modo visual para não travar desenvolvimento.
+- `services/index.js` exporta Firebase/Auth/Access.
+- CSS do gate de acesso criado.
+- A configuração real do Firebase ainda precisa ser fornecida via ambiente/deploy; nenhuma chave nova foi gravada diretamente no código.
 
-### Bloco 5 — Geração de aulas
+### Bloco 5 — Geração de aulas — próximo
 - Chaves exclusivas de aulas.
 - Multikeys.
 - Flash primeiro.
 - Pro apenas como fallback.
 - Diagnóstico real em tela.
+- Ligar a fachada `geminiLessons.js` com chamadas reais, mantendo validação forte.
 
 ### Bloco 6 — Áudio / Pronúncia / iOS
 - TTS.
