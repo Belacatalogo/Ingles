@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   ChevronRight,
   Headphones,
@@ -17,15 +17,9 @@ import { startRecording, stopRecording } from '../services/recorder.js';
 const conversationPrompt = 'Hi! Tell me about your weekend. What did you do?';
 const pronunciationText = 'I have already finished my homework.';
 
-const messages = [
+const initialMessages = [
   { who: 'ai', text: conversationPrompt },
-  {
-    who: 'you',
-    text: 'I went to the beach with my friends and we had lunch.',
-    score: 84,
-    errors: [{ word: 'had', note: "Considere 'we ate lunch' — mais natural." }],
-  },
-  { who: 'ai', text: 'Sounds nice! Was the weather good?' },
+  { who: 'ai', text: 'Answer in English. I will analyze your pronunciation and then continue the conversation.' },
 ];
 
 const immersionScenes = [
@@ -52,19 +46,74 @@ const immersionScenes = [
   },
 ];
 
-const wordScores = [
-  { word: 'I', score: 100 },
-  { word: 'have', score: 95 },
-  { word: 'already', score: 78 },
-  { word: 'finished', score: 62 },
-  { word: 'my', score: 100 },
-  { word: 'homework', score: 88 },
-];
-
 function scoreClass(score) {
+  if (score == null) return 'warn';
   if (score >= 85) return 'good';
   if (score >= 70) return 'warn';
   return 'bad';
+}
+
+function getScore(result) {
+  return result?.pronunciationScore ?? result?.accuracyScore ?? null;
+}
+
+function getWordScore(word) {
+  return word?.accuracyScore ?? word?.score ?? null;
+}
+
+function getAnalyzedWords(result, fallbackText = pronunciationText) {
+  if (Array.isArray(result?.words) && result.words.length) {
+    return result.words.map((word) => ({
+      word: word.word,
+      score: getWordScore(word),
+      status: word.status,
+      errorType: word.errorType,
+    }));
+  }
+
+  return fallbackText.split(/\s+/).filter(Boolean).map((word) => ({
+    word: word.replace(/[“”".,!?]/g, ''),
+    score: null,
+    status: 'unknown',
+    errorType: 'Unknown',
+  }));
+}
+
+function getFocusWord(result) {
+  const words = getAnalyzedWords(result);
+  return words
+    .filter((word) => word.score != null)
+    .sort((a, b) => a.score - b.score)[0] || words.find((word) => word.status !== 'correct') || null;
+}
+
+function buildWordTip(word) {
+  if (!word?.word) return 'Grave novamente para eu apontar exatamente o ponto de melhoria.';
+  const scoreText = word.score != null ? ` O Azure deu ${word.score}/100 para essa palavra.` : '';
+
+  if (word.errorType === 'Omission') {
+    return `O Azure entendeu que você pulou “${word.word}”. Tente falar essa palavra com clareza dentro da frase.${scoreText}`;
+  }
+
+  if (word.errorType && word.errorType !== 'None') {
+    return `O ponto mais fraco foi “${word.word}”. Repita devagar, separe os sons e depois fale a frase completa em ritmo natural.${scoreText}`;
+  }
+
+  if (word.score != null && word.score < 70) {
+    return `O ponto mais fraco foi “${word.word}”. Compare com o modelo, repita só essa palavra 3 vezes e depois grave a frase inteira.${scoreText}`;
+  }
+
+  if (word.score != null && word.score < 85) {
+    return `“${word.word}” ficou compreensível, mas pode soar mais natural. Trabalhe ritmo, vogal principal e terminação.${scoreText}`;
+  }
+
+  return `Sua pronúncia de “${word.word}” ficou boa. Continue buscando ritmo natural na frase inteira.${scoreText}`;
+}
+
+function buildConversationReply(score) {
+  if (score == null) return 'Good. I heard your answer. Try again with a little more clarity.';
+  if (score >= 85) return 'Great answer! Your pronunciation was clear. Now tell me one more detail about it.';
+  if (score >= 70) return 'Good job. I understood you, but let’s polish a few sounds and try again.';
+  return 'I understood part of it. Speak a little slower and focus on the highlighted word.';
 }
 
 export function SpeakingScreen() {
@@ -74,7 +123,12 @@ export function SpeakingScreen() {
   const [analyzing, setAnalyzing] = useState(false);
   const [result, setResult] = useState(null);
   const [message, setMessage] = useState('Toque para responder em inglês.');
+  const [chatMessages, setChatMessages] = useState(initialMessages);
   const scene = immersionScenes[activeScene];
+
+  const pronunciationScore = getScore(result);
+  const analyzedWords = useMemo(() => getAnalyzedWords(result, pronunciationText), [result]);
+  const focusWord = useMemo(() => getFocusWord(result), [result]);
 
   async function handleSpeak(text = pronunciationText) {
     setMessage('Preparando áudio...');
@@ -85,6 +139,23 @@ export function SpeakingScreen() {
       style: 'Natural English conversation model. Clear, friendly and easy to repeat.',
     });
     setMessage(response.ok ? 'Áudio iniciado.' : response.error || 'Erro ao reproduzir áudio.');
+  }
+
+  function appendConversationAnalysis(analysisResult, referenceText) {
+    const score = getScore(analysisResult);
+    const focus = getFocusWord(analysisResult);
+    const spokenText = analysisResult?.recognizedText || referenceText || 'Resposta gravada';
+
+    setChatMessages((current) => [
+      ...current,
+      {
+        who: 'you',
+        text: spokenText,
+        score,
+        errors: focus ? [{ word: focus.word, note: buildWordTip(focus) }] : [],
+      },
+      { who: 'ai', text: buildConversationReply(score) },
+    ]);
   }
 
   async function handleRecordToggle(referenceText = pronunciationText) {
@@ -125,10 +196,9 @@ export function SpeakingScreen() {
     }
 
     setResult(analyzed.result);
+    if (mode === 'conversation') appendConversationAnalysis(analyzed.result, referenceText);
     setMessage('Análise concluída.');
   }
-
-  const pronunciationScore = result?.pronunciationScore ?? result?.accuracyScore ?? 87;
 
   return (
     <section className="speaking-reference-screen">
@@ -174,8 +244,8 @@ export function SpeakingScreen() {
           </section>
 
           <section className="speaking-chat-list" aria-label="Conversa guiada">
-            {messages.map((item, index) => (
-              <article className={`speaking-chat-row ${item.who}`} key={`${item.who}-${index}`}>
+            {chatMessages.map((item, index) => (
+              <article className={`speaking-chat-row ${item.who}`} key={`${item.who}-${index}-${item.text}`}>
                 <div className="speaking-chat-bubble-wrap">
                   {item.who === 'ai' ? (
                     <div className="speaking-ai-label">
@@ -194,13 +264,13 @@ export function SpeakingScreen() {
                     </button>
                   ) : null}
 
-                  {item.score !== undefined ? (
+                  {item.score !== undefined && item.score !== null ? (
                     <div className="speaking-chat-feedback">
                       <div>
                         <strong>Pronúncia: {item.score}%</strong>
-                        <span>1 dica</span>
+                        <span>{item.errors?.length || 0} dica</span>
                       </div>
-                      {item.errors.map((error) => (
+                      {(item.errors || []).map((error) => (
                         <p key={error.word}><b>{error.word}</b> · {error.note}</p>
                       ))}
                     </div>
@@ -244,7 +314,7 @@ export function SpeakingScreen() {
               <div>
                 <span>Sua tentativa</span>
                 <strong>
-                  <b>{pronunciationScore}</b>
+                  <b>{pronunciationScore ?? '—'}</b>
                   <em>/ 100</em>
                 </strong>
               </div>
@@ -254,17 +324,17 @@ export function SpeakingScreen() {
             </div>
 
             <div className="speaking-word-score-row">
-              {wordScores.map((item) => (
-                <span className={scoreClass(item.score)} key={item.word}>{item.word}</span>
+              {analyzedWords.map((item) => (
+                <span className={scoreClass(item.score)} key={`${item.word}-${item.score ?? 'pending'}`}>{item.word}</span>
               ))}
             </div>
 
             <div className="speaking-pronunciation-tip">
               <div>
                 <Info size={13} />
-                <strong>Foco em “finished”</strong>
+                <strong>{focusWord ? `Foco em “${focusWord.word}”` : 'Foco da próxima tentativa'}</strong>
               </div>
-              <p>O <b>-ed</b> aqui soa como <b>/t/</b>, não /id/. Pronuncie “finisht”.</p>
+              <p>{focusWord ? buildWordTip(focusWord) : 'Grave sua frase para receber um foco real baseado na análise do Azure.'}</p>
             </div>
           </section>
 
