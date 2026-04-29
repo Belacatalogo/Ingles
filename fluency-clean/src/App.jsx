@@ -1,4 +1,4 @@
-import { BookOpen, Brain, Flame, Home, LineChart, Mic, Settings } from 'lucide-react';
+import { Activity, BookOpen, Brain, Flame, Home, LineChart, Mic, Settings, X } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { AccessGate } from './components/auth/AccessGate.jsx';
 import { BottomNav } from './components/layout/BottomNav.jsx';
@@ -25,6 +25,7 @@ const tabs = [
 function AppContent() {
   const [activeTab, setActiveTab] = useState('today');
   const [lessonRevision, setLessonRevision] = useState(0);
+  const [showDiagnostics, setShowDiagnostics] = useState(false);
   const current = useMemo(() => tabs.find((tab) => tab.id === activeTab) ?? tabs[0], [activeTab]);
   const progress = useMemo(() => getProgressSummary(), [lessonRevision, activeTab]);
   const Screen = current.component;
@@ -62,7 +63,30 @@ function AppContent() {
 
       <footer className="preview-version-footer">{PREVIEW_VERSION}</footer>
 
-      <DiagnosticPanel />
+      <button
+        className="diagnostic-mini-button"
+        type="button"
+        onClick={() => setShowDiagnostics(true)}
+        aria-label="Abrir diagnóstico"
+      >
+        <Activity size={17} />
+      </button>
+
+      {showDiagnostics ? (
+        <div className="diagnostic-overlay" role="dialog" aria-label="Diagnóstico" aria-modal="true">
+          <button className="diagnostic-backdrop" type="button" onClick={() => setShowDiagnostics(false)} aria-label="Fechar diagnóstico" />
+          <section className="diagnostic-sheet">
+            <div className="diagnostic-sheet-header">
+              <strong>Diagnóstico</strong>
+              <button type="button" onClick={() => setShowDiagnostics(false)} aria-label="Fechar diagnóstico">
+                <X size={18} />
+              </button>
+            </div>
+            <DiagnosticPanel />
+          </section>
+        </div>
+      ) : null}
+
       <BottomNav tabs={tabs} activeTab={activeTab} onChange={setActiveTab} />
     </main>
   );
