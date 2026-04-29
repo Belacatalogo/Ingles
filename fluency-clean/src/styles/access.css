@@ -1,0 +1,22 @@
+.access-code-form { display: grid; gap: 8px; margin-top: 14px; }
+.access-code-form label { color: #dbeafe; font-size: 13px; font-weight: 850; }
+.access-code-form > div { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: start; }
+.access-code-form .secondary-button { width: auto; min-width: 104px; margin-top: 0; }
+.reset-access-button { width: 100%; margin-top: 10px; }
+.google-auth-actions { display: grid; gap: 8px; margin-top: 12px; }
+.google-auth-actions .primary-button,
+.google-auth-actions .secondary-button { margin-top: 0; }
+.auth-message { padding: 10px 12px; border-radius: 14px; border: 1px solid rgba(147,197,253,.18); background: rgba(91,156,246,.08); }
+.firebase-config-panel { margin-top: 14px; padding: 14px; border: 1px solid rgba(148,163,184,.16); border-radius: 18px; background: rgba(2,6,23,.22); }
+.firebase-config-panel summary { color: #dbeafe; font-weight: 850; cursor: pointer; }
+.firebase-config-panel p { margin: 10px 0 12px; font-size: 13px; line-height: 1.45; }
+.firebase-config-panel form { display: grid; gap: 8px; }
+.firebase-config-panel label { color: #bfdbfe; font-size: 12px; font-weight: 800; }
+.firebase-config-panel input { min-height: 42px; font-size: 14px; }
+.firebase-config-panel .primary-button,
+.firebase-config-panel .danger-button { margin-top: 8px; }
+
+@media (max-width: 720px) {
+  .access-code-form > div { grid-template-columns: 1fr; }
+  .access-code-form .secondary-button { width: 100%; }
+}
