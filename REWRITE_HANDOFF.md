@@ -85,13 +85,20 @@ Não mexer na `main` durante a reconstrução. Tudo deve acontecer nesta branch 
 - `services/index.js` exporta lessonStore.
 - CSS de geração e logs criado.
 
+### Bloco 5.2 — Build/preview controlado
+- `vite.config.js` criado com `base: './'`, build em `dist` e sourcemap.
+- Workflow `.github/workflows/fluency-clean-preview.yml` criado para buildar `fluency-clean` no GitHub Actions.
+- `package.json` recebeu script `check` apontando para `npm run build`.
+- Workflow usa `npm install` e `npm run build`, sem depender de lockfile inexistente.
+- Não consegui rodar build local nesta sessão por erro de DNS/clonagem do GitHub no ambiente, então a validação real ficará com o GitHub Actions.
+
 ## Próximo bloco recomendado
 
-### Bloco 5.2 — Build/preview controlado antes de áudio
-- Configurar forma de testar o app limpo sem substituir a main.
-- Rodar build/validação do projeto se possível.
-- Corrigir erros de import/build antes de seguir para áudio.
-- Só depois seguir para Bloco 6.
+### Bloco 5.3 — Verificar resultado do GitHub Actions / corrigir build
+- Abrir a aba Actions do repositório.
+- Rodar ou conferir o workflow "Fluency Clean Preview".
+- Se falhar, corrigir import/build antes de áudio.
+- Se passar, baixar/ver artifact `fluency-clean-dist` ou preparar deploy de preview.
 
 ## Blocos restantes
 
