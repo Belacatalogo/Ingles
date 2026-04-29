@@ -79,40 +79,34 @@ Blocos concluídos:
 
 ## Estado atual para teste
 
-### Imersão — `LAB-IMERSAO-1` IMPLEMENTADO, AGUARDANDO TESTE DO USUÁRIO
-Pedido do usuário:
-- se a aba Imersão não existisse, colocar Imersão dentro da aba Speaking com um botão ao lado de **Pronúncia**.
-
-Verificação feita:
-- foi pesquisado no repositório por Imersão/Immersion/ImmersionScreen e não havia tela real existente.
+### Imersão — `LAB-IMERSAO-1B` CORRIGIDO, AGUARDANDO RETESTE DO USUÁRIO
+Pedido do usuário no ajuste fino:
+- a aba ficou achatada;
+- as bordas/cartões estavam com espaços vazios;
+- o chip “situações reais” parecia botão, mas não fazia nada.
 
 Arquivos alterados:
 - `fluency-clean/src/screens/SpeakingScreen.jsx`
 - `fluency-clean/src/styles/lab-polish.css`
 - `REWRITE_HANDOFF.md`
 
-Commit confirmado deste bloco:
-- `413fe010d28cda1917519c3ccf70de30f004d94e` — adiciona estilos de imersão.
+Commits confirmados deste ajuste fino:
+- `496f1e9f491e6f77b5ea86eede13bd987dc0b639` — remove chip sem função e melhora lista;
+- `40c8b4473b56c34e7efa0ce858c5c62282f1e76f` — corrige layout achatado no iPhone.
 
-O que foi implementado:
-- Speaking agora tem 3 modos no seletor superior:
-  - **Conversa**;
-  - **Pronúncia**;
-  - **Imersão**;
-- Imersão foi adicionada dentro de Speaking, sem criar aba fantasma na navbar;
-- modo Imersão tem:
-  - hero explicativo;
-  - cenários reais: Café, Hotel e Rua;
-  - cartão com frase natural do cenário;
-  - botão **Ouvir** usando o TTS existente;
-  - botão grande de microfone usando o mesmo fluxo seguro de gravação/análise Azure já usado no Speaking;
-  - estilos próprios no `lab-polish.css`;
-- não foi feita integração pesada com IA geral neste bloco;
-- não foi mexido em Aula, Hoje, Cartas, Progresso, Ajustes, Firebase, Gemini, Azure backend, HTML ou bundle.
+O que foi corrigido:
+- seletor **Conversa / Pronúncia / Imersão** agora usa grid de 3 colunas para não ficar achatado;
+- tamanho dos botões reduzido com cuidado no iPhone;
+- chip “situações reais” removido para não parecer ação sem função;
+- texto do hero ajustado para “Escolha um cenário...”;
+- cards dos cenários agora usam duas colunas, sem espaço vazio à direita;
+- título e nível ficam empilhados dentro do card, evitando truncamento estranho;
+- card ativo continua destacado.
 
 Limites intencionais:
-- Imersão usa cenários estáticos seguros por enquanto;
-- a futura geração dinâmica com IA geral deve ser feita em bloco próprio, depois do checklist, para não quebrar Speaking/Azure.
+- Imersão ainda usa cenários estáticos seguros;
+- geração dinâmica por IA geral fica para bloco próprio futuro;
+- não mexeu em Aula, Hoje, Cartas, Progresso, Ajustes, Firebase, Gemini, Azure backend, HTML ou bundle.
 
 ## Próximo bloco correto
 
@@ -127,7 +121,7 @@ Objetivo do LAB-9:
 - garantir que o app pareça produto final antes do checklist.
 
 ### Se Imersão tiver problema
-Não avançar. Corrigir cirurgicamente apenas `LAB-IMERSAO-1` na branch lab.
+Não avançar. Corrigir cirurgicamente apenas `LAB-IMERSAO-1B` na branch lab.
 
 ## Ordem restante dos blocos de UI
 
@@ -164,7 +158,7 @@ Depois de cada bloco, o usuário testa no Vercel pelo iPhone. Só avançar se el
 ## Como continuar em outro chat
 Mensagem recomendada:
 
-"Continue a reconstrução do Fluency usando SOMENTE a branch `rewrite-fluency-clean-lab`. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. O teste é feito no Vercel preview da branch lab, pelo iPhone. Speaking, Hoje, Navbar, Aula, Cartas, Progresso e Ajustes estão aprovados. O `LAB-IMERSAO-1` adicionou Imersão dentro de Speaking como terceira opção ao lado de Conversa/Pronúncia e está aguardando aprovação. A Aula tem preview temporário por pilares funcionando 100%, que será removido no LAB-9. Não mexa na `main`, não mexa na `rewrite-fluency-clean`, não use HTML remendado, DOM injection ou bundle patch. Continue modularmente em `fluency-clean/src/`."
+"Continue a reconstrução do Fluency usando SOMENTE a branch `rewrite-fluency-clean-lab`. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. O teste é feito no Vercel preview da branch lab, pelo iPhone. Speaking, Hoje, Navbar, Aula, Cartas, Progresso e Ajustes estão aprovados. O `LAB-IMERSAO-1B` corrigiu a Imersão dentro de Speaking e está aguardando aprovação. A Aula tem preview temporário por pilares funcionando 100%, que será removido no LAB-9. Não mexa na `main`, não mexa na `rewrite-fluency-clean`, não use HTML remendado, DOM injection ou bundle patch. Continue modularmente em `fluency-clean/src/`."
 
 ## Última orientação operacional
 A partir deste handoff, qualquer alteração fora de `rewrite-fluency-clean-lab` deve ser considerada erro, salvo pedido explícito do usuário.
