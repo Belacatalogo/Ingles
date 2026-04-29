@@ -52,87 +52,108 @@ Continuar montando o sistema como React modular em `fluency-clean/src/`:
 
 ## Estado atual para teste
 
-### Bloco 8-LAB-1 — Motor pedagógico multi-tipo IMPLEMENTADO, aguardando teste do usuário
-Objetivo do bloco:
-- iniciar a reestruturação profunda das aulas/conteúdo pedagógico;
-- preparar a geração de aulas para mais de um tipo real;
-- melhorar o aproveitamento do conteúdo real gerado pela IA em Listening e Writing;
-- manter visual aprovado e backend intactos.
+### Bloco 8-LAB-1 — Motor pedagógico multi-tipo IMPLEMENTADO
+Objetivo:
+- preparar a geração de aulas para Reading, Grammar, Listening e Writing;
+- usar blueprints pedagógicos por tipo;
+- melhorar aproveitamento do conteúdo real da IA em Listening e Writing.
 
-Arquivos alterados:
+Arquivos principais:
 - `fluency-clean/src/services/lessonTypes.js`
 - `fluency-clean/src/services/geminiLessons.js`
 - `fluency-clean/src/components/lesson/LessonGeneratorPanel.jsx`
 - `fluency-clean/src/lessons/ListeningLesson.jsx`
 - `fluency-clean/src/lessons/WritingLesson.jsx`
 - `fluency-clean/src/services/lessonStore.js`
+
+### Bloco 8-LAB-2 — Cronograma pedagógico A1 → C2 automático IMPLEMENTADO, aguardando teste
+Pedido do usuário:
+- não quer escolher o conteúdo manualmente;
+- quer um cronograma extremamente completo e extenso;
+- quer aprender em ordem, do A1 ao avançado;
+- não quer ver uma aula que dependa de conteúdo ainda não estudado;
+- quer aulas longas, aprofundadas e com muitas perguntas;
+- a IA deve gerar a aula, mas seguindo obrigatoriamente o cronograma;
+- não quer passar de nível sem ver o máximo de conteúdo possível daquele nível.
+
+Arquivos alterados/criados:
+- `fluency-clean/src/services/curriculumPlan.js`
+- `fluency-clean/src/components/lesson/LessonGeneratorPanel.jsx`
+- `fluency-clean/src/services/progressStore.js`
+- `fluency-clean/src/services/lessonStore.js`
 - `REWRITE_HANDOFF.md`
 
 O que foi implementado:
-- `lessonTypes.js` agora normaliza um schema mais rico de aula:
-  - `objective`;
-  - `focus`;
-  - `sections` com exemplos;
-  - `exercises` com explicação;
-  - `prompts` de produção;
-  - aliases e inferência de tipo por texto do pedido.
-- `geminiLessons.js` agora detecta o tipo de aula pelo prompt:
-  - Reading;
-  - Grammar;
-  - Listening;
-  - Writing.
-- O gerador passou a usar blueprints pedagógicos por tipo:
-  - Reading: estrutura, texto principal, vocabulário, exercícios e produção;
-  - Grammar: regra, exemplos, prática e produção;
-  - Listening: estrutura, transcrição, vocabulário, exercícios e shadowing;
-  - Writing: modelo, estrutura, roteiro, microprática e produção final.
-- O diagnóstico agora registra o tipo detectado e os blocos gerados.
-- `LessonGeneratorPanel.jsx` foi atualizado para orientar o usuário a pedir Reading/Grammar/Listening/Writing e aponta as chaves para Ajustes > Chaves de aulas.
-- `ListeningLesson.jsx` agora usa a transcrição real da IA (`listeningText`), exercícios reais e rascunho/conclusão real.
-- `WritingLesson.jsx` agora usa seções/prompts reais da IA, não apenas roteiro fixo.
-- `lessonStore.js` teve o prompt padrão atualizado para aula mais completa.
+- criado `curriculumPlan.js` com trilha local A1 → C2;
+- a trilha contém níveis, unidades, aulas, tipos e pré-requisitos;
+- A1 é mais extenso e bem detalhado, cobrindo fundamentos antes de avançar;
+- A2, B1, B2, C1 e C2 já têm estrutura ordenada inicial;
+- o gerador não pede mais prompt livre para escolher conteúdo;
+- o painel agora mostra:
+  - nível atual;
+  - progresso do nível;
+  - próxima aula obrigatória;
+  - botão **Gerar próxima aula**;
+- ao gerar, o sistema monta um prompt interno com:
+  - ID da aula;
+  - tipo;
+  - nível;
+  - unidade;
+  - tema obrigatório;
+  - pré-requisitos;
+  - regras para não atropelar conteúdo;
+- ao concluir uma aula, `progressStore.js` marca também a aula do cronograma como concluída;
+- a próxima geração avança para a próxima aula ainda não concluída.
+
+Commits confirmados deste bloco:
+- `11cf4877bc02ccc1e8e6a437b3566caf5c530219` — avança cronograma ao concluir aula;
+- `2846c4d10d6408b05c612694277fa0936b4434e9` — gerador segue cronograma automático;
+- além do commit de criação de `curriculumPlan.js` e do ajuste em `lessonStore.js` neste bloco.
 
 Limites intencionais:
+- cronograma está local no frontend por enquanto;
+- ainda não existe tela dedicada para editar/ver o cronograma completo;
+- ainda não existe bloqueio visual sofisticado de “não avançar de nível”, mas a geração já segue a ordem da trilha;
 - não mexeu em backend Azure privado;
 - não mexeu em Firebase;
 - não mexeu em HTML;
 - não mexeu em bundle;
 - não conectou IA geral de Speaking/Imersão ainda;
-- não alterou visual aprovado das telas principais;
 - não fez promoção/merge para branch estável.
 
 ## Teste recomendado no Vercel/iPhone
 
 1. Abrir **Hoje**.
-2. Abrir o painel **Gerar nova aula por IA**.
-3. Gerar uma aula Reading A1 simples e confirmar se abre na aba Aula.
-4. Depois testar pelo menos uma aula Grammar A1 com prompt explícito:
-   - “Gere uma aula de Grammar A1 sobre Simple Present com explicação profunda e prática.”
-5. Opcionalmente testar Listening ou Writing:
-   - “Gere uma aula de Listening A1 sobre pedir café em uma cafeteria.”
-   - “Gere uma aula de Writing A1 sobre my daily routine.”
-6. Conferir no diagnóstico se aparece “Tipo de aula detectado”.
-7. Confirmar que não aparece tela branca.
-8. Confirmar que Aula renderiza o tipo gerado sem travar.
+2. Abrir **Gerar nova aula por IA**.
+3. Confirmar que não aparece mais o campo para escolher conteúdo livre.
+4. Confirmar que aparece **Próxima aula do cronograma**.
+5. Confirmar que aparece algo como:
+   - Nível atual: A1;
+   - Progresso do nível;
+   - Próxima: A1 · reading · Cumprimentos, nomes e apresentações simples.
+6. Tocar em **Gerar próxima aula**.
+7. Abrir diagnóstico e confirmar que a geração usa o tipo detectado e blocos.
+8. Depois de gerar, abrir **Aula** e concluir.
+9. Voltar ao gerador e confirmar que a próxima aula avançou no cronograma.
 
 ## Próximo bloco correto
 
-### Se Bloco 8-LAB-1 for aprovado
-Próximo: `Bloco 8-LAB-2 — aprofundar renderização pedagógica e conclusão por tipo`.
+### Se Bloco 8-LAB-2 for aprovado
+Próximo: `Bloco 8-LAB-3 — fortalecer cronograma e tela de trilha`.
 
 Objetivo provável:
-- melhorar Grammar com exemplos e explicações mais ricas;
-- melhorar Listening com perguntas sem revelar resposta antes da tentativa;
-- melhorar Writing com checklist e correção guiada;
-- padronizar conclusão/progresso por tipo;
-- manter sistema modular e seguro.
+- mostrar uma visão da trilha A1 → C2 em Progresso ou Ajustes;
+- expandir ainda mais o currículo com mais aulas por nível;
+- adicionar bloqueio visual de avanço de nível;
+- adicionar porcentagem mínima por nível antes de avançar;
+- adicionar revisão obrigatória e simulados antes de liberar próximo nível.
 
-### Se Bloco 8-LAB-1 tiver problema
+### Se Bloco 8-LAB-2 tiver problema
 Não avançar. Corrigir cirurgicamente apenas o problema encontrado na branch lab.
 
 ## Ordem restante dos blocos
 
-1. `Bloco 8-LAB-2` — aprofundar renderização pedagógica e conclusão por tipo.
+1. `Bloco 8-LAB-3` — fortalecer cronograma e tela de trilha.
 2. Checklist funcional real: login, áudio, Azure, Gemini, geração/conclusão de aula e persistência.
 3. Só depois, considerar promoção/merge para branch estável, se o usuário pedir explicitamente.
 
@@ -165,7 +186,7 @@ Depois de cada bloco, o usuário testa no Vercel pelo iPhone. Só avançar se el
 ## Como continuar em outro chat
 Mensagem recomendada:
 
-"Continue a reconstrução do Fluency usando SOMENTE a branch `rewrite-fluency-clean-lab`. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. O teste é feito no Vercel preview da branch lab, pelo iPhone. A UI visual está aprovada/organizada. O `Bloco 8-LAB-1` implementou motor pedagógico multi-tipo para Reading, Grammar, Listening e Writing e está aguardando teste. Não mexa na `main`, não mexa na `rewrite-fluency-clean`, não use HTML remendado, DOM injection ou bundle patch. Continue modularmente em `fluency-clean/src/`."
+"Continue a reconstrução do Fluency usando SOMENTE a branch `rewrite-fluency-clean-lab`. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. O teste é feito no Vercel preview da branch lab, pelo iPhone. A UI visual está aprovada/organizada. O `Bloco 8-LAB-2` criou cronograma pedagógico A1 → C2 automático: o usuário não escolhe mais o conteúdo, o gerador segue a próxima aula obrigatória da trilha e avança ao concluir. Não mexa na `main`, não mexa na `rewrite-fluency-clean`, não use HTML remendado, DOM injection ou bundle patch. Continue modularmente em `fluency-clean/src/`."
 
 ## Última orientação operacional
 A partir deste handoff, qualquer alteração fora de `rewrite-fluency-clean-lab` deve ser considerada erro, salvo pedido explícito do usuário.
