@@ -3,15 +3,19 @@ import {
   BookOpenCheck,
   Brain,
   CheckCircle2,
+  ChevronRight,
   Flame,
   Lock,
   Mic,
+  Route,
+  ShieldCheck,
   Target,
   TrendingUp,
   Trophy,
   Zap,
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import { CURRICULUM_LEVELS, getCurriculumLessons, getCurriculumProgress, getCurriculumSummary } from '../services/curriculumPlan.js';
 import { getCurrentWeekStats, getLessonCompletions, getProgressSummary } from '../services/progressStore.js';
 
 const cefrLevels = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
@@ -81,17 +85,57 @@ function buildActivity(completions) {
   }));
 }
 
+function getCurriculumLevelRows(curriculumProgress) {
+  const completed = new Set(curriculumProgress.completedIds || []);
+  const allLessons = getCurriculumLessons();
+  const nextLesson = getCurriculumSummary().nextLesson;
+  const currentLevel = nextLesson?.level || 'A1';
+  const currentLevelIndex = cefrLevels.indexOf(currentLevel);
+
+  return CURRICULUM_LEVELS.map((level, index) => {
+    const lessons = allLessons.filter((lesson) => lesson.level === level.level);
+    const done = lessons.filter((lesson) => completed.has(lesson.id)).length;
+    const total = lessons.length || 1;
+    const percent = Math.round((done / total) * 100);
+    const locked = index > currentLevelIndex;
+    const current = level.level === currentLevel;
+    const completeEnough = percent >= Math.round(level.requiredCompletion * 100);
+
+    return {
+      ...level,
+      done,
+      total,
+      percent,
+      locked,
+      current,
+      completeEnough,
+    };
+  });
+}
+
+function getUpcomingLessons(curriculumProgress, limit = 5) {
+  const completed = new Set(curriculumProgress.completedIds || []);
+  return getCurriculumLessons().filter((lesson) => !completed.has(lesson.id)).slice(0, limit);
+}
+
 export function ProgressScreen() {
   const [range, setRange] = useState('30d');
   const progress = useMemo(() => getProgressSummary(), []);
   const week = useMemo(() => getCurrentWeekStats(), []);
   const completions = useMemo(() => getLessonCompletions(), []);
+  const curriculum = useMemo(() => getCurriculumSummary(), []);
+  const curriculumProgress = useMemo(() => getCurriculumProgress(), []);
+  const curriculumLevels = useMemo(() => getCurriculumLevelRows(curriculumProgress), [curriculumProgress]);
+  const upcomingLessons = useMemo(() => getUpcomingLessons(curriculumProgress), [curriculumProgress]);
   const recentCompletions = completions.slice(0, 4);
   const levelState = useMemo(() => getLevelState(progress), [progress]);
   const skillScores = useMemo(() => buildSkillScores(completions), [completions]);
   const activity = useMemo(() => buildActivity(completions), [completions]);
   const wordsEstimate = Math.max(0, progress.completedLessons * 7 + completions.length * 4);
   const speakingHours = Math.max(0, Math.round((completions.filter((item) => String(item.type || '').toLowerCase() === 'speaking').length * 18) / 60));
+  const nextLesson = curriculum.nextLesson;
+  const currentLevelData = curriculumLevels.find((item) => item.current) || curriculumLevels[0];
+  const lessonsToUnlock = Math.max(0, Math.ceil((currentLevelData?.total || 1) * (currentLevelData?.requiredCompletion || 0.92)) - (currentLevelData?.done || 0));
 
   return (
     <section className="progress-screen" aria-label="Progresso do Fluency">
@@ -99,7 +143,7 @@ export function ProgressScreen() {
         <div>
           <p className="progress-eyebrow">Progresso</p>
           <h1>Sua jornada</h1>
-          <p>Do A1 ao C2, com XP, streak, aulas e revisão visual.</p>
+          <p>Do A1 ao C2, com cronograma, pré-requisitos, revisão e geração guiada.</p>
         </div>
 
         <div className="progress-range-toggle" aria-label="Período do progresso">
@@ -117,27 +161,89 @@ export function ProgressScreen() {
       </div>
 
       <section className="progress-level-hero">
-        <span>Nível estimado</span>
-        <strong>{levelState.currentLevel}</strong>
+        <span>Nível do cronograma</span>
+        <strong>{curriculum.currentLevel}</strong>
         <p>
-          {levelState.levelProgress}% até {levelState.nextLevel} · {progress.completedLessons || 0} aulas concluídas
+          {curriculum.completedInLevel}/{curriculum.levelTotal} aulas do nível · {curriculum.levelProgress}% concluído
         </p>
 
         <div className="progress-cefr-road" aria-label="Mapa CEFR de A1 a C2">
           {cefrLevels.map((level, index) => {
-            const reached = index <= levelState.currentIndex;
-            const current = index === levelState.currentIndex;
+            const row = curriculumLevels.find((item) => item.level === level);
+            const reached = !row?.locked;
+            const current = row?.current;
             return (
               <div className="progress-cefr-step" key={level}>
                 <div className={`progress-cefr-node ${reached ? 'reached' : ''} ${current ? 'current' : ''}`}>
                   {level}
                 </div>
                 {index < cefrLevels.length - 1 ? (
-                  <i className={index < levelState.currentIndex ? 'filled' : ''} />
+                  <i className={row?.completeEnough ? 'filled' : ''} />
                 ) : null}
               </div>
             );
           })}
+        </div>
+      </section>
+
+      <section className="progress-section-card curriculum-card">
+        <div className="progress-section-title">
+          <span>Trilha obrigatória</span>
+          <small>{curriculum.completedTotal}/{curriculum.totalLessons} aulas</small>
+        </div>
+
+        <div className="curriculum-next-lesson">
+          <div>
+            <Route size={18} />
+          </div>
+          <article>
+            <span>Próxima aula</span>
+            <strong>{nextLesson?.title || 'Cronograma concluído'}</strong>
+            <p>{nextLesson ? `${nextLesson.level} · ${nextLesson.type} · ${nextLesson.unitTitle}` : 'Todas as aulas planejadas foram concluídas.'}</p>
+          </article>
+        </div>
+
+        <div className="curriculum-level-list">
+          {curriculumLevels.map((level) => (
+            <article className={`curriculum-level-row ${level.current ? 'current' : ''} ${level.locked ? 'locked' : ''}`} key={level.level}>
+              <div>
+                {level.locked ? <Lock size={15} /> : level.completeEnough ? <ShieldCheck size={15} /> : <Target size={15} />}
+              </div>
+              <section>
+                <header>
+                  <strong>{level.level} · {level.title}</strong>
+                  <span>{level.done}/{level.total}</span>
+                </header>
+                <i><b style={{ width: `${level.percent}%` }} /></i>
+                <p>
+                  {level.locked
+                    ? 'Bloqueado até consolidar o nível anterior.'
+                    : level.current
+                      ? `${lessonsToUnlock} aulas/revisões até liberar o próximo nível.`
+                      : 'Nível consolidado ou já percorrido.'}
+                </p>
+              </section>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="progress-section-card curriculum-card">
+        <div className="progress-section-title">
+          <span>Próximas aulas</span>
+          <small>sem atropelar conteúdo</small>
+        </div>
+        <div className="curriculum-upcoming-list">
+          {upcomingLessons.map((lesson, index) => (
+            <article className={index === 0 ? 'active' : ''} key={lesson.id}>
+              <b>{index + 1}</b>
+              <div>
+                <strong>{lesson.title}</strong>
+                <span>{lesson.level} · {lesson.type} · {lesson.unitTitle}</span>
+              </div>
+              {index === 0 ? <ChevronRight size={18} /> : <Lock size={15} />}
+            </article>
+          ))}
         </div>
       </section>
 
@@ -214,7 +320,7 @@ export function ProgressScreen() {
             { label: `${wordsEstimate} palavras`, icon: Brain, tone: 'violet', locked: false },
             { label: '1ª conversa', icon: Mic, tone: 'teal', locked: speakingHours === 0 },
             { label: `${progress.completedLessons || 0} aulas`, icon: BookOpenCheck, tone: 'blue', locked: false },
-            { label: levelState.currentLevel, icon: Target, tone: 'green', locked: false },
+            { label: curriculum.currentLevel, icon: Target, tone: 'green', locked: false },
             { label: 'próxima', icon: Lock, tone: 'muted', locked: true },
           ].map((achievement) => {
             const Icon = achievement.icon;
@@ -257,8 +363,8 @@ export function ProgressScreen() {
 
       <section className="progress-footer-focus">
         <div><Trophy size={18} /> Próximo marco</div>
-        <strong>{5 - Math.min(5, week.completed || 0)} aulas para fechar a meta semanal</strong>
-        <p>Continue mantendo a rotina. As chaves agora ficam em Ajustes, dentro da categoria correta.</p>
+        <strong>{lessonsToUnlock} aulas/revisões para liberar o próximo nível</strong>
+        <p>O cronograma escolhe a próxima aula em ordem, respeitando pré-requisitos e consolidação de nível.</p>
         <small><Zap size={13} /> progresso seguro para testes no Vercel</small>
       </section>
     </section>
