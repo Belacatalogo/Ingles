@@ -149,6 +149,13 @@ Não mexer na `main` durante a reconstrução. Tudo deve acontecer nesta branch 
 - Se houver usuário no retorno do redirect, o app cria sessão local e libera a entrada automaticamente.
 - Se houver erro no retorno, a mensagem aparece na tela e também no Diagnóstico.
 
+### Bloco 7.2.4 — Popup como padrão no preview RawGitHack
+- Teste real no iPhone confirmou que login Google por popup funciona no RawGitHack.
+- Teste real também mostrou que o redirect pode voltar para a tela de acesso no preview.
+- `AccessGate.jsx` agora usa popup como ação principal do botão “Entrar com Google”.
+- O redirect continua disponível apenas como fallback/diagnóstico.
+- No app final hospedado em domínio próprio, o redirect pode ser reavaliado; para o preview atual, popup é o caminho validado.
+
 ### Bloco 7.4.1 — Correção UX da compreensão Reading
 - `ReadingLesson.jsx` não revela mais a resposta correta antes da interação.
 - O aluno escolhe uma opção e só então recebe feedback visual.
@@ -157,20 +164,18 @@ Não mexer na `main` durante a reconstrução. Tudo deve acontecer nesta branch 
 
 ## Próximo passo recomendado
 
-### Bloco 7.2 — Validar Firebase/Google real
+### Bloco 7.2 — Fechar validação Firebase/Google
 - Abrir o preview atualizado.
 - Confirmar status `Firebase configurado (runtime)`.
-- Testar primeiro “Entrar com Google”.
-- Ao voltar do Google, o app deve mostrar “Verificando retorno do Google...” e liberar automaticamente se houver usuário.
-- Se não liberar, testar “Tentar Google por popup”.
-- Se aparecer erro de domínio, adicionar `raw.githack.com` nos domínios autorizados do Firebase Authentication.
-- Se aparecer erro de método, ativar Google em Firebase Authentication > Sign-in method.
-- Confirmar se “Reiniciar acesso” limpa a sessão local.
+- Testar o botão principal “Entrar com Google”, que agora usa popup.
+- Confirmar se o app libera automaticamente e mantém sessão após recarregar.
+- Testar “Reiniciar acesso” e login novamente.
+- Se tudo continuar funcionando, marcar Firebase/Google como validado no preview.
 
 ## Blocos restantes por ordem de segurança
 
 ### Bloco 7.2 — Validar Firebase/Google
-- Validar runtime Firebase, Google redirect, código de acesso e sessão local.
+- Validar runtime Firebase, Google popup, sessão local e limpeza de sessão.
 
 ### Bloco 7.3 — Validar progresso/salvamento/conclusão de aula
 - Confirmar que a aula gerada persiste ao recarregar.
