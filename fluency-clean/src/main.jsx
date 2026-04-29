@@ -9,6 +9,7 @@ import './styles/today-polish.css';
 import './styles/nav-polish.css';
 import './styles/lesson-polish.css';
 import './styles/flashcards-polish.css';
+import './styles/progress-polish.css';
 
 const rootElement = document.getElementById('root');
 const root = createRoot(rootElement);
