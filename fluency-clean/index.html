@@ -5,9 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <meta name="theme-color" content="#060D1F" />
     <title>Fluency Clean</title>
+    <style>
+      html, body, #root { min-height: 100%; margin: 0; background: #050b18; }
+      .static-boot-fallback { min-height: 100vh; display: grid; place-items: center; padding: 24px; color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', Inter, system-ui, sans-serif; background: radial-gradient(circle at 50% 0%, rgba(126,112,255,.22), transparent 35%), linear-gradient(180deg,#080f22,#050b18); }
+      .static-boot-card { width: min(420px, 100%); border: 1px solid rgba(147,160,213,.22); border-radius: 28px; padding: 24px; background: rgba(13,19,42,.88); box-shadow: 0 22px 70px rgba(0,0,0,.35); }
+      .static-boot-card span { color: #93c5fd; font-size: 12px; font-weight: 900; letter-spacing: .14em; text-transform: uppercase; }
+      .static-boot-card h1 { margin: 12px 0 8px; font-size: 30px; line-height: 1; }
+      .static-boot-card p { margin: 0; color: #9ca8ca; line-height: 1.5; }
+      .static-boot-card small { display: block; margin-top: 16px; color: #8f9ab9; }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div class="static-boot-fallback">
+        <section class="static-boot-card">
+          <span>Fluency Clean</span>
+          <h1>Carregando preview seguro</h1>
+          <p>Se esta mensagem não sumir, o bundle do preview ainda não carregou. Recarregue a página ou aguarde a publicação do build.</p>
+          <small>rewrite-clean · recovery boot</small>
+        </section>
+      </div>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
