@@ -4,12 +4,15 @@ Branch atual de trabalho: `rewrite-fluency-clean-lab`
 
 Branch estável protegida: `rewrite-fluency-clean`
 
+PR de promoção controlada para main: #21 — DRAFT
+
 ## REGRA MÁXIMA
 Todas as próximas alterações devem acontecer SOMENTE na branch:
 
 `rewrite-fluency-clean-lab`
 
-Não alterar `main`.
+Não alterar `main` diretamente.
+Não fazer merge do PR #21 antes de confirmar Root Directory da Vercel.
 Não deletar `rewrite-fluency-clean-lab` após merge.
 Não mexer em `bundle.js`.
 Não usar DOM injection.
@@ -17,6 +20,56 @@ Não criar bundle patch.
 Não mexer no backend Azure privado.
 
 ## Estado atual para teste
+
+### Bloco 8-LAB-11A — Preparação segura para main criada como PR draft
+
+Contexto:
+- usuário perguntou se, ao levar para `main`, os arquivos do sistema antigo poderiam se misturar com o sistema novo;
+- a resposta técnica é sim: se a Vercel usar a raiz do repositório, pode carregar o `index.html` antigo e o `bundle.js` antigo;
+- por isso, não foi feito merge direto na `main`.
+
+Ação feita:
+- criado PR draft #21: `rewrite-fluency-clean` → `main`;
+- título: `Promover Fluency Clean para main com controle`;
+- PR está em draft para impedir promoção acidental;
+- `main` permanece intocada;
+- `rewrite-fluency-clean-lab` permanece viva;
+- `bundle.js` permanece intocado.
+
+Estado técnico:
+- `rewrite-fluency-clean` está 369 commits à frente da `main`;
+- `main` está 0 commits à frente da `rewrite-fluency-clean`;
+- tecnicamente é possível promover, mas só depois de validar a configuração da Vercel;
+- o sistema novo está em `fluency-clean/`;
+- o sistema antigo ainda existe na raiz da `main`.
+
+Condição obrigatória antes de qualquer merge para main:
+- confirmar na Vercel que o projeto de produção usa:
+  - Root Directory: `fluency-clean`
+
+Se o Root Directory não estiver como `fluency-clean`:
+- não fazer merge;
+- ajustar a configuração real da Vercel primeiro;
+- evitar que produção carregue `index.html` antigo ou `bundle.js` antigo da raiz.
+
+Checklist do PR #21 antes de sair de draft/mesclar:
+1. confirmar Root Directory da Vercel como `fluency-clean`;
+2. confirmar domínio de produção autorizado no Firebase Authentication;
+3. testar branch `rewrite-fluency-clean` no iPhone;
+4. confirmar login Google funcionando;
+5. confirmar Hoje funcionando;
+6. confirmar Aula funcionando;
+7. confirmar áudio natural funcionando;
+8. confirmar Progresso funcionando;
+9. confirmar Diagnóstico funcionando;
+10. confirmar PWA funcionando;
+11. manter rollback anotado.
+
+Rollback se main quebrar após merge:
+- voltar `main` para `5047bae031f20ddd9604953dcd3fd821655e56fa`;
+- não deletar `rewrite-fluency-clean-lab`;
+- corrigir qualquer falha primeiro na lab;
+- não mexer no backend Azure.
 
 ### Bloco 8-LAB-10D — Login Google validado na branch estável / correção sincronizada
 
@@ -40,10 +93,6 @@ Checklist validado pelo usuário:
 - Auth domain OK;
 - login Google funcionou no link estável da Vercel;
 - domínio Vercel autorizado no Firebase.
-
-Próximo passo seguro:
-- testar novamente na branch estável: Hoje, Aula, áudio natural, Progresso, Diagnóstico, PWA e sync;
-- se tudo estiver aprovado, preparar o `Bloco 8-LAB-11 — Promoção para main`, mas somente com confirmação explícita.
 
 ### Bloco 8-LAB-10C — Correção cirúrgica do login Google no iPhone IMPLEMENTADO
 
@@ -86,74 +135,21 @@ Resultado:
 - `rewrite-fluency-clean-lab` foi mantida viva;
 - `main` permaneceu intocada.
 
-### Bloco 8-LAB-9 — Preparação para promoção controlada IMPLEMENTADO
-
-Objetivo:
-- revisar o estado da lab antes de qualquer promoção;
-- preparar uma promoção controlada para `rewrite-fluency-clean` sem tocar em `main`;
-- listar escopo, riscos, checklist e rollback;
-- deixar claro que a promoção só acontece com confirmação explícita do usuário.
-
-Resultado da revisão:
-- comparação feita: `rewrite-fluency-clean` → `rewrite-fluency-clean-lab`;
-- estado: lab estava à frente da estável e não estava atrás;
-- não havia divergência nova na branch estável que precisasse ser preservada antes da promoção;
-- `main` permaneceu intocada;
-- `bundle.js` permaneceu intocado;
-- backend Azure privado permaneceu intocado.
-
-Escopo promovido para `rewrite-fluency-clean` no LAB-10:
-- nova UI principal aprovada;
-- áudio natural Gemini com fallback;
-- cronograma profundo A1 → C2;
-- travas pedagógicas e domínio por pilar;
-- revisão adaptativa de sábado;
-- sync Google + Firebase/Firestore;
-- checklist funcional LAB-8;
-- PWA iOS com manifest, service worker e metadados;
-- ícone PWA PNG 180x180 para iOS;
-- arquivos modulares em `fluency-clean/src/`, `fluency-clean/public/` e configurações reais.
-
-### Bloco 8-LAB-8C — Ícone PWA PNG para iOS IMPLEMENTADO/APROVADO VISUALMENTE
-
-Objetivo:
-- garantir ícone próprio para iOS ao adicionar o Fluency à Tela de Início;
-- evitar dependência do SVG como `apple-touch-icon`;
-- manter o PWA instalável sem alterar a UI, backend, bundle ou fluxos principais.
-
-Arquivos alterados/criados:
-- `fluency-clean/public/apple-touch-icon.png`
-- `fluency-clean/public/manifest.webmanifest`
-- `fluency-clean/index.html`
-- `REWRITE_HANDOFF.md`
-
-Resultado do teste visual:
-- usuário enviou imagem do iPhone mostrando o fluxo “Adicionar à Tela de Início”;
-- nome `Fluency` apareceu correto;
-- ícone apareceu corretamente;
-- opção “Abrir como app web” apareceu ativada.
-
 ## Próximo bloco possível
 
-### `Bloco 8-LAB-10E — Validação funcional final da branch estável`
+### `Bloco 8-LAB-11B — Confirmar Vercel Root Directory e domínio de produção`
 Objetivo:
-- validar `rewrite-fluency-clean` no iPhone usando o domínio autorizado;
-- confirmar Hoje, Aula, áudio natural, Progresso, Diagnóstico, PWA e sync;
-- se houver problema, corrigir na lab e sincronizar novamente para a estável;
-- se tudo estiver aprovado, preparar o plano de ida para `main`.
+- usuário confirmar visualmente na Vercel se Root Directory está `fluency-clean`;
+- autorizar o domínio final/main no Firebase;
+- só então transformar PR #21 de draft para pronto ou fazer merge controlado.
 
-### `Bloco 8-LAB-11 — Preparação/Promoção para main` — somente com confirmação explícita posterior
+### `Bloco 8-LAB-11C — Merge controlado para main` — somente após confirmação explícita
 Objetivo:
-- levar o sistema aprovado para produção/main;
-- fazer plano de rollback;
-- validar domínio final, login Google/Firebase e PWA no domínio definitivo.
-
-Se houver qualquer problema após promoção:
-- não tocar em `main`;
-- reverter `rewrite-fluency-clean` para `a2e6ba07c41f3068d19162af974f4e933622453e` se necessário;
-- corrigir cirurgicamente apenas a falha encontrada na branch lab;
-- manter escopo limitado ao problema encontrado.
+- mesclar PR #21;
+- não deletar lab;
+- testar produção no iPhone;
+- se quebrar, rollback para `5047bae031f20ddd9604953dcd3fd821655e56fa`.
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. O login Google funcionou no domínio autorizado `ingles-git-rewrite-fluency-clean-belacatalogos-projects.vercel.app` da branch `rewrite-fluency-clean`. O próximo bloco provável é `BLOCO-8-LAB-10E — Validação funcional final da branch estável`. Não delete `rewrite-fluency-clean-lab`, não toque em `main`, não mexa em `bundle.js`, não use DOM injection ou bundle patch. Rollback da estável, se necessário: `a2e6ba07c41f3068d19162af974f4e933622453e`."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. Foi criado o PR draft #21 de `rewrite-fluency-clean` para `main` para promoção controlada. Não fazer merge antes de confirmar na Vercel que Root Directory é `fluency-clean` e que o domínio de produção está autorizado no Firebase. Não delete `rewrite-fluency-clean-lab`, não toque em `bundle.js`, não use DOM injection ou bundle patch. Rollback da main, se necessário: `5047bae031f20ddd9604953dcd3fd821655e56fa`."
