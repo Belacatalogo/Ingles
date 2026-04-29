@@ -18,18 +18,25 @@
 .lesson-reference-hero,
 .lesson-stepper-card,
 .lesson-progress-strip,
+.lesson-lab-pillar-switch,
 .lesson-reference-screen .reading-layout,
+.lesson-reference-screen .grammar-layout,
+.lesson-reference-screen .pillar-lesson,
 .lesson-reference-screen .reading-grid,
 .lesson-reference-screen .reading-main-grid,
+.lesson-reference-screen .grammar-study-grid,
 .lesson-reference-screen .reading-text-panel,
 .lesson-reference-screen .reading-paper,
 .lesson-reference-screen .reading-paper-body,
 .lesson-reference-screen .reading-side-panel,
+.lesson-reference-screen .grammar-main-panel,
+.lesson-reference-screen .grammar-side-panel,
 .lesson-reference-screen .mini-card,
 .lesson-reference-screen .reading-section-card,
 .lesson-reference-screen .answer-card,
 .lesson-reference-screen .question-card,
-.lesson-reference-screen .vocab-card {
+.lesson-reference-screen .vocab-card,
+.lesson-reference-screen .pillar-card {
   width: 100%;
   max-width: 100%;
   min-width: 0;
@@ -37,7 +44,9 @@
 
 .lesson-reference-hero,
 .lesson-stepper-card,
-.lesson-progress-strip {
+.lesson-progress-strip,
+.lesson-lab-pillar-switch,
+.lesson-reference-screen .pillar-card {
   border: 1px solid rgba(147,160,213,.18);
   background: rgba(11,18,38,.74);
   box-shadow: 0 16px 44px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.03);
@@ -139,6 +148,73 @@
   flex: 0 0 auto;
 }
 
+.lesson-lab-pillar-switch {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 18px;
+  background: rgba(6,13,31,.62);
+}
+
+.lesson-lab-pillar-switch > div:first-child {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.lesson-lab-pillar-switch > div:first-child span {
+  color: #fbbf24;
+  font-size: 10px;
+  font-weight: 950;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+
+.lesson-lab-pillar-switch > div:first-child strong {
+  color: #dbeafe;
+  font-size: 12px;
+}
+
+.lesson-pillar-options {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.lesson-pillar-options::-webkit-scrollbar {
+  display: none;
+}
+
+.lesson-pillar-options button {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 8px 11px;
+  border: 1px solid rgba(147,160,213,.14);
+  border-radius: 999px;
+  color: #8b95b5;
+  background: rgba(255,255,255,.035);
+  font-size: 12px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.lesson-pillar-options button.active {
+  color: #ffffff;
+  border-color: transparent;
+  background: linear-gradient(135deg, #5b9cf6, #a78bfa);
+}
+
+.lesson-pillar-options button.hint {
+  border-color: rgba(52,211,153,.28);
+  color: #34d399;
+}
+
 .lesson-stepper-card {
   padding: 10px 8px;
   border-radius: 18px;
@@ -235,13 +311,16 @@
   background: linear-gradient(90deg, #5b9cf6, #a78bfa);
 }
 
-.lesson-reference-screen .reading-layout {
+.lesson-reference-screen .reading-layout,
+.lesson-reference-screen .grammar-layout,
+.lesson-reference-screen .pillar-lesson {
   display: grid;
   gap: 14px;
   overflow-x: hidden;
 }
 
-.lesson-reference-screen .reading-layout > .card:first-child {
+.lesson-reference-screen .reading-layout > .card:first-child,
+.lesson-reference-screen .grammar-layout > .card:first-child {
   display: none;
 }
 
@@ -250,7 +329,8 @@
 }
 
 .lesson-reference-screen .reading-grid,
-.lesson-reference-screen .reading-main-grid {
+.lesson-reference-screen .reading-main-grid,
+.lesson-reference-screen .grammar-study-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 14px;
@@ -259,6 +339,7 @@
 
 .lesson-reference-screen .reading-text-panel,
 .lesson-reference-screen .mini-card,
+.lesson-reference-screen .grammar-main-panel,
 .lesson-reference-screen .reading-section-card,
 .lesson-reference-screen .answer-card,
 .lesson-reference-screen .question-card {
@@ -271,11 +352,13 @@
 
 .lesson-reference-screen .reading-text-panel,
 .lesson-reference-screen .reading-section-card,
-.lesson-reference-screen .answer-card {
+.lesson-reference-screen .answer-card,
+.lesson-reference-screen .grammar-main-panel {
   padding: 18px;
 }
 
-.lesson-reference-screen .panel-title {
+.lesson-reference-screen .panel-title,
+.lesson-reference-screen .pillar-card-title {
   display: flex;
   align-items: center;
   justify-content: flex-start;
@@ -297,7 +380,10 @@
   overflow: hidden;
 }
 
-.lesson-reference-screen .reading-paper-body p {
+.lesson-reference-screen .reading-paper-body p,
+.lesson-reference-screen .grammar-rule-card p,
+.lesson-reference-screen .pillar-card p,
+.lesson-reference-screen .transcript-box p {
   margin: 0;
   max-width: 100%;
   color: #dbeafe;
@@ -308,26 +394,32 @@
   word-break: normal;
 }
 
-.lesson-reference-screen .reading-side-panel {
+.lesson-reference-screen .reading-side-panel,
+.lesson-reference-screen .grammar-side-panel {
   display: grid;
   gap: 12px;
   overflow: hidden;
 }
 
-.lesson-reference-screen .mini-card {
+.lesson-reference-screen .mini-card,
+.lesson-reference-screen .pillar-card {
   padding: 16px;
+  border-radius: 20px;
 }
 
 .lesson-reference-screen .mini-card p,
 .lesson-reference-screen .reading-section-card p,
-.lesson-reference-screen .answer-label {
+.lesson-reference-screen .answer-label,
+.lesson-reference-screen .pillar-card small {
   max-width: 100%;
   color: #9ca8ca;
   overflow-wrap: anywhere;
 }
 
 .lesson-reference-screen .secondary-button,
-.lesson-reference-screen .primary-button {
+.lesson-reference-screen .primary-button,
+.lesson-reference-screen .pillar-card button,
+.lesson-reference-screen .writing-actions button {
   max-width: 100%;
   min-height: 42px;
   border-radius: 14px;
@@ -336,14 +428,19 @@
 }
 
 .lesson-reference-screen .vocabulary-grid,
-.lesson-reference-screen .comprehension-list {
+.lesson-reference-screen .comprehension-list,
+.lesson-reference-screen .grammar-section-list,
+.lesson-reference-screen .listening-question-list,
+.lesson-reference-screen .writing-prompt-list {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 10px;
   max-width: 100%;
 }
 
-.lesson-reference-screen .vocab-card {
+.lesson-reference-screen .vocab-card,
+.lesson-reference-screen .grammar-rule-card,
+.lesson-reference-screen .writing-prompt-list div {
   padding: 14px;
   border: 1px solid rgba(147,160,213,.14);
   border-radius: 15px;
@@ -353,17 +450,23 @@
 
 .lesson-reference-screen .vocab-card strong,
 .lesson-reference-screen .vocab-card span,
-.lesson-reference-screen .vocab-card p {
+.lesson-reference-screen .vocab-card p,
+.lesson-reference-screen .grammar-rule-card strong,
+.lesson-reference-screen .grammar-rule-card span,
+.lesson-reference-screen .grammar-rule-card p {
   display: block;
   max-width: 100%;
   overflow-wrap: anywhere;
 }
 
-.lesson-reference-screen .vocab-card strong {
+.lesson-reference-screen .vocab-card strong,
+.lesson-reference-screen .grammar-rule-card strong,
+.lesson-reference-screen .pillar-card h2 {
   color: #ffffff;
 }
 
-.lesson-reference-screen .vocab-card span {
+.lesson-reference-screen .vocab-card span,
+.lesson-reference-screen .grammar-rule-card span {
   color: #93c5fd;
 }
 
@@ -410,23 +513,169 @@
   overflow-wrap: anywhere;
 }
 
-.lesson-reference-screen textarea {
+.lesson-reference-screen textarea,
+.lesson-reference-screen input {
   width: 100%;
   max-width: 100%;
-  min-height: 118px;
+  min-height: 46px;
+  border: 1px solid rgba(147,160,213,.16);
   border-radius: 16px;
+  color: #ffffff;
+  background: rgba(255,255,255,.045);
 }
 
-.lesson-reference-screen .answer-actions {
+.lesson-reference-screen textarea {
+  min-height: 118px;
+  padding: 14px;
+}
+
+.lesson-reference-screen input {
+  padding: 0 14px;
+}
+
+.lesson-reference-screen .answer-actions,
+.lesson-reference-screen .writing-actions {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 10px;
   margin-top: 12px;
 }
 
+.listening-audio-card {
+  background: radial-gradient(circle at 8% 0%, rgba(34,211,238,.16), transparent 44%), rgba(11,18,38,.74);
+}
+
+.listening-player {
+  display: grid;
+  grid-template-columns: 48px 1fr 42px;
+  align-items: center;
+  gap: 12px;
+  margin: 16px 0 10px;
+}
+
+.listening-player button {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 999px;
+  color: #ffffff;
+  background: linear-gradient(135deg, #5b9cf6, #a78bfa);
+}
+
+.listening-player div {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 44px;
+}
+
+.listening-player div span {
+  flex: 1;
+  height: 18px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #93c5fd, #a78bfa);
+  opacity: .55;
+}
+
+.listening-player div span:nth-child(2),
+.listening-player div span:nth-child(5) { height: 28px; }
+.listening-player div span:nth-child(3),
+.listening-player div span:nth-child(4) { height: 38px; opacity: .95; }
+
+.transcript-box {
+  display: grid;
+  gap: 10px;
+}
+
+.transcript-box p {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  gap: 10px;
+}
+
+.transcript-box b,
+.writing-prompt-list b {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 9px;
+  color: #ffffff;
+  background: rgba(91,156,246,.18);
+  font-size: 12px;
+}
+
+.listening-question-list label {
+  display: grid;
+  gap: 8px;
+}
+
+.listening-question-list span,
+.writing-prompt-list span {
+  color: #dbeafe;
+  line-height: 1.45;
+}
+
+.pillar-finish-card {
+  display: grid;
+  gap: 14px;
+}
+
+.pillar-finish-card button,
+.writing-actions button:last-child {
+  border: 0;
+  color: #ffffff;
+  background: linear-gradient(135deg, #5b9cf6, #a78bfa);
+}
+
+.writing-brief-card {
+  background: radial-gradient(circle at 8% 0%, rgba(251,191,36,.16), transparent 44%), rgba(11,18,38,.74);
+}
+
+.writing-goal-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.writing-goal-row span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border: 1px solid rgba(147,160,213,.14);
+  border-radius: 999px;
+  color: #dbeafe;
+  background: rgba(255,255,255,.04);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.writing-prompt-list div {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  align-items: center;
+  gap: 10px;
+}
+
+.writing-editor-card p {
+  margin-top: 10px;
+  color: #9ca8ca;
+}
+
+.writing-actions button:first-child {
+  border: 1px solid rgba(147,160,213,.16);
+  color: #dbeafe;
+  background: rgba(255,255,255,.045);
+}
+
 @media (min-width: 720px) {
   .lesson-reference-screen .reading-grid,
-  .lesson-reference-screen .reading-main-grid {
+  .lesson-reference-screen .reading-main-grid,
+  .lesson-reference-screen .grammar-study-grid {
     grid-template-columns: minmax(0, 1.4fr) minmax(260px, .6fr);
   }
 }
