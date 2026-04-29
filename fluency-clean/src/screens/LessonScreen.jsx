@@ -1,4 +1,5 @@
 import { Card } from '../components/ui/Card.jsx';
+import { SectionHeader } from '../components/ui/SectionHeader.jsx';
 import { ReadingLesson } from '../lessons/ReadingLesson.jsx';
 
 const demoLesson = {
@@ -20,6 +21,11 @@ function LessonRenderer({ lesson }) {
 export function LessonScreen() {
   return (
     <section className="screen-stack">
+      <SectionHeader
+        eyebrow="Aula"
+        title="Renderização por tipo de aula"
+        description="Cada tipo terá seu próprio componente. Reading, Grammar, Listening e Speaking não precisam disputar o mesmo bloco de HTML."
+      />
       <LessonRenderer lesson={demoLesson} />
     </section>
   );
