@@ -1,3 +1,5 @@
+import { scheduleCloudSync } from './cloudSync.js';
+
 const PREFIX = 'fluency.clean.';
 
 function safeJsonParse(value, fallback) {
@@ -13,6 +15,19 @@ function key(name) {
   return `${PREFIX}${name}`;
 }
 
+function shouldSync(name) {
+  return !String(name || '').startsWith('cloud.sync.') && !String(name || '').startsWith('diagnostics.');
+}
+
+function notifySync(name) {
+  if (!shouldSync(name)) return;
+  try {
+    scheduleCloudSync(`storage:${name}`);
+  } catch {
+    // Sync is best-effort; local storage remains the fallback.
+  }
+}
+
 export const storage = {
   get(name, fallback = null) {
     try {
@@ -25,6 +40,7 @@ export const storage = {
   set(name, value) {
     try {
       window.localStorage.setItem(key(name), JSON.stringify(value));
+      notifySync(name);
       return true;
     } catch (error) {
       console.warn('[Fluency storage] failed to save', name, error);
@@ -35,6 +51,7 @@ export const storage = {
   remove(name) {
     try {
       window.localStorage.removeItem(key(name));
+      notifySync(name);
       return true;
     } catch {
       return false;
@@ -52,6 +69,7 @@ export const storage = {
   setText(name, value) {
     try {
       window.localStorage.setItem(key(name), String(value ?? ''));
+      notifySync(name);
       return true;
     } catch (error) {
       console.warn('[Fluency storage] failed to save text', name, error);
