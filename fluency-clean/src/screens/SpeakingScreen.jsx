@@ -11,9 +11,8 @@ import {
   Volume2,
 } from 'lucide-react';
 import { analyzePronunciation } from '../services/azurePronunciation.js';
-import { unlockAudioForIOS } from '../services/audioUnlock.js';
+import { playLearningAudio, stopLearningAudio } from '../services/audioPlayback.js';
 import { startRecording, stopRecording } from '../services/recorder.js';
-import { speakText, stopSpeech } from '../services/tts.js';
 
 const conversationPrompt = 'Hi! Tell me about your weekend. What did you do?';
 const pronunciationText = 'I have already finished my homework.';
@@ -78,11 +77,14 @@ export function SpeakingScreen() {
   const scene = immersionScenes[activeScene];
 
   async function handleSpeak(text = pronunciationText) {
-    setMessage('Reproduzindo áudio...');
-    const unlocked = await unlockAudioForIOS();
-    if (!unlocked.ok) setMessage(unlocked.error || 'Não foi possível liberar o áudio no iOS.');
-    const response = await speakText(text);
-    setMessage(response.ok ? 'Áudio finalizado.' : response.error || 'Erro ao reproduzir áudio.');
+    setMessage('Preparando áudio...');
+    const response = await playLearningAudio({
+      text,
+      label: `Speaking · ${mode}`,
+      voiceName: 'Kore',
+      style: 'Natural English conversation model. Clear, friendly and easy to repeat.',
+    });
+    setMessage(response.ok ? 'Áudio iniciado.' : response.error || 'Erro ao reproduzir áudio.');
   }
 
   async function handleRecordToggle(referenceText = pronunciationText) {
@@ -246,8 +248,8 @@ export function SpeakingScreen() {
                   <em>/ 100</em>
                 </strong>
               </div>
-              <button className="speaking-small-button ghost" type="button" onClick={stopSpeech}>
-                <Play size={12} /> Sua voz
+              <button className="speaking-small-button ghost" type="button" onClick={stopLearningAudio}>
+                <Play size={12} /> Parar voz
               </button>
             </div>
 
