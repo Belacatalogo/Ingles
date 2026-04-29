@@ -69,7 +69,7 @@
     </script>
     <script type="module" crossorigin src="./assets/index-DUoCBAiU.js"></script>
     <link rel="stylesheet" crossorigin href="./assets/index-aqNRHn6c.css">
-    <style id="lab-continue-button-fix">
+    <style id="lab-safe-visual-fixes">
       .reference-continue-button,
       .today-progress-hero .reference-continue-button {
         color: #ffffff !important;
@@ -95,6 +95,21 @@
         color: #ffffff !important;
         stroke: #ffffff !important;
       }
+      .layout-preview-switcher {
+        padding: 10px 12px !important;
+        border-radius: 18px !important;
+        background: rgba(13,19,42,.48) !important;
+        border-color: rgba(147,160,213,.18) !important;
+      }
+      .layout-preview-switcher > div:first-child p,
+      .layout-preview-switcher .layout-preview-actions {
+        display: none !important;
+      }
+      .layout-preview-switcher > div:first-child span {
+        color: #8f9ab9 !important;
+        font-size: 12px !important;
+        letter-spacing: .04em !important;
+      }
     </style>
   </head>
   <body>
@@ -112,12 +127,12 @@
     <script>
       (function () {
         var label = 'rewrite-clean-lab · seguro para testes';
-        var fixCss = '.reference-continue-button,.today-progress-hero .reference-continue-button{color:#fff!important;border:0!important;text-shadow:0 1px 10px rgba(0,0,0,.22)!important;overflow:hidden!important}.reference-continue-button span,.today-progress-hero .reference-continue-button span{display:inline-flex!important;margin:0!important;color:#fff!important;font-size:inherit!important;font-weight:950!important;line-height:1!important;text-transform:none!important;letter-spacing:-.01em!important;white-space:nowrap!important}.reference-continue-button svg,.today-progress-hero .reference-continue-button svg{flex:0 0 auto!important;color:#fff!important;stroke:#fff!important}';
+        var fixCss = '.reference-continue-button,.today-progress-hero .reference-continue-button{color:#fff!important;border:0!important;text-shadow:0 1px 10px rgba(0,0,0,.22)!important;overflow:hidden!important}.reference-continue-button span,.today-progress-hero .reference-continue-button span{display:inline-flex!important;margin:0!important;color:#fff!important;font-size:inherit!important;font-weight:950!important;line-height:1!important;text-transform:none!important;letter-spacing:-.01em!important;white-space:nowrap!important}.reference-continue-button svg,.today-progress-hero .reference-continue-button svg{flex:0 0 auto!important;color:#fff!important;stroke:#fff!important}.layout-preview-switcher{padding:10px 12px!important;border-radius:18px!important;background:rgba(13,19,42,.48)!important;border-color:rgba(147,160,213,.18)!important}.layout-preview-switcher>div:first-child p,.layout-preview-switcher .layout-preview-actions{display:none!important}.layout-preview-switcher>div:first-child span{color:#8f9ab9!important;font-size:12px!important;letter-spacing:.04em!important}';
         function ensureLateStyle() {
-          var style = document.getElementById('lab-continue-button-runtime-fix');
+          var style = document.getElementById('lab-safe-visual-runtime-fixes');
           if (!style) {
             style = document.createElement('style');
-            style.id = 'lab-continue-button-runtime-fix';
+            style.id = 'lab-safe-visual-runtime-fixes';
             document.head.appendChild(style);
           }
           if (style.textContent !== fixCss) style.textContent = fixCss;
