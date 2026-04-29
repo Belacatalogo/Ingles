@@ -6,3 +6,4 @@ export { AZURE_PRONUNCIATION_STATUS, analyzePronunciation } from './azurePronunc
 export { getFirebaseApp, getFirebaseAuth, getFirebaseStatus, hasFirebaseConfig } from './firebase.js';
 export { subscribeAuth, signInWithGoogle, logout } from './auth.js';
 export { getAccessSession, setAccessSession, clearAccessSession, validateAccessCode } from './accessCode.js';
+export { getLessonFlashKeys, saveLessonFlashKeys, addLessonFlashKey, removeLessonFlashKey, getLessonProKey, saveLessonProKey, clearLessonProKey, getLessonKeysStatus, buildLessonKeyPlan } from './lessonKeys.js';
