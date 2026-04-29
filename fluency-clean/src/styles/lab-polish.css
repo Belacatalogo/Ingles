@@ -188,14 +188,17 @@
 .speaking-scenario-card,
 .speaking-mic-card,
 .speaking-pronunciation-hero,
-.speaking-score-panel {
+.speaking-score-panel,
+.speaking-immersion-hero,
+.speaking-immersion-card {
   border: 1px solid rgba(255,255,255,.08);
   border-radius: 20px;
   background: rgba(11,18,38,.72);
   box-shadow: 0 12px 32px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.03);
 }
 
-.speaking-scenario-card {
+.speaking-scenario-card,
+.speaking-immersion-hero {
   padding: 18px;
   margin-bottom: 14px;
   background: radial-gradient(circle at 10% 0%, rgba(34,211,238,.12), transparent 45%), rgba(11,18,38,.72);
@@ -227,14 +230,16 @@
   background: rgba(34,211,238,.09);
 }
 
-.speaking-scenario-card strong {
+.speaking-scenario-card strong,
+.speaking-immersion-hero strong {
   display: block;
   color: #ffffff;
   font-size: 17px;
   letter-spacing: -.02em;
 }
 
-.speaking-scenario-card p {
+.speaking-scenario-card p,
+.speaking-immersion-hero p {
   margin: 4px 0 0;
   color: #8b95b5;
   font-size: 13px;
@@ -618,6 +623,116 @@
   text-align: center;
 }
 
+.speaking-immersion-scenes {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.speaking-immersion-scene {
+  width: 100%;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 58px;
+  padding: 11px 13px;
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 16px;
+  color: inherit;
+  background: rgba(255,255,255,.035);
+  text-align: left;
+}
+
+.speaking-immersion-scene.active {
+  border-color: rgba(34,211,238,.28);
+  background: linear-gradient(135deg, rgba(34,211,238,.10), rgba(91,156,246,.09));
+}
+
+.speaking-immersion-scene > span {
+  display: grid;
+  place-items: center;
+  min-width: 46px;
+  height: 34px;
+  padding: 0 8px;
+  border-radius: 12px;
+  color: #22d3ee;
+  background: rgba(34,211,238,.10);
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.speaking-immersion-scene strong {
+  min-width: 0;
+  overflow: hidden;
+  color: #ffffff;
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.speaking-immersion-scene small {
+  color: #8b95b5;
+  font-size: 10.5px;
+  white-space: nowrap;
+}
+
+.speaking-immersion-card {
+  padding: 18px;
+  margin-bottom: 14px;
+  background: radial-gradient(circle at 90% 0%, rgba(167,139,250,.16), transparent 42%), rgba(11,18,38,.72);
+}
+
+.speaking-immersion-card-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.speaking-immersion-card-top span {
+  color: #8b95b5;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+
+.speaking-immersion-card-top button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 0 10px;
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 999px;
+  color: #e8ecf7;
+  background: rgba(255,255,255,.05);
+  font-size: 11.5px;
+  font-weight: 850;
+}
+
+.speaking-immersion-card h2 {
+  margin: 0;
+  color: #ffffff;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 23px;
+  font-weight: 400;
+  line-height: 1.32;
+}
+
+.speaking-immersion-card p {
+  margin: 12px 0 0;
+  color: #8b95b5;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.speaking-mic-card.immersion {
+  background: radial-gradient(circle at 50% 0%, rgba(34,211,238,.11), transparent 42%), rgba(11,18,38,.72);
+}
+
 @keyframes speaking-pulse {
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.04); }
@@ -643,9 +758,13 @@
     font-size: 12.5px;
   }
 
+  .speaking-mode-switch {
+    gap: 3px;
+  }
+
   .speaking-mode-switch button {
-    padding-left: 9px;
-    padding-right: 9px;
-    font-size: 11px;
+    padding-left: 8px;
+    padding-right: 8px;
+    font-size: 10.5px;
   }
 }
