@@ -6,9 +6,29 @@ export function getAvailableVoices() {
   return window.speechSynthesis.getVoices();
 }
 
-function pickEnglishVoice() {
-  const voices = getAvailableVoices();
+function waitForVoices(timeoutMs = 700) {
+  if (!('speechSynthesis' in window)) return Promise.resolve([]);
+  const current = window.speechSynthesis.getVoices();
+  if (current.length) return Promise.resolve(current);
+
+  return new Promise((resolve) => {
+    let finished = false;
+    const finish = () => {
+      if (finished) return;
+      finished = true;
+      window.speechSynthesis.onvoiceschanged = null;
+      resolve(window.speechSynthesis.getVoices());
+    };
+
+    window.speechSynthesis.onvoiceschanged = finish;
+    setTimeout(finish, timeoutMs);
+  });
+}
+
+async function pickEnglishVoice() {
+  const voices = await waitForVoices();
   return (
+    voices.find((voice) => /en-US/i.test(voice.lang) && /samantha|ava|allison|nicky|susan|alex/i.test(voice.name)) ||
     voices.find((voice) => /en-US/i.test(voice.lang)) ||
     voices.find((voice) => /^en/i.test(voice.lang)) ||
     voices[0] ||
@@ -16,7 +36,7 @@ function pickEnglishVoice() {
   );
 }
 
-export async function speakText(text, { rate = 0.92, pitch = 1, lang = 'en-US' } = {}) {
+export async function speakText(text, { rate = 0.9, pitch = 1, lang = 'en-US' } = {}) {
   const content = String(text ?? '').trim();
 
   if (!content) {
@@ -30,28 +50,48 @@ export async function speakText(text, { rate = 0.92, pitch = 1, lang = 'en-US' }
   }
 
   await unlockAudioForIOS();
+  const voice = await pickEnglishVoice();
 
   return new Promise((resolve) => {
+    let settled = false;
+    const finish = (result) => {
+      if (settled) return;
+      settled = true;
+      resolve(result);
+    };
+
     window.speechSynthesis.cancel();
 
     const utterance = new SpeechSynthesisUtterance(content);
-    utterance.lang = lang;
+    utterance.lang = voice?.lang || lang;
     utterance.rate = rate;
     utterance.pitch = pitch;
-    utterance.voice = pickEnglishVoice();
+    utterance.voice = voice;
 
-    utterance.onstart = () => diagnostics.log('TTS iniciado.', 'info', { lang, rate });
+    utterance.onstart = () => diagnostics.log('TTS iniciado.', 'info', { lang: utterance.lang, rate });
     utterance.onend = () => {
       diagnostics.log('TTS finalizado.', 'info');
-      resolve({ ok: true });
+      finish({ ok: true });
     };
     utterance.onerror = (event) => {
       const error = event?.error || 'Erro desconhecido no TTS.';
+      if (error === 'interrupted' || error === 'canceled') {
+        diagnostics.log(`TTS interrompido: ${error}`, 'info');
+        finish({ ok: true, interrupted: true });
+        return;
+      }
       diagnostics.log(`Erro no TTS: ${error}`, 'error');
-      resolve({ ok: false, error });
+      finish({ ok: false, error });
     };
 
     window.speechSynthesis.speak(utterance);
+
+    setTimeout(() => {
+      if (settled) return;
+      if (window.speechSynthesis.speaking || window.speechSynthesis.pending) return;
+      diagnostics.log('TTS não iniciou após o toque. Safari pode ter bloqueado a voz.', 'error');
+      finish({ ok: false, error: 'O Safari bloqueou o áudio. Toque novamente em Ouvir.' });
+    }, 1200);
   });
 }
 
