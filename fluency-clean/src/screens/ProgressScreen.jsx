@@ -41,21 +41,6 @@ function getLastThirtyDays() {
   });
 }
 
-function getLevelState(progress) {
-  const completed = progress.completedLessons || 0;
-  const currentIndex = Math.min(Math.floor(completed / 20), cefrLevels.length - 1);
-  const lessonsInsideLevel = completed % 20;
-  const levelProgress = Math.min(100, Math.round((lessonsInsideLevel / 20) * 100));
-  const nextLevel = cefrLevels[Math.min(currentIndex + 1, cefrLevels.length - 1)];
-
-  return {
-    currentIndex,
-    currentLevel: cefrLevels[currentIndex],
-    nextLevel,
-    levelProgress: currentIndex === cefrLevels.length - 1 ? 100 : levelProgress,
-  };
-}
-
 function buildSkillScores(completions) {
   const counts = completions.reduce((acc, item) => {
     const type = String(item.type || '').toLowerCase();
@@ -63,11 +48,10 @@ function buildSkillScores(completions) {
     return acc;
   }, {});
 
-  return skillConfig.map((skill, index) => {
+  return skillConfig.map((skill) => {
     const count = counts[skill.key] || 0;
-    const fallback = [34, 28, 24, 22, 31][index];
-    const score = Math.min(100, fallback + count * 9);
-    return { ...skill, score };
+    const score = count ? Math.min(100, count * 20) : 0;
+    return { ...skill, score, count };
   });
 }
 
@@ -128,11 +112,10 @@ export function ProgressScreen() {
   const curriculumLevels = useMemo(() => getCurriculumLevelRows(curriculumProgress), [curriculumProgress]);
   const upcomingLessons = useMemo(() => getUpcomingLessons(curriculumProgress), [curriculumProgress]);
   const recentCompletions = completions.slice(0, 4);
-  const levelState = useMemo(() => getLevelState(progress), [progress]);
   const skillScores = useMemo(() => buildSkillScores(completions), [completions]);
   const activity = useMemo(() => buildActivity(completions), [completions]);
-  const wordsEstimate = Math.max(0, progress.completedLessons * 7 + completions.length * 4);
-  const speakingHours = Math.max(0, Math.round((completions.filter((item) => String(item.type || '').toLowerCase() === 'speaking').length * 18) / 60));
+  const wordsRegistered = completions.reduce((total, item) => total + String(item.writtenAnswer || '').trim().split(/\s+/).filter(Boolean).length, 0);
+  const speakingSessions = completions.filter((item) => String(item.type || '').toLowerCase() === 'speaking').length;
   const nextLesson = curriculum.nextLesson;
   const currentLevelData = curriculumLevels.find((item) => item.current) || curriculumLevels[0];
   const lessonsToUnlock = Math.max(0, Math.ceil((currentLevelData?.total || 1) * (currentLevelData?.requiredCompletion || 0.92)) - (currentLevelData?.done || 0));
@@ -269,8 +252,8 @@ export function ProgressScreen() {
         <article className="progress-stat-tile teal">
           <Mic size={18} />
           <span>Speaking</span>
-          <strong>{speakingHours}h</strong>
-          <small>estimativa registrada</small>
+          <strong>{speakingSessions}</strong>
+          <small>sessões registradas</small>
         </article>
       </div>
 
@@ -294,14 +277,14 @@ export function ProgressScreen() {
       <section className="progress-section-card">
         <div className="progress-section-title">
           <span>Habilidades</span>
-          <small>baseado no histórico</small>
+          <small>baseado em aulas concluídas</small>
         </div>
         <div className="progress-skill-list">
           {skillScores.map((skill) => (
             <div className={`progress-skill-row ${skill.tone}`} key={skill.key}>
               <div>
                 <span>{skill.label}</span>
-                <strong>{skill.score}/100</strong>
+                <strong>{skill.count ? `${skill.score}/100` : 'sem dados'}</strong>
               </div>
               <div className="progress-skill-bar"><i style={{ width: `${skill.score}%` }} /></div>
             </div>
@@ -312,14 +295,14 @@ export function ProgressScreen() {
       <section className="progress-section-card">
         <div className="progress-section-title">
           <span>Conquistas recentes</span>
-          <small>visual</small>
+          <small>baseadas no histórico</small>
         </div>
         <div className="progress-achievements-grid">
           {[
-            { label: `${progress.streakDays || 0} dias`, icon: Flame, tone: 'amber', locked: false },
-            { label: `${wordsEstimate} palavras`, icon: Brain, tone: 'violet', locked: false },
-            { label: '1ª conversa', icon: Mic, tone: 'teal', locked: speakingHours === 0 },
-            { label: `${progress.completedLessons || 0} aulas`, icon: BookOpenCheck, tone: 'blue', locked: false },
+            { label: `${progress.streakDays || 0} dias`, icon: Flame, tone: 'amber', locked: !progress.streakDays },
+            { label: `${wordsRegistered} palavras`, icon: Brain, tone: 'violet', locked: wordsRegistered === 0 },
+            { label: `${speakingSessions} speaking`, icon: Mic, tone: 'teal', locked: speakingSessions === 0 },
+            { label: `${progress.completedLessons || 0} aulas`, icon: BookOpenCheck, tone: 'blue', locked: !progress.completedLessons },
             { label: curriculum.currentLevel, icon: Target, tone: 'green', locked: false },
             { label: 'próxima', icon: Lock, tone: 'muted', locked: true },
           ].map((achievement) => {
