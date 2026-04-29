@@ -3,6 +3,7 @@ import { getLessonFlashKeys, getLessonProKey } from './lessonKeys.js';
 import { maskApiKey, normalizeLessonKeys } from './geminiLessons.js';
 import { storage } from './storage.js';
 import { speakText } from './tts.js';
+import { unlockAudioForIOS } from './audioUnlock.js';
 
 const CACHE_PREFIX = 'tts.gemini.cache.';
 const TTS_MODELS = [
@@ -13,6 +14,7 @@ const TTS_MODELS = [
 
 const DEFAULT_VOICE = 'Kore';
 const DEFAULT_SAMPLE_RATE = 24000;
+let currentAudio = null;
 
 function hashText(value) {
   const text = String(value ?? '');
@@ -84,7 +86,7 @@ function buildTtsPrompt(text, style) {
 
 function buildAttempts({ flashKeys, proKey }) {
   const flash = normalizeLessonKeys(flashKeys);
-  const pro = normalizeLessonKeys([proKey])[0] ? [normalizeLessonKeys([proKey])[0]] : [];
+  const proKeyValue = normalizeLessonKeys([proKey])[0] || '';
   const attempts = [];
 
   for (const key of flash) {
@@ -93,9 +95,9 @@ function buildAttempts({ flashKeys, proKey }) {
     }
   }
 
-  for (const key of pro) {
+  if (proKeyValue) {
     for (const model of TTS_MODELS) {
-      attempts.push({ key, model, masked: maskApiKey(key), paid: true });
+      attempts.push({ key: proKeyValue, model, masked: maskApiKey(proKeyValue), paid: true });
     }
   }
 
@@ -144,7 +146,11 @@ export async function generateGeminiTtsAudio({
   useCache = true,
 } = {}) {
   const cleanText = String(text ?? '').trim();
+  diagnostics.log('Botão de áudio acionado: preparando Gemini TTS.', 'info');
+
   if (!cleanText) return { ok: false, audioUrl: '', source: 'none', error: 'Texto vazio.' };
+
+  await unlockAudioForIOS();
 
   const key = cacheKey({ text: cleanText, voiceName, style });
   if (useCache) {
@@ -157,6 +163,8 @@ export async function generateGeminiTtsAudio({
   }
 
   const attempts = buildAttempts({ flashKeys: getLessonFlashKeys(), proKey: getLessonProKey() });
+  diagnostics.log(`Gemini TTS: ${attempts.length} tentativa(s) preparada(s).`, 'info');
+
   if (!attempts.length) {
     diagnostics.log('Gemini TTS sem keys de aula. Usando TTS do navegador como fallback.', 'info');
     await speakText(cleanText);
@@ -200,13 +208,23 @@ export async function playGeminiTtsAudio(options = {}) {
   if (!result.ok) return result;
 
   if (result.audioUrl) {
-    await new Promise((resolve) => {
-      const audio = new Audio(result.audioUrl);
-      audio.playsInline = true;
-      audio.onended = () => resolve();
-      audio.onerror = () => resolve();
-      audio.play().catch(() => resolve());
-    });
+    try {
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.src = '';
+      }
+
+      currentAudio = new Audio(result.audioUrl);
+      currentAudio.playsInline = true;
+      currentAudio.preload = 'auto';
+
+      await currentAudio.play();
+      diagnostics.log('Reprodução do áudio Gemini iniciada.', 'info');
+    } catch (error) {
+      diagnostics.log(`Safari bloqueou/erro ao tocar áudio Gemini: ${error?.message || error}. Usando fallback.`, 'error');
+      await speakText(options.text);
+      return { ...result, source: 'browser-fallback', error: error?.message || String(error) };
+    }
   }
 
   return result;
