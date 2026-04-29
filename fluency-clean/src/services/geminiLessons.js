@@ -23,6 +23,15 @@ const QUALITY_RULES = [
   'Use inglês adequado ao nível, mas explicações em português quando isso ajudar o aluno brasileiro.',
 ].join('\n');
 
+const COMPACT_STRUCTURE_RULES = [
+  QUALITY_RULES,
+  'IMPORTANTE PARA ESTABILIDADE: este bloco deve ser compacto e com JSON simples.',
+  'Não use arrays dentro de cada section.',
+  'Não inclua examples neste bloco.',
+  'Cada section deve ter somente title e content.',
+  'A profundidade principal virá nos blocos seguintes: texto, vocabulário, exercícios e produção.',
+].join('\n');
+
 const LESSON_BLUEPRINTS = {
   reading: {
     label: 'Reading',
@@ -34,16 +43,15 @@ const LESSON_BLUEPRINTS = {
     blocks: [
       {
         id: 'structure',
-        label: 'estrutura aprofundada da aula Reading',
-        maxOutputTokens: 3600,
+        label: 'estrutura compacta da aula Reading',
+        maxOutputTokens: 2400,
         instruction: [
-          QUALITY_RULES,
+          COMPACT_STRUCTURE_RULES,
           'Crie somente a estrutura da aula Reading A1.',
           'Retorne JSON com: type="reading", level, title, intro, objective, focus, sections e tips.',
-          'intro deve ter 2 parágrafos em português explicando por que o tema é importante.',
-          'sections deve conter 6 a 8 partes em português: contexto, pré-leitura, estratégia de leitura, leitura guiada, linguagem útil, armadilhas comuns, revisão e prática final.',
-          'Cada section deve ter title, content e examples.',
-          'content de cada section deve ter explicação substancial, não uma frase curta.',
+          'intro deve ter 1 parágrafo claro em português.',
+          'sections deve conter 6 partes: contexto, pré-leitura, estratégia de leitura, leitura guiada, linguagem útil e revisão.',
+          'Cada section deve ter somente title e content.',
           'tips deve conter 6 dicas curtas e práticas.',
         ].join('\n'),
       },
@@ -114,17 +122,15 @@ const LESSON_BLUEPRINTS = {
     blocks: [
       {
         id: 'structure',
-        label: 'estrutura aprofundada da aula Grammar',
-        maxOutputTokens: 5200,
+        label: 'estrutura compacta da aula Grammar',
+        maxOutputTokens: 2800,
         instruction: [
-          QUALITY_RULES,
-          'Crie uma aula Grammar A1 séria, clara, completa e objetiva.',
+          COMPACT_STRUCTURE_RULES,
+          'Crie uma estrutura de aula Grammar A1 séria, clara e objetiva.',
           'Retorne JSON com: type="grammar", level, title, intro, objective, focus, sections e tips.',
-          'intro deve ter 2 parágrafos em português.',
-          'sections deve ter 7 a 9 partes: visão geral, quando usar, forma afirmativa, forma negativa, perguntas, respostas curtas, erros comuns, comparação com português e revisão.',
-          'Cada section deve ter title, content e examples.',
-          'Cada content deve ser substancial e didático.',
-          'Cada examples deve ter 4 a 6 exemplos em inglês com variação controlada.',
+          'intro deve ter 1 parágrafo claro em português.',
+          'sections deve ter 7 partes: visão geral, quando usar, forma afirmativa, forma negativa, perguntas, erros comuns e revisão.',
+          'Cada section deve ter somente title e content.',
           'tips deve ter 6 dicas práticas.',
           'Não transforme a aula em jogo.',
         ].join('\n'),
@@ -178,14 +184,15 @@ const LESSON_BLUEPRINTS = {
     blocks: [
       {
         id: 'structure',
-        label: 'estrutura aprofundada da aula Listening',
-        maxOutputTokens: 3400,
+        label: 'estrutura compacta da aula Listening',
+        maxOutputTokens: 2400,
         instruction: [
-          QUALITY_RULES,
+          COMPACT_STRUCTURE_RULES,
           'Crie somente a estrutura da aula Listening A1.',
           'Retorne JSON com: type="listening", level, title, intro, objective, focus, sections e tips.',
+          'intro deve ter 1 parágrafo claro em português.',
           'sections deve ter 6 partes: preparação, primeira escuta, segunda escuta, detalhes, shadowing e revisão.',
-          'Cada section deve ter title, content e examples.',
+          'Cada section deve ter somente title e content.',
           'tips deve ter 6 dicas práticas.',
         ].join('\n'),
       },
@@ -248,15 +255,15 @@ const LESSON_BLUEPRINTS = {
     blocks: [
       {
         id: 'structure',
-        label: 'estrutura aprofundada da aula Writing',
-        maxOutputTokens: 5000,
+        label: 'estrutura compacta da aula Writing',
+        maxOutputTokens: 2800,
         instruction: [
-          QUALITY_RULES,
-          'Crie uma aula Writing A1 prática, longa e guiada.',
+          COMPACT_STRUCTURE_RULES,
+          'Crie uma estrutura de aula Writing A1 prática e guiada.',
           'Retorne JSON com: type="writing", level, title, intro, objective, focus, sections e tips.',
-          'sections deve ter 7 a 9 partes: modelo, análise do modelo, estrutura da frase, vocabulário útil, conectores, erros comuns, checklist e preparação para produção.',
-          'Cada section deve ter title, content e examples.',
-          'Cada content deve explicar bem, em português, com exemplos em inglês A1.',
+          'intro deve ter 1 parágrafo claro em português.',
+          'sections deve ter 7 partes: modelo, análise do modelo, estrutura da frase, vocabulário útil, erros comuns, checklist e produção.',
+          'Cada section deve ter somente title e content.',
           'tips deve ter 6 dicas práticas.',
         ].join('\n'),
       },
@@ -399,7 +406,7 @@ function assertLessonBlock(block, data, blueprint) {
 
   if (block.id === 'structure') {
     if (!normalizeText(data.title)) throw new Error('Bloco estrutura veio sem título.');
-    if (!normalizeText(data.intro) || normalizeText(data.intro).length < 120) throw new Error('Bloco estrutura veio com introdução curta demais.');
+    if (!normalizeText(data.intro) || normalizeText(data.intro).length < 90) throw new Error('Bloco estrutura veio com introdução curta demais.');
     if (!normalizeText(data.objective)) throw new Error('Bloco estrutura veio sem objetivo.');
     if (ensureArray(data.sections).length < blueprint.minSections) throw new Error('Bloco estrutura veio com poucas seções.');
   }
@@ -460,8 +467,9 @@ function buildBlockPrompt({ block, blueprint, basePrompt, lessonType, partialLes
     'Você é o gerador de aulas do Fluency.',
     'Retorne APENAS JSON válido. Não use markdown. Não use **negrito**. Não use listas com asterisco.',
     'O JSON deve ser completo, fechado corretamente e parseável por JSON.parse.',
+    'Para o bloco de estrutura, use JSON compacto: strings curtas e arrays simples.',
     'Crie conteúdo para aluno brasileiro aprender inglês com uma aula séria, clara, profunda, longa e organizada.',
-    'IMPORTANTE: esta aula NÃO pode ser curta. Se o tema for simples, aprofunde com exemplos, prática, repetição guiada e revisão.',
+    'IMPORTANTE: esta aula NÃO pode ser curta. Se o tema for simples, aprofunde com exemplos, prática, repetição guiada e revisão nos blocos seguintes.',
     retryReason ? `Correção obrigatória da tentativa anterior: ${retryReason}` : '',
     `Tipo de aula escolhido pelo app: ${blueprint.label} (${lessonType}).`,
     'Nível padrão: A1, salvo se o pedido do app indicar outro nível claramente.',
@@ -482,7 +490,7 @@ async function callGeminiJson({ attempt, prompt, maxOutputTokens, fetcher }) {
   const body = {
     contents: [{ role: 'user', parts: [{ text: prompt }] }],
     generationConfig: {
-      temperature: 0.24,
+      temperature: 0.18,
       maxOutputTokens,
       responseMimeType: 'application/json',
     },
