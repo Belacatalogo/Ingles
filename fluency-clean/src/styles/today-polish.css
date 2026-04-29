@@ -1,7 +1,8 @@
 .today-reference-screen {
   display: grid;
   gap: 14px;
-  padding: 4px 18px 118px;
+  width: 100%;
+  padding: 4px 0 118px;
   color: #e8ecf7;
 }
 
@@ -117,7 +118,7 @@
 .today-summary-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+  gap: 12px;
 }
 
 .today-summary-card {
@@ -468,12 +469,13 @@
 
 @media (max-width: 430px) {
   .today-reference-screen {
-    padding-left: 14px;
-    padding-right: 14px;
+    padding-left: 0;
+    padding-right: 0;
   }
 
   .today-summary-grid {
     grid-template-columns: 1fr 1fr;
+    gap: 12px;
   }
 
   .today-task-card {
