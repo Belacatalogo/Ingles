@@ -142,6 +142,13 @@ Não mexer na `main` durante a reconstrução. Tudo deve acontecer nesta branch 
 - O clique no botão Google agora gera log explícito no Diagnóstico e mensagem visível na tela.
 - `access.css` recebeu estilos para os botões de fallback e mensagem de auth.
 
+### Bloco 7.2.3 — Capturar retorno do Google Redirect
+- `auth.js` agora usa `getRedirectResult` para capturar o retorno do login Google.
+- `auth.js` tenta configurar `browserLocalPersistence` antes de autenticar.
+- `AccessGate.jsx` verifica o retorno do Google quando o preview carrega.
+- Se houver usuário no retorno do redirect, o app cria sessão local e libera a entrada automaticamente.
+- Se houver erro no retorno, a mensagem aparece na tela e também no Diagnóstico.
+
 ### Bloco 7.4.1 — Correção UX da compreensão Reading
 - `ReadingLesson.jsx` não revela mais a resposta correta antes da interação.
 - O aluno escolhe uma opção e só então recebe feedback visual.
@@ -154,10 +161,10 @@ Não mexer na `main` durante a reconstrução. Tudo deve acontecer nesta branch 
 - Abrir o preview atualizado.
 - Confirmar status `Firebase configurado (runtime)`.
 - Testar primeiro “Entrar com Google”.
-- Se nada abrir, testar “Tentar Google por popup”.
+- Ao voltar do Google, o app deve mostrar “Verificando retorno do Google...” e liberar automaticamente se houver usuário.
+- Se não liberar, testar “Tentar Google por popup”.
 - Se aparecer erro de domínio, adicionar `raw.githack.com` nos domínios autorizados do Firebase Authentication.
 - Se aparecer erro de método, ativar Google em Firebase Authentication > Sign-in method.
-- Confirmar se, ao voltar do Google, o app libera automaticamente.
 - Confirmar se “Reiniciar acesso” limpa a sessão local.
 
 ## Blocos restantes por ordem de segurança
