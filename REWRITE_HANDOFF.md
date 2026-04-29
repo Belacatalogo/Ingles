@@ -13,12 +13,14 @@ Não mexer na `main` durante a reconstrução. Tudo deve acontecer nesta branch 
 - O `bundle.js` contém muitos patches acumulados, interceptações de `fetch`, painéis injetados, `MutationObserver`, `setInterval`, aliases de `localStorage` e manipulação direta do DOM.
 - O `index.html` também contém lógica demais: PWA/cache, unlock de áudio iOS, diagnóstico, service worker, montagem do app e scripts extras.
 - O backend Azure privado deve permanecer intocado. O novo frontend deve apenas preservar o contrato da API já usada hoje.
+- A referência visual final enviada pelo usuário é o Fluency escuro/premium do pacote `meu fluency(2).zip` e das screenshots: topbar com logo/pills, cards grandes, bottom nav arredondada, flashcards/speaking/home no estilo premium.
 
 ## Estratégia
 1. Criar um novo app React modular dentro de `fluency-clean/`.
 2. Migrar função por função do app antigo.
 3. Manter o app antigo funcionando até o novo estar testável.
 4. Substituir a renderização antiga apenas quando o novo app estiver estável.
+5. Realinhar a aparência visual ao HTML de referência real antes da limpeza final.
 
 ## Blocos concluídos
 
@@ -160,21 +162,28 @@ Não mexer na `main` durante a reconstrução. Tudo deve acontecer nesta branch 
 - Listening e Speaking ainda mostram fallback enquanto seus layouts específicos não forem criados.
 - O seletor foi marcado como temporário e deve ser removido no Bloco 9.
 
+### Bloco 7.4.4 — Realinhamento visual global com referência Fluency
+- Referência visual real recebida via imagens e pacote `meu fluency(2).zip`.
+- `App.jsx` foi realinhado: saiu o hero gigante de validação do shell principal; entrou topbar no estilo Fluency com logo, nível, streak e ajustes.
+- Ordem da bottom nav foi ajustada para se aproximar da referência: Hoje, Aula, Cartas, Speaking, Progresso, Ajustes.
+- `TodayScreen.jsx` foi reconstruída com visual de referência: progresso do dia, cards de ofensiva/nível, tarefas do dia, foco da semana e frase do dia.
+- `reference.css` criado para concentrar o visual premium: fundo, pills, cards, topbar, home e bottom nav.
+- O objetivo agora é continuar trazendo Flashcards, Speaking, Aula e Ajustes para a mesma aparência.
+
 ## Próximo passo recomendado
 
-### Testar Grammar no preview
-- Abrir a aba Aula.
-- Usar o seletor temporário “Teste seguro de layout”.
-- Tocar em Grammar.
-- Verificar se o layout está sério, bonito e se as respostas não aparecem antes do clique.
-- Testar resposta escrita, salvar rascunho e concluir Grammar.
-- Confirmar que a aula real Reading continua preservada quando voltar para “Aula real”.
+### Testar Home realinhada no preview
+- Abrir o preview atualizado.
+- Conferir se o topo, cards, bottom nav e aba Hoje estão muito mais próximos da referência enviada.
+- Verificar se nada quebrou: login, navegação, aula real, progresso e geração.
+- Se a Home estiver aprovada, continuar realinhando Flashcards e Speaking com a referência.
 
 ## Blocos restantes por ordem de segurança
 
 ### Bloco 7.4 — Corrigir layouts por tipo de aula
 - Grammar em teste.
 - Listening e Speaking devem ser corrigidos um por vez.
+- Flashcards e Speaking também devem ser realinhados visualmente à referência.
 
 ### Bloco 7.5 — Checklist final do preview
 - Testar app inteiro no iPhone antes de qualquer migração.
