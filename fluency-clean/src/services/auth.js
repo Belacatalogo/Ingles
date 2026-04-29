@@ -1,6 +1,9 @@
 import {
   GoogleAuthProvider,
+  browserLocalPersistence,
+  getRedirectResult,
   onAuthStateChanged,
+  setPersistence,
   signInWithPopup,
   signInWithRedirect,
   signOut,
@@ -39,7 +42,20 @@ function getReadableAuthError(error) {
     return 'Janela de login fechada antes de concluir.';
   }
 
+  if (code.includes('web-storage-unsupported')) {
+    return 'O navegador bloqueou armazenamento necessário para login. Desative modo privado/bloqueio de cookies e tente novamente.';
+  }
+
   return message;
+}
+
+async function prepareAuthPersistence(auth) {
+  try {
+    await setPersistence(auth, browserLocalPersistence);
+    diagnostics.log('Persistência local do Firebase Auth configurada.', 'info');
+  } catch (error) {
+    diagnostics.log(`Não foi possível configurar persistência local: ${getReadableAuthError(error)}`, 'error');
+  }
 }
 
 export function subscribeAuth(callback) {
@@ -49,11 +65,45 @@ export function subscribeAuth(callback) {
     return () => {};
   }
 
+  prepareAuthPersistence(auth);
+
   return onAuthStateChanged(auth, (user) => {
     const normalized = normalizeUser(user);
     diagnostics.log(normalized ? `Usuário autenticado: ${normalized.email}` : 'Usuário não autenticado.', 'info');
     callback(normalized);
   });
+}
+
+export async function resolveGoogleRedirectResult() {
+  const auth = getFirebaseAuth();
+  if (!auth) {
+    return { ok: false, user: null, error: 'Firebase não configurado.' };
+  }
+
+  try {
+    await prepareAuthPersistence(auth);
+    diagnostics.log('Verificando retorno do redirect Google.', 'info');
+    const result = await getRedirectResult(auth);
+
+    if (!result?.user) {
+      diagnostics.log('Nenhum resultado pendente de redirect Google encontrado.', 'info');
+      return { ok: true, user: null, empty: true, error: null };
+    }
+
+    const user = normalizeUser(result.user);
+    diagnostics.log(`Retorno do Google capturado: ${user?.email || 'usuário sem email'}.`, 'info');
+    return { ok: true, user, empty: false, error: null };
+  } catch (error) {
+    const readable = getReadableAuthError(error);
+    diagnostics.log(`Erro ao capturar retorno Google: ${readable}`, 'error');
+    return {
+      ok: false,
+      user: null,
+      error: readable,
+      code: error?.code || '',
+      rawError: error?.message || String(error),
+    };
+  }
 }
 
 export async function signInWithGoogle({ mode = 'redirect' } = {}) {
@@ -67,6 +117,7 @@ export async function signInWithGoogle({ mode = 'redirect' } = {}) {
   provider.setCustomParameters({ prompt: 'select_account' });
 
   try {
+    await prepareAuthPersistence(auth);
     diagnostics.setPhase(`login Google ${mode}`, 'authenticating');
     diagnostics.log(`Iniciando login Google via ${mode}.`, 'info');
 
