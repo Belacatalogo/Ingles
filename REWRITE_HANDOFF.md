@@ -127,43 +127,6 @@ Não mexer na `main` durante a reconstrução. Tudo deve acontecer nesta branch 
 - Para o preview RawGitHack, popup virou o caminho principal.
 - Redirect fica como fallback/diagnóstico, pois voltou para a tela de acesso no teste real.
 
-### Bloco 7.2.0 — Segurança antes da validação Firebase/Google
-- `AccessGate.jsx` agora assina o estado real do Firebase Auth com `subscribeAuth`.
-- Após login Google/redirect, uma sessão local é criada e o app libera automaticamente.
-- Foi adicionada entrada por código de acesso usando `VITE_ACCESS_CODE`.
-- Foi adicionada ação para reiniciar acesso local no preview.
-- `access.css` criado para estilos do gate sem inflar o CSS principal.
-- `.env.example` documenta `VITE_ACCESS_CODE`.
-
-### Bloco 7.2.1 — Configuração Firebase runtime para preview
-- `firebase.js` agora lê configuração Firebase por env ou por configuração salva localmente no navegador.
-- `AccessGate.jsx` recebeu painel “Configurar Firebase neste preview”.
-- O usuário pode colar `apiKey`, `authDomain`, `projectId`, `storageBucket`, `messagingSenderId` e `appId` direto no preview RawGitHack.
-- A configuração fica salva apenas no navegador/localStorage do preview.
-- Isso permite validar login Google sem precisar rebuildar o app com `.env` a cada teste.
-- `access.css` recebeu estilos próprios para o painel Firebase.
-
-### Bloco 7.2.2 — Diagnóstico de login Google no iPhone
-- `auth.js` agora diferencia login Google por redirect e por popup.
-- Erros comuns recebem mensagens legíveis: domínio não autorizado, método Google desativado, popup bloqueado ou janela fechada.
-- `AccessGate.jsx` agora mostra dois botões: “Entrar com Google” por redirect e “Tentar Google por popup”.
-- O clique no botão Google agora gera log explícito no Diagnóstico e mensagem visível na tela.
-- `access.css` recebeu estilos para os botões de fallback e mensagem de auth.
-
-### Bloco 7.2.3 — Capturar retorno do Google Redirect
-- `auth.js` agora usa `getRedirectResult` para capturar o retorno do login Google.
-- `auth.js` tenta configurar `browserLocalPersistence` antes de autenticar.
-- `AccessGate.jsx` verifica o retorno do Google quando o preview carrega.
-- Se houver usuário no retorno do redirect, o app cria sessão local e libera a entrada automaticamente.
-- Se houver erro no retorno, a mensagem aparece na tela e também no Diagnóstico.
-
-### Bloco 7.2.4 — Popup como padrão no preview RawGitHack
-- Teste real no iPhone confirmou que login Google por popup funciona no RawGitHack.
-- Teste real também mostrou que o redirect pode voltar para a tela de acesso no preview.
-- `AccessGate.jsx` agora usa popup como ação principal do botão “Entrar com Google”.
-- O redirect continua disponível apenas como fallback/diagnóstico.
-- No app final hospedado em domínio próprio, o redirect pode ser reavaliado; para o preview atual, popup é o caminho validado.
-
 ### Bloco 7.3.1 — Progresso local e conclusão Reading
 - `progressStore.js` criado.
 - Progresso agora salva XP, streak, aulas concluídas, histórico e rascunhos no localStorage.
@@ -177,19 +140,32 @@ Não mexer na `main` durante a reconstrução. Tudo deve acontecer nesta branch 
 - Teste real confirmou que login continua persistente.
 - Salvamento/conclusão/progresso funcionaram corretamente no preview segundo retorno do usuário.
 
+### Bloco 7.4.1 — Correção UX da compreensão Reading
+- `ReadingLesson.jsx` não revela mais a resposta correta antes da interação.
+- O aluno escolhe uma opção e só então recebe feedback visual.
+- Resposta correta é revelada apenas após tentativa.
+- Seleção, acerto e erro têm estados visuais próprios em `index.css`.
+
+### Bloco 7.4.2 — Layout dedicado para Grammar
+- `GrammarLesson.jsx` criado.
+- `LessonScreen.jsx` agora renderiza `GrammarLesson` quando `lesson.type === 'grammar'`.
+- Grammar agora tem explicação guiada, cards de regra, painel de dicas, prática sem revelar resposta antes do clique e produção própria.
+- Grammar usa o mesmo progresso real: salvar rascunho, concluir aula, +25 XP e histórico.
+- `lessons.css` criado para estilos específicos de layouts de aula, evitando inflar ainda mais `index.css`.
+
 ## Próximo passo recomendado
 
-### Bloco 7.4 — Corrigir layouts por tipo de aula
-- Começar por Grammar, porque já havia reclamação anterior de respostas aparecendo abertas e layout pouco sério.
-- Depois Listening.
-- Depois Speaking.
+### Bloco 7.4 — Continuar layouts por tipo de aula
+- Testar se uma aula Grammar renderiza no novo layout quando `type: grammar`.
+- Depois criar layout específico para Listening.
+- Depois revisar Speaking.
 - Reading já recebeu correção inicial de UX, mas ainda será revisado no bloco pedagógico profundo.
 
 ## Blocos restantes por ordem de segurança
 
 ### Bloco 7.4 — Corrigir layouts por tipo de aula
-- Reading UX iniciado antecipadamente.
-- Grammar, Listening e Speaking devem ser corrigidos um por vez.
+- Grammar iniciado.
+- Listening e Speaking devem ser corrigidos um por vez.
 
 ### Bloco 7.5 — Checklist final do preview
 - Testar app inteiro no iPhone antes de qualquer migração.
