@@ -1,23 +1,24 @@
 import { AlertCircle, Loader2, Sparkles } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import { buildCurriculumPrompt, getCurriculumSummary, setActiveCurriculumLesson } from '../../services/curriculumPlan.js';
 import { diagnostics } from '../../services/diagnostics.js';
 import { generateLessonDraft } from '../../services/geminiLessons.js';
 import { getLessonKeysStatus, getLessonFlashKeys, getLessonProKey } from '../../services/lessonKeys.js';
-import { getLessonPromptDraft, saveCurrentLesson, saveLessonPromptDraft } from '../../services/lessonStore.js';
+import { saveCurrentLesson } from '../../services/lessonStore.js';
 
 export function LessonGeneratorPanel({ onGenerated }) {
-  const [prompt, setPrompt] = useState(() => getLessonPromptDraft());
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [version, setVersion] = useState(0);
   const keyStatus = useMemo(() => getLessonKeysStatus(), [version]);
+  const curriculum = useMemo(() => getCurriculumSummary(), [version]);
+  const nextLesson = curriculum.nextLesson;
 
   async function handleGenerate() {
     setVersion((value) => value + 1);
     setLoading(true);
-    setMessage('Gerando aula em blocos pedagógicos... acompanhe o diagnóstico.');
-    saveLessonPromptDraft(prompt);
-    diagnostics.log('Botão Gerar aula acionado.', 'info');
+    setMessage('Gerando a próxima aula do cronograma... acompanhe o diagnóstico.');
+    diagnostics.log('Botão Gerar próxima aula do cronograma acionado.', 'info');
 
     try {
       const flashKeys = getLessonFlashKeys();
@@ -30,6 +31,14 @@ export function LessonGeneratorPanel({ onGenerated }) {
         return;
       }
 
+      if (!nextLesson) {
+        setMessage('Cronograma concluído. Todas as aulas planejadas foram vistas.');
+        return;
+      }
+
+      setActiveCurriculumLesson(nextLesson.id);
+      const prompt = buildCurriculumPrompt(nextLesson);
+
       const result = await generateLessonDraft({
         prompt,
         keys: flashKeys,
@@ -41,22 +50,51 @@ export function LessonGeneratorPanel({ onGenerated }) {
         return;
       }
 
-      const saved = saveCurrentLesson(result.lesson);
-      diagnostics.log(`Aula pronta para abrir: ${saved.title}`, 'info');
-      setMessage('Aula gerada, salva e aberta na aba Aula.');
+      const saved = saveCurrentLesson({
+        ...result.lesson,
+        id: nextLesson.id,
+        curriculumId: nextLesson.id,
+        type: nextLesson.type,
+        level: nextLesson.level,
+        unitTitle: nextLesson.unitTitle,
+        prerequisites: nextLesson.prerequisites,
+      });
+      diagnostics.log(`Aula do cronograma pronta para abrir: ${saved.title}`, 'info');
+      setMessage('Próxima aula do cronograma gerada, salva e aberta na aba Aula.');
       onGenerated?.(saved);
     } catch (error) {
-      diagnostics.log(`Erro inesperado ao gerar aula: ${error?.message || error}`, 'error');
+      diagnostics.log(`Erro inesperado ao gerar aula do cronograma: ${error?.message || error}`, 'error');
       setMessage(error?.message || 'Erro inesperado ao gerar aula.');
     } finally {
       setLoading(false);
+      setVersion((value) => value + 1);
     }
   }
 
   return (
     <section className="lesson-generator-panel">
-      <div className="panel-title"><Sparkles size={18} /> Gerar aula por IA</div>
-      <p>Escolha no pedido se quer Reading, Grammar, Listening ou Writing. O sistema monta a aula em blocos pedagógicos e valida antes de salvar.</p>
+      <div className="panel-title"><Sparkles size={18} /> Próxima aula do cronograma</div>
+      <p>Você não precisa escolher o conteúdo. O Fluency segue uma trilha A1 → C2 em ordem, com pré-requisitos e revisão antes de avançar.</p>
+
+      <div className="generation-status-box">
+        <div>
+          <span>Nível atual</span>
+          <strong>{curriculum.currentLevel}</strong>
+        </div>
+        <div>
+          <span>Progresso do nível</span>
+          <strong>{curriculum.completedInLevel}/{curriculum.levelTotal}</strong>
+        </div>
+      </div>
+
+      {nextLesson ? (
+        <div className="inline-warning curriculum-next-box">
+          <Sparkles size={16} />
+          <span>
+            Próxima: <b>{nextLesson.level}</b> · {nextLesson.type} · {nextLesson.title}
+          </span>
+        </div>
+      ) : null}
 
       <div className="generation-status-box">
         <div>
@@ -76,21 +114,9 @@ export function LessonGeneratorPanel({ onGenerated }) {
         </div>
       ) : null}
 
-      <label htmlFor="lesson-prompt">Pedido da aula</label>
-      <textarea
-        id="lesson-prompt"
-        value={prompt}
-        onChange={(event) => setPrompt(event.target.value)}
-        placeholder="Ex.: Gere uma aula de Grammar A1 sobre Simple Present com explicação profunda e prática."
-        inputMode="text"
-        autoCapitalize="sentences"
-        autoCorrect="on"
-        spellCheck="true"
-      />
-
       <button type="button" className="primary-button" onClick={handleGenerate} disabled={loading}>
         {loading ? <Loader2 size={16} className="spin" /> : <Sparkles size={16} />}
-        {loading ? 'Gerando aula...' : 'Gerar aula'}
+        {loading ? 'Gerando aula...' : 'Gerar próxima aula'}
       </button>
 
       {message ? <p className="generator-message">{message}</p> : null}
