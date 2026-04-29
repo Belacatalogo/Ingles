@@ -5,6 +5,7 @@ import './styles/access.css';
 import './styles/lessons.css';
 import './styles/reference.css';
 import './styles/lab-polish.css';
+import './styles/today-polish.css';
 
 const rootElement = document.getElementById('root');
 const root = createRoot(rootElement);
