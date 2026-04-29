@@ -43,77 +43,72 @@ Não mexer na `main` durante a reconstrução. Tudo deve acontecer nesta branch 
 - Campo de resposta usa `textarea` com `inputMode`, `autoCapitalize`, `autoCorrect` e `spellCheck` para iOS.
 - Botões de salvar rascunho e concluir Reading posicionados no componente real.
 - Novo componente `ProgressPill` criado.
-- CSS específico criado para Reading v2, vocabulário, questões, opções, resposta e responsividade.
+- CSS específico criado para Reading v2, vocabulário, questões, opções e resposta.
 
 ### Bloco 3 — Serviços limpos
 - `storage.js` criado para centralizar `localStorage` com prefixo `fluency.clean.`.
-- `diagnostics.js` criado para logs e fases do sistema sem espalhar console/localStorage pelo app.
-- `lessonTypes.js` criado para normalizar tipos de aula: reading, grammar, listening, speaking, writing, vocabulary e default.
-- `geminiLessons.js` criado como fachada futura para geração de aulas, validação/máscara de keys e normalização de chaves.
-- `azurePronunciation.js` criado como cliente/fachada para preservar o backend Azure privado existente.
+- `diagnostics.js` criado para logs e fases do sistema.
+- `lessonTypes.js` criado para normalizar tipos de aula.
+- `geminiLessons.js` criado como fachada de geração.
+- `azurePronunciation.js` criado como cliente/fachada do backend Azure privado.
 - `services/index.js` criado para exportação centralizada.
 
 ### Bloco 4 — Firebase / Google
 - `.env.example` criado com variáveis `VITE_FIREBASE_*` e endpoint opcional do Azure.
-- `firebase.js` criado para inicializar Firebase somente se as variáveis estiverem configuradas.
+- `firebase.js` criado para inicializar Firebase via env.
 - `auth.js` criado com subscribeAuth, login Google e logout.
-- `accessCode.js` criado como fachada do fluxo de código/acesso local.
-- `AccessGate.jsx` criado para separar login/acesso da aplicação principal.
-- `App.jsx` agora usa `AccessGate`, mas ainda permite modo visual para não travar desenvolvimento.
-- `services/index.js` exporta Firebase/Auth/Access.
-- CSS do gate de acesso criado.
-- A configuração real do Firebase ainda precisa ser fornecida via ambiente/deploy; nenhuma chave nova foi gravada diretamente no código.
+- `accessCode.js` criado como fachada do fluxo de acesso local.
+- `AccessGate.jsx` criado.
+- `App.jsx` usa `AccessGate`, com modo visual.
 
 ### Bloco 5 — Geração de aulas
 - `lessonKeys.js` criado para chaves exclusivas de aulas.
-- Suporte a até 3 keys Flash/free exclusivas de aulas.
-- Suporte a 1 key Pro paga como último fallback.
-- `geminiLessons.js` agora monta plano real de tentativas: Flash primeiro e Pro apenas no final.
-- `geminiLessons.js` faz chamada real ao endpoint Gemini, parse de JSON e validação básica da aula.
-- `LessonKeysPanel.jsx` criado e anexado à aba Progresso.
-- `ProgressScreen.jsx` recebeu o painel de chaves exclusivas de aulas no lugar correto.
-- `services/index.js` exporta funções de chaves de aulas.
-- CSS do painel de chaves criado.
+- Até 3 keys Flash/free exclusivas.
+- 1 key Pro paga como último fallback.
+- `geminiLessons.js` monta plano real: Flash primeiro, Pro no final.
+- `LessonKeysPanel.jsx` anexado à aba Progresso.
 
 ### Bloco 5.1 — Conectar geração de aula na interface
-- `lessonStore.js` criado para salvar aula atual, histórico e prompt de geração.
-- `useDiagnostics.js` criado para componentes lerem logs reais.
+- `lessonStore.js` criado para aula atual, histórico e prompt.
+- `useDiagnostics.js` criado.
 - `LessonGeneratorPanel.jsx` criado.
-- `TodayScreen.jsx` recebeu painel real de geração de aula.
-- `LessonScreen.jsx` agora tenta renderizar a aula salva antes da demo.
-- `DiagnosticPanel.jsx` agora mostra status, fase, último erro e logs reais.
-- `services/index.js` exporta lessonStore.
-- CSS de geração e logs criado.
+- `TodayScreen.jsx` recebeu geração de aula.
+- `LessonScreen.jsx` renderiza aula salva antes da demo.
+- `DiagnosticPanel.jsx` mostra logs reais.
 
 ### Bloco 5.2 — Build/preview controlado
-- `vite.config.js` criado com `base: './'`, build em `dist` e sourcemap.
-- Workflow `.github/workflows/fluency-clean-preview.yml` criado para buildar `fluency-clean` no GitHub Actions.
-- `package.json` recebeu script `check` apontando para `npm run build`.
-- Workflow usa `npm install` e `npm run build`, sem depender de lockfile inexistente.
-- Não consegui rodar build local nesta sessão por erro de DNS/clonagem do GitHub no ambiente, então a validação real ficará com o GitHub Actions.
+- `vite.config.js` criado.
+- Workflow `fluency-clean-preview.yml` criado para build.
+- `package.json` recebeu script `check`.
 
 ### Bloco 5.3 — Preview por link sem merge
-- Workflow `.github/workflows/fluency-clean-publish-preview.yml` criado.
-- Ele builda `fluency-clean` e copia `dist/` para `preview-clean/` dentro da branch `rewrite-fluency-clean`.
-- Isso não mexe na `main`.
-- Isso não altera a branch atual do GitHub Pages (`1Elegante` apareceu como Pages no print do usuário).
-- A ideia é abrir o preview por link estático apontando para `preview-clean/index.html` na branch.
+- Workflow `fluency-clean-publish-preview.yml` criado.
+- Build é copiado para `preview-clean/` na branch `rewrite-fluency-clean`.
+- Não mexe na `main` nem na branch Pages atual.
+
+### Bloco 6 — Áudio / Pronúncia / iOS — concluído estruturalmente
+- `audioUnlock.js` criado para liberar áudio em iOS por gesto do usuário.
+- `tts.js` criado usando Web Speech API, com voz em inglês quando disponível.
+- `recorder.js` criado com MediaRecorder/getUserMedia.
+- `azurePronunciation.js` agora envia `FormData` para `VITE_AZURE_PRONUNCIATION_ENDPOINT` sem alterar backend privado.
+- `SpeakingScreen.jsx` agora tem: liberar áudio iOS, ouvir frase, parar áudio, gravar, parar/analisar, exibir score.
+- `services/index.js` exporta serviços de áudio.
+- CSS recebeu `.audio-actions` e ajustes mobile.
 
 ## Próximo passo recomendado
 
-### Verificar workflow de publicação do preview
-- Abrir Actions.
-- Procurar `Publish Fluency Clean Branch Preview`.
-- Se ficar verde, abrir o preview pelo link estático da pasta `preview-clean`.
-- Se ficar vermelho, corrigir o erro antes de continuar para áudio.
+### Verificar preview atualizado
+- Esperar o workflow publicar `preview-clean` novamente.
+- Abrir o mesmo link do preview.
+- Testar apenas: abrir Speaking, liberar áudio iOS, ouvir frase, iniciar/parar gravação.
+- Azure pode mostrar erro de endpoint se `VITE_AZURE_PRONUNCIATION_ENDPOINT` não estiver configurado; isso é esperado até configurar o deploy.
 
 ## Blocos restantes
 
-### Bloco 6 — Áudio / Pronúncia / iOS
-- TTS.
-- Unlock iOS.
-- Azure Pronunciation via backend privado.
-- Diagnóstico de áudio.
+### Bloco 6.1 — Configuração de endpoint Azure para preview
+- Descobrir/confirmar endpoint atual do backend privado.
+- Definir `VITE_AZURE_PRONUNCIATION_ENDPOINT` no ambiente de build/preview, sem mexer no backend.
+- Testar análise real.
 
 ### Bloco 7 — Migração final
 - Testes manuais por aba.
