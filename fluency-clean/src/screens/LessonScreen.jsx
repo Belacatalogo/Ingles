@@ -42,6 +42,32 @@ function getLessonTypeLabel(lesson) {
   return labels[lesson?.type] || 'Aula';
 }
 
+function countWords(value) {
+  return String(value || '').trim().split(/\s+/).filter(Boolean).length;
+}
+
+function getLessonStats(lesson) {
+  const exerciseCount = Array.isArray(lesson?.exercises) ? lesson.exercises.length : 0;
+  const vocabularyCount = Array.isArray(lesson?.vocabulary) ? lesson.vocabulary.length : 0;
+  const sectionCount = Array.isArray(lesson?.sections) ? lesson.sections.length : 0;
+  const promptCount = Array.isArray(lesson?.prompts) ? lesson.prompts.length : 0;
+  const mainWords = countWords(lesson?.listeningText);
+  const sectionWords = Array.isArray(lesson?.sections)
+    ? lesson.sections.reduce((total, section) => total + countWords(`${section?.title || ''} ${section?.content || ''}`), 0)
+    : 0;
+
+  const estimatedMinutes = Math.max(
+    8,
+    Math.ceil((mainWords + sectionWords + vocabularyCount * 18 + exerciseCount * 32 + promptCount * 24) / 95)
+  );
+
+  return {
+    minutes: estimatedMinutes,
+    exercises: exerciseCount || 0,
+    sections: sectionCount,
+  };
+}
+
 function LessonRenderer({ lesson }) {
   if (lesson?.type === 'reading') return <ReadingLesson lesson={lesson} />;
   if (lesson?.type === 'grammar') return <GrammarLesson lesson={lesson} />;
@@ -60,6 +86,7 @@ export function LessonScreen({ lessonRevision = 0 }) {
   const [activeSection, setActiveSection] = useState(0);
   const savedLesson = useMemo(() => getCurrentLesson(), [lessonRevision]);
   const lesson = savedLesson || fallbackLesson;
+  const lessonStats = useMemo(() => getLessonStats(lesson), [lesson]);
   const usingGenerated = Boolean(savedLesson);
   const currentProgress = Math.round(((activeSection + 1) / lessonSections.length) * 100);
 
@@ -77,8 +104,8 @@ export function LessonScreen({ lessonRevision = 0 }) {
 
         <footer>
           <div>
-            <span><Clock size={13} /> 12 min</span>
-            <span><Target size={13} /> 8 ex.</span>
+            <span><Clock size={13} /> {lessonStats.minutes} min</span>
+            <span><Target size={13} /> {lessonStats.exercises} ex.</span>
           </div>
           <button type="button" aria-label="Regenerar com IA">
             <RefreshCw size={14} />
