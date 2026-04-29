@@ -34,31 +34,17 @@ Não mexer na `main` durante a reconstrução. Tudo deve acontecer nesta branch 
 - Navegação inferior criada.
 - Componentes reutilizáveis criados: `Card`, `StatCard`, `SectionHeader`, `BottomNav`, `DiagnosticPanel`.
 - Telas principais estruturadas visualmente: Hoje, Aula, Progresso, Speaking, Flashcards e Ajustes.
-- Reading continua usando renderização condicional por tipo, sem sobreposição com aula antiga.
-- CSS expandido para dashboard, cards, progresso, speaking, flashcards, ajustes e responsividade mobile.
 
 ### Bloco 2 — Aula Reading nova
 - `ReadingLesson` transformado em layout completo.
 - Aula dividida em introdução, objetivo, etapas de estudo, texto principal, escuta guiada, vocabulário, compreensão e resposta guiada.
-- Campo de resposta usa `textarea` com `inputMode`, `autoCapitalize`, `autoCorrect` e `spellCheck` para iOS.
-- Botões de salvar rascunho e concluir Reading posicionados no componente real.
-- Novo componente `ProgressPill` criado.
-- CSS específico criado para Reading v2, vocabulário, questões, opções e resposta.
+- Campo de resposta preparado para iOS.
 
 ### Bloco 3 — Serviços limpos
-- `storage.js` criado para centralizar `localStorage` com prefixo `fluency.clean.`.
-- `diagnostics.js` criado para logs e fases do sistema.
-- `lessonTypes.js` criado para normalizar tipos de aula.
-- `geminiLessons.js` criado como fachada de geração.
-- `azurePronunciation.js` criado como cliente/fachada do backend Azure privado.
-- `services/index.js` criado para exportação centralizada.
+- `storage.js`, `diagnostics.js`, `lessonTypes.js`, `geminiLessons.js`, `azurePronunciation.js` e `services/index.js` criados.
 
 ### Bloco 4 — Firebase / Google
-- `.env.example` criado com variáveis `VITE_FIREBASE_*` e endpoint opcional do Azure.
-- `firebase.js` criado para inicializar Firebase via env.
-- `auth.js` criado com subscribeAuth, login Google e logout.
-- `accessCode.js` criado como fachada do fluxo de acesso local.
-- `AccessGate.jsx` criado.
+- `.env.example`, `firebase.js`, `auth.js`, `accessCode.js`, `AccessGate.jsx` criados.
 - `App.jsx` usa `AccessGate`, com modo visual.
 
 ### Bloco 5 — Geração de aulas
@@ -69,12 +55,8 @@ Não mexer na `main` durante a reconstrução. Tudo deve acontecer nesta branch 
 - `LessonKeysPanel.jsx` anexado à aba Progresso.
 
 ### Bloco 5.1 — Conectar geração de aula na interface
-- `lessonStore.js` criado para aula atual, histórico e prompt.
-- `useDiagnostics.js` criado.
-- `LessonGeneratorPanel.jsx` criado.
-- `TodayScreen.jsx` recebeu geração de aula.
-- `LessonScreen.jsx` renderiza aula salva antes da demo.
-- `DiagnosticPanel.jsx` mostra logs reais.
+- `lessonStore.js`, `useDiagnostics.js`, `LessonGeneratorPanel.jsx` criados.
+- `TodayScreen.jsx`, `LessonScreen.jsx` e `DiagnosticPanel.jsx` conectados.
 
 ### Bloco 5.2 — Build/preview controlado
 - `vite.config.js` criado.
@@ -86,34 +68,34 @@ Não mexer na `main` durante a reconstrução. Tudo deve acontecer nesta branch 
 - Build é copiado para `preview-clean/` na branch `rewrite-fluency-clean`.
 - Não mexe na `main` nem na branch Pages atual.
 
-### Bloco 6 — Áudio / Pronúncia / iOS — concluído estruturalmente
+### Bloco 6 — Áudio / Pronúncia / iOS
 - `audioUnlock.js` criado para liberar áudio em iOS por gesto do usuário.
-- `tts.js` criado usando Web Speech API, com voz em inglês quando disponível.
+- `tts.js` criado usando Web Speech API.
 - `recorder.js` criado com MediaRecorder/getUserMedia.
-- `azurePronunciation.js` agora envia `FormData` para `VITE_AZURE_PRONUNCIATION_ENDPOINT` sem alterar backend privado.
-- `SpeakingScreen.jsx` agora tem: liberar áudio iOS, ouvir frase, parar áudio, gravar, parar/analisar, exibir score.
-- `services/index.js` exporta serviços de áudio.
-- CSS recebeu `.audio-actions` e ajustes mobile.
+- `SpeakingScreen.jsx` agora tem liberar áudio iOS, ouvir frase, parar áudio, gravar, parar/analisar e score.
+
+### Bloco 6.1 — Contrato Azure preservado
+- O app antigo usa backend privado apenas para entregar token Azure; a avaliação acontece no navegador com Azure Speech SDK.
+- `azurePronunciation.js` foi corrigido para preservar esse contrato.
+- O novo app carrega o Azure Speech SDK no navegador, busca token no backend existente e analisa o áudio gravado localmente.
+- Não houve alteração no backend privado.
+- Se nenhuma variável de ambiente for definida, o serviço usa a mesma URL pública de token já usada no app antigo.
 
 ## Próximo passo recomendado
 
 ### Verificar preview atualizado
 - Esperar o workflow publicar `preview-clean` novamente.
 - Abrir o mesmo link do preview.
-- Testar apenas: abrir Speaking, liberar áudio iOS, ouvir frase, iniciar/parar gravação.
-- Azure pode mostrar erro de endpoint se `VITE_AZURE_PRONUNCIATION_ENDPOINT` não estiver configurado; isso é esperado até configurar o deploy.
+- Testar Speaking: liberar áudio, ouvir frase, gravar e parar/analisar.
+- Agora a análise deve tentar usar o contrato real de token Azure.
 
 ## Blocos restantes
 
-### Bloco 6.1 — Configuração de endpoint Azure para preview
-- Descobrir/confirmar endpoint atual do backend privado.
-- Definir `VITE_AZURE_PRONUNCIATION_ENDPOINT` no ambiente de build/preview, sem mexer no backend.
-- Testar análise real.
-
 ### Bloco 7 — Migração final
 - Testes manuais por aba.
-- Build.
-- Deploy preview.
+- Configurar Firebase/Google real no ambiente.
+- Validar geração Gemini com keys reais.
+- Validar Azure real.
 - Só depois considerar substituir a `main`.
 
 ## Como continuar em outro chat
