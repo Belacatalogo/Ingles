@@ -9,7 +9,7 @@ export const GEMINI_LESSON_STATUS = {
   error: 'error',
 };
 
-const FLASH_MODELS = ['gemini-2.5-flash', 'gemini-2.0-flash'];
+const FLASH_MODELS = ['gemini-2.5-flash', 'gemini-2.5-flash-lite'];
 const PRO_MODELS = ['gemini-2.5-pro'];
 const RETRYABLE_STATUS = new Set([500, 502, 503, 504]);
 
