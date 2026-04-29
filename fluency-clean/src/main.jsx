@@ -10,6 +10,7 @@ import './styles/nav-polish.css';
 import './styles/lesson-polish.css';
 import './styles/flashcards-polish.css';
 import './styles/progress-polish.css';
+import './styles/settings-polish.css';
 
 const rootElement = document.getElementById('root');
 const root = createRoot(rootElement);
