@@ -1,4 +1,5 @@
 import { Award, BookOpenCheck, Flame, TrendingUp } from 'lucide-react';
+import { LessonKeysPanel } from '../components/settings/LessonKeysPanel.jsx';
 import { Card } from '../components/ui/Card.jsx';
 import { StatCard } from '../components/ui/StatCard.jsx';
 import { SectionHeader } from '../components/ui/SectionHeader.jsx';
@@ -17,6 +18,8 @@ export function ProgressScreen() {
         <StatCard label="Aulas" value="0/5" hint="semana atual" icon={BookOpenCheck} />
         <StatCard label="Streak" value="0 dias" hint="segunda a sexta" icon={Flame} />
       </div>
+
+      <LessonKeysPanel />
 
       <Card eyebrow="Mapa CEFR" title="A1 → C2">
         <div className="level-track">
