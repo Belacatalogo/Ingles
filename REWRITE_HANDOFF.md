@@ -105,12 +105,19 @@ Não mexer na `main` durante a reconstrução. Tudo deve acontecer nesta branch 
 - Mensagem final agora diferencia quota, alta demanda e modelo indisponível.
 - `lessonKeys.js` atualizado para refletir a lista correta de modelos.
 
+### Bloco 7.2 — Correção UX da compreensão Reading
+- `ReadingLesson.jsx` não revela mais a resposta correta antes da interação.
+- O aluno escolhe uma opção e só então recebe feedback visual.
+- Resposta correta é revelada apenas após tentativa.
+- Seleção, acerto e erro têm estados visuais próprios em `index.css`.
+
 ## Próximo passo recomendado
 
-### Retestar geração de aula real no preview
-- Esperar o workflow publicar `preview-clean` novamente.
+### Retestar preview após publicação automática
+- Verificar se os workflows publicaram `preview-clean` novamente.
 - Abrir o preview.
-- Se a key atual bateu quota, adicionar outra key em Progresso ou aguardar quota renovar.
+- Ir na aba Aula e testar a compreensão Reading: nenhuma alternativa deve aparecer correta antes do clique.
+- Adicionar key em Progresso se necessário.
 - Ir em Hoje e clicar em Gerar aula.
 - Acompanhar o painel Diagnóstico.
 - O app deve mudar sozinho para a aba Aula quando terminar.
