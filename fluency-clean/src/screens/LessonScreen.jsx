@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { Card } from '../components/ui/Card.jsx';
 import { SectionHeader } from '../components/ui/SectionHeader.jsx';
 import { ReadingLesson } from '../lessons/ReadingLesson.jsx';
+import { GrammarLesson } from '../lessons/GrammarLesson.jsx';
 import { getCurrentLesson } from '../services/lessonStore.js';
 
 const demoLesson = {
@@ -12,6 +13,7 @@ const demoLesson = {
 
 function LessonRenderer({ lesson }) {
   if (lesson?.type === 'reading') return <ReadingLesson lesson={lesson} />;
+  if (lesson?.type === 'grammar') return <GrammarLesson lesson={lesson} />;
 
   return (
     <Card eyebrow={`Aula · ${lesson?.level || 'A1'}`} title={lesson?.title || 'Aula padrão'}>
