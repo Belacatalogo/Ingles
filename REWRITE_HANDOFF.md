@@ -119,6 +119,14 @@ Não mexer na `main` durante a reconstrução. Tudo deve acontecer nesta branch 
 - Plano atual de aulas usa `gemini-2.5-flash`, `gemini-2.5-flash-lite` e, se houver key Pro, `gemini-2.5-pro`.
 - Objetivo: manter fallback Flash/free válido antes de acionar Pro.
 
+### Bloco 7.2 — Firebase/Google validado no preview
+- Firebase runtime configurado no RawGitHack com projeto `aulas-ingles-c0c65`.
+- Domínio autorizado no Firebase após teste real.
+- Login por popup validado no iPhone.
+- Sessão Google permaneceu após recarregar.
+- Para o preview RawGitHack, popup virou o caminho principal.
+- Redirect fica como fallback/diagnóstico, pois voltou para a tela de acesso no teste real.
+
 ### Bloco 7.2.0 — Segurança antes da validação Firebase/Google
 - `AccessGate.jsx` agora assina o estado real do Firebase Auth com `subscribeAuth`.
 - Após login Google/redirect, uma sessão local é criada e o app libera automaticamente.
@@ -156,31 +164,35 @@ Não mexer na `main` durante a reconstrução. Tudo deve acontecer nesta branch 
 - O redirect continua disponível apenas como fallback/diagnóstico.
 - No app final hospedado em domínio próprio, o redirect pode ser reavaliado; para o preview atual, popup é o caminho validado.
 
-### Bloco 7.4.1 — Correção UX da compreensão Reading
-- `ReadingLesson.jsx` não revela mais a resposta correta antes da interação.
-- O aluno escolhe uma opção e só então recebe feedback visual.
-- Resposta correta é revelada apenas após tentativa.
-- Seleção, acerto e erro têm estados visuais próprios em `index.css`.
+### Bloco 7.3.1 — Progresso local e conclusão Reading
+- `progressStore.js` criado.
+- Progresso agora salva XP, streak, aulas concluídas, histórico e rascunhos no localStorage.
+- `ReadingLesson.jsx` agora salva rascunho da resposta guiada.
+- Botão “Concluir Reading” agora registra conclusão real, +25 XP e histórico.
+- Reabrir a aula mostra estado concluído quando já foi finalizada.
+- `ProgressScreen.jsx` agora mostra XP real, aulas da semana, streak e histórico recente.
+- `index.css` recebeu estilos para mensagem de conclusão e histórico.
 
 ## Próximo passo recomendado
 
-### Bloco 7.2 — Fechar validação Firebase/Google
+### Bloco 7.3 — Validar progresso/salvamento/conclusão no preview
 - Abrir o preview atualizado.
-- Confirmar status `Firebase configurado (runtime)`.
-- Testar o botão principal “Entrar com Google”, que agora usa popup.
-- Confirmar se o app libera automaticamente e mantém sessão após recarregar.
-- Testar “Reiniciar acesso” e login novamente.
-- Se tudo continuar funcionando, marcar Firebase/Google como validado no preview.
+- Confirmar que login continua persistente.
+- Abrir a aba Aula.
+- Escrever uma resposta guiada.
+- Clicar em “Salvar rascunho”.
+- Recarregar a página e confirmar se o rascunho permanece.
+- Clicar em “Concluir Reading”.
+- Confirmar mensagem `+25 XP`.
+- Ir para Progresso e confirmar XP, aulas da semana, streak e histórico.
+- Recarregar e confirmar que o progresso permanece.
 
 ## Blocos restantes por ordem de segurança
 
-### Bloco 7.2 — Validar Firebase/Google
-- Validar runtime Firebase, Google popup, sessão local e limpeza de sessão.
-
 ### Bloco 7.3 — Validar progresso/salvamento/conclusão de aula
-- Confirmar que a aula gerada persiste ao recarregar.
-- Transformar “Concluir Reading” em progresso real.
-- Registrar conclusão, tempo e rotina diária.
+- Testar persistência real no preview.
+- Corrigir eventuais problemas de atualização imediata da aba Progresso sem recarregar.
+- Depois considerar sincronização Firebase se necessário.
 
 ### Bloco 7.4 — Corrigir layouts por tipo de aula
 - Reading UX iniciado antecipadamente.
