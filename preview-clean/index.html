@@ -54,7 +54,7 @@
         if (!root) return;
         var logs = window.__FLUENCY_BOOT_LOGS__ || [];
         var text = JSON.stringify(logs, null, 2);
-        root.innerHTML = '<div class="static-boot-fallback"><section class="static-boot-card"><span>Fluency Clean</span><h1>Log do preview</h1><p>Copie este log e envie no chat para eu localizar o erro real.</p><button type="button" onclick="navigator.clipboard && navigator.clipboard.writeText(document.getElementById(\'bootlog\').textContent)">Copiar log</button><pre id="bootlog"></pre><small>rewrite-clean · debug boot</small></section></div>';
+        root.innerHTML = '<div class="static-boot-fallback"><section class="static-boot-card"><span>Fluency Clean</span><h1>Log do preview</h1><p>Copie este log e envie no chat para eu localizar o erro real.</p><button type="button" onclick="navigator.clipboard && navigator.clipboard.writeText(document.getElementById(\'bootlog\').textContent)">Copiar log</button><pre id="bootlog"></pre><small>rewrite-clean-lab · seguro para testes</small></section></div>';
         document.getElementById('bootlog').textContent = text || '[]';
       };
       setTimeout(function () {
@@ -78,9 +78,20 @@
           <h1>Carregando preview seguro</h1>
           <p>Se esta mensagem não sumir, o log de erro aparecerá automaticamente em alguns segundos.</p>
           <button type="button" onclick="window.__FLUENCY_SHOW_BOOT_LOG__ && window.__FLUENCY_SHOW_BOOT_LOG__()">Mostrar log agora</button>
-          <small>rewrite-clean · debug boot</small>
+          <small>rewrite-clean-lab · seguro para testes</small>
         </section>
       </div>
     </div>
+    <script>
+      (function () {
+        var label = 'rewrite-clean-lab · seguro para testes';
+        function applyLabLabel() {
+          var footer = document.querySelector('.preview-version-footer');
+          if (footer && footer.textContent !== label) footer.textContent = label;
+        }
+        applyLabLabel();
+        setInterval(applyLabLabel, 700);
+      })();
+    </script>
   </body>
 </html>
