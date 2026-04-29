@@ -3,6 +3,7 @@ import { BookOpen, CheckCircle2, Headphones, Lightbulb, ListChecks, Loader2, Mes
 import { Card } from '../components/ui/Card.jsx';
 import { ProgressPill } from '../components/ui/ProgressPill.jsx';
 import { playGeminiTtsAudio } from '../services/geminiTts.js';
+import { diagnostics } from '../services/diagnostics.js';
 
 const fallbackParagraphs = [
   'Every morning, Ana opens her notebook and writes three simple goals for the day. She likes short tasks because they help her feel focused and calm.',
@@ -70,20 +71,27 @@ export function ReadingLesson({ lesson }) {
   const readingText = paragraphs.join('\n\n');
 
   async function handleListen() {
+    diagnostics.log('Clique recebido no botão Ouvir texto da aula Reading.', 'info');
     setAudioState('loading');
     setAudioMessage('Preparando áudio natural...');
 
-    const result = await playGeminiTtsAudio({
-      text: readingText,
-      voiceName: 'Kore',
-      style: 'Natural American English teacher voice, calm and clear, moderate speed, ideal for A1 Brazilian learners.',
-    });
+    try {
+      const result = await playGeminiTtsAudio({
+        text: readingText,
+        voiceName: 'Kore',
+        style: 'Natural American English teacher voice, calm and clear, moderate speed, ideal for A1 Brazilian learners.',
+      });
 
-    setAudioState('idle');
-    if (result.source === 'gemini') setAudioMessage('Áudio natural Gemini reproduzido.');
-    else if (result.source === 'cache') setAudioMessage('Áudio natural carregado do cache.');
-    else if (result.source === 'browser-fallback') setAudioMessage('Gemini TTS indisponível; usei o TTS do navegador como fallback.');
-    else setAudioMessage(result.error || 'Não foi possível reproduzir áudio.');
+      if (result.source === 'gemini') setAudioMessage('Áudio natural Gemini reproduzido.');
+      else if (result.source === 'cache') setAudioMessage('Áudio natural carregado do cache.');
+      else if (result.source === 'browser-fallback') setAudioMessage('Gemini TTS indisponível; usei o TTS do navegador como fallback.');
+      else setAudioMessage(result.error || 'Não foi possível reproduzir áudio.');
+    } catch (error) {
+      diagnostics.log(`Erro inesperado no botão Ouvir texto: ${error?.message || error}`, 'error');
+      setAudioMessage(error?.message || 'Erro inesperado ao tentar reproduzir áudio.');
+    } finally {
+      setAudioState('idle');
+    }
   }
 
   return (
