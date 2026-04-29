@@ -21,9 +21,10 @@ function LessonRenderer({ lesson }) {
   );
 }
 
-export function LessonScreen() {
-  const lesson = useMemo(() => getCurrentLesson() || demoLesson, []);
-  const usingGenerated = Boolean(getCurrentLesson());
+export function LessonScreen({ lessonRevision = 0 }) {
+  const savedLesson = useMemo(() => getCurrentLesson(), [lessonRevision]);
+  const lesson = savedLesson || demoLesson;
+  const usingGenerated = Boolean(savedLesson);
 
   return (
     <section className="screen-stack">
