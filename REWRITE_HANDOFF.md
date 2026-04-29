@@ -173,21 +173,24 @@ Não mexer na `main` durante a reconstrução. Tudo deve acontecer nesta branch 
 ### Bloco 7.4.5 — Correção responsiva do realinhamento visual
 - Corrigido overflow horizontal global em `html`, `body`, `#root` e shell principal.
 - Hero da Home ajustado no mobile para não sobrepor círculo de progresso em cima do botão.
-- Círculo de progresso reposicionado em fluxo normal no mobile.
+- Círculo de progresso reposicionado no canto superior direito.
 - Cards Ofensiva/Nível agora empilham em mobile para evitar corte e esmagamento.
 - Streak boxes agora usam grid proporcional em vez de largura fixa.
 - Bottom nav recebeu ajuste de `safe-area-inset-bottom`, largura máxima e rolagem horizontal sem scrollbar.
 - Bloco “Gerar aula por IA” foi recolhido em `<details>` e movido para baixo da Home para não dominar o visual principal.
 
+### Bloco 7.4.5.1 — Botão de relatório/progresso no hero
+- Botão que leva para a aba Progresso foi mantido pequeno e quadrado ao lado de “Continuar agora”.
+- Removida a quebra mobile que fazia o botão descer para baixo.
+- Se no preview o botão ainda não ficar fiel à referência, ele deve ser removido do hero e o acesso ao relatório deve ficar apenas pela bottom nav/aba Progresso.
+
 ## Próximo passo recomendado
 
 ### Retestar Home no preview
 - Abrir o preview atualizado no iPhone.
-- Confirmar que não há overflow horizontal.
-- Confirmar que o círculo de progresso não invade o botão.
-- Confirmar que Ofensiva/Nível não ficam cortados.
-- Confirmar que a bottom nav não cobre conteúdo importante.
-- Confirmar que “Gerar nova aula por IA” está recolhido e não polui a Home.
+- Confirmar que o botão de relatório/progresso está pequeno e ao lado de “Continuar agora”.
+- Se ainda ficar estranho, remover o botão do hero.
+- Confirmar que o círculo de porcentagem fica no canto superior direito e não invade os botões.
 
 ## Blocos restantes por ordem de segurança
 
