@@ -95,12 +95,22 @@ Não mexer na `main` durante a reconstrução. Tudo deve acontecer nesta branch 
 - `LessonScreen.jsx` recarrega a aula salva quando `lessonRevision` muda.
 - `index.css` recebeu estilos para `generation-status-box` e `inline-warning`.
 
+### Bloco 7.1.1 — Correção após diagnóstico real Gemini
+- Diagnóstico real mostrou 503, 429 e 404.
+- `gemini-1.5-flash` removido do plano porque retornou 404 na API v1beta.
+- `gemini-1.5-pro` removido do fallback.
+- Plano atual usa `gemini-2.5-flash`, `gemini-2.0-flash` e, se houver key Pro, `gemini-2.5-pro`.
+- Se uma key retornar 429, próximas tentativas com a mesma key são puladas.
+- Erros 503 recebem pequena espera antes da próxima tentativa.
+- Mensagem final agora diferencia quota, alta demanda e modelo indisponível.
+- `lessonKeys.js` atualizado para refletir a lista correta de modelos.
+
 ## Próximo passo recomendado
 
-### Testar geração de aula real no preview
+### Retestar geração de aula real no preview
 - Esperar o workflow publicar `preview-clean` novamente.
 - Abrir o preview.
-- Ir em Progresso e confirmar que uma key de aula está salva.
+- Se a key atual bateu quota, adicionar outra key em Progresso ou aguardar quota renovar.
 - Ir em Hoje e clicar em Gerar aula.
 - Acompanhar o painel Diagnóstico.
 - O app deve mudar sozinho para a aba Aula quando terminar.
