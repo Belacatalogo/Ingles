@@ -1,238 +1,329 @@
-# Fluency Clean Rewrite — Handoff
+# Fluency Clean Rewrite — Handoff LAB
 
-Branch: `rewrite-fluency-clean`
+Branch atual de trabalho: `rewrite-fluency-clean-lab`
 
-## Objetivo
-Reconstruir o app Fluency em uma arquitetura React modular, sem continuar empilhando patches dentro do `bundle.js` e sem transformar o `index.html` em um arquivo gigante.
+Branch estável protegida: `rewrite-fluency-clean`
 
-## Regra principal
-Não mexer na `main` durante a reconstrução. Tudo deve acontecer nesta branch até o usuário aprovar.
+## REGRA MÁXIMA A PARTIR DE AGORA
+Todas as próximas alterações devem acontecer SOMENTE na branch:
 
-## Estado atual analisado
-- O app atual em `main` depende de `index.html` + `bundle.js`.
-- O `bundle.js` contém muitos patches acumulados, interceptações de `fetch`, painéis injetados, `MutationObserver`, `setInterval`, aliases de `localStorage` e manipulação direta do DOM.
-- O `index.html` também contém lógica demais: PWA/cache, unlock de áudio iOS, diagnóstico, service worker, montagem do app e scripts extras.
-- O backend Azure privado deve permanecer intocado. O novo frontend deve apenas preservar o contrato da API já usada hoje.
-- A referência visual final enviada pelo usuário é o Fluency escuro/premium do pacote `meu fluency(2).zip` e das screenshots: topbar com logo/pills, cards grandes, bottom nav arredondada, flashcards/speaking/home no estilo premium.
+`rewrite-fluency-clean-lab`
 
-## Estratégia
-1. Criar um novo app React modular dentro de `fluency-clean/`.
-2. Migrar função por função do app antigo.
-3. Manter o app antigo funcionando até o novo estar testável.
-4. Substituir a renderização antiga apenas quando o novo app estiver estável.
-5. Realinhar a aparência visual ao HTML de referência real antes da limpeza final.
+Não alterar `main`.
+Não alterar `rewrite-fluency-clean`.
+Não fazer rollback, force push, update_file ou qualquer mudança fora da branch lab sem pedido explícito do usuário.
 
-## Blocos concluídos
+A branch `rewrite-fluency-clean` virou ponto seguro/backup após voltar a carregar em guia anônima no preview RawGitHack.
 
-### Bloco 0 — Fundação segura
-- Branch separada criada.
-- Pasta `fluency-clean/` criada.
-- Vite + React configurados.
-- `index.html`, `main.jsx`, `App.jsx` e CSS base criados.
+## Motivo da branch lab
+Durante o Bloco 7.5, mudanças visuais grandes e tentativas de recovery/watchdog deixaram o preview instável e geraram tela branca/cache confuso no iPhone. Para evitar novas dores de cabeça:
 
-### Bloco 1 — Estrutura visual
-- Shell do app refinado.
-- Navegação inferior criada.
-- Componentes reutilizáveis criados.
-- Telas principais estruturadas visualmente.
+- `rewrite-fluency-clean` fica preservada como estado carregável.
+- `rewrite-fluency-clean-lab` recebe todos os testes visuais/pedagógicos daqui para frente.
+- Mudança só volta para a branch protegida depois de validada pelo usuário.
 
-### Bloco 2 — Aula Reading nova
-- `ReadingLesson` transformado em layout completo.
-- Campo de resposta preparado para iOS.
+## Link de preview da branch protegida
+Branch protegida atual:
 
-### Bloco 3 — Serviços limpos
-- `storage.js`, `diagnostics.js`, `lessonTypes.js`, `geminiLessons.js`, `azurePronunciation.js` e `services/index.js` criados.
+`https://raw.githack.com/Belacatalogo/Ingles/rewrite-fluency-clean/preview-clean/index.html`
 
-### Bloco 4 — Firebase / Google
-- `.env.example`, `firebase.js`, `auth.js`, `accessCode.js`, `AccessGate.jsx` criados.
-- `App.jsx` usa `AccessGate`, com modo visual.
+## Link de preview esperado da branch lab
+Usar a branch lab nos próximos testes:
 
-### Bloco 5 — Geração de aulas
-- `lessonKeys.js` criado para chaves exclusivas de aulas.
-- Até 3 keys Flash/free exclusivas.
-- 1 key Pro paga como último fallback.
-- `geminiLessons.js` monta plano real: Flash primeiro, Pro no final.
-- `LessonKeysPanel.jsx` anexado à aba Progresso.
+`https://raw.githack.com/Belacatalogo/Ingles/rewrite-fluency-clean-lab/preview-clean/index.html`
 
-### Bloco 5.1 — Conectar geração de aula na interface
-- `lessonStore.js`, `useDiagnostics.js`, `LessonGeneratorPanel.jsx` criados.
-- `TodayScreen.jsx`, `LessonScreen.jsx` e `DiagnosticPanel.jsx` conectados.
+Usar cache buster em todo teste:
 
-### Bloco 5.2 — Build/preview controlado
-- `vite.config.js` criado.
-- Workflow `fluency-clean-preview.yml` criado para build.
-- `package.json` recebeu script `check`.
+`?visual=1&v=lab-001`
 
-### Bloco 5.3 — Preview por link sem merge
-- Workflow `fluency-clean-publish-preview.yml` criado.
-- Build é copiado para `preview-clean/` na branch `rewrite-fluency-clean`.
-- Não mexe na `main` nem na branch Pages atual.
+Exemplo:
 
-### Bloco 6 — Áudio / Pronúncia / iOS
-- `audioUnlock.js` criado para liberar áudio em iOS.
-- `tts.js` criado usando Web Speech API.
-- `recorder.js` criado com MediaRecorder/getUserMedia.
-- `SpeakingScreen.jsx` conectado.
+`https://raw.githack.com/Belacatalogo/Ingles/rewrite-fluency-clean-lab/preview-clean/index.html?visual=1&v=lab-001`
 
-### Bloco 6.1 — Contrato Azure preservado
-- O app antigo usa backend privado apenas para entregar token Azure.
-- `azurePronunciation.js` foi corrigido para preservar esse contrato.
-- O novo app carrega o Azure Speech SDK no navegador, busca token no backend existente e analisa o áudio gravado localmente.
-- Não houve alteração no backend privado.
+## Estado atual antes da lab
+- O app voltou a carregar em guia anônima.
+- A tela de acesso apareceu corretamente.
+- O problema de tela branca no navegador normal provavelmente era cache/estado antigo do `raw.githack.com`.
+- O usuário quer que futuras alterações sejam feitas em uma branch separada para proteger a branch atual.
 
-### Bloco 6.2 — Gemini TTS natural para aulas
-- `geminiTts.js` criado.
-- Usa Gemini TTS com `responseModalities: ['AUDIO']`, voz prebuilt e áudio inline.
-- Converte PCM base64 para WAV para tocar no navegador.
-- Usa chaves exclusivas de aulas já salvas em `lessonKeys.js`.
-- Faz cache local por texto/voz/estilo.
-- Usa Web Speech API como fallback se Gemini TTS falhar ou não houver key.
-- `ReadingLesson.jsx` agora usa Gemini TTS no botão “Ouvir texto”.
+## Objetivo geral
+Reconstruir o app Fluency em React modular, sem continuar empilhando patches no `bundle.js`, preservando login, Firebase, geração Gemini, progresso, áudio e contrato Azure privado.
 
-### Bloco 7.1 — Validação real da geração Gemini
-- `App.jsx` agora passa `onLessonGenerated` e `lessonRevision` para as telas.
-- Quando a aula é gerada, o app muda automaticamente para a aba Aula.
-- `TodayScreen.jsx` passa o callback para `LessonGeneratorPanel`.
-- `LessonGeneratorPanel.jsx` mostra status das keys, alerta se não houver key, loga clique e erros com mais clareza.
-- `LessonScreen.jsx` recarrega a aula salva quando `lessonRevision` muda.
-- `index.css` recebeu estilos para `generation-status-box` e `inline-warning`.
+## Decisões que continuam valendo
+- Não mexer na `main`.
+- Não mexer no backend Azure privado.
+- Não criar outro HTML gigante.
+- Não remendar `bundle.js`.
+- Não usar DOM injection para UI principal.
+- Toda nova tela deve ser componente React real.
+- A aparência deve seguir a referência Fluency premium escura enviada pelo usuário.
 
-### Bloco 7.1.1 — Geração de aula em blocos
-- `geminiLessons.js` deixou de depender de uma única resposta gigante.
-- A geração agora é montada em 4 blocos: estrutura, texto principal Reading, vocabulário e exercícios.
-- Cada bloco é validado antes de passar para o próximo.
-- O Diagnóstico mostra em qual bloco a geração está.
-- O plano de keys/modelos foi preservado: Flash/free primeiro e Pro somente como fallback.
-- Erros 429 continuam pulando a key afetada; erros temporários continuam tentando o próximo modelo/key.
-- Validado no preview real: aula `My Family` gerada com sucesso via `gemini-2.5-flash-lite`.
+## Blocos concluídos importantes
 
-### Bloco 7.1.2 — Correção após diagnóstico real Gemini
-- Diagnóstico real mostrou 503, 429 e 404.
-- `gemini-1.5-flash` removido do plano porque retornou 404 na API v1beta.
-- `gemini-1.5-pro` removido do fallback.
-- Se uma key retornar 429, próximas tentativas com a mesma key são puladas.
-- Erros 503 recebem pequena espera antes da próxima tentativa.
-- Mensagem final agora diferencia quota, alta demanda e modelo indisponível.
-- `lessonKeys.js` atualizado para refletir a lista correta de modelos.
+### Bloco 0 a 6 — Fundação, UI base, serviços, Firebase, Gemini, áudio e Azure
+- App React criado em `fluency-clean/`.
+- Serviços Gemini, Azure, Firebase, diagnóstico, chaves de aula e TTS criados.
+- Login Google/Firebase e modo visual implementados.
+- Geração de aula em blocos validada.
+- Azure preservado sem alterar backend privado.
 
-### Bloco 7.1.3 — Segurança de modelos Gemini após preview real
-- Preview mostrou `gemini-2.5-flash` com 503 por alta demanda e `gemini-2.0-flash` como indisponível.
-- `gemini-2.0-flash` foi removido do plano de geração de aulas.
-- Plano atual de aulas usa `gemini-2.5-flash`, `gemini-2.5-flash-lite` e, se houver key Pro, `gemini-2.5-pro`.
-- Objetivo: manter fallback Flash/free válido antes de acionar Pro.
+### Bloco 7.1 — Gemini real
+- Geração real validada.
+- Aula `My Family` foi gerada com sucesso via `gemini-2.5-flash-lite`.
+- Diagnóstico mostra blocos e erros.
 
-### Bloco 7.2 — Firebase/Google validado no preview
-- Firebase runtime configurado no RawGitHack com projeto `aulas-ingles-c0c65`.
-- Domínio autorizado no Firebase após teste real.
+### Bloco 7.2 — Firebase/Google
+- Firebase runtime configurado no RawGitHack.
+- Domínio autorizado.
 - Login por popup validado no iPhone.
-- Sessão Google permaneceu após recarregar.
-- Para o preview RawGitHack, popup virou o caminho principal.
-- Redirect fica como fallback/diagnóstico, pois voltou para a tela de acesso no teste real.
+- Sessão persistiu após recarregar.
 
-### Bloco 7.3.1 — Progresso local e conclusão Reading
-- `progressStore.js` criado.
-- Progresso agora salva XP, streak, aulas concluídas, histórico e rascunhos no localStorage.
-- `ReadingLesson.jsx` agora salva rascunho da resposta guiada.
-- Botão “Concluir Reading” agora registra conclusão real, +25 XP e histórico.
-- Reabrir a aula mostra estado concluído quando já foi finalizada.
-- `ProgressScreen.jsx` agora mostra XP real, aulas da semana, streak e histórico recente.
-- `index.css` recebeu estilos para mensagem de conclusão e histórico.
+### Bloco 7.3 — Progresso/salvamento/conclusão
+- Progresso local criado.
+- Conclusão de Reading salva XP, streak, histórico e estado concluído.
+- Usuário confirmou funcionamento.
 
-### Bloco 7.3 — Progresso/salvamento/conclusão validado no preview
-- Teste real confirmou que login continua persistente.
-- Salvamento/conclusão/progresso funcionaram corretamente no preview segundo retorno do usuário.
+### Bloco 7.4 — Realinhamento visual inicial
+- Home, topbar e bottom nav começaram a se aproximar da referência.
+- Flashcards/Speaking/Home têm base visual premium, mas ainda precisam de validação calma.
 
-### Bloco 7.4.1 — Correção UX da compreensão Reading
-- `ReadingLesson.jsx` não revela mais a resposta correta antes da interação.
-- O aluno escolhe uma opção e só então recebe feedback visual.
-- Resposta correta é revelada apenas após tentativa.
-- Seleção, acerto e erro têm estados visuais próprios em `index.css`.
+### Bloco 7.5-R — Rollback/estabilização
+- Tentativas instáveis do Bloco 7.5 foram revertidas/neutralizadas na branch protegida.
+- App voltou a carregar em guia anônima.
+- Nova branch lab criada a partir do estado carregável.
 
-### Bloco 7.4.2 — Layout dedicado para Grammar
-- `GrammarLesson.jsx` criado.
-- `LessonScreen.jsx` agora renderiza `GrammarLesson` quando `lesson.type === 'grammar'`.
-- Grammar agora tem explicação guiada, cards de regra, painel de dicas, prática sem revelar resposta antes do clique e produção própria.
-- Grammar usa o mesmo progresso real: salvar rascunho, concluir aula, +25 XP e histórico.
-- `lessons.css` criado para estilos específicos de layouts de aula, evitando inflar ainda mais `index.css`.
+## Nova estratégia de segurança
 
-### Bloco 7.4.3 — Seletor seguro temporário de layouts
-- `LessonScreen.jsx` recebeu um seletor temporário de teste: Aula real, Reading, Grammar, Listening e Speaking.
-- O seletor não altera a aula salva e não substitui o progresso real.
-- Grammar pode ser testado mesmo quando a aula real salva é Reading.
-- Listening e Speaking ainda mostram fallback enquanto seus layouts específicos não forem criados.
-- O seletor foi marcado como temporário e deve ser removido no Bloco 9.
+### Regra 1 — Um bloco = uma mudança pequena
+Nada de reformular uma tela inteira de uma vez.
+Cada bloco deve alterar no máximo:
+- 1 componente principal; ou
+- 1 arquivo CSS; ou
+- 1 comportamento isolado.
 
-### Bloco 7.4.4 — Realinhamento visual global com referência Fluency
-- Referência visual real recebida via imagens e pacote `meu fluency(2).zip`.
-- `App.jsx` foi realinhado: saiu o hero gigante de validação do shell principal; entrou topbar no estilo Fluency com logo, nível, streak e ajustes.
-- Ordem da bottom nav foi ajustada para se aproximar da referência: Hoje, Aula, Cartas, Speaking, Progresso, Ajustes.
-- `TodayScreen.jsx` foi reconstruída com visual de referência: progresso do dia, cards de ofensiva/nível, tarefas do dia, foco da semana e frase do dia.
-- `reference.css` criado para concentrar o visual premium: fundo, pills, cards, topbar, home e bottom nav.
-- O objetivo agora é continuar trazendo Flashcards, Speaking, Aula e Ajustes para a mesma aparência.
+### Regra 2 — Sempre informar arquivos alterados
+Toda resposta após alteração deve listar:
+- branch usada;
+- arquivos alterados;
+- commit gerado;
+- link de preview da branch lab.
 
-### Bloco 7.4.5 — Correção responsiva do realinhamento visual
-- Corrigido overflow horizontal global em `html`, `body`, `#root` e shell principal.
-- Hero da Home ajustado no mobile para não sobrepor círculo de progresso em cima do botão.
-- Círculo de progresso reposicionado no canto superior direito.
-- Cards Ofensiva/Nível agora empilham em mobile para evitar corte e esmagamento.
-- Streak boxes agora usam grid proporcional em vez de largura fixa.
-- Bottom nav recebeu ajuste de `safe-area-inset-bottom`, largura máxima e rolagem horizontal sem scrollbar.
-- Bloco “Gerar aula por IA” foi recolhido em `<details>` e movido para baixo da Home para não dominar o visual principal.
+### Regra 3 — Sem tocar na branch protegida
+Antes de qualquer tool call de escrita, conferir mentalmente:
 
-### Bloco 7.4.5.1 — Botão de relatório/progresso no hero
-- Botão que leva para a aba Progresso foi mantido pequeno e quadrado ao lado de “Continuar agora”.
-- Removida a quebra mobile que fazia o botão descer para baixo.
-- Se no preview o botão ainda não ficar fiel à referência, ele deve ser removido do hero e o acesso ao relatório deve ficar apenas pela bottom nav/aba Progresso.
+`branch === rewrite-fluency-clean-lab`
 
-## Próximo passo recomendado
+### Regra 4 — Preview antes de continuar
+Depois de cada bloco, o usuário testa no iPhone. Só avançar se ele confirmar.
 
-### Retestar Home no preview
-- Abrir o preview atualizado no iPhone.
-- Confirmar que o botão de relatório/progresso está pequeno e ao lado de “Continuar agora”.
-- Se ainda ficar estranho, remover o botão do hero.
-- Confirmar que o círculo de porcentagem fica no canto superior direito e não invade os botões.
+### Regra 5 — Evitar mudanças de infraestrutura
+Não mexer em workflow, Vite, preview-clean ou HTML, a menos que seja exclusivamente necessário para recuperar preview quebrado e com autorização clara.
 
-## Blocos restantes por ordem de segurança
+### Regra 6 — Se der tela branca
+Não continuar tentando layout.
+Procedimento:
+1. parar;
+2. revisar último commit da lab;
+3. reverter somente o último bloco na lab;
+4. preservar branch protegida intacta.
 
-### Bloco 7.4 — Corrigir layouts por tipo de aula
-- Grammar em teste.
-- Listening e Speaking devem ser corrigidos um por vez.
-- Flashcards e Speaking também devem ser realinhados visualmente à referência.
+## Próximos blocos remodelados — ordem segura
 
-### Bloco 7.5 — Checklist final do preview
-- Testar app inteiro no iPhone antes de qualquer migração.
+### Bloco LAB-0 — Confirmar preview da lab
+Objetivo: garantir que a branch lab carrega antes de qualquer mudança nova.
 
-### Bloco 7.6 — Decidir se substitui a main
-- Só depois de validação completa e aprovação do usuário.
+Ações:
+- abrir link da lab com cache buster;
+- entrar em modo visual;
+- testar navegação básica;
+- não alterar UI ainda.
 
-### Bloco 8 — Reestruturação profunda das aulas
-- Reestruturar as aulas depois da validação/migração segura.
-- Objetivo: nenhuma aula curta, rasa ou com poucos exercícios.
-- Criar contratos mínimos por tipo de aula: tamanho mínimo de conteúdo, quantidade mínima de exercícios, profundidade de explicação, revisão, prática guiada e prática independente.
-- Reading deve ter texto mais completo, vocabulário robusto, compreensão, produção escrita, revisão e desafio final.
-- Grammar deve ter explicação séria, exemplos, erros comuns, comparação português/inglês, exercícios variados e produção própria.
-- Listening deve ter áudio/texto separados, pré-escuta, escuta guiada, checagem de compreensão e prática de shadowing.
-- Speaking deve ter roteiro, modelo, gravação, feedback e repetição orientada.
-- Atualizar `geminiLessons.js` para gerar aulas mais profundas em mais blocos se necessário.
-- Atualizar validações para rejeitar aula curta, vocabulário fraco ou poucos exercícios.
-- Esse bloco deve ser feito após o app estar estável para não misturar reestruturação pedagógica com correções críticas de login/progresso.
+Critério de conclusão:
+- usuário confirma que `rewrite-fluency-clean-lab` abriu normal.
 
-### Bloco 9 — Limpeza final e polimento de produção
-- Remover textos grandes de versão/validação da Home.
-- Remover ou esconder botões de teste, fallback e diagnóstico que não devem aparecer para usuário final.
-- Remover o seletor temporário de layouts da aba Aula.
-- Revisar a aba Ajustes inteira.
-- Todo botão que permanecer em Ajustes deve ter função real.
-- Botões decorativos, duplicados ou sem utilidade devem ser removidos.
-- Trocar textos de preview por textos finais de produto.
-- Garantir que o app final não pareça ambiente de teste antes de substituir a `main`.
+### Bloco LAB-1 — Trava de segurança visual
+Objetivo: adicionar uma identificação discreta de que o usuário está na branch lab.
+
+Alteração pequena sugerida:
+- mudar apenas o texto do rodapé/versão para algo como:
+  `rewrite-clean-lab · seguro para testes`
+
+Arquivos prováveis:
+- `fluency-clean/src/App.jsx`
+
+Critério:
+- app carrega e mostra versão lab no rodapé.
+
+### Bloco LAB-2 — Corrigir botão “Continuar agora” sem mexer no resto
+Objetivo: garantir contraste branco e formato correto do botão da Home.
+
+Alteração pequena:
+- mexer somente em CSS relacionado ao botão.
+- não alterar estrutura da Home.
+
+Arquivos prováveis:
+- `fluency-clean/src/styles/reference.css` ou `hotfix.css`, se existir.
+
+Critério:
+- botão legível, branco, sem quebrar layout.
+
+### Bloco LAB-3 — Remover/confirmar botão de relatório do hero
+Objetivo: manter Home limpa.
+
+Opção segura:
+- se o botão pequeno do relatório estiver estranho, remover do hero.
+- acesso ao progresso fica pela bottom nav.
+
+Arquivos prováveis:
+- `fluency-clean/src/screens/TodayScreen.jsx`
+- CSS apenas se necessário.
+
+Critério:
+- Home carrega sem overflow e sem botão estranho.
+
+### Bloco LAB-4 — Aula: esconder seletor temporário sem redesenhar toda tela
+Objetivo: reduzir aparência de ambiente técnico na aba Aula sem refazer o layout.
+
+Alteração pequena:
+- transformar seletor de layout em `<details>` recolhido; ou
+- mover seletor para final da tela.
+
+Proibido neste bloco:
+- refazer hero inteiro da Aula;
+- trocar estrutura completa de `LessonScreen`;
+- mexer em `ReadingLesson`.
+
+Critério:
+- aba Aula abre normalmente e fica menos poluída.
+
+### Bloco LAB-5 — Aula: card superior no estilo referência, em mudança mínima
+Objetivo: aproximar a aba Aula da referência sem quebrar.
+
+Alteração segura:
+- alterar somente textos/classes do card superior existente;
+- não criar lógica nova complexa;
+- não adicionar imports novos desnecessários.
+
+Critério:
+- Aula carrega no iPhone e o card fica visualmente melhor.
+
+### Bloco LAB-6 — Progresso visual
+Objetivo: validar visual da aba Progresso.
+
+Ações:
+- ajustar cards, espaçamento e textos;
+- não mexer na lógica de salvamento.
+
+Critério:
+- histórico, XP e streak continuam aparecendo.
+
+### Bloco LAB-7 — Speaking visual
+Objetivo: alinhar Speaking com referência.
+
+Ações:
+- visual somente;
+- não mexer no contrato Azure;
+- não alterar backend.
+
+Critério:
+- tela abre, botão de fala continua disponível.
+
+### Bloco LAB-8 — Flashcards visual
+Objetivo: aproximar Flashcards da referência enviada.
+
+Ações:
+- visual do card, botões de dificuldade e sessão;
+- sem mexer em lógica pesada.
+
+Critério:
+- aba Cartas abre sem corte/overflow.
+
+### Bloco LAB-9 — Ajustes: inventário de botões
+Objetivo: mapear botões sem função.
+
+Ações:
+- listar botões existentes;
+- remover ou desativar visualmente os sem função;
+- não adicionar funcionalidades grandes ainda.
+
+Critério:
+- Ajustes não parece falso/cheio de botões inúteis.
+
+### Bloco LAB-10 — Checklist visual final da lab
+Objetivo: testar navegação completa.
+
+Checklist:
+- Hoje;
+- Aula;
+- Progresso;
+- Speaking;
+- Cartas;
+- Ajustes;
+- modo visual;
+- login se necessário;
+- recarregar página;
+- guia anônima.
+
+Critério:
+- sem tela branca.
+
+### Bloco 8-LAB — Reestruturação profunda das aulas
+Só iniciar depois do checklist visual da lab.
+
+Objetivo pedagógico:
+- nenhuma aula curta;
+- nada de poucos exercícios;
+- conteúdo completo e aprofundado;
+- validação anti-aula-rasa.
+
+Sub-blocos seguros:
+
+#### 8-LAB.1 — Contrato mínimo da aula
+Definir mínimos por tipo:
+- tamanho do conteúdo;
+- número de exercícios;
+- vocabulário;
+- exemplos;
+- prática guiada;
+- produção própria.
+
+#### 8-LAB.2 — Reading profunda
+- texto maior;
+- vocabulário robusto;
+- compreensão;
+- produção escrita;
+- desafio final.
+
+#### 8-LAB.3 — Grammar profunda
+- explicação séria;
+- exemplos;
+- erros comuns;
+- comparação PT/EN;
+- exercícios variados.
+
+#### 8-LAB.4 — Listening profunda
+- pré-escuta;
+- áudio/transcrição separados;
+- compreensão;
+- shadowing.
+
+#### 8-LAB.5 — Speaking profundo
+- roteiro;
+- modelo;
+- gravação;
+- feedback;
+- repetição guiada.
+
+#### 8-LAB.6 — Validação anti-aula-curta
+- rejeitar aula rasa;
+- rejeitar pouco exercício;
+- rejeitar vocabulário fraco;
+- pedir regeneração do bloco ruim.
 
 ## Como continuar em outro chat
-Diga: "continue a reconstrução do Fluency na branch `rewrite-fluency-clean`, leia o arquivo `REWRITE_HANDOFF.md` e siga do próximo bloco".
+Mensagem recomendada para o próximo chat:
 
-## Decisões importantes
-- Não criar outro HTML gigante.
-- Não continuar remendando `bundle.js`.
-- Não mexer no backend Azure privado.
-- Não usar UI sobreposta por DOM injection.
-- Toda nova tela deve ser componente React real.
+"Continue a reconstrução do Fluency usando SOMENTE a branch `rewrite-fluency-clean-lab`. Leia `REWRITE_HANDOFF.md`. Primeiro confirme o preview da lab e siga os blocos LAB em ordem. Não mexa na `main` nem na `rewrite-fluency-clean`."
+
+## Última orientação operacional
+A partir deste handoff, qualquer alteração fora de `rewrite-fluency-clean-lab` deve ser considerada erro, salvo pedido explícito do usuário.
