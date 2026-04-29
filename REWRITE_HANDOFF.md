@@ -20,25 +20,28 @@ Não mexer na `main` durante a reconstrução. Tudo deve acontecer nesta branch 
 3. Manter o app antigo funcionando até o novo estar testável.
 4. Substituir a renderização antiga apenas quando o novo app estiver estável.
 
-## Blocos planejados
+## Blocos
 
-### Bloco 0 — Fundação segura
-- Branch separada.
-- Pasta `fluency-clean/`.
-- Vite + React.
-- Design base inspirado no HTML enviado pelo usuário.
+### Bloco 0 — Fundação segura — concluído
+- Branch separada criada.
+- Pasta `fluency-clean/` criada.
+- Vite + React configurados.
+- `index.html`, `main.jsx`, `App.jsx` e CSS base criados.
 - Sem tocar no root atual.
 
-### Bloco 1 — Estrutura visual
-- Shell do app.
-- Navegação inferior.
-- Cards, botões, painéis.
-- Telas placeholder: Hoje, Aula, Progresso, Speaking, Flashcards, Configurações.
+### Bloco 1 — Estrutura visual — concluído
+- Shell do app refinado com topbar, hero e status strip.
+- Navegação inferior criada.
+- Componentes reutilizáveis criados: `Card`, `StatCard`, `SectionHeader`, `BottomNav`, `DiagnosticPanel`.
+- Telas principais estruturadas visualmente: Hoje, Aula, Progresso, Speaking, Flashcards e Ajustes.
+- Reading continua usando renderização condicional por tipo, sem sobreposição com aula antiga.
+- CSS expandido para dashboard, cards, progresso, speaking, flashcards, ajustes e responsividade mobile.
 
-### Bloco 2 — Aula Reading nova
-- Criar `ReadingLesson` limpo.
-- Não sobrepor aula antiga.
-- Renderização condicional por tipo de aula.
+### Bloco 2 — Aula Reading nova — próximo
+- Transformar `ReadingLesson` em layout completo de aula real.
+- Separar blocos: introdução, texto, vocabulário, compreensão, resposta guiada, revisão e concluir aula.
+- Garantir foco correto em textarea/input no iOS para chamar teclado.
+- Não sobrepor aula antiga; usar apenas renderização condicional.
 
 ### Bloco 3 — Serviços limpos
 - `storage.js`.
