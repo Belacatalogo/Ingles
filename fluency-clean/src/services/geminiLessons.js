@@ -9,8 +9,11 @@ export const GEMINI_LESSON_STATUS = {
   error: 'error',
 };
 
-const FLASH_MODELS = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
-const PRO_MODELS = ['gemini-2.5-pro', 'gemini-1.5-pro'];
+// Modelos inválidos/indisponíveis geram 404 e desperdiçam tentativa.
+// Mantemos apenas modelos Flash atuais usados para geração de texto.
+const FLASH_MODELS = ['gemini-2.5-flash', 'gemini-2.0-flash'];
+const PRO_MODELS = ['gemini-2.5-pro'];
+const RETRYABLE_STATUS = new Set([500, 502, 503, 504]);
 
 export function maskApiKey(key) {
   const value = String(key ?? '').replace(/\s+/g, '').trim();
@@ -34,6 +37,27 @@ export function normalizeLessonKeys(keys) {
       seen.add(key);
       return true;
     });
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function getHttpStatus(error) {
+  const match = String(error?.message || error).match(/HTTP\s+(\d{3})/i);
+  return match ? Number(match[1]) : null;
+}
+
+function isQuotaError(error) {
+  return getHttpStatus(error) === 429;
+}
+
+function isModelNotFound(error) {
+  return getHttpStatus(error) === 404;
+}
+
+function isRetryableError(error) {
+  return RETRYABLE_STATUS.has(getHttpStatus(error));
 }
 
 function buildAttempts({ keys = [], proKey = '' }) {
@@ -136,6 +160,23 @@ async function callGemini({ attempt, prompt, fetcher }) {
   return validateGeneratedLesson(parsed);
 }
 
+function summarizeFinalError({ quotaKeys, modelErrors, lastError, attempts }) {
+  if (quotaKeys.size && quotaKeys.size >= new Set(attempts.map((attempt) => attempt.key)).size) {
+    return 'Todas as keys de aula disponíveis bateram quota/limite. Adicione outra key ou tente novamente mais tarde.';
+  }
+
+  if (modelErrors > 0 && !lastError) {
+    return 'Os modelos disponíveis não estão aceitando geração agora.';
+  }
+
+  const status = getHttpStatus(lastError);
+  if (status === 503) return 'O Gemini respondeu alta demanda temporária. Tente gerar novamente em alguns minutos.';
+  if (status === 429) return 'A key usada atingiu quota/limite. Adicione outra key de aula ou aguarde a renovação da quota.';
+  if (status === 404) return 'Modelo Gemini indisponível para esta API. A lista de modelos foi ajustada; tente novamente após atualizar o preview.';
+
+  return lastError?.message || 'Falha ao gerar aula.';
+}
+
 export async function generateLessonDraft({ prompt, keys = [], proKey = '', fetcher = fetch } = {}) {
   const attempts = buildAttempts({ keys, proKey });
 
@@ -152,10 +193,17 @@ export async function generateLessonDraft({ prompt, keys = [], proKey = '', fetc
   }
 
   let lastError = null;
+  let modelErrors = 0;
+  const quotaKeys = new Set();
 
   for (let index = 0; index < attempts.length; index += 1) {
     const attempt = attempts[index];
     const attemptLabel = `${index + 1}/${attempts.length}`;
+
+    if (quotaKeys.has(attempt.key)) {
+      diagnostics.log(`Pulando ${attempt.model}: key ${attempt.masked} já atingiu quota.`, 'info');
+      continue;
+    }
 
     diagnostics.setPhase(`gerando aula ${attemptLabel}`, GEMINI_LESSON_STATUS.generating);
     diagnostics.log(
@@ -170,14 +218,35 @@ export async function generateLessonDraft({ prompt, keys = [], proKey = '', fetc
       return { status: GEMINI_LESSON_STATUS.success, lesson, error: null };
     } catch (error) {
       lastError = error;
+
+      if (isQuotaError(error)) {
+        quotaKeys.add(attempt.key);
+        diagnostics.log(`Quota atingida na key ${attempt.masked}. Próximas tentativas com essa key serão puladas.`, 'error');
+        continue;
+      }
+
+      if (isModelNotFound(error)) {
+        modelErrors += 1;
+        diagnostics.log(`Modelo indisponível: ${attempt.model}.`, 'error');
+        continue;
+      }
+
       diagnostics.log(`Falha na tentativa ${attemptLabel}: ${error?.message || error}`, attempt.paid ? 'error' : 'info');
+
+      if (isRetryableError(error)) {
+        diagnostics.log('Erro temporário do Gemini. Aguardando antes da próxima tentativa...', 'info');
+        await sleep(900);
+      }
     }
   }
 
+  const finalError = summarizeFinalError({ quotaKeys, modelErrors, lastError, attempts });
   diagnostics.setPhase('falha na geração de aula', GEMINI_LESSON_STATUS.error);
+  diagnostics.log(finalError, 'error');
+
   return {
     status: GEMINI_LESSON_STATUS.error,
     lesson: null,
-    error: lastError?.message || 'Falha ao gerar aula.',
+    error: finalError,
   };
 }
