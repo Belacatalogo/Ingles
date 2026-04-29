@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { BookOpen, CheckCircle2, Clock, Headphones, PencilLine, RefreshCw, Sparkles, Target, Zap } from 'lucide-react';
+import { BookOpen, CheckCircle2, Clock, Headphones, RefreshCw, Sparkles, Target, Zap } from 'lucide-react';
 import { Card } from '../components/ui/Card.jsx';
 import { ReadingLesson } from '../lessons/ReadingLesson.jsx';
 import { GrammarLesson } from '../lessons/GrammarLesson.jsx';
@@ -7,42 +7,13 @@ import { ListeningLesson } from '../lessons/ListeningLesson.jsx';
 import { WritingLesson } from '../lessons/WritingLesson.jsx';
 import { getCurrentLesson } from '../services/lessonStore.js';
 
-const demoLessons = {
-  reading: {
-    id: 'layout-preview-reading',
-    type: 'reading',
-    title: 'Reading — A rotina de uma manhã produtiva',
-    level: 'A1',
-  },
-  grammar: {
-    id: 'layout-preview-grammar',
-    type: 'grammar',
-    title: 'Grammar — Simple Present for routines',
-    level: 'A1',
-    intro: 'Entenda a regra, veja exemplos e pratique sem mostrar a resposta antes da tentativa.',
-  },
-  listening: {
-    id: 'layout-preview-listening',
-    type: 'listening',
-    title: 'Listening — A short morning routine',
-    level: 'A1',
-    intro: 'Ouça, confirme detalhes na transcrição e pratique shadowing.',
-  },
-  writing: {
-    id: 'layout-preview-writing',
-    type: 'writing',
-    title: 'Writing — My simple routine',
-    level: 'A1',
-    intro: 'Escreva frases simples, claras e corretas sobre sua rotina.',
-  },
+const fallbackLesson = {
+  id: 'fallback-reading',
+  type: 'reading',
+  title: 'Reading — A rotina de uma manhã produtiva',
+  level: 'A1',
+  intro: 'Abra ou gere uma aula para estudar com explicação guiada, prática ativa e conclusão salva no seu progresso.',
 };
-
-const pillarOptions = [
-  { id: 'reading', label: 'Leitura', icon: BookOpen },
-  { id: 'grammar', label: 'Gramática', icon: Target },
-  { id: 'listening', label: 'Escuta', icon: Headphones },
-  { id: 'writing', label: 'Escrita', icon: PencilLine },
-];
 
 const lessonSections = [
   { id: 'warmup', title: 'Aquecimento', icon: Zap },
@@ -58,6 +29,17 @@ function getLessonTitle(lesson) {
 
 function getLessonDescription(lesson) {
   return lesson?.intro || lesson?.subtitle || 'Estude com explicação guiada, prática ativa e conclusão salva no seu progresso.';
+}
+
+function getLessonTypeLabel(lesson) {
+  const labels = {
+    reading: 'Leitura',
+    grammar: 'Gramática',
+    listening: 'Escuta',
+    writing: 'Escrita',
+  };
+
+  return labels[lesson?.type] || 'Aula';
 }
 
 function LessonRenderer({ lesson }) {
@@ -76,20 +58,17 @@ function LessonRenderer({ lesson }) {
 
 export function LessonScreen({ lessonRevision = 0 }) {
   const [activeSection, setActiveSection] = useState(0);
-  const [previewPillar, setPreviewPillar] = useState('reading');
   const savedLesson = useMemo(() => getCurrentLesson(), [lessonRevision]);
+  const lesson = savedLesson || fallbackLesson;
   const usingGenerated = Boolean(savedLesson);
-  const generatedType = savedLesson?.type || 'reading';
-  const previewLesson = demoLessons[previewPillar] || demoLessons.reading;
-  const lesson = savedLesson && previewPillar === 'generated' ? savedLesson : previewLesson;
   const currentProgress = Math.round(((activeSection + 1) / lessonSections.length) * 100);
 
   return (
     <section className="lesson-reference-screen">
       <section className="lesson-reference-hero">
         <div className="lesson-chip-row">
-          <span className="lesson-chip blue"><Sparkles size={11} /> {usingGenerated && previewPillar === 'generated' ? 'Gerada por IA' : 'Preview seguro'}</span>
-          <span className="lesson-chip">Day 47</span>
+          <span className="lesson-chip blue"><Sparkles size={11} /> {usingGenerated ? 'Gerada por IA' : 'Aula inicial'}</span>
+          <span className="lesson-chip">{getLessonTypeLabel(lesson)}</span>
           <span className="lesson-chip violet">{lesson?.level || 'A1'}</span>
         </div>
 
@@ -105,33 +84,6 @@ export function LessonScreen({ lessonRevision = 0 }) {
             <RefreshCw size={14} />
           </button>
         </footer>
-      </section>
-
-      <section className="lesson-lab-pillar-switch" aria-label="Preview temporário dos pilares">
-        <div>
-          <span>Lab preview</span>
-          <strong>Ver UI por pilar</strong>
-        </div>
-        <div className="lesson-pillar-options">
-          {usingGenerated ? (
-            <button type="button" className={previewPillar === 'generated' ? 'active' : ''} onClick={() => setPreviewPillar('generated')}>
-              <Sparkles size={12} /> Aula real
-            </button>
-          ) : null}
-          {pillarOptions.map((pillar) => {
-            const Icon = pillar.icon;
-            return (
-              <button
-                type="button"
-                key={pillar.id}
-                className={previewPillar === pillar.id ? 'active' : generatedType === pillar.id && previewPillar === 'generated' ? 'hint' : ''}
-                onClick={() => setPreviewPillar(pillar.id)}
-              >
-                <Icon size={12} /> {pillar.label}
-              </button>
-            );
-          })}
-        </div>
       </section>
 
       <section className="lesson-stepper-card">
