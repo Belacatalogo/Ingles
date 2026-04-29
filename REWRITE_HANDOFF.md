@@ -39,56 +39,58 @@ Continuar montando o sistema como React modular em `fluency-clean/src/`:
 
 ## Estado atual para teste
 
-### Bloco 8-LAB-2C — Retry por bloco e validação equilibrada IMPLEMENTADO, aguardando reteste
-Motivo:
-- no reteste do usuário apareceram dois erros úteis no diagnóstico:
-  1. `JSON Parse error: Expected '}'`;
-  2. `Introdução curta demais`.
-- o primeiro indica resposta JSON malformada/truncada em uma tentativa da IA;
-- o segundo indica que a validação nova estava rígida demais em um ponto isolado, rejeitando aula mesmo quando blocos posteriores passavam.
+### Bloco 8-LAB-3 — Trilha A1 → C2 visível em Progresso IMPLEMENTADO, aguardando teste
+Objetivo:
+- mostrar o cronograma que já existia por baixo dentro da aba Progresso;
+- deixar claro que o app escolhe a próxima aula em ordem;
+- mostrar bloqueio visual de níveis futuros;
+- mostrar próximas aulas sem atropelar conteúdo.
 
 Arquivos alterados:
-- `fluency-clean/src/services/geminiLessons.js`
+- `fluency-clean/src/screens/ProgressScreen.jsx`
+- `fluency-clean/src/styles/lab-polish.css`
 - `REWRITE_HANDOFF.md`
 
-Commit confirmado:
-- `57fc8f2ef4846d068a6bf000081b0991522a23ec` — adiciona retry por bloco e validação equilibrada.
+Commits confirmados:
+- `8c6c192f8794102c80b10e970c6d84d7da74aa49` — adiciona trilha A1-C2 na tela Progresso;
+- `9adf2b31c97f372a7945f310ed31e2de0b6114dd` — adiciona estilos da trilha do Progresso.
 
-O que foi corrigido:
-- adicionado `BLOCK_RETRY_LIMIT = 2`;
-- cada bloco agora pode ser regerado internamente até 2 vezes quando vier:
-  - JSON inválido;
-  - conteúdo curto;
-  - poucas seções;
-  - vocabulário insuficiente;
-  - exercícios insuficientes;
-  - produção final insuficiente;
-- o diagnóstico agora mostra quando um bloco é regerado por qualidade/JSON;
-- o prompt de retry informa o motivo exato da tentativa anterior;
-- a exigência de introdução foi equilibrada:
-  - ainda precisa existir e ter conteúdo;
-  - mas a profundidade principal agora é medida pelo conjunto da aula: seções, texto, vocabulário, exercícios e prompts;
-- `responseMimeType: application/json` foi mantido;
-- temperatura reduzida para `0.24` para melhorar estabilidade do JSON;
-- validação continua rígida contra aula rasa, mas não deve derrubar uma aula inteira só por uma introdução um pouco menor.
+O que foi adicionado:
+- card **Trilha obrigatória** na aba Progresso;
+- card da **Próxima aula** do cronograma;
+- lista dos níveis A1, A2, B1, B2, C1 e C2;
+- cada nível mostra:
+  - aulas concluídas/total;
+  - barra de progresso;
+  - estado atual, consolidado ou bloqueado;
+  - quantas aulas/revisões faltam para liberar o próximo nível;
+- lista **Próximas aulas**, mostrando a sequência imediata da trilha;
+- níveis futuros ficam visualmente bloqueados;
+- a seção final de Progresso agora usa o cronograma como próximo marco.
 
-Estado esperado no próximo teste:
-- se vier JSON quebrado, o bloco deve ser regerado automaticamente;
-- se vier introdução curta, o bloco de estrutura deve tentar se corrigir;
-- se todos os blocos passarem, a aula deve salvar;
-- se ainda vier curta demais, o sistema deve rejeitar com motivo claro.
+Limites intencionais:
+- não mexeu na geração Gemini;
+- não mexeu no backend Azure;
+- não mexeu no Firebase;
+- não mexeu em HTML;
+- não mexeu em bundle;
+- ainda não expandiu massivamente o currículo; isso fica para bloco futuro;
+- ainda não adicionou tela dedicada de currículo editável; por enquanto a trilha aparece em Progresso.
 
 ## Teste recomendado no Vercel/iPhone
 
-1. Esperar novo deploy da branch lab ficar Ready.
-2. Abrir o link fixo da branch lab.
-3. Gerar novamente a próxima aula do cronograma.
-4. Abrir o diagnóstico.
-5. Procurar mensagens como:
-   - `Regerando bloco 1/5 por qualidade/JSON...`
-   - `Bloco 1/5 aprovado...`
-6. Se gerar, abrir a Aula e conferir se ficou longa e completa.
-7. Se falhar, enviar print do diagnóstico com o último erro.
+1. Esperar o deploy da branch lab ficar Ready.
+2. Abrir o app no link fixo da branch lab.
+3. Entrar em **Progresso**.
+4. Verificar se aparece:
+   - Nível do cronograma;
+   - Trilha obrigatória;
+   - Próxima aula;
+   - A1 → C2 com níveis bloqueados;
+   - Próximas aulas.
+5. Conferir se a tela rola até o final sem travar.
+6. Conferir se a navbar não cobre informação importante.
+7. Conferir se a aba Hoje/Aula continuam funcionando.
 
 ## Contexto dos blocos anteriores
 
@@ -98,7 +100,7 @@ Estado esperado no próximo teste:
 - Navbar aprovada: `LAB-NAV-1`.
 - Aula aprovada e limpa: `LAB-AULA-1`, `LAB-AULA-1B`, `LAB-AULA-2`, `LAB-9`.
 - Cartas/Flashcards aprovado: `LAB-CARTAS-1`.
-- Progresso aprovado: `LAB-PROGRESSO-1`.
+- Progresso visual aprovado: `LAB-PROGRESSO-1`.
 - Ajustes/Configurações aprovado/organizado.
 - Imersão adicionada dentro de Speaking e ajustada.
 - Checklist visual final: `LAB-10`.
@@ -110,26 +112,28 @@ Estado esperado no próximo teste:
 - Cronograma pedagógico A1 → C2 automático.
 - Usuário não escolhe conteúdo; sistema gera próxima aula obrigatória.
 
-### Bloco 8-LAB-2B
-- Exigência de aulas longas e validação rígida.
-- Aumentou mínimos de seções, texto, vocabulário, exercícios e prompts.
+### Bloco 8-LAB-2B/2C/2D
+- Geração longa, retry por bloco, validação equilibrada e estabilização do JSON.
+
+### Bloco 8-LAB-2E/2F
+- Estatísticas reais de tempo/exercícios para Aula e Hoje, sem valor fixo.
 
 ## Próximo bloco correto
 
-### Se Bloco 8-LAB-2C for aprovado
-Próximo: `Bloco 8-LAB-3 — fortalecer cronograma e tela de trilha`.
+### Se Bloco 8-LAB-3 for aprovado
+Próximo: `Bloco 8-LAB-4 — expandir currículo e travas pedagógicas`.
 
 Objetivo provável:
-- mostrar visão da trilha A1 → C2 em Progresso ou Ajustes;
-- expandir ainda mais o currículo com mais aulas por nível;
-- adicionar bloqueio visual de avanço de nível;
-- adicionar porcentagem mínima por nível antes de avançar;
-- adicionar revisão obrigatória e simulados antes de liberar próximo nível.
+- expandir muito mais o cronograma A1, A2, B1, B2, C1 e C2;
+- adicionar revisões obrigatórias mais claras;
+- adicionar simulados de fim de nível;
+- reforçar regra de não avançar de nível antes de consolidar quase tudo;
+- melhorar o cálculo de liberação de nível.
 
-### Se Bloco 8-LAB-2C tiver problema
+### Se Bloco 8-LAB-3 tiver problema
 Não avançar. Corrigir cirurgicamente apenas o problema encontrado na branch lab.
 
 ## Como continuar em outro chat
 Mensagem recomendada:
 
-"Continue a reconstrução do Fluency usando SOMENTE a branch `rewrite-fluency-clean-lab`. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. O teste é feito no Vercel preview da branch lab, pelo iPhone. A UI visual está aprovada/organizada. O `Bloco 8-LAB-2C` corrigiu os erros JSON Parse/Introdução curta com retry por bloco e validação equilibrada. Está aguardando reteste. Não mexa na `main`, não mexa na `rewrite-fluency-clean`, não use HTML remendado, DOM injection ou bundle patch. Continue modularmente em `fluency-clean/src/`."
+"Continue a reconstrução do Fluency usando SOMENTE a branch `rewrite-fluency-clean-lab`. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. O teste é feito no Vercel preview da branch lab, pelo iPhone. A UI visual está aprovada/organizada. O `Bloco 8-LAB-3` adicionou a trilha A1 → C2 visível na aba Progresso e está aguardando teste. Não mexa na `main`, não mexa na `rewrite-fluency-clean`, não use HTML remendado, DOM injection ou bundle patch. Continue modularmente em `fluency-clean/src/`."
