@@ -13,16 +13,14 @@ export function ProgressScreen() {
   const recentCompletions = completions.slice(0, 5);
 
   return (
-    <section className="screen-stack progress-screen-stack">
-      <div className="progress-hero-card">
-        <SectionHeader
-          eyebrow="Progresso"
-          title="Seu avanço em inglês"
-          description="Acompanhe XP, ofensiva, aulas concluídas e histórico sem perder clareza."
-        />
-      </div>
+    <section className="screen-stack">
+      <SectionHeader
+        eyebrow="Progresso"
+        title="Evolução visível e organizada"
+        description="Acompanhe XP, streak, histórico de aulas e chaves exclusivas para geração de aulas."
+      />
 
-      <div className="stats-grid progress-stats-grid">
+      <div className="stats-grid">
         <StatCard label="XP total" value={String(progress.xp)} hint="salvo localmente" icon={Award} />
         <StatCard label="Aulas" value={`${week.completed}/5`} hint="semana atual" icon={BookOpenCheck} />
         <StatCard label="Streak" value={`${progress.streakDays} dias`} hint={progress.lastStudyDate || 'sem registro'} icon={Flame} />
