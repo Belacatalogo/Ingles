@@ -58,87 +58,84 @@ Objetivo:
 - usar blueprints pedagógicos por tipo;
 - melhorar aproveitamento do conteúdo real da IA em Listening e Writing.
 
-Arquivos principais:
-- `fluency-clean/src/services/lessonTypes.js`
+### Bloco 8-LAB-2 — Cronograma pedagógico A1 → C2 automático IMPLEMENTADO
+Objetivo:
+- o usuário não escolhe conteúdo manualmente;
+- o gerador segue a próxima aula obrigatória do cronograma;
+- a aula avança ao concluir;
+- a geração recebe nível, unidade, tema obrigatório e pré-requisitos.
+
+### Bloco 8-LAB-2B — Aulas longas e validação rígida IMPLEMENTADO, aguardando reteste
+Motivo:
+- o usuário gerou a primeira aula do cronograma, mas ela veio curta demais;
+- o sistema estava aceitando texto principal com mínimo baixo e poucos exercícios.
+
+Arquivos alterados neste ajuste:
 - `fluency-clean/src/services/geminiLessons.js`
-- `fluency-clean/src/components/lesson/LessonGeneratorPanel.jsx`
-- `fluency-clean/src/lessons/ListeningLesson.jsx`
-- `fluency-clean/src/lessons/WritingLesson.jsx`
-- `fluency-clean/src/services/lessonStore.js`
-
-### Bloco 8-LAB-2 — Cronograma pedagógico A1 → C2 automático IMPLEMENTADO, aguardando teste
-Pedido do usuário:
-- não quer escolher o conteúdo manualmente;
-- quer um cronograma extremamente completo e extenso;
-- quer aprender em ordem, do A1 ao avançado;
-- não quer ver uma aula que dependa de conteúdo ainda não estudado;
-- quer aulas longas, aprofundadas e com muitas perguntas;
-- a IA deve gerar a aula, mas seguindo obrigatoriamente o cronograma;
-- não quer passar de nível sem ver o máximo de conteúdo possível daquele nível.
-
-Arquivos alterados/criados:
-- `fluency-clean/src/services/curriculumPlan.js`
-- `fluency-clean/src/components/lesson/LessonGeneratorPanel.jsx`
-- `fluency-clean/src/services/progressStore.js`
-- `fluency-clean/src/services/lessonStore.js`
 - `REWRITE_HANDOFF.md`
 
-O que foi implementado:
-- criado `curriculumPlan.js` com trilha local A1 → C2;
-- a trilha contém níveis, unidades, aulas, tipos e pré-requisitos;
-- A1 é mais extenso e bem detalhado, cobrindo fundamentos antes de avançar;
-- A2, B1, B2, C1 e C2 já têm estrutura ordenada inicial;
-- o gerador não pede mais prompt livre para escolher conteúdo;
-- o painel agora mostra:
-  - nível atual;
-  - progresso do nível;
-  - próxima aula obrigatória;
-  - botão **Gerar próxima aula**;
-- ao gerar, o sistema monta um prompt interno com:
-  - ID da aula;
-  - tipo;
-  - nível;
-  - unidade;
-  - tema obrigatório;
-  - pré-requisitos;
-  - regras para não atropelar conteúdo;
-- ao concluir uma aula, `progressStore.js` marca também a aula do cronograma como concluída;
-- a próxima geração avança para a próxima aula ainda não concluída.
+Commit confirmado:
+- `eb544cc8d58bdcdf6cbe9ea44369fb5c6c871643` — exige aulas longas e profundas.
 
-Commits confirmados deste bloco:
-- `11cf4877bc02ccc1e8e6a437b3566caf5c530219` — avança cronograma ao concluir aula;
-- `2846c4d10d6408b05c612694277fa0936b4434e9` — gerador segue cronograma automático;
-- além do commit de criação de `curriculumPlan.js` e do ajuste em `lessonStore.js` neste bloco.
+O que foi corrigido:
+- aumentados tokens por bloco;
+- criadas regras globais de qualidade para impedir aula curta;
+- Reading agora exige:
+  - intro mais longa;
+  - 6 a 8 seções explicativas;
+  - texto principal com mínimo de 1200 caracteres;
+  - 14 a 18 itens de vocabulário;
+  - 14 a 18 exercícios;
+  - 5 a 7 prompts finais.
+- Grammar agora exige:
+  - 7 a 9 seções;
+  - 10 a 14 vocabulários;
+  - 16 a 22 exercícios;
+  - 5 a 7 prompts finais.
+- Listening agora exige:
+  - transcrição longa;
+  - 12 a 16 vocabulários;
+  - 12 a 16 exercícios;
+  - 5 a 7 prompts de shadowing.
+- Writing agora exige:
+  - 7 a 9 seções;
+  - 12 a 16 vocabulários;
+  - 12 a 16 micropráticas;
+  - 6 a 8 prompts finais.
+- a validação agora rejeita automaticamente aula com:
+  - introdução curta;
+  - poucas seções;
+  - texto principal curto em Reading/Listening;
+  - pouco vocabulário;
+  - poucos exercícios;
+  - pouca produção final.
+- diagnóstico agora informa o critério de qualidade: aula longa, profunda, quantidade mínima de exercícios e vocabulários.
 
 Limites intencionais:
-- cronograma está local no frontend por enquanto;
-- ainda não existe tela dedicada para editar/ver o cronograma completo;
-- ainda não existe bloqueio visual sofisticado de “não avançar de nível”, mas a geração já segue a ordem da trilha;
-- não mexeu em backend Azure privado;
-- não mexeu em Firebase;
-- não mexeu em HTML;
-- não mexeu em bundle;
-- não conectou IA geral de Speaking/Imersão ainda;
-- não fez promoção/merge para branch estável.
+- aulas longas podem consumir mais tokens/key;
+- se o Gemini Flash não conseguir entregar a estrutura longa, a geração pode falhar em vez de aceitar aula curta;
+- isso é intencional para preservar qualidade;
+- não mexeu em backend, Azure, Firebase, HTML ou bundle.
 
 ## Teste recomendado no Vercel/iPhone
 
-1. Abrir **Hoje**.
-2. Abrir **Gerar nova aula por IA**.
-3. Confirmar que não aparece mais o campo para escolher conteúdo livre.
-4. Confirmar que aparece **Próxima aula do cronograma**.
-5. Confirmar que aparece algo como:
-   - Nível atual: A1;
-   - Progresso do nível;
-   - Próxima: A1 · reading · Cumprimentos, nomes e apresentações simples.
-6. Tocar em **Gerar próxima aula**.
-7. Abrir diagnóstico e confirmar que a geração usa o tipo detectado e blocos.
-8. Depois de gerar, abrir **Aula** e concluir.
-9. Voltar ao gerador e confirmar que a próxima aula avançou no cronograma.
+1. Esperar o novo deploy da branch lab ficar Ready.
+2. Abrir o link fixo da branch lab.
+3. Ir em **Hoje > Gerar próxima aula**.
+4. Gerar novamente a próxima aula do cronograma.
+5. Abrir o diagnóstico e verificar se aparece algo como:
+   - `Critério de qualidade: longa, profunda...`
+   - blocos sendo aprovados.
+6. Se a IA gerar curto, o sistema deve rejeitar e tentar/falhar, não aceitar aula rasa.
+7. Se passar, abrir a Aula e verificar:
+   - texto maior;
+   - mais vocabulário;
+   - mais exercícios;
+   - mais produção final.
 
 ## Próximo bloco correto
 
-### Se Bloco 8-LAB-2 for aprovado
+### Se Bloco 8-LAB-2B for aprovado
 Próximo: `Bloco 8-LAB-3 — fortalecer cronograma e tela de trilha`.
 
 Objetivo provável:
@@ -148,7 +145,7 @@ Objetivo provável:
 - adicionar porcentagem mínima por nível antes de avançar;
 - adicionar revisão obrigatória e simulados antes de liberar próximo nível.
 
-### Se Bloco 8-LAB-2 tiver problema
+### Se Bloco 8-LAB-2B tiver problema
 Não avançar. Corrigir cirurgicamente apenas o problema encontrado na branch lab.
 
 ## Ordem restante dos blocos
@@ -186,7 +183,7 @@ Depois de cada bloco, o usuário testa no Vercel pelo iPhone. Só avançar se el
 ## Como continuar em outro chat
 Mensagem recomendada:
 
-"Continue a reconstrução do Fluency usando SOMENTE a branch `rewrite-fluency-clean-lab`. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. O teste é feito no Vercel preview da branch lab, pelo iPhone. A UI visual está aprovada/organizada. O `Bloco 8-LAB-2` criou cronograma pedagógico A1 → C2 automático: o usuário não escolhe mais o conteúdo, o gerador segue a próxima aula obrigatória da trilha e avança ao concluir. Não mexa na `main`, não mexa na `rewrite-fluency-clean`, não use HTML remendado, DOM injection ou bundle patch. Continue modularmente em `fluency-clean/src/`."
+"Continue a reconstrução do Fluency usando SOMENTE a branch `rewrite-fluency-clean-lab`. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A UI visual está aprovada/organizada. O `Bloco 8-LAB-2B` endureceu a geração para rejeitar aulas curtas e exigir aulas longas/profundas. Está aguardando reteste no Vercel/iPhone. Não mexa na `main`, não mexa na `rewrite-fluency-clean`, não use HTML remendado, DOM injection ou bundle patch. Continue modularmente em `fluency-clean/src/`."
 
 ## Última orientação operacional
 A partir deste handoff, qualquer alteração fora de `rewrite-fluency-clean-lab` deve ser considerada erro, salvo pedido explícito do usuário.
