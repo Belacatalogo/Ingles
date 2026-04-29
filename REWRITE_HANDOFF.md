@@ -40,7 +40,9 @@ Continuar montando o sistema como React modular em `fluency-clean/src/`:
 ## REGRA DE ESCOPO
 Antes de alterar, identificar o bloco atual e mexer apenas nos arquivos necessários.
 
-Exemplo: se o bloco é `LAB-CARTAS-1`, não alterar Aula, Hoje, Speaking, Firebase, Gemini, Azure ou backend. Se precisar tocar em `main.jsx`, usar apenas para importar CSS do bloco.
+Exemplos:
+- Se o bloco é Progresso, não alterar Aula, Hoje, Speaking, Cartas, Firebase, Gemini, Azure ou backend.
+- Se precisar tocar em `main.jsx`, usar apenas para importar CSS do bloco.
 
 ## Estado aprovado pelo usuário
 
@@ -99,67 +101,78 @@ Resultado: topo premium aprovado, conteúdo sem corte, seletor temporário de pi
 
 Observação: o seletor temporário `Lab preview — Ver UI por pilar` deve ficar por enquanto e ser removido apenas no `LAB-9`.
 
+### Cartas/Flashcards — APROVADO
+Bloco concluído:
+- `LAB-CARTAS-1` — Flashcards/Cartas igual à referência.
+
+Arquivos principais:
+- `fluency-clean/src/screens/FlashcardsScreen.jsx`
+- `fluency-clean/src/styles/flashcards-polish.css`
+- `fluency-clean/src/main.jsx`
+
+Resultado: visual premium seguindo o ZIP de referência, chips horizontais de decks, sessão com barra de progresso, carta com efeito flip frente/verso, botão “Mostrar resposta”, botões SRS, estatísticas da sessão e card de próximo foco. Usuário confirmou: “ficou perfeito”.
+
 ## Estado atual para teste
 
-### Cartas/Flashcards — `LAB-CARTAS-1` IMPLEMENTADO, AGUARDANDO TESTE DO USUÁRIO
+### Progresso — `LAB-PROGRESSO-1` IMPLEMENTADO, AGUARDANDO TESTE DO USUÁRIO
 Bloco feito neste chat com base no ZIP de referência enviado pelo usuário.
 
 Arquivos alterados/criados:
-- `fluency-clean/src/screens/FlashcardsScreen.jsx`
-- `fluency-clean/src/styles/flashcards-polish.css`
-- `fluency-clean/src/main.jsx` apenas para importar `flashcards-polish.css`
+- `fluency-clean/src/screens/ProgressScreen.jsx`
+- `fluency-clean/src/styles/progress-polish.css`
+- `fluency-clean/src/main.jsx` apenas para importar `progress-polish.css`
 - `REWRITE_HANDOFF.md`
 
 Commits principais deste bloco:
-- `e0594f035f94c617dd96860f9df25cb008cb0c93` — refaz tela de flashcards;
-- `c5de029621372b5329f95825be5890c572ba5608` — adiciona CSS modular de flashcards;
-- `edde5d7605de3a1a011c58ac6bd9e0a3c64a8f78` — importa CSS de flashcards.
+- `e9988a02cb60cfe97104bc8637390877b7ae8122` — refaz tela de progresso;
+- `60a5607bc134cb64781b032eca7e12fb846a6aa8` — adiciona CSS modular de progresso;
+- `4f2cd82272997e6695d1558ef564ffcb7c7ef31d` — importa CSS de progresso.
 
 O que foi implementado:
-- cabeçalho “Cartas” com contador de vencimentos e total;
-- chips horizontais de decks: Vencendo, Novas, Vocabulário B1, Phrasal verbs e Collocations;
-- sessão atual com barra de progresso;
-- carta premium com frente/verso e efeito flip;
-- frente com deck, vencimento, fonética, palavra e botão visual de áudio;
-- verso com definição, exemplo, tradução e botão visual de áudio da frase;
-- botão “Mostrar resposta”;
-- botões SRS após virar a carta: De novo, Difícil, Bom e Fácil;
-- estatísticas da sessão;
-- card de “Próximo foco”;
+- cabeçalho “Sua jornada” com seletor visual 7d/30d/Tudo;
+- hero de nível estimado com linha CEFR A1 → C2;
+- grid premium de métricas: Aulas, XP total, Streak e Speaking;
+- heatmap de atividade dos últimos 30 dias usando histórico local;
+- barras de habilidades por área com base no histórico de aulas;
+- conquistas recentes;
+- histórico recente de aulas concluídas;
+- painel de chaves exclusivas de aulas preservado dentro da aba Progresso;
+- card de próximo marco semanal;
 - CSS próprio para evitar overflow/corte no iPhone.
 
 Limites intencionais do bloco:
-- lógica simples e segura;
-- sem integração pesada com cards reais ainda;
-- sem mexer em Aula, Hoje, Speaking, Firebase, Gemini, Azure, backend, HTML ou bundle.
+- não altera lógica de progresso;
+- não altera storage;
+- não altera chaves;
+- não mexe em Firebase, Gemini, Azure, backend, Aula, Hoje, Speaking ou Cartas;
+- apenas React/CSS real.
 
 Verificação feita:
-- `FlashcardsScreen.jsx` validado com esbuild localmente antes de subir;
 - arquivos conferidos na branch lab após os commits;
-- não foi feito build completo local do Vite porque o ambiente atual não tem o repositório completo clonado, então o teste final deve ser pelo Vercel preview da branch lab.
+- foi corrigido um import de ícone antes de finalizar para evitar tela branca;
+- o teste final deve ser pelo Vercel preview da branch lab.
 
 ## Próximo bloco correto
 
-### Se Cartas for aprovado no Vercel/iPhone
-Próximo: `LAB-PROGRESSO-1 — Progresso visual`
+### Se Progresso for aprovado no Vercel/iPhone
+Próximo: `LAB-AJUSTES-1 — Ajustes: inventário e limpeza`
 
 Objetivo:
-- refazer Progresso com segurança, sem repetir tela branca;
-- usar apenas React/CSS real;
-- preservar XP, streak, histórico e chaves;
-- não usar runtime injection.
+- mapear botões existentes na aba Ajustes;
+- remover/desativar visualmente os sem função;
+- deixar Ajustes confiável;
+- não adicionar funcionalidades grandes ainda.
 
-### Se Cartas tiver problema
-Não avançar. Corrigir cirurgicamente apenas `LAB-CARTAS-1` na branch lab.
+### Se Progresso tiver problema
+Não avançar. Corrigir cirurgicamente apenas `LAB-PROGRESSO-1` na branch lab.
 
 ## Ordem restante dos blocos de UI
 
-1. `LAB-PROGRESSO-1` — Progresso visual.
-2. `LAB-AJUSTES-1` — Ajustes: inventário e limpeza.
-3. `LAB-IMERSAO-1` — localizar/criar Imersão apenas se existir estrutura real.
-4. `LAB-9` — limpeza final da UI e arquivos de teste, incluindo remoção do seletor temporário da Aula.
-5. `LAB-10` — checklist visual final da lab.
-6. `Bloco 8-LAB` — reestruturação profunda das aulas, só depois do checklist visual.
+1. `LAB-AJUSTES-1` — Ajustes: inventário e limpeza.
+2. `LAB-IMERSAO-1` — localizar/criar Imersão apenas se existir estrutura real.
+3. `LAB-9` — limpeza final da UI e arquivos de teste, incluindo remoção do seletor temporário da Aula.
+4. `LAB-10` — checklist visual final da lab.
+5. `Bloco 8-LAB` — reestruturação profunda das aulas, só depois do checklist visual.
 
 ## Estratégia de segurança
 
@@ -190,7 +203,7 @@ Depois de cada bloco, o usuário testa no Vercel pelo iPhone. Só avançar se el
 ## Como continuar em outro chat
 Mensagem recomendada:
 
-"Continue a reconstrução do Fluency usando SOMENTE a branch `rewrite-fluency-clean-lab`. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. O teste é feito no Vercel preview da branch lab, pelo iPhone. Speaking, Hoje, Navbar e Aula estão aprovados. O bloco `LAB-CARTAS-1` foi implementado e está aguardando teste/aprovação no Vercel. A Aula tem preview temporário por pilares funcionando 100%, que será removido no LAB-9. Não mexa na `main`, não mexa na `rewrite-fluency-clean`, não use HTML remendado, DOM injection ou bundle patch. Continue modularmente em `fluency-clean/src/`."
+"Continue a reconstrução do Fluency usando SOMENTE a branch `rewrite-fluency-clean-lab`. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. O teste é feito no Vercel preview da branch lab, pelo iPhone. Speaking, Hoje, Navbar, Aula e Cartas estão aprovados. O bloco `LAB-PROGRESSO-1` foi implementado e está aguardando teste/aprovação no Vercel. A Aula tem preview temporário por pilares funcionando 100%, que será removido no LAB-9. Não mexa na `main`, não mexa na `rewrite-fluency-clean`, não use HTML remendado, DOM injection ou bundle patch. Continue modularmente em `fluency-clean/src/`."
 
 ## Última orientação operacional
 A partir deste handoff, qualquer alteração fora de `rewrite-fluency-clean-lab` deve ser considerada erro, salvo pedido explícito do usuário.
