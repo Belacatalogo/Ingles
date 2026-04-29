@@ -66,14 +66,14 @@ export function SettingsScreen() {
       <SectionHeader
         eyebrow="Ajustes"
         title="Configurações por categoria"
-        description="Nada de painel perdido em aba errada. Cada configuração terá dono e lugar fixo."
+        description="Cada configuração tem dono, lugar fixo e organização clara."
       />
 
       <section className="settings-profile-card">
         <div className="settings-avatar">L</div>
         <div>
           <strong>Luis</strong>
-          <span>A1 · Fluency Clean Lab</span>
+          <span>A1 · Plano ativo</span>
         </div>
         <div className="settings-profile-badge">
           <CheckCircle2 size={14} /> ativo
@@ -105,7 +105,7 @@ export function SettingsScreen() {
           <div className="settings-info-card">
             <SettingsRow icon={UserRound} label="Perfil local" value="ativo" tone="green" />
             <SettingsRow icon={Shield} label="Código de acesso" value="protegido" tone="blue" />
-            <SettingsRow icon={Info} label="Sessão no preview" value="Vercel lab" />
+            <SettingsRow icon={Info} label="Sessão" value="ativa" />
           </div>
         </Card>
       ) : null}
@@ -179,7 +179,7 @@ export function SettingsScreen() {
       <section className="settings-about-card">
         <div className="reference-brand-dot" aria-hidden="true" />
         <strong>Fluency</strong>
-        <span>rewrite-clean-lab · ajustes organizados</span>
+        <span>Seu app de inglês diário</span>
       </section>
     </section>
   );
