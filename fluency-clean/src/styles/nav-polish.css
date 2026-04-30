@@ -1,7 +1,9 @@
 .reference-bottom-nav {
+  position: fixed;
   left: 50%;
+  right: auto;
   bottom: max(12px, env(safe-area-inset-bottom));
-  transform: translateX(-50%);
+  transform: translate3d(-50%, 0, 0);
   width: min(720px, calc(100vw - 28px));
   min-height: 70px;
   padding: 7px;
@@ -9,9 +11,13 @@
   border-radius: 999px;
   border: 1px solid rgba(147,160,213,.18);
   background: rgba(7, 13, 31, .90);
+  -webkit-backdrop-filter: blur(20px);
   backdrop-filter: blur(20px);
   box-shadow: 0 18px 70px rgba(0,0,0,.42), inset 0 1px 0 rgba(255,255,255,.04);
   overflow: hidden;
+  z-index: 80;
+  will-change: transform;
+  contain: layout paint;
 }
 
 .reference-bottom-nav .nav-item {
@@ -56,16 +62,34 @@
 }
 
 .fluency-reference-shell {
-  padding-bottom: calc(112px + env(safe-area-inset-bottom));
+  min-height: 100dvh;
+  padding-bottom: calc(124px + env(safe-area-inset-bottom));
 }
 
 .diagnostic-mini-button {
+  position: fixed;
   bottom: calc(92px + env(safe-area-inset-bottom));
+  z-index: 81;
 }
 
 .today-reference-screen,
-.speaking-reference-screen {
-  padding-bottom: calc(106px + env(safe-area-inset-bottom));
+.speaking-reference-screen,
+.progress-screen,
+.cards-screen,
+.settings-screen,
+.lesson-screen {
+  padding-bottom: calc(126px + env(safe-area-inset-bottom));
+}
+
+@supports (-webkit-touch-callout: none) {
+  .reference-bottom-nav {
+    bottom: calc(14px + env(safe-area-inset-bottom));
+    transform: translate3d(-50%, 0, 0);
+  }
+
+  .fluency-reference-shell {
+    padding-bottom: calc(136px + env(safe-area-inset-bottom));
+  }
 }
 
 @media (max-width: 430px) {
