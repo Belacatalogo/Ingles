@@ -1,9 +1,10 @@
 const PREFIX = 'fluency.clean.';
 
 function safeJsonParse(value, fallback) {
-  if (!value) return fallback;
+  if (value == null || value === '') return fallback;
   try {
-    return JSON.parse(value);
+    const parsed = JSON.parse(value);
+    return parsed == null ? fallback : parsed;
   } catch {
     return fallback;
   }
@@ -38,7 +39,11 @@ export const storage = {
 
   set(name, value) {
     try {
-      window.localStorage.setItem(key(name), JSON.stringify(value));
+      if (value == null) {
+        window.localStorage.removeItem(key(name));
+      } else {
+        window.localStorage.setItem(key(name), JSON.stringify(value));
+      }
       notifySync(name);
       return true;
     } catch (error) {
