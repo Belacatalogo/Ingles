@@ -1,11 +1,25 @@
 import React from 'react';
 
 const TARGETED_RECOVERY_KEYS = {
-  curriculum: ['curriculum.progress.v1', 'fluency:curriculum.progress.v1'],
+  curriculum: [
+    'curriculum.progress.v1',
+    'fluency:curriculum.progress.v1',
+    'fluency.clean.curriculum.progress.v1',
+  ],
 };
 
 function isCurriculumProgressError(message = '') {
   return String(message).includes('completedIds') || String(message).includes('curriculum.progress');
+}
+
+function removeMatchingLocalStorageKeys(matcher) {
+  const keys = [];
+  for (let index = 0; index < window.localStorage.length; index += 1) {
+    const key = window.localStorage.key(index);
+    if (key && matcher(key)) keys.push(key);
+  }
+  keys.forEach((key) => window.localStorage.removeItem(key));
+  return keys;
 }
 
 export class ErrorBoundary extends React.Component {
@@ -39,8 +53,13 @@ export class ErrorBoundary extends React.Component {
   handleRepairCurriculum = () => {
     try {
       TARGETED_RECOVERY_KEYS.curriculum.forEach((key) => window.localStorage.removeItem(key));
+      const removed = removeMatchingLocalStorageKeys((key) => {
+        const normalized = key.toLowerCase();
+        return normalized.includes('curriculum') || normalized.includes('progress.v1');
+      });
       window.localStorage.setItem('fluency:last-targeted-repair', JSON.stringify({
         type: 'curriculum-progress',
+        removed,
         at: new Date().toISOString(),
       }));
     } catch {
@@ -54,7 +73,7 @@ export class ErrorBoundary extends React.Component {
       const keepKeys = [];
       for (let index = 0; index < window.localStorage.length; index += 1) {
         const key = window.localStorage.key(index);
-        if (key?.startsWith('fluency:')) keepKeys.push(key);
+        if (key?.startsWith('fluency:') || key?.startsWith('fluency.clean.')) keepKeys.push(key);
       }
       keepKeys.forEach((key) => window.localStorage.removeItem(key));
     } catch {
