@@ -5,6 +5,7 @@ import { diagnostics } from '../../services/diagnostics.js';
 import { generateLessonDraft } from '../../services/geminiLessons.js';
 import { getLessonKeysStatus, getLessonFlashKeys, getLessonProKey } from '../../services/lessonKeys.js';
 import { saveCurrentLesson } from '../../services/lessonStore.js';
+import { attachPedagogicalReview, validateLessonForQuality } from '../../services/lessonValidation.js';
 import { buildSaturdayReviewLesson, shouldPrioritizeSaturdayReview } from '../../services/masteryStore.js';
 
 export function LessonGeneratorPanel({ onGenerated }) {
@@ -54,7 +55,7 @@ export function LessonGeneratorPanel({ onGenerated }) {
         return;
       }
 
-      const saved = saveCurrentLesson({
+      const lessonToValidate = {
         ...result.lesson,
         id: nextLesson.id,
         curriculumId: nextLesson.id,
@@ -67,9 +68,30 @@ export function LessonGeneratorPanel({ onGenerated }) {
         pillars: nextLesson.pillars,
         weakPillars: nextLesson.weakPillars,
         weakTopics: nextLesson.weakTopics,
+      };
+
+      diagnostics.setPhase('avaliando qualidade pedagógica', 'generating');
+      diagnostics.log('Avaliação pedagógica iniciada antes de salvar a aula.', 'info');
+
+      const pedagogicalReview = validateLessonForQuality(lessonToValidate, {
+        expectedLevel: nextLesson.level,
+        expectedType: lessonToValidate.type,
       });
+
+      if (!pedagogicalReview.approved) {
+        const issueText = pedagogicalReview.issues.length ? ` Problemas: ${pedagogicalReview.issues.join(' ')}` : '';
+        const error = `Aula reprovada na avaliação pedagógica (${pedagogicalReview.overallScore}/100). Gere novamente ou reduza o escopo.${issueText}`;
+        diagnostics.setPhase('aula reprovada na avaliação pedagógica', 'error');
+        diagnostics.log(error, 'error', pedagogicalReview);
+        setMessage(error);
+        return;
+      }
+
+      diagnostics.log(`Aula aprovada na avaliação pedagógica: ${pedagogicalReview.overallScore}/100.`, 'info', pedagogicalReview);
+
+      const saved = saveCurrentLesson(attachPedagogicalReview(lessonToValidate, pedagogicalReview));
       diagnostics.log(`${saturdayReview ? 'Revisão adaptativa' : 'Aula do cronograma'} pronta para abrir: ${saved.title}`, 'info');
-      setMessage(saturdayReview ? 'Revisão adaptativa de sábado gerada, salva e aberta na aba Aula.' : 'Próxima aula do cronograma gerada, salva e aberta na aba Aula.');
+      setMessage(saturdayReview ? `Revisão validada (${pedagogicalReview.overallScore}/100), salva e aberta na aba Aula.` : `Aula validada (${pedagogicalReview.overallScore}/100), salva e aberta na aba Aula.`);
       onGenerated?.(saved);
     } catch (error) {
       diagnostics.log(`Erro inesperado ao gerar aula do cronograma: ${error?.message || error}`, 'error');
