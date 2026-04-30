@@ -1,5 +1,13 @@
 import React from 'react';
 
+const TARGETED_RECOVERY_KEYS = {
+  curriculum: ['curriculum.progress.v1', 'fluency:curriculum.progress.v1'],
+};
+
+function isCurriculumProgressError(message = '') {
+  return String(message).includes('completedIds') || String(message).includes('curriculum.progress');
+}
+
 export class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
@@ -28,6 +36,19 @@ export class ErrorBoundary extends React.Component {
     window.location.reload();
   };
 
+  handleRepairCurriculum = () => {
+    try {
+      TARGETED_RECOVERY_KEYS.curriculum.forEach((key) => window.localStorage.removeItem(key));
+      window.localStorage.setItem('fluency:last-targeted-repair', JSON.stringify({
+        type: 'curriculum-progress',
+        at: new Date().toISOString(),
+      }));
+    } catch {
+      // ignore storage failures
+    }
+    window.location.reload();
+  };
+
   handleResetPreview = () => {
     try {
       const keepKeys = [];
@@ -46,6 +67,7 @@ export class ErrorBoundary extends React.Component {
     if (!this.state.error) return this.props.children;
 
     const message = this.state.error?.message || String(this.state.error);
+    const curriculumError = isCurriculumProgressError(message);
 
     return (
       <main className="app-shell fluency-reference-shell">
@@ -56,9 +78,16 @@ export class ErrorBoundary extends React.Component {
           <pre>{message}</pre>
           <div className="render-error-actions">
             <button type="button" onClick={this.handleReload}>Recarregar</button>
+            {curriculumError ? (
+              <button type="button" onClick={this.handleRepairCurriculum}>Corrigir progresso</button>
+            ) : null}
             <button type="button" onClick={this.handleResetPreview}>Limpar dados do preview</button>
           </div>
-          <small>Versão: rewrite-clean · erro seguro</small>
+          <small>
+            {curriculumError
+              ? 'Versão: rewrite-clean · recuperação segura do currículo'
+              : 'Versão: rewrite-clean · erro seguro'}
+          </small>
         </section>
       </main>
     );
