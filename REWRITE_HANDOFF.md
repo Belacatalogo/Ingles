@@ -44,6 +44,27 @@ Link funcional enquanto a Vercel não libera a produção:
 
 Esse link é preview da branch `rewrite-fluency-clean`, já funcionou com login Google/Firebase, mas pode não conter as correções mais recentes da lab.
 
+## Observação importante sobre branches e as duas últimas alterações
+
+Antes das duas alterações recentes, o usuário estava promovendo a branch estável/secundária `rewrite-fluency-clean` para `main` via PR #21.
+
+Depois disso, foram feitas duas linhas de alteração na branch de testes `rewrite-fluency-clean-lab`:
+1. melhorias no Speaking/Azure para usar SDK empacotado e dados reais da análise;
+2. remoção de conteúdos fictícios/mockados em Hoje, Progresso, Cartas e Ajustes.
+
+Essas duas alterações recentes estão isoladas na `rewrite-fluency-clean-lab` e NÃO entram automaticamente na `main` nem na `rewrite-fluency-clean`.
+
+Não tratar essas alterações como parte da promoção já feita para `main`. A promoção para `main` foi do estado da `rewrite-fluency-clean` no PR #21, e a produção ainda nem foi validada por causa do bloqueio da Vercel.
+
+Quando a Vercel liberar, a ordem correta é:
+1. validar primeiro a `rewrite-fluency-clean-lab` com as duas alterações recentes;
+2. se estiver bom, sincronizar essas alterações para `rewrite-fluency-clean`;
+3. testar novamente o link estável da `rewrite-fluency-clean`;
+4. só depois decidir se essas alterações entram em `main`;
+5. validar produção/main separadamente.
+
+Não misturar as correções recentes da lab direto na `main` sem validação.
+
 ## Estado atual
 
 ### Bloco 8-LAB-12 — Remoção de conteúdos fictícios nas telas IMPLEMENTADO, MAS NÃO VALIDADO POR DEPLOY
@@ -211,4 +232,4 @@ Se o deploy da main quebrar por código:
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. Estamos travados pela Vercel: o usuário confirmou que só poderá tentar novo deploy em 24h. As últimas mudanças estão no GitHub, mas NÃO foram validadas em deploy. A lab está no commit `42c1fbb` com remoção de conteúdos fictícios, mas o deploy foi bloqueado por `upgradeToPro=build-rate-limit`. O PR #21 foi mesclado na `main` no GitHub, mas a produção/main ainda NÃO foi validada no Vercel; portanto a ida para main está incompleta do ponto de vista de produção. Não delete `rewrite-fluency-clean-lab` nem `rewrite-fluency-clean`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch. Rollback da main: `5047bae031f20ddd9604953dcd3fd821655e56fa`. Quando a Vercel liberar, primeiro validar a lab, depois sincronizar para estável e só então validar produção."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. Estamos travados pela Vercel: o usuário confirmou que só poderá tentar novo deploy em 24h. As últimas mudanças estão no GitHub, mas NÃO foram validadas em deploy. A lab está no commit `42c1fbb` com remoção de conteúdos fictícios, mas o deploy foi bloqueado por `upgradeToPro=build-rate-limit`. O PR #21 foi mesclado na `main` no GitHub, mas a produção/main ainda NÃO foi validada no Vercel; portanto a ida para main está incompleta do ponto de vista de produção. Importante: as duas alterações recentes — Speaking/Azure real e remoção de dados fictícios — estão isoladas na `rewrite-fluency-clean-lab`; elas NÃO entraram automaticamente na `rewrite-fluency-clean` nem na `main`. Quando a Vercel liberar, validar primeiro a lab, depois sincronizar para `rewrite-fluency-clean`, testar o link estável e só depois decidir nova ida para `main`. Não delete `rewrite-fluency-clean-lab` nem `rewrite-fluency-clean`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch. Rollback da main: `5047bae031f20ddd9604953dcd3fd821655e56fa`."
