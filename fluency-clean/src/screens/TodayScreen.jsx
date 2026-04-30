@@ -1,22 +1,13 @@
-import { BookOpen, Brain, CheckCircle2, ChevronRight, Flame, LineChart, Mic, PencilLine, Quote, Sparkles, Target, Volume2, Zap } from 'lucide-react';
+import { BookOpen, Brain, ChevronRight, Flame, LineChart, Mic, Quote, Sparkles, Target, Volume2, Zap } from 'lucide-react';
 import { LessonGeneratorPanel } from '../components/lesson/LessonGeneratorPanel.jsx';
 import { getCurrentLesson } from '../services/lessonStore.js';
 import { getLessonStats } from '../services/lessonStats.js';
-import { getProgressSummary } from '../services/progressStore.js';
+import { getLessonCompletions, getProgressSummary } from '../services/progressStore.js';
 
 const baseTasks = [
   { id: 'lesson', label: 'Aula de hoje', status: 'Aula guiada pela IA', icon: BookOpen, target: 'lesson', color: 'blue' },
-  { id: 'cards', label: 'Revisar flashcards', status: 'Cartas vencendo hoje', time: '~5 min', icon: Brain, target: 'cards', color: 'violet' },
+  { id: 'cards', label: 'Revisar flashcards', status: 'Aguardando cards reais', icon: Brain, target: 'cards', color: 'violet' },
   { id: 'speaking', label: 'Conversação', status: 'Speaking guiado com IA', time: '~8 min', icon: Mic, target: 'speaking', color: 'teal' },
-  { id: 'diary', label: 'Diário em inglês', status: '3 frases sobre seu dia', time: '~3 min', icon: PencilLine, target: 'lesson', color: 'amber', done: true },
-];
-
-const weekDays = [
-  { day: 'Seg', value: 80, label: 'Aula' },
-  { day: 'Ter', value: 60, label: 'Aula' },
-  { day: 'Qua', value: 90, label: 'Aula', active: true },
-  { day: 'Qui', value: 75, label: 'Aula' },
-  { day: 'Sex', value: 30, label: 'Speak' },
 ];
 
 function getGreeting() {
@@ -37,29 +28,71 @@ function getLessonTypeStatus(lesson) {
   return labels[lesson?.type] || 'Aula guiada pela IA';
 }
 
+function getWeekDaysFromCompletions(completions) {
+  const labels = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+  const today = new Date();
+  const start = new Date(today);
+  start.setDate(today.getDate() - 4);
+
+  return Array.from({ length: 5 }, (_, index) => {
+    const date = new Date(start);
+    date.setDate(start.getDate() + index);
+    const key = date.toISOString().slice(0, 10);
+    const count = completions.filter((item) => String(item.completedAt || '').slice(0, 10) === key).length;
+    return {
+      day: labels[date.getDay()],
+      value: Math.min(100, count * 50),
+      label: count ? `${count} aula${count > 1 ? 's' : ''}` : 'sem registro',
+      active: key === today.toISOString().slice(0, 10),
+    };
+  });
+}
+
+function getTodayCompletedCount(completions) {
+  const today = new Date().toISOString().slice(0, 10);
+  const completedToday = completions.filter((item) => String(item.completedAt || '').slice(0, 10) === today).length;
+  return Math.min(completedToday, baseTasks.length);
+}
+
 export function TodayScreen({ onLessonGenerated, onNavigate }) {
   const progress = getProgressSummary();
   const currentLesson = getCurrentLesson();
   const lessonStats = getLessonStats(currentLesson);
-  const tasks = baseTasks.map((task) => task.id === 'lesson'
-    ? {
-        ...task,
-        status: getLessonTypeStatus(currentLesson),
-        time: `~${lessonStats.minutes} min`,
-      }
-    : task);
-  const completed = Math.min(progress.completedLessons || 0, 4);
-  const percent = Math.max(0, Math.min(100, Math.round((completed / 4) * 100)));
+  const completions = getLessonCompletions();
+  const weekDays = getWeekDaysFromCompletions(completions);
+  const completed = getTodayCompletedCount(completions);
+  const totalTasks = baseTasks.length;
+  const percent = Math.max(0, Math.min(100, Math.round((completed / totalTasks) * 100)));
   const streak = progress.streakDays || 0;
-  const levelPercent = Math.min(12 + (progress.xp || 0), 100);
+  const levelPercent = Math.min(Math.max(progress.xp || 0, 0), 100);
+  const cardsAvailable = Array.isArray(currentLesson?.vocabulary) ? currentLesson.vocabulary.length : 0;
+  const tasks = baseTasks.map((task) => {
+    if (task.id === 'lesson') {
+      return {
+        ...task,
+        status: currentLesson ? getLessonTypeStatus(currentLesson) : 'Nenhuma aula gerada ainda',
+        time: currentLesson ? `~${lessonStats.minutes} min` : '',
+      };
+    }
+
+    if (task.id === 'cards') {
+      return {
+        ...task,
+        status: cardsAvailable ? `${cardsAvailable} cards da aula atual` : 'Nenhum card real disponível ainda',
+        time: cardsAvailable ? '~5 min' : '',
+      };
+    }
+
+    return task;
+  });
 
   return (
     <section className="today-reference-screen">
       <section className="today-hero-card">
         <div className="today-hero-copy">
           <span>{getGreeting()}, Luis</span>
-          <h1><b>{completed || 0} de 4</b> tarefas</h1>
-          <p>{completed >= 4 ? 'Dia completo. Excelente consistência.' : 'Continue para fechar sua rotina de inglês.'}</p>
+          <h1><b>{completed || 0} de {totalTasks}</b> tarefas</h1>
+          <p>{completed >= totalTasks ? 'Dia completo. Excelente consistência.' : 'Continue para fechar sua rotina de inglês.'}</p>
         </div>
 
         <div className="today-ring" style={{ '--today-progress': `${percent}%` }}>
@@ -67,7 +100,7 @@ export function TodayScreen({ onLessonGenerated, onNavigate }) {
         </div>
 
         <div className="today-hero-actions">
-          <button className="today-primary-action" type="button" onClick={() => onNavigate?.(completed >= 3 ? 'speaking' : 'lesson')}>
+          <button className="today-primary-action" type="button" onClick={() => onNavigate?.(completed >= 2 ? 'speaking' : 'lesson')}>
             <Zap size={16} /> Continuar agora
           </button>
           <button className="today-secondary-action" type="button" onClick={() => onNavigate?.('progress')} aria-label="Ver progresso">
@@ -100,7 +133,7 @@ export function TodayScreen({ onLessonGenerated, onNavigate }) {
           </div>
           <strong>A1 <small>→ A2</small></strong>
           <div className="today-level-track"><i style={{ width: `${levelPercent}%` }} /></div>
-          <p>{levelPercent}% até o próximo nível</p>
+          <p>{levelPercent}% registrado em XP real</p>
         </article>
       </div>
 
@@ -118,9 +151,9 @@ export function TodayScreen({ onLessonGenerated, onNavigate }) {
               <span className="today-task-copy">
                 <strong>{task.label}</strong>
                 <small>{task.status}</small>
-                <em>{task.time}</em>
+                {task.time ? <em>{task.time}</em> : null}
               </span>
-              {task.done ? <CheckCircle2 className="today-task-done" size={24} /> : <ChevronRight className="today-task-arrow" size={20} />}
+              <ChevronRight className="today-task-arrow" size={20} />
             </button>
           );
         })}
@@ -128,9 +161,9 @@ export function TodayScreen({ onLessonGenerated, onNavigate }) {
 
       <section className="today-week-card">
         <span>Esta semana</span>
-        <strong>Foco da semana</strong>
-        <p>Speaking sexta + revisão sábado</p>
-        <b>40 min/dia</b>
+        <strong>Atividade real</strong>
+        <p>{completions.length ? 'Baseado nas aulas concluídas.' : 'Sem aulas concluídas ainda.'}</p>
+        <b>{completions.length} registro(s)</b>
         <div className="today-week-bars">
           {weekDays.map((item) => (
             <div key={item.day}>
