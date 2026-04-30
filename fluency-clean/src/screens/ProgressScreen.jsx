@@ -41,9 +41,10 @@ function getLastThirtyDays() {
   });
 }
 
-function buildSkillScores(completions) {
-  const counts = completions.reduce((acc, item) => {
-    const type = String(item.type || '').toLowerCase();
+function buildSkillScores(completions = []) {
+  const safeCompletions = Array.isArray(completions) ? completions : [];
+  const counts = safeCompletions.reduce((acc, item) => {
+    const type = String(item?.type || '').toLowerCase();
     acc[type] = (acc[type] || 0) + 1;
     return acc;
   }, {});
@@ -55,9 +56,10 @@ function buildSkillScores(completions) {
   });
 }
 
-function buildActivity(completions) {
-  const completionMap = completions.reduce((acc, item) => {
-    const key = dateKeyFromIso(item.completedAt);
+function buildActivity(completions = []) {
+  const safeCompletions = Array.isArray(completions) ? completions : [];
+  const completionMap = safeCompletions.reduce((acc, item) => {
+    const key = dateKeyFromIso(item?.completedAt);
     if (!key) return acc;
     acc[key] = (acc[key] || 0) + 1;
     return acc;
@@ -69,12 +71,46 @@ function buildActivity(completions) {
   }));
 }
 
-function getCurriculumLevelRows(curriculumProgress) {
-  const completed = new Set(curriculumProgress.completedIds || []);
+function normalizeCurriculumProgress(progress) {
+  if (!progress || typeof progress !== 'object') return { completedIds: [] };
+  return {
+    ...progress,
+    completedIds: Array.isArray(progress.completedIds) ? progress.completedIds : [],
+  };
+}
+
+function normalizeCurriculumSummary(summary) {
+  if (!summary || typeof summary !== 'object') {
+    return {
+      currentLevel: 'A1',
+      completedInLevel: 0,
+      levelTotal: 0,
+      levelProgress: 0,
+      completedTotal: 0,
+      totalLessons: getCurriculumLessons().length,
+      nextLesson: getCurriculumLessons()[0] || null,
+    };
+  }
+
+  return {
+    currentLevel: summary.currentLevel || 'A1',
+    completedInLevel: Number(summary.completedInLevel || 0),
+    levelTotal: Number(summary.levelTotal || 0),
+    levelProgress: Number(summary.levelProgress || 0),
+    completedTotal: Number(summary.completedTotal || 0),
+    totalLessons: Number(summary.totalLessons || getCurriculumLessons().length),
+    nextLesson: summary.nextLesson || getCurriculumLessons()[0] || null,
+  };
+}
+
+function getCurriculumLevelRows(curriculumProgress, curriculumSummary) {
+  const safeProgress = normalizeCurriculumProgress(curriculumProgress);
+  const safeSummary = normalizeCurriculumSummary(curriculumSummary);
+  const completed = new Set(safeProgress.completedIds);
   const allLessons = getCurriculumLessons();
-  const nextLesson = getCurriculumSummary().nextLesson;
-  const currentLevel = nextLesson?.level || 'A1';
-  const currentLevelIndex = cefrLevels.indexOf(currentLevel);
+  const nextLesson = safeSummary.nextLesson;
+  const currentLevel = nextLesson?.level || safeSummary.currentLevel || 'A1';
+  const currentLevelIndex = Math.max(0, cefrLevels.indexOf(currentLevel));
 
   return CURRICULUM_LEVELS.map((level, index) => {
     const lessons = allLessons.filter((lesson) => lesson.level === level.level);
@@ -83,7 +119,7 @@ function getCurriculumLevelRows(curriculumProgress) {
     const percent = Math.round((done / total) * 100);
     const locked = index > currentLevelIndex;
     const current = level.level === currentLevel;
-    const completeEnough = percent >= Math.round(level.requiredCompletion * 100);
+    const completeEnough = percent >= Math.round((level.requiredCompletion || 0.92) * 100);
 
     return {
       ...level,
@@ -98,24 +134,28 @@ function getCurriculumLevelRows(curriculumProgress) {
 }
 
 function getUpcomingLessons(curriculumProgress, limit = 5) {
-  const completed = new Set(curriculumProgress.completedIds || []);
+  const safeProgress = normalizeCurriculumProgress(curriculumProgress);
+  const completed = new Set(safeProgress.completedIds);
   return getCurriculumLessons().filter((lesson) => !completed.has(lesson.id)).slice(0, limit);
 }
 
 export function ProgressScreen() {
   const [range, setRange] = useState('30d');
-  const progress = useMemo(() => getProgressSummary(), []);
-  const week = useMemo(() => getCurrentWeekStats(), []);
-  const completions = useMemo(() => getLessonCompletions(), []);
-  const curriculum = useMemo(() => getCurriculumSummary(), []);
-  const curriculumProgress = useMemo(() => getCurriculumProgress(), []);
-  const curriculumLevels = useMemo(() => getCurriculumLevelRows(curriculumProgress), [curriculumProgress]);
+  const progress = useMemo(() => getProgressSummary() || {}, []);
+  const week = useMemo(() => getCurrentWeekStats() || {}, []);
+  const completions = useMemo(() => {
+    const items = getLessonCompletions();
+    return Array.isArray(items) ? items : [];
+  }, []);
+  const curriculum = useMemo(() => normalizeCurriculumSummary(getCurriculumSummary()), []);
+  const curriculumProgress = useMemo(() => normalizeCurriculumProgress(getCurriculumProgress()), []);
+  const curriculumLevels = useMemo(() => getCurriculumLevelRows(curriculumProgress, curriculum), [curriculumProgress, curriculum]);
   const upcomingLessons = useMemo(() => getUpcomingLessons(curriculumProgress), [curriculumProgress]);
   const recentCompletions = completions.slice(0, 4);
   const skillScores = useMemo(() => buildSkillScores(completions), [completions]);
   const activity = useMemo(() => buildActivity(completions), [completions]);
-  const wordsRegistered = completions.reduce((total, item) => total + String(item.writtenAnswer || '').trim().split(/\s+/).filter(Boolean).length, 0);
-  const speakingSessions = completions.filter((item) => String(item.type || '').toLowerCase() === 'speaking').length;
+  const wordsRegistered = completions.reduce((total, item) => total + String(item?.writtenAnswer || '').trim().split(/\s+/).filter(Boolean).length, 0);
+  const speakingSessions = completions.filter((item) => String(item?.type || '').toLowerCase() === 'speaking').length;
   const nextLesson = curriculum.nextLesson;
   const currentLevelData = curriculumLevels.find((item) => item.current) || curriculumLevels[0];
   const lessonsToUnlock = Math.max(0, Math.ceil((currentLevelData?.total || 1) * (currentLevelData?.requiredCompletion || 0.92)) - (currentLevelData?.done || 0));
@@ -326,11 +366,11 @@ export function ProgressScreen() {
         {recentCompletions.length ? (
           <div className="progress-history-list">
             {recentCompletions.map((item) => (
-              <article className="progress-history-row" key={`${item.lessonId}-${item.completedAt}`}>
+              <article className="progress-history-row" key={`${item.lessonId || 'lesson'}-${item.completedAt || Math.random()}`}>
                 <div className="progress-history-icon"><CheckCircle2 size={16} /></div>
                 <div>
-                  <strong>{item.title}</strong>
-                  <span>{item.type} · {item.level}</span>
+                  <strong>{item.title || 'Aula concluída'}</strong>
+                  <span>{item.type || 'aula'} · {item.level || 'A1'}</span>
                 </div>
                 <b>+{item.xp || 0} XP</b>
               </article>
