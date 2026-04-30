@@ -1,3 +1,4 @@
+import * as SpeechSDKModule from 'microsoft-cognitiveservices-speech-sdk';
 import { diagnostics } from './diagnostics.js';
 
 export const AZURE_PRONUNCIATION_STATUS = {
@@ -24,7 +25,14 @@ function round(value) {
   return Math.round(Number(value));
 }
 
-function loadAzureSDK() {
+function getBundledAzureSDK() {
+  const candidate = SpeechSDKModule?.default || SpeechSDKModule;
+  if (candidate?.SpeechConfig && candidate?.AudioConfig) return candidate;
+  if (window.SpeechSDK?.SpeechConfig && window.SpeechSDK?.AudioConfig) return window.SpeechSDK;
+  return null;
+}
+
+function loadAzureSDKFromScript() {
   if (window.SpeechSDK) return Promise.resolve(window.SpeechSDK);
   if (sdkPromise) return sdkPromise;
 
@@ -36,11 +44,22 @@ function loadAzureSDK() {
       if (window.SpeechSDK) resolve(window.SpeechSDK);
       else reject(new Error('Azure SpeechSDK não foi exposto no window.'));
     };
-    script.onerror = () => reject(new Error('Falha ao carregar Azure Speech SDK.'));
+    script.onerror = () => reject(new Error('Falha ao carregar Azure Speech SDK externo.'));
     document.head.appendChild(script);
   });
 
   return sdkPromise;
+}
+
+async function loadAzureSDK() {
+  const bundled = getBundledAzureSDK();
+  if (bundled) {
+    diagnostics.log('Azure Speech SDK carregado do bundle do app.', 'info');
+    return bundled;
+  }
+
+  diagnostics.log('Azure Speech SDK empacotado indisponível. Tentando script externo.', 'warn');
+  return loadAzureSDKFromScript();
 }
 
 async function getAzureToken(fetcher = fetch) {
@@ -158,12 +177,17 @@ function normalizeAzureJson(json) {
   if (!best) throw new Error('Azure não retornou NBest.');
 
   const assessment = best.PronunciationAssessment || {};
+  const words = (best.Words || []).map(mapAzureWord);
   return {
+    recognizedText: best.Display || json.DisplayText || '',
     accuracyScore: round(assessment.AccuracyScore),
     fluencyScore: round(assessment.FluencyScore),
     completenessScore: round(assessment.CompletenessScore),
     pronunciationScore: round(assessment.PronScore),
-    words: (best.Words || []).map(mapAzureWord),
+    words,
+    lowestWord: words
+      .filter((word) => word.accuracyScore != null)
+      .sort((a, b) => a.accuracyScore - b.accuracyScore)[0] || null,
     raw: json,
   };
 }
