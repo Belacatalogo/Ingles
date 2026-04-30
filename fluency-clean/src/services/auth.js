@@ -1,7 +1,9 @@
 import {
   GoogleAuthProvider,
   browserLocalPersistence,
+  browserSessionPersistence,
   getRedirectResult,
+  indexedDBLocalPersistence,
   onAuthStateChanged,
   setPersistence,
   signInWithPopup,
@@ -44,7 +46,7 @@ function getReadableAuthError(error) {
   }
 
   if (code.includes('web-storage-unsupported')) {
-    return 'O navegador bloqueou armazenamento necessário para login. Desative modo privado/bloqueio de cookies e tente novamente.';
+    return 'O navegador bloqueou armazenamento necessário para login. Desative bloqueio de cookies/conteúdo e tente novamente.';
   }
 
   if (code.includes('network-request-failed')) {
@@ -55,12 +57,24 @@ function getReadableAuthError(error) {
 }
 
 async function prepareAuthPersistence(auth) {
-  try {
-    await setPersistence(auth, browserLocalPersistence);
-    diagnostics.log('Persistência local do Firebase Auth configurada.', 'info');
-  } catch (error) {
-    diagnostics.log(`Não foi possível configurar persistência local: ${getReadableAuthError(error)}`, 'error');
+  const options = [
+    { name: 'indexedDBLocalPersistence', value: indexedDBLocalPersistence },
+    { name: 'browserLocalPersistence', value: browserLocalPersistence },
+    { name: 'browserSessionPersistence', value: browserSessionPersistence },
+  ];
+
+  for (const option of options) {
+    try {
+      await setPersistence(auth, option.value);
+      diagnostics.log(`Persistência Firebase Auth ativa: ${option.name}.`, 'info');
+      return true;
+    } catch (error) {
+      diagnostics.log(`Persistência ${option.name} falhou: ${getReadableAuthError(error)}`, 'warn');
+    }
   }
+
+  diagnostics.log('Nenhuma persistência Firebase Auth pôde ser configurada.', 'error');
+  return false;
 }
 
 export function subscribeAuth(callback) {
@@ -77,6 +91,9 @@ export function subscribeAuth(callback) {
     diagnostics.log(normalized ? `Usuário autenticado: ${normalized.email}` : 'Usuário não autenticado.', 'info');
     configureCloudSyncUser(normalized);
     callback(normalized);
+  }, (error) => {
+    diagnostics.log(`Erro no listener Firebase Auth: ${getReadableAuthError(error)}`, 'error');
+    callback(null);
   });
 }
 
@@ -128,9 +145,6 @@ export async function signInWithGoogle({ mode = 'redirect' } = {}) {
     diagnostics.log(`Iniciando login Google via ${mode}.`, 'info');
 
     if (mode === 'popup') {
-      // Importante no iPhone/Safari: não colocar nenhum await antes do popup.
-      // O popup precisa nascer diretamente do toque do usuário, senão o Safari
-      // pode apenas piscar a tela e bloquear a janela silenciosamente.
       const result = await signInWithPopup(auth, provider);
       const user = normalizeUser(result.user);
       diagnostics.log(`Login Google concluído via popup: ${user?.email || 'usuário sem email'}.`, 'info');
