@@ -62,6 +62,66 @@ Não misturar as correções recentes da lab direto na `main` sem validação.
 
 ## Estado atual
 
+### BLOCO-10A-LAB — Quality Gate Pedagógico Local IMPLEMENTADO, aguardando deploy/teste
+
+Contexto:
+- usuário quer aumentar a confiança das aulas geradas;
+- aula não deve ser salva apenas por ter sido gerada;
+- agora precisa passar por avaliação pedagógica local antes de entrar em `lesson.current` e histórico.
+
+Arquivos alterados:
+- `fluency-clean/src/services/lessonValidation.js` — novo serviço de avaliação pedagógica local;
+- `fluency-clean/src/components/lesson/LessonGeneratorPanel.jsx` — valida aula antes de salvar;
+- `fluency-clean/src/services/lessonTypes.js` — preserva `pedagogicalReview` e `quality` ao normalizar aula;
+- `REWRITE_HANDOFF.md`.
+
+Comportamento implementado:
+- depois de `generateLessonDraft`, o painel monta a aula com metadados do cronograma;
+- antes de `saveCurrentLesson`, roda `validateLessonForQuality()`;
+- nota mínima: 85/100;
+- se reprovada, a aula NÃO é salva;
+- Diagnóstico registra a reprovação e os problemas encontrados;
+- se aprovada, salva a aula com `pedagogicalReview` e `quality.pedagogicalScore`;
+- mensagem do painel mostra a nota validada.
+
+Critérios avaliados:
+- objetivo claro;
+- aderência ao nível esperado do cronograma;
+- clareza e profundidade das seções;
+- completude por tipo de aula;
+- vocabulário contextualizado;
+- exercícios com pergunta, resposta e explicação;
+- prática ativa/produção final;
+- revisão/checklist/conclusão;
+- texto/transcrição principal quando o tipo exige.
+
+Importante:
+- o bloco é local/determinístico;
+- não chama IA revisora ainda;
+- não altera backend Azure;
+- não mexe em `bundle.js`;
+- não usa DOM injection;
+- não troca o gerador atual.
+
+Commits:
+- `23a21cc0fa62eb0adec3dc6f4a54dbe60d6a9db5` — adiciona `lessonValidation.js`;
+- `11739c99ce70addc58bdd9e8cb683b3f5cca2ede` — conecta gate antes de salvar;
+- `198453ce6ed3a54d1f7ce6fd55b55e3de8de1a53` — preserva revisão pedagógica na normalização.
+
+Teste recomendado:
+1. aguardar deploy da lab no commit `198453c` ou posterior;
+2. abrir preview da `rewrite-fluency-clean-lab` no iPhone;
+3. ir em Aula;
+4. gerar a próxima aula;
+5. acompanhar Diagnóstico;
+6. confirmar que aparece “Avaliação pedagógica iniciada”; 
+7. se aprovada, confirmar mensagem “Aula validada (nota/100), salva e aberta na aba Aula”;
+8. se reprovada, confirmar que a aula não substitui a aula atual e que o Diagnóstico mostra os problemas.
+
+Próximo bloco sugerido:
+- `BLOCO-10B-LAB — Correção automática limitada quando quality gate reprovar`.
+- Fluxo: se score < 85, pedir reparo automático à IA no máximo 2 vezes; se ainda reprovar, bloquear salvamento com mensagem clara.
+
 ### Bloco 8-LAB-12C — Correção da próxima frase em Pronúncia IMPLEMENTADA, aguardando deploy/teste
 
 Contexto:
@@ -221,11 +281,19 @@ Resultado:
 
 ## Próximo bloco possível
 
+### `BLOCO-10B-LAB — Correção automática limitada quando quality gate reprovar`
+Objetivo:
+- se aula gerada ficar abaixo de 85/100, pedir à IA para corrigir somente os problemas listados;
+- tentar no máximo 2 reparos automáticos;
+- reavaliar após cada reparo;
+- se ainda reprovar, bloquear salvamento e mostrar erro claro no Diagnóstico.
+
 ### `Bloco 8-LAB-12D — Validação completa da lab`
 Objetivo:
-- aguardar/confirmar deploy da lab no commit `133e104` ou posterior;
+- aguardar/confirmar deploy da lab no commit mais recente;
 - testar se Hoje, Cartas, Progresso, Ajustes e Speaking não exibem conteúdo falso;
 - testar especificamente “Próxima” em Pronúncia;
+- testar o quality gate pedagógico gerando uma aula real;
 - corrigir qualquer bug encontrado;
 - se aprovado, sincronizar para `rewrite-fluency-clean`.
 
@@ -243,4 +311,4 @@ Se o deploy da main quebrar por código:
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A Vercel voltou a fazer deploy da `rewrite-fluency-clean-lab`. A lab recebeu a correção `133e104` para o botão Próxima em Speaking > Pronúncia: agora frase, IPA, palavras, foco, áudio e análise anterior devem sincronizar. As alterações recentes estão apenas na lab e NÃO entraram automaticamente na `rewrite-fluency-clean` nem na `main`. O PR #21 foi mesclado na `main` no GitHub, mas a produção/main ainda NÃO foi validada no Vercel. Validar primeiro a lab, depois sincronizar para `rewrite-fluency-clean`, testar o link estável e só depois decidir nova ida para `main`. Não delete `rewrite-fluency-clean-lab` nem `rewrite-fluency-clean`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch. Rollback da main: `5047bae031f20ddd9604953dcd3fd821655e56fa`."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Foi implementado o BLOCO-10A-LAB: quality gate pedagógico local antes de salvar aula. O validador fica em `fluency-clean/src/services/lessonValidation.js`; `LessonGeneratorPanel.jsx` agora valida antes de `saveCurrentLesson`; `lessonTypes.js` preserva `pedagogicalReview` e `quality`. A nota mínima é 85/100. Aula reprovada não salva e registra problemas no Diagnóstico. Próximo bloco sugerido: BLOCO-10B-LAB, correção automática limitada se reprovar. Não delete `rewrite-fluency-clean-lab` nem `rewrite-fluency-clean`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. A produção/main ainda NÃO foi validada no Vercel. Validar primeiro a lab no iPhone, depois sincronizar para `rewrite-fluency-clean`, testar o link estável e só depois decidir nova ida para `main`. Rollback da main: `5047bae031f20ddd9604953dcd3fd821655e56fa`."
