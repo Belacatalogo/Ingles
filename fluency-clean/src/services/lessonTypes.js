@@ -89,6 +89,10 @@ function normalizePrompts(lesson) {
     : ensureArray(lesson.writingPrompts);
 }
 
+function normalizeObject(value) {
+  return value && typeof value === 'object' && !Array.isArray(value) ? value : null;
+}
+
 export function normalizeLesson(rawLesson) {
   const lesson = rawLesson && typeof rawLesson === 'object' ? rawLesson : {};
   const inferredType = normalizeLessonType(lesson.type ?? lesson.category ?? lesson.kind);
@@ -109,6 +113,8 @@ export function normalizeLesson(rawLesson) {
     tips: ensureArray(lesson.tips),
     prompts: normalizePrompts(lesson),
     listeningText: lesson.listeningText ?? lesson.listening_text ?? lesson.transcript ?? '',
+    pedagogicalReview: normalizeObject(lesson.pedagogicalReview),
+    quality: normalizeObject(lesson.quality),
     raw: lesson,
   };
 }
