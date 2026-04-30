@@ -1,5 +1,12 @@
 import { initializeApp, getApps, deleteApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
+import {
+  browserLocalPersistence,
+  browserPopupRedirectResolver,
+  browserSessionPersistence,
+  getAuth,
+  indexedDBLocalPersistence,
+  initializeAuth,
+} from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { diagnostics } from './diagnostics.js';
 import { storage } from './storage.js';
@@ -117,7 +124,21 @@ export function getFirebaseAuth() {
   const app = getFirebaseApp();
   if (!app) return null;
 
-  cachedAuth = getAuth(app);
+  try {
+    cachedAuth = initializeAuth(app, {
+      persistence: [
+        indexedDBLocalPersistence,
+        browserLocalPersistence,
+        browserSessionPersistence,
+      ],
+      popupRedirectResolver: browserPopupRedirectResolver,
+    });
+    diagnostics.log('Firebase Auth inicializado com persistência reforçada para iOS.', 'info');
+  } catch (error) {
+    cachedAuth = getAuth(app);
+    diagnostics.log(`Firebase Auth já existia ou fallback usado: ${error?.message || error}`, 'info');
+  }
+
   return cachedAuth;
 }
 
