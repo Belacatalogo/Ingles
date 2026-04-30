@@ -20,6 +20,8 @@ import { GeneralAiKeysPanel } from '../components/settings/GeneralAiKeysPanel.js
 import { LessonKeysPanel } from '../components/settings/LessonKeysPanel.jsx';
 import { Card } from '../components/ui/Card.jsx';
 import { SectionHeader } from '../components/ui/SectionHeader.jsx';
+import { getCurrentLesson } from '../services/lessonStore.js';
+import { getCurrentWeekStats, getProgressSummary } from '../services/progressStore.js';
 
 const groups = [
   { id: 'account', title: 'Conta e acesso', detail: 'login, código de acesso e perfil', icon: Shield },
@@ -57,9 +59,12 @@ function SettingsToggle({ icon: Icon, label, value, onChange }) {
 export function SettingsScreen() {
   const [activeGroup, setActiveGroup] = useState('lessonKeys');
   const [activeKeyTab, setActiveKeyTab] = useState('lesson');
-  const [dailyReminder, setDailyReminder] = useState(true);
-  const [autoplayAudio, setAutoplayAudio] = useState(true);
+  const [dailyReminder, setDailyReminder] = useState(false);
+  const [autoplayAudio, setAutoplayAudio] = useState(false);
   const [compactMode, setCompactMode] = useState(false);
+  const progress = getProgressSummary();
+  const week = getCurrentWeekStats();
+  const currentLesson = getCurrentLesson();
 
   return (
     <section className="screen-stack settings-screen">
@@ -70,13 +75,13 @@ export function SettingsScreen() {
       />
 
       <section className="settings-profile-card">
-        <div className="settings-avatar">L</div>
+        <div className="settings-avatar">F</div>
         <div>
-          <strong>Luis</strong>
-          <span>A1 · Plano ativo</span>
+          <strong>Fluency</strong>
+          <span>{progress.completedLessons || 0} aula(s) concluída(s) · {progress.xp || 0} XP</span>
         </div>
         <div className="settings-profile-badge">
-          <CheckCircle2 size={14} /> ativo
+          <CheckCircle2 size={14} /> local
         </div>
       </section>
 
@@ -103,9 +108,9 @@ export function SettingsScreen() {
       {activeGroup === 'account' ? (
         <Card eyebrow="Conta" title="Acesso e perfil">
           <div className="settings-info-card">
-            <SettingsRow icon={UserRound} label="Perfil local" value="ativo" tone="green" />
-            <SettingsRow icon={Shield} label="Código de acesso" value="protegido" tone="blue" />
-            <SettingsRow icon={Info} label="Sessão" value="ativa" />
+            <SettingsRow icon={UserRound} label="Perfil" value="gerenciado pelo login" tone="blue" />
+            <SettingsRow icon={Shield} label="Código de acesso" value="verificado no gate" tone="blue" />
+            <SettingsRow icon={Info} label="Sessão local" value={progress.lastStudyDate ? `último estudo ${progress.lastStudyDate}` : 'sem estudo registrado'} />
           </div>
         </Card>
       ) : null}
@@ -114,9 +119,9 @@ export function SettingsScreen() {
         <Card eyebrow="Rotina" title="Plano de estudos">
           <div className="settings-info-card">
             <SettingsRow icon={Target} label="Meta diária" value="1 aula" tone="violet" />
-            <SettingsRow icon={Clock3} label="Lembrete diário" value="19:30" />
-            <SettingsRow icon={Flag} label="Nível atual" value="A1 → A2" tone="violet" />
-            <SettingsRow icon={Zap} label="Foco da semana" value="Speaking" tone="teal" />
+            <SettingsRow icon={Clock3} label="Semana atual" value={`${week.completed || 0} aula(s) · ${week.xp || 0} XP`} />
+            <SettingsRow icon={Flag} label="Aula atual" value={currentLesson?.level ? `${currentLesson.level} · ${currentLesson.type}` : 'nenhuma aula gerada'} tone="violet" />
+            <SettingsRow icon={Zap} label="Foco atual" value={currentLesson?.type || 'gerar aula'} tone="teal" />
           </div>
         </Card>
       ) : null}
@@ -149,8 +154,8 @@ export function SettingsScreen() {
       {activeGroup === 'audio' ? (
         <Card eyebrow="Som" title="Áudio e pronúncia">
           <div className="settings-info-card">
-            <SettingsRow icon={Volume2} label="Voz padrão" value="natural" tone="blue" />
-            <SettingsRow icon={Bot} label="Pronúncia" value="Azure" tone="green" />
+            <SettingsRow icon={Volume2} label="Voz padrão" value="Gemini natural quando disponível" tone="blue" />
+            <SettingsRow icon={Bot} label="Pronúncia" value="Azure Speech real" tone="green" />
             <SettingsToggle icon={Play} label="Autoplay de áudio" value={autoplayAudio} onChange={setAutoplayAudio} />
           </div>
         </Card>
@@ -159,8 +164,8 @@ export function SettingsScreen() {
       {activeGroup === 'appearance' ? (
         <Card eyebrow="Visual" title="Aparência">
           <div className="settings-info-card">
-            <SettingsRow icon={Palette} label="Tema" value="premium escuro" tone="violet" />
-            <SettingsRow icon={Info} label="Navegação" value="flutuante" />
+            <SettingsRow icon={Palette} label="Tema" value="escuro" tone="violet" />
+            <SettingsRow icon={Info} label="Navegação" value="barra inferior" />
             <SettingsToggle icon={Zap} label="Modo compacto" value={compactMode} onChange={setCompactMode} />
           </div>
         </Card>
@@ -170,7 +175,7 @@ export function SettingsScreen() {
         <Card eyebrow="Sistema" title="Dados e diagnóstico">
           <div className="settings-info-card">
             <SettingsToggle icon={Bell} label="Lembretes diários" value={dailyReminder} onChange={setDailyReminder} />
-            <SettingsRow icon={Database} label="Histórico" value="local" tone="blue" />
+            <SettingsRow icon={Database} label="Histórico" value={`${progress.completedLessons || 0} aula(s) local/sync`} tone="blue" />
             <SettingsRow icon={Info} label="Diagnóstico" value="botão lateral" />
           </div>
         </Card>
