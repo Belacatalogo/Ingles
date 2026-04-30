@@ -15,7 +15,25 @@ import { playLearningAudio, stopLearningAudio } from '../services/audioPlayback.
 import { startRecording, stopRecording } from '../services/recorder.js';
 
 const conversationPrompt = 'Hi! Tell me about your weekend. What did you do?';
-const pronunciationText = 'I have already finished my homework.';
+
+const pronunciationPrompts = [
+  {
+    text: 'I have already finished my homework.',
+    ipa: '/aɪ hæv ɔːlˈredi ˈfɪnɪʃt maɪ ˈhoʊmwɜːrk/',
+  },
+  {
+    text: 'She has already called her teacher.',
+    ipa: '/ʃi hæz ɔːlˈredi kɔːld hɜːr ˈtiːtʃər/',
+  },
+  {
+    text: 'We practiced English before dinner.',
+    ipa: '/wi ˈpræktɪst ˈɪŋɡlɪʃ bɪˈfɔːr ˈdɪnər/',
+  },
+  {
+    text: 'They watched a movie last night.',
+    ipa: '/ðeɪ wɑːtʃt ə ˈmuːvi læst naɪt/',
+  },
+];
 
 const initialMessages = [
   { who: 'ai', text: conversationPrompt },
@@ -61,7 +79,7 @@ function getWordScore(word) {
   return word?.accuracyScore ?? word?.score ?? null;
 }
 
-function getAnalyzedWords(result, fallbackText = pronunciationText) {
+function getAnalyzedWords(result, fallbackText = '') {
   if (Array.isArray(result?.words) && result.words.length) {
     return result.words.map((word) => ({
       word: word.word,
@@ -79,8 +97,9 @@ function getAnalyzedWords(result, fallbackText = pronunciationText) {
   }));
 }
 
-function getFocusWord(result) {
-  const words = getAnalyzedWords(result);
+function getFocusWord(result, fallbackText = '') {
+  if (!result) return null;
+  const words = getAnalyzedWords(result, fallbackText);
   return words
     .filter((word) => word.score != null)
     .sort((a, b) => a.score - b.score)[0] || words.find((word) => word.status !== 'correct') || null;
@@ -119,16 +138,19 @@ function buildConversationReply(score) {
 export function SpeakingScreen() {
   const [mode, setMode] = useState('conversation');
   const [activeScene, setActiveScene] = useState(0);
+  const [pronunciationIndex, setPronunciationIndex] = useState(0);
   const [recording, setRecording] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
   const [result, setResult] = useState(null);
   const [message, setMessage] = useState('Toque para responder em inglês.');
   const [chatMessages, setChatMessages] = useState(initialMessages);
   const scene = immersionScenes[activeScene];
+  const pronunciationPrompt = pronunciationPrompts[pronunciationIndex % pronunciationPrompts.length];
+  const pronunciationText = pronunciationPrompt.text;
 
   const pronunciationScore = getScore(result);
-  const analyzedWords = useMemo(() => getAnalyzedWords(result, pronunciationText), [result]);
-  const focusWord = useMemo(() => getFocusWord(result), [result]);
+  const analyzedWords = useMemo(() => getAnalyzedWords(result, pronunciationText), [result, pronunciationText]);
+  const focusWord = useMemo(() => getFocusWord(result, pronunciationText), [result, pronunciationText]);
 
   async function handleSpeak(text = pronunciationText) {
     setMessage('Preparando áudio...');
@@ -141,9 +163,19 @@ export function SpeakingScreen() {
     setMessage(response.ok ? 'Áudio iniciado.' : response.error || 'Erro ao reproduzir áudio.');
   }
 
+  async function handleNextPronunciation() {
+    if (recording || analyzing) return;
+    const nextIndex = (pronunciationIndex + 1) % pronunciationPrompts.length;
+    const nextPrompt = pronunciationPrompts[nextIndex];
+    setPronunciationIndex(nextIndex);
+    setResult(null);
+    setMessage('Próxima frase carregada.');
+    await handleSpeak(nextPrompt.text);
+  }
+
   function appendConversationAnalysis(analysisResult, referenceText) {
     const score = getScore(analysisResult);
-    const focus = getFocusWord(analysisResult);
+    const focus = getFocusWord(analysisResult, referenceText);
     const spokenText = analysisResult?.recognizedText || referenceText || 'Resposta gravada';
 
     setChatMessages((current) => [
@@ -303,7 +335,7 @@ export function SpeakingScreen() {
           <section className="speaking-pronunciation-hero">
             <p>Repita a frase</p>
             <h2>“{pronunciationText}”</h2>
-            <code>/aɪ hæv ɔːlˈredi ˈfɪnɪʃt maɪ ˈhoʊmwɜːrk/</code>
+            <code>{pronunciationPrompt.ipa}</code>
             <button className="speaking-small-button" type="button" onClick={() => handleSpeak(pronunciationText)}>
               <Volume2 size={13} /> Ouvir modelo
             </button>
@@ -325,7 +357,7 @@ export function SpeakingScreen() {
 
             <div className="speaking-word-score-row">
               {analyzedWords.map((item) => (
-                <span className={scoreClass(item.score)} key={`${item.word}-${item.score ?? 'pending'}`}>{item.word}</span>
+                <span className={scoreClass(item.score)} key={`${pronunciationText}-${item.word}-${item.score ?? 'pending'}`}>{item.word}</span>
               ))}
             </div>
 
@@ -342,7 +374,7 @@ export function SpeakingScreen() {
             <button className="speaking-action-secondary" type="button" onClick={() => handleRecordToggle(pronunciationText)} disabled={analyzing}>
               <RefreshCw size={14} /> {recording ? 'Parar e analisar' : 'Tentar de novo'}
             </button>
-            <button className="speaking-action-primary" type="button" onClick={() => handleSpeak('She has already called her teacher.')}>
+            <button className="speaking-action-primary" type="button" onClick={handleNextPronunciation} disabled={recording || analyzing}>
               Próxima <ChevronRight size={14} />
             </button>
           </div>
