@@ -17,48 +17,43 @@ Não mexer em `bundle.js`.
 Não usar DOM injection.
 Não criar bundle patch.
 Não mexer no backend Azure privado.
-Não commitar novas mudanças enquanto a Vercel estiver bloqueada por limite, salvo correção crítica e consciente.
 
-## BLOQUEIO ATUAL — VERCEL LIMIT 24H
+## Estado Vercel atual
 
-Usuário verificou na Vercel que só poderá tentar novo deploy novamente em aproximadamente 24 horas.
+A Vercel voltou a fazer deploy da `rewrite-fluency-clean-lab`.
 
-Situação importante:
-- as últimas mudanças estão commitadas no GitHub, mas NÃO foram validadas em deploy porque a Vercel bloqueou os builds;
-- a Vercel retornou `upgradeToPro=build-rate-limit` nos commits recentes;
-- portanto, não considerar as últimas correções como aprovadas visualmente ainda;
-- não insistir em novos commits/deploys agora para não reiniciar/agravar o bloqueio.
-
-Commits recentes ainda sem validação por deploy:
-- `rewrite-fluency-clean-lab`: `42c1fbb7533b7121ea1a0f1c2a951d3997fb83d0` — `Documenta remoção de dados fictícios`;
-- alterações anteriores de Speaking/Azure também foram feitas na lab, mas precisam ser conferidas no preview mais recente quando o deploy liberar.
+Status confirmado:
+- branch: `rewrite-fluency-clean-lab`;
+- commit atual antes da correção mais recente: `3f5c74da4a28332dce67204d1fd96010b537ab7f`;
+- status Vercel: success;
+- portanto o bloqueio de build para preview/lab parece ter sido liberado ou era temporário/intermitente.
 
 Produção/main:
 - PR #21 foi mesclado no GitHub;
-- porém NÃO conseguimos validar produção/main na Vercel;
-- o deploy de produção/main ainda não ficou Ready com a versão final;
-- portanto, considerar que a ida para `main` está incompleta do ponto de vista de produção, mesmo que o merge GitHub tenha ocorrido.
+- porém a produção/main ainda não foi validada em Vercel;
+- não considerar `main` aprovada até deploy Production Ready e teste real no iPhone.
 
-Link funcional enquanto a Vercel não libera a produção:
+Link funcional enquanto produção não é validada:
 - `https://ingles-git-rewrite-fluency-clean-belacatalogos-projects.vercel.app/`
 
-Esse link é preview da branch `rewrite-fluency-clean`, já funcionou com login Google/Firebase, mas pode não conter as correções mais recentes da lab.
+Esse link é preview da branch `rewrite-fluency-clean`, já funcionou com login Google/Firebase, mas pode não conter correções mais recentes da lab.
 
-## Observação importante sobre branches e as duas últimas alterações
+## Observação importante sobre branches e alterações recentes
 
-Antes das duas alterações recentes, o usuário estava promovendo a branch estável/secundária `rewrite-fluency-clean` para `main` via PR #21.
+Antes das alterações recentes, o usuário estava promovendo a branch estável/secundária `rewrite-fluency-clean` para `main` via PR #21.
 
-Depois disso, foram feitas duas linhas de alteração na branch de testes `rewrite-fluency-clean-lab`:
+Depois disso, foram feitas alterações na branch de testes `rewrite-fluency-clean-lab`:
 1. melhorias no Speaking/Azure para usar SDK empacotado e dados reais da análise;
-2. remoção de conteúdos fictícios/mockados em Hoje, Progresso, Cartas e Ajustes.
+2. remoção de conteúdos fictícios/mockados em Hoje, Progresso, Cartas e Ajustes;
+3. correção da aba Pronúncia para que o botão “Próxima” atualize frase, IPA, palavras, foco, áudio e limpe a análise anterior.
 
-Essas duas alterações recentes estão isoladas na `rewrite-fluency-clean-lab` e NÃO entram automaticamente na `main` nem na `rewrite-fluency-clean`.
+Essas alterações recentes estão isoladas na `rewrite-fluency-clean-lab` e NÃO entram automaticamente na `main` nem na `rewrite-fluency-clean`.
 
-Não tratar essas alterações como parte da promoção já feita para `main`. A promoção para `main` foi do estado da `rewrite-fluency-clean` no PR #21, e a produção ainda nem foi validada por causa do bloqueio da Vercel.
+Não tratar essas alterações como parte da promoção já feita para `main`. A promoção para `main` foi do estado da `rewrite-fluency-clean` no PR #21.
 
-Quando a Vercel liberar, a ordem correta é:
-1. validar primeiro a `rewrite-fluency-clean-lab` com as duas alterações recentes;
-2. se estiver bom, sincronizar essas alterações para `rewrite-fluency-clean`;
+Ordem correta:
+1. validar primeiro a `rewrite-fluency-clean-lab` com as alterações recentes;
+2. se estiver bom, sincronizar para `rewrite-fluency-clean`;
 3. testar novamente o link estável da `rewrite-fluency-clean`;
 4. só depois decidir se essas alterações entram em `main`;
 5. validar produção/main separadamente.
@@ -67,7 +62,36 @@ Não misturar as correções recentes da lab direto na `main` sem validação.
 
 ## Estado atual
 
-### Bloco 8-LAB-12 — Remoção de conteúdos fictícios nas telas IMPLEMENTADO, MAS NÃO VALIDADO POR DEPLOY
+### Bloco 8-LAB-12C — Correção da próxima frase em Pronúncia IMPLEMENTADA, aguardando deploy/teste
+
+Contexto:
+- usuário testou a aba Speaking > Pronúncia;
+- ao tocar em “Próxima”, o áudio tocava outra frase, mas o painel continuava mostrando a frase antiga;
+- isso deixava texto, IPA, palavras e áudio fora de sincronia.
+
+Correção aplicada:
+- `fluency-clean/src/screens/SpeakingScreen.jsx` agora usa uma lista controlada de frases de pronúncia;
+- o índice da frase atual fica em estado (`pronunciationIndex`);
+- o botão “Próxima” troca:
+  - frase exibida;
+  - IPA exibido;
+  - palavras do painel;
+  - foco da análise;
+  - áudio tocado;
+  - resultado anterior limpo.
+
+Commit:
+- `133e1047312fc7918ad2eab76e74d7738c28d6d0` — `Corrige próxima frase na pronúncia`.
+
+Teste recomendado:
+1. aguardar deploy da lab com commit `133e104` ou posterior;
+2. abrir Speaking > Pronúncia;
+3. tocar “Próxima”;
+4. confirmar que a frase visual muda junto com o áudio;
+5. gravar a nova frase;
+6. confirmar que a análise/foco usa a nova frase, não a antiga.
+
+### Bloco 8-LAB-12 — Remoção de conteúdos fictícios nas telas IMPLEMENTADO, aguardando validação completa
 
 Contexto:
 - usuário identificou que a análise Azure já funcionava, mas algumas áreas ainda exibiam conteúdo mockado/fictício;
@@ -99,26 +123,13 @@ O que foi removido/corrigido:
   - removidos dados estáticos como se fossem reais, por exemplo perfil “Luis A1 plano ativo”, lembrete 19:30 e foco semanal fixo;
   - tela agora mostra progresso real, aula atual real, semana atual e estado local/sync.
 
-Status:
-- implementado no GitHub;
-- Vercel bloqueou o deploy por limite;
-- aguardando liberação de 24 horas para testar na lab.
-
-Não foi alterado:
-- backend Azure privado;
-- `bundle.js`;
-- DOM injection;
-- bundle patch.
-
-Teste recomendado quando a Vercel liberar:
-1. aguardar deploy da `rewrite-fluency-clean-lab` ficar Ready no commit `42c1fbb` ou posterior;
-2. abrir no iPhone;
-3. verificar Hoje com e sem aula gerada;
-4. verificar Cartas antes/depois de uma aula com vocabulário;
-5. verificar Progresso antes/depois de concluir aula;
-6. verificar Ajustes e confirmar que não há números ou status falsos;
-7. verificar Speaking/Azure usando dados reais;
-8. se aprovado, sincronizar para `rewrite-fluency-clean`.
+Teste recomendado:
+1. verificar Hoje com e sem aula gerada;
+2. verificar Cartas antes/depois de uma aula com vocabulário;
+3. verificar Progresso antes/depois de concluir aula;
+4. verificar Ajustes e confirmar que não há números ou status falsos;
+5. verificar Speaking/Azure usando dados reais;
+6. se aprovado, sincronizar para `rewrite-fluency-clean`.
 
 ### Bloco 8-LAB-11E — Correção do npm install da Vercel IMPLEMENTADA, MAS PRODUÇÃO AINDA NÃO VALIDADA
 
@@ -147,7 +158,7 @@ Versões fixadas:
 
 Status:
 - commitado;
-- a produção/main ainda não teve deploy final validado por causa do limite de 24h.
+- a produção/main ainda não teve deploy final validado.
 
 Commits relevantes:
 - `main`: `576cc3818e80f42dfbc91c49493406911e03941c`;
@@ -165,7 +176,6 @@ Resultado GitHub:
 
 Status produção:
 - ainda não conseguimos fazer a validação final da `main` no Vercel;
-- deploy de produção ficou bloqueado/falhou por limite;
 - considerar `main` como não aprovada em produção até novo deploy Ready e teste no iPhone.
 
 Rollback se main quebrar:
@@ -184,7 +194,7 @@ Conclusão da configuração:
 - o deploy deve publicar `fluency-clean/dist`;
 - o `index.html` antigo e o `bundle.js` antigo da raiz não devem ser usados como saída final do deploy.
 
-### Bloco Speaking/Azure — SDK empacotado e dados reais IMPLEMENTADO, MAS ÚLTIMA VERSÃO AINDA PRECISA SER VALIDADA
+### Bloco Speaking/Azure — SDK empacotado e dados reais IMPLEMENTADO
 
 Contexto:
 - usuário reportou erro `Falha ao carregar Azure Speech SDK`;
@@ -193,8 +203,9 @@ Contexto:
 - foi alterado para usar palavras, score e texto reconhecido do Azure.
 
 Status:
-- parte inicial foi vista funcionando pelo usuário;
-- as melhorias finais de dados reais precisam ser testadas no preview da lab após a Vercel liberar novo deploy.
+- análise Azure voltou a funcionar;
+- dados reais foram integrados;
+- ainda é necessário validar completamente na lab antes de sincronizar para estável.
 
 ### Bloco 8-LAB-10D — Login Google validado na branch estável / correção sincronizada
 
@@ -210,17 +221,17 @@ Resultado:
 
 ## Próximo bloco possível
 
-### `Bloco 8-LAB-12B — Validação após liberação da Vercel`
+### `Bloco 8-LAB-12D — Validação completa da lab`
 Objetivo:
-- depois das 24 horas, aguardar/acionar deploy da `rewrite-fluency-clean-lab`;
-- confirmar que o commit `42c1fbb` ou posterior ficou Ready;
+- aguardar/confirmar deploy da lab no commit `133e104` ou posterior;
 - testar se Hoje, Cartas, Progresso, Ajustes e Speaking não exibem conteúdo falso;
-- corrigir qualquer texto/valor mockado que ainda apareça;
+- testar especificamente “Próxima” em Pronúncia;
+- corrigir qualquer bug encontrado;
 - se aprovado, sincronizar para `rewrite-fluency-clean`.
 
 ### `Bloco 8-LAB-11F — Redeploy da main e validação produção`
 Objetivo:
-- depois das 24 horas, aguardar/acionar deploy da `main`;
+- aguardar/acionar deploy da `main`;
 - se falhar, ler logs reais do install/build;
 - se ficar Ready, testar link de produção no iPhone;
 - só considerar `main` aprovada após teste real no iPhone.
@@ -232,4 +243,4 @@ Se o deploy da main quebrar por código:
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. Estamos travados pela Vercel: o usuário confirmou que só poderá tentar novo deploy em 24h. As últimas mudanças estão no GitHub, mas NÃO foram validadas em deploy. A lab está no commit `42c1fbb` com remoção de conteúdos fictícios, mas o deploy foi bloqueado por `upgradeToPro=build-rate-limit`. O PR #21 foi mesclado na `main` no GitHub, mas a produção/main ainda NÃO foi validada no Vercel; portanto a ida para main está incompleta do ponto de vista de produção. Importante: as duas alterações recentes — Speaking/Azure real e remoção de dados fictícios — estão isoladas na `rewrite-fluency-clean-lab`; elas NÃO entraram automaticamente na `rewrite-fluency-clean` nem na `main`. Quando a Vercel liberar, validar primeiro a lab, depois sincronizar para `rewrite-fluency-clean`, testar o link estável e só depois decidir nova ida para `main`. Não delete `rewrite-fluency-clean-lab` nem `rewrite-fluency-clean`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch. Rollback da main: `5047bae031f20ddd9604953dcd3fd821655e56fa`."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A Vercel voltou a fazer deploy da `rewrite-fluency-clean-lab`. A lab recebeu a correção `133e104` para o botão Próxima em Speaking > Pronúncia: agora frase, IPA, palavras, foco, áudio e análise anterior devem sincronizar. As alterações recentes estão apenas na lab e NÃO entraram automaticamente na `rewrite-fluency-clean` nem na `main`. O PR #21 foi mesclado na `main` no GitHub, mas a produção/main ainda NÃO foi validada no Vercel. Validar primeiro a lab, depois sincronizar para `rewrite-fluency-clean`, testar o link estável e só depois decidir nova ida para `main`. Não delete `rewrite-fluency-clean-lab` nem `rewrite-fluency-clean`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch. Rollback da main: `5047bae031f20ddd9604953dcd3fd821655e56fa`."
