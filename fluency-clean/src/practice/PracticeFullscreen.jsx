@@ -1,7 +1,9 @@
 import { useMemo, useState } from 'react';
-import { CheckCircle2, ChevronRight, Headphones, Mic, RotateCcw, Sparkles, Volume2, X, XCircle } from 'lucide-react';
+import { CheckCircle2, ChevronRight, Heart, Headphones, Mic, RotateCcw, Sparkles, Volume2, X, XCircle } from 'lucide-react';
 import { playLearningAudio } from '../services/audioPlayback.js';
 import { buildPracticeItems, evaluatePracticeAnswer, normalizeForPractice } from './PracticeEngine.js';
+
+const STARTING_LIVES = 5;
 
 function getSpeechRecognition() {
   return window.SpeechRecognition || window.webkitSpeechRecognition || null;
@@ -26,6 +28,16 @@ function getQuestionActionLabel(type) {
   if (type === 'wordBank') return 'Conferir frase';
   if (type === 'speak') return 'Conferir fala';
   return 'Verificar';
+}
+
+function LivesBar({ lives, maxLives = STARTING_LIVES, reviewMode }) {
+  return (
+    <div className={`practice-lives ${reviewMode ? 'review' : ''}`} aria-label={`${lives} vidas restantes`}>
+      {Array.from({ length: maxLives }).map((_, index) => (
+        <span key={index} className={index < lives ? 'on' : 'off'}><Heart size={14} fill="currentColor" /></span>
+      ))}
+    </div>
+  );
 }
 
 function ChoiceGrid({ item, value, feedback, onSelect }) {
@@ -81,9 +93,12 @@ export function PracticeFullscreen({ lesson, open, onClose, onComplete }) {
   const [results, setResults] = useState([]);
   const [hintVisible, setHintVisible] = useState(false);
   const [listening, setListening] = useState(false);
+  const [lives, setLives] = useState(STARTING_LIVES);
+  const [reviewMode, setReviewMode] = useState(false);
   const current = items[index];
   const done = open && items.length > 0 && index >= items.length;
   const correctCount = results.filter((result) => result.correct).length;
+  const mistakeCount = results.filter((result) => !result.correct).length;
   const progress = items.length ? Math.round((Math.min(index, items.length) / items.length) * 100) : 0;
   const skillLabel = getPracticeSkillLabel(lesson);
 
@@ -109,11 +124,29 @@ export function PracticeFullscreen({ lesson, open, onClose, onComplete }) {
     const evaluation = evaluatePracticeAnswer(current, finalValue);
     if (evaluation.empty) return;
     if (evaluation.retryable) {
-      setFeedback({ ...evaluation, near: true, message: 'Quase certo. Ajuste só um detalhe.' });
+      setFeedback({ ...evaluation, near: true, message: 'Quase certo. Ajuste só um detalhe.', lifeLost: false });
       return;
     }
-    setFeedback({ ...evaluation, message: evaluation.correct ? 'Muito bem!' : 'Vamos revisar.' });
-    setResults((currentResults) => [...currentResults, { id: current.id, type: current.type, correct: evaluation.correct, answer: finalValue, expected: current.answer }]);
+    const lifeLost = !evaluation.correct;
+    let nextLives = lives;
+    if (lifeLost) {
+      nextLives = Math.max(0, lives - 1);
+      setLives(nextLives);
+      if (nextLives <= 0) setReviewMode(true);
+    }
+    setFeedback({
+      ...evaluation,
+      lifeLost,
+      message: evaluation.correct ? 'Muito bem!' : nextLives <= 0 ? 'Sem vidas. Agora é revisão.' : 'Vamos revisar.',
+    });
+    setResults((currentResults) => [...currentResults, {
+      id: current.id,
+      type: current.type,
+      correct: evaluation.correct,
+      answer: finalValue,
+      expected: current.answer,
+      lifeLost,
+    }]);
   }
 
   function continueNext() {
@@ -137,7 +170,7 @@ export function PracticeFullscreen({ lesson, open, onClose, onComplete }) {
   function speak() {
     const SpeechRecognition = getSpeechRecognition();
     if (!SpeechRecognition) {
-      setFeedback({ correct: false, empty: true, message: 'Digite o que você falou.' });
+      setFeedback({ correct: false, empty: true, message: 'Digite o que você falou.', lifeLost: false });
       return;
     }
     try {
@@ -150,10 +183,10 @@ export function PracticeFullscreen({ lesson, open, onClose, onComplete }) {
         setValue(transcript);
         submit(transcript);
       };
-      recognition.onerror = () => setFeedback({ correct: false, empty: true, message: 'Digite o que você falou.' });
+      recognition.onerror = () => setFeedback({ correct: false, empty: true, message: 'Digite o que você falou.', lifeLost: false });
       recognition.start();
     } catch {
-      setFeedback({ correct: false, empty: true, message: 'Digite o que você falou.' });
+      setFeedback({ correct: false, empty: true, message: 'Digite o que você falou.', lifeLost: false });
     }
   }
 
@@ -165,10 +198,12 @@ export function PracticeFullscreen({ lesson, open, onClose, onComplete }) {
     setFeedback(null);
     setResults([]);
     setHintVisible(false);
+    setLives(STARTING_LIVES);
+    setReviewMode(false);
   }
 
   function finish() {
-    onComplete?.({ total: items.length, correct: correctCount, results });
+    onComplete?.({ total: items.length, correct: correctCount, mistakes: mistakeCount, lives, reviewMode, results });
     onClose?.();
   }
 
@@ -183,6 +218,8 @@ export function PracticeFullscreen({ lesson, open, onClose, onComplete }) {
         <strong>{done ? `${correctCount}/${items.length}` : started ? `${index + 1}/${items.length}` : `${items.length}`}</strong>
       </header>
 
+      {started && !done ? <LivesBar lives={lives} reviewMode={reviewMode} /> : null}
+
       {!started && !done ? (
         <main className="practice-intro">
           <div className="practice-intro-orb"><Sparkles size={34} /></div>
@@ -191,7 +228,7 @@ export function PracticeFullscreen({ lesson, open, onClose, onComplete }) {
           <p>Treine o conteúdo em etapas curtas, com correção imediata e exercícios variados.</p>
           <div className="practice-intro-stats">
             <span><Headphones size={15} /> {items.length} exercícios</span>
-            <span>8–12 min</span>
+            <span><Heart size={15} fill="currentColor" /> {STARTING_LIVES} vidas</span>
             <span>nível {lesson?.level || 'A1'}</span>
           </div>
           <button type="button" className="practice-start-button" onClick={() => setStarted(true)}>Começar prática</button>
@@ -199,16 +236,16 @@ export function PracticeFullscreen({ lesson, open, onClose, onComplete }) {
       ) : done ? (
         <main className="practice-done">
           <div className="practice-done-medal"><CheckCircle2 size={52} /></div>
-          <p className="practice-kind">Sessão finalizada</p>
-          <h1>Prática concluída</h1>
-          <p>Você acertou {correctCount} de {items.length}. Continue revisando até ficar natural.</p>
+          <p className="practice-kind">{reviewMode ? 'Revisão recomendada' : 'Sessão finalizada'}</p>
+          <h1>{reviewMode ? 'Você concluiu revisando' : 'Prática concluída'}</h1>
+          <p>{reviewMode ? `Você acertou ${correctCount} de ${items.length}. Refaça a prática para fortalecer os pontos fracos.` : `Você acertou ${correctCount} de ${items.length} e terminou com ${lives} vida(s). Continue assim.`}</p>
           <button type="button" onClick={restart}><RotateCcw size={18} /> Refazer prática</button>
           <button type="button" className="primary" onClick={finish}>Voltar para aula</button>
         </main>
       ) : current ? (
         <main className="practice-question">
           <div className="practice-question-card">
-            <p className="practice-kind">{current.title}</p>
+            <p className="practice-kind">{reviewMode ? 'Modo revisão' : current.title}</p>
             <h1>{current.prompt}</h1>
           </div>
 
@@ -247,7 +284,9 @@ export function PracticeFullscreen({ lesson, open, onClose, onComplete }) {
               {feedback.correct ? <CheckCircle2 size={24} /> : <XCircle size={24} />}
               <div>
                 <strong>{feedback.message}</strong>
+                {feedback.lifeLost ? <span>Você perdeu 1 vida. Restam {lives}.</span> : null}
                 {!feedback.correct && !feedback.near ? <span>Resposta: {current.answer}</span> : null}
+                {feedback.near ? <span>Erro pequeno não tira vida.</span> : null}
                 {feedback.near && hintVisible && feedback.hintWord ? <span>Dica: confira “{feedback.hintWord}”.</span> : null}
               </div>
             </div>
