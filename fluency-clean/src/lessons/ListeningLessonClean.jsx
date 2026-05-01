@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { BookOpen, CheckCircle2, ChevronDown, ChevronUp, Headphones, Pause, Play, Repeat2, Save, Volume2 } from 'lucide-react';
+import { BookOpen, CheckCircle2, ChevronDown, ChevronUp, Headphones, Pause, Play, Repeat2, Save, Volume2, Target } from 'lucide-react';
 import { playLearningAudio, stopLearningAudio } from '../services/audioPlayback.js';
 import { diagnostics } from '../services/diagnostics.js';
 import { completeLesson, getLessonDraft, saveLessonDraft } from '../services/progressStore.js';
@@ -61,6 +61,20 @@ function normalizeVocabulary(lesson) {
   })).filter((item) => item.word || item.meaning || item.example);
 }
 
+function normalizeExercises(lesson) {
+  const exercises = Array.isArray(lesson?.exercises) ? lesson.exercises : [];
+  return exercises.map((item, index) => {
+    const options = Array.isArray(item?.options) ? item.options.map(cleanText).filter(Boolean) : [];
+    return {
+      id: item?.id || `exercise-${index}`,
+      question: cleanText(item?.question || item?.prompt || `Exercício ${index + 1}`),
+      options,
+      answer: cleanText(item?.answer || item?.correctAnswer),
+      explanation: cleanText(item?.explanation || item?.feedback),
+    };
+  }).filter((item) => item.question || item.options.length);
+}
+
 function normalizeShadowingLines(transcript, prompts) {
   const lines = transcript
     .flatMap((line) => cleanText(line).split(/(?<=[.!?])\s+/))
@@ -95,13 +109,15 @@ export function ListeningLessonClean({ lesson }) {
   const [savedAt, setSavedAt] = useState('');
   const [completedAt, setCompletedAt] = useState('');
   const [shadowingIndex, setShadowingIndex] = useState(0);
-  const [openSections, setOpenSections] = useState({ guide: true, concept: true, vocab: false, transcript: false, answer: false, shadowing: true });
-  const refs = { guide: useRef(null), concept: useRef(null), shadowing: useRef(null), answer: useRef(null) };
+  const [selectedAnswers, setSelectedAnswers] = useState({});
+  const [openSections, setOpenSections] = useState({ guide: true, transcript: true, concept: false, vocab: false, exercises: false, shadowing: false, answer: false });
+  const refs = { guide: useRef(null), transcript: useRef(null), concept: useRef(null), vocab: useRef(null), exercises: useRef(null), shadowing: useRef(null), answer: useRef(null) };
 
   const transcript = useMemo(() => splitTranscript(lesson?.listeningText), [lesson?.listeningText]);
   const prompts = useMemo(() => normalizePrompts(lesson), [lesson]);
   const sections = useMemo(() => normalizeSections(lesson), [lesson]);
   const vocabulary = useMemo(() => normalizeVocabulary(lesson), [lesson]);
+  const exercises = useMemo(() => normalizeExercises(lesson), [lesson]);
   const shadowingLines = useMemo(() => normalizeShadowingLines(transcript, prompts), [transcript, prompts]);
   const audioText = transcript.join(' ');
   const currentShadowingLine = shadowingLines[shadowingIndex] || shadowingLines[0] || prompts[0];
@@ -109,7 +125,7 @@ export function ListeningLessonClean({ lesson }) {
   useEffect(() => {
     function handleJump(event) {
       const target = event?.detail?.section;
-      const map = { warmup: 'guide', core: 'concept', practice: 'shadowing', speak: 'shadowing', review: 'answer' };
+      const map = { warmup: 'guide', core: 'transcript', practice: 'exercises', speak: 'shadowing', review: 'answer' };
       const id = map[target] || 'guide';
       setOpenSections((current) => ({ ...current, [id]: true }));
       requestAnimationFrame(() => refs[id]?.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
@@ -120,6 +136,10 @@ export function ListeningLessonClean({ lesson }) {
 
   function toggleSection(id) {
     setOpenSections((current) => ({ ...current, [id]: !current[id] }));
+  }
+
+  function chooseExerciseAnswer(exerciseId, option) {
+    setSelectedAnswers((current) => ({ ...current, [exerciseId]: option }));
   }
 
   async function handleListen() {
@@ -190,6 +210,7 @@ export function ListeningLessonClean({ lesson }) {
       lesson,
       answers: {
         summary: answer,
+        selectedAnswers,
         transcriptLines: transcript.length,
         shadowing: { currentPhrase: currentShadowingLine, totalPhrases: shadowingLines.length },
         updatedAt: new Date().toISOString(),
@@ -218,10 +239,18 @@ export function ListeningLessonClean({ lesson }) {
         </section>
       </div>
 
+      <div ref={refs.transcript}>
+        <CollapsibleSection id="lesson-transcript" title="Texto da aula" icon={Volume2} summary={`${transcript.length} trechos`} open={openSections.transcript} onToggle={() => toggleSection('transcript')}>
+          <div className="transcript-box compact">
+            {transcript.map((line, index) => <p key={`${line}-${index}`}><b>{index + 1}</b>{line}</p>)}
+          </div>
+        </CollapsibleSection>
+      </div>
+
       {sections.length ? (
         <div ref={refs.concept}>
-          <CollapsibleSection id="lesson-concept" title="Conceito e explicação" icon={BookOpen} summary={`${sections.length} passos curtos`} open={openSections.concept} onToggle={() => toggleSection('concept')}>
-            <div className="lesson-section-stack compact">
+          <CollapsibleSection id="lesson-concept" title="Conceito e explicação" icon={BookOpen} summary={`${sections.length} passos · fechado para deixar a tela leve`} open={openSections.concept} onToggle={() => toggleSection('concept')}>
+            <div className="lesson-section-stack compact concept-compact-list">
               {sections.map((section, index) => (
                 <article className="lesson-content-block" key={`${section.title}-${index}`}>
                   <small>Passo {index + 1}</small>
@@ -236,24 +265,59 @@ export function ListeningLessonClean({ lesson }) {
       ) : null}
 
       {vocabulary.length ? (
-        <CollapsibleSection id="lesson-vocab" title="Vocabulário da aula" icon={BookOpen} summary={`${vocabulary.length} palavras-chave`} open={openSections.vocab} onToggle={() => toggleSection('vocab')}>
-          <div className="lesson-vocabulary-grid compact">
-            {vocabulary.map((item, index) => (
-              <article className="lesson-vocab-card" key={`${item.word}-${index}`}>
-                <strong>{item.word || item.meaning}</strong>
-                {item.meaning ? <span>{item.meaning}</span> : null}
-                {item.example ? <p>{item.example}</p> : null}
-              </article>
-            ))}
-          </div>
-        </CollapsibleSection>
+        <div ref={refs.vocab}>
+          <CollapsibleSection id="lesson-vocab" title="Vocabulário da aula" icon={BookOpen} summary={`${vocabulary.length} palavras-chave`} open={openSections.vocab} onToggle={() => toggleSection('vocab')}>
+            <div className="lesson-vocabulary-grid compact">
+              {vocabulary.map((item, index) => (
+                <article className="lesson-vocab-card" key={`${item.word}-${index}`}>
+                  <strong>{item.word || item.meaning}</strong>
+                  {item.meaning ? <span>{item.meaning}</span> : null}
+                  {item.example ? <p>{item.example}</p> : null}
+                </article>
+              ))}
+            </div>
+          </CollapsibleSection>
+        </div>
       ) : null}
 
-      <CollapsibleSection id="lesson-transcript" title="Transcrição" icon={Volume2} summary={`${transcript.length} trechos`} open={openSections.transcript} onToggle={() => toggleSection('transcript')}>
-        <div className="transcript-box compact">
-          {transcript.map((line, index) => <p key={`${line}-${index}`}><b>{index + 1}</b>{line}</p>)}
+      {exercises.length ? (
+        <div ref={refs.exercises}>
+          <CollapsibleSection id="lesson-exercises" title="Exercícios" icon={Target} summary={`${exercises.length} questões · respostas ocultas`} open={openSections.exercises} onToggle={() => toggleSection('exercises')}>
+            <div className="listening-question-list compact">
+              {exercises.map((exercise, index) => {
+                const selected = selectedAnswers[exercise.id];
+                const isCorrect = selected && exercise.answer && selected.toLowerCase() === exercise.answer.toLowerCase();
+                return (
+                  <article className="question-card" key={exercise.id}>
+                    <span>Questão {index + 1}</span>
+                    <strong>{exercise.question}</strong>
+                    {exercise.options.length ? (
+                      <div className="option-list">
+                        {exercise.options.map((option) => (
+                          <button
+                            type="button"
+                            className={`option-button ${selected === option ? 'selected' : ''}`}
+                            key={option}
+                            onClick={() => chooseExerciseAnswer(exercise.id, option)}
+                          >
+                            {option}
+                          </button>
+                        ))}
+                      </div>
+                    ) : null}
+                    {selected ? (
+                      <p className={`lesson-exercise-feedback ${isCorrect ? 'correct' : 'wrong'}`}>
+                        {isCorrect ? 'Correto.' : exercise.answer ? `Revise. Resposta esperada: ${exercise.answer}` : 'Resposta registrada.'}
+                        {exercise.explanation ? ` ${exercise.explanation}` : ''}
+                      </p>
+                    ) : null}
+                  </article>
+                );
+              })}
+            </div>
+          </CollapsibleSection>
         </div>
-      </CollapsibleSection>
+      ) : null}
 
       <div ref={refs.shadowing}>
         <CollapsibleSection id="lesson-shadowing" title="Shadowing real" icon={Repeat2} summary={`frase ${shadowingIndex + 1}/${shadowingLines.length || 1}`} open={openSections.shadowing} onToggle={() => toggleSection('shadowing')}>
@@ -269,7 +333,7 @@ export function ListeningLessonClean({ lesson }) {
       </div>
 
       <div ref={refs.answer}>
-        <CollapsibleSection id="lesson-answer" title="Sua resposta" icon={Save} summary={completedAt ? `concluída às ${completedAt}` : savedAt ? `salva às ${savedAt}` : 'rascunho opcional'} open={openSections.answer} onToggle={() => toggleSection('answer')}>
+        <CollapsibleSection id="lesson-answer" title="Finalizar aula" icon={Save} summary={completedAt ? `concluída às ${completedAt}` : savedAt ? `rascunho salvo às ${savedAt}` : 'último passo'} open={openSections.answer} onToggle={() => toggleSection('answer')}>
           <div className="lesson-written-answer compact">
             <textarea value={answer} onChange={(event) => setAnswer(event.target.value)} placeholder="Escreva um resumo curto do que você entendeu, ou uma frase nova usando o conteúdo da aula." />
             <button type="button" onClick={handleSave}><Save size={16} /> Salvar rascunho</button>
