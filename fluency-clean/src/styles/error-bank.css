@@ -1,0 +1,60 @@
+.error-bank-card {
+  border-color: rgba(251, 191, 36, .22) !important;
+  background: radial-gradient(circle at 8% 0%, rgba(251, 191, 36, .12), transparent 42%), rgba(11,18,38,.72) !important;
+}
+
+.error-bank-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.error-bank-row {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  gap: 9px;
+  align-items: start;
+  padding: 11px;
+  border: 1px solid rgba(147, 160, 213, .13);
+  border-radius: 15px;
+  background: rgba(255,255,255,.035);
+}
+
+.error-bank-row svg {
+  margin-top: 1px;
+  color: #fbbf24;
+}
+
+.error-bank-row.high {
+  border-color: rgba(248, 113, 113, .24);
+  background: rgba(248, 113, 113, .075);
+}
+
+.error-bank-row.high svg { color: #f87171; }
+.error-bank-row.medium { border-color: rgba(251, 191, 36, .2); }
+.error-bank-row.low { border-color: rgba(147, 160, 213, .13); }
+
+.error-bank-row strong {
+  display: block;
+  color: #f8fbff;
+  font-size: 13px;
+  line-height: 1.25;
+  font-weight: 950;
+  overflow-wrap: anywhere;
+}
+
+.error-bank-row span {
+  display: block;
+  margin-top: 3px;
+  color: #fde68a;
+  font-size: 11px;
+  line-height: 1.25;
+  font-weight: 850;
+}
+
+.error-bank-row p {
+  margin: 6px 0 0;
+  color: #9ca8ca;
+  font-size: 11.5px;
+  line-height: 1.38;
+}
