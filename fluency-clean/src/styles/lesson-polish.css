@@ -17,6 +17,7 @@
 .lesson-stepper-card,
 .lesson-progress-strip,
 .lesson-lab-pillar-switch,
+.lesson-quality-panel,
 .lesson-reference-screen .reading-layout,
 .lesson-reference-screen .grammar-layout,
 .lesson-reference-screen .pillar-lesson,
@@ -40,6 +41,7 @@
 .lesson-stepper-card,
 .lesson-progress-strip,
 .lesson-lab-pillar-switch,
+.lesson-quality-panel,
 .lesson-reference-screen .pillar-card { border: 1px solid rgba(147,160,213,.18); background: rgba(11,18,38,.74); box-shadow: 0 16px 44px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.03); }
 
 .lesson-reference-hero { position: relative; overflow: hidden; padding: 18px; border-radius: 24px; background: radial-gradient(circle at 95% 2%, rgba(167,139,250,.22), transparent 42%), linear-gradient(135deg, rgba(19,27,57,.96), rgba(13,19,42,.78)); }
@@ -57,6 +59,40 @@
 .lesson-reference-hero footer div { display: flex; align-items: center; flex-wrap: wrap; gap: 14px; min-width: 0; }
 .lesson-reference-hero footer span { display: inline-flex; align-items: center; gap: 5px; color: #8b95b5; font-size: 12px; font-weight: 800; }
 .lesson-reference-hero footer button { display: grid; place-items: center; width: 34px; height: 34px; border: 1px solid rgba(147,160,213,.16); border-radius: 13px; color: #dbeafe; background: rgba(255,255,255,.05); flex: 0 0 auto; }
+
+.lesson-quality-panel { display: grid; gap: 14px; padding: 15px; border-radius: 22px; overflow: hidden; background: radial-gradient(circle at 5% 0%, rgba(94,231,255,.14), transparent 42%), rgba(11,18,38,.76); }
+.lesson-quality-panel.excellent { border-color: rgba(52,211,153,.28); }
+.lesson-quality-panel.approved { border-color: rgba(91,156,246,.28); }
+.lesson-quality-panel.warning { border-color: rgba(251,191,36,.28); }
+.lesson-quality-panel.danger { border-color: rgba(248,113,113,.30); }
+.lesson-quality-header { display: grid; grid-template-columns: minmax(0, 1fr) 70px; align-items: center; gap: 12px; }
+.quality-eyebrow { display: inline-flex; align-items: center; gap: 6px; color: #93c5fd; font-size: 10px; font-weight: 950; letter-spacing: .15em; text-transform: uppercase; }
+.lesson-quality-header h2 { margin: 7px 0 0; color: #ffffff; font-size: 21px; letter-spacing: -.035em; line-height: 1.1; }
+.lesson-quality-header p { margin: 6px 0 0; color: #9ca8ca; font-size: 12.5px; line-height: 1.45; }
+.quality-score-ring { display: grid; place-items: center; align-content: center; width: 66px; height: 66px; border-radius: 999px; border: 1px solid rgba(147,160,213,.18); background: radial-gradient(circle at 35% 18%, rgba(255,255,255,.15), transparent 34%), linear-gradient(135deg, rgba(91,156,246,.18), rgba(167,139,250,.14)); box-shadow: inset 0 0 0 6px rgba(255,255,255,.035); }
+.quality-score-ring strong { color: #fff; font-size: 20px; font-weight: 950; line-height: 1; }
+.quality-score-ring small { margin-top: 2px; color: #8b95b5; font-size: 10px; font-weight: 900; }
+.quality-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px; }
+.quality-card { min-width: 0; padding: 10px; border: 1px solid rgba(147,160,213,.14); border-radius: 15px; background: rgba(255,255,255,.04); }
+.quality-card svg { color: #93c5fd; }
+.quality-card span { display: block; margin-top: 7px; color: #8b95b5; font-size: 10px; font-weight: 900; letter-spacing: .04em; text-transform: uppercase; }
+.quality-card strong { display: block; margin-top: 3px; color: #f8fbff; font-size: 12px; line-height: 1.25; overflow-wrap: anywhere; }
+.quality-plan-box { display: grid; gap: 7px; padding: 11px; border: 1px solid rgba(167,139,250,.18); border-radius: 16px; background: rgba(167,139,250,.07); }
+.quality-plan-box span { display: inline-flex; align-items: center; gap: 7px; color: #ddd6fe; font-size: 11px; font-weight: 950; letter-spacing: .12em; text-transform: uppercase; }
+.quality-plan-box p { margin: 0; color: #dbeafe; font-size: 12.5px; line-height: 1.45; }
+.quality-dimensions { display: grid; gap: 9px; }
+.quality-dimensions > div { display: grid; gap: 5px; padding: 10px; border: 1px solid rgba(147,160,213,.13); border-radius: 14px; background: rgba(255,255,255,.03); }
+.quality-dimensions div div { display: flex; justify-content: space-between; gap: 10px; align-items: center; }
+.quality-dimensions span { color: #dbeafe; font-size: 12px; font-weight: 900; }
+.quality-dimensions strong { color: #93c5fd; font-size: 12px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+.quality-dimensions i { display: block; height: 6px; overflow: hidden; border-radius: 999px; background: rgba(147,160,213,.13); }
+.quality-dimensions i b { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #5b9cf6, #a78bfa); }
+.quality-dimensions small { color: #8b95b5; font-size: 11px; line-height: 1.35; }
+.quality-alerts { display: grid; gap: 8px; padding: 11px; border: 1px solid rgba(251,191,36,.22); border-radius: 16px; background: rgba(251,191,36,.07); }
+.quality-alerts span { display: inline-flex; align-items: center; gap: 7px; color: #fde68a; font-size: 11px; font-weight: 950; letter-spacing: .1em; text-transform: uppercase; }
+.quality-alerts ul { display: grid; gap: 6px; margin: 0; padding-left: 18px; }
+.quality-alerts li { color: #fef3c7; font-size: 12px; line-height: 1.4; }
+.quality-ok { display: inline-flex; align-items: center; gap: 7px; padding: 10px 11px; border: 1px solid rgba(52,211,153,.22); border-radius: 16px; color: #bbf7d0; background: rgba(52,211,153,.08); font-size: 12px; font-weight: 850; }
 
 .generation-current-box { display: grid; grid-template-columns: auto minmax(0,1fr); align-items: center; gap: 9px; margin: 10px 0; padding: 10px 11px; border: 1px solid rgba(94,231,255,.17); border-radius: 16px; background: rgba(94,231,255,.065); color: #dbeafe; }
 .generation-current-box.soft { border-color: rgba(167,139,250,.15); background: rgba(167,139,250,.055); }
@@ -137,4 +173,4 @@
 .writing-prompt-list div { display: grid; grid-template-columns: 28px 1fr; align-items: center; gap: 10px; }
 .writing-editor-card p { margin-top: 10px; color: #9ca8ca; }
 .writing-actions button:first-child { border: 1px solid rgba(147,160,213,.16); color: #dbeafe; background: rgba(255,255,255,.045); }
-@media (min-width: 720px) { .lesson-reference-screen .reading-grid,.lesson-reference-screen .reading-main-grid,.lesson-reference-screen .grammar-study-grid { grid-template-columns: minmax(0, 1.4fr) minmax(260px, .6fr); } }
+@media (min-width: 720px) { .lesson-reference-screen .reading-grid,.lesson-reference-screen .reading-main-grid,.lesson-reference-screen .grammar-study-grid { grid-template-columns: minmax(0, 1.4fr) minmax(260px, .6fr); } .quality-grid { grid-template-columns: repeat(3, minmax(0,1fr)); } }
