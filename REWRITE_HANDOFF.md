@@ -31,70 +31,63 @@ Regra operacional:
 4. Fluxo ideal: **1 bloco → 1 commit → 1 deploy → teste no iPhone**.
 5. Se a Vercel bloquear novamente, parar commits e aguardar liberação.
 
-Observação: nos últimos ajustes do Speaking e no início do CARTAS-3, o conector bloqueou algumas operações de árvore/commit único. Por segurança, as alterações foram aplicadas via `create_file`/`update_file`, sem tocar em `main`, `bundle.js` ou backend Azure.
+Observação: em alguns ajustes recentes, o conector bloqueou operações de árvore/commit único. Por segurança, alterações foram aplicadas via `create_file`/`update_file`, sem tocar em `main`, `bundle.js` ou backend Azure.
 
 ## Estado atual implementado
 
-### BLOCO-CARTAS-3-LAB — Banco de vocabulário por tópicos IMPLEMENTADO parcialmente, aguardando teste no iPhone
-
-Contexto:
-- próximo bloco da ordem era `BLOCO-CARTAS-3-LAB — 2.000 palavras por tópicos`;
-- foi criada a base real modular de decks por tópico;
-- a meta das 2.000 palavras ficou registrada no código, mas este commit adiciona o primeiro lote real com 288 palavras organizadas;
-- não foi preenchido com palavras fictícias apenas para bater número.
+### BLOCO-10B-LAB — Correção automática do quality gate IMPLEMENTADO, aguardando teste no iPhone
 
 Arquivos alterados:
-- `fluency-clean/src/services/vocabularyDecks.js`
-- `fluency-clean/src/screens/FlashcardsScreen.jsx`
+- `fluency-clean/src/services/lessonRepair.js`
+- `fluency-clean/src/components/lesson/LessonGeneratorPanel.jsx`
 - `REWRITE_HANDOFF.md`
+
+Correção aplicada:
+- se uma aula gerada reprovar no quality gate, o app não descarta imediatamente;
+- antes de desistir, faz uma tentativa automática local de reparo estrutural;
+- o reparo completa objetivo, introdução, foco, seções pedagógicas, vocabulário, exercícios, prompts e revisão final quando estiverem insuficientes;
+- o reparo respeita o tipo da aula: Reading, Grammar, Listening, Writing, Speaking ou Vocabulary;
+- para Reading/Listening, também amplia texto principal/transcrição quando estiver curto;
+- depois do reparo, o quality gate roda novamente;
+- se aprovar, salva com marca `autoRepaired: true` no review/quality;
+- se ainda reprovar, não salva aula ruim e mostra os problemas;
+- Diagnóstico informa quando a correção automática foi tentada e quando foi aprovada/reprovada.
+
+Teste recomendado:
+1. gerar uma nova aula no iPhone;
+2. observar o Diagnóstico;
+3. se a primeira geração vier fraca, deve aparecer tentativa de correção automática;
+4. se a correção aprovar, a aula deve salvar e abrir;
+5. se não aprovar, deve bloquear o salvamento e mostrar os problemas;
+6. confirmar que uma aula aprovada normalmente continua salvando sem passar por reparo.
+
+### BLOCO-CARTAS-3-LAB — Banco de vocabulário por tópicos IMPLEMENTADO parcialmente e VALIDADO APÓS CORREÇÃO DE BUILD
 
 Correção aplicada:
 - novo serviço `vocabularyDecks.js` com decks temáticos reais;
 - banco atual: 288 palavras em tópicos A1/A2;
 - meta registrada: 2.000 palavras (`VOCABULARY_BANK_TARGET = 2000`);
-- decks iniciais incluem: Essenciais A1, Pessoas e família, Rotina diária, Comida e bebidas, Casa e objetos, Lugares e cidade, Verbos comuns, Adjetivos úteis, Perguntas/conectores, Tempo/números, Trabalho/estudo, Sentimentos/saúde e Viagem/sobrevivência;
-- tela Cartas agora permite escolher decks por tópico além da Aula atual;
-- sessão de flashcards agora pode ser feita com deck temático mesmo sem aula com vocabulário;
+- tela Cartas permite escolher decks por tópico além da Aula atual;
+- sessão de flashcards pode ser feita com deck temático mesmo sem aula com vocabulário;
 - registro de sessão usa id de deck quando a revisão vem de deck temático;
-- tela mostra contador honesto `288/2000` do banco planejado;
-- próximos lotes podem expandir a base até completar 2.000 sem alterar a arquitetura.
-
-Teste recomendado:
-1. aguardar deploy Ready da `rewrite-fluency-clean-lab`;
-2. abrir Cartas no iPhone;
-3. confirmar que aparecem decks além de Aula atual;
-4. selecionar um deck, por exemplo “Essenciais A1”;
-5. revisar algumas cartas;
-6. confirmar que frente, verso, tradução, exemplo e áudio funcionam;
-7. concluir uma sessão de deck e confirmar tela “Sessão concluída”;
-8. voltar para Hoje e confirmar que Cartas continua sendo reconhecida como tarefa real concluída.
+- correção de build aplicada no commit `d25e4869c39dcdfb6192f6a3d0c2421763d373a0` por fechamento incorreto do deck `feelings-health`.
 
 ### AJUSTE BLOCO-SPEAKING-2-LAB — Feedback de pronúncia em cada fala livre IMPLEMENTADO E VALIDADO PELO USUÁRIO
 
 Correção aplicada:
 - mantém o modo de fala livre;
 - após transcrever a fala livre com Azure, o app roda uma segunda análise usando a própria frase reconhecida como referência;
-- cada resposta do usuário agora pode mostrar nota de pronúncia;
-- cada resposta pode mostrar palavra/ponto mais fraco;
-- cada resposta pode mostrar dica de melhoria;
-- mostra até 3 palavras mais fracas com nota;
-- a média da sessão usa notas reais de pronúncia quando disponíveis;
+- cada resposta do usuário mostra nota de pronúncia, ponto mais fraco e dica;
 - usuário informou: “deu certo”.
 
 ### AJUSTE BLOCO-SPEAKING-2-LAB — Conversa livre com parada automática por silêncio IMPLEMENTADO
 
 Correção aplicada:
 - Conversa voltou a ser fala livre, sem mostrar “Modelo: ...”;
-- botão de conversa agora é de toque único: toca, fala, o sistema escuta;
+- botão de conversa é de toque único;
 - gravador detecta silêncio usando `AudioContext`/`AnalyserNode`;
-- ao detectar silêncio após a fala, para automaticamente;
-- análise/transcrição Azure começa automaticamente após parar;
-- conversa usa `recognizeSpeech()` sem avaliação por frase-modelo;
-- a aba Pronúncia continua usando `analyzePronunciation()` com frase de referência;
-- tentativas muito curtas/cortadas com menos de 2 palavras não avançam a sessão;
-- conversa avança com base no texto realmente reconhecido;
-- conclusão continua em 5 respostas válidas ou 3 minutos;
-- não houve alteração no backend Azure privado.
+- transcrição Azure começa automaticamente após parar;
+- tentativas muito curtas/cortadas não avançam.
 
 ### BLOCO-SPEAKING-2-LAB — Speaking por nível e registro real IMPLEMENTADO
 
@@ -102,9 +95,7 @@ Correção aplicada:
 - Conversa não usa mais cenário B1 fixo quando o aluno está em A1;
 - A1 usa prompts simples;
 - Pronúncia usa frases A1 quando o nível atual é A1;
-- Imersão foi mantida em cenários A1 simples;
 - Conversa registra sessão real ao completar 5 respostas válidas ou 3 minutos;
-- registro real salvo em `progress.speakingSessions`;
 - Hoje marca Conversação como concluída somente se existir sessão real de Speaking hoje.
 
 ### AJUSTE BLOCO-CARTAS-2-LAB — Restaurar sessão concluída ao voltar de Hoje IMPLEMENTADO E VALIDADO PELO USUÁRIO
@@ -139,18 +130,17 @@ Comportamento:
 
 ## Próximos blocos, após validar a lab no iPhone
 
-1. `BLOCO-10B-LAB` — Correção automática do quality gate.
-2. `BLOCO-12-LAB` — Rubricas por tipo de aula.
-3. `BLOCO-14-LAB` — Contrato JSON rígido.
-4. `BLOCO-11-LAB` — Plano primeiro, aula depois.
-5. `BLOCO-13-LAB` — Professor Gerador/Revisor.
-6. `BLOCO-17-LAB` — Qualidade visível da aula.
-7. `BLOCO-16-LAB` — Histórico real de Speaking.
-8. `BLOCO-15-LAB` — Banco de erros real.
-9. `BLOCO-20-LAB` — Certificação por nível.
-10. `BLOCO-CARTAS-3B-LAB` — Expandir banco de vocabulário em novos lotes até 2.000 palavras reais.
-11. `BLOCO-AUDITORIA-POLIMENTO-GERAL-LAB` — após concluir os blocos principais, analisar cada página com precisão, listar melhorias possíveis e só então montar blocos de polimento com base nessa auditoria.
+1. `BLOCO-12-LAB` — Rubricas por tipo de aula.
+2. `BLOCO-14-LAB` — Contrato JSON rígido.
+3. `BLOCO-11-LAB` — Plano primeiro, aula depois.
+4. `BLOCO-13-LAB` — Professor Gerador/Revisor.
+5. `BLOCO-17-LAB` — Qualidade visível da aula.
+6. `BLOCO-16-LAB` — Histórico real de Speaking.
+7. `BLOCO-15-LAB` — Banco de erros real.
+8. `BLOCO-20-LAB` — Certificação por nível.
+9. `BLOCO-CARTAS-3B-LAB` — Expandir banco de vocabulário em novos lotes até 2.000 palavras reais.
+10. `BLOCO-AUDITORIA-POLIMENTO-GERAL-LAB` — após concluir os blocos principais, analisar cada página com precisão, listar melhorias possíveis e só então montar blocos de polimento com base nessa auditoria.
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Use o PROTOCOLO ECONÔMICO DE DEPLOY: cada bloco deve virar 1 commit único, com handoff atualizado no mesmo commit. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. Já foram implementados o BLOCO-10A-LAB, ajustes do BLOCO-10C-LAB, BLOCO-CARTAS-2-LAB, BLOCO-SPEAKING-2-LAB, conversa livre com parada automática por silêncio, feedback de pronúncia em cada fala livre e o início do BLOCO-CARTAS-3-LAB com 288 palavras reais em decks. Validar primeiro no iPhone. Próximo bloco depois da validação: BLOCO-10B-LAB. Depois seguir a ordem: 12, 14, 11, 13, 17, 16, 15, 20, CARTAS-3B para expandir até 2.000 e AUDITORIA-POLIMENTO-GERAL. Não delete `rewrite-fluency-clean-lab` nem `rewrite-fluency-clean`. A produção/main ainda NÃO foi validada no Vercel. Validar primeiro a lab no iPhone, depois sincronizar para `rewrite-fluency-clean`, testar o link estável e só depois decidir nova ida para `main`. Rollback da main: `5047bae031f20ddd9604953dcd3fd821655e56fa`."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Use o PROTOCOLO ECONÔMICO DE DEPLOY: cada bloco deve virar 1 commit único, com handoff atualizado no mesmo commit. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. Já foram implementados o BLOCO-10A-LAB, ajustes do BLOCO-10C-LAB, BLOCO-CARTAS-2-LAB, BLOCO-SPEAKING-2-LAB, BLOCO-CARTAS-3-LAB e BLOCO-10B-LAB. Validar primeiro no iPhone. Próximo bloco depois da validação: BLOCO-12-LAB. Depois seguir a ordem: 14, 11, 13, 17, 16, 15, 20, CARTAS-3B para expandir até 2.000 e AUDITORIA-POLIMENTO-GERAL. Não delete `rewrite-fluency-clean-lab` nem `rewrite-fluency-clean`. A produção/main ainda NÃO foi validada no Vercel. Validar primeiro a lab no iPhone, depois sincronizar para `rewrite-fluency-clean`, testar o link estável e só depois decidir nova ida para `main`. Rollback da main: `5047bae031f20ddd9604953dcd3fd821655e56fa`."
