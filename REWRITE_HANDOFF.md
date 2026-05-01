@@ -47,12 +47,66 @@ Princípio máximo:
 
 ## BLOCO ATUAL
 
-### `BLOCO-CONFIANÇA-DE-ESTUDO-LAB` — Aula vale estudar + painel compacto IMPLEMENTADO, aguardando deploy/teste
+### `BLOCO-16-LAB` — Histórico real de Speaking IMPLEMENTADO, aguardando deploy/teste
 
 Contexto:
-- usuário quer estudar com segurança prática: não precisa ser perfeito, mas precisa ser concreto, útil e confiável;
-- usuário também pediu que dados do professor/qualidade não poluam a página de aula;
-- painel de qualidade estava grande demais e ocupava muito espaço.
+- Speaking já usava Azure e já gravava sessões de conversa concluídas;
+- porém a aba Progresso ainda contava Speaking a partir de aulas concluídas, não do histórico real;
+- tentativas nos modos Pronúncia e Imersão não ficavam visíveis como histórico real;
+- usuário quer progresso confiável, não dados fictícios.
+
+Arquivos criados:
+- `fluency-clean/src/services/speakingHistory.js`
+- `fluency-clean/src/styles/speaking-history.css`
+
+Arquivos alterados:
+- `fluency-clean/src/screens/SpeakingScreen.jsx`
+- `fluency-clean/src/screens/ProgressScreen.jsx`
+- `fluency-clean/src/main.jsx`
+- `REWRITE_HANDOFF.md`
+
+O que foi implementado:
+- novo serviço `speakingHistory.js` lê `progress.speakingSessions` e monta resumo real:
+  - total de sessões;
+  - sessões de hoje;
+  - total de falas;
+  - média de pronúncia;
+  - minutos acumulados;
+  - palavras fracas recorrentes;
+  - últimas sessões;
+  - tendência de evolução;
+- `SpeakingScreen.jsx` agora mostra card `Histórico real de Speaking` no topo;
+- modos Pronúncia e Imersão agora registram tentativas reais no histórico quando o Azure analisa a fala;
+- conversa concluída continua registrando sessão real;
+- corrigido filtro de sessão diária: apenas modo `conversation` bloqueia a conversa como já concluída hoje, não tentativas de pronúncia/imersão;
+- `ProgressScreen.jsx` agora usa `getSpeakingHistorySummary()` para:
+  - contador de Speaking;
+  - média de Speaking;
+  - habilidade Speaking;
+  - card `Speaking real` com falas, minutos, sessões hoje e palavras para revisar;
+- `speaking-history.css` foi importado em `main.jsx`;
+- tudo usa local storage existente via `progressStore.js`, sem alterar backend Azure privado.
+
+Commits:
+- `4bb807ad5bda894511dafd817ed77ee533169efa` — adiciona resumo real de histórico speaking;
+- `6404756aab83b18b5c65b7fd56350c8d6a8ed376` — registra histórico real em todos modos speaking;
+- `50d48ea4de8b248cda76c108cd2f613ed6cbe5eb` — usa histórico real de speaking no progresso;
+- `8bc0b6b531cb1a36be9ddf0846026495e8c462b8` — estiliza histórico real de speaking;
+- `6df5f8c0f6b70990e77489b92bf433fc2692d6bf` — importa estilos do histórico speaking.
+
+Teste recomendado no iPhone:
+1. aguardar deploy da branch lab;
+2. abrir aba Speaking;
+3. confirmar card `Histórico real de Speaking` no topo;
+4. fazer uma tentativa em Pronúncia;
+5. confirmar que a tentativa aparece no histórico real;
+6. fazer uma tentativa em Imersão;
+7. confirmar que também registra;
+8. concluir uma conversa;
+9. abrir Progresso e confirmar que Speaking usa sessões reais e mostra média real;
+10. confirmar que fazer Pronúncia não bloqueia a Conversa como já concluída.
+
+### `BLOCO-CONFIANÇA-DE-ESTUDO-LAB` — Aula vale estudar + painel compacto IMPLEMENTADO
 
 Arquivos criados:
 - `fluency-clean/src/services/studyReadiness.js`
@@ -64,31 +118,12 @@ Arquivos alterados:
 - `REWRITE_HANDOFF.md`
 
 O que foi implementado:
-- novo serviço `studyReadiness.js` avalia se a aula vale estudar;
-- status possíveis:
-  - `study-ready` / `Pode estudar`;
-  - `study-with-attention` / `Pode estudar com atenção`;
-  - `do-not-study` / `Não estudar ainda`;
-- critérios por tipo de aula:
-  - Listening: texto/áudio, vocabulário, prática profunda, shadowing/escuta e produção ativa;
-  - Grammar: regra, uso, afirmativa, negativa, pergunta, erros comuns, exemplos, exercícios e produção;
-  - Reading: texto principal, vocabulário, compreensão, detalhe/inferência e produção final;
-  - Writing: modelo, estrutura, escrita guiada, revisão/reescrita/checklist;
-  - Speaking: fala ativa, repetição, pronúncia e produção oral;
-- `LessonGeneratorPanel.jsx` agora aplica a trava antes de salvar;
-- se status for `Não estudar ainda`, tenta reparo automático;
-- se continuar ruim após reparo, bloqueia o salvamento da aula e mostra erro no diagnóstico;
-- contrato salvo agora pode incluir `study-readiness-v1`;
-- metadados salvos:
-  - `studyReadiness`;
-  - `quality.studyReadiness`;
-  - `quality.studyReady`;
-  - `generationMeta.studyReady`;
-- `LessonQualityPanel.jsx` foi compactado:
-  - fechado por padrão;
-  - mostra apenas resumo `Confiança de estudo`, status e nota;
-  - botão `Detalhes` abre professor, rubrica, áreas analisadas, plano, contrato e alertas;
-- CSS novo mantém visual compacto e reduz poluição da aba Aula.
+- `studyReadiness.js` avalia se a aula vale estudar;
+- status possíveis: `Pode estudar`, `Pode estudar com atenção`, `Não estudar ainda`;
+- critérios por tipo de aula: Listening, Grammar, Reading, Writing e Speaking;
+- `LessonGeneratorPanel.jsx` aplica a trava antes de salvar;
+- se ruim, tenta reparar; se continuar ruim, bloqueia salvamento;
+- `LessonQualityPanel.jsx` ficou compacto com botão `Detalhes`.
 
 Commits:
 - `a80d2e0f2eac8a1579ca921ee52b1e7ed8a048af` — adiciona verificador de confiança de estudo;
@@ -96,56 +131,15 @@ Commits:
 - `0a70dfd16d59be8bab680bce46bdf300e3260cbc` — compacta painel de qualidade com detalhes expansíveis;
 - `1af5abc87804912576f9ee902aa3aec6b9ecc663` — estiliza painel compacto de confiança.
 
-Teste recomendado no iPhone:
-1. aguardar deploy da branch lab;
-2. abrir a aula atual e confirmar que o painel de qualidade aparece compacto;
-3. tocar em `Detalhes` para abrir professor/rubrica/áreas analisadas;
-4. gerar uma aula nova para ver `study-readiness-v1` no contrato;
-5. confirmar que, se a aula vier insuficiente, o diagnóstico tenta reparar ou bloqueia o salvamento;
-6. testar especialmente uma aula Grammar para confirmar que o sistema exige explicação mais concreta.
-
 ### `BLOCO-QUALIDADE-POR-ABA-LAB` — Áreas analisadas pelo professor IMPLEMENTADO
-
-Arquivos alterados:
-- `fluency-clean/src/services/teacherReviewer.js`
-- `fluency-clean/src/components/lesson/LessonQualityPanel.jsx`
-- `fluency-clean/src/styles/lesson-polish.css`
-- `REWRITE_HANDOFF.md`
-
-O que foi implementado:
-- `teacherReviewer.js` cria `reviewedAreas` dentro de `teacherReview`;
-- `attachTeacherReview()` salva `quality.reviewedAreas`;
-- áreas marcadas: Texto, Conceito, Vocabulário, Prática profunda, Shadowing e Produção final;
-- `Prática profunda` usa os exercícios da aula como fonte analisada, mas renderização fica apenas no `PracticeLauncher`;
-- `LessonQualityPanel.jsx` mostra `Professor analisou` dentro dos detalhes compactos.
-
-Commits:
-- `4e9a9f601fe4bf1df3395996c271768ee33e5693` — marca áreas revisadas pelo professor;
-- `129dae3ac7cfd8e8c2ca4b6b094c8a9cc23b8887` — mostra áreas revisadas no painel de qualidade;
-- `98e8cfe63e5368aaf2a12d5ceaddad4567390cb8` — estiliza áreas analisadas pelo professor.
 
 ### `BLOCO-LISTENING-DUPLICIDADE-PRATICA-LAB` — Exercícios duplicados removidos da aula Listening IMPLEMENTADO
 
-Commit:
-- `4b89e02ad6f580f5b7113cff51592fad2a448422` — remove exercícios duplicados da aula listening.
-
 ### `BLOCO-GERAÇÃO-JSON-RESILIENTE-2-LAB` — Fallback contra JSON escapado IMPLEMENTADO
-
-Commits:
-- `d6f693f0e352d3e455a3529890fa6c65b84e02b8` — adiciona fallback resiliente para JSON escapado do Gemini;
-- `92402468a9ee4237523fdea7642aa009165d1bf5` — usa fallback resiliente quando Gemini retorna JSON escapado.
 
 ### `BLOCO-ANTI-FALSO-DOMÍNIO-LAB` — Reparo local contra falso domínio IMPLEMENTADO
 
-Commits:
-- `f3fb92056807af8b710a9cfcaeef7b22fb4308dc` — adiciona reparador anti falso domínio;
-- `41e6834752f87c5bebc4c37c7e17252e131b93c9` — integra reparo anti falso domínio na geração.
-
 ### `BLOCO-LISTENING-ORDEM-1-LAB` — Ordem da aula Listening e conceito recolhido IMPLEMENTADO
-
-Commits:
-- `6352cd9795558a60c7b5d07177522123a4cada0b` — reorganiza aula listening e recolhe conceito por padrão;
-- `0894dd905d19cac96a5d71258b807bc5cb43a18a` — compacta conceito e feedback dos exercícios listening.
 
 ### `BLOCO-17-LAB` — Qualidade visível da aula IMPLEMENTADO
 
@@ -198,12 +192,11 @@ Pendente técnica:
 
 ## NOVA ORDEM DE BLOCOS — QUALIDADE REAL DAS AULAS
 
-1. `BLOCO-CONFIANÇA-DE-ESTUDO-LAB` — Aula vale estudar + painel compacto. STATUS: implementado, aguardando teste.
-2. `BLOCO-16-LAB` — Histórico real de Speaking.
-3. `BLOCO-15-LAB` — Banco de erros real.
-4. `BLOCO-20-LAB` — Certificação por nível.
-5. `BLOCO-CARTAS-3B-LAB` — Expandir banco de vocabulário em novos lotes até 2.000 palavras reais.
-6. `BLOCO-AUDITORIA-POLIMENTO-GERAL-LAB` — após concluir os blocos principais, analisar cada página com precisão, listar melhorias possíveis e montar blocos de polimento.
+1. `BLOCO-16-LAB` — Histórico real de Speaking. STATUS: implementado, aguardando teste.
+2. `BLOCO-15-LAB` — Banco de erros real.
+3. `BLOCO-20-LAB` — Certificação por nível.
+4. `BLOCO-CARTAS-3B-LAB` — Expandir banco de vocabulário em novos lotes até 2.000 palavras reais.
+5. `BLOCO-AUDITORIA-POLIMENTO-GERAL-LAB` — após concluir os blocos principais, analisar cada página com precisão, listar melhorias possíveis e montar blocos de polimento.
 
 ## FASE EXTRA — GARANTIA PEDAGÓGICA MÁXIMA
 
@@ -226,15 +219,13 @@ Ordem recomendada após os blocos principais:
 
 ## Pendência técnica importante
 
-- testar deploy do `BLOCO-CONFIANÇA-DE-ESTUDO-LAB` no iPhone;
-- confirmar que o painel de qualidade ficou compacto;
-- confirmar que `Detalhes` abre professor/rubrica/áreas analisadas;
-- gerar aula nova para validar `study-readiness-v1` no contrato;
-- testar especialmente uma aula Grammar;
-- confirmar que aulas ruins são reparadas ou bloqueadas;
-- confirmar que questões continuam aparecendo apenas em `Prática profunda`;
+- testar deploy do `BLOCO-16-LAB` no iPhone;
+- testar Speaking nos modos Conversa, Pronúncia e Imersão;
+- confirmar que a aba Progresso usa histórico real de Speaking;
+- confirmar que tentativas de pronúncia/imersão não bloqueiam conversa diária;
+- continuar depois para `BLOCO-15-LAB` — Banco de erros real;
 - remover definitivamente `ListeningLesson.jsx` antigo quando o conector permitir SHA correto.
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O bloco atual implementado foi `BLOCO-CONFIANÇA-DE-ESTUDO-LAB`: criado `studyReadiness.js`, integrado em `LessonGeneratorPanel.jsx` antes de salvar, e `LessonQualityPanel.jsx` agora fica compacto com botão Detalhes. Testar no iPhone; se ok, seguir para `BLOCO-16-LAB` Histórico real de Speaking."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O bloco atual implementado foi `BLOCO-16-LAB`: criado `speakingHistory.js`, Speaking agora mostra histórico real, Pronúncia/Imersão registram tentativas reais, Progresso usa histórico real de Speaking. Testar no iPhone; se ok, seguir para `BLOCO-15-LAB` Banco de erros real."
