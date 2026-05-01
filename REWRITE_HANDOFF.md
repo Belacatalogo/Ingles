@@ -35,32 +35,57 @@ Observação: em alguns ajustes recentes, o conector bloqueou operações de ár
 
 ## Estado atual implementado
 
-### AJUSTE BLOCO-10B-LAB — Listening respeita tema do cronograma e áudio prioriza iOS IMPLEMENTADO, aguardando teste
+### AJUSTE BLOCO-10B-LAB — Listening mais leve, recolhível e áudio natural priorizado IMPLEMENTADO, aguardando teste
 
 Contexto:
-- usuário mostrou que a próxima aula era “Alfabeto, sons iniciais e spelling de nomes”, mas a aula reparada virava “Daily English Routine”;
-- usuário também mostrou erro de áudio no Safari/iPhone mesmo após fallback.
+- usuário pediu que o áudio voltasse a priorizar Gemini natural;
+- botões Aquecimento/Conceito/Prática pareciam abas mas não funcionavam;
+- aula estava pesada, com muito conteúdo aberto e pouca sensação de aprendizado leve;
+- usuário pediu seta para minimizar cada área e uma análise de UX para deixar a aula mais tranquila.
 
 Arquivos alterados:
-- `fluency-clean/src/components/lesson/LessonGeneratorPanel.jsx`
-- `fluency-clean/src/services/lessonRepair.js`
 - `fluency-clean/src/services/audioPlayback.js`
+- `fluency-clean/src/lessons/ListeningLesson.jsx`
+- `fluency-clean/src/styles/lessons.css`
 - `REWRITE_HANDOFF.md`
 
 Correção aplicada:
-- o gerador agora preserva `expectedTitle`/`curriculumTitle` no objeto da aula antes da validação/reparo;
-- o reparo de Listening agora escolhe perfil por tema do cronograma;
-- para temas de alfabeto/spelling/nomes/sons iniciais, o reparo cria aula específica sobre alfabeto, sons iniciais e spelling de nomes;
-- transcrição, vocabulário e exercícios agora usam o tema real do cronograma, não rotina genérica;
-- áudio no iPhone agora prioriza TTS do navegador imediatamente no toque, para preservar o gesto exigido pelo Safari;
-- em iOS, não tenta Gemini primeiro para áudio de aula; tenta o TTS do navegador direto.
+- áudio volta a priorizar Gemini TTS natural;
+- se Gemini falhar, usa TTS do navegador apenas como fallback;
+- Listening agora tem navegação local: Aquecimento, Conceito e Prática;
+- botões de navegação agora rolam para a área correspondente;
+- áreas da aula viraram cartões recolhíveis com seta;
+- Conceito começa aberto;
+- Vocabulário, Transcrição, Prática e Sua resposta podem ser abertos/fechados;
+- Shadowing fica disponível como etapa prática curta;
+- layout reduz sensação de tela infinita e deixa a aula menos pesada;
+- adicionados estilos para seções recolhíveis, tabs locais, opções de múltipla escolha e modo compacto.
+
+Análise UX feita:
+- a aula estava pesada porque mostrava tudo ao mesmo tempo;
+- Listening precisa começar pelo áudio e guiar o aluno em etapas curtas;
+- vocabulário e transcrição devem ficar acessíveis, mas não ocupar a tela inteira desde o início;
+- prática deve aparecer como etapa clara, não como um bloco perdido no fim;
+- o aluno deve conseguir abrir/fechar partes conforme necessidade, mantendo sensação de controle.
 
 Teste recomendado:
 1. aguardar deploy Ready;
-2. gerar novamente a aula “A1 · listening · Alfabeto, sons iniciais e spelling de nomes”;
-3. se o Gemini falhar e o reparo entrar, confirmar que a aula continua sobre alfabeto/spelling/nomes;
-4. abrir a aula e tocar no áudio;
-5. confirmar se o TTS do iPhone toca; se não tocar, tocar novamente diretamente no botão da aula.
+2. abrir a aula Listening atual;
+3. tocar em Aquecimento, Conceito e Prática e confirmar rolagem;
+4. abrir/fechar seções pela seta;
+5. tocar no áudio e confirmar se tenta áudio natural Gemini;
+6. verificar se a aula ficou mais leve e menos cansativa.
+
+### AJUSTE BLOCO-10B-LAB — Listening respeita tema do cronograma e áudio prioriza iOS IMPLEMENTADO
+
+Correção aplicada anteriormente:
+- o gerador preserva `expectedTitle`/`curriculumTitle` no objeto da aula antes da validação/reparo;
+- o reparo de Listening escolhe perfil por tema do cronograma;
+- para temas de alfabeto/spelling/nomes/sons iniciais, o reparo cria aula específica sobre alfabeto, sons iniciais e spelling de nomes;
+- transcrição, vocabulário e exercícios usam o tema real do cronograma, não rotina genérica.
+
+Observação posterior:
+- a prioridade de áudio iOS foi revertida no ajuste seguinte para devolver prioridade ao Gemini natural, usando navegador apenas como fallback.
 
 ### AJUSTE BLOCO-10B-LAB — Vocabulário visual e áudio com erro real IMPLEMENTADO
 
@@ -184,4 +209,4 @@ Comportamento:
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Use o PROTOCOLO ECONÔMICO DE DEPLOY: cada bloco deve virar 1 commit único, com handoff atualizado no mesmo commit. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. Já foram implementados o BLOCO-10A-LAB, ajustes do BLOCO-10C-LAB, BLOCO-CARTAS-2-LAB, BLOCO-SPEAKING-2-LAB, BLOCO-CARTAS-3-LAB, BLOCO-10B-LAB, renderer/gate de Listening, reparo automático especializado para Listening, ajuste de vocabulário/áudio e preservação do tema real do cronograma em Listening. Validar primeiro no iPhone. Próximo bloco depois da validação: BLOCO-12-LAB. Depois seguir a ordem: 14, 11, 13, 17, 16, 15, 20, CARTAS-3B para expandir até 2.000 e AUDITORIA-POLIMENTO-GERAL. Não delete `rewrite-fluency-clean-lab` nem `rewrite-fluency-clean`. A produção/main ainda NÃO foi validada no Vercel. Validar primeiro a lab no iPhone, depois sincronizar para `rewrite-fluency-clean`, testar o link estável e só depois decidir nova ida para `main`. Rollback da main: `5047bae031f20ddd9604953dcd3fd821655e56fa`."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Use o PROTOCOLO ECONÔMICO DE DEPLOY: cada bloco deve virar 1 commit único, com handoff atualizado no mesmo commit. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. Já foram implementados o BLOCO-10A-LAB, ajustes do BLOCO-10C-LAB, BLOCO-CARTAS-2-LAB, BLOCO-SPEAKING-2-LAB, BLOCO-CARTAS-3-LAB, BLOCO-10B-LAB, renderer/gate de Listening, reparo automático especializado para Listening, ajuste de vocabulário/áudio, preservação do tema real do cronograma em Listening e Listening leve com seções recolhíveis. Validar primeiro no iPhone. Próximo bloco depois da validação: BLOCO-12-LAB. Depois seguir a ordem: 14, 11, 13, 17, 16, 15, 20, CARTAS-3B para expandir até 2.000 e AUDITORIA-POLIMENTO-GERAL. Não delete `rewrite-fluency-clean-lab` nem `rewrite-fluency-clean`. A produção/main ainda NÃO foi validada no Vercel. Validar primeiro a lab no iPhone, depois sincronizar para `rewrite-fluency-clean`, testar o link estável e só depois decidir nova ida para `main`. Rollback da main: `5047bae031f20ddd9604953dcd3fd821655e56fa`."
