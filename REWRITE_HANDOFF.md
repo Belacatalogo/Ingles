@@ -31,23 +31,42 @@ Regra operacional:
 4. Fluxo ideal: **1 bloco → 1 commit → 1 deploy → teste no iPhone**.
 5. Se a Vercel bloquear novamente, parar commits e aguardar liberação.
 
-Observação: no ajuste de parada automática do Speaking, o conector bloqueou a criação de árvore/commit único. Por segurança, a correção foi aplicada via `update_file`, gerando commits separados, sem tocar em `main`, `bundle.js` ou backend Azure.
+Observação: nos últimos ajustes do Speaking, o conector bloqueou a criação de árvore/commit único. Por segurança, a correção foi aplicada via `update_file`, gerando commits separados, sem tocar em `main`, `bundle.js` ou backend Azure.
 
 ## Estado atual implementado
 
-### AJUSTE BLOCO-SPEAKING-2-LAB — Conversa livre com parada automática por silêncio IMPLEMENTADO, aguardando teste
+### AJUSTE BLOCO-SPEAKING-2-LAB — Feedback de pronúncia em cada fala livre IMPLEMENTADO, aguardando teste
 
-Contexto do teste:
-- usuário informou que a correção anterior não resolveu o corte de fala;
-- o usuário não quer repetir um modelo fixo;
-- o Speaking precisa ser válido para aprendizado real, permitindo responder com as próprias palavras;
-- usuário pediu: tocar no botão, falar, o sistema parar sozinho quando detectar silêncio e iniciar análise automaticamente.
+Contexto:
+- usuário validou que a conversa livre com parada automática funcionou;
+- pediu que, ao finalizar a sessão, houvesse análise de pronúncia em cada frase, mostrando onde errou e onde precisa melhorar.
 
 Arquivos alterados:
 - `fluency-clean/src/screens/SpeakingScreen.jsx`
-- `fluency-clean/src/services/recorder.js`
-- `fluency-clean/src/services/azurePronunciation.js`
 - `REWRITE_HANDOFF.md`
+
+Correção aplicada:
+- mantém o modo de fala livre;
+- após transcrever a fala livre com Azure, o app roda uma segunda análise usando a própria frase reconhecida como referência;
+- cada resposta do usuário agora pode mostrar nota de pronúncia;
+- cada resposta pode mostrar palavra/ponto mais fraco;
+- cada resposta pode mostrar dica de melhoria;
+- mostra até 3 palavras mais fracas com nota;
+- a média da sessão usa notas reais de pronúncia quando disponíveis;
+- se a análise de pronúncia falhar, mantém a transcrição e não quebra o fluxo.
+
+Teste recomendado:
+1. abrir Speaking no iPhone;
+2. iniciar Nova sessão;
+3. tocar no microfone uma vez;
+4. falar livremente;
+5. aguardar parada automática e análise;
+6. confirmar que aparece a resposta reconhecida;
+7. confirmar que aparece “Pronúncia: X%” abaixo da resposta;
+8. confirmar dica com palavra/ponto a melhorar;
+9. concluir 5 respostas e confirmar média de pronúncia na sessão concluída.
+
+### AJUSTE BLOCO-SPEAKING-2-LAB — Conversa livre com parada automática por silêncio IMPLEMENTADO
 
 Correção aplicada:
 - Conversa voltou a ser fala livre, sem mostrar “Modelo: ...”;
@@ -61,18 +80,6 @@ Correção aplicada:
 - conversa avança com base no texto realmente reconhecido;
 - conclusão continua em 5 respostas válidas ou 3 minutos;
 - não houve alteração no backend Azure privado.
-
-Teste recomendado:
-1. abrir Speaking no iPhone;
-2. iniciar Nova sessão, se já estiver concluída;
-3. tocar uma vez no microfone;
-4. falar livremente uma resposta completa;
-5. parar de falar e aguardar;
-6. confirmar que a gravação para sozinha;
-7. confirmar que a análise começa sem segundo toque;
-8. confirmar que a resposta reconhecida não aparece mais como frase-modelo;
-9. confirmar que respostas cortadas/curtas não avançam;
-10. concluir 5 respostas válidas e conferir Hoje.
 
 ### BLOCO-SPEAKING-2-LAB — Speaking por nível e registro real IMPLEMENTADO
 
@@ -130,4 +137,4 @@ Comportamento:
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Use o PROTOCOLO ECONÔMICO DE DEPLOY: cada bloco deve virar 1 commit único, com handoff atualizado no mesmo commit. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. Já foram implementados o BLOCO-10A-LAB, ajustes do BLOCO-10C-LAB, BLOCO-CARTAS-2-LAB, BLOCO-SPEAKING-2-LAB e o ajuste de conversa livre com parada automática por silêncio. Validar primeiro no iPhone. Próximo bloco depois da validação: BLOCO-CARTAS-3-LAB. Depois seguir a ordem: 10B, 12, 14, 11, 13, 17, 16, 15, 20. Não delete `rewrite-fluency-clean-lab` nem `rewrite-fluency-clean`. A produção/main ainda NÃO foi validada no Vercel. Validar primeiro a lab no iPhone, depois sincronizar para `rewrite-fluency-clean`, testar o link estável e só depois decidir nova ida para `main`. Rollback da main: `5047bae031f20ddd9604953dcd3fd821655e56fa`."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Use o PROTOCOLO ECONÔMICO DE DEPLOY: cada bloco deve virar 1 commit único, com handoff atualizado no mesmo commit. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. Já foram implementados o BLOCO-10A-LAB, ajustes do BLOCO-10C-LAB, BLOCO-CARTAS-2-LAB, BLOCO-SPEAKING-2-LAB, conversa livre com parada automática por silêncio e feedback de pronúncia em cada fala livre. Validar primeiro no iPhone. Próximo bloco depois da validação: BLOCO-CARTAS-3-LAB. Depois seguir a ordem: 10B, 12, 14, 11, 13, 17, 16, 15, 20. Não delete `rewrite-fluency-clean-lab` nem `rewrite-fluency-clean`. A produção/main ainda NÃO foi validada no Vercel. Validar primeiro a lab no iPhone, depois sincronizar para `rewrite-fluency-clean`, testar o link estável e só depois decidir nova ida para `main`. Rollback da main: `5047bae031f20ddd9604953dcd3fd821655e56fa`."
