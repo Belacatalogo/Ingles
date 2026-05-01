@@ -1,59 +1,9 @@
 import { normalizeLesson } from './lessonTypes.js';
+import { LESSON_RUBRIC_APPROVAL_SCORE, getLessonTypeRequirements } from './lessonRubrics.js';
 
-const APPROVAL_SCORE = 85;
+const APPROVAL_SCORE = LESSON_RUBRIC_APPROVAL_SCORE;
 
-const TYPE_REQUIREMENTS = {
-  reading: {
-    minSections: 6,
-    minVocabulary: 12,
-    minExercises: 12,
-    minPrompts: 4,
-    minMainLength: 900,
-    requiredSignals: ['pré-leitura', 'leitura', 'compreensão', 'vocabulário', 'revisão'],
-  },
-  grammar: {
-    minSections: 7,
-    minVocabulary: 8,
-    minExercises: 14,
-    minPrompts: 4,
-    minMainLength: 0,
-    requiredSignals: ['quando usar', 'afirmativa', 'negativa', 'pergunta', 'erro', 'revisão'],
-  },
-  listening: {
-    minSections: 6,
-    minVocabulary: 10,
-    minExercises: 10,
-    minPrompts: 4,
-    minMainLength: 750,
-    requiredSignals: ['escuta', 'áudio', 'transcrição', 'detalhe', 'shadowing', 'ouça', 'vocabulário', 'revisão'],
-  },
-  writing: {
-    minSections: 6,
-    minVocabulary: 10,
-    minExercises: 10,
-    minPrompts: 5,
-    minMainLength: 0,
-    requiredSignals: ['modelo', 'estrutura', 'frases', 'checklist', 'produção'],
-  },
-  speaking: {
-    minSections: 5,
-    minVocabulary: 6,
-    minExercises: 6,
-    minPrompts: 5,
-    minMainLength: 0,
-    requiredSignals: ['modelo', 'repetição', 'pronúncia', 'conversa', 'tentativa'],
-  },
-  vocabulary: {
-    minSections: 5,
-    minVocabulary: 12,
-    minExercises: 10,
-    minPrompts: 4,
-    minMainLength: 0,
-    requiredSignals: ['contexto', 'exemplo', 'prática', 'revisão'],
-  },
-};
-
-function requirementFor(type) { return TYPE_REQUIREMENTS[type] || TYPE_REQUIREMENTS.reading; }
+function requirementFor(type) { return getLessonTypeRequirements(type); }
 function cleanText(value) { return String(value ?? '').trim(); }
 function normalizeScore(value) { return Math.max(0, Math.min(100, Math.round(value))); }
 function countWords(value) { const text = cleanText(value); return text ? text.split(/\s+/).filter(Boolean).length : 0; }
@@ -192,6 +142,7 @@ function buildReview({ lesson, expectedLevel, expectedType }) {
     answerKey,
     contextualVocabulary,
     reviewIncluded,
+    rubricCriteria: requirements.qualityCriteria,
     issues: uniqueIssues,
     revisionInstructions: uniqueIssues.length ? `Corrija antes de salvar: ${uniqueIssues.join(' ')}` : '',
     checkedAt: new Date().toISOString(),
@@ -215,6 +166,7 @@ export function attachPedagogicalReview(rawLesson, review) {
       pedagogicalScore: review.overallScore,
       approved: review.approved,
       issues: review.issues,
+      rubricCriteria: review.rubricCriteria,
     },
   };
 }
