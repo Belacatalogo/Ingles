@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { BookOpen, CheckCircle2, Clock, Headphones, RefreshCw, Sparkles, Target, Zap } from 'lucide-react';
+import { BookOpen, CheckCircle2, Clock, Headphones, RefreshCw, ShieldCheck, Sparkles, Target, Zap } from 'lucide-react';
 import { Card } from '../components/ui/Card.jsx';
 import { ReadingLesson } from '../lessons/ReadingLesson.jsx';
 import { GrammarLesson } from '../lessons/GrammarLesson.jsx';
@@ -33,17 +33,21 @@ function getLessonDescription(lesson) {
 }
 
 function getLessonTypeLabel(lesson) {
-  const labels = {
-    reading: 'Leitura',
-    grammar: 'Gramática',
-    listening: 'Escuta',
-    writing: 'Escrita',
-  };
+  const labels = { reading: 'Leitura', grammar: 'Gramática', listening: 'Escuta', writing: 'Escrita' };
   return labels[lesson?.type] || 'Aula';
 }
 
 function countWords(value) {
   return String(value || '').trim().split(/\s+/).filter(Boolean).length;
+}
+
+function formatDateTime(value) {
+  if (!value) return '';
+  try {
+    return new Date(value).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+  } catch {
+    return String(value).slice(0, 16);
+  }
 }
 
 function getLessonStats(lesson) {
@@ -80,6 +84,8 @@ export function LessonScreen({ lessonRevision = 0 }) {
   const lessonStats = useMemo(() => getLessonStats(lesson), [lesson]);
   const usingGenerated = Boolean(savedLesson);
   const currentProgress = Math.round(((activeSection + 1) / lessonSections.length) * 100);
+  const meta = lesson?.generationMeta || null;
+  const score = meta?.pedagogicalScore || lesson?.quality?.pedagogicalScore || 0;
 
   function jumpToSection(section, index) {
     setActiveSection(index);
@@ -96,6 +102,15 @@ export function LessonScreen({ lessonRevision = 0 }) {
         </div>
         <h1>{getLessonTitle(lesson)}</h1>
         <p>{getLessonDescription(lesson)}</p>
+        {usingGenerated ? (
+          <div className="lesson-generation-proof">
+            <ShieldCheck size={15} />
+            <span>
+              {meta?.id ? <b>{meta.id}</b> : <b>Aula antiga sem ID de geração</b>}
+              <small>{meta?.contractVersion || 'sem contrato antigo'} · qualidade {score}/100{meta?.generatedAt ? ` · ${formatDateTime(meta.generatedAt)}` : ''}</small>
+            </span>
+          </div>
+        ) : null}
         <footer>
           <div>
             <span><Clock size={13} /> {lessonStats.minutes} min</span>
@@ -105,33 +120,11 @@ export function LessonScreen({ lessonRevision = 0 }) {
         </footer>
       </section>
 
-      <section className="lesson-stepper-card">
-        <div className="lesson-stepper-row">
-          {lessonSections.map((section, index) => {
-            const Icon = index < activeSection ? CheckCircle2 : section.icon;
-            const active = index === activeSection;
-            const done = index < activeSection;
-            return (
-              <button type="button" key={section.id} className={active ? 'active' : done ? 'done' : ''} onClick={() => jumpToSection(section, index)}>
-                <Icon size={12} />
-                {section.title}
-              </button>
-            );
-          })}
-        </div>
-      </section>
+      <section className="lesson-stepper-card"><div className="lesson-stepper-row">{lessonSections.map((section, index) => { const Icon = index < activeSection ? CheckCircle2 : section.icon; const active = index === activeSection; const done = index < activeSection; return (<button type="button" key={section.id} className={active ? 'active' : done ? 'done' : ''} onClick={() => jumpToSection(section, index)}><Icon size={12} />{section.title}</button>); })}</div></section>
 
-      <section className="lesson-progress-strip">
-        <div>
-          <span>Progresso da aula</span>
-          <strong>{activeSection + 1}/{lessonSections.length}</strong>
-        </div>
-        <i><b style={{ width: `${currentProgress}%` }} /></i>
-      </section>
+      <section className="lesson-progress-strip"><div><span>Progresso da aula</span><strong>{activeSection + 1}/{lessonSections.length}</strong></div><i><b style={{ width: `${currentProgress}%` }} /></i></section>
 
-      <section className="lesson-practice-mount">
-        <PracticeLauncher lesson={lesson} />
-      </section>
+      <section className="lesson-practice-mount"><PracticeLauncher lesson={lesson} /></section>
 
       <LessonRenderer lesson={lesson} />
     </section>
