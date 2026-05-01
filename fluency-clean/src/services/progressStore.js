@@ -8,6 +8,7 @@ const LESSON_COMPLETIONS_KEY = 'progress.lessonCompletions';
 const LESSON_DRAFTS_KEY = 'progress.lessonDrafts';
 const FLASHCARD_SESSIONS_KEY = 'progress.flashcardSessions';
 const SPEAKING_SESSIONS_KEY = 'progress.speakingSessions';
+const PRACTICE_SESSIONS_KEY = 'progress.practiceSessions';
 
 function todayKey(date = new Date()) { return date.toISOString().slice(0, 10); }
 function weekKey(date = new Date()) {
@@ -31,13 +32,78 @@ function isYesterday(dateA, dateB) {
   return Math.round((b - a) / 86400000) === 1;
 }
 function getCompletionId(lesson) { return lesson?.id || `${lesson?.type || 'lesson'}-${lesson?.title || 'untitled'}`; }
+function clampNumber(value, min = 0, max = 100) { return Math.max(min, Math.min(max, Number(value || 0))); }
+function compactPracticeResult(result) {
+  return {
+    id: result?.id || '',
+    type: result?.type || 'practice',
+    title: result?.title || '',
+    prompt: result?.prompt || '',
+    correct: Boolean(result?.correct),
+    answer: String(result?.answer || '').slice(0, 180),
+    expected: String(result?.expected || '').slice(0, 180),
+    lifeLost: Boolean(result?.lifeLost),
+    sourceEngine: result?.sourceEngine || '',
+  };
+}
 
 export function getProgressSummary() { return normalizeProgress(storage.get(PROGRESS_KEY, {})); }
 export function getLessonCompletions() { return safeArray(storage.get(LESSON_COMPLETIONS_KEY, [])); }
 export function getFlashcardSessions() { return safeArray(storage.get(FLASHCARD_SESSIONS_KEY, [])); }
 export function getSpeakingSessions() { return safeArray(storage.get(SPEAKING_SESSIONS_KEY, [])); }
+export function getPracticeSessions() { return safeArray(storage.get(PRACTICE_SESSIONS_KEY, [])); }
+export function getPracticeSessionsForLesson(lesson) {
+  const lessonId = getCompletionId(lesson);
+  return getPracticeSessions().filter((item) => item.lessonId === lessonId);
+}
 export function hasFlashcardSessionToday(date = new Date()) { const day = todayKey(date); return getFlashcardSessions().some((item) => String(item.completedAt || '').slice(0, 10) === day); }
 export function hasSpeakingSessionToday(date = new Date()) { const day = todayKey(date); return getSpeakingSessions().some((item) => String(item.completedAt || '').slice(0, 10) === day); }
+export function hasPracticeSessionToday(date = new Date()) { const day = todayKey(date); return getPracticeSessions().some((item) => String(item.completedAt || '').slice(0, 10) === day); }
+
+export function recordPracticeSession({ lesson, total = 0, correct = 0, mistakes = 0, lives = 0, reviewMode = false, results = [] }) {
+  const now = new Date();
+  const lessonId = getCompletionId(lesson);
+  const safeResults = safeArray(results).map(compactPracticeResult).slice(0, 80);
+  const totalCount = Number(total || safeResults.length || 0);
+  const correctCount = Number(correct || safeResults.filter((item) => item.correct).length || 0);
+  const mistakeCount = Number(mistakes || Math.max(0, totalCount - correctCount));
+  const accuracy = totalCount ? Math.round((correctCount / totalCount) * 100) : 0;
+  const weakItems = safeResults.filter((item) => !item.correct).slice(0, 20);
+  const session = {
+    id: `practice-${lessonId}-${now.getTime()}`,
+    lessonId,
+    title: lesson?.title || 'Aula atual',
+    type: lesson?.type || 'lesson',
+    level: lesson?.level || 'A1',
+    completedAt: now.toISOString(),
+    total: totalCount,
+    correct: correctCount,
+    mistakes: mistakeCount,
+    accuracy: clampNumber(accuracy),
+    lives: Number(lives || 0),
+    reviewMode: Boolean(reviewMode),
+    weakItems,
+    results: safeResults,
+  };
+  storage.set(PRACTICE_SESSIONS_KEY, [session, ...getPracticeSessions()].slice(0, 160));
+  diagnostics.log(`Prática registrada: ${correctCount}/${totalCount}, ${accuracy}% de precisão.`, accuracy >= 80 ? 'success' : 'warn');
+  return session;
+}
+
+export function getPracticeReviewQueue(limit = 20) {
+  const seen = new Set();
+  const queue = [];
+  for (const session of getPracticeSessions()) {
+    for (const item of safeArray(session.weakItems)) {
+      const key = `${session.lessonId}:${item.id || item.prompt}:${item.expected}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      queue.push({ ...item, lessonId: session.lessonId, lessonTitle: session.title, level: session.level, completedAt: session.completedAt });
+      if (queue.length >= limit) return queue;
+    }
+  }
+  return queue;
+}
 
 export function recordFlashcardSession({ lesson, totalCards = 0, reviewedCards = 0, correctCount = 0, needsReviewCount = 0, cards = [] }) {
   const now = new Date();
