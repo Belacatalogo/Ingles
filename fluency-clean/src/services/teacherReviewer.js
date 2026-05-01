@@ -133,6 +133,52 @@ function scoreLevelSafety(lesson, expectedLevel = '') {
   return normalizeScore(score);
 }
 
+function buildReviewedAreas(lesson) {
+  const sections = ensureArray(lesson.sections);
+  const vocabulary = ensureArray(lesson.vocabulary);
+  const exercises = ensureArray(lesson.exercises);
+  const prompts = ensureArray(lesson.prompts);
+  const hasText = Boolean(clean(lesson.listeningText) || clean(lesson.intro) || clean(lesson.objective));
+  return {
+    text: {
+      label: 'Texto da aula',
+      reviewed: hasText,
+      status: hasText ? 'aprovado' : 'não encontrado',
+      detail: hasText ? 'introdução, objetivo e texto/transcrição foram considerados na revisão.' : 'sem texto suficiente para medir.',
+    },
+    concept: {
+      label: 'Conceito e explicação',
+      reviewed: sections.length > 0,
+      status: sections.length ? `${sections.length} parte(s) revisada(s)` : 'não encontrado',
+      detail: sections.length ? 'as seções explicativas foram avaliadas por coerência e profundidade.' : 'sem seções explicativas.',
+    },
+    vocabulary: {
+      label: 'Vocabulário',
+      reviewed: vocabulary.length > 0,
+      status: vocabulary.length ? `${vocabulary.length} item(ns) revisado(s)` : 'não encontrado',
+      detail: vocabulary.length ? 'palavras, significados e exemplos foram considerados na profundidade da aula.' : 'sem vocabulário suficiente.',
+    },
+    deepPractice: {
+      label: 'Prática profunda',
+      reviewed: exercises.length > 0,
+      status: exercises.length ? `${exercises.length} questão(ões) revisada(s)` : 'não encontrado',
+      detail: exercises.length ? 'os exercícios que alimentam a prática profunda foram revisados; eles não devem aparecer duplicados na aula.' : 'sem exercícios para a prática profunda.',
+    },
+    shadowing: {
+      label: 'Shadowing',
+      reviewed: prompts.length > 0 || /shadowing|repita|repeat|speak|fale/i.test(searchText(lesson)),
+      status: prompts.length ? `${prompts.length} prompt(s) revisado(s)` : 'medido por sinais da aula',
+      detail: 'prompts de produção oral/shadowing foram considerados quando presentes.',
+    },
+    finalProduction: {
+      label: 'Produção final',
+      reviewed: prompts.length > 0 || exercises.some((item) => !ensureArray(item.options).length),
+      status: prompts.length ? `${prompts.length} comando(s) revisado(s)` : 'produção aberta nos exercícios',
+      detail: 'produção própria e respostas abertas foram consideradas para reduzir falso domínio.',
+    },
+  };
+}
+
 export function reviewLessonAsTeacher(rawLesson, { expectedLevel = '', expectedType = '', baseReview = null } = {}) {
   const lesson = normalizeLesson(rawLesson);
   const coherence = scoreCoherence(lesson);
@@ -179,6 +225,7 @@ export function reviewLessonAsTeacher(rawLesson, { expectedLevel = '', expectedT
     levelSafety,
     issues,
     advice: issues.length ? `Revisar antes de salvar: ${issues.join(' ')}` : 'Aula aprovada pelo professor revisor.',
+    reviewedAreas: buildReviewedAreas(lesson),
     checkedAt: new Date().toISOString(),
     reviewer: 'teacher-reviewer-v1',
   };
@@ -194,6 +241,7 @@ export function attachTeacherReview(rawLesson, teacherReview) {
       teacherApproved: teacherReview.approved,
       teacherIssues: teacherReview.issues,
       reviewer: teacherReview.reviewer,
+      reviewedAreas: teacherReview.reviewedAreas,
     },
   };
 }
