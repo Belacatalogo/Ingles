@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react';
 import { buildCurriculumPrompt, getCurriculumSummary, setActiveCurriculumLesson } from '../../services/curriculumPlan.js';
 import { diagnostics } from '../../services/diagnostics.js';
 import { generatePlannedLessonDraft } from '../../services/plannedGeminiLessons.js';
+import { generateResilientLessonDraft } from '../../services/resilientGeminiLessonDraft.js';
 import { getLessonKeysStatus, getLessonFlashKeys, getLessonProKey } from '../../services/lessonKeys.js';
 import { getCurrentLessonRaw, getLastGenerationStatus, saveCurrentLesson } from '../../services/lessonStore.js';
 import { repairLessonForQuality } from '../../services/lessonRepair.js';
@@ -18,6 +19,11 @@ function formatDateTime(value) {
   } catch {
     return String(value).slice(0, 16);
   }
+}
+
+function shouldUseResilientFallback(result) {
+  const text = String(result?.error || '');
+  return /JSON Parse error|Unrecognized token|Expected ']"|Expected ']'|JSON resiliente|\\"type\\"|Preview: \{\\"/i.test(text);
 }
 
 export function LessonGeneratorPanel({ onGenerated }) {
@@ -68,11 +74,20 @@ export function LessonGeneratorPanel({ onGenerated }) {
       const prompt = nextLesson.promptOverride || buildCurriculumPrompt(nextLesson);
       const forcedType = nextLesson.type === 'review' ? '' : nextLesson.type;
 
-      const result = await generatePlannedLessonDraft({ prompt, keys: flashKeys, proKey, previousLesson: forceNew ? currentLesson : null, forceVariation: forceNew, forcedType, level: nextLesson.level || 'A1' });
+      let result = await generatePlannedLessonDraft({ prompt, keys: flashKeys, proKey, previousLesson: forceNew ? currentLesson : null, forceVariation: forceNew, forcedType, level: nextLesson.level || 'A1' });
 
       if (result.status !== 'success' || !result.lesson) {
-        setMessage(result.error || 'Não foi possível gerar a aula.');
-        return;
+        if (shouldUseResilientFallback(result)) {
+          diagnostics.setPhase('ativando parser resiliente', 'generating');
+          diagnostics.log('Erro de JSON escapado detectado. Tentando fallback resiliente antes de falhar a aula.', 'warn', result);
+          setMessage('O Gemini devolveu JSON escapado. Ativando parser resiliente para salvar a aula...');
+          result = await generateResilientLessonDraft({ prompt, keys: flashKeys, proKey, forcedType, level: nextLesson.level || 'A1' });
+        }
+
+        if (result.status !== 'success' || !result.lesson) {
+          setMessage(result.error || 'Não foi possível gerar a aula.');
+          return;
+        }
       }
 
       const lessonToValidate = {
@@ -187,7 +202,7 @@ export function LessonGeneratorPanel({ onGenerated }) {
       const reviewedLesson = attachTeacherReview(attachPedagogicalReview(lessonForSave, pedagogicalReview), teacherReview);
 
       const saved = saveCurrentLesson(reviewedLesson, {
-        source: forceNew ? 'generated-replacement-variation' : 'generated',
+        source: forceNew ? 'generated-replacement-variation' : result.lesson.planContract === 'resilient-json-v1' ? 'generated-resilient-json' : 'generated',
         status: 'new',
         contractVersion: result.lesson.planContract ? `lesson-contract-v1+${result.lesson.planContract}+teacher-reviewer-v1${antiFalseDomainRepaired ? '+anti-false-domain-v1' : ''}` : `lesson-contract-v1+teacher-reviewer-v1${antiFalseDomainRepaired ? '+anti-false-domain-v1' : ''}`,
         pedagogicalScore: teacherReview.finalScore,
