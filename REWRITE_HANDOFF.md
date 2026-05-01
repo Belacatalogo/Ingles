@@ -35,31 +35,39 @@ Observação: em alguns ajustes recentes, o conector bloqueou operações de ár
 
 ## Estado atual implementado
 
-### AJUSTE BLOCO-10B-LAB — Renderer Listening mostra conceito e vocabulário IMPLEMENTADO, aguardando teste
+### AJUSTE BLOCO-10B-LAB — Listening especializado e gate contra tipo errado IMPLEMENTADO, aguardando teste
 
 Contexto:
-- usuário gerou uma aula que passou no quality gate, mas visualmente ficou ruim;
-- a tela mostrava duas caixas com conteúdo parecido, depois ia direto para questões;
-- faltava aula real, explicação/conceito e vocabulário da aula.
+- usuário confirmou que a forma correta é cada aula ter página especializada por tipo;
+- Listening deve focar em áudio, escuta guiada, vocabulário auditivo, transcrição, compreensão e shadowing;
+- Grammar deve focar em regra, estrutura e exercícios;
+- Reading deve focar em texto e interpretação;
+- Speaking deve focar em fala e feedback;
+- foi identificado que uma aula esperada como Listening veio com conteúdo de Grammar e a tela ainda não estava didática.
 
-Arquivo alterado:
+Arquivos alterados:
 - `fluency-clean/src/lessons/ListeningLesson.jsx`
+- `fluency-clean/src/services/lessonValidation.js`
 - `REWRITE_HANDOFF.md`
 
 Correção aplicada:
 - renderer de Listening agora mostra seções reais da aula em “Conceito e explicação”;
 - renderer de Listening agora mostra “Vocabulário da aula” antes da transcrição e dos exercícios;
+- vocabulário renderiza em cards separados, não em texto colado;
 - primeira caixa de áudio agora usa `objective` como orientação, não repete `intro` como se fosse transcrição/conteúdo;
 - fluxo visual esperado: Escuta guiada → Conceito e explicação → Vocabulário da aula → Transcrição → Compreensão → Sua resposta → Shadowing;
-- isso corrige o caso de aula aprovada mas escondida pelo layout.
+- quality gate agora reprova quando a aula esperada é Listening, mas o conteúdo está com cara de Grammar;
+- quality gate exige sinais de Listening como áudio, escuta, transcrição, shadowing e compreensão auditiva;
+- se a transcrição/roteiro auditivo for muito curto, a aula Listening deve reprovar;
+- isso evita salvar “Listening” disfarçado de Grammar.
 
 Teste recomendado:
 1. aguardar deploy Ready;
-2. abrir a aula atual gerada;
-3. confirmar que aparece “Conceito e explicação” antes da transcrição;
-4. confirmar que aparece “Vocabulário da aula” antes das questões;
-5. confirmar que a aula não pula direto para exercícios;
-6. testar botão de áudio, respostas, Salvar rascunho, Concluir Listening e Shadowing.
+2. abrir a aula atual gerada e verificar se aparece “Vocabulário da aula” em cards;
+3. gerar nova aula Listening;
+4. confirmar que o Diagnóstico reprova ou repara caso venha conteúdo de Grammar;
+5. confirmar que uma Listening aprovada parece realmente uma aula de Listening;
+6. testar áudio, transcrição, compreensão, Salvar rascunho, Concluir Listening e Shadowing.
 
 ### BLOCO-10B-LAB — Correção automática do quality gate IMPLEMENTADO
 
@@ -156,4 +164,4 @@ Comportamento:
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Use o PROTOCOLO ECONÔMICO DE DEPLOY: cada bloco deve virar 1 commit único, com handoff atualizado no mesmo commit. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. Já foram implementados o BLOCO-10A-LAB, ajustes do BLOCO-10C-LAB, BLOCO-CARTAS-2-LAB, BLOCO-SPEAKING-2-LAB, BLOCO-CARTAS-3-LAB, BLOCO-10B-LAB e o ajuste do renderer Listening para exibir conceito/vocabulário. Validar primeiro no iPhone. Próximo bloco depois da validação: BLOCO-12-LAB. Depois seguir a ordem: 14, 11, 13, 17, 16, 15, 20, CARTAS-3B para expandir até 2.000 e AUDITORIA-POLIMENTO-GERAL. Não delete `rewrite-fluency-clean-lab` nem `rewrite-fluency-clean`. A produção/main ainda NÃO foi validada no Vercel. Validar primeiro a lab no iPhone, depois sincronizar para `rewrite-fluency-clean`, testar o link estável e só depois decidir nova ida para `main`. Rollback da main: `5047bae031f20ddd9604953dcd3fd821655e56fa`."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Use o PROTOCOLO ECONÔMICO DE DEPLOY: cada bloco deve virar 1 commit único, com handoff atualizado no mesmo commit. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. Já foram implementados o BLOCO-10A-LAB, ajustes do BLOCO-10C-LAB, BLOCO-CARTAS-2-LAB, BLOCO-SPEAKING-2-LAB, BLOCO-CARTAS-3-LAB, BLOCO-10B-LAB e o ajuste do renderer/gate de Listening para exibir conceito/vocabulário e impedir Listening com cara de Grammar. Validar primeiro no iPhone. Próximo bloco depois da validação: BLOCO-12-LAB. Depois seguir a ordem: 14, 11, 13, 17, 16, 15, 20, CARTAS-3B para expandir até 2.000 e AUDITORIA-POLIMENTO-GERAL. Não delete `rewrite-fluency-clean-lab` nem `rewrite-fluency-clean`. A produção/main ainda NÃO foi validada no Vercel. Validar primeiro a lab no iPhone, depois sincronizar para `rewrite-fluency-clean`, testar o link estável e só depois decidir nova ida para `main`. Rollback da main: `5047bae031f20ddd9604953dcd3fd821655e56fa`."
