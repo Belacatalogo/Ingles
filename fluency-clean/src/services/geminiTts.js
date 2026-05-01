@@ -18,9 +18,7 @@ let currentAudio = null;
 function base64ToUint8Array(base64) {
   const binary = atob(base64);
   const bytes = new Uint8Array(binary.length);
-  for (let index = 0; index < binary.length; index += 1) {
-    bytes[index] = binary.charCodeAt(index);
-  }
+  for (let index = 0; index < binary.length; index += 1) bytes[index] = binary.charCodeAt(index);
   return bytes;
 }
 
@@ -109,6 +107,21 @@ async function playBrowserFallback(cleanText) {
   return { ok: true, audioUrl: '', source: 'browser-fallback', error: null };
 }
 
+function waitForAudioToEnd(audio) {
+  return new Promise((resolve) => {
+    let settled = false;
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      audio.onended = null;
+      audio.onerror = null;
+      resolve();
+    };
+    audio.onended = finish;
+    audio.onerror = finish;
+  });
+}
+
 export function stopGeminiTtsAudio() {
   if (currentAudio) {
     currentAudio.pause();
@@ -188,6 +201,7 @@ export async function playGeminiTtsAudio(options = {}) {
       currentAudio.preload = 'auto';
       await currentAudio.play();
       diagnostics.log('Reprodução do áudio natural Gemini iniciada.', 'info');
+      if (options.waitUntilEnded) await waitForAudioToEnd(currentAudio);
     } catch (error) {
       diagnostics.log(`Plataforma/navegador bloqueou ou falhou ao tocar áudio natural Gemini: ${error?.message || error}.`, 'error');
       if (options.allowBrowserFallback === false) return { ...result, ok: false, source: 'gemini-playback-error', error: error?.message || String(error) };
