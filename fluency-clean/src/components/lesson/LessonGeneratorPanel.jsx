@@ -8,6 +8,7 @@ import { getCurrentLessonRaw, getLastGenerationStatus, saveCurrentLesson } from 
 import { repairLessonForQuality } from '../../services/lessonRepair.js';
 import { attachPedagogicalReview, validateLessonForQuality } from '../../services/lessonValidation.js';
 import { attachTeacherReview, reviewLessonAsTeacher } from '../../services/teacherReviewer.js';
+import { needsAntiFalseDomainRepair, repairLessonAgainstFalseDomain } from '../../services/antiFalseDomainRepair.js';
 import { buildSaturdayReviewLesson, shouldPrioritizeSaturdayReview } from '../../services/masteryStore.js';
 
 function formatDateTime(value) {
@@ -97,6 +98,7 @@ export function LessonGeneratorPanel({ onGenerated }) {
       let pedagogicalReview = validateLessonForQuality(lessonToValidate, { expectedLevel: nextLesson.level, expectedType: lessonToValidate.type });
       let lessonForSave = lessonToValidate;
       let autoRepaired = false;
+      let antiFalseDomainRepaired = false;
 
       if (!pedagogicalReview.approved) {
         diagnostics.setPhase('corrigindo aula automaticamente', 'generating');
@@ -127,6 +129,39 @@ export function LessonGeneratorPanel({ onGenerated }) {
       let teacherReview = reviewLessonAsTeacher(lessonForSave, { expectedLevel: nextLesson.level, expectedType: lessonForSave.type, baseReview: pedagogicalReview });
       diagnostics.log(`Professor revisor avaliou a aula: ${teacherReview.finalScore}/100.`, teacherReview.approved ? 'success' : 'warn', teacherReview);
 
+      if (needsAntiFalseDomainRepair(lessonForSave, teacherReview)) {
+        diagnostics.setPhase('reparando falso domínio', 'generating');
+        diagnostics.log('Risco de falso domínio detectado. Adicionando produção ativa antes de salvar.', 'warn', teacherReview);
+        setMessage('Professor detectou risco de falso domínio. Adicionando produção ativa antes de salvar...');
+
+        const antiFalseDomainLesson = repairLessonAgainstFalseDomain(lessonForSave, {
+          expectedLevel: nextLesson.level,
+          expectedType: lessonForSave.type,
+          teacherReview,
+        });
+        const antiFalseDomainPedagogicalReview = validateLessonForQuality(antiFalseDomainLesson, { expectedLevel: nextLesson.level, expectedType: lessonForSave.type });
+        const antiFalseDomainTeacherReview = reviewLessonAsTeacher(antiFalseDomainLesson, { expectedLevel: nextLesson.level, expectedType: lessonForSave.type, baseReview: antiFalseDomainPedagogicalReview });
+
+        lessonForSave = antiFalseDomainLesson;
+        pedagogicalReview = {
+          ...antiFalseDomainPedagogicalReview,
+          autoRepaired: true,
+          antiFalseDomainRepair: true,
+          previousScore: pedagogicalReview.overallScore,
+          previousIssues: pedagogicalReview.issues,
+        };
+        teacherReview = {
+          ...antiFalseDomainTeacherReview,
+          issues: antiFalseDomainTeacherReview.issues.filter((issue) => !/falso domínio|falso dominio|pouca produção|pouca producao|excesso de reconhecimento/i.test(issue)),
+          antiFalseDomainRepaired: true,
+          previousAntiIllusion: teacherReview.antiIllusion,
+          previousIssues: teacherReview.issues,
+        };
+        antiFalseDomainRepaired = true;
+        autoRepaired = true;
+        diagnostics.log(`Reparo anti falso domínio aplicado. Professor reavaliou: ${teacherReview.finalScore}/100.`, 'success', teacherReview);
+      }
+
       if (!teacherReview.approved) {
         diagnostics.setPhase('professor revisor pediu reparo', 'generating');
         setMessage(`Professor revisor pediu reparo (${teacherReview.finalScore}/100). Ajustando antes de salvar...`);
@@ -154,15 +189,16 @@ export function LessonGeneratorPanel({ onGenerated }) {
       const saved = saveCurrentLesson(reviewedLesson, {
         source: forceNew ? 'generated-replacement-variation' : 'generated',
         status: 'new',
-        contractVersion: result.lesson.planContract ? `lesson-contract-v1+${result.lesson.planContract}+teacher-reviewer-v1` : 'lesson-contract-v1+teacher-reviewer-v1',
+        contractVersion: result.lesson.planContract ? `lesson-contract-v1+${result.lesson.planContract}+teacher-reviewer-v1${antiFalseDomainRepaired ? '+anti-false-domain-v1' : ''}` : `lesson-contract-v1+teacher-reviewer-v1${antiFalseDomainRepaired ? '+anti-false-domain-v1' : ''}`,
         pedagogicalScore: teacherReview.finalScore,
         autoRepaired,
+        antiFalseDomainRepaired,
         variationMode: forceNew,
         generationSeed: result.lesson.generationSeed,
         planSeed: result.lesson.planSeed,
       });
       diagnostics.log(`${saturdayReview ? 'Revisão adaptativa planejada' : forceNew ? 'Nova versão planejada da aula do cronograma' : 'Aula planejada do cronograma'} pronta para abrir: ${saved.title}`, 'info');
-      const repairLabel = autoRepaired ? ' corrigida automaticamente,' : '';
+      const repairLabel = antiFalseDomainRepaired ? ' com produção ativa anti falso domínio,' : autoRepaired ? ' corrigida automaticamente,' : '';
       setMessage(saturdayReview ? `Nova revisão planejada${repairLabel} aprovada pelo professor (${teacherReview.finalScore}/100), salva e aberta na aba Aula.` : forceNew ? `Nova versão planejada${repairLabel} aprovada pelo professor (${teacherReview.finalScore}/100), salva e aberta na aba Aula.` : `Nova aula planejada${repairLabel} aprovada pelo professor (${teacherReview.finalScore}/100), salva e aberta na aba Aula.`);
       setForceNew(false);
       onGenerated?.(saved);
