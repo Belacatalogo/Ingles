@@ -251,6 +251,7 @@ export function normalizeLesson(rawLesson) {
     answerKey: lesson.answerKey ?? lesson.answer_key ?? lesson.raw?.answerKey ?? lesson.raw?.answer_key ?? null,
     pedagogicalReview: normalizeObject(lesson.pedagogicalReview),
     quality: normalizeObject(lesson.quality),
+    generationMeta: normalizeObject(lesson.generationMeta),
     raw: lesson.raw && typeof lesson.raw === 'object' ? lesson.raw : lesson,
   };
 }
