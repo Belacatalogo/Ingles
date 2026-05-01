@@ -1,4 +1,4 @@
-import { AlertTriangle, CheckCircle2, ClipboardCheck, GraduationCap, ShieldCheck, Sparkles } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, ClipboardCheck, GraduationCap, ShieldCheck, Sparkles, Target, Zap } from 'lucide-react';
 
 function clampScore(value) {
   const score = Number(value || 0);
@@ -6,21 +6,51 @@ function clampScore(value) {
 }
 
 function scoreLabel(score) {
-  if (score >= 90) return 'Excelente';
+  if (score >= 92) return 'Excelente';
+  if (score >= 86) return 'Muito boa';
   if (score >= 82) return 'Aprovada';
   if (score >= 72) return 'Precisa atenção';
   return 'Fraca';
 }
 
 function scoreClass(score) {
-  if (score >= 90) return 'excellent';
+  if (score >= 92) return 'excellent';
   if (score >= 82) return 'approved';
   if (score >= 72) return 'warning';
   return 'danger';
 }
 
-function uniqueIssues(items = []) {
-  return Array.from(new Set(items.filter(Boolean))).slice(0, 4);
+function uniqueIssues(items = [], limit = 5) {
+  return Array.from(new Set(items.filter(Boolean))).slice(0, limit);
+}
+
+function formatPercent(value) {
+  const score = clampScore(value);
+  return score ? `${score}%` : '—';
+}
+
+function getConfidenceLabel(score, approved, issuesLength) {
+  if (!approved) return 'não confiar sem revisar';
+  if (score >= 92 && issuesLength === 0) return 'alta confiança';
+  if (score >= 86) return 'boa confiança';
+  return 'confiança moderada';
+}
+
+function getRiskLabel(teacher = {}, quality = {}) {
+  const antiIllusion = clampScore(teacher.antiIllusion || quality.antiIllusion || 0);
+  if (!antiIllusion) return 'não medido';
+  if (antiIllusion >= 88) return 'baixo';
+  if (antiIllusion >= 76) return 'médio';
+  return 'alto';
+}
+
+function getPlanScenario(lesson) {
+  const plan = lesson?.lessonPlan || {};
+  return plan.scenario || plan.topic || 'não informado';
+}
+
+function getContract(meta = {}, lesson = {}) {
+  return meta.contractVersion || lesson.planContract || lesson.quality?.contractVersion || 'sem contrato antigo';
 }
 
 export function LessonQualityPanel({ lesson }) {
@@ -38,14 +68,27 @@ export function LessonQualityPanel({ lesson }) {
   const issues = uniqueIssues([...(quality.teacherIssues || []), ...(teacher.issues || []), ...(quality.issues || []), ...(pedagogical.issues || [])]);
   const approved = Boolean(quality.teacherApproved ?? teacher.approved ?? quality.approved ?? pedagogical.approved ?? finalScore >= 82);
   const scoreType = scoreClass(finalScore);
+  const confidence = getConfidenceLabel(finalScore, approved, issues.length);
+  const falseMasteryRisk = getRiskLabel(teacher, quality);
+  const contract = getContract(meta, lesson);
+  const repaired = Boolean(meta.autoRepaired || pedagogical.autoRepaired || pedagogical.teacherRepair);
+
+  const dimensions = [
+    { label: 'Coerência', value: teacher.coherence, hint: 'objetivo, cenário e conteúdo' },
+    { label: 'Profundidade', value: teacher.depth, hint: 'explicação, vocabulário e produção' },
+    { label: 'Exercícios úteis', value: teacher.exerciseUsefulness, hint: 'prática que treina de verdade' },
+    { label: 'Alinhamento', value: teacher.skillAlignment, hint: 'tipo da aula correto' },
+    { label: 'Anti-ilusão', value: teacher.antiIllusion, hint: 'menos falso domínio' },
+    { label: 'Nível seguro', value: teacher.levelSafety, hint: 'adequado ao nível atual' },
+  ].filter((item) => Number(item.value || 0) > 0);
 
   return (
     <section className={`lesson-quality-panel ${scoreType}`}>
       <div className="lesson-quality-header">
         <div>
-          <span className="quality-eyebrow"><ShieldCheck size={13} /> Qualidade da aula</span>
+          <span className="quality-eyebrow"><ShieldCheck size={13} /> Qualidade visível</span>
           <h2>{scoreLabel(finalScore)} · {finalScore}/100</h2>
-          <p>{approved ? 'Esta aula passou pelas camadas de qualidade antes de ser salva.' : 'Esta aula tem alertas e deve ser revisada antes de confiar totalmente.'}</p>
+          <p>{approved ? `Esta aula tem ${confidence} para estudo. Ela passou por plano, rubrica e professor revisor quando disponíveis.` : 'Esta aula tem alertas e não deveria ser usada sem revisão.'}</p>
         </div>
         <div className="quality-score-ring" aria-label={`Nota ${finalScore} de 100`}>
           <strong>{finalScore}</strong>
@@ -72,9 +115,38 @@ export function LessonQualityPanel({ lesson }) {
         <div className="quality-card">
           <CheckCircle2 size={16} />
           <span>Correção automática</span>
-          <strong>{meta.autoRepaired || pedagogical.autoRepaired ? 'sim' : 'não'}</strong>
+          <strong>{repaired ? 'sim' : 'não'}</strong>
+        </div>
+        <div className="quality-card">
+          <Target size={16} />
+          <span>Risco falso domínio</span>
+          <strong>{falseMasteryRisk}</strong>
+        </div>
+        <div className="quality-card">
+          <Zap size={16} />
+          <span>Contrato</span>
+          <strong>{contract}</strong>
         </div>
       </div>
+
+      {hasPlan ? (
+        <div className="quality-plan-box">
+          <span><Sparkles size={14} /> Plano usado</span>
+          <p>{getPlanScenario(lesson)}</p>
+        </div>
+      ) : null}
+
+      {dimensions.length ? (
+        <div className="quality-dimensions">
+          {dimensions.map((item) => (
+            <div key={item.label}>
+              <div><span>{item.label}</span><strong>{formatPercent(item.value)}</strong></div>
+              <i><b style={{ width: `${clampScore(item.value)}%` }} /></i>
+              <small>{item.hint}</small>
+            </div>
+          ))}
+        </div>
+      ) : null}
 
       {issues.length ? (
         <div className="quality-alerts">
