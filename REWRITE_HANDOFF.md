@@ -47,13 +47,70 @@ Princípio máximo:
 
 ## BLOCO ATUAL
 
-### `BLOCO-16-LAB` — Histórico real de Speaking IMPLEMENTADO, aguardando deploy/teste
+### `BLOCO-15-LAB` — Banco de erros real IMPLEMENTADO, aguardando deploy/teste
 
 Contexto:
-- Speaking já usava Azure e já gravava sessões de conversa concluídas;
-- porém a aba Progresso ainda contava Speaking a partir de aulas concluídas, não do histórico real;
-- tentativas nos modos Pronúncia e Imersão não ficavam visíveis como histórico real;
-- usuário quer progresso confiável, não dados fictícios.
+- objetivo é transformar erros reais em material de revisão;
+- nada fictício: usa dados já persistidos pelo app;
+- fontes usadas:
+  - erros da prática profunda em `progress.practiceSessions` / `weakItems`;
+  - palavras fracas do Speaking/Azure em `progress.speakingSessions`;
+  - produção escrita final curta demais em `lessonCompletions`.
+
+Arquivos criados:
+- `fluency-clean/src/services/errorBank.js`
+- `fluency-clean/src/styles/error-bank.css`
+
+Arquivos alterados:
+- `fluency-clean/src/screens/ProgressScreen.jsx`
+- `fluency-clean/src/main.jsx`
+- `REWRITE_HANDOFF.md`
+
+O que foi implementado:
+- novo serviço `errorBank.js` monta banco de erros real derivado dos dados locais;
+- agrega erros por chave/categoria, conta recorrência, severidade e próxima revisão;
+- categorias iniciais:
+  - grammar;
+  - vocabulary;
+  - pronunciation;
+  - listening;
+  - reading;
+  - writing;
+  - practice;
+- severidade:
+  - low: monitorar;
+  - medium: revisar em breve;
+  - high: alta prioridade;
+- `getErrorBankSummary()` retorna:
+  - total de erros;
+  - erros únicos;
+  - alta prioridade;
+  - revisões vencidas/para hoje;
+  - erros por categoria;
+  - top erros;
+  - erros recentes;
+- `ProgressScreen.jsx` agora mostra card `Banco de erros real`;
+- o card mostra métricas e top erros com nota/contexto quando houver;
+- conquistas agora também podem mostrar quantidade de erros reais;
+- CSS modular em `error-bank.css`, importado no `main.jsx`.
+
+Commits:
+- `3fe82bb1fdf845fb82483ec21642171e561de87c` — adiciona banco de erros real;
+- `43b34365f3902fb8026e593e5e853468a7bd2ee9` — mostra banco de erros real no progresso;
+- `a1c4152a7142d30fc5ff243c45b99dd07ff7c6a3` — estiliza banco de erros real;
+- `d520ec1fab42193dc7320eb5c5edc101931bb4e9` — importa estilos do banco de erros.
+
+Teste recomendado no iPhone:
+1. aguardar deploy da branch lab;
+2. abrir Progresso e confirmar card `Banco de erros real`;
+3. errar questões na prática profunda e concluir a prática;
+4. voltar ao Progresso e verificar se erros aparecem;
+5. fazer tentativa de Pronúncia com palavra fraca;
+6. verificar se aparece como erro de pronúncia;
+7. concluir aula com produção escrita muito curta e verificar se entra como escrita fraca;
+8. confirmar que não há dados fictícios.
+
+### `BLOCO-16-LAB` — Histórico real de Speaking IMPLEMENTADO
 
 Arquivos criados:
 - `fluency-clean/src/services/speakingHistory.js`
@@ -66,70 +123,12 @@ Arquivos alterados:
 - `REWRITE_HANDOFF.md`
 
 O que foi implementado:
-- novo serviço `speakingHistory.js` lê `progress.speakingSessions` e monta resumo real:
-  - total de sessões;
-  - sessões de hoje;
-  - total de falas;
-  - média de pronúncia;
-  - minutos acumulados;
-  - palavras fracas recorrentes;
-  - últimas sessões;
-  - tendência de evolução;
-- `SpeakingScreen.jsx` agora mostra card `Histórico real de Speaking` no topo;
-- modos Pronúncia e Imersão agora registram tentativas reais no histórico quando o Azure analisa a fala;
-- conversa concluída continua registrando sessão real;
-- corrigido filtro de sessão diária: apenas modo `conversation` bloqueia a conversa como já concluída hoje, não tentativas de pronúncia/imersão;
-- `ProgressScreen.jsx` agora usa `getSpeakingHistorySummary()` para:
-  - contador de Speaking;
-  - média de Speaking;
-  - habilidade Speaking;
-  - card `Speaking real` com falas, minutos, sessões hoje e palavras para revisar;
-- `speaking-history.css` foi importado em `main.jsx`;
-- tudo usa local storage existente via `progressStore.js`, sem alterar backend Azure privado.
-
-Commits:
-- `4bb807ad5bda894511dafd817ed77ee533169efa` — adiciona resumo real de histórico speaking;
-- `6404756aab83b18b5c65b7fd56350c8d6a8ed376` — registra histórico real em todos modos speaking;
-- `50d48ea4de8b248cda76c108cd2f613ed6cbe5eb` — usa histórico real de speaking no progresso;
-- `8bc0b6b531cb1a36be9ddf0846026495e8c462b8` — estiliza histórico real de speaking;
-- `6df5f8c0f6b70990e77489b92bf433fc2692d6bf` — importa estilos do histórico speaking.
-
-Teste recomendado no iPhone:
-1. aguardar deploy da branch lab;
-2. abrir aba Speaking;
-3. confirmar card `Histórico real de Speaking` no topo;
-4. fazer uma tentativa em Pronúncia;
-5. confirmar que a tentativa aparece no histórico real;
-6. fazer uma tentativa em Imersão;
-7. confirmar que também registra;
-8. concluir uma conversa;
-9. abrir Progresso e confirmar que Speaking usa sessões reais e mostra média real;
-10. confirmar que fazer Pronúncia não bloqueia a Conversa como já concluída.
+- `speakingHistory.js` lê `progress.speakingSessions` e monta resumo real;
+- `SpeakingScreen.jsx` mostra card `Histórico real de Speaking`;
+- Pronúncia e Imersão registram tentativas reais quando o Azure analisa;
+- Progresso usa histórico real de Speaking.
 
 ### `BLOCO-CONFIANÇA-DE-ESTUDO-LAB` — Aula vale estudar + painel compacto IMPLEMENTADO
-
-Arquivos criados:
-- `fluency-clean/src/services/studyReadiness.js`
-
-Arquivos alterados:
-- `fluency-clean/src/components/lesson/LessonGeneratorPanel.jsx`
-- `fluency-clean/src/components/lesson/LessonQualityPanel.jsx`
-- `fluency-clean/src/styles/lesson-polish.css`
-- `REWRITE_HANDOFF.md`
-
-O que foi implementado:
-- `studyReadiness.js` avalia se a aula vale estudar;
-- status possíveis: `Pode estudar`, `Pode estudar com atenção`, `Não estudar ainda`;
-- critérios por tipo de aula: Listening, Grammar, Reading, Writing e Speaking;
-- `LessonGeneratorPanel.jsx` aplica a trava antes de salvar;
-- se ruim, tenta reparar; se continuar ruim, bloqueia salvamento;
-- `LessonQualityPanel.jsx` ficou compacto com botão `Detalhes`.
-
-Commits:
-- `a80d2e0f2eac8a1579ca921ee52b1e7ed8a048af` — adiciona verificador de confiança de estudo;
-- `7436a2688750ad62ffab2940d36a8e95a86b8b37` — aplica trava de confiança antes de salvar aula;
-- `0a70dfd16d59be8bab680bce46bdf300e3260cbc` — compacta painel de qualidade com detalhes expansíveis;
-- `1af5abc87804912576f9ee902aa3aec6b9ecc663` — estiliza painel compacto de confiança.
 
 ### `BLOCO-QUALIDADE-POR-ABA-LAB` — Áreas analisadas pelo professor IMPLEMENTADO
 
@@ -172,31 +171,12 @@ Pendente técnica:
 - a tela ativa já usa `ListeningLessonClean.jsx` via `LessonScreen.jsx`, então o app não depende do arquivo antigo;
 - tentar limpar novamente depois ou via PR separado.
 
-### `BLOCO-PRACTICE-REBUILD-8-LAB` — Persistência, progresso e revisão IMPLEMENTADO E VALIDADO PELO USUÁRIO
-
-### `BLOCO-PRACTICE-REBUILD-7B-LAB` — Saneamento pedagógico e polimento mobile IMPLEMENTADO E VALIDADO PELO USUÁRIO
-
-### `BLOCO-PRACTICE-REBUILD-7-LAB` — Integração limpa com aulas usando motor novo IMPLEMENTADO E VALIDADO
-
-### `BLOCO-PRACTICE-REBUILD-6-LAB` — Componentes por tipo de exercício IMPLEMENTADO
-
-### `BLOCO-PRACTICE-REBUILD-5-LAB` — Sistema de vidas e erro pedagógico IMPLEMENTADO
-
-### `BLOCO-PRACTICE-REBUILD-4-LAB` — UI fullscreen elegante do Fluency IMPLEMENTADO E VISUAL APROVADO PELO USUÁRIO
-
-### `BLOCO-PRACTICE-REBUILD-3-LAB` — Quality gate forte de questões IMPLEMENTADO
-
-### `BLOCO-PRACTICE-REBUILD-2-LAB` — Builder pedagógico por fases IMPLEMENTADO COMO BASE
-
-### `BLOCO-PRACTICE-REBUILD-1-LAB` — Arquitetura limpa da prática IMPLEMENTADO COMO FUNDAÇÃO
-
 ## NOVA ORDEM DE BLOCOS — QUALIDADE REAL DAS AULAS
 
-1. `BLOCO-16-LAB` — Histórico real de Speaking. STATUS: implementado, aguardando teste.
-2. `BLOCO-15-LAB` — Banco de erros real.
-3. `BLOCO-20-LAB` — Certificação por nível.
-4. `BLOCO-CARTAS-3B-LAB` — Expandir banco de vocabulário em novos lotes até 2.000 palavras reais.
-5. `BLOCO-AUDITORIA-POLIMENTO-GERAL-LAB` — após concluir os blocos principais, analisar cada página com precisão, listar melhorias possíveis e montar blocos de polimento.
+1. `BLOCO-15-LAB` — Banco de erros real. STATUS: implementado, aguardando teste.
+2. `BLOCO-20-LAB` — Certificação por nível.
+3. `BLOCO-CARTAS-3B-LAB` — Expandir banco de vocabulário em novos lotes até 2.000 palavras reais.
+4. `BLOCO-AUDITORIA-POLIMENTO-GERAL-LAB` — após concluir os blocos principais, analisar cada página com precisão, listar melhorias possíveis e montar blocos de polimento.
 
 ## FASE EXTRA — GARANTIA PEDAGÓGICA MÁXIMA
 
@@ -219,13 +199,13 @@ Ordem recomendada após os blocos principais:
 
 ## Pendência técnica importante
 
-- testar deploy do `BLOCO-16-LAB` no iPhone;
-- testar Speaking nos modos Conversa, Pronúncia e Imersão;
-- confirmar que a aba Progresso usa histórico real de Speaking;
-- confirmar que tentativas de pronúncia/imersão não bloqueiam conversa diária;
-- continuar depois para `BLOCO-15-LAB` — Banco de erros real;
+- testar deploy do `BLOCO-15-LAB` no iPhone;
+- confirmar card `Banco de erros real` na aba Progresso;
+- confirmar que erros da prática profunda aparecem;
+- confirmar que palavras fracas de Speaking/Azure aparecem;
+- continuar depois para `BLOCO-20-LAB` — Certificação por nível;
 - remover definitivamente `ListeningLesson.jsx` antigo quando o conector permitir SHA correto.
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O bloco atual implementado foi `BLOCO-16-LAB`: criado `speakingHistory.js`, Speaking agora mostra histórico real, Pronúncia/Imersão registram tentativas reais, Progresso usa histórico real de Speaking. Testar no iPhone; se ok, seguir para `BLOCO-15-LAB` Banco de erros real."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O bloco atual implementado foi `BLOCO-15-LAB`: criado `errorBank.js`, Progresso mostra `Banco de erros real`, erros vêm de prática profunda, Speaking/Azure e produção escrita curta. Testar no iPhone; se ok, seguir para `BLOCO-20-LAB` Certificação por nível."
