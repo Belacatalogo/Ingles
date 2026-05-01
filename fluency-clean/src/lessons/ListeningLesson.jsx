@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { CheckCircle2, Eye, Headphones, ListChecks, MessageSquareText, Pause, Play, Repeat2, RotateCcw, Save, Volume2 } from 'lucide-react';
+import { BookOpen, CheckCircle2, Eye, Headphones, ListChecks, MessageSquareText, Pause, Play, Repeat2, RotateCcw, Save, Volume2 } from 'lucide-react';
 import { playLearningAudio, stopLearningAudio } from '../services/audioPlayback.js';
 import { diagnostics } from '../services/diagnostics.js';
 import { completeLesson, getLessonDraft, saveLessonDraft } from '../services/progressStore.js';
@@ -67,6 +67,24 @@ function normalizePrompts(lesson) {
   return ['Repeat the last sentence three times.', 'Answer one question out loud.', 'Say one similar sentence about your routine.'];
 }
 
+function normalizeSections(lesson) {
+  const sections = Array.isArray(lesson?.sections) ? lesson.sections : [];
+  return sections.map((section, index) => ({
+    title: cleanText(section?.title || section?.heading || `Parte ${index + 1}`),
+    content: cleanText(section?.content || section?.text || section?.body || section?.explanation),
+    examples: Array.isArray(section?.examples) ? section.examples.map(cleanText).filter(Boolean) : [],
+  })).filter((section) => section.title || section.content);
+}
+
+function normalizeVocabulary(lesson) {
+  const vocabulary = Array.isArray(lesson?.vocabulary) ? lesson.vocabulary : [];
+  return vocabulary.map((item) => ({
+    word: cleanText(item?.word || item?.term),
+    meaning: cleanText(item?.meaning || item?.translation || item?.definition),
+    example: cleanText(item?.example || item?.sentence),
+  })).filter((item) => item.word || item.meaning || item.example);
+}
+
 function normalizeShadowingLines(transcript, prompts) {
   const lines = transcript
     .flatMap((line) => cleanText(line).split(/(?<=[.!?])\s+/))
@@ -106,6 +124,8 @@ export function ListeningLesson({ lesson }) {
   const transcript = useMemo(() => splitTranscript(lesson?.listeningText), [lesson?.listeningText]);
   const questions = useMemo(() => normalizeQuestions(lesson), [lesson]);
   const prompts = useMemo(() => normalizePrompts(lesson), [lesson]);
+  const sections = useMemo(() => normalizeSections(lesson), [lesson]);
+  const vocabulary = useMemo(() => normalizeVocabulary(lesson), [lesson]);
   const shadowingLines = useMemo(() => normalizeShadowingLines(transcript, prompts), [transcript, prompts]);
   const audioText = transcript.join(' ');
   const currentShadowingLine = shadowingLines[shadowingIndex] || shadowingLines[0] || prompts[0];
@@ -205,7 +225,7 @@ export function ListeningLesson({ lesson }) {
       <section className="pillar-card listening-audio-card">
         <div className="pillar-card-title"><Headphones size={17} /> Escuta guiada</div>
         <h2>{lesson?.title || 'Listening — A morning routine'}</h2>
-        <p>{cleanText(lesson?.intro || 'Ouça primeiro sem ler. Depois use a transcrição para confirmar detalhes e repetir em voz alta.')}</p>
+        <p>{cleanText(lesson?.objective || 'Ouça primeiro sem ler. Depois use a transcrição para confirmar detalhes e repetir em voz alta.')}</p>
         <div className="listening-player">
           <button type="button" onClick={handleListen} disabled={audioState === 'loading'} aria-label="Ouvir áudio da aula"><Play size={20} /></button>
           <div><span /><span /><span /><span /><span /><span /></div>
@@ -213,6 +233,40 @@ export function ListeningLesson({ lesson }) {
         </div>
         <small>{message}</small>
       </section>
+
+      {sections.length ? (
+        <section className="pillar-card">
+          <div className="pillar-card-title"><BookOpen size={17} /> Conceito e explicação</div>
+          <div className="lesson-section-stack">
+            {sections.map((section, index) => (
+              <article className="lesson-content-block" key={`${section.title}-${index}`}>
+                <h3>{section.title}</h3>
+                {section.content ? <p>{section.content}</p> : null}
+                {section.examples.length ? (
+                  <ul>
+                    {section.examples.map((example) => <li key={example}>{example}</li>)}
+                  </ul>
+                ) : null}
+              </article>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      {vocabulary.length ? (
+        <section className="pillar-card">
+          <div className="pillar-card-title"><BookOpen size={17} /> Vocabulário da aula</div>
+          <div className="lesson-vocabulary-grid">
+            {vocabulary.map((item, index) => (
+              <article className="lesson-vocab-card" key={`${item.word}-${index}`}>
+                <strong>{item.word || item.meaning}</strong>
+                {item.meaning ? <span>{item.meaning}</span> : null}
+                {item.example ? <p>{item.example}</p> : null}
+              </article>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       <section className="pillar-card">
         <div className="pillar-card-title"><Volume2 size={17} /> Transcrição</div>
