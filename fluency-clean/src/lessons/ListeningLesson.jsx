@@ -117,29 +117,90 @@ function safeJsonParse(value) {
   }
 }
 
-function makeDistractors(answer, vocabulary) {
-  const base = ['A', 'B', 'C', 'D', 'True', 'False', 'book', 'cat', 'apple', 'name', 'letter', 'spell'];
-  const words = vocabulary.map((item) => item.word).filter(Boolean);
-  const pool = [...words, ...base].filter((item) => normalizeForCheck(item) !== normalizeForCheck(answer));
-  return [...new Set(pool)].slice(0, 3);
+function uniqueOptions(options) {
+  const seen = new Set();
+  return options.map(cleanText).filter(Boolean).filter((option) => {
+    const key = normalizeForCheck(option);
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function optionsLookLowQuality(options) {
+  if (!Array.isArray(options) || options.length < 2) return true;
+  const clean = options.map(cleanText).filter(Boolean);
+  if (clean.length < 2) return true;
+  const shortCount = clean.filter((option) => option.length <= 2).length;
+  return shortCount >= Math.ceil(clean.length * 0.6);
+}
+
+function makeQuestionDistractors(answer, questions) {
+  const pool = questions
+    .map((item) => item.answer)
+    .filter((item) => normalizeForCheck(item) && normalizeForCheck(item) !== normalizeForCheck(answer) && item.length > 3);
+  const fallback = [
+    'She is practicing daily greetings.',
+    'She is listening to music.',
+    'She is writing numbers only.',
+    'She is reading a long story.',
+  ];
+  return uniqueOptions([...pool, ...fallback]).slice(0, 3);
+}
+
+function makeVocabularyDistractors(answer, vocabulary) {
+  const pool = vocabulary
+    .map((item) => item.meaning)
+    .filter((item) => normalizeForCheck(item) && normalizeForCheck(item) !== normalizeForCheck(answer));
+  return uniqueOptions([...pool, 'pergunta', 'resposta', 'frase', 'ouvir']).slice(0, 3);
+}
+
+function buildChoiceItem(question, questions) {
+  if (!question?.answer) return null;
+  const options = optionsLookLowQuality(question.options)
+    ? [question.answer, ...makeQuestionDistractors(question.answer, questions)]
+    : question.options;
+  return {
+    ...question,
+    type: 'choice',
+    title: 'Escolha a resposta correta',
+    instruction: 'Toque na alternativa que combina com o áudio.',
+    options: uniqueOptions(options).slice(0, 4),
+  };
 }
 
 function buildQuizItems(questions, vocabulary, transcript, shadowingLines) {
   const items = [];
-  const firstQuestionWithOptions = questions.find((item) => item.options?.length >= 2);
-  if (firstQuestionWithOptions) {
-    items.push({ ...firstQuestionWithOptions, type: 'choice', title: 'Escolha a resposta correta', instruction: 'Toque na alternativa que combina com o áudio.' });
-  } else if (questions[0]) {
-    const answer = questions[0].answer || 'A';
-    items.push({ ...questions[0], type: 'choice', title: 'Escolha a resposta correta', instruction: 'Toque na melhor resposta.', options: [answer, ...makeDistractors(answer, vocabulary)].slice(0, 4) });
+  const firstQuestion = questions.find((item) => item.answer && !/true|false/i.test(`${item.question} ${item.answer}`)) || questions[0];
+  const firstChoice = buildChoiceItem(firstQuestion, questions);
+  if (firstChoice) items.push(firstChoice);
+
+  const dictationLine = shadowingLines.find((line) => line.length >= 12 && line.length <= 90) || transcript[0];
+  if (dictationLine) {
+    items.push({
+      type: 'dictation',
+      title: 'Escute e escreva',
+      instruction: 'Toque no áudio e escreva exatamente o que você ouviu. Pontuação e maiúsculas não contam como erro.',
+      question: 'Escreva a frase que você ouviu.',
+      answer: dictationLine,
+      audioText: dictationLine,
+      options: [],
+    });
   }
 
   const vocab = vocabulary.find((item) => item.word && item.meaning) || vocabulary[0];
   if (vocab) {
-    items.push({ type: 'choice', title: 'Vocabulário rápido', instruction: `Qual é o significado de “${vocab.word}”?`, question: `Escolha a tradução correta de “${vocab.word}”.`, answer: vocab.meaning, options: [vocab.meaning, 'pergunta', 'letra', 'ouvir'].filter(Boolean) });
+    items.push({
+      type: 'choice',
+      title: 'Vocabulário rápido',
+      instruction: `Qual é o significado de “${vocab.word}”?`,
+      question: `Escolha a tradução correta de “${vocab.word}”.`,
+      answer: vocab.meaning,
+      options: uniqueOptions([vocab.meaning, ...makeVocabularyDistractors(vocab.meaning, vocabulary)]).slice(0, 4),
+    });
   }
 
-  const trueFalseQuestion = questions.find((item) => /true|false/i.test(item.question) || item.options?.some((option) => /true|false/i.test(option))) || questions[1];
+  const trueFalseQuestion = questions.find((item) => /true|false/i.test(`${item.question} ${item.answer}`) || item.options?.some((option) => /true|false/i.test(option))) || questions[1];
   if (trueFalseQuestion) {
     const tfAnswer = /false/i.test(trueFalseQuestion.answer) ? 'False' : (/true/i.test(trueFalseQuestion.answer) ? 'True' : 'True');
     items.push({ ...trueFalseQuestion, type: 'truefalse', title: 'Certo ou errado?', instruction: 'Decida se a frase combina com o áudio.', question: trueFalseQuestion.question, answer: tfAnswer, options: ['True', 'False'] });
@@ -148,13 +209,13 @@ function buildQuizItems(questions, vocabulary, transcript, shadowingLines) {
   const correctionSource = transcript.find((line) => /spell|name|letter|alphabet|sound/i.test(line)) || transcript[0];
   if (correctionSource) {
     const correct = cleanText(correctionSource.split('. ')[0]).replace(/\.$/, '');
-    const wrong = correct.replace(/Ana/i, 'Anna').replace(/A-N-A/i, 'A-M-A').replace(/apple/i, 'aple');
-    items.push({ type: 'correct', title: 'Corrija a frase', instruction: 'Leia a frase e escreva a forma correta.', question: wrong === correct ? `${correct} (corrija se necessário)` : wrong, answer: correct, options: [] });
+    const wrong = correct.replace(/Ana/i, 'Anna').replace(/A-N-A/i, 'A-M-A').replace(/apple/i, 'aple').replace(/alphabet/i, 'alfabet');
+    items.push({ type: 'correct', title: 'Corrija a frase', instruction: 'Leia a frase e escreva a forma correta. Pontuação e maiúsculas não contam como erro.', question: wrong === correct ? `${correct} (corrija se necessário)` : wrong, answer: correct, options: [] });
   }
 
   const writeQuestion = questions.find((item) => !item.options?.length && item.answer) || questions[2];
   if (writeQuestion) {
-    items.push({ ...writeQuestion, type: 'write', title: 'Escreva a resposta', instruction: 'Digite uma resposta curta em inglês.' });
+    items.push({ ...writeQuestion, type: 'write', title: 'Escreva a resposta', instruction: 'Digite uma resposta curta em inglês. Pequenos detalhes de pontuação não contam como erro.' });
   }
 
   const speakLine = shadowingLines.find((line) => line.length <= 90) || shadowingLines[0] || 'My name is Ana.';
@@ -163,15 +224,55 @@ function buildQuizItems(questions, vocabulary, transcript, shadowingLines) {
   return items.filter(Boolean).slice(0, 8);
 }
 
-function isAnswerCorrect(item, value) {
+function levenshtein(a, b) {
+  const left = normalizeForCheck(a);
+  const right = normalizeForCheck(b);
+  const matrix = Array.from({ length: left.length + 1 }, () => Array(right.length + 1).fill(0));
+  for (let i = 0; i <= left.length; i += 1) matrix[i][0] = i;
+  for (let j = 0; j <= right.length; j += 1) matrix[0][j] = j;
+  for (let i = 1; i <= left.length; i += 1) {
+    for (let j = 1; j <= right.length; j += 1) {
+      const cost = left[i - 1] === right[j - 1] ? 0 : 1;
+      matrix[i][j] = Math.min(matrix[i - 1][j] + 1, matrix[i][j - 1] + 1, matrix[i - 1][j - 1] + cost);
+    }
+  }
+  return matrix[left.length][right.length];
+}
+
+function findWeakWord(expected, user) {
+  const expectedWords = normalizeForCheck(expected).split(' ').filter(Boolean);
+  const userWords = normalizeForCheck(user).split(' ').filter(Boolean);
+  return expectedWords.find((word, index) => word.length > 2 && word !== userWords[index] && !userWords.includes(word)) || expectedWords.find((word) => word.length > 3) || '';
+}
+
+function evaluateAnswer(item, value) {
   const user = normalizeForCheck(value);
   const expected = normalizeForCheck(item.answer);
-  if (!user || !expected) return false;
-  if (item.type === 'choice' || item.type === 'truefalse') return user === expected;
-  if (item.type === 'correct') return user === expected || user.includes(expected.slice(0, Math.min(18, expected.length)));
-  const expectedTokens = expected.split(' ').filter((token) => token.length > 2);
-  const hits = expectedTokens.filter((token) => user.includes(token)).length;
-  return user === expected || hits >= Math.max(1, Math.ceil(expectedTokens.length * 0.45));
+  if (!user || !expected) return { correct: false, retryable: false, empty: true };
+  if (item.type === 'choice' || item.type === 'truefalse') return { correct: user === expected, retryable: false };
+
+  if (user === expected) return { correct: true, retryable: false };
+
+  const expectedWords = expected.split(' ').filter(Boolean);
+  const userWords = user.split(' ').filter(Boolean);
+  const distance = levenshtein(user, expected);
+  const maxLen = Math.max(user.length, expected.length, 1);
+  const ratio = 1 - distance / maxLen;
+  const sameWordCount = Math.abs(expectedWords.length - userWords.length) <= 1;
+  const closeWords = expectedWords.filter((word, index) => {
+    const attempt = userWords[index] || '';
+    return word === attempt || (word.length > 3 && levenshtein(word, attempt) <= 1);
+  }).length;
+  const nearByWords = expectedWords.length ? closeWords / expectedWords.length >= 0.68 : false;
+  const retryable = (sameWordCount && (ratio >= 0.78 || nearByWords)) || distance <= 3;
+
+  if (item.type === 'write') {
+    const expectedTokens = expectedWords.filter((token) => token.length > 2);
+    const hits = expectedTokens.filter((token) => user.includes(token)).length;
+    if (hits >= Math.max(1, Math.ceil(expectedTokens.length * 0.55))) return { correct: true, retryable: false };
+  }
+
+  return { correct: false, retryable, hintWord: findWeakWord(item.answer, value) };
 }
 
 function getSpeechRecognition() {
@@ -200,6 +301,7 @@ export function ListeningLesson({ lesson }) {
   const [quizIndex, setQuizIndex] = useState(0);
   const [quizInput, setQuizInput] = useState('');
   const [quizFeedback, setQuizFeedback] = useState(null);
+  const [hintShown, setHintShown] = useState(false);
   const [quizResults, setQuizResults] = useState([]);
   const [speakingState, setSpeakingState] = useState('idle');
   const [savedAt, setSavedAt] = useState('');
@@ -256,6 +358,22 @@ export function ListeningLesson({ lesson }) {
     setMessage(result.ok ? (result.source === 'browser-fallback' ? 'Gemini falhou; áudio do navegador iniciado.' : 'Áudio natural iniciado.') : (result.error || 'Não foi possível reproduzir áudio.'));
   }
 
+  async function handleQuizAudio() {
+    if (!currentQuiz?.audioText && !currentQuiz?.question) return;
+    const text = currentQuiz.audioText || currentQuiz.question;
+    setAudioState('loading');
+    const result = await playLearningAudio({
+      text,
+      label: `Quiz Listening · ${currentQuiz.title}`,
+      voiceName: 'Kore',
+      style: 'Natural A1 English dictation voice. Clear, slow, human pronunciation.',
+      preferNatural: true,
+      allowBrowserFallback: true,
+    });
+    setAudioState('idle');
+    setMessage(result.ok ? 'Áudio da questão iniciado.' : (result.error || 'Não foi possível tocar o áudio da questão.'));
+  }
+
   async function handleShadowingListen() {
     const text = cleanText(currentShadowingLine);
     if (!text) {
@@ -284,28 +402,47 @@ export function ListeningLesson({ lesson }) {
   }
 
   function submitQuiz(value = quizInput) {
-    if (!currentQuiz || quizFeedback) return;
+    if (!currentQuiz || (quizFeedback && !quizFeedback.retryable)) return;
     const finalValue = cleanText(value);
     if (!finalValue) {
-      setQuizFeedback({ correct: false, empty: true, message: 'Responda antes de conferir.' });
+      setQuizFeedback({ correct: false, empty: true, retryable: false, message: 'Responda antes de conferir.' });
       return;
     }
-    const correct = isAnswerCorrect(currentQuiz, finalValue);
+    const evaluation = evaluateAnswer(currentQuiz, finalValue);
+    if (evaluation.retryable) {
+      setQuizFeedback({
+        correct: false,
+        retryable: true,
+        answer: finalValue,
+        expected: currentQuiz.answer,
+        hintWord: evaluation.hintWord,
+        message: 'Você está quase certo. Parece só um erro pequeno de escrita. Tente de novo.',
+      });
+      diagnostics.log(`Quiz Listening: questão ${quizIndex + 1}/${quizItems.length} quase correta; tentativa extra liberada.`, 'info');
+      return;
+    }
     const feedback = {
-      correct,
+      correct: evaluation.correct,
+      retryable: false,
       answer: finalValue,
       expected: currentQuiz.answer,
-      message: correct ? 'Muito bem! Resposta correta.' : 'Quase. Veja a resposta correta e siga para a próxima.',
+      message: evaluation.correct ? 'Muito bem! Resposta correta.' : 'Quase. Veja a resposta correta e siga para a próxima.',
     };
     setQuizFeedback(feedback);
-    setQuizResults((current) => [...current, { index: quizIndex, type: currentQuiz.type, correct, answer: finalValue, expected: currentQuiz.answer }]);
+    setQuizResults((current) => [...current, { index: quizIndex, type: currentQuiz.type, correct: evaluation.correct, answer: finalValue, expected: currentQuiz.answer }]);
     setQuestionAnswers((current) => ({ ...current, [quizIndex]: finalValue }));
-    diagnostics.log(`Quiz Listening: questão ${quizIndex + 1}/${quizItems.length} ${correct ? 'correta' : 'incorreta'}.`, correct ? 'success' : 'warn');
+    diagnostics.log(`Quiz Listening: questão ${quizIndex + 1}/${quizItems.length} ${evaluation.correct ? 'correta' : 'incorreta'}.`, evaluation.correct ? 'success' : 'warn');
+  }
+
+  function retryQuiz() {
+    setQuizFeedback(null);
+    setHintShown(false);
   }
 
   function nextQuiz() {
     setQuizInput('');
     setQuizFeedback(null);
+    setHintShown(false);
     setQuizIndex((current) => Math.min(current + 1, quizItems.length));
   }
 
@@ -313,6 +450,7 @@ export function ListeningLesson({ lesson }) {
     setQuizIndex(0);
     setQuizInput('');
     setQuizFeedback(null);
+    setHintShown(false);
     setQuizResults([]);
   }
 
@@ -442,7 +580,7 @@ export function ListeningLesson({ lesson }) {
       <div ref={refs.practice}>
         <CollapsibleSection id="lesson-practice" title="Prática guiada" icon={ListChecks} summary={quizDone ? `${correctCount}/${quizItems.length} corretas` : `questão ${Math.min(quizIndex + 1, quizItems.length)}/${quizItems.length}`} open={openSections.practice} onToggle={() => toggleSection('practice')}>
           <div className="fluency-quiz-card">
-            <div className="fluency-quiz-progress"><span style={{ width: `${quizItems.length ? ((Math.min(quizIndex, quizItems.length) + (quizFeedback ? 1 : 0)) / quizItems.length) * 100 : 0}%` }} /></div>
+            <div className="fluency-quiz-progress"><span style={{ width: `${quizItems.length ? ((Math.min(quizIndex, quizItems.length) + (quizFeedback && !quizFeedback.retryable ? 1 : 0)) / quizItems.length) * 100 : 0}%` }} /></div>
             {quizDone ? (
               <div className="fluency-quiz-finish">
                 <CheckCircle2 size={34} />
@@ -459,7 +597,12 @@ export function ListeningLesson({ lesson }) {
                 <p className="fluency-quiz-instruction">{currentQuiz.instruction}</p>
                 <h3>{currentQuiz.question}</h3>
 
-                {(currentQuiz.type === 'choice' || currentQuiz.type === 'truefalse') ? (
+                {currentQuiz.type === 'dictation' ? (
+                  <div className="fluency-quiz-dictation">
+                    <button type="button" onClick={handleQuizAudio} disabled={audioState === 'loading'}><Volume2 size={18} /> Ouvir frase</button>
+                    <textarea value={quizInput} onChange={(event) => setQuizInput(event.target.value)} placeholder="Escreva o que você ouviu..." disabled={Boolean(quizFeedback && !quizFeedback.retryable)} />
+                  </div>
+                ) : (currentQuiz.type === 'choice' || currentQuiz.type === 'truefalse') ? (
                   <div className="fluency-quiz-options">
                     {currentQuiz.options.map((option) => {
                       const selected = normalizeForCheck(quizInput) === normalizeForCheck(option);
@@ -470,25 +613,35 @@ export function ListeningLesson({ lesson }) {
                   </div>
                 ) : currentQuiz.type === 'speak' ? (
                   <div className="fluency-quiz-speaking">
-                    <button type="button" onClick={startSpeakingQuiz} disabled={speakingState === 'listening' || Boolean(quizFeedback)}><Mic size={20} /> {speakingState === 'listening' ? 'Ouvindo...' : 'Falar agora'}</button>
-                    <input value={quizInput} onChange={(event) => setQuizInput(event.target.value)} placeholder="Ou digite o que você falou..." disabled={Boolean(quizFeedback)} />
+                    <button type="button" onClick={startSpeakingQuiz} disabled={speakingState === 'listening' || Boolean(quizFeedback && !quizFeedback.retryable)}><Mic size={20} /> {speakingState === 'listening' ? 'Ouvindo...' : 'Falar agora'}</button>
+                    <input value={quizInput} onChange={(event) => setQuizInput(event.target.value)} placeholder="Ou digite o que você falou..." disabled={Boolean(quizFeedback && !quizFeedback.retryable)} />
                   </div>
                 ) : (
-                  <textarea value={quizInput} onChange={(event) => setQuizInput(event.target.value)} placeholder={currentQuiz.type === 'correct' ? 'Escreva a frase corrigida...' : 'Digite sua resposta...'} disabled={Boolean(quizFeedback)} />
+                  <textarea value={quizInput} onChange={(event) => setQuizInput(event.target.value)} placeholder={currentQuiz.type === 'correct' ? 'Escreva a frase corrigida...' : 'Digite sua resposta...'} disabled={Boolean(quizFeedback && !quizFeedback.retryable)} />
                 )}
 
                 {quizFeedback ? (
-                  <div className={`fluency-quiz-feedback ${quizFeedback.correct ? 'right' : 'wrong'}`}>
+                  <div className={`fluency-quiz-feedback ${quizFeedback.correct ? 'right' : quizFeedback.retryable ? 'near' : 'wrong'}`}>
                     {quizFeedback.correct ? <CheckCircle2 size={19} /> : <XCircle size={19} />}
                     <div>
                       <strong>{quizFeedback.message}</strong>
-                      {!quizFeedback.correct && !quizFeedback.empty ? <small>Resposta esperada: {currentQuiz.answer}</small> : null}
+                      {quizFeedback.retryable && quizFeedback.hintWord && hintShown ? <small>Dica: confira a palavra “{quizFeedback.hintWord}”.</small> : null}
+                      {!quizFeedback.correct && !quizFeedback.empty && !quizFeedback.retryable ? <small>Resposta esperada: {currentQuiz.answer}</small> : null}
                     </div>
                   </div>
                 ) : null}
 
                 <footer className="fluency-quiz-actions">
-                  {!quizFeedback ? <button type="button" onClick={() => submitQuiz()}>{currentQuiz.type === 'choice' || currentQuiz.type === 'truefalse' ? 'Conferir' : 'Responder'}</button> : <button type="button" onClick={nextQuiz}>Continuar <ChevronRight size={16} /></button>}
+                  {quizFeedback?.retryable ? (
+                    <>
+                      {quizFeedback.hintWord ? <button type="button" className="secondary" onClick={() => setHintShown(true)}>Ver dica</button> : null}
+                      <button type="button" onClick={retryQuiz}><RotateCcw size={16} /> Tentar de novo</button>
+                    </>
+                  ) : !quizFeedback ? (
+                    <button type="button" onClick={() => submitQuiz()}>{currentQuiz.type === 'choice' || currentQuiz.type === 'truefalse' ? 'Conferir' : 'Responder'}</button>
+                  ) : (
+                    <button type="button" onClick={nextQuiz}>Continuar <ChevronRight size={16} /></button>
+                  )}
                 </footer>
               </>
             ) : null}
