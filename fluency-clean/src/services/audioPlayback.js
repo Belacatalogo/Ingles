@@ -12,10 +12,7 @@ function cleanAudioText(value) {
 }
 
 function splitIntoSentences(text) {
-  return cleanAudioText(text)
-    .split(/(?<=[.!?])\s+/)
-    .map((item) => item.trim())
-    .filter(Boolean);
+  return cleanAudioText(text).split(/(?<=[.!?])\s+/).map((item) => item.trim()).filter(Boolean);
 }
 
 export function segmentLearningAudioText(text, maxChars = MAX_SEGMENT_CHARS) {
@@ -70,10 +67,10 @@ async function playBrowserFallback(cleanText) {
   };
 }
 
-async function playSingleLearningAudio({ cleanText, label, voiceName, style, preferNatural, allowBrowserFallback }) {
+async function playSingleLearningAudio({ cleanText, label, voiceName, style, preferNatural, allowBrowserFallback, waitUntilEnded = false }) {
   if (preferNatural) {
     diagnostics.log(`Tentando áudio natural Gemini primeiro: ${label}.`, 'info');
-    const natural = await playGeminiTtsAudio({ text: cleanText, voiceName, style, allowBrowserFallback: false });
+    const natural = await playGeminiTtsAudio({ text: cleanText, voiceName, style, allowBrowserFallback: false, waitUntilEnded });
 
     if (natural.ok && (natural.source === 'gemini' || natural.source === 'cache')) {
       diagnostics.log(`Áudio natural Gemini iniciado: ${label}.`, 'info');
@@ -106,7 +103,16 @@ async function playSegmentedLearningAudio({ segments, label, voiceName, style, p
     diagnostics.setPhase(`tocando áudio ${index + 1}/${segments.length}`, 'tts');
     diagnostics.log(`Preparando ${segmentLabel}.`, 'info');
 
-    lastResult = await playSingleLearningAudio({ cleanText: segments[index], label: segmentLabel, voiceName, style, preferNatural, allowBrowserFallback });
+    lastResult = await playSingleLearningAudio({
+      cleanText: segments[index],
+      label: segmentLabel,
+      voiceName,
+      style,
+      preferNatural,
+      allowBrowserFallback,
+      waitUntilEnded: true,
+    });
+
     if (lastResult.source === 'browser-fallback') usedFallback = true;
     if (lastResult.source === 'cache') usedCache = true;
 
@@ -116,7 +122,7 @@ async function playSegmentedLearningAudio({ segments, label, voiceName, style, p
     }
 
     if (token !== playbackToken) return { ok: false, source: 'stopped', error: 'Áudio interrompido.' };
-    await new Promise((resolve) => setTimeout(resolve, lastResult.source === 'browser-fallback' ? 650 : 280));
+    await new Promise((resolve) => setTimeout(resolve, 220));
   }
 
   segmentQueueRunning = false;
