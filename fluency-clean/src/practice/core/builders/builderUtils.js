@@ -1,6 +1,11 @@
 import { PRACTICE_PHASES, QUESTION_TYPES } from '../PracticeTypes.js';
 import { cleanPracticeText, detectAnswerKind, normalizePracticeText, splitPracticeWords } from '../PracticeNormalizer.js';
 
+const GENERIC_DISTRACTORS = new Set([
+  'resposta', 'responder', 'pergunta', 'frase', 'palavra', 'coisa', 'exemplo', 'texto', 'aula',
+  'answer', 'question', 'sentence', 'word', 'thing', 'example', 'text', 'lesson',
+]);
+
 export function makeId(parts) {
   return parts
     .map((part) => cleanPracticeText(part).toLowerCase().replace(/[^a-z0-9]+/g, '-'))
@@ -24,6 +29,19 @@ export function shuffle(values) {
     .map((value) => ({ value, sort: Math.random() }))
     .sort((a, b) => a.sort - b.sort)
     .map((item) => item.value);
+}
+
+export function isGenericDistractor(value) {
+  const normalized = normalizePracticeText(value);
+  return GENERIC_DISTRACTORS.has(normalized) || /resposta\//i.test(value) || /^(resposta|answer)\b/i.test(value);
+}
+
+export function isCompactOption(value, maxWords = 5, maxChars = 44) {
+  const clean = cleanPracticeText(value);
+  if (!clean || clean.length > maxChars) return false;
+  if (splitPracticeWords(clean).length > maxWords) return false;
+  if (isGenericDistractor(clean)) return false;
+  return true;
 }
 
 export function createQuestion(base) {
@@ -71,26 +89,50 @@ export function makeWordOptions(answer, context, extra = []) {
     'listen',
     'repeat',
     'morning',
-  ]).filter((item) => item.length >= 3);
+  ]).filter((item) => item.length >= 2 && isCompactOption(item, 2, 24));
   const distractors = shuffle(pool).filter((item) => normalizePracticeText(item) !== normalizePracticeText(answer)).slice(0, 3);
-  return shuffle(unique([answer, ...distractors]).slice(0, 4));
+  return shuffle(unique([answer, ...distractors]).filter((item) => isCompactOption(item, 2, 24)).slice(0, 4));
 }
 
 export function makeSentenceOptions(answer, context, extra = []) {
-  const pool = unique([answer, ...context.sentences, ...extra]).filter((sentence) => sentence.length <= 88);
+  const answerWords = splitPracticeWords(answer).length;
+  const maxWords = answerWords <= 4 ? 5 : 8;
+  const maxChars = answerWords <= 4 ? 42 : 62;
+  const pool = unique([answer, ...context.sentences, ...extra]).filter((sentence) => isCompactOption(sentence, maxWords, maxChars));
   const distractors = shuffle(pool).filter((item) => normalizePracticeText(item) !== normalizePracticeText(answer)).slice(0, 3);
-  return shuffle(unique([answer, ...distractors]).slice(0, 4));
+  return shuffle(unique([answer, ...distractors]).filter((item) => isCompactOption(item, maxWords, maxChars)).slice(0, 4));
 }
 
 export function makeMeaningOptions(answer, vocabulary) {
-  const pool = unique([answer, ...vocabulary.map((item) => item.meaning), 'palavra', 'frase', 'pergunta', 'som']).filter(Boolean);
-  const distractors = shuffle(pool).filter((item) => normalizePracticeText(item) !== normalizePracticeText(answer)).slice(0, 3);
-  return shuffle(unique([answer, ...distractors]).slice(0, 4));
+  const cleanAnswer = cleanPracticeText(answer);
+  const pool = unique([cleanAnswer, ...vocabulary.map((item) => item.meaning)])
+    .filter((item) => isCompactOption(item, 4, 34));
+  let distractors = shuffle(pool).filter((item) => normalizePracticeText(item) !== normalizePracticeText(cleanAnswer)).slice(0, 3);
+
+  if (distractors.length < 3) {
+    const safeFallbacks = ['nome', 'letra', 'som', 'ouvir', 'livro', 'maçã']
+      .filter((item) => normalizePracticeText(item) !== normalizePracticeText(cleanAnswer))
+      .filter((item) => !distractors.some((existing) => normalizePracticeText(existing) === normalizePracticeText(item)));
+    distractors = [...distractors, ...safeFallbacks].slice(0, 3);
+  }
+
+  return shuffle(unique([cleanAnswer, ...distractors]).filter((item) => isCompactOption(item, 4, 34)).slice(0, 4));
+}
+
+export function getA1DictationUnits(context, limit = 6) {
+  const vocabWords = context.vocabulary
+    .map((item) => item.word)
+    .filter((word) => isCompactOption(word, 2, 20));
+  const shortSentences = context.sentences
+    .filter((sentence) => splitPracticeWords(sentence).length <= 4 && sentence.length <= 42);
+  return unique([...vocabWords, ...context.keywords, ...shortSentences])
+    .filter((item) => splitPracticeWords(item).length <= 4 && item.length <= 42)
+    .slice(0, limit);
 }
 
 export function makeWordBankQuestion({ sentence, context, phase = PRACTICE_PHASES.GUIDED_PRODUCTION, prompt = 'Monte a frase em inglês.' }) {
   const words = splitPracticeWords(sentence);
-  if (words.length < 3 || words.length > 9) return null;
+  if (words.length < 3 || words.length > 8) return null;
   const answerWords = words.join(' ');
   const extras = ['please', 'book', 'name', 'letter', 'morning', 'English']
     .filter((word) => !words.map((item) => item.toLowerCase()).includes(word.toLowerCase()))
@@ -125,7 +167,7 @@ export function makeFillBlankQuestion({ sentence, context, phase = PRACTICE_PHAS
 
 export function makeCorrectionQuestion({ sentence, context, phase = PRACTICE_PHASES.GUIDED_PRODUCTION }) {
   const clean = cleanPracticeText(sentence).replace(/[.!?]$/, '');
-  if (clean.length < 8) return null;
+  if (clean.length < 8 || clean.length > 62) return null;
   const wrong = clean
     .replace(/Ana/i, 'Anna')
     .replace(/alphabet/i, 'alfabet')
@@ -148,6 +190,7 @@ export function makeCorrectionQuestion({ sentence, context, phase = PRACTICE_PHA
 export function makeVocabularyQuestions(context, limit = 6) {
   return context.vocabulary.slice(0, limit).map((item) => {
     if (!item.word || !item.meaning) return null;
+    if (!isCompactOption(item.meaning, 4, 34)) return null;
     return createQuestion({
       skill: context.skill,
       phase: PRACTICE_PHASES.WARMUP,
@@ -175,6 +218,8 @@ export function makeExistingExerciseQuestions(context, phase = PRACTICE_PHASES.C
         source: exercise.id,
       });
     }
+    const options = exercise.options?.length ? exercise.options : makeSentenceOptions(exercise.answer, context);
+    if (!isCompactOption(exercise.answer, 8, 62) || options.length < 2) return null;
     return createQuestion({
       skill: context.skill,
       phase,
@@ -182,8 +227,8 @@ export function makeExistingExerciseQuestions(context, phase = PRACTICE_PHASES.C
       title: 'Escolha a melhor resposta',
       prompt: translatePromptToPortuguese(exercise.prompt),
       answer: exercise.answer,
-      options: exercise.options?.length ? exercise.options : makeSentenceOptions(exercise.answer, context),
+      options,
       source: exercise.id,
     });
-  });
+  }).filter(Boolean);
 }
