@@ -12,6 +12,7 @@ import './styles/lesson-polish.css';
 import './styles/choice-polish.css';
 import './styles/flashcards-polish.css';
 import './styles/flashcards-session.css';
+import './styles/speaking-session.css';
 import './styles/progress-polish.css';
 import './styles/settings-polish.css';
 
