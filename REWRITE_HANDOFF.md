@@ -56,11 +56,14 @@ Diretriz visual nova:
 
 ## BLOCO ATUAL
 
-### `BLOCO-PRACTICE-REBUILD-7-LAB` — Integração limpa com aulas usando motor novo IMPLEMENTADO, aguardando validação futura no Vercel/iPhone
+### `BLOCO-PRACTICE-REBUILD-7-LAB` — Integração limpa com aulas usando motor novo IMPLEMENTADO, aguardando validação no Vercel/iPhone
+
+Atualização de deploy:
+- trial Pro da Vercel foi ativado pelo usuário;
+- orçamento sob demanda foi reduzido para US$ 5;
+- este handoff recebeu commit seguro apenas para forçar novo deploy da branch lab e validar o bloco 7.
 
 Contexto importante:
-- a Vercel está com limite de build temporário, então este bloco foi implementado sem validação visual imediata;
-- o usuário autorizou continuar sem Vercel enquanto o limite não libera;
 - o objetivo foi conectar a prática fullscreen ao motor novo sem alterar o visual premium aprovado.
 
 Análise antes da alteração:
@@ -191,7 +194,7 @@ Arquivos criados:
 4. `BLOCO-PRACTICE-REBUILD-4-LAB` — UI fullscreen elegante do Fluency. STATUS: implementado e visual aprovado.
 5. `BLOCO-PRACTICE-REBUILD-5-LAB` — Sistema de vidas e erro pedagógico. STATUS: implementado.
 6. `BLOCO-PRACTICE-REBUILD-6-LAB` — Componentes por tipo de exercício. STATUS: implementado.
-7. `BLOCO-PRACTICE-REBUILD-7-LAB` — Integração limpa com aulas. STATUS: implementado, aguardando validação quando Vercel liberar.
+7. `BLOCO-PRACTICE-REBUILD-7-LAB` — Integração limpa com aulas. STATUS: implementado, aguardando validação no iPhone.
 8. `BLOCO-PRACTICE-REBUILD-8-LAB` — Persistência, progresso e revisão.
 9. `BLOCO-PRACTICE-REBUILD-9-LAB` — Limpeza final e remoção de legado.
 10. `BLOCO-PRACTICE-REBUILD-10-LAB` — Teste completo no iPhone.
@@ -219,4 +222,4 @@ Arquivos criados:
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O antigo protocolo econômico de commit/deploy está temporariamente suspenso por pedido do usuário. Os blocos `BLOCO-PRACTICE-REBUILD-1-LAB` a `7` foram implementados. O bloco 4 redesenhou o fullscreen premium e foi aprovado visualmente. O bloco 5 adicionou vidas. O bloco 6 separou a UI em componentes. O bloco 7 criou `PracticePlanAdapter.js` e conectou `PracticeFullscreen.jsx` ao motor novo de `src/practice/core/`, com fallback seguro para `PracticeEngine.js`. Vercel está temporariamente bloqueada por limite de build, então o bloco 7 aguarda validação real no iPhone. Próximo bloco possível sem Vercel: `BLOCO-PRACTICE-REBUILD-8-LAB`, persistência, progresso e revisão, mas evitar remoção de legado até testar."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O antigo protocolo econômico de commit/deploy está temporariamente suspenso por pedido do usuário. Os blocos `BLOCO-PRACTICE-REBUILD-1-LAB` a `7` foram implementados. O bloco 4 redesenhou o fullscreen premium e foi aprovado visualmente. O bloco 5 adicionou vidas. O bloco 6 separou a UI em componentes. O bloco 7 criou `PracticePlanAdapter.js` e conectou `PracticeFullscreen.jsx` ao motor novo de `src/practice/core/`, com fallback seguro para `PracticeEngine.js`. Trial Pro da Vercel foi ativado e orçamento sob demanda foi reduzido para US$ 5. Um commit seguro no handoff foi feito para forçar novo deploy da lab e validar o bloco 7. Próximo passo: verificar deploy, testar no iPhone e só então seguir para `BLOCO-PRACTICE-REBUILD-8-LAB`."
