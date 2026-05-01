@@ -35,7 +35,53 @@ Nova regra operacional enquanto a reconstrução da prática estiver em andament
 
 ## BLOCO ATUAL
 
-### `BLOCO-GERAÇÃO-VARIAÇÃO-2-LAB` — Bloqueio de repetição e reparo sem fallback antigo IMPLEMENTADO, aguardando deploy/teste
+### `BLOCO-GERAÇÃO-ESTABILIDADE-1-LAB` — AutoFill adaptativo por progresso IMPLEMENTADO, aguardando deploy/teste
+
+Contexto:
+- usuário reportou que as gerações estavam travando por `Exercícios insuficientes`;
+- também apareceu `gerando estrutura compacta da aula Grammar` quando a próxima aula visualmente era Listening;
+- usuário questionou com razão que questões de soletrar em múltipla escolha são fracas quando o objetivo real é produzir spelling.
+
+Arquivos criados:
+- `fluency-clean/src/services/exerciseAutoFill.js`
+
+Arquivos alterados:
+- `fluency-clean/src/services/geminiLessons.js`
+- `fluency-clean/src/components/lesson/LessonGeneratorPanel.jsx`
+- `REWRITE_HANDOFF.md`
+
+O que foi implementado:
+- criado `exerciseAutoFill.js` como módulo separado, limpo e adaptativo;
+- AutoFill completa exercícios faltantes quando o Gemini entrega pouco;
+- AutoFill usa tipo da aula, nível, transcrição/texto, vocabulário e modo de entrada;
+- para Listening A1, spelling agora prioriza:
+  - escrever spelling;
+  - ditado curto de palavra;
+  - ditado de frase muito curta;
+  - corrigir spelling;
+  - falar nome e soletrar;
+- múltipla escolha ficou reservada para reconhecimento, som inicial, vocabulário e verdadeiro/falso simples;
+- `geminiLessons.js` passou a aceitar `forcedType`;
+- `LessonGeneratorPanel.jsx` envia `forcedType = nextLesson.type`, exceto revisão adaptativa;
+- o tipo da aula agora fica travado pelo cronograma/app, reduzindo risco de Listening virar Grammar;
+- `BLOCK_RETRY_LIMIT` caiu para 1 porque agora AutoFill resolve ausência de exercícios antes de gastar novas tentativas;
+- `assertLessonBlock()` agora sanitiza exercícios, corrige alternativas onde possível e completa faltantes;
+- `validateGeneratedLesson()` também tem fallback final de AutoFill se ainda faltar exercício;
+- diagnóstico agora pode mostrar mensagens como:
+  - `Tipo de aula travado: Listening.`
+  - `Gemini entregou 8/12 exercícios. AutoFill adaptativo completou +4.`
+  - `Validação final: AutoFill completou +X exercícios.`
+
+Teste recomendado:
+1. aguardar deploy;
+2. gerar aula marcada como Listening;
+3. confirmar no diagnóstico: `Tipo de aula travado: Listening`;
+4. se Gemini entregar poucos exercícios, confirmar diagnóstico de AutoFill;
+5. verificar se a geração não fica presa em loops de `Exercícios insuficientes`;
+6. abrir prática e verificar se spelling não fica só como múltipla escolha com resposta pronta;
+7. conferir se existem exercícios de escrever, ouvir/escrever, corrigir spelling e speaking.
+
+### `BLOCO-GERAÇÃO-VARIAÇÃO-2-LAB` — Bloqueio de repetição e reparo sem fallback antigo IMPLEMENTADO
 
 Contexto:
 - usuário mandou print da transcrição e comprovou que a aula continuava com o mesmo roteiro: Ana, Maria, apple, book, cat;
@@ -59,79 +105,13 @@ O que foi implementado:
 - `repairLessonForQuality()` agora passa `rawLesson` para `getListeningProfile()`;
 - `quality` passa a registrar `repairedWithVariation` e `repairProfileTitle`.
 
-Teste recomendado:
-1. aguardar deploy;
-2. abrir geração de aula;
-3. marcar `Substituir aula atual e gerar uma versão diferente`;
-4. gerar a aula;
-5. se a aula for corrigida automaticamente, verificar que a transcrição NÃO usa mais Ana/Maria/apple/book/cat;
-6. conferir se aparece um contexto alternativo: recepção, cafeteria ou videochamada;
-7. se ainda aparecer o texto antigo, limpar cache/PWA ou verificar se o deploy correto está carregado.
-
 ### `BLOCO-GERAÇÃO-VARIAÇÃO-1-LAB` — Aula nova precisa variar de verdade IMPLEMENTADO
-
-Contexto:
-- usuário confirmou que a prova visual funcionou: apareceu ID `gen-...`, contrato `lesson-contract-v1` e nota 96/100;
-- porém a aula parecia igual porque a próxima aula do cronograma ainda era o mesmo tema: `A1 · listening · Alfabeto, sons iniciais e spelling de nomes`;
-- o sistema estava gerando nova tentativa, mas com prompt muito determinístico e sem contexto explícito de variação.
-
-Arquivos alterados:
-- `fluency-clean/src/services/geminiLessons.js`
-- `fluency-clean/src/components/lesson/LessonGeneratorPanel.jsx`
-- `fluency-clean/src/services/lessonStore.js`
-- `REWRITE_HANDOFF.md`
-
-O que foi implementado:
-- `generateLessonDraft()` agora aceita `previousLesson` e `forceVariation`;
-- quando `forceVariation` está ativo, o gerador cria `generationSeed` e adiciona uma instrução de variação real no prompt;
-- a instrução obriga variar título, situação comunicativa, nomes dos personagens, roteiro/transcrição, exemplos, vocabulário secundário e exercícios;
-- o prompt recebe um resumo da aula anterior para evitar repetição;
-- foram criados temas alternativos por seed: escola, biblioteca, cafeteria, recepção, chamada de vídeo, loja pequena;
-- temperatura do Gemini para aulas subiu de `0.18` para `0.34` para reduzir repetição sem perder controle;
-- `LessonGeneratorPanel.jsx` agora envia a aula atual como `previousLesson` quando o usuário marca substituição;
-- o checkbox passou de `gerar uma nova de verdade` para `gerar uma versão diferente`;
-- o botão passa a mostrar `Gerar versão diferente`;
-- `lessonStore.js` salva `generationSeed`, `variationMode`, `replacedPreviousLessonId` e `replacedPreviousGenerationId` dentro de `generationMeta`;
-- último status agora pode mostrar `Nova versão diferente gerada e salva.`;
-- diagnóstico registra `Variação real ativa para mesmo tema. Seed: ...`.
 
 ### `BLOCO-GERAÇÃO-STATUS-1-LAB` — Prova visual de aula nova IMPLEMENTADO E VALIDADO PELO USUÁRIO
 
-Contexto:
-- usuário gerou nova aula e confirmou visualmente o badge `gen-...`, `lesson-contract-v1` e nota de qualidade;
-- isso provou que a geração nova aconteceu, mas não garantia variação de conteúdo.
-
-Arquivos alterados:
-- `fluency-clean/src/services/lessonStore.js`
-- `fluency-clean/src/components/lesson/LessonGeneratorPanel.jsx`
-- `fluency-clean/src/services/lessonTypes.js`
-- `fluency-clean/src/screens/LessonScreen.jsx`
-- `fluency-clean/src/styles/lesson-polish.css`
-- `REWRITE_HANDOFF.md`
-
 ### `BLOCO-14-LAB` — Contrato JSON rígido IMPLEMENTADO
 
-Arquivos criados:
-- `fluency-clean/src/services/lessonJsonContract.js`
-
-Arquivos alterados:
-- `fluency-clean/src/services/geminiLessons.js`
-- `REWRITE_HANDOFF.md`
-
-O que foi implementado:
-- contrato `lesson-contract-v1`;
-- chaves obrigatórias por bloco;
-- instruções anti-conteúdo raso;
-- contrato conectado ao gerador Gemini.
-
 ### `BLOCO-12-LAB` — Rubricas por tipo de aula IMPLEMENTADO
-
-Arquivos criados:
-- `fluency-clean/src/services/lessonRubrics.js`
-
-Arquivos alterados:
-- `fluency-clean/src/services/lessonValidation.js`
-- `REWRITE_HANDOFF.md`
 
 ### `BLOCO-AUDIO-CACHE-1B-LAB` — Player iOS/Comet com fila mais segura IMPLEMENTADO E VALIDADO PELO USUÁRIO
 
@@ -164,8 +144,8 @@ Pendente técnica:
 
 ## NOVA ORDEM DE BLOCOS — QUALIDADE REAL DAS AULAS
 
-1. `BLOCO-GERAÇÃO-VARIAÇÃO-2-LAB` — Bloqueio de repetição e reparo sem fallback antigo. STATUS: implementado, aguardando teste.
-2. `BLOCO-11-LAB` — Plano primeiro, aula depois. STATUS: próximo.
+1. `BLOCO-GERAÇÃO-ESTABILIDADE-1-LAB` — AutoFill adaptativo por progresso. STATUS: implementado, aguardando teste.
+2. `BLOCO-11-LAB` — Plano primeiro, aula depois. STATUS: próximo após validação.
 3. `BLOCO-13-LAB` — Professor Gerador/Revisor.
 4. `BLOCO-17-LAB` — Qualidade visível da aula.
 5. `BLOCO-16-LAB` — Histórico real de Speaking.
@@ -176,11 +156,11 @@ Pendente técnica:
 
 ## Pendência técnica importante
 
-- testar deploy do `BLOCO-GERAÇÃO-VARIAÇÃO-2-LAB`;
+- testar deploy do `BLOCO-GERAÇÃO-ESTABILIDADE-1-LAB`;
 - remover definitivamente `ListeningLesson.jsx` antigo quando o conector permitir SHA correto;
 - confirmar se o contrato não ficou restritivo demais para Flash/free;
 - se o contrato reprovar muitas gerações, ajustar no bloco de plano/reparo sem afrouxar qualidade.
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. Os blocos de prática e áudio foram implementados e validados. O `BLOCO-12-LAB` criou rubricas por tipo de aula. O `BLOCO-14-LAB` criou `lessonJsonContract.js` e conectou o contrato JSON rígido ao `geminiLessons.js`. O `BLOCO-GERAÇÃO-STATUS-1-LAB` foi validado: o app mostra ID gen, contrato e nota. O `BLOCO-GERAÇÃO-VARIAÇÃO-1-LAB` adicionou seed, contexto da aula anterior e instrução de variação real. O `BLOCO-GERAÇÃO-VARIAÇÃO-2-LAB` removeu o problema principal: o reparador local tinha fallback fixo com Ana/Maria/apple/book/cat e agora usa perfis alternativos quando há variação. Próximo passo: testar deploy; se ok, seguir para `BLOCO-11-LAB` plano primeiro, aula depois."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. Os blocos de prática e áudio foram implementados e validados. O `BLOCO-12-LAB` criou rubricas por tipo de aula. O `BLOCO-14-LAB` criou `lessonJsonContract.js` e conectou o contrato JSON rígido ao `geminiLessons.js`. O `BLOCO-GERAÇÃO-STATUS-1-LAB` foi validado. O `BLOCO-GERAÇÃO-VARIAÇÃO-2-LAB` removeu o fallback fixo de Ana/Maria/apple/book/cat do reparador. O `BLOCO-GERAÇÃO-ESTABILIDADE-1-LAB` criou AutoFill adaptativo para completar exercícios faltantes e travou o tipo da aula pelo cronograma. Próximo passo: testar deploy; se ok, seguir para `BLOCO-11-LAB` plano primeiro, aula depois."
