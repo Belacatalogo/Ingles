@@ -63,7 +63,8 @@ Depois da promoção controlada da branch estável/secundária `rewrite-fluency-
 2. remoção de conteúdos fictícios/mockados em Hoje, Progresso, Cartas e Ajustes;
 3. correção da aba Pronúncia para que o botão “Próxima” atualize frase, IPA, palavras, foco, áudio e limpe a análise anterior;
 4. quality gate pedagógico local antes de salvar aula;
-5. protocolo econômico de deploy.
+5. protocolo econômico de deploy;
+6. correção da aula renderizada de Listening no `BLOCO-10C-LAB`.
 
 Essas alterações recentes estão isoladas na `rewrite-fluency-clean-lab` e NÃO entram automaticamente na `main` nem na `rewrite-fluency-clean`.
 
@@ -77,6 +78,39 @@ Ordem correta:
 Não misturar correções recentes da lab direto na `main` sem validação.
 
 ## Estado atual implementado
+
+### BLOCO-10C-LAB — Corrigir aula renderizada IMPLEMENTADO, aguardando teste no iPhone
+
+Prioridade: máxima.
+
+Arquivos alterados:
+- `fluency-clean/src/lessons/ListeningLesson.jsx`
+- `REWRITE_HANDOFF.md`
+
+Problemas corrigidos:
+- respostas esperadas não aparecem mais automaticamente antes da tentativa;
+- cada pergunta de compreensão agora tem estado próprio de resposta;
+- resposta esperada só aparece depois que o aluno escreve algo ou toca em “Ver resposta”;
+- respostas de compreensão são salvas como rascunho junto com a resposta escrita principal;
+- botão “Salvar rascunho” mostra confirmação perceptível com horário;
+- botão “Concluir Listening” salva rascunho, chama `completeLesson()` e mostra confirmação com horário;
+- conclusão registra evento real de aula/progresso via `progressStore`;
+- Shadowing agora usa frases reais extraídas da transcrição/listeningText;
+- Shadowing ganhou botão “Ouvir frase” e “Próxima frase”;
+- botão redundante “Concluir” dentro do Shadowing foi removido para não confundir;
+- Diagnóstico registra salvamento, conclusão e avanço de frase de shadowing.
+
+Critério de aprovação:
+1. abrir preview da `rewrite-fluency-clean-lab` no iPhone;
+2. ir em Aula e abrir uma aula de Listening;
+3. confirmar que as respostas esperadas NÃO aparecem de início;
+4. escrever uma resposta curta em uma pergunta e confirmar que a resposta esperada aparece depois;
+5. testar “Ver resposta” em outra pergunta;
+6. escrever em “Sua resposta”;
+7. tocar “Salvar rascunho” e confirmar mensagem/horário;
+8. tocar “Concluir Listening” e confirmar mensagem/horário;
+9. testar Shadowing: frase real da transcrição, “Ouvir frase” e “Próxima frase”;
+10. confirmar que não há botão “Concluir” duplicado no bloco de Shadowing.
 
 ### BLOCO-10A-LAB — Quality Gate Pedagógico Local IMPLEMENTADO, aguardando teste completo
 
@@ -106,21 +140,7 @@ Commits relevantes:
 - `198453ce6ed3a54d1f7ce6fd55b55e3de8de1a53` — preserva revisão pedagógica na normalização;
 - `4372fc82de59ee3bfd969a440f2fc477ddcbeeef` — atualiza handoff do gate pedagógico.
 
-Teste recomendado:
-1. abrir preview da `rewrite-fluency-clean-lab` no iPhone;
-2. ir em Aula;
-3. gerar a próxima aula;
-4. acompanhar Diagnóstico;
-5. confirmar que aparece “Avaliação pedagógica iniciada”;
-6. se aprovada, confirmar mensagem “Aula validada (nota/100), salva e aberta na aba Aula”;
-7. se reprovada, confirmar que a aula não substitui a aula atual e que o Diagnóstico mostra os problemas.
-
 ### Bloco 8-LAB-12C — Correção da próxima frase em Pronúncia IMPLEMENTADA, aguardando teste completo
-
-Contexto:
-- usuário testou a aba Speaking > Pronúncia;
-- ao tocar em “Próxima”, o áudio tocava outra frase, mas o painel continuava mostrando a frase antiga;
-- isso deixava texto, IPA, palavras e áudio fora de sincronia.
 
 Correção aplicada:
 - `fluency-clean/src/screens/SpeakingScreen.jsx` usa uma lista controlada de frases de pronúncia;
@@ -185,33 +205,7 @@ Rollback se main quebrar:
 
 ## CAMINHO COMPLETO DOS PRÓXIMOS BLOCOS
 
-### 1. BLOCO-10C-LAB — Corrigir aula renderizada
-
-Prioridade: máxima.
-
-Problemas registrados:
-- respostas esperadas aparecem antes da tentativa;
-- algumas perguntas aparecem incoerentes ou mal formuladas;
-- Shadowing não é shadowing real;
-- botões “Salvar” e “Concluir Listening” não salvam/concluem de forma perceptível ou funcional;
-- botão “Concluir” no bloco Shadowing parece redundante/confuso.
-
-Correção planejada:
-- ocultar respostas esperadas inicialmente;
-- mostrar resposta apenas depois que o aluno responder ou tocar em “Ver resposta”;
-- fazer Shadowing usar frases reais da transcrição/listeningText;
-- adicionar ouvir frase do shadowing e próxima frase;
-- corrigir salvar/concluir Listening;
-- registrar evento real de conclusão quando aplicável;
-- manter alteração modular, sem bundle patch e sem DOM injection.
-
-Critério de aprovação:
-- usuário responde sem ver a resposta;
-- consegue salvar rascunho;
-- consegue concluir Listening;
-- shadowing tem frases reais do áudio/transcrição.
-
-### 2. BLOCO-CARTAS-2-LAB — Finalização real da sessão de flashcards
+### 1. BLOCO-CARTAS-2-LAB — Finalização real da sessão de flashcards
 
 Prioridade: alta.
 
@@ -234,7 +228,7 @@ Critério de aprovação:
 - aparece conclusão clara;
 - Hoje reconhece Cartas como concluída com base em evento real.
 
-### 3. BLOCO-SPEAKING-2-LAB — Conversa adaptada ao nível e registro real
+### 2. BLOCO-SPEAKING-2-LAB — Conversa adaptada ao nível e registro real
 
 Prioridade: alta.
 
@@ -258,7 +252,7 @@ Critério de aprovação:
 - usuário vê critério claro de conclusão;
 - Hoje marca Conversação feita apenas após prática real.
 
-### 4. BLOCO-CARTAS-3-LAB — Banco das 2.000 palavras mais usadas em inglês
+### 3. BLOCO-CARTAS-3-LAB — Banco das 2.000 palavras mais usadas em inglês
 
 Prioridade: alta/média, após Cartas salvar sessão real.
 
@@ -270,28 +264,7 @@ Objetivo:
 - incluir palavra, tradução, exemplo, categoria, nível e áudio;
 - reaproveitar sistema real de sessão do BLOCO-CARTAS-2.
 
-Organização sugerida:
-- Aula 1: Core 1 — palavras 1–25;
-- Aula 2: Core 2 — palavras 26–50;
-- Aula 3: Pessoas e família;
-- Aula 4: Casa e objetos;
-- Aula 5: Comida e bebida;
-- Aula 6: Rotina diária;
-- Aula 7: Verbos essenciais;
-- Aula 8: Adjetivos básicos;
-- Aula 9: Perguntas e conectores;
-- Aula 10: Tempo, dias e frequência;
-- continuar até 2.000 palavras em blocos leves.
-
-Critério de aprovação:
-- aba Cartas tem “Aula atual” e “2.000 palavras”;
-- tocar em “2.000 palavras” mostra tópicos;
-- tocar no tópico abre deck real;
-- sessão usa o mesmo fluxo de conclusão real.
-
-### 5. BLOCO-10B-LAB — Correção automática limitada quando quality gate reprovar
-
-Prioridade: média/alta.
+### 4. BLOCO-10B-LAB — Correção automática limitada quando quality gate reprovar
 
 Objetivo:
 - se aula gerada ficar abaixo de 85/100, pedir à IA para corrigir somente os problemas listados;
@@ -299,87 +272,27 @@ Objetivo:
 - reavaliar após cada reparo;
 - se ainda reprovar, bloquear salvamento e mostrar erro claro no Diagnóstico.
 
-Critério de aprovação:
-- aula reprovada não salva;
-- app tenta reparar de forma limitada;
-- sem loop infinito;
-- Diagnóstico mostra tentativa de reparo e resultado.
-
-### 6. BLOCO-12-LAB — Rubricas por tipo de aula
-
-Prioridade: média/alta.
+### 5. BLOCO-12-LAB — Rubricas por tipo de aula
 
 Objetivo:
 - criar estruturas obrigatórias para Grammar, Reading, Listening, Writing e Speaking;
 - impedir aula bagunçada por tipo.
 
-Regras por tipo:
-- Grammar: objetivo, regra simples, exemplos corretos, exemplos errados, explicação dos erros, prática guiada, prática independente, mini revisão, conclusão.
-- Reading: pré-leitura, vocabulário essencial, texto adequado ao nível, leitura guiada, compreensão, inferência, vocabulário em contexto, resumo, conclusão.
-- Listening: contexto, vocabulário antes de ouvir, áudio/transcrição, compreensão geral, compreensão detalhada, shadowing, ditado parcial, revisão.
-- Writing: modelo, estrutura, frases úteis, escrita guiada, escrita livre, checklist, versão melhorada.
-- Speaking: modelo natural, frase-alvo, repetição, gravação, análise Azure, correção de som, resposta em conversa, nova tentativa.
-
-Critério de aprovação:
-- cada tipo de aula só salva se cumprir estrutura mínima equivalente.
-
-### 7. BLOCO-14-LAB — Aula confiável com contrato JSON rígido
-
-Prioridade: alta para corrigir perguntas ruins na raiz.
+### 6. BLOCO-14-LAB — Aula confiável com contrato JSON rígido
 
 Objetivo:
 - impedir aula incompleta ou bagunçada antes de renderizar;
 - exigir campos obrigatórios;
 - rejeitar perguntas/respostas incoerentes.
 
-Contrato esperado:
-- `quality.targetLevel`;
-- `quality.estimatedMinutes`;
-- `quality.pedagogicalScore`;
-- `lesson.id`;
-- `lesson.type`;
-- `lesson.level`;
-- `lesson.title`;
-- `lesson.objective`;
-- `lesson.sections`;
-- `lesson.vocabulary`;
-- `lesson.exercises`;
-- `lesson.answerKey`;
-- `lesson.review`;
-- `lesson.completionChecklist`.
-
-Critério de aprovação:
-- exercícios têm enunciado claro, resposta correta e explicação;
-- perguntas/respostas incoerentes são rejeitadas antes de salvar.
-
-### 8. BLOCO-11-LAB — Aula em duas fases: plano primeiro, conteúdo depois
-
-Prioridade: média.
+### 7. BLOCO-11-LAB — Aula em duas fases: plano primeiro, conteúdo depois
 
 Objetivo:
 - gerar primeiro o plano da aula;
 - validar plano;
 - só depois gerar aula completa.
 
-Plano deve conter:
-- nível CEFR;
-- pilar principal;
-- objetivo;
-- pré-requisitos;
-- tópico gramatical;
-- vocabulário alvo;
-- habilidade principal/secundária;
-- estrutura da aula;
-- tipos de exercícios;
-- critério de conclusão.
-
-Critério de aprovação:
-- plano aprovado antes de gerar conteúdo completo;
-- Diagnóstico mostra “Plano gerado”, “Plano aprovado”, “Gerando aula completa”, “Aula validada”.
-
-### 9. BLOCO-13-LAB — Professor Gerador e Professor Revisor
-
-Prioridade: média.
+### 8. BLOCO-13-LAB — Professor Gerador e Professor Revisor
 
 Objetivo:
 - separar IA que cria da IA que avalia;
@@ -389,39 +302,21 @@ Objetivo:
 - Revisor reavalia;
 - salvar só quando aprovado.
 
-Critério de aprovação:
-- revisão por papel separado, mesmo que use o mesmo modelo;
-- relatório de problemas claro;
-- reparo direcionado.
-
-### 10. BLOCO-17-LAB — Qualidade da aula visível para o usuário
-
-Prioridade: média.
+### 9. BLOCO-17-LAB — Qualidade da aula visível para o usuário
 
 Objetivo:
 - mostrar selo “Aula validada”;
 - mostrar nota pedagógica;
 - mostrar clareza, adequação ao nível, prática ativa, vocabulário, exercícios, respostas esperadas e revisão.
 
-Critério de aprovação:
-- usuário consegue ver por que a aula é confiável;
-- notas vêm do validador, não são inventadas.
-
-### 11. BLOCO-16-LAB — Histórico real de Speaking
-
-Prioridade: média, após BLOCO-SPEAKING-2-LAB.
+### 10. BLOCO-16-LAB — Histórico real de Speaking
 
 Objetivo:
 - salvar tentativas reais de speaking;
 - guardar frase esperada, texto reconhecido, score geral, accuracy, fluency, completeness, palavra mais fraca, fonemas problemáticos, modo e data;
 - mostrar evolução real no Progresso.
 
-Critério de aprovação:
-- Progresso mostra speaking com base em tentativas reais.
-
-### 12. BLOCO-15-LAB — Banco de erros e revisão adaptativa real
-
-Prioridade: média.
+### 11. BLOCO-15-LAB — Banco de erros e revisão adaptativa real
 
 Objetivo:
 - salvar erros reais do aluno;
@@ -429,37 +324,27 @@ Objetivo:
 - alimentar revisão adaptativa de sábado;
 - mostrar pontos fracos reais no Progresso.
 
-Critério de aprovação:
-- erros reais viram revisão futura;
-- nada de pontos fracos inventados.
-
-### 13. BLOCO-20-LAB — Certificação interna por nível
-
-Prioridade: final.
+### 12. BLOCO-20-LAB — Certificação interna por nível
 
 Objetivo:
 - impedir avanço de A1 para A2 apenas por quantidade de aulas;
 - exigir requisitos reais: conclusão, média por pilar, sessões de speaking, revisão final aprovada e poucos erros críticos abertos.
 
-Critério de aprovação:
-- app só libera próximo nível com evidência real de domínio.
-
 ## ORDEM RESUMIDA PARA O PRÓXIMO CHAT
 
-1. `BLOCO-10C-LAB` — Corrigir aula renderizada.
-2. `BLOCO-CARTAS-2-LAB` — Finalização real dos flashcards.
-3. `BLOCO-SPEAKING-2-LAB` — Speaking por nível e registro real.
-4. `BLOCO-CARTAS-3-LAB` — 2.000 palavras por tópicos.
-5. `BLOCO-10B-LAB` — Correção automática do quality gate.
-6. `BLOCO-12-LAB` — Rubricas por tipo de aula.
-7. `BLOCO-14-LAB` — Contrato JSON rígido.
-8. `BLOCO-11-LAB` — Plano primeiro, aula depois.
-9. `BLOCO-13-LAB` — Professor gerador/revisor.
-10. `BLOCO-17-LAB` — Qualidade visível da aula.
-11. `BLOCO-16-LAB` — Histórico real de Speaking.
-12. `BLOCO-15-LAB` — Banco de erros real.
-13. `BLOCO-20-LAB` — Certificação por nível.
+1. `BLOCO-CARTAS-2-LAB` — Finalização real dos flashcards.
+2. `BLOCO-SPEAKING-2-LAB` — Speaking por nível e registro real.
+3. `BLOCO-CARTAS-3-LAB` — 2.000 palavras por tópicos.
+4. `BLOCO-10B-LAB` — Correção automática do quality gate.
+5. `BLOCO-12-LAB` — Rubricas por tipo de aula.
+6. `BLOCO-14-LAB` — Contrato JSON rígido.
+7. `BLOCO-11-LAB` — Plano primeiro, aula depois.
+8. `BLOCO-13-LAB` — Professor gerador/revisor.
+9. `BLOCO-17-LAB` — Qualidade visível da aula.
+10. `BLOCO-16-LAB` — Histórico real de Speaking.
+11. `BLOCO-15-LAB` — Banco de erros real.
+12. `BLOCO-20-LAB` — Certificação por nível.
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Use o PROTOCOLO ECONÔMICO DE DEPLOY: cada bloco deve virar 1 commit único, com handoff atualizado no mesmo commit; fluxo ideal 1 bloco → 1 commit → 1 deploy → teste no iPhone. Não faça vários commits pequenos. Não insista se a Vercel bloquear por limite. O deploy voltou a funcionar após o commit `8281150`, mas continuar economizando. Já foi implementado o BLOCO-10A-LAB: quality gate pedagógico local antes de salvar aula. Próximo bloco prático: BLOCO-10C-LAB, corrigir aula renderizada: respostas antecipadas, shadowing real e botões Salvar/Concluir Listening. Depois seguir a ordem: CARTAS-2, SPEAKING-2, CARTAS-3, 10B, 12, 14, 11, 13, 17, 16, 15, 20. Não delete `rewrite-fluency-clean-lab` nem `rewrite-fluency-clean`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. A produção/main ainda NÃO foi validada no Vercel. Validar primeiro a lab no iPhone, depois sincronizar para `rewrite-fluency-clean`, testar o link estável e só depois decidir nova ida para `main`. Rollback da main: `5047bae031f20ddd9604953dcd3fd821655e56fa`."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Use o PROTOCOLO ECONÔMICO DE DEPLOY: cada bloco deve virar 1 commit único, com handoff atualizado no mesmo commit; fluxo ideal 1 bloco → 1 commit → 1 deploy → teste no iPhone. Não faça vários commits pequenos. Não insista se a Vercel bloquear por limite. O deploy voltou a funcionar após o commit `8281150`, mas continuar economizando. Já foram implementados o BLOCO-10A-LAB e o BLOCO-10C-LAB. Próximo bloco: BLOCO-CARTAS-2-LAB, finalização real da sessão de flashcards. Depois seguir a ordem: SPEAKING-2, CARTAS-3, 10B, 12, 14, 11, 13, 17, 16, 15, 20. Não delete `rewrite-fluency-clean-lab` nem `rewrite-fluency-clean`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. A produção/main ainda NÃO foi validada no Vercel. Validar primeiro a lab no iPhone, depois sincronizar para `rewrite-fluency-clean`, testar o link estável e só depois decidir nova ida para `main`. Rollback da main: `5047bae031f20ddd9604953dcd3fd821655e56fa`."
