@@ -18,6 +18,7 @@ import { useMemo, useState } from 'react';
 import { PracticeProgressSummary } from '../components/progress/PracticeProgressSummary.jsx';
 import { CURRICULUM_LEVELS, getCurriculumLessons, getCurriculumProgress, getCurriculumSummary } from '../services/curriculumPlan.js';
 import { getCurrentWeekStats, getLessonCompletions, getProgressSummary } from '../services/progressStore.js';
+import { getSpeakingHistorySummary } from '../services/speakingHistory.js';
 
 const cefrLevels = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 
@@ -42,7 +43,7 @@ function getLastThirtyDays() {
   });
 }
 
-function buildSkillScores(completions) {
+function buildSkillScores(completions, speakingSummary) {
   const counts = completions.reduce((acc, item) => {
     const type = String(item.type || '').toLowerCase();
     acc[type] = (acc[type] || 0) + 1;
@@ -50,6 +51,11 @@ function buildSkillScores(completions) {
   }, {});
 
   return skillConfig.map((skill) => {
+    if (skill.key === 'speaking') {
+      const count = speakingSummary.totalSessions || 0;
+      const score = speakingSummary.averageScore ? Math.min(100, Math.round(speakingSummary.averageScore * 0.8 + Math.min(20, count * 2))) : 0;
+      return { ...skill, score, count };
+    }
     const count = counts[skill.key] || 0;
     const score = count ? Math.min(100, count * 20) : 0;
     return { ...skill, score, count };
@@ -110,13 +116,14 @@ export function ProgressScreen() {
   const completions = useMemo(() => getLessonCompletions(), []);
   const curriculum = useMemo(() => getCurriculumSummary(), []);
   const curriculumProgress = useMemo(() => getCurriculumProgress(), []);
+  const speakingSummary = useMemo(() => getSpeakingHistorySummary({ limit: 4 }), []);
   const curriculumLevels = useMemo(() => getCurriculumLevelRows(curriculumProgress), [curriculumProgress]);
   const upcomingLessons = useMemo(() => getUpcomingLessons(curriculumProgress), [curriculumProgress]);
   const recentCompletions = completions.slice(0, 4);
-  const skillScores = useMemo(() => buildSkillScores(completions), [completions]);
+  const skillScores = useMemo(() => buildSkillScores(completions, speakingSummary), [completions, speakingSummary]);
   const activity = useMemo(() => buildActivity(completions), [completions]);
   const wordsRegistered = completions.reduce((total, item) => total + String(item.writtenAnswer || '').trim().split(/\s+/).filter(Boolean).length, 0);
-  const speakingSessions = completions.filter((item) => String(item.type || '').toLowerCase() === 'speaking').length;
+  const speakingSessions = speakingSummary.totalSessions || 0;
   const nextLesson = curriculum.nextLesson;
   const currentLevelData = curriculumLevels.find((item) => item.current) || curriculumLevels[0];
   const lessonsToUnlock = Math.max(0, Math.ceil((currentLevelData?.total || 1) * (currentLevelData?.requiredCompletion || 0.92)) - (currentLevelData?.done || 0));
@@ -254,9 +261,24 @@ export function ProgressScreen() {
           <Mic size={18} />
           <span>Speaking</span>
           <strong>{speakingSessions}</strong>
-          <small>sessões registradas</small>
+          <small>média {speakingSummary.averageScore || 0}/100</small>
         </article>
       </div>
+
+      {speakingSummary.hasData ? (
+        <section className="progress-section-card speaking-real-history-card">
+          <div className="progress-section-title">
+            <span>Speaking real</span>
+            <small>{speakingSummary.trend.label}</small>
+          </div>
+          <div className="speaking-real-metrics">
+            <article><span>Falas</span><strong>{speakingSummary.totalSpoken}</strong></article>
+            <article><span>Minutos</span><strong>{speakingSummary.minutes || 0}</strong></article>
+            <article><span>Hoje</span><strong>{speakingSummary.todaySessions}</strong></article>
+          </div>
+          {speakingSummary.weakWords.length ? <p>Palavras para revisar: {speakingSummary.weakWords.slice(0, 6).map((item) => item.word).join(', ')}</p> : <p>Nenhuma palavra fraca acumulada ainda.</p>}
+        </section>
+      ) : null}
 
       <PracticeProgressSummary />
 
@@ -280,7 +302,7 @@ export function ProgressScreen() {
       <section className="progress-section-card">
         <div className="progress-section-title">
           <span>Habilidades</span>
-          <small>baseado em aulas concluídas</small>
+          <small>baseado em aulas e speaking real</small>
         </div>
         <div className="progress-skill-list">
           {skillScores.map((skill) => (
