@@ -72,51 +72,133 @@ function getExercises(lesson) {
     : [];
 }
 
-function optionQuality(options) {
+function wordsFromSentence(sentence) {
+  return cleanText(sentence).replace(/[.!?]/g, '').split(/\s+/).filter((word) => word.length > 0).slice(0, 9);
+}
+
+function answerKind(value) {
+  const text = cleanText(value);
+  const normalized = normalizeForPractice(text);
+  const words = normalized.split(' ').filter(Boolean);
+  if (/^(true|false)$/i.test(text)) return 'boolean';
+  if (/^[a-z](?:-[a-z]){1,}\.?$/i.test(text) || /^[a-z](?:\s*-\s*[a-z]){1,}\.?$/i.test(text)) return 'spelling';
+  if (words.length === 1) return 'word';
+  if (words.length <= 4 && text.length <= 28) return 'shortPhrase';
+  if (/resposta pessoal|example:|exemplo:|your name|seu nome/i.test(text)) return 'personal';
+  return 'sentence';
+}
+
+function isPersonalQuestion(question, answer) {
+  return /your name|seu nome|your answer|resposta pessoal|about you|sobre você|fale sobre você|write your/i.test(`${question} ${answer}`);
+}
+
+function sameKindOptions(answer, options) {
+  const kind = answerKind(answer);
+  return unique(options).filter((option) => {
+    const optionKind = answerKind(option);
+    if (kind === 'spelling') return optionKind === 'spelling';
+    if (kind === 'boolean') return optionKind === 'boolean';
+    if (kind === 'word') return optionKind === 'word';
+    if (kind === 'shortPhrase') return optionKind === 'shortPhrase' || optionKind === 'word';
+    if (kind === 'sentence') return optionKind === 'sentence' || optionKind === 'shortPhrase';
+    return false;
+  });
+}
+
+function optionQuality(options, answer = '') {
   const clean = unique(options);
   if (clean.length < 3) return false;
   const weak = clean.filter((option) => option.length <= 2).length;
-  return weak < Math.ceil(clean.length * 0.5);
+  if (weak >= Math.ceil(clean.length * 0.5)) return false;
+  if (!answer) return true;
+  const sameKind = sameKindOptions(answer, clean);
+  return sameKind.length >= 3;
 }
 
 function distractorsFor(answer, pool, fallback = []) {
   const key = normalizeForPractice(answer);
-  return unique([...pool, ...fallback]).filter((item) => normalizeForPractice(item) !== key && item.length > 2).slice(0, 3);
+  return sameKindOptions(answer, unique([...pool, ...fallback]))
+    .filter((item) => normalizeForPractice(item) !== key && item.length > 1)
+    .slice(0, 3);
 }
 
 function shuffle(values) {
   return [...values].map((value) => ({ value, sort: Math.random() })).sort((a, b) => a.sort - b.sort).map((item) => item.value);
 }
 
-function wordsFromSentence(sentence) {
-  return cleanText(sentence).replace(/[.!?]/g, '').split(/\s+/).filter((word) => word.length > 0).slice(0, 9);
+function spellingDistractors(answer) {
+  const clean = cleanText(answer).replace(/\.$/, '');
+  const compact = clean.replace(/\s+/g, '');
+  const letters = compact.split('-').filter(Boolean);
+  if (letters.length < 2) return [];
+  const swapped = [...letters];
+  if (swapped.length > 1) [swapped[0], swapped[1]] = [swapped[1], swapped[0]];
+  const changed = letters.map((letter, index) => index === letters.length - 1 ? 'E' : letter);
+  return unique([swapped.join('-') + '.', changed.join('-') + '.', letters.slice().reverse().join('-') + '.']).filter((item) => normalizeForPractice(item) !== normalizeForPractice(answer));
 }
 
-function makeChoice(exercise, exercises) {
+function wordDistractors(answer, transcript, vocabulary) {
+  const pool = [
+    ...transcript.flatMap(wordsFromSentence),
+    ...vocabulary.map((item) => item.word),
+    'book', 'name', 'letter', 'sound', 'apple', 'alphabet', 'morning', 'English', 'listen', 'repeat',
+  ];
+  return distractorsFor(answer, pool);
+}
+
+function sentenceDistractors(answer, transcript) {
+  const fallback = [
+    'She is listening to a short audio.',
+    'She is spelling her name.',
+    'She is practicing the alphabet.',
+    'She is writing three words.',
+  ];
+  return distractorsFor(answer, transcript, fallback);
+}
+
+function makeChoice(exercise, exercises, transcript, vocabulary) {
+  if (isPersonalQuestion(exercise.question, exercise.answer)) return makeWrite(exercise);
+  const kind = answerKind(exercise.answer);
+  if (kind === 'personal') return makeWrite(exercise);
   const pool = exercises.map((item) => item.answer).filter(Boolean);
-  const fallback = ['She is listening.', 'She is spelling a name.', 'She is reading a story.', 'She is writing numbers.'];
-  const options = optionQuality(exercise.options)
+  let fallback = [];
+  if (kind === 'spelling') fallback = spellingDistractors(exercise.answer);
+  else if (kind === 'word') fallback = wordDistractors(exercise.answer, transcript, vocabulary);
+  else if (kind === 'boolean') fallback = ['True', 'False'];
+  else fallback = sentenceDistractors(exercise.answer, transcript);
+  const rawOptions = optionQuality(exercise.options, exercise.answer)
     ? exercise.options
     : [exercise.answer, ...distractorsFor(exercise.answer, pool, fallback)];
-  if (!optionQuality(options)) return null;
+  const options = sameKindOptions(exercise.answer, rawOptions).slice(0, 4);
+  if (!optionQuality(options, exercise.answer)) return makeWrite(exercise);
   return {
     id: `choice-${exercise.question}`,
     type: 'choice',
     title: 'Escolha a resposta correta',
     prompt: exercise.question,
     answer: exercise.answer,
-    options: shuffle(unique(options).slice(0, 4)),
+    options: shuffle(options),
   };
 }
 
-function makeListenChoice(sentence, transcript) {
-  const answer = cleanText(sentence);
-  const shortAnswer = wordsFromSentence(answer).find((word) => word.length >= 3) || answer;
-  const pool = transcript.flatMap(wordsFromSentence).filter((word) => word.length >= 3);
-  const options = unique([shortAnswer, ...distractorsFor(shortAnswer, pool, ['name', 'letter', 'sound', 'apple', 'book'])]).slice(0, 4);
-  if (options.length < 3) return null;
+function makeWrite(exercise) {
   return {
-    id: `listen-choice-${answer}`,
+    id: `write-${exercise.question}`,
+    type: 'write',
+    title: 'Escreva a resposta',
+    prompt: exercise.question,
+    answer: exercise.answer,
+  };
+}
+
+function makeListenChoice(sentence, transcript, vocabulary) {
+  const words = wordsFromSentence(sentence).filter((word) => word.length >= 3);
+  const shortAnswer = words.find((word) => /apple|book|name|letter|sound|spell|alphabet|listen|repeat|english/i.test(word)) || words[0];
+  if (!shortAnswer) return null;
+  const options = unique([shortAnswer, ...wordDistractors(shortAnswer, transcript, vocabulary)]).slice(0, 4);
+  if (!optionQuality(options, shortAnswer)) return null;
+  return {
+    id: `listen-choice-${sentence}-${shortAnswer}`,
     type: 'listenChoice',
     title: 'O que você escuta?',
     prompt: 'Toque no áudio e escolha a palavra correta.',
@@ -141,27 +223,27 @@ function makeDictation(sentence) {
 
 function makeWordBank(sentence) {
   const answerWords = wordsFromSentence(sentence);
-  if (answerWords.length < 3) return null;
+  if (answerWords.length < 3 || answerWords.length > 9) return null;
   const answer = answerWords.join(' ');
-  const extra = ['please', 'book', 'name', 'letter', 'morning', 'English'].filter((word) => !answerWords.map((w) => w.toLowerCase()).includes(word.toLowerCase())).slice(0, 3);
+  const extras = ['please', 'book', 'name', 'letter', 'morning', 'English'].filter((word) => !answerWords.map((w) => w.toLowerCase()).includes(word.toLowerCase())).slice(0, 3);
   return {
     id: `word-bank-${answer}`,
     type: 'wordBank',
     title: 'Monte a frase',
-    prompt: answer,
+    prompt: 'Monte a frase correta.',
     answer,
-    words: shuffle([...answerWords, ...extra]),
+    words: shuffle([...answerWords, ...extras]),
   };
 }
 
-function makeFillBlank(sentence) {
+function makeFillBlank(sentence, transcript, vocabulary) {
   const words = wordsFromSentence(sentence);
-  const targetIndex = words.findIndex((word) => word.length >= 4);
+  const targetIndex = words.findIndex((word) => word.length >= 4 && !/this|that|with|from|they|have|does|your/i.test(word));
   if (targetIndex < 0) return null;
   const answer = words[targetIndex];
   const prompt = words.map((word, index) => (index === targetIndex ? '____' : word)).join(' ');
-  const options = unique([answer, 'book', 'name', 'letter', 'morning', 'sound']).filter((item) => normalizeForPractice(item) !== '').slice(0, 4);
-  if (options.length < 3) return null;
+  const options = unique([answer, ...wordDistractors(answer, transcript, vocabulary)]).slice(0, 4);
+  if (!optionQuality(options, answer)) return null;
   return {
     id: `fill-${sentence}`,
     type: 'fillBlank',
@@ -194,7 +276,7 @@ function makeCorrection(sentence) {
 function makeVocabularyChoice(vocab, vocabulary) {
   if (!vocab?.word || !vocab?.meaning) return null;
   const options = unique([vocab.meaning, ...distractorsFor(vocab.meaning, vocabulary.map((item) => item.meaning), ['pergunta', 'resposta', 'letra', 'som'])]).slice(0, 4);
-  if (options.length < 3) return null;
+  if (!optionQuality(options, vocab.meaning)) return null;
   return {
     id: `vocab-${vocab.word}`,
     type: 'choice',
@@ -203,6 +285,17 @@ function makeVocabularyChoice(vocab, vocabulary) {
     answer: vocab.meaning,
     options: shuffle(options),
   };
+}
+
+function makeTrueFalseFromSentence(sentence) {
+  const lower = normalizeForPractice(sentence);
+  if (lower.includes('apple')) {
+    return { id: `tf-apple-${sentence}`, type: 'choice', title: 'Certo ou errado?', prompt: 'Apple starts with A.', answer: 'True', options: ['True', 'False'] };
+  }
+  if (lower.includes('ana')) {
+    return { id: `tf-ana-${sentence}`, type: 'choice', title: 'Certo ou errado?', prompt: 'Ana starts with A.', answer: 'True', options: ['True', 'False'] };
+  }
+  return null;
 }
 
 function makeSpeak(sentence) {
@@ -219,7 +312,8 @@ function makeSpeak(sentence) {
 
 function hasGoodQuestion(item) {
   if (!item?.type || !item?.answer || !item?.prompt) return false;
-  if ((item.type === 'choice' || item.type === 'listenChoice' || item.type === 'fillBlank') && !optionQuality(item.options)) return false;
+  if ((item.type === 'choice' || item.type === 'listenChoice' || item.type === 'fillBlank') && !optionQuality(item.options, item.answer)) return false;
+  if (item.type === 'choice' && isPersonalQuestion(item.prompt, item.answer)) return false;
   if (normalizeForPractice(item.answer).length < 1) return false;
   return true;
 }
@@ -231,13 +325,14 @@ export function buildPracticeItems(lesson, { min = 12, max = 28 } = {}) {
   const exercises = getExercises(lesson);
   const items = [];
 
-  exercises.forEach((exercise) => items.push(makeChoice(exercise, exercises)));
+  exercises.forEach((exercise) => items.push(makeChoice(exercise, exercises, transcript, vocabulary)));
   transcript.slice(0, 8).forEach((sentence) => items.push(makeDictation(sentence)));
-  transcript.slice(0, 8).forEach((sentence) => items.push(makeListenChoice(sentence, transcript)));
+  transcript.slice(0, 8).forEach((sentence) => items.push(makeListenChoice(sentence, transcript, vocabulary)));
   vocabulary.slice(0, 10).forEach((vocab) => items.push(makeVocabularyChoice(vocab, vocabulary)));
   transcript.slice(0, 8).forEach((sentence) => items.push(makeWordBank(sentence)));
-  transcript.slice(0, 8).forEach((sentence) => items.push(makeFillBlank(sentence)));
+  transcript.slice(0, 8).forEach((sentence) => items.push(makeFillBlank(sentence, transcript, vocabulary)));
   transcript.slice(0, 6).forEach((sentence) => items.push(makeCorrection(sentence)));
+  transcript.slice(0, 6).forEach((sentence) => items.push(makeTrueFalseFromSentence(sentence)));
   transcript.slice(0, 5).forEach((sentence) => items.push(makeSpeak(sentence)));
 
   const filtered = uniqueById(items.filter(hasGoodQuestion));
@@ -245,7 +340,7 @@ export function buildPracticeItems(lesson, { min = 12, max = 28 } = {}) {
   const selected = filtered.slice(0, Math.min(target, filtered.length));
 
   if (selected.length >= min || type !== 'listening') return selected;
-  return selected.length ? selected : [makeDictation(transcript[0]), makeWordBank(transcript[1] || transcript[0]), makeFillBlank(transcript[2] || transcript[0])].filter(hasGoodQuestion);
+  return selected.length ? selected : [makeDictation(transcript[0]), makeWordBank(transcript[1] || transcript[0]), makeFillBlank(transcript[2] || transcript[0], transcript, vocabulary)].filter(hasGoodQuestion);
 }
 
 function uniqueById(items) {
