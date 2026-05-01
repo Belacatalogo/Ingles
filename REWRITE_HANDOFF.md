@@ -35,34 +35,46 @@ Observação: neste bloco o conector do GitHub aceitou apenas arquivos/atualiza�
 
 ## Estado atual implementado
 
-### HOTFIX QUIZ FULLSCREEN — Polimento sem scroll IMPLEMENTADO, aguardando teste
+### HOTFIX QUIZ FULLSCREEN — Quality gate de alternativas IMPLEMENTADO, aguardando teste
 
 Contexto:
-- usuário testou a tela fullscreen e informou que a página estava rolando para cima/baixo sem ter conteúdo;
-- botão inferior estava cobrindo opções;
-- alternativas grandes demais ficavam cortadas/baixo da tela;
-- faltava polimento de qualidade visual.
+- usuário informou que não precisa gerar outra aula;
+- o problema estava no motor da prática, que montava questões com respostas vagas e alternativas de tipos misturados;
+- exemplos ruins: pergunta pessoal virando múltipla escolha, respostas longas como alternativas, `Book` misturado com spelling, frase longa misturada com True/False.
 
 Arquivo alterado:
-- `fluency-clean/src/styles/practice-fullscreen.css`
+- `fluency-clean/src/practice/PracticeEngine.js`
 
 Correção aplicada:
-- `.practice-fullscreen` agora usa `height: 100dvh`, `max-height: 100dvh`, `overflow: hidden` e `overscroll-behavior: none`;
+- adicionada classificação de tipo de resposta: `word`, `spelling`, `shortPhrase`, `sentence`, `boolean`, `personal`;
+- múltipla escolha agora só aceita alternativas do mesmo tipo da resposta;
+- perguntas pessoais deixam de virar múltipla escolha e passam para escrita;
+- respostas com `Resposta pessoal`/`Exemplo` são rejeitadas como alternativas;
+- distratores de spelling agora são gerados como spelling;
+- distratores de palavra vêm de vocabulário/transcrição;
+- distratores de frase vêm de frases equivalentes;
+- True/False passa a usar apenas `True` e `False`;
+- `hasGoodQuestion` rejeita escolhas pessoais e opções de tipo incompatível;
+- objetivo: reduzir perguntas vagas, alternativas aleatórias e respostas sem relação com o enunciado.
+
+Teste recomendado:
+1. aguardar deploy Ready;
+2. abrir Prática profunda;
+3. verificar se perguntas como “Write your name...” não aparecem mais como múltipla escolha;
+4. verificar se spelling aparece com opções de spelling;
+5. verificar se True/False não mistura com frases longas;
+6. verificar se opções longas/vagas diminuíram.
+
+### HOTFIX QUIZ FULLSCREEN — Polimento sem scroll IMPLEMENTADO
+
+Correção aplicada:
+- `.practice-fullscreen` usa `height: 100dvh`, `max-height: 100dvh`, `overflow: hidden` e `overscroll-behavior: none`;
 - layout virou grid fixo: topo, conteúdo e rodapé;
 - área da questão não deve mais criar scroll solto;
 - altura dos cards de alternativa foi reduzida e limitada com `clamp()`;
 - fonte das alternativas foi reduzida para caber melhor no iPhone;
 - botão/rodapé inferior ficou menor e com sombra controlada;
-- ajustes extras para telas baixas com `@media (max-height: 720px)`;
-- objetivo: caber a questão, opções e botão em uma tela sem rolagem vertical desnecessária.
-
-Teste recomendado:
-1. aguardar deploy Ready;
-2. abrir prática fullscreen no iPhone;
-3. confirmar que a tela não rola para cima/baixo;
-4. confirmar que o botão `Verificar` não cobre alternativas;
-5. testar questão com 4 alternativas longas;
-6. testar ditado, word bank e complete lacuna.
+- ajustes extras para telas baixas com `@media (max-height: 720px)`.
 
 ### BLOCO-QUIZ-FULLSCREEN-LAB — Prática profunda fullscreen por tipo de aula IMPLEMENTADO PARCIALMENTE
 
@@ -89,11 +101,10 @@ O que foi feito:
 - criado launcher reutilizável `PracticeLauncher`;
 - criado fullscreen `PracticeFullscreen` com X, barra de progresso, uma questão por vez, feedback e continuação;
 - CSS fullscreen importado no bootstrap principal;
-- `LessonScreen.jsx` agora renderiza `PracticeLauncher` no nível da tela da aula;
+- `LessonScreen.jsx` renderiza `PracticeLauncher` no nível da tela da aula;
 - prática antiga embutida no `ListeningLesson.jsx` foi ocultada via hotfix CSS para não sobrepor a prática nova enquanto a limpeza estrutural do JSX não é concluída;
 - tipos suportados no motor: múltipla escolha, escuta e escolha, ditado, banco de palavras, complete lacuna, correção de frase e fala;
 - quantidade de exercícios é variável, alvo entre 14 e 36 conforme conteúdo da aula;
-- alternativas ruins/curtas são filtradas;
 - respostas escritas usam normalização para ignorar pontuação, maiúsculas, acentos e espaços;
 - erros pequenos liberam tentativa extra e dica de palavra.
 
@@ -123,4 +134,4 @@ Validar build/deploy. Se quebrar, corrigir apenas build. Se funcionar, testar no
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O BLOCO-QUIZ-FULLSCREEN-LAB foi iniciado com módulo próprio em `src/practice/`, CSS importado e `PracticeLauncher` conectado em `LessonScreen.jsx`. O hotfix de polimento sem scroll do fullscreen foi aplicado em `practice-fullscreen.css`. A prática antiga do `ListeningLesson.jsx` está oculta por CSS, mas ainda precisa ser removida estruturalmente depois da validação. Validar primeiro build/deploy e teste no iPhone. Próximo passo imediato: se o deploy estiver Ready e a prática fullscreen funcionar, limpar `ListeningLesson.jsx` removendo prática antiga/rascunho. Depois seguir para aplicar prática modular aos outros tipos de aula e continuar a ordem: 12, 14, 11, 13, 17, 16, 15, 20, CARTAS-3B e AUDITORIA-POLIMENTO-GERAL."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O BLOCO-QUIZ-FULLSCREEN-LAB foi iniciado com módulo próprio em `src/practice/`, CSS importado e `PracticeLauncher` conectado em `LessonScreen.jsx`. Foram aplicados hotfixes de polimento sem scroll e quality gate de alternativas em `PracticeEngine.js`. A prática antiga do `ListeningLesson.jsx` está oculta por CSS, mas ainda precisa ser removida estruturalmente depois da validação. Validar primeiro build/deploy e teste no iPhone. Próximo passo imediato: se o deploy estiver Ready e a prática fullscreen funcionar, limpar `ListeningLesson.jsx` removendo prática antiga/rascunho. Depois seguir para aplicar prática modular aos outros tipos de aula e continuar a ordem: 12, 14, 11, 13, 17, 16, 15, 20, CARTAS-3B e AUDITORIA-POLIMENTO-GERAL."
