@@ -89,8 +89,8 @@ export async function speakText(text, { rate = 0.9, pitch = 1, lang = 'en-US' } 
     setTimeout(() => {
       if (settled) return;
       if (window.speechSynthesis.speaking || window.speechSynthesis.pending) return;
-      diagnostics.log('TTS não iniciou após o toque. Safari pode ter bloqueado a voz.', 'error');
-      finish({ ok: false, error: 'O Safari bloqueou o áudio. Toque novamente em Ouvir.' });
+      diagnostics.log('TTS não iniciou após o toque. A plataforma/navegador pode ter bloqueado a voz.', 'warn');
+      finish({ ok: false, error: 'A plataforma/navegador bloqueou o áudio. Toque novamente em Ouvir.' });
     }, 1200);
   });
 }
