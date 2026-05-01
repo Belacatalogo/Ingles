@@ -47,7 +47,45 @@ Princípio máximo:
 
 ## BLOCO ATUAL
 
-### `BLOCO-13-LAB` — Professor Gerador/Revisor IMPLEMENTADO, aguardando deploy/teste
+### `BLOCO-17-LAB` — Qualidade visível da aula IMPLEMENTADO, aguardando deploy/teste
+
+Contexto:
+- usuário quer enxergar se uma aula é confiável antes de estudar;
+- já havia `LessonQualityPanel.jsx`, mas era básico;
+- o bloco amplia o painel em vez de criar UI paralela, mantendo arquitetura limpa.
+
+Arquivos alterados:
+- `fluency-clean/src/components/lesson/LessonQualityPanel.jsx`
+- `fluency-clean/src/styles/lesson-polish.css`
+- `REWRITE_HANDOFF.md`
+
+O que foi implementado:
+- painel agora mostra uma leitura mais clara de confiança da aula;
+- mostra nota final, rubrica pedagógica e professor revisor;
+- mostra se o plano pedagógico está ativo;
+- mostra se houve correção automática;
+- mostra contrato da aula, incluindo `lesson-plan-v1` e `teacher-reviewer-v1` quando presentes;
+- mostra risco de falso domínio;
+- mostra cenário/plano usado;
+- adiciona barras por dimensão quando houver professor revisor:
+  - coerência;
+  - profundidade;
+  - exercícios úteis;
+  - alinhamento;
+  - anti-ilusão;
+  - nível seguro;
+- mantém pontos de atenção visíveis;
+- CSS foi integrado ao `lesson-polish.css`, sem criar sobreposição visual.
+
+Teste recomendado:
+1. aguardar deploy;
+2. abrir uma aula gerada após o `BLOCO-13-LAB`;
+3. verificar se aparece painel `Qualidade visível`;
+4. conferir se mostra professor revisor, plano pedagógico, contrato e risco de falso domínio;
+5. verificar se o layout não ficou pesado no iPhone;
+6. se a aula antiga não tiver professor, painel deve continuar funcionando com dados parciais.
+
+### `BLOCO-13-LAB` — Professor Gerador/Revisor IMPLEMENTADO
 
 Contexto:
 - usuário quer maior garantia de que não está perdendo tempo com aulas rasas;
@@ -72,51 +110,11 @@ O que foi implementado:
   - segurança de nível para A1/A2;
 - detecta pergunta fraca de spelling quando a alternativa entrega a resposta pronta;
 - gera `teacherReview` com nota final, nota do professor, issues e aprovação;
-- o fluxo agora é:
-  - gerar aula planejada;
-  - validar rubricamente;
-  - se necessário reparar;
-  - professor revisor avalia;
-  - se reprovar, tenta reparo com issues do professor;
-  - só salva se o professor aprovar;
+- fluxo agora: gerar aula planejada → validar rubricamente → reparar se necessário → professor revisor → reparar se necessário → salvar se aprovado;
 - contrato salvo agora pode aparecer como `lesson-contract-v1+lesson-plan-v1+teacher-reviewer-v1`;
 - qualidade salva agora inclui `teacherScore`, `teacherApproved`, `teacherIssues` e `reviewer`.
 
-Teste recomendado:
-1. aguardar deploy;
-2. gerar aula nova;
-3. confirmar no Diagnóstico:
-   - `Plano pedagógico criado`;
-   - `Professor revisor avaliou a aula`;
-4. se o professor reprovar, confirmar se tenta reparo;
-5. se salvar, conferir se a mensagem final diz `aprovada pelo professor`;
-6. abrir a aula e conferir se a qualidade parece mais coerente.
-
 ### `BLOCO-11-LAB` — Plano primeiro, aula depois IMPLEMENTADO
-
-Contexto:
-- usuário quer ter certeza de que as aulas têm qualidade real e não conteúdo raso;
-- tentativa inicial de integrar diretamente no `geminiLessons.js` foi bloqueada porque o arquivo é grande/truncado pelo conector e `update_file` exige SHA exato;
-- para não arriscar quebrar o gerador já funcional, foi escolhida arquitetura segura: módulo de plano + wrapper planejado + troca da chamada no painel.
-
-Arquivos criados:
-- `fluency-clean/src/services/lessonPlan.js`
-- `fluency-clean/src/services/plannedGeminiLessons.js`
-
-Arquivos alterados:
-- `fluency-clean/src/components/lesson/LessonGeneratorPanel.jsx`
-- `REWRITE_HANDOFF.md`
-
-O que foi implementado:
-- `lessonPlan.js` cria um plano pedagógico antes da aula;
-- plano considera tipo da aula: listening, grammar, reading, writing, speaking;
-- plano define missão, cenário, sequência pedagógica, mix ideal de exercícios, critérios de qualidade e itens proibidos;
-- para Listening A1, o plano proíbe ditado longo cedo e spelling fraco com resposta pronta em múltipla escolha;
-- `plannedGeminiLessons.js` envolve `generateLessonDraft()` sem mexer no `geminiLessons.js` grande;
-- o wrapper injeta o plano pedagógico no prompt final usado pelo gerador;
-- `LessonGeneratorPanel.jsx` agora usa `generatePlannedLessonDraft()`;
-- diagnóstico deve registrar: `Plano pedagógico criado: ...` antes da geração;
-- aulas salvas passam a carregar `lessonPlan`, `planSeed` e contrato `lesson-contract-v1+lesson-plan-v1`.
 
 ### `BLOCO-GERAÇÃO-ESTABILIDADE-1B-LAB` — Parser JSON tolerante IMPLEMENTADO E VALIDADO PELO USUÁRIO
 
@@ -163,13 +161,12 @@ Pendente técnica:
 
 ## NOVA ORDEM DE BLOCOS — QUALIDADE REAL DAS AULAS
 
-1. `BLOCO-13-LAB` — Professor Gerador/Revisor. STATUS: implementado, aguardando teste.
-2. `BLOCO-17-LAB` — Qualidade visível da aula.
-3. `BLOCO-16-LAB` — Histórico real de Speaking.
-4. `BLOCO-15-LAB` — Banco de erros real.
-5. `BLOCO-20-LAB` — Certificação por nível.
-6. `BLOCO-CARTAS-3B-LAB` — Expandir banco de vocabulário em novos lotes até 2.000 palavras reais.
-7. `BLOCO-AUDITORIA-POLIMENTO-GERAL-LAB` — após concluir os blocos principais, analisar cada página com precisão, listar melhorias possíveis e montar blocos de polimento.
+1. `BLOCO-17-LAB` — Qualidade visível da aula. STATUS: implementado, aguardando teste.
+2. `BLOCO-16-LAB` — Histórico real de Speaking.
+3. `BLOCO-15-LAB` — Banco de erros real.
+4. `BLOCO-20-LAB` — Certificação por nível.
+5. `BLOCO-CARTAS-3B-LAB` — Expandir banco de vocabulário em novos lotes até 2.000 palavras reais.
+6. `BLOCO-AUDITORIA-POLIMENTO-GERAL-LAB` — após concluir os blocos principais, analisar cada página com precisão, listar melhorias possíveis e montar blocos de polimento.
 
 ## FASE EXTRA — GARANTIA PEDAGÓGICA MÁXIMA
 
@@ -225,11 +222,11 @@ Ordem recomendada após os blocos principais:
 
 ## Pendência técnica importante
 
-- testar deploy do `BLOCO-13-LAB`;
+- testar deploy do `BLOCO-17-LAB`;
 - remover definitivamente `ListeningLesson.jsx` antigo quando o conector permitir SHA correto;
-- confirmar se o professor revisor não está restritivo demais para A1;
-- se reprovar aulas boas demais, ajustar pesos do professor sem afrouxar qualidade.
+- confirmar se o painel de qualidade não ficou pesado no iPhone;
+- confirmar se aulas antigas sem professor revisor continuam renderizando.
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. Os blocos de prática e áudio foram implementados e validados. O `BLOCO-GERAÇÃO-ESTABILIDADE-1B-LAB` foi validado. O `BLOCO-11-LAB` criou plano pedagógico antes da geração. O `BLOCO-13-LAB` criou `teacherReviewer.js` e integrou o professor revisor no `LessonGeneratorPanel.jsx`, aprovando ou reparando aulas antes de salvar. Próximo passo: testar deploy do bloco 13; se ok, seguir para `BLOCO-17-LAB` Qualidade visível da aula."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. Os blocos de prática e áudio foram implementados e validados. O `BLOCO-11-LAB` criou plano pedagógico antes da geração. O `BLOCO-13-LAB` criou professor revisor. O `BLOCO-17-LAB` ampliou `LessonQualityPanel.jsx` e `lesson-polish.css` para mostrar qualidade visível, contrato, plano, professor, risco de falso domínio e dimensões de avaliação. Próximo passo: testar deploy do bloco 17; se ok, seguir para `BLOCO-16-LAB` Histórico real de Speaking."
