@@ -10,8 +10,9 @@ const REQUIREMENTS = {
 };
 
 const LISTENING_PROFILES = {
-  alphabet: {
+  alphabetClassroom: {
     title: 'Alfabeto, sons iniciais e spelling de nomes',
+    bannedWhenVariation: true,
     transcript: `Hi, my name is Ana. Today, I am practicing the English alphabet, initial sounds and spelling names. First, I listen to the letters: A, B, C, D, E and F. Then I repeat each letter slowly.
 
 The teacher says: A is for apple, B is for book, C is for cat and D is for David. I listen carefully to the first sound of each word. Apple starts with A. Book starts with B. Cat starts with C. David starts with D.
@@ -44,6 +45,114 @@ At the end of the audio, I practice short questions. How do you spell cat? C-A-T
       { question: 'Complete: How do you ___ your name?', options: ['spell', 'listen', 'read'], answer: 'spell', explanation: 'A pergunta correta é: How do you spell your name?' },
       { question: 'True or false: Apple starts with D.', options: ['True', 'False'], answer: 'False', explanation: 'Apple começa com A.' },
       { question: 'Write your name and spell it in English letters.', answer: 'Resposta pessoal. Exemplo: My name is Ana. A-N-A.', explanation: 'O objetivo é praticar spelling real do seu nome.' },
+    ],
+  },
+  alphabetReception: {
+    title: 'Alfabeto, sons iniciais e spelling de nomes',
+    transcript: `Good morning. I am at an English school reception. The woman at the desk asks for my name. I say: My name is Leo. She asks me to spell it slowly. I say: L-E-O. Then she writes my name on a small student card.
+
+Next, she asks about my friend. His name is Tom. I spell it: T-O-M. The first sound in Tom is T. The first sound in Leo is L. We listen to the sounds and repeat them slowly.
+
+The woman shows three cards. One card says map. One card says pen. One card says sun. She says: map starts with M, pen starts with P and sun starts with S. I repeat: M, P, S.
+
+At the end, I practice short spelling questions. How do you spell Leo? L-E-O. How do you spell Tom? T-O-M. How do you spell sun? S-U-N. I listen again and repeat the letters clearly.`,
+    vocabulary: [
+      ['reception', 'recepção', 'I am at the school reception.'],
+      ['student card', 'cartão de estudante', 'She writes my name on a student card.'],
+      ['spell', 'soletrar', 'Please spell your name slowly.'],
+      ['slowly', 'devagar', 'I spell the name slowly.'],
+      ['letter', 'letra', 'L is a letter.'],
+      ['first sound', 'primeiro som', 'The first sound in Tom is T.'],
+      ['name', 'nome', 'My name is Leo.'],
+      ['friend', 'amigo', 'My friend is Tom.'],
+      ['card', 'cartão', 'The card says map.'],
+      ['map', 'mapa', 'Map starts with M.'],
+      ['pen', 'caneta', 'Pen starts with P.'],
+      ['sun', 'sol', 'Sun starts with S.'],
+    ],
+    exercises: [
+      { question: 'Where is the person in the audio?', options: ['At an English school reception', 'At a restaurant', 'At home'], answer: 'At an English school reception', explanation: 'O áudio começa com a pessoa na recepção de uma escola de inglês.' },
+      { question: 'How does Leo spell his name?', options: ['L-E-O', 'T-O-M', 'S-U-N'], answer: 'L-E-O', explanation: 'Leo soletra o próprio nome como L-E-O.' },
+      { question: 'What is the first sound in Tom?', options: ['T', 'L', 'M'], answer: 'T', explanation: 'O áudio diz que Tom começa com T.' },
+      { question: 'Which word starts with M?', options: ['map', 'pen', 'sun'], answer: 'map', explanation: 'Map começa com M.' },
+      { question: 'Which word starts with P?', options: ['pen', 'sun', 'Leo'], answer: 'pen', explanation: 'Pen começa com P.' },
+      { question: 'How do you spell sun?', options: ['S-U-N', 'M-A-P', 'P-E-N'], answer: 'S-U-N', explanation: 'No final, o áudio soletra sun como S-U-N.' },
+      { question: 'Complete: She writes my name on a student ___.', options: ['card', 'sound', 'letter'], answer: 'card', explanation: 'A frase correta é student card.' },
+      { question: 'True or false: Leo spells his name quickly.', options: ['True', 'False'], answer: 'False', explanation: 'Ele soletra devagar: slowly.' },
+      { question: 'Write the letters you hear in L-E-O.', answer: 'L-E-O', explanation: 'O objetivo é reconhecer as letras do nome curto.' },
+      { question: 'Say your name and spell it slowly.', answer: 'Resposta pessoal com nome soletrado.', explanation: 'A produção final treina spelling real do seu nome.' },
+    ],
+  },
+  alphabetCafe: {
+    title: 'Alfabeto, sons iniciais e spelling de nomes',
+    transcript: `Hello. I am in a small café. I want to order tea. The cashier asks for my name for the cup. I say: My name is Nina. She asks: How do you spell Nina? I answer: N-I-N-A.
+
+Then my brother orders milk. His name is Ben. He spells it: B-E-N. The cashier repeats the names slowly: Nina, N-I-N-A. Ben, B-E-N. We listen carefully to each letter.
+
+On the menu, I see short words: tea, milk and cake. Tea starts with T. Milk starts with M. Cake starts with C. I say the first sound of each word: T, M, C.
+
+Before we sit down, the cashier checks the cups. One cup says Nina. One cup says Ben. I listen, repeat and spell the names again. This helps me hear letters and initial sounds in English.`,
+    vocabulary: [
+      ['café', 'cafeteria', 'I am in a small café.'],
+      ['cashier', 'caixa/atendente', 'The cashier asks for my name.'],
+      ['cup', 'copo', 'My name is on the cup.'],
+      ['order', 'pedir', 'I order tea.'],
+      ['tea', 'chá', 'Tea starts with T.'],
+      ['milk', 'leite', 'Milk starts with M.'],
+      ['cake', 'bolo', 'Cake starts with C.'],
+      ['spell', 'soletrar', 'How do you spell Nina?'],
+      ['letter', 'letra', 'I hear each letter.'],
+      ['initial sound', 'som inicial', 'The initial sound of cake is C.'],
+      ['repeat', 'repetir', 'Repeat the names slowly.'],
+      ['carefully', 'com atenção', 'Listen carefully to each letter.'],
+    ],
+    exercises: [
+      { question: 'Where is the person in the audio?', options: ['In a small café', 'At school', 'At the park'], answer: 'In a small café', explanation: 'O áudio acontece em uma cafeteria pequena.' },
+      { question: 'How does Nina spell her name?', options: ['N-I-N-A', 'B-E-N', 'T-E-A'], answer: 'N-I-N-A', explanation: 'Nina soletra o nome como N-I-N-A.' },
+      { question: 'How does Ben spell his name?', options: ['B-E-N', 'N-I-N-A', 'M-I-L-K'], answer: 'B-E-N', explanation: 'Ben soletra o nome como B-E-N.' },
+      { question: 'Which word starts with T?', options: ['tea', 'milk', 'cake'], answer: 'tea', explanation: 'Tea começa com T.' },
+      { question: 'Which word starts with M?', options: ['milk', 'cake', 'cup'], answer: 'milk', explanation: 'Milk começa com M.' },
+      { question: 'What is written on the cup?', options: ['A name', 'A number', 'A question'], answer: 'A name', explanation: 'A atendente escreve os nomes nos copos.' },
+      { question: 'Complete: Cake starts with ___.', options: ['C', 'T', 'N'], answer: 'C', explanation: 'Cake começa com C.' },
+      { question: 'True or false: The cashier repeats the names slowly.', options: ['True', 'False'], answer: 'True', explanation: 'O áudio diz que a atendente repete os nomes devagar.' },
+      { question: 'Write what you hear: N-I-N-A.', answer: 'N-I-N-A', explanation: 'Esse ditado treina letras curtas, adequado para A1.' },
+      { question: 'Say one café word and its first letter.', answer: 'Resposta pessoal. Exemplo: tea, T.', explanation: 'A produção final liga vocabulário ao som inicial.' },
+    ],
+  },
+  alphabetVideoCall: {
+    title: 'Alfabeto, sons iniciais e spelling de nomes',
+    transcript: `Hi. I am in a short video call for English practice. The teacher says hello and asks my name. I say: My name is Rita. The teacher asks me to spell it. I say: R-I-T-A.
+
+Another student joins the call. His name is Sam. He spells it: S-A-M. We listen to both names and repeat the letters slowly. Rita starts with R. Sam starts with S.
+
+The teacher shows three simple words on the screen: red, bag and desk. Red starts with R. Bag starts with B. Desk starts with D. I listen and say the first sound before I read the word.
+
+At the end of the call, we practice one more time. Rita: R-I-T-A. Sam: S-A-M. Red: R. Bag: B. Desk: D. I repeat the letters and speak clearly.`,
+    vocabulary: [
+      ['video call', 'chamada de vídeo', 'I am in a video call.'],
+      ['teacher', 'professor/professora', 'The teacher asks my name.'],
+      ['student', 'aluno', 'Another student joins the call.'],
+      ['screen', 'tela', 'The words are on the screen.'],
+      ['spell', 'soletrar', 'Spell your name, please.'],
+      ['letter', 'letra', 'R is a letter.'],
+      ['clearly', 'com clareza', 'Speak clearly.'],
+      ['red', 'vermelho', 'Red starts with R.'],
+      ['bag', 'bolsa/mochila', 'Bag starts with B.'],
+      ['desk', 'mesa/carteira', 'Desk starts with D.'],
+      ['repeat', 'repetir', 'Repeat the letters slowly.'],
+      ['first sound', 'som inicial', 'Say the first sound.'],
+    ],
+    exercises: [
+      { question: 'What kind of class is in the audio?', options: ['A video call', 'A café order', 'A bus trip'], answer: 'A video call', explanation: 'O roteiro fala de uma chamada de vídeo.' },
+      { question: 'How does Rita spell her name?', options: ['R-I-T-A', 'S-A-M', 'D-E-S-K'], answer: 'R-I-T-A', explanation: 'Rita soletra R-I-T-A.' },
+      { question: 'How does Sam spell his name?', options: ['S-A-M', 'R-I-T-A', 'B-A-G'], answer: 'S-A-M', explanation: 'Sam soletra S-A-M.' },
+      { question: 'Which word starts with R?', options: ['red', 'bag', 'desk'], answer: 'red', explanation: 'Red começa com R.' },
+      { question: 'Which word starts with B?', options: ['bag', 'red', 'desk'], answer: 'bag', explanation: 'Bag começa com B.' },
+      { question: 'Which word starts with D?', options: ['desk', 'red', 'Sam'], answer: 'desk', explanation: 'Desk começa com D.' },
+      { question: 'Complete: Speak ___.', options: ['clearly', 'quickly', 'silently'], answer: 'clearly', explanation: 'O final do áudio fala em falar com clareza.' },
+      { question: 'True or false: Rita starts with S.', options: ['True', 'False'], answer: 'False', explanation: 'Rita começa com R.' },
+      { question: 'Write what you hear: S-A-M.', answer: 'S-A-M', explanation: 'Ditado curto de letras é adequado para A1.' },
+      { question: 'Say your name and one first sound.', answer: 'Resposta pessoal. Exemplo: Luis starts with L.', explanation: 'A produção final usa spelling e som inicial com seu nome.' },
     ],
   },
   routine: {
@@ -156,9 +265,20 @@ function array(value) { return Array.isArray(value) ? value : []; }
 function req(type) { return REQUIREMENTS[type] || REQUIREMENTS.reading; }
 function templates(type) { return SECTION_TEMPLATES[type] || SECTION_TEMPLATES.reading; }
 function getExpectedTitle(rawLesson, normalized, expectedTitle) { return clean(expectedTitle || rawLesson?.expectedTitle || rawLesson?.curriculumTitle || normalized?.curriculumTitle || normalized?.title || rawLesson?.title); }
-function getListeningProfile(title) {
+function getSeedIndex(seed, length) {
+  const source = clean(seed) || `${Date.now()}`;
+  const sum = Array.from(source).reduce((total, char) => total + char.charCodeAt(0), 0);
+  return length ? sum % length : 0;
+}
+function getListeningProfile(title, rawLesson = {}) {
   const lower = clean(title).toLowerCase();
-  if (/alfabeto|alphabet|spelling|spell|soletr|nomes|names|sons iniciais|initial/.test(lower)) return LISTENING_PROFILES.alphabet;
+  const variationMode = Boolean(rawLesson?.variationMode || rawLesson?.generationMeta?.variationMode || rawLesson?.generationSeed || rawLesson?.generationMeta?.generationSeed);
+  if (/alfabeto|alphabet|spelling|spell|soletr|nomes|names|sons iniciais|initial/.test(lower)) {
+    const profiles = variationMode
+      ? [LISTENING_PROFILES.alphabetReception, LISTENING_PROFILES.alphabetCafe, LISTENING_PROFILES.alphabetVideoCall]
+      : [LISTENING_PROFILES.alphabetReception, LISTENING_PROFILES.alphabetCafe, LISTENING_PROFILES.alphabetVideoCall, LISTENING_PROFILES.alphabetClassroom];
+    return profiles[getSeedIndex(rawLesson?.generationSeed || rawLesson?.generationMeta?.generationSeed, profiles.length)];
+  }
   return LISTENING_PROFILES.routine;
 }
 
@@ -271,7 +391,7 @@ export function repairLessonForQuality(rawLesson, { expectedLevel = '', expected
   const level = clean(expectedLevel) || normalized.level || 'A1';
   const isListening = type === 'listening';
   const targetTitle = getExpectedTitle(rawLesson, normalized, expectedTitle);
-  const listeningProfile = isListening ? getListeningProfile(targetTitle) : null;
+  const listeningProfile = isListening ? getListeningProfile(targetTitle, rawLesson) : null;
   const listeningTitle = targetTitle || listeningProfile?.title || 'Listening Practice';
   const repaired = {
     ...rawLesson,
@@ -295,6 +415,8 @@ export function repairLessonForQuality(rawLesson, { expectedLevel = '', expected
       repairedAt: new Date().toISOString(),
       repairedAsSpecializedType: type,
       repairedForTitle: listeningTitle,
+      repairedWithVariation: Boolean(rawLesson?.variationMode || rawLesson?.generationSeed),
+      repairProfileTitle: listeningProfile?.title || '',
     },
   };
   return repaired;
