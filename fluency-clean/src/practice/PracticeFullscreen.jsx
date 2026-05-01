@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { CheckCircle2, ChevronRight, Headphones, Mic, RotateCcw, Volume2, X, XCircle } from 'lucide-react';
+import { CheckCircle2, ChevronRight, Headphones, Mic, RotateCcw, Sparkles, Volume2, X, XCircle } from 'lucide-react';
 import { playLearningAudio } from '../services/audioPlayback.js';
 import { buildPracticeItems, evaluatePracticeAnswer, normalizeForPractice } from './PracticeEngine.js';
 
@@ -11,16 +11,34 @@ function clean(value) {
   return String(value ?? '').trim();
 }
 
+function getPracticeSkillLabel(lesson) {
+  const type = String(lesson?.type || '').toLowerCase();
+  if (type.includes('listening')) return 'Escuta ativa';
+  if (type.includes('speaking')) return 'Fala guiada';
+  if (type.includes('reading')) return 'Leitura profunda';
+  if (type.includes('grammar')) return 'Gramática prática';
+  if (type.includes('writing')) return 'Escrita guiada';
+  return 'Prática guiada';
+}
+
+function getQuestionActionLabel(type) {
+  if (type === 'dictation') return 'Conferir escrita';
+  if (type === 'wordBank') return 'Conferir frase';
+  if (type === 'speak') return 'Conferir fala';
+  return 'Verificar';
+}
+
 function ChoiceGrid({ item, value, feedback, onSelect }) {
   return (
     <div className="practice-choice-grid">
-      {item.options.map((option) => {
+      {item.options.map((option, index) => {
         const selected = normalizeForPractice(value) === normalizeForPractice(option);
         const right = feedback && normalizeForPractice(option) === normalizeForPractice(item.answer);
         const wrong = feedback && selected && !right;
         return (
           <button type="button" key={option} onClick={() => onSelect(option)} disabled={Boolean(feedback)} className={right ? 'right' : wrong ? 'wrong' : selected ? 'selected' : ''}>
-            {option}
+            <span>{String.fromCharCode(65 + index)}</span>
+            <b>{option}</b>
           </button>
         );
       })}
@@ -41,7 +59,7 @@ function WordBank({ item, selectedWords, feedback, onChange }) {
   return (
     <div className="practice-wordbank">
       <div className="practice-answer-line">
-        {selectedWords.length ? selectedWords.map((word, index) => <button key={`${word}-${index}`} type="button" onClick={() => remove(index)}>{word}</button>) : <span>Monte a frase aqui</span>}
+        {selectedWords.length ? selectedWords.map((word, index) => <button key={`${word}-${index}`} type="button" onClick={() => remove(index)}>{word}</button>) : <span>Toque nas palavras para montar a frase</span>}
       </div>
       <div className="practice-word-options">
         {item.words.map((word, index) => {
@@ -55,6 +73,7 @@ function WordBank({ item, selectedWords, feedback, onChange }) {
 
 export function PracticeFullscreen({ lesson, open, onClose, onComplete }) {
   const items = useMemo(() => buildPracticeItems(lesson, { min: 14, max: 36 }), [lesson]);
+  const [started, setStarted] = useState(false);
   const [index, setIndex] = useState(0);
   const [value, setValue] = useState('');
   const [wordBankValue, setWordBankValue] = useState([]);
@@ -66,6 +85,7 @@ export function PracticeFullscreen({ lesson, open, onClose, onComplete }) {
   const done = open && items.length > 0 && index >= items.length;
   const correctCount = results.filter((result) => result.correct).length;
   const progress = items.length ? Math.round((Math.min(index, items.length) / items.length) * 100) : 0;
+  const skillLabel = getPracticeSkillLabel(lesson);
 
   if (!open) return null;
 
@@ -89,10 +109,10 @@ export function PracticeFullscreen({ lesson, open, onClose, onComplete }) {
     const evaluation = evaluatePracticeAnswer(current, finalValue);
     if (evaluation.empty) return;
     if (evaluation.retryable) {
-      setFeedback({ ...evaluation, near: true, message: 'Quase certo. Tente de novo.' });
+      setFeedback({ ...evaluation, near: true, message: 'Quase certo. Ajuste só um detalhe.' });
       return;
     }
-    setFeedback({ ...evaluation, message: evaluation.correct ? 'Isso mesmo!' : 'Resposta correta:' });
+    setFeedback({ ...evaluation, message: evaluation.correct ? 'Muito bem!' : 'Vamos revisar.' });
     setResults((currentResults) => [...currentResults, { id: current.id, type: current.type, correct: evaluation.correct, answer: finalValue, expected: current.answer }]);
   }
 
@@ -138,6 +158,7 @@ export function PracticeFullscreen({ lesson, open, onClose, onComplete }) {
   }
 
   function restart() {
+    setStarted(false);
     setIndex(0);
     setValue('');
     setWordBankValue([]);
@@ -153,15 +174,32 @@ export function PracticeFullscreen({ lesson, open, onClose, onComplete }) {
 
   return (
     <div className="practice-fullscreen" role="dialog" aria-modal="true">
+      <div className="practice-ambient practice-ambient-one" />
+      <div className="practice-ambient practice-ambient-two" />
+
       <header className="practice-topbar">
-        <button type="button" className="practice-close" onClick={onClose} aria-label="Fechar prática"><X size={34} /></button>
-        <div className="practice-progress"><span style={{ width: `${done ? 100 : progress}%` }} /></div>
-        <strong>{done ? `${correctCount}/${items.length}` : `${index + 1}/${items.length}`}</strong>
+        <button type="button" className="practice-close" onClick={onClose} aria-label="Fechar prática"><X size={26} /></button>
+        <div className="practice-progress"><span style={{ width: `${done ? 100 : started ? progress : 0}%` }} /></div>
+        <strong>{done ? `${correctCount}/${items.length}` : started ? `${index + 1}/${items.length}` : `${items.length}`}</strong>
       </header>
 
-      {done ? (
+      {!started && !done ? (
+        <main className="practice-intro">
+          <div className="practice-intro-orb"><Sparkles size={34} /></div>
+          <p className="practice-kind">{skillLabel}</p>
+          <h1>Prática da aula</h1>
+          <p>Treine o conteúdo em etapas curtas, com correção imediata e exercícios variados.</p>
+          <div className="practice-intro-stats">
+            <span><Headphones size={15} /> {items.length} exercícios</span>
+            <span>8–12 min</span>
+            <span>nível {lesson?.level || 'A1'}</span>
+          </div>
+          <button type="button" className="practice-start-button" onClick={() => setStarted(true)}>Começar prática</button>
+        </main>
+      ) : done ? (
         <main className="practice-done">
-          <CheckCircle2 size={56} />
+          <div className="practice-done-medal"><CheckCircle2 size={52} /></div>
+          <p className="practice-kind">Sessão finalizada</p>
           <h1>Prática concluída</h1>
           <p>Você acertou {correctCount} de {items.length}. Continue revisando até ficar natural.</p>
           <button type="button" onClick={restart}><RotateCcw size={18} /> Refazer prática</button>
@@ -169,12 +207,15 @@ export function PracticeFullscreen({ lesson, open, onClose, onComplete }) {
         </main>
       ) : current ? (
         <main className="practice-question">
-          <p className="practice-kind">{current.title}</p>
-          <h1>{current.prompt}</h1>
+          <div className="practice-question-card">
+            <p className="practice-kind">{current.title}</p>
+            <h1>{current.prompt}</h1>
+          </div>
 
           {(current.type === 'listenChoice' || current.type === 'dictation') ? (
             <button type="button" className="practice-audio-big" onClick={() => playAudio(current.audioText || current.answer)} disabled={listening}>
-              <Volume2 size={56} />
+              <Volume2 size={48} />
+              <span>{listening ? 'Tocando...' : 'Ouvir'}</span>
             </button>
           ) : null}
 
@@ -199,21 +240,21 @@ export function PracticeFullscreen({ lesson, open, onClose, onComplete }) {
         </main>
       ) : null}
 
-      {!done && current ? (
+      {started && !done && current ? (
         <footer className={`practice-feedback ${feedback ? feedback.correct ? 'right' : feedback.near ? 'near' : 'wrong' : ''}`}>
           {feedback ? (
             <div className="practice-feedback-text">
               {feedback.correct ? <CheckCircle2 size={24} /> : <XCircle size={24} />}
               <div>
                 <strong>{feedback.message}</strong>
-                {!feedback.correct && !feedback.near ? <span>{current.answer}</span> : null}
+                {!feedback.correct && !feedback.near ? <span>Resposta: {current.answer}</span> : null}
                 {feedback.near && hintVisible && feedback.hintWord ? <span>Dica: confira “{feedback.hintWord}”.</span> : null}
               </div>
             </div>
-          ) : null}
+          ) : <div className="practice-feedback-placeholder">Respire, responda com calma e siga no seu ritmo.</div>}
           <div className="practice-footer-actions">
             {feedback?.near ? <button type="button" className="secondary" onClick={() => setHintVisible(true)}>Ver dica</button> : null}
-            {feedback?.near ? <button type="button" onClick={retry}><RotateCcw size={16} /> Tentar de novo</button> : feedback ? <button type="button" onClick={continueNext}>Continuar <ChevronRight size={16} /></button> : <button type="button" disabled={!clean(current.type === 'wordBank' ? wordBankValue.join(' ') : value) && !['choice', 'listenChoice', 'fillBlank'].includes(current.type)} onClick={() => submit()}>Verificar</button>}
+            {feedback?.near ? <button type="button" onClick={retry}><RotateCcw size={16} /> Tentar de novo</button> : feedback ? <button type="button" onClick={continueNext}>Continuar <ChevronRight size={16} /></button> : <button type="button" disabled={!clean(current.type === 'wordBank' ? wordBankValue.join(' ') : value) && !['choice', 'listenChoice', 'fillBlank'].includes(current.type)} onClick={() => submit()}>{getQuestionActionLabel(current.type)}</button>}
           </div>
         </footer>
       ) : null}
