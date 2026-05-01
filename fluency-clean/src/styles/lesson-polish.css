@@ -65,7 +65,27 @@
 .lesson-quality-panel.approved { border-color: rgba(91,156,246,.28); }
 .lesson-quality-panel.warning { border-color: rgba(251,191,36,.28); }
 .lesson-quality-panel.danger { border-color: rgba(248,113,113,.30); }
+.lesson-quality-panel.compact-quality { padding: 0; gap: 0; }
+.quality-compact-head { display: grid !important; grid-template-columns: minmax(0,1fr) 82px; gap: 12px; align-items: center; width: 100%; min-height: 0 !important; padding: 14px !important; border: 0 !important; background: transparent !important; text-align: left; box-shadow: none !important; }
+.quality-compact-head h2 { margin: 7px 0 0; color: #ffffff; font-size: 20px; line-height: 1.1; letter-spacing: -.04em; }
+.quality-compact-head p { margin: 6px 0 0; color: #9ca8ca; font-size: 12.5px; line-height: 1.4; }
+.quality-compact-side { display: grid; justify-items: end; gap: 7px; }
+.quality-compact-side .quality-score-ring { width: 58px; height: 58px; }
+.quality-compact-side span { display: inline-flex; align-items: center; gap: 4px; color: #93c5fd; font-size: 11px; font-weight: 950; }
+.compact-quality.ready .quality-eyebrow { color: #bbf7d0; }
+.compact-quality.attention .quality-eyebrow { color: #fde68a; }
+.compact-quality.blocked .quality-eyebrow { color: #fecaca; }
+.quality-details-body { display: grid; gap: 14px; padding: 0 14px 14px; }
+.study-readiness-box { display: grid; gap: 6px; padding: 11px; border: 1px solid rgba(52,211,153,.2); border-radius: 16px; background: rgba(52,211,153,.07); }
+.compact-quality.attention .study-readiness-box { border-color: rgba(251,191,36,.22); background: rgba(251,191,36,.08); }
+.compact-quality.blocked .study-readiness-box { border-color: rgba(248,113,113,.24); background: rgba(248,113,113,.08); }
+.study-readiness-box span { display: inline-flex; align-items: center; gap: 7px; color: #bbf7d0; font-size: 11px; font-weight: 950; letter-spacing: .12em; text-transform: uppercase; }
+.compact-quality.attention .study-readiness-box span { color: #fde68a; }
+.compact-quality.blocked .study-readiness-box span { color: #fecaca; }
+.study-readiness-box strong { color: #ffffff; font-size: 15px; font-weight: 950; }
+.study-readiness-box p,.study-readiness-box small { margin: 0; color: #dbeafe; font-size: 12px; line-height: 1.4; }
 .lesson-quality-header { display: grid; grid-template-columns: minmax(0, 1fr) 70px; align-items: center; gap: 12px; }
+.lesson-quality-header.nested { grid-template-columns: minmax(0,1fr); padding: 0; }
 .quality-eyebrow { display: inline-flex; align-items: center; gap: 6px; color: #93c5fd; font-size: 10px; font-weight: 950; letter-spacing: .15em; text-transform: uppercase; }
 .lesson-quality-header h2 { margin: 7px 0 0; color: #ffffff; font-size: 21px; letter-spacing: -.035em; line-height: 1.1; }
 .lesson-quality-header p { margin: 6px 0 0; color: #9ca8ca; font-size: 12.5px; line-height: 1.45; }
