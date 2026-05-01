@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { playLearningAudio } from '../services/audioPlayback.js';
 import { getCurrentLesson } from '../services/lessonStore.js';
 import { getFlashcardSessions, recordFlashcardSession } from '../services/progressStore.js';
+import { getTotalVocabularyBankCount, getVocabularyDeckCards, getVocabularyDecks, VOCABULARY_BANK_TARGET } from '../services/vocabularyDecks.js';
 
 function normalizeVocabularyItem(item, index) {
   if (typeof item === 'string') {
@@ -26,7 +27,7 @@ function normalizeVocabularyItem(item, index) {
     definition: item?.definition || item?.meaning || item?.explanation || 'Vocabulário extraído da aula atual.',
     example: item?.example || item?.sentence || '',
     translation: item?.translation || item?.pt || item?.portuguese || '',
-    due: 'aula atual',
+    due: item?.due || item?.level || 'aula atual',
     deck: item?.deck || item?.category || 'Aula atual',
     id: item?.id || `${item?.word || item?.term || 'card'}-${index}`,
   };
@@ -61,9 +62,24 @@ function statsFromSession(session) {
   };
 }
 
+function makeDeckLesson(deck) {
+  return {
+    id: `deck-${deck.id}`,
+    title: `Deck · ${deck.title}`,
+    type: 'flashcards',
+    level: deck.level || 'A1',
+  };
+}
+
 export function FlashcardsScreen({ onNavigate }) {
   const currentLesson = getCurrentLesson();
-  const persistedSession = useMemo(() => findTodaySession(currentLesson), [currentLesson?.id, currentLesson?.title]);
+  const currentLessonCards = useMemo(() => (Array.isArray(currentLesson?.vocabulary) ? currentLesson.vocabulary.map(normalizeVocabularyItem) : []), [currentLesson]);
+  const decks = useMemo(() => getVocabularyDecks(), []);
+  const bankCount = getTotalVocabularyBankCount();
+  const [activeDeckId, setActiveDeckId] = useState(() => currentLessonCards.length ? 'lesson' : 'core-a1');
+  const activeDeck = decks.find((deck) => deck.id === activeDeckId) || decks[0];
+  const sessionTarget = activeDeckId === 'lesson' ? currentLesson : makeDeckLesson(activeDeck);
+  const persistedSession = useMemo(() => findTodaySession(sessionTarget), [sessionTarget?.id, sessionTarget?.title]);
   const [flipped, setFlipped] = useState(false);
   const [cardIndex, setCardIndex] = useState(0);
   const [sessionStats, setSessionStats] = useState(() => statsFromSession(persistedSession));
@@ -71,7 +87,10 @@ export function FlashcardsScreen({ onNavigate }) {
   const [sessionRecord, setSessionRecord] = useState(() => persistedSession);
   const [reviewLog, setReviewLog] = useState([]);
   const [audioMessage, setAudioMessage] = useState(() => persistedSession ? 'Sessão de cartas já concluída hoje.' : '');
-  const cards = useMemo(() => (Array.isArray(currentLesson?.vocabulary) ? currentLesson.vocabulary.map(normalizeVocabularyItem) : []), [currentLesson]);
+  const cards = useMemo(() => {
+    if (activeDeckId === 'lesson') return currentLessonCards;
+    return getVocabularyDeckCards(activeDeckId).map(normalizeVocabularyItem);
+  }, [activeDeckId, currentLessonCards]);
   const currentCard = cards.length && !sessionDone ? cards[Math.min(cardIndex, cards.length - 1)] : null;
   const sessionPosition = cards.length ? Math.min(cardIndex + 1, cards.length) : 0;
   const sessionProgress = cards.length ? Math.min(100, (sessionStats.reviewed / cards.length) * 100) : 0;
@@ -81,18 +100,33 @@ export function FlashcardsScreen({ onNavigate }) {
   }, [sessionStats]);
 
   useEffect(() => {
-    if (!persistedSession) return;
+    if (activeDeckId === 'lesson' && !currentLessonCards.length) setActiveDeckId('core-a1');
+  }, [activeDeckId, currentLessonCards.length]);
+
+  useEffect(() => {
     setFlipped(false);
     setCardIndex(0);
-    setSessionStats(statsFromSession(persistedSession));
-    setSessionDone(true);
-    setSessionRecord(persistedSession);
-    setAudioMessage('Sessão de cartas já concluída hoje.');
-  }, [persistedSession?.id]);
+    setReviewLog([]);
+    if (persistedSession) {
+      setSessionStats(statsFromSession(persistedSession));
+      setSessionDone(true);
+      setSessionRecord(persistedSession);
+      setAudioMessage('Sessão de cartas já concluída hoje.');
+    } else {
+      setSessionStats(initialStats());
+      setSessionDone(false);
+      setSessionRecord(null);
+      setAudioMessage('');
+    }
+  }, [activeDeckId, persistedSession?.id]);
+
+  function selectDeck(deckId) {
+    setActiveDeckId(deckId);
+  }
 
   function finishSession(nextStats, nextLog) {
     const record = recordFlashcardSession({
-      lesson: currentLesson,
+      lesson: sessionTarget,
       totalCards: cards.length,
       reviewedCards: nextStats.reviewed,
       correctCount: nextStats.correct,
@@ -112,6 +146,7 @@ export function FlashcardsScreen({ onNavigate }) {
     const reviewItem = {
       id: currentCard.id,
       word: currentCard.word,
+      deck: currentCard.deck,
       rating: tone,
       needsReview: isMissed,
       reviewedAt: new Date().toISOString(),
@@ -165,16 +200,34 @@ export function FlashcardsScreen({ onNavigate }) {
         <div>
           <p className="cards-eyebrow">Flashcards</p>
           <h1>Cartas</h1>
-          <p>{cards.length ? `${cards.length} card(s) reais da aula atual` : 'Nenhum card real disponível ainda'}</p>
+          <p>{cards.length ? `${cards.length} card(s) no deck selecionado · ${bankCount}/${VOCABULARY_BANK_TARGET} do banco planejado` : 'Nenhum card real disponível ainda'}</p>
         </div>
       </div>
 
       <div className="cards-deck-scroll" aria-label="Baralhos de revisão">
-        <button className="cards-chip active" type="button">
-          Aula atual
-          <span>{cards.length}</span>
-        </button>
+        {currentLessonCards.length ? (
+          <button className={`cards-chip ${activeDeckId === 'lesson' ? 'active' : ''}`} type="button" onClick={() => selectDeck('lesson')}>
+            Aula atual
+            <span>{currentLessonCards.length}</span>
+          </button>
+        ) : null}
+        {decks.map((deck) => (
+          <button className={`cards-chip ${activeDeckId === deck.id ? 'active' : ''}`} type="button" key={deck.id} onClick={() => selectDeck(deck.id)}>
+            {deck.title}
+            <span>{deck.count}</span>
+          </button>
+        ))}
       </div>
+
+      <section className="cards-review-footer">
+        <div>
+          <Layers3 size={18} />
+          <span>Banco por tópicos</span>
+        </div>
+        <strong>{bankCount} palavras organizadas agora</strong>
+        <p>Meta registrada: {VOCABULARY_BANK_TARGET} palavras. Esta etapa cria a base real por decks para revisar por tema sem depender apenas da aula atual.</p>
+        <small><Clock3 size={13} /> Próximas expansões podem adicionar mais lotes até fechar 2.000.</small>
+      </section>
 
       {!cards.length ? (
         <section className="cards-review-footer">
@@ -182,9 +235,9 @@ export function FlashcardsScreen({ onNavigate }) {
             <Layers3 size={18} />
             <span>Sem cards reais</span>
           </div>
-          <strong>gere ou abra uma aula com vocabulário</strong>
-          <p>As cartas agora só mostram vocabulário real vindo da aula atual. Não há mais baralhos ou contagens fictícias.</p>
-          <small><Clock3 size={13} /> volte após gerar uma aula por IA</small>
+          <strong>selecione um deck ou gere uma aula com vocabulário</strong>
+          <p>As cartas agora usam vocabulário real da aula atual e também decks temáticos do banco interno.</p>
+          <small><Clock3 size={13} /> escolha um tópico acima</small>
         </section>
       ) : sessionDone ? (
         <section className="cards-complete-card" aria-label="Sessão de flashcards concluída">
@@ -242,7 +295,7 @@ export function FlashcardsScreen({ onNavigate }) {
                 </div>
 
                 <div className="cards-card-center">
-                  <span className="cards-phonetic">{[currentCard.pos, currentCard.phonetic].filter(Boolean).join(' · ') || 'vocabulário real'}</span>
+                  <span className="cards-phonetic">{[currentCard.pos, currentCard.phonetic].filter(Boolean).join(' · ') || currentCard.level || 'vocabulário real'}</span>
                   <strong className="cards-word">{currentCard.word}</strong>
                   <span className="cards-audio-pill" onClick={(event) => handleCardAudio(currentCard.word, event)} role="button" tabIndex={0}>
                     <Volume2 size={14} /> Ouvir
@@ -298,7 +351,7 @@ export function FlashcardsScreen({ onNavigate }) {
           <section className="cards-session-stats" aria-label="Estatísticas da sessão atual">
             <div className="cards-section-title">
               <span><Brain size={15} /> Esta sessão</span>
-              <small>somente revisão atual</small>
+              <small>{activeDeckId === 'lesson' ? 'aula atual' : activeDeck?.title}</small>
             </div>
 
             <div className="cards-stat-grid">
