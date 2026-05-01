@@ -20,9 +20,22 @@ const JSON_OUTPUT_GUARD = [
   'Nunca comece com {\\"type\\" ou {\\"exercises\\".',
   'Nunca coloque barra invertida antes de aspas de chaves JSON.',
   'Forma correta: {"type":"listening","level":"A1"}',
-  'Forma proibida: {\\"type\\":\\"listening\\",\\"level\\":\\"A1\\"}',
+  'Forma proibida: {\\"type\\":\\"listening\\",\\"level\\":\\"A1"}',
   'Não coloque markdown, texto explicativo, comentários ou aspas envolvendo o objeto JSON.',
   'Se a API pedir application/json, devolva objeto JSON real, não texto serializado dentro de texto.',
+].join('\n');
+
+const LISTENING_SOURCE_OF_TRUTH_GUARD = [
+  'REGRA CRÍTICA PARA AULAS LISTENING:',
+  'A transcrição/listeningText é a fonte única de verdade da aula.',
+  'Primeiro crie uma transcrição completa e coerente; depois vocabulário e questões devem sair somente dessa transcrição.',
+  'Nunca faça pergunta sobre informação que não aparece literalmente ou claramente na transcrição.',
+  'Nunca inclua vocabulário principal que não aparece na transcrição.',
+  'Se o texto for diálogo entre duas ou mais pessoas, cada fala deve começar com o nome/papel do falante seguido de dois pontos.',
+  'Exemplo correto: Librarian: Hello, Clara. How can I help you?',
+  'Exemplo correto: Clara: I am looking for a book about local history.',
+  'Se houver autor, livro, número, sobrenome ou qualquer detalhe cobrado nos exercícios, esse detalhe precisa aparecer no listeningText.',
+  'Se não aparece no listeningText, não pode aparecer no vocabulário nem nas questões.',
 ].join('\n');
 
 export async function generatePlannedLessonDraft(options = {}) {
@@ -50,6 +63,8 @@ export async function generatePlannedLessonDraft(options = {}) {
 
   const plannedPrompt = [
     JSON_OUTPUT_GUARD,
+    '',
+    lessonType === 'listening' ? LISTENING_SOURCE_OF_TRUTH_GUARD : '',
     '',
     buildPlanPromptText(plan),
     '',
