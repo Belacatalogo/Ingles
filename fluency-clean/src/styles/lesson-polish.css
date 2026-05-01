@@ -77,6 +77,15 @@
 .quality-card svg { color: #93c5fd; }
 .quality-card span { display: block; margin-top: 7px; color: #8b95b5; font-size: 10px; font-weight: 900; letter-spacing: .04em; text-transform: uppercase; }
 .quality-card strong { display: block; margin-top: 3px; color: #f8fbff; font-size: 12px; line-height: 1.25; overflow-wrap: anywhere; }
+.quality-reviewed-areas { display: grid; gap: 10px; padding: 11px; border: 1px solid rgba(91,156,246,.18); border-radius: 16px; background: rgba(91,156,246,.06); }
+.quality-reviewed-areas > span { display: inline-flex; align-items: center; gap: 7px; color: #bfdbfe; font-size: 11px; font-weight: 950; letter-spacing: .12em; text-transform: uppercase; }
+.quality-reviewed-areas > div { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.quality-reviewed-areas article { display: grid; grid-template-columns: 18px minmax(0,1fr); gap: 3px 7px; align-items: start; padding: 9px; border: 1px solid rgba(147,160,213,.13); border-radius: 13px; background: rgba(255,255,255,.035); }
+.quality-reviewed-areas article.reviewed svg { color: #34d399; }
+.quality-reviewed-areas article.missing svg { color: #fbbf24; }
+.quality-reviewed-areas article strong { color: #f8fbff; font-size: 11.5px; font-weight: 950; line-height: 1.2; overflow-wrap: anywhere; }
+.quality-reviewed-areas article small { grid-column: 2; color: #93c5fd; font-size: 10.5px; font-weight: 850; line-height: 1.2; }
+.quality-reviewed-areas article p { grid-column: 1 / -1; margin: 3px 0 0; color: #8b95b5; font-size: 10.5px; line-height: 1.35; }
 .quality-plan-box { display: grid; gap: 7px; padding: 11px; border: 1px solid rgba(167,139,250,.18); border-radius: 16px; background: rgba(167,139,250,.07); }
 .quality-plan-box span { display: inline-flex; align-items: center; gap: 7px; color: #ddd6fe; font-size: 11px; font-weight: 950; letter-spacing: .12em; text-transform: uppercase; }
 .quality-plan-box p { margin: 0; color: #dbeafe; font-size: 12.5px; line-height: 1.45; }
@@ -188,4 +197,4 @@
 .writing-prompt-list div { display: grid; grid-template-columns: 28px 1fr; align-items: center; gap: 10px; }
 .writing-editor-card p { margin-top: 10px; color: #9ca8ca; }
 .writing-actions button:first-child { border: 1px solid rgba(147,160,213,.16); color: #dbeafe; background: rgba(255,255,255,.045); }
-@media (min-width: 720px) { .lesson-reference-screen .reading-grid,.lesson-reference-screen .reading-main-grid,.lesson-reference-screen .grammar-study-grid { grid-template-columns: minmax(0, 1.4fr) minmax(260px, .6fr); } .quality-grid { grid-template-columns: repeat(3, minmax(0,1fr)); } }
+@media (min-width: 720px) { .lesson-reference-screen .reading-grid,.lesson-reference-screen .reading-main-grid,.lesson-reference-screen .grammar-study-grid { grid-template-columns: minmax(0, 1.4fr) minmax(260px, .6fr); } .quality-grid { grid-template-columns: repeat(3, minmax(0,1fr)); } .quality-reviewed-areas > div { grid-template-columns: repeat(3, minmax(0,1fr)); } }
