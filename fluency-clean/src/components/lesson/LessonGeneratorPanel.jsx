@@ -5,6 +5,7 @@ import { diagnostics } from '../../services/diagnostics.js';
 import { generateLessonDraft } from '../../services/geminiLessons.js';
 import { getLessonKeysStatus, getLessonFlashKeys, getLessonProKey } from '../../services/lessonKeys.js';
 import { saveCurrentLesson } from '../../services/lessonStore.js';
+import { repairLessonForQuality } from '../../services/lessonRepair.js';
 import { attachPedagogicalReview, validateLessonForQuality } from '../../services/lessonValidation.js';
 import { buildSaturdayReviewLesson, shouldPrioritizeSaturdayReview } from '../../services/masteryStore.js';
 
@@ -73,25 +74,54 @@ export function LessonGeneratorPanel({ onGenerated }) {
       diagnostics.setPhase('avaliando qualidade pedagógica', 'generating');
       diagnostics.log('Avaliação pedagógica iniciada antes de salvar a aula.', 'info');
 
-      const pedagogicalReview = validateLessonForQuality(lessonToValidate, {
+      let pedagogicalReview = validateLessonForQuality(lessonToValidate, {
         expectedLevel: nextLesson.level,
         expectedType: lessonToValidate.type,
       });
+      let lessonForSave = lessonToValidate;
+      let autoRepaired = false;
 
       if (!pedagogicalReview.approved) {
-        const issueText = pedagogicalReview.issues.length ? ` Problemas: ${pedagogicalReview.issues.join(' ')}` : '';
-        const error = `Aula reprovada na avaliação pedagógica (${pedagogicalReview.overallScore}/100). Gere novamente ou reduza o escopo.${issueText}`;
-        diagnostics.setPhase('aula reprovada na avaliação pedagógica', 'error');
-        diagnostics.log(error, 'error', pedagogicalReview);
-        setMessage(error);
-        return;
+        diagnostics.setPhase('corrigindo aula automaticamente', 'generating');
+        diagnostics.log(`Aula reprovada (${pedagogicalReview.overallScore}/100). Tentando correção automática local antes de descartar.`, 'warn', pedagogicalReview);
+        setMessage(`Aula ficou fraca (${pedagogicalReview.overallScore}/100). Tentando correção automática antes de salvar...`);
+
+        const repairedLesson = repairLessonForQuality(lessonToValidate, {
+          expectedLevel: nextLesson.level,
+          expectedType: lessonToValidate.type,
+          review: pedagogicalReview,
+        });
+        const repairedReview = validateLessonForQuality(repairedLesson, {
+          expectedLevel: nextLesson.level,
+          expectedType: lessonToValidate.type,
+        });
+
+        if (repairedReview.approved) {
+          autoRepaired = true;
+          lessonForSave = repairedLesson;
+          pedagogicalReview = {
+            ...repairedReview,
+            autoRepaired: true,
+            previousScore: pedagogicalReview.overallScore,
+            previousIssues: pedagogicalReview.issues,
+          };
+          diagnostics.log(`Correção automática aprovada: ${repairedReview.overallScore}/100.`, 'success', pedagogicalReview);
+        } else {
+          const issueText = repairedReview.issues.length ? ` Problemas: ${repairedReview.issues.join(' ')}` : '';
+          const error = `Aula reprovada mesmo após correção automática (${repairedReview.overallScore}/100). Gere novamente ou reduza o escopo.${issueText}`;
+          diagnostics.setPhase('aula reprovada após correção automática', 'error');
+          diagnostics.log(error, 'error', repairedReview);
+          setMessage(error);
+          return;
+        }
       }
 
       diagnostics.log(`Aula aprovada na avaliação pedagógica: ${pedagogicalReview.overallScore}/100.`, 'info', pedagogicalReview);
 
-      const saved = saveCurrentLesson(attachPedagogicalReview(lessonToValidate, pedagogicalReview));
+      const saved = saveCurrentLesson(attachPedagogicalReview(lessonForSave, pedagogicalReview));
       diagnostics.log(`${saturdayReview ? 'Revisão adaptativa' : 'Aula do cronograma'} pronta para abrir: ${saved.title}`, 'info');
-      setMessage(saturdayReview ? `Revisão validada (${pedagogicalReview.overallScore}/100), salva e aberta na aba Aula.` : `Aula validada (${pedagogicalReview.overallScore}/100), salva e aberta na aba Aula.`);
+      const repairLabel = autoRepaired ? ' corrigida automaticamente,' : '';
+      setMessage(saturdayReview ? `Revisão${repairLabel} validada (${pedagogicalReview.overallScore}/100), salva e aberta na aba Aula.` : `Aula${repairLabel} validada (${pedagogicalReview.overallScore}/100), salva e aberta na aba Aula.`);
       onGenerated?.(saved);
     } catch (error) {
       diagnostics.log(`Erro inesperado ao gerar aula do cronograma: ${error?.message || error}`, 'error');
