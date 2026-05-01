@@ -17,6 +17,19 @@
 .grammar-warning-card { background: linear-gradient(135deg, rgba(91,156,246,.14), rgba(15,23,42,.72)); }
 .grammar-practice-card { background: linear-gradient(180deg, rgba(15,23,42,.80), rgba(15,23,42,.60)); }
 
+.lesson-section-stack { display: grid; gap: 14px; }
+.lesson-content-block { display: grid; gap: 9px; padding: 16px; border: 1px solid rgba(147,160,213,.16); border-radius: 20px; background: rgba(7, 13, 31, .46); }
+.lesson-content-block h3 { margin: 0; color: #f8fafc; font-size: clamp(22px, 6vw, 34px); line-height: 1.1; letter-spacing: -.04em; }
+.lesson-content-block p { margin: 0; color: #d7def4; font-size: 17px; line-height: 1.65; }
+.lesson-content-block ul { margin: 4px 0 0; padding-left: 20px; color: #c8d2ef; line-height: 1.55; }
+.lesson-vocabulary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; }
+.lesson-vocab-card { display: grid; gap: 8px; padding: 16px; border: 1px solid rgba(147,160,213,.18); border-radius: 20px; background: linear-gradient(180deg, rgba(20, 31, 59, .82), rgba(8, 14, 32, .78)); box-shadow: inset 0 1px 0 rgba(255,255,255,.04); }
+.lesson-vocab-card strong { display: block; color: #ffffff; font-size: 24px; line-height: 1.08; letter-spacing: -.03em; }
+.lesson-vocab-card span { display: inline-flex; width: fit-content; max-width: 100%; padding: 6px 10px; border-radius: 999px; color: #d8ccff; background: rgba(124, 92, 255, .18); border: 1px solid rgba(164, 140, 255, .28); font-size: 15px; font-weight: 850; line-height: 1.25; }
+.lesson-vocab-card p { margin: 2px 0 0; color: #aeb9d8; font-size: 15px; line-height: 1.45; }
+.lesson-helper-text { margin: 0 0 14px; color: #aeb9d8; line-height: 1.5; }
+.inline-lesson-action { width: fit-content; min-height: 40px; display: inline-flex; align-items: center; gap: 8px; margin-top: 9px; padding: 0 14px; border-radius: 999px; border: 1px solid rgba(91,156,246,.34); background: rgba(91,156,246,.12); color: #bfdbfe; font-weight: 900; }
+
 .reference-flashcards-screen { gap: 18px; }
 .flashcards-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 .flashcards-header h1 { margin: 0; color: white; font-size: clamp(38px, 10vw, 56px); line-height: .95; }
@@ -66,6 +79,8 @@
 
 @media (max-width: 720px) {
   .grammar-study-grid { grid-template-columns: 1fr; }
+  .lesson-vocabulary-grid { grid-template-columns: 1fr; }
+  .lesson-vocab-card { padding: 15px; }
   .reference-flashcard { min-height: 398px; padding: 22px; border-radius: 26px; }
   .flashcard-word-area strong { font-size: clamp(44px, 15vw, 64px); }
   .flashcard-review-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
