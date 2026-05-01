@@ -9,6 +9,29 @@ const REQUIREMENTS = {
   vocabulary: { minSections: 5, minVocabulary: 12, minExercises: 10, minPrompts: 4, minMainLength: 0 },
 };
 
+const LISTENING_TRANSCRIPT = `Hi, my name is Ana. Every morning, I wake up at seven o'clock and make coffee. Then I open my English notebook and listen to a short audio lesson.
+
+In the lesson, I hear simple words, short questions and clear examples. First, I listen without reading. After that, I read the transcription and check the words I did not understand.
+
+Today, the teacher asks about names, letters and spelling. I practice slowly: A, B, C, D. Then I spell simple words like cat, book and apple.
+
+At night, I listen again and repeat the sentences out loud. This helps me improve my pronunciation, remember new vocabulary and understand English when people speak naturally.`;
+
+const LISTENING_VOCAB = [
+  ['listen', 'ouvir', 'I listen to a short audio lesson.'],
+  ['hear', 'escutar/perceber pelo ouvido', 'I hear simple words in the audio.'],
+  ['audio', 'áudio', 'The audio is clear and slow.'],
+  ['transcription', 'transcrição', 'I read the transcription after listening.'],
+  ['repeat', 'repetir', 'I repeat the sentences out loud.'],
+  ['sentence', 'frase', 'This sentence is easy to understand.'],
+  ['question', 'pergunta', 'The teacher asks a question.'],
+  ['answer', 'resposta/responder', 'I answer in English.'],
+  ['spell', 'soletrar', 'I spell the word cat.'],
+  ['letter', 'letra', 'The letter A is the first letter.'],
+  ['word', 'palavra', 'This word is new for me.'],
+  ['pronunciation', 'pronúncia', 'I improve my pronunciation.'],
+];
+
 const SECTION_TEMPLATES = {
   reading: [
     ['Pré-leitura', 'Antes de ler, observe o título, identifique palavras conhecidas e pense no contexto geral do texto. Esta etapa prepara compreensão e reduz ansiedade.'],
@@ -28,12 +51,12 @@ const SECTION_TEMPLATES = {
     ['Revisão final', 'Faça um checklist: forma afirmativa, negativa, pergunta, uso real e erro comum. Reescreva uma frase própria.'],
   ],
   listening: [
-    ['Escuta global', 'Ouça uma vez sem pausar para captar a ideia geral. Não tente entender todas as palavras na primeira escuta.'],
-    ['Escuta por detalhes', 'Ouça novamente procurando nomes, números, ações e palavras-chave. Anote apenas informações importantes.'],
-    ['Shadowing', 'Repita frases curtas copiando ritmo, pausa e pronúncia. Comece devagar e aumente a naturalidade aos poucos.'],
-    ['Vocabulário do áudio', 'Estude palavras que aparecem no áudio dentro de frases reais. Preste atenção à forma como soam conectadas.'],
-    ['Compreensão', 'Responda às perguntas usando o que ouviu. Se errar, volte ao trecho e procure o detalhe que passou despercebido.'],
-    ['Revisão final', 'Resuma o áudio com frases simples, revise palavras novas e repita as partes mais úteis em voz alta.'],
+    ['Escuta global', 'Ouça o áudio uma vez sem pausar. O objetivo da primeira escuta é entender a situação geral: quem fala, onde acontece e qual é o assunto principal.'],
+    ['Escuta por detalhes', 'Ouça novamente procurando informações específicas: nomes, horários, ações, palavras soletradas e perguntas feitas no áudio. Anote apenas palavras-chave.'],
+    ['Transcrição guiada', 'Depois de escutar, leia a transcrição e compare com o que você entendeu. Marque palavras que pareciam diferentes quando foram faladas.'],
+    ['Vocabulário auditivo', 'Estude palavras que aparecem no áudio e pratique como elas soam dentro de frases. O foco é reconhecer a palavra quando alguém fala.'],
+    ['Compreensão auditiva', 'Responda às perguntas usando o áudio e a transcrição como apoio. Volte ao trecho do áudio antes de revelar a resposta esperada.'],
+    ['Shadowing', 'Repita frases curtas copiando ritmo, pausas e pronúncia. Comece com frases lentas e depois tente falar junto com o áudio.'],
   ],
   writing: [
     ['Modelo', 'Observe um modelo curto antes de escrever. Repare na estrutura, nas frases de abertura e na conclusão.'],
@@ -82,6 +105,7 @@ function req(type) { return REQUIREMENTS[type] || REQUIREMENTS.reading; }
 function templates(type) { return SECTION_TEMPLATES[type] || SECTION_TEMPLATES.reading; }
 
 function makeSections(lesson, type) {
+  if (type === 'listening') return templates('listening').map(([title, content]) => ({ title, content, examples: [] }));
   const existing = array(lesson.sections).map((section, index) => ({
     title: clean(section?.title || section?.heading || `Parte ${index + 1}`),
     content: clean(section?.content || section?.text || section?.body || section?.explanation),
@@ -102,6 +126,7 @@ function makeSections(lesson, type) {
 }
 
 function makeVocabulary(lesson, type) {
+  if (type === 'listening') return LISTENING_VOCAB.map(([word, meaning, example]) => ({ word, meaning, example }));
   const existing = array(lesson.vocabulary).map((item) => ({
     word: clean(item?.word || item?.term),
     meaning: clean(item?.meaning || item?.translation || item?.definition),
@@ -119,7 +144,23 @@ function makeVocabulary(lesson, type) {
   return next;
 }
 
+function makeListeningExercises() {
+  return [
+    { question: 'What does Ana do every morning before opening her notebook?', options: [], answer: 'She wakes up at seven o’clock and makes coffee.', explanation: 'Essa informação aparece no começo do áudio.' },
+    { question: 'What does Ana listen to?', options: [], answer: 'She listens to a short audio lesson.', explanation: 'O áudio diz que ela abre o caderno e escuta uma aula curta.' },
+    { question: 'What does Ana do before reading the transcription?', options: [], answer: 'She listens without reading.', explanation: 'A ordem correta é ouvir primeiro e ler a transcrição depois.' },
+    { question: 'Which words does Ana spell in the audio?', options: [], answer: 'She spells cat, book and apple.', explanation: 'Essas palavras aparecem na parte sobre letras e soletração.' },
+    { question: 'Why does Ana listen again at night?', options: [], answer: 'To improve pronunciation, remember vocabulary and understand natural English.', explanation: 'Essa é a conclusão do roteiro de listening.' },
+    { question: 'What is the main idea of the audio?', options: [], answer: 'Ana uses listening, transcription and repetition to practice English.', explanation: 'A ideia principal combina rotina, áudio, transcrição e shadowing.' },
+    { question: 'Complete: Ana reads the ______ after listening.', options: ['grammar rule', 'transcription', 'dictionary'], answer: 'transcription', explanation: 'Ela lê a transcrição depois da primeira escuta.' },
+    { question: 'Complete: At night, Ana repeats the sentences ______.', options: ['out loud', 'silently', 'in Portuguese'], answer: 'out loud', explanation: 'O áudio diz que ela repete as frases em voz alta.' },
+    { question: 'True or false: Ana reads the transcription before listening.', options: ['True', 'False'], answer: 'False', explanation: 'Ela escuta sem ler primeiro.' },
+    { question: 'Write one sentence from the audio that you can repeat for shadowing.', options: [], answer: 'Resposta pessoal baseada na transcrição.', explanation: 'O objetivo é escolher uma frase curta para repetir em voz alta.' },
+  ];
+}
+
 function makeExercises(lesson, type) {
+  if (type === 'listening') return makeListeningExercises();
   const existing = array(lesson.exercises).map((item, index) => ({
     question: clean(item?.question || item?.prompt || `Questão ${index + 1}`),
     options: array(item?.options || item?.choices || item?.alternatives).map(clean).filter(Boolean),
@@ -145,6 +186,14 @@ function makeExercises(lesson, type) {
 }
 
 function makePrompts(lesson, type) {
+  if (type === 'listening') {
+    return [
+      'Ouça o áudio uma vez sem ler a transcrição e escreva a ideia principal em português.',
+      'Ouça novamente e anote três palavras que você reconheceu.',
+      'Leia a transcrição e marque uma frase curta para repetir em shadowing.',
+      'Grave ou fale em voz alta uma frase parecida com a rotina da Ana.',
+    ];
+  }
   const next = array(lesson.prompts || lesson.writingPrompts).map(clean).filter(Boolean);
   const additions = [
     'Explique em português o ponto principal da aula em uma frase.',
@@ -161,6 +210,7 @@ function makePrompts(lesson, type) {
 }
 
 function makeMainText(lesson, type) {
+  if (type === 'listening') return LISTENING_TRANSCRIPT;
   const min = req(type).minMainLength;
   const current = clean(lesson.listeningText || lesson.listening_text || lesson.transcript);
   if (!min || current.length >= min) return current;
@@ -175,26 +225,28 @@ export function repairLessonForQuality(rawLesson, { expectedLevel = '', expected
   const normalized = normalizeLesson(rawLesson);
   const type = clean(expectedType) || normalized.type || 'reading';
   const level = clean(expectedLevel) || normalized.level || 'A1';
+  const isListening = type === 'listening';
   const repaired = {
     ...rawLesson,
     id: rawLesson?.id || normalized.id,
     type,
     level,
-    title: clean(rawLesson?.title || normalized.title) || 'Aula de inglês',
-    objective: clean(rawLesson?.objective || rawLesson?.goal || normalized.objective) || `Aprender e praticar ${type} no nível ${level} com explicação, exemplos, exercícios e revisão final.`,
-    intro: clean(rawLesson?.intro || normalized.intro) || `Nesta aula, você vai estudar ${type} no nível ${level} com prática guiada e produção ativa.`,
-    focus: clean(rawLesson?.focus || normalized.focus) || `${type} · ${level}`,
+    title: isListening ? 'Listening Practice — Daily English Routine' : (clean(rawLesson?.title || normalized.title) || 'Aula de inglês'),
+    objective: isListening ? 'Treinar compreensão auditiva em inglês A1 usando escuta global, escuta por detalhes, transcrição, vocabulário auditivo e shadowing.' : (clean(rawLesson?.objective || rawLesson?.goal || normalized.objective) || `Aprender e praticar ${type} no nível ${level} com explicação, exemplos, exercícios e revisão final.`),
+    intro: isListening ? 'Nesta aula de Listening, você vai ouvir um roteiro curto sobre rotina de estudos, identificar informações principais, revisar vocabulário do áudio e repetir frases em voz alta.' : (clean(rawLesson?.intro || normalized.intro) || `Nesta aula, você vai estudar ${type} no nível ${level} com prática guiada e produção ativa.`),
+    focus: isListening ? `listening · audio comprehension · shadowing · ${level}` : (clean(rawLesson?.focus || normalized.focus) || `${type} · ${level}`),
     sections: makeSections(normalized, type),
     vocabulary: makeVocabulary(normalized, type),
     exercises: makeExercises(normalized, type),
     prompts: makePrompts(normalized, type),
-    tips: [...array(rawLesson?.tips || normalized.tips), 'Revisão final: confira objetivo, vocabulário, exercícios e produção independente antes de concluir.'],
+    tips: isListening ? ['Ouça primeiro sem ler.', 'Depois leia a transcrição.', 'Repita frases curtas em shadowing.', 'Revise palavras que soam diferente quando faladas.'] : [...array(rawLesson?.tips || normalized.tips), 'Revisão final: confira objetivo, vocabulário, exercícios e produção independente antes de concluir.'],
     listeningText: makeMainText(normalized, type),
     quality: {
       ...(rawLesson?.quality && typeof rawLesson.quality === 'object' ? rawLesson.quality : {}),
       autoRepairAttempted: true,
       autoRepairReason: review?.issues || [],
       repairedAt: new Date().toISOString(),
+      repairedAsSpecializedType: type,
     },
   };
   return repaired;
