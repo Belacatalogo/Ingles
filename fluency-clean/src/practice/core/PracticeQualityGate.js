@@ -4,6 +4,9 @@ import { cleanPracticeText, detectAnswerKind, normalizePracticeText, splitPracti
 const BLOCKED_OPTION_PATTERNS = [
   /resposta pessoal/i,
   /personal answer/i,
+  /resposta\//i,
+  /^resposta\b/i,
+  /^answer\b/i,
   /exemplo:/i,
   /example:/i,
   /^n\/?a$/i,
@@ -11,6 +14,11 @@ const BLOCKED_OPTION_PATTERNS = [
   /^undefined$/i,
   /^null$/i,
 ];
+
+const GENERIC_SINGLE_OPTIONS = new Set([
+  'resposta', 'pergunta', 'frase', 'palavra', 'coisa', 'exemplo', 'texto', 'aula',
+  'answer', 'question', 'sentence', 'word', 'thing', 'example', 'text', 'lesson',
+]);
 
 const ENGLISH_QUESTION_START = /^(what|where|when|who|why|how|choose|complete|write|answer|listen|repeat|select|correct)\b/i;
 const PORTUGUESE_HINT = /(o que|qual|quais|escolha|complete|escreva|ouça|corrija|monte|fale|repita|responda|frase|palavra|áudio|audio)/i;
@@ -46,6 +54,10 @@ function hasBalancedOptions(options) {
   return dominant >= Math.ceil(options.length * 0.75);
 }
 
+function isGenericOption(option) {
+  return GENERIC_SINGLE_OPTIONS.has(normalizePracticeText(option)) || BLOCKED_OPTION_PATTERNS.some((pattern) => pattern.test(option));
+}
+
 function getPhaseIssue(question) {
   if (!Object.values(PRACTICE_PHASES).includes(question.phase)) return 'Fase pedagógica inválida.';
   if (question.phase === PRACTICE_PHASES.SPEAKING && question.type !== QUESTION_TYPES.SPEAK_RESPONSE) return 'Fase de fala deve usar exercício oral.';
@@ -62,6 +74,7 @@ export function getPracticeQuestionIssues(question, limits = DEFAULT_PRACTICE_LI
   const answer = cleanPracticeText(question.answer);
   const answerKind = question.answerKind || detectAnswerKind(answer);
   const phaseIssue = getPhaseIssue(question);
+  const answerWordCount = splitPracticeWords(answer).length;
 
   if (!Object.values(QUESTION_TYPES).includes(type)) issues.push(`Tipo de questão desconhecido: ${type || 'vazio'}.`);
   if (phaseIssue) issues.push(phaseIssue);
@@ -83,7 +96,7 @@ export function getPracticeQuestionIssues(question, limits = DEFAULT_PRACTICE_LI
     if (options.length > limits.maxChoiceOptions) issues.push('Alternativas demais.');
     if (uniqueOptions.size !== options.length) issues.push('Alternativas repetidas.');
     if (!options.some((option) => normalizePracticeText(option) === normalizePracticeText(answer))) issues.push('Resposta correta não está nas alternativas.');
-    const badOptions = options.filter((option) => option.length > limits.maxOptionLength || BLOCKED_OPTION_PATTERNS.some((pattern) => pattern.test(option)));
+    const badOptions = options.filter((option) => option.length > Math.min(limits.maxOptionLength, 62) || isGenericOption(option));
     if (badOptions.length) issues.push('Alternativas longas, vagas ou pessoais.');
     if (!hasBalancedOptions(options)) issues.push('Alternativas têm formatos muito diferentes.');
 
@@ -105,16 +118,16 @@ export function getPracticeQuestionIssues(question, limits = DEFAULT_PRACTICE_LI
     const words = Array.isArray(question.words) ? question.words.map(cleanPracticeText).filter(Boolean) : [];
     if (words.length < 3) issues.push('Banco de palavras insuficiente.');
     if (words.length > 12) issues.push('Banco de palavras longo demais.');
-    if (answer && splitPracticeWords(answer).length > 12) issues.push('Resposta longa demais para banco de palavras.');
+    if (answer && splitPracticeWords(answer).length > 10) issues.push('Resposta longa demais para banco de palavras.');
   }
 
   if ([QUESTION_TYPES.DICTATION, QUESTION_TYPES.AUDIO_CHOICE].includes(type) && !cleanPracticeText(question.audioText)) {
     issues.push('Questão de áudio sem texto de áudio.');
   }
 
-  if (type === QUESTION_TYPES.DICTATION && answer.length > 120) issues.push('Ditado longo demais.');
-  if (type === QUESTION_TYPES.SPEAK_RESPONSE && prompt.length > 120) issues.push('Frase de fala longa demais.');
-  if (type === QUESTION_TYPES.WRITE_SHORT && answer.length > 140) issues.push('Resposta escrita longa demais para resposta curta.');
+  if (type === QUESTION_TYPES.DICTATION && (answer.length > 64 || answerWordCount > 8)) issues.push('Ditado longo demais.');
+  if (type === QUESTION_TYPES.SPEAK_RESPONSE && (prompt.length > 80 || splitPracticeWords(prompt).length > 10)) issues.push('Frase de fala longa demais.');
+  if (type === QUESTION_TYPES.WRITE_SHORT && answer.length > 110) issues.push('Resposta escrita longa demais para resposta curta.');
 
   return issues;
 }
