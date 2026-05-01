@@ -10,6 +10,7 @@ import { repairLessonForQuality } from '../../services/lessonRepair.js';
 import { attachPedagogicalReview, validateLessonForQuality } from '../../services/lessonValidation.js';
 import { attachTeacherReview, reviewLessonAsTeacher } from '../../services/teacherReviewer.js';
 import { needsAntiFalseDomainRepair, repairLessonAgainstFalseDomain } from '../../services/antiFalseDomainRepair.js';
+import { attachStudyReadiness, evaluateStudyReadiness } from '../../services/studyReadiness.js';
 import { buildSaturdayReviewLesson, shouldPrioritizeSaturdayReview } from '../../services/masteryStore.js';
 
 function formatDateTime(value) {
@@ -199,22 +200,52 @@ export function LessonGeneratorPanel({ onGenerated }) {
         diagnostics.log(`Professor revisor aprovou após reparo: ${teacherReview.finalScore}/100.`, 'success', teacherReview);
       }
 
-      const reviewedLesson = attachTeacherReview(attachPedagogicalReview(lessonForSave, pedagogicalReview), teacherReview);
+      let studyReadiness = evaluateStudyReadiness(lessonForSave, { teacherReview, pedagogicalReview });
+      if (studyReadiness.status === 'do-not-study') {
+        diagnostics.setPhase('trava de estudo pediu reparo', 'generating');
+        diagnostics.log(`Trava de confiança bloqueou a aula: ${studyReadiness.message}`, 'warn', studyReadiness);
+        setMessage('A aula ainda não vale seu tempo. Tentando reparo de confiança antes de salvar...');
+        const readinessRepairedLesson = repairLessonForQuality(lessonForSave, { expectedLevel: nextLesson.level, expectedType: lessonForSave.type, expectedTitle: nextLesson.title, review: { ...pedagogicalReview, issues: [...(pedagogicalReview.issues || []), ...(teacherReview.issues || []), ...(studyReadiness.missing || []), ...(studyReadiness.criticalIssues || [])] } });
+        const readinessReview = validateLessonForQuality(readinessRepairedLesson, { expectedLevel: nextLesson.level, expectedType: lessonForSave.type });
+        const readinessTeacherReview = reviewLessonAsTeacher(readinessRepairedLesson, { expectedLevel: nextLesson.level, expectedType: lessonForSave.type, baseReview: readinessReview });
+        const readinessCheck = evaluateStudyReadiness(readinessRepairedLesson, { teacherReview: readinessTeacherReview, pedagogicalReview: readinessReview });
+
+        if (readinessCheck.status === 'do-not-study') {
+          const error = `Aula bloqueada: ${readinessCheck.message} ${[...(readinessCheck.missing || []), ...(readinessCheck.criticalIssues || [])].join(' ')}`;
+          diagnostics.setPhase('aula bloqueada por confiança de estudo', 'error');
+          diagnostics.log(error, 'error', readinessCheck);
+          setMessage(error);
+          return;
+        }
+
+        autoRepaired = true;
+        lessonForSave = readinessRepairedLesson;
+        pedagogicalReview = { ...readinessReview, autoRepaired: true, studyReadinessRepair: true };
+        teacherReview = readinessTeacherReview;
+        studyReadiness = readinessCheck;
+        diagnostics.log(`Trava de confiança liberou após reparo: ${studyReadiness.label}.`, 'success', studyReadiness);
+      } else {
+        diagnostics.log(`Trava de confiança liberou a aula: ${studyReadiness.label}.`, 'success', studyReadiness);
+      }
+
+      const reviewedLesson = attachStudyReadiness(attachTeacherReview(attachPedagogicalReview(lessonForSave, pedagogicalReview), teacherReview), studyReadiness);
 
       const saved = saveCurrentLesson(reviewedLesson, {
         source: forceNew ? 'generated-replacement-variation' : result.lesson.planContract === 'resilient-json-v1' ? 'generated-resilient-json' : 'generated',
         status: 'new',
-        contractVersion: result.lesson.planContract ? `lesson-contract-v1+${result.lesson.planContract}+teacher-reviewer-v1${antiFalseDomainRepaired ? '+anti-false-domain-v1' : ''}` : `lesson-contract-v1+teacher-reviewer-v1${antiFalseDomainRepaired ? '+anti-false-domain-v1' : ''}`,
+        contractVersion: result.lesson.planContract ? `lesson-contract-v1+${result.lesson.planContract}+teacher-reviewer-v1+study-readiness-v1${antiFalseDomainRepaired ? '+anti-false-domain-v1' : ''}` : `lesson-contract-v1+teacher-reviewer-v1+study-readiness-v1${antiFalseDomainRepaired ? '+anti-false-domain-v1' : ''}`,
         pedagogicalScore: teacherReview.finalScore,
         autoRepaired,
         antiFalseDomainRepaired,
+        studyReady: studyReadiness.status !== 'do-not-study',
+        studyReadiness: studyReadiness.status,
         variationMode: forceNew,
         generationSeed: result.lesson.generationSeed,
         planSeed: result.lesson.planSeed,
       });
       diagnostics.log(`${saturdayReview ? 'Revisão adaptativa planejada' : forceNew ? 'Nova versão planejada da aula do cronograma' : 'Aula planejada do cronograma'} pronta para abrir: ${saved.title}`, 'info');
       const repairLabel = antiFalseDomainRepaired ? ' com produção ativa anti falso domínio,' : autoRepaired ? ' corrigida automaticamente,' : '';
-      setMessage(saturdayReview ? `Nova revisão planejada${repairLabel} aprovada pelo professor (${teacherReview.finalScore}/100), salva e aberta na aba Aula.` : forceNew ? `Nova versão planejada${repairLabel} aprovada pelo professor (${teacherReview.finalScore}/100), salva e aberta na aba Aula.` : `Nova aula planejada${repairLabel} aprovada pelo professor (${teacherReview.finalScore}/100), salva e aberta na aba Aula.`);
+      setMessage(saturdayReview ? `Nova revisão planejada${repairLabel} ${studyReadiness.label.toLowerCase()} (${teacherReview.finalScore}/100), salva e aberta na aba Aula.` : forceNew ? `Nova versão planejada${repairLabel} ${studyReadiness.label.toLowerCase()} (${teacherReview.finalScore}/100), salva e aberta na aba Aula.` : `Nova aula planejada${repairLabel} ${studyReadiness.label.toLowerCase()} (${teacherReview.finalScore}/100), salva e aberta na aba Aula.`);
       setForceNew(false);
       onGenerated?.(saved);
     } catch (error) {
