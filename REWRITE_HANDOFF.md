@@ -37,15 +37,6 @@ Nova regra operacional enquanto a reconstrução da prática estiver em andament
 
 O usuário pediu uma reformulação completa do sistema de exercícios/prática.
 
-Motivos:
-- tela fullscreen funcionou, mas ainda está visualmente pesada;
-- verde claro atual incomoda;
-- perguntas em inglês geram trabalho desnecessário no A1;
-- alternativas ficam vagas, longas ou misturadas;
-- questões devem ter qualidade parecida com a qualidade da aula;
-- prática deve dar vontade de estudar;
-- sistema deve permanecer limpo, modular e sem funções se sobrepondo.
-
 Diretriz pedagógica nova:
 - instruções e enunciados principais em português;
 - conteúdo treinado em inglês;
@@ -63,159 +54,61 @@ Diretriz visual nova:
 - feedback bonito e motivador;
 - adicionar sistema de vidas para muitos erros.
 
-## NOVA ORDEM DE BLOCOS — REFORMULAÇÃO DA PRÁTICA
+## BLOCO ATUAL
 
-### 1. `BLOCO-PRACTICE-REBUILD-1-LAB` — Arquitetura limpa da prática
+### `BLOCO-PRACTICE-REBUILD-1-LAB` — Arquitetura limpa da prática IMPLEMENTADO COMO FUNDAÇÃO, aguardando build/deploy
 
-Objetivo:
-- substituir o motor atual por uma arquitetura nova e modular;
-- parar de depender do `PracticeEngine.js` como motor improvisado;
-- criar builder, quality gate, checker e tipos separados.
+Análise antes da alteração:
+- `REWRITE_HANDOFF.md` confirmou que a prioridade atual é reconstruir a prática de forma limpa;
+- `PracticeEngine.js` atual concentra normalização, builder, quality gate e correção em um arquivo único;
+- `PracticeFullscreen.jsx` ainda mistura UI, estado da sessão, correção e tipos de exercício;
+- a prática atual continua funcionando como protótipo, mas não deve ser a base final;
+- o bloco 1 criou a fundação nova sem substituir a prática em produção ainda, para reduzir risco de quebra.
 
-Arquivos previstos:
-- `fluency-clean/src/practice/core/PracticeBuilder.js`
+Arquivos criados:
+- `fluency-clean/src/practice/core/PracticeTypes.js`
+- `fluency-clean/src/practice/core/PracticeNormalizer.js`
 - `fluency-clean/src/practice/core/PracticeQualityGate.js`
 - `fluency-clean/src/practice/core/PracticeAnswerChecker.js`
-- `fluency-clean/src/practice/core/PracticeTypes.js`
 - `fluency-clean/src/practice/core/PracticeSessionState.js`
+- `fluency-clean/src/practice/core/PracticeBuilder.js`
+- `fluency-clean/src/practice/core/index.js`
 
-Regras:
-- não mexer em `bundle.js`;
-- não usar DOM injection;
-- não criar patch por CSS escondendo lógica antiga;
-- manter prática nova independente e testável.
+O que foi implementado:
+- tipos centrais de habilidade, fase, pergunta, resposta e status;
+- plano de fases por habilidade: Listening, Speaking, Reading, Grammar, Writing e Mixed;
+- normalizador de aula para prática;
+- extrator de frases, vocabulário, exercícios e palavras-chave;
+- detector de habilidade da aula;
+- detector de tipo de resposta;
+- quality gate independente para validar perguntas;
+- answer checker independente para corrigir respostas e distinguir correto/incorreto/quase certo/vazio;
+- estado de sessão independente com vidas, respostas, avanço, restart e resumo;
+- builder base que monta um plano de prática a partir da aula normalizada;
+- export central em `src/practice/core/index.js`.
 
-### 2. `BLOCO-PRACTICE-REBUILD-2-LAB` — Builder pedagógico por fases
+Importante:
+- este bloco ainda não substitui visualmente a prática atual;
+- o objetivo foi criar fundação limpa antes de mexer no design;
+- o próximo bloco deve usar esta fundação para montar o builder pedagógico por fases de forma mais profunda.
 
-Objetivo:
-- gerar prática com progressão real, não lista aleatória.
+Teste recomendado:
+1. aguardar deploy;
+2. se build quebrar, corrigir apenas import/erro sintático;
+3. se build passar, seguir para `BLOCO-PRACTICE-REBUILD-2-LAB`.
 
-Fases obrigatórias:
-1. Aquecimento — reconhecer palavras/sons/estrutura.
-2. Compreensão — entender áudio/texto/conceito.
-3. Produção guiada — completar, ordenar, montar frase.
-4. Escrita — escrever resposta curta ou frase.
-5. Fala/shadowing — repetir ou responder falando.
-6. Revisão final — reforçar erros ou pontos principais.
+## NOVA ORDEM DE BLOCOS — REFORMULAÇÃO DA PRÁTICA
 
-Regras de idioma:
-- enunciados em português;
-- respostas/conteúdo em inglês quando o objetivo for aprender inglês;
-- feedback em português.
-
-### 3. `BLOCO-PRACTICE-REBUILD-3-LAB` — Quality gate forte de questões
-
-Objetivo:
-- impedir questões burras, vagas ou aleatórias.
-
-Bloqueios obrigatórios:
-- não permitir alternativas gigantes;
-- não misturar palavra com frase longa;
-- não usar `Resposta pessoal` como alternativa;
-- não transformar pergunta pessoal em múltipla escolha;
-- não permitir alternativas que não pertencem ao mesmo tipo da resposta;
-- não gerar pergunta em inglês quando o aluno A1 precisaria de instrução em português;
-- não repetir a mesma habilidade várias vezes do mesmo jeito;
-- não permitir resposta correta que não vem do conteúdo da aula;
-- não aceitar questão sem objetivo pedagógico claro.
-
-### 4. `BLOCO-PRACTICE-REBUILD-4-LAB` — UI fullscreen elegante do Fluency
-
-Objetivo:
-- substituir a aparência atual inspirada genericamente em apps de idiomas por uma UI própria do Fluency.
-
-Mudanças visuais:
-- remover verde claro dominante;
-- usar gradiente azul/violeta do Fluency;
-- usar cards glass escuros;
-- barra de progresso elegante;
-- botão inferior com gradiente do sistema;
-- feedback correto/incorreto com cores suaves;
-- layout sem scroll indevido;
-- opções com altura inteligente e texto legível;
-- teclado/campo de escrita confortável no iPhone.
-
-### 5. `BLOCO-PRACTICE-REBUILD-5-LAB` — Sistema de vidas e erro pedagógico
-
-Objetivo:
-- adicionar sistema de vidas para muitos erros.
-
-Comportamento:
-- aluno começa com vidas, por exemplo 5;
-- erro real tira vida;
-- erro bobo não tira vida, libera tentativa extra;
-- ao zerar vidas, a prática entra em modo revisão;
-- modo revisão mostra onde errou e permite repetir pontos fracos;
-- conclusão diferencia: concluída perfeita, concluída com revisão, precisa revisar.
-
-### 6. `BLOCO-PRACTICE-REBUILD-6-LAB` — Componentes por tipo de exercício
-
-Criar componentes próprios:
-- `ChoiceCard.jsx`
-- `AudioChoiceCard.jsx`
-- `DictationCard.jsx`
-- `WordBankCard.jsx`
-- `FillBlankCard.jsx`
-- `CorrectionCard.jsx`
-- `WriteCard.jsx`
-- `SpeakCard.jsx`
-- `PracticeFeedback.jsx`
-- `PracticeResults.jsx`
-
-Objetivo:
-- não deixar tudo dentro de um único arquivo gigante;
-- cada tipo de exercício deve ser isolado, claro e reaproveitável.
-
-### 7. `BLOCO-PRACTICE-REBUILD-7-LAB` — Integração limpa com aulas
-
-Objetivo:
-- conectar a prática reformulada com Listening primeiro;
-- depois Grammar, Reading, Writing e Speaking;
-- remover prática antiga do `ListeningLesson.jsx`;
-- remover CSS hotfix temporário;
-- remover sobreposição visual.
-
-Regra:
-- a aula chama apenas um launcher limpo;
-- nenhum renderer de aula deve carregar motor de questão inteiro dentro dele.
-
-### 8. `BLOCO-PRACTICE-REBUILD-8-LAB` — Persistência, progresso e revisão
-
-Objetivo:
-- salvar resultado real da prática;
-- guardar erros;
-- alimentar progresso e futuro banco de erros.
-
-Salvar:
-- quantidade de questões;
-- acertos;
-- erros;
-- vidas restantes;
-- tipos de questão errados;
-- palavras/frases problemáticas;
-- se concluiu com revisão.
-
-### 9. `BLOCO-PRACTICE-REBUILD-9-LAB` — Limpeza final e remoção de legado
-
-Objetivo:
-- remover `PracticeEngine.js` antigo se não for mais usado;
-- remover CSS `listening-ux-hotfix.css` se virar legado;
-- remover quiz antigo do `ListeningLesson.jsx`;
-- garantir que não há funções duplicadas, sobrepostas ou escondidas por CSS.
-
-### 10. `BLOCO-PRACTICE-REBUILD-10-LAB` — Teste completo no iPhone
-
-Checklist:
-- fullscreen não rola sem necessidade;
-- botão não cobre conteúdo;
-- teclado não quebra layout;
-- áudio toca;
-- fala funciona ou mostra fallback limpo;
-- vidas funcionam;
-- erro bobo não pune;
-- feedback é claro;
-- conclusão volta para a aula;
-- performance ok no Safari/PWA.
+1. `BLOCO-PRACTICE-REBUILD-1-LAB` — Arquitetura limpa da prática. STATUS: fundação criada.
+2. `BLOCO-PRACTICE-REBUILD-2-LAB` — Builder pedagógico por fases.
+3. `BLOCO-PRACTICE-REBUILD-3-LAB` — Quality gate forte de questões.
+4. `BLOCO-PRACTICE-REBUILD-4-LAB` — UI fullscreen elegante do Fluency.
+5. `BLOCO-PRACTICE-REBUILD-5-LAB` — Sistema de vidas e erro pedagógico.
+6. `BLOCO-PRACTICE-REBUILD-6-LAB` — Componentes por tipo de exercício.
+7. `BLOCO-PRACTICE-REBUILD-7-LAB` — Integração limpa com aulas.
+8. `BLOCO-PRACTICE-REBUILD-8-LAB` — Persistência, progresso e revisão.
+9. `BLOCO-PRACTICE-REBUILD-9-LAB` — Limpeza final e remoção de legado.
+10. `BLOCO-PRACTICE-REBUILD-10-LAB` — Teste completo no iPhone.
 
 ## Estado atual antes da reformulação
 
@@ -251,4 +144,4 @@ Pendência técnica importante:
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O antigo protocolo econômico de commit/deploy está temporariamente suspenso por pedido do usuário. A prioridade agora é reformular completamente o sistema de prática/exercícios. Seguir a ordem `BLOCO-PRACTICE-REBUILD-1-LAB` até `BLOCO-PRACTICE-REBUILD-10-LAB`: arquitetura limpa, builder por fases, quality gate forte, UI fullscreen elegante Fluency, sistema de vidas, componentes por tipo, integração limpa, persistência, remoção de legado e teste completo no iPhone. Instruções/enunciados em português, conteúdo treinado em inglês, feedback em português. Remover verde claro agressivo e usar gradientes azul/violeta/glass do Fluency. Depois da reformulação, continuar os blocos 12, 14, 11, 13, 17, 16, 15, 20, CARTAS-3B e AUDITORIA-POLIMENTO-GERAL."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O antigo protocolo econômico de commit/deploy está temporariamente suspenso por pedido do usuário. O `BLOCO-PRACTICE-REBUILD-1-LAB` criou a fundação nova em `src/practice/core/` com Types, Normalizer, QualityGate, AnswerChecker, SessionState, Builder e index central. Ainda não substituiu a prática visual atual. Próximo passo: validar build/deploy; se passar, iniciar `BLOCO-PRACTICE-REBUILD-2-LAB`, builder pedagógico por fases. Instruções/enunciados em português, conteúdo treinado em inglês, feedback em português. Remover verde claro agressivo e usar gradientes azul/violeta/glass do Fluency nos blocos de UI. Depois seguir blocos 2 a 10 da reformulação e então 12, 14, 11, 13, 17, 16, 15, 20, CARTAS-3B e AUDITORIA-POLIMENTO-GERAL."
