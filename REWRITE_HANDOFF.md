@@ -47,7 +47,45 @@ Princípio máximo:
 
 ## BLOCO ATUAL
 
-### `BLOCO-LISTENING-COERENCIA-1-LAB` — Fonte única da aula Listening IMPLEMENTADO, aguardando deploy/teste
+### `BLOCO-LISTENING-COERENCIA-1B-LAB` — Fechamento narrativo do Listening IMPLEMENTADO, aguardando deploy/teste
+
+Contexto:
+- usuário percebeu que a aula de Listening parecia uma mini-história cortada no meio;
+- mesmo que vocabulário e questões batam com a transcrição, o texto precisa ter começo, meio e fechamento mínimo;
+- exemplo do problema: diálogo em biblioteca que apresenta o caso, mas não resolve a busca/livro/atendimento.
+
+Arquivos alterados:
+- `fluency-clean/src/services/listeningCoherence.js`
+- `fluency-clean/src/services/plannedGeminiLessons.js`
+- `REWRITE_HANDOFF.md`
+
+O que foi implementado:
+- `listeningCoherence.js` agora detecta fechamento narrativo em diálogos/listening;
+- nova checagem `hasNarrativeClosure()` considera sinais como:
+  - agradecimento;
+  - resolução;
+  - livro/informação encontrada;
+  - final educado;
+  - fim que não termina em pergunta aberta;
+- `validateListeningCoherence()` agora adiciona issue quando a mini-história parece terminar sem fechamento;
+- `repairListeningCoherence()` agora pode adicionar fechamento simples quando o diálogo estiver sem resolução;
+- `plannedGeminiLessons.js` reforça no prompt:
+  - Listening precisa ter começo, meio e fechamento claro;
+  - mini-história/diálogo precisa ter abertura da situação, troca principal de informações e fechamento/resolução;
+  - não entregar diálogo cortado no meio.
+
+Commits:
+- `36ae80056f74076db0a4ed207b1907d3867bed22` — exige fechamento narrativo no listening;
+- `8d96d72e3fc374448f95d529950cbe7810042d18` — exige começo meio e fim no listening.
+
+Teste recomendado no iPhone:
+1. aguardar deploy da branch lab;
+2. gerar nova aula Listening;
+3. conferir se a transcrição tem começo, desenvolvimento e fechamento;
+4. confirmar que não termina em pergunta solta ou situação sem resolver;
+5. confirmar que vocabulário e questões ainda batem com a transcrição.
+
+### `BLOCO-LISTENING-COERENCIA-1-LAB` — Fonte única da aula Listening IMPLEMENTADO
 
 Contexto:
 - usuário identificou uma aula Listening em que o texto falava apenas de biblioteca, nome e sobrenome;
@@ -66,49 +104,18 @@ Arquivos alterados:
 O que foi implementado:
 - novo verificador `validateListeningCoherence()`;
 - para aulas `listening`, a transcrição/listeningText vira fonte única de verdade;
-- valida se:
-  - transcrição é suficiente para sustentar vocabulário e questões;
-  - vocabulário principal aparece na transcrição;
-  - questões não cobram informação que não aparece claramente no listeningText;
-  - diálogos com múltiplas falas têm nome/papel do falante antes da fala;
+- valida se transcrição sustenta vocabulário e questões, se vocabulário aparece na transcrição, se questões não cobram informação ausente e se diálogos têm falantes;
 - novo reparador `repairListeningCoherence()`;
-- o fluxo de geração em `LessonGeneratorPanel.jsx` agora roda a checagem antes do professor revisor e antes de salvar;
-- se houver incoerência, tenta reparo local;
-- se continuar incoerente, bloqueia a aula e mostra no diagnóstico;
-- quando reparar, contrato pode incluir `listening-coherence-v1`;
-- `plannedGeminiLessons.js` agora reforça no prompt:
-  - listeningText é a fonte única de verdade;
-  - vocabulário e questões só podem sair da transcrição;
-  - se houver autor, livro, número, sobrenome ou qualquer detalhe cobrado, esse detalhe precisa aparecer no listeningText;
-  - diálogos precisam usar `Falante: frase`.
+- fluxo de geração roda a checagem antes do professor revisor e antes de salvar;
+- se houver incoerência, tenta reparo local; se continuar incoerente, bloqueia a aula;
+- quando reparar, contrato pode incluir `listening-coherence-v1`.
 
 Commits:
 - `c8a7740c1caa767009e9ab97e8b667433046e915` — adiciona verificador de coerência listening;
 - `d9177694fbafb0f506c024bd0a3a747408793f59` — integra checagem de coerência listening;
 - `4a8669611483f8bc4d0f68d09c6d1fc57121b4fc` — reforça fonte única em aulas listening.
 
-Teste recomendado no iPhone:
-1. aguardar deploy da branch lab;
-2. gerar uma nova aula Listening;
-3. conferir se o texto tem falantes quando for diálogo;
-4. conferir se vocabulário aparece no texto;
-5. conferir se as questões só perguntam coisas presentes na transcrição;
-6. se vier aula incoerente, confirmar se o diagnóstico bloqueia ou repara antes de salvar.
-
 ### `BLOCO-20-LAB` — Certificação por nível IMPLEMENTADO
-
-Arquivos criados:
-- `fluency-clean/src/services/levelCertification.js`
-- `fluency-clean/src/styles/level-certification.css`
-
-Arquivos alterados:
-- `fluency-clean/src/screens/ProgressScreen.jsx`
-- `fluency-clean/src/main.jsx`
-- `REWRITE_HANDOFF.md`
-
-O que foi implementado:
-- `levelCertification.js` calcula certificação por nível usando currículo, habilidades, checkpoints, Speaking real e banco de erros;
-- Progresso mostra card `Certificação por nível`.
 
 ### `BLOCO-15-LAB` — Banco de erros real IMPLEMENTADO
 
@@ -159,7 +166,7 @@ Pendente técnica:
 
 ## NOVA ORDEM DE BLOCOS — QUALIDADE REAL DAS AULAS
 
-1. `BLOCO-LISTENING-COERENCIA-1-LAB` — Fonte única da aula Listening. STATUS: implementado, aguardando teste.
+1. `BLOCO-LISTENING-COERENCIA-1B-LAB` — Fechamento narrativo do Listening. STATUS: implementado, aguardando teste.
 2. `BLOCO-CARTAS-3B-LAB` — Expandir banco de vocabulário em novos lotes até 2.000 palavras reais.
 3. `BLOCO-AUDITORIA-POLIMENTO-GERAL-LAB` — após concluir os blocos principais, analisar cada página com precisão, listar melhorias possíveis e montar blocos de polimento.
 
@@ -184,8 +191,8 @@ Ordem recomendada após os blocos principais:
 
 ## Pendência técnica importante
 
-- testar deploy do `BLOCO-LISTENING-COERENCIA-1-LAB` no iPhone;
-- gerar nova aula Listening para validar fonte única;
+- testar deploy do `BLOCO-LISTENING-COERENCIA-1B-LAB` no iPhone;
+- gerar nova aula Listening para validar fonte única e fechamento narrativo;
 - confirmar que questões e vocabulário batem com listeningText;
 - confirmar falantes identificados em diálogos;
 - seguir depois para `BLOCO-CARTAS-3B-LAB`;
@@ -193,4 +200,4 @@ Ordem recomendada após os blocos principais:
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O bloco atual implementado foi `BLOCO-LISTENING-COERENCIA-1-LAB`: criado `listeningCoherence.js`, integrado em `LessonGeneratorPanel.jsx`, e prompt em `plannedGeminiLessons.js` reforça listeningText como fonte única. Testar no iPhone; se ok, seguir para `BLOCO-CARTAS-3B-LAB`."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O bloco atual implementado foi `BLOCO-LISTENING-COERENCIA-1B-LAB`: `listeningCoherence.js` agora exige fechamento narrativo e `plannedGeminiLessons.js` exige começo, meio e fim no Listening. Testar no iPhone; se ok, seguir para `BLOCO-CARTAS-3B-LAB`."
