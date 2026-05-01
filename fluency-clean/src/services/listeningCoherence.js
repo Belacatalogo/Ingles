@@ -29,18 +29,45 @@ function transcriptText(lesson) {
   return normalize([lesson?.listeningText, lesson?.transcript, lesson?.dialogue, lesson?.script].filter(Boolean).join(' '));
 }
 
+function rawTranscriptText(lesson) {
+  return clean(lesson?.listeningText || lesson?.transcript || lesson?.dialogue || lesson?.script);
+}
+
+function transcriptLines(text) {
+  const raw = clean(text);
+  const byLine = raw.split(/\n+/).map((line) => line.trim()).filter(Boolean);
+  if (byLine.length >= 4) return byLine;
+  return raw.split(/(?<=[.!?])\s+/).map((line) => line.trim()).filter(Boolean);
+}
+
 function hasSpeakerLabels(text) {
   return /(^|\n)\s*[A-Z][A-Za-zÀ-ÿ .'-]{1,24}\s*:/m.test(clean(text));
 }
 
 function looksLikeDialogue(text) {
   const raw = clean(text);
-  const lines = raw.split(/\n+/).map((line) => line.trim()).filter(Boolean);
+  const lines = transcriptLines(raw);
   if (hasSpeakerLabels(raw)) return true;
   const questionCount = (raw.match(/\?/g) || []).length;
   const shortTurns = lines.filter((line) => line.length <= 90).length;
-  const dialogSignals = /\b(hello|hi|yes|no|please|thank you|can i|can you|what is|where is|my name|your name|and your|welcome)\b/i.test(raw);
+  const dialogSignals = /\b(hello|hi|yes|no|please|thank you|thanks|can i|can you|what is|where is|my name|your name|and your|welcome|you're welcome)\b/i.test(raw);
   return questionCount >= 2 && shortTurns >= 4 && dialogSignals;
+}
+
+function hasNarrativeClosure(text) {
+  const raw = clean(text);
+  const lines = transcriptLines(raw);
+  const lastChunk = lines.slice(-3).join(' ').toLowerCase();
+  const closureSignals = /\b(thank you|thanks|you're welcome|you are welcome|great|perfect|here it is|there it is|i found it|we found it|that is all|goodbye|bye|see you|now i understand|that helps|have a nice day|enjoy|done|finished)\b/i;
+  const resolutionSignals = /\b(found|find it|section|shelf|author|title|card|number|answer|solution|result|finished|complete|ready|resolved)\b/i;
+  const endsWithQuestion = /\?\s*$/.test(raw);
+  const enoughTurns = lines.length >= 8;
+  const enoughWords = normalize(raw).split(' ').filter(Boolean).length >= 110;
+  if (endsWithQuestion) return false;
+  if (closureSignals.test(lastChunk)) return true;
+  if (resolutionSignals.test(lastChunk) && enoughTurns) return true;
+  if (!looksLikeDialogue(raw) && enoughWords) return true;
+  return false;
 }
 
 function unsupportedVocabulary(lesson, text) {
@@ -69,13 +96,14 @@ function unsupportedExercises(lesson, text) {
 export function validateListeningCoherence(lesson) {
   const type = normalize(lesson?.type);
   if (type !== 'listening') {
-    return { approved: true, issues: [], unsupportedVocabulary: [], unsupportedExercises: [], needsSpeakerLabels: false, score: 100 };
+    return { approved: true, issues: [], unsupportedVocabulary: [], unsupportedExercises: [], needsSpeakerLabels: false, needsClosure: false, score: 100 };
   }
 
   const text = transcriptText(lesson);
-  const rawTranscript = clean(lesson?.listeningText || lesson?.transcript || lesson?.dialogue || lesson?.script);
+  const rawTranscript = rawTranscriptText(lesson);
+  const wordCount = text.split(' ').filter(Boolean).length;
   const issues = [];
-  if (text.split(' ').filter(Boolean).length < 80) issues.push('A transcrição de Listening está curta ou incompleta demais para sustentar vocabulário e questões.');
+  if (wordCount < 80) issues.push('A transcrição de Listening está curta ou incompleta demais para sustentar vocabulário e questões.');
 
   const badVocab = unsupportedVocabulary(lesson, text);
   if (badVocab.length) issues.push(`Vocabulário fora da transcrição: ${badVocab.slice(0, 6).join(', ')}.`);
@@ -86,7 +114,10 @@ export function validateListeningCoherence(lesson) {
   const needsSpeakerLabels = looksLikeDialogue(rawTranscript) && !hasSpeakerLabels(rawTranscript);
   if (needsSpeakerLabels) issues.push('Diálogo detectado sem nome de quem está falando em cada fala.');
 
-  const penalty = badVocab.length * 6 + badExercises.length * 14 + (needsSpeakerLabels ? 18 : 0) + (text.split(' ').length < 80 ? 20 : 0);
+  const needsClosure = looksLikeDialogue(rawTranscript) && !hasNarrativeClosure(rawTranscript);
+  if (needsClosure) issues.push('A mini-história/diálogo de Listening parece terminar sem fechamento ou resolução.');
+
+  const penalty = badVocab.length * 6 + badExercises.length * 14 + (needsSpeakerLabels ? 18 : 0) + (needsClosure ? 18 : 0) + (wordCount < 80 ? 20 : 0);
   const score = Math.max(0, Math.min(100, Math.round(100 - penalty)));
 
   return {
@@ -95,6 +126,7 @@ export function validateListeningCoherence(lesson) {
     unsupportedVocabulary: badVocab,
     unsupportedExercises: badExercises,
     needsSpeakerLabels,
+    needsClosure,
     score,
     checkedAt: new Date().toISOString(),
     version: 'listening-coherence-v1',
@@ -103,6 +135,18 @@ export function validateListeningCoherence(lesson) {
 
 function firstSentence(text) {
   return clean(text).split(/(?<=[.!?])\s+/).find(Boolean) || clean(text);
+}
+
+function addDialogueClosure(text) {
+  const raw = clean(text);
+  if (!raw || hasNarrativeClosure(raw)) return raw;
+  if (hasSpeakerLabels(raw)) {
+    const labels = Array.from(raw.matchAll(/(^|\n)\s*([A-Z][A-Za-zÀ-ÿ .'-]{1,24})\s*:/g)).map((match) => match[2].trim());
+    const first = labels[0] || 'Speaker A';
+    const second = labels.find((label) => label !== first) || 'Speaker B';
+    return `${raw}\n${first}: Great. Here is the information you need.\n${second}: Thank you. That helps a lot.\n${first}: You're welcome.`;
+  }
+  return `${raw}\nLibrarian: Great. Here is the information you need.\nStudent: Thank you. That helps a lot.\nLibrarian: You're welcome.`;
 }
 
 export function repairListeningCoherence(lesson) {
@@ -114,9 +158,10 @@ export function repairListeningCoherence(lesson) {
 
   let listeningText = rawTranscript;
   if (looksLikeDialogue(rawTranscript) && !hasSpeakerLabels(rawTranscript)) {
-    const lines = rawTranscript.split(/(?<=[.!?])\s+/).map((line) => clean(line)).filter(Boolean);
-    listeningText = lines.map((line, index) => `${index % 2 === 0 ? 'Librarian' : 'Student'}: ${line}`).join('\n');
+    const lines = transcriptLines(rawTranscript);
+    listeningText = lines.map((line, index) => `${index % 2 === 0 ? 'Speaker A' : 'Speaker B'}: ${line}`).join('\n');
   }
+  listeningText = addDialogueClosure(listeningText);
 
   return {
     ...lesson,
