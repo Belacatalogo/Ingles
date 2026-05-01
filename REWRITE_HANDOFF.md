@@ -35,20 +35,42 @@ Observação: em alguns ajustes recentes, o conector bloqueou operações de ár
 
 ## Estado atual implementado
 
-### HOTFIX LISTENING UX — remove navegação duplicada, limpa caixas e pausa áudio Gemini IMPLEMENTADO, aguardando teste
+### AJUSTE LISTENING PRÁTICA — Quiz guiado estilo Duolingo IMPLEMENTADO, aguardando teste
 
 Contexto:
-- usuário mostrou que foram criados 3 botões duplicados abaixo do stepper original;
-- usuário informou que a aparência das caixas recolhíveis ficou ruim/pesada;
-- usuário informou que o áudio natural tocou, mas o botão de pausa não parava.
+- usuário informou que a caixa de perguntas e respostas ainda estava pesada;
+- pedido: transformar a prática em uma caixa bonita e fiel à UI do Fluency;
+- comportamento desejado: uma pergunta por vez, resposta automática certo/errado, avançar para a próxima depois do feedback;
+- incluir tipos variados: múltipla escolha, corrigir frase, certo/errado, escrever e falar.
 
 Arquivos alterados:
-- `fluency-clean/src/services/geminiTts.js`
-- `fluency-clean/src/services/audioPlayback.js`
-- `fluency-clean/src/screens/LessonScreen.jsx`
 - `fluency-clean/src/lessons/ListeningLesson.jsx`
 - `fluency-clean/src/styles/lessons.css`
 - `REWRITE_HANDOFF.md`
+
+Correção aplicada:
+- seção de Compreensão virou `Prática guiada`;
+- agora renderiza uma pergunta por vez em card de quiz;
+- adiciona barra de progresso da prática;
+- adiciona feedback automático correto/incorreto;
+- botão `Continuar` avança para a próxima pergunta;
+- prática monta tipos variados a partir da aula: escolha, vocabulário, certo/errado, correção, escrita e fala;
+- múltipla escolha tem estados visualmente marcados: selecionado, certo e errado;
+- pergunta de fala tenta usar reconhecimento de voz do navegador (`SpeechRecognition`/`webkitSpeechRecognition`);
+- se o Safari não liberar reconhecimento de voz, a pergunta de fala permite digitar o que foi falado;
+- final da prática mostra pontuação e botão para refazer.
+
+Teste recomendado:
+1. aguardar deploy Ready;
+2. abrir Listening;
+3. ir em Prática;
+4. confirmar que aparece só uma pergunta por vez;
+5. responder múltipla escolha e ver se marca certo/errado;
+6. clicar Continuar e confirmar que vai para a próxima;
+7. testar pergunta de escrita/correção;
+8. testar pergunta de fala no iPhone; se o Safari bloquear, confirmar que dá para digitar.
+
+### HOTFIX LISTENING UX — remove navegação duplicada, limpa caixas e pausa áudio Gemini IMPLEMENTADO
 
 Correção aplicada:
 - removida a navegação duplicada criada dentro do `ListeningLesson`;
@@ -57,18 +79,10 @@ Correção aplicada:
 - botão Aquecimento leva para Escuta guiada;
 - botão Conceito leva para Conceito e explicação;
 - botão Prática leva para Compreensão;
-- visual das caixas recolhíveis foi suavizado: sem botão preto grande, sem borda pesada, com cabeçalho mais limpo;
-- `geminiTts.js` agora exporta `stopGeminiTtsAudio()`;
-- `audioPlayback.js` agora chama `stopGeminiTtsAudio()` junto com `stopSpeech()`;
+- visual das caixas recolhíveis foi suavizado;
+- `geminiTts.js` exporta `stopGeminiTtsAudio()`;
+- `audioPlayback.js` chama `stopGeminiTtsAudio()` junto com `stopSpeech()`;
 - botão de pausa deve parar tanto o áudio natural Gemini quanto o fallback do navegador.
-
-Teste recomendado:
-1. aguardar deploy Ready;
-2. confirmar que só existem os botões originais Aquecimento/Conceito/Prática no topo;
-3. tocar em Aquecimento/Conceito/Prática e confirmar a rolagem;
-4. verificar se as caixas recolhíveis ficaram visualmente mais limpas;
-5. tocar no áudio natural;
-6. tocar no botão pause e confirmar que o áudio para.
 
 ### AJUSTE BLOCO-10B-LAB — Listening mais leve, recolhível e áudio natural priorizado IMPLEMENTADO
 
@@ -79,8 +93,7 @@ Correção aplicada:
 - Conceito começa aberto;
 - Vocabulário, Transcrição, Prática e Sua resposta podem ser abertos/fechados;
 - Shadowing fica disponível como etapa prática curta;
-- layout reduz sensação de tela infinita e deixa a aula menos pesada;
-- adicionados estilos para seções recolhíveis, opções de múltipla escolha e modo compacto.
+- layout reduz sensação de tela infinita e deixa a aula menos pesada.
 
 ### AJUSTE BLOCO-10B-LAB — Listening respeita tema do cronograma IMPLEMENTADO
 
@@ -109,24 +122,6 @@ Correção aplicada:
 - exercícios do reparo Listening passam a ser perguntas de compreensão auditiva baseadas no roteiro;
 - seções do reparo Listening cobrem escuta global, detalhes, transcrição guiada, vocabulário auditivo, compreensão auditiva e shadowing.
 
-### AJUSTE BLOCO-10B-LAB — Listening especializado e gate contra tipo errado IMPLEMENTADO
-
-Correção aplicada:
-- renderer de Listening mostra seções reais da aula em “Conceito e explicação”;
-- renderer de Listening mostra “Vocabulário da aula” antes da transcrição e dos exercícios;
-- quality gate reprova quando a aula esperada é Listening, mas o conteúdo está com cara de Grammar;
-- quality gate exige sinais de Listening como áudio, escuta, transcrição, shadowing e compreensão auditiva;
-- se a transcrição/roteiro auditivo for muito curto, a aula Listening deve reprovar.
-
-### BLOCO-10B-LAB — Correção automática do quality gate IMPLEMENTADO
-
-Correção aplicada:
-- se uma aula gerada reprovar no quality gate, o app não descarta imediatamente;
-- antes de desistir, faz uma tentativa automática local de reparo estrutural;
-- depois do reparo, o quality gate roda novamente;
-- se aprovar, salva com marca `autoRepaired: true` no review/quality;
-- se ainda reprovar, não salva aula ruim e mostra os problemas.
-
 ### BLOCO-CARTAS-3-LAB — Banco de vocabulário por tópicos IMPLEMENTADO parcialmente e VALIDADO APÓS CORREÇÃO DE BUILD
 
 Correção aplicada:
@@ -134,9 +129,7 @@ Correção aplicada:
 - banco atual: 288 palavras em tópicos A1/A2;
 - meta registrada: 2.000 palavras (`VOCABULARY_BANK_TARGET = 2000`);
 - tela Cartas permite escolher decks por tópico além da Aula atual;
-- sessão de flashcards pode ser feita com deck temático mesmo sem aula com vocabulário;
-- registro de sessão usa id de deck quando a revisão vem de deck temático;
-- correção de build aplicada no commit `d25e4869c39dcdfb6192f6a3d0c2421763d373a0` por fechamento incorreto do deck `feelings-health`.
+- sessão de flashcards pode ser feita com deck temático mesmo sem aula com vocabulário.
 
 ### AJUSTE BLOCO-SPEAKING-2-LAB — Feedback de pronúncia em cada fala livre IMPLEMENTADO E VALIDADO PELO USUÁRIO
 
@@ -163,13 +156,6 @@ Correção aplicada:
 - Pronúncia usa frases A1 quando o nível atual é A1;
 - Conversa registra sessão real ao completar 5 respostas válidas ou 3 minutos;
 - Hoje marca Conversação como concluída somente se existir sessão real de Speaking hoje.
-
-### AJUSTE BLOCO-CARTAS-2-LAB — Restaurar sessão concluída ao voltar de Hoje IMPLEMENTADO E VALIDADO PELO USUÁRIO
-
-Correção aplicada:
-- Cartas consulta `getFlashcardSessions()` ao montar;
-- se existe sessão real concluída hoje para a aula atual, abre em “Sessão concluída”;
-- usuário informou: “tudo ok”.
 
 ### BLOCO-CARTAS-2-LAB — Finalização real da sessão de flashcards IMPLEMENTADO
 
@@ -209,4 +195,4 @@ Comportamento:
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Use o PROTOCOLO ECONÔMICO DE DEPLOY: cada bloco deve virar 1 commit único, com handoff atualizado no mesmo commit. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. Já foram implementados o BLOCO-10A-LAB, ajustes do BLOCO-10C-LAB, BLOCO-CARTAS-2-LAB, BLOCO-SPEAKING-2-LAB, BLOCO-CARTAS-3-LAB, BLOCO-10B-LAB, renderer/gate de Listening, reparo automático especializado para Listening, ajuste de vocabulário/áudio, preservação do tema real do cronograma em Listening, Listening leve com seções recolhíveis e hotfix de navegação/pausa. Validar primeiro no iPhone. Próximo bloco depois da validação: BLOCO-12-LAB. Depois seguir a ordem: 14, 11, 13, 17, 16, 15, 20, CARTAS-3B para expandir até 2.000 e AUDITORIA-POLIMENTO-GERAL. Não delete `rewrite-fluency-clean-lab` nem `rewrite-fluency-clean`. A produção/main ainda NÃO foi validada no Vercel. Validar primeiro a lab no iPhone, depois sincronizar para `rewrite-fluency-clean`, testar o link estável e só depois decidir nova ida para `main`. Rollback da main: `5047bae031f20ddd9604953dcd3fd821655e56fa`."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Use o PROTOCOLO ECONÔMICO DE DEPLOY: cada bloco deve virar 1 commit único, com handoff atualizado no mesmo commit. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. Já foram implementados o BLOCO-10A-LAB, ajustes do BLOCO-10C-LAB, BLOCO-CARTAS-2-LAB, BLOCO-SPEAKING-2-LAB, BLOCO-CARTAS-3-LAB, BLOCO-10B-LAB, renderer/gate de Listening, reparo automático especializado para Listening, ajuste de vocabulário/áudio, preservação do tema real do cronograma em Listening, Listening leve com seções recolhíveis, hotfix de navegação/pausa e quiz guiado estilo Duolingo na prática de Listening. Validar primeiro no iPhone. Próximo bloco depois da validação: BLOCO-12-LAB. Depois seguir a ordem: 14, 11, 13, 17, 16, 15, 20, CARTAS-3B para expandir até 2.000 e AUDITORIA-POLIMENTO-GERAL. Não delete `rewrite-fluency-clean-lab` nem `rewrite-fluency-clean`. A produção/main ainda NÃO foi validada no Vercel. Validar primeiro a lab no iPhone, depois sincronizar para `rewrite-fluency-clean`, testar o link estável e só depois decidir nova ida para `main`. Rollback da main: `5047bae031f20ddd9604953dcd3fd821655e56fa`."
