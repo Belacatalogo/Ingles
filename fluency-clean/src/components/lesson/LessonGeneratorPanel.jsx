@@ -60,6 +60,8 @@ export function LessonGeneratorPanel({ onGenerated }) {
         ...result.lesson,
         id: nextLesson.id,
         curriculumId: nextLesson.id,
+        curriculumTitle: nextLesson.title,
+        expectedTitle: nextLesson.title,
         type: nextLesson.type === 'review' ? result.lesson.type || 'reading' : nextLesson.type,
         level: nextLesson.level,
         unitTitle: nextLesson.unitTitle,
@@ -89,6 +91,7 @@ export function LessonGeneratorPanel({ onGenerated }) {
         const repairedLesson = repairLessonForQuality(lessonToValidate, {
           expectedLevel: nextLesson.level,
           expectedType: lessonToValidate.type,
+          expectedTitle: nextLesson.title,
           review: pedagogicalReview,
         });
         const repairedReview = validateLessonForQuality(repairedLesson, {
