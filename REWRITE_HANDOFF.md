@@ -35,12 +35,47 @@ Nova regra operacional enquanto a reconstrução da prática estiver em andament
 
 ## BLOCO ATUAL
 
-### `BLOCO-GERAÇÃO-STATUS-1-LAB` — Prova visual de aula nova IMPLEMENTADO, aguardando deploy/teste
+### `BLOCO-GERAÇÃO-VARIAÇÃO-1-LAB` — Aula nova precisa variar de verdade IMPLEMENTADO, aguardando deploy/teste
 
 Contexto:
-- usuário gerou aula após o contrato JSON, mas a aula exibida parecia a mesma de antes;
-- causa provável: o app preservava aula atual/pendente sem metadados claros, então não dava para saber se era aula antiga reaproveitada ou aula nova;
-- antes de seguir para `BLOCO-11-LAB`, era necessário provar visualmente origem, horário, contrato e qualidade da aula.
+- usuário confirmou que a prova visual funcionou: apareceu ID `gen-...`, contrato `lesson-contract-v1` e nota 96/100;
+- porém a aula parecia igual porque a próxima aula do cronograma ainda era o mesmo tema: `A1 · listening · Alfabeto, sons iniciais e spelling de nomes`;
+- o sistema estava gerando nova tentativa, mas com prompt muito determinístico e sem contexto explícito de variação.
+
+Arquivos alterados:
+- `fluency-clean/src/services/geminiLessons.js`
+- `fluency-clean/src/components/lesson/LessonGeneratorPanel.jsx`
+- `fluency-clean/src/services/lessonStore.js`
+- `REWRITE_HANDOFF.md`
+
+O que foi implementado:
+- `generateLessonDraft()` agora aceita `previousLesson` e `forceVariation`;
+- quando `forceVariation` está ativo, o gerador cria `generationSeed` e adiciona uma instrução de variação real no prompt;
+- a instrução obriga variar título, situação comunicativa, nomes dos personagens, roteiro/transcrição, exemplos, vocabulário secundário e exercícios;
+- o prompt recebe um resumo da aula anterior para evitar repetição;
+- foram criados temas alternativos por seed: escola, biblioteca, cafeteria, recepção, chamada de vídeo, loja pequena;
+- temperatura do Gemini para aulas subiu de `0.18` para `0.34` para reduzir repetição sem perder controle;
+- `LessonGeneratorPanel.jsx` agora envia a aula atual como `previousLesson` quando o usuário marca substituição;
+- o checkbox passou de `gerar uma nova de verdade` para `gerar uma versão diferente`;
+- o botão passa a mostrar `Gerar versão diferente`;
+- `lessonStore.js` salva `generationSeed`, `variationMode`, `replacedPreviousLessonId` e `replacedPreviousGenerationId` dentro de `generationMeta`;
+- último status agora pode mostrar `Nova versão diferente gerada e salva.`;
+- diagnóstico registra `Variação real ativa para mesmo tema. Seed: ...`.
+
+Teste recomendado:
+1. aguardar deploy;
+2. abrir geração de aula;
+3. marcar `Substituir aula atual e gerar uma versão diferente`;
+4. gerar;
+5. no Diagnóstico, confirmar `Variação real ativa para mesmo tema. Seed: ...`;
+6. abrir Aula e verificar se o ID `gen-...` mudou;
+7. conferir se o título, contexto/roteiro e transcrição mudaram de verdade, mesmo mantendo o tema do cronograma.
+
+### `BLOCO-GERAÇÃO-STATUS-1-LAB` — Prova visual de aula nova IMPLEMENTADO E VALIDADO PELO USUÁRIO
+
+Contexto:
+- usuário gerou nova aula e confirmou visualmente o badge `gen-...`, `lesson-contract-v1` e nota de qualidade;
+- isso provou que a geração nova aconteceu, mas não garantia variação de conteúdo.
 
 Arquivos alterados:
 - `fluency-clean/src/services/lessonStore.js`
@@ -49,28 +84,6 @@ Arquivos alterados:
 - `fluency-clean/src/screens/LessonScreen.jsx`
 - `fluency-clean/src/styles/lesson-polish.css`
 - `REWRITE_HANDOFF.md`
-
-O que foi implementado:
-- `lessonStore.js` agora salva `generationMeta` na aula atual;
-- `generationMeta` inclui: id de geração, origem, status, horário, contrato, nota pedagógica, reparo automático e aula anterior substituída;
-- novo storage `lesson.lastGenerationStatus`;
-- funções novas: `getCurrentLessonRaw()`, `getLastGenerationStatus()`, `saveGenerationStatus()`;
-- `normalizeLesson()` agora preserva `generationMeta`;
-- `LessonGeneratorPanel.jsx` mostra aula atual, horário/contrato/qualidade, último status de geração e aviso quando há aula pendente;
-- se a aula atual é a mesma próxima aula do cronograma, o botão não gera de novo sem o usuário marcar `Substituir aula atual e gerar uma nova de verdade`;
-- quando marcado, o botão passa a gerar uma nova aula e salvar com metadados;
-- `LessonScreen.jsx` mostra badge no topo da aula com ID da geração, contrato, nota de qualidade e horário;
-- aulas antigas sem metadados aparecem como `Aula antiga sem ID de geração`;
-- estilos adicionados para os novos cards/badges.
-
-Teste recomendado:
-1. aguardar deploy;
-2. abrir a aba de geração;
-3. verificar se aparece `Aula atual` e, se for antiga, `sem metadados de geração`;
-4. se quiser gerar nova de verdade, marcar `Substituir aula atual e gerar uma nova de verdade`;
-5. clicar em gerar;
-6. abrir aba Aula e verificar o badge com `gen-...`, `lesson-contract-v1`, nota e horário;
-7. confirmar no Diagnóstico se apareceu `Contrato JSON rígido ativo` e blocos aprovados.
 
 ### `BLOCO-14-LAB` — Contrato JSON rígido IMPLEMENTADO
 
@@ -127,7 +140,7 @@ Pendente técnica:
 
 ## NOVA ORDEM DE BLOCOS — QUALIDADE REAL DAS AULAS
 
-1. `BLOCO-GERAÇÃO-STATUS-1-LAB` — Prova visual de aula nova. STATUS: implementado, aguardando teste.
+1. `BLOCO-GERAÇÃO-VARIAÇÃO-1-LAB` — Aula nova precisa variar de verdade. STATUS: implementado, aguardando teste.
 2. `BLOCO-11-LAB` — Plano primeiro, aula depois. STATUS: próximo.
 3. `BLOCO-13-LAB` — Professor Gerador/Revisor.
 4. `BLOCO-17-LAB` — Qualidade visível da aula.
@@ -139,11 +152,11 @@ Pendente técnica:
 
 ## Pendência técnica importante
 
-- testar deploy do `BLOCO-GERAÇÃO-STATUS-1-LAB`;
+- testar deploy do `BLOCO-GERAÇÃO-VARIAÇÃO-1-LAB`;
 - remover definitivamente `ListeningLesson.jsx` antigo quando o conector permitir SHA correto;
 - confirmar se o contrato não ficou restritivo demais para Flash/free;
 - se o contrato reprovar muitas gerações, ajustar no bloco de plano/reparo sem afrouxar qualidade.
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. Os blocos de prática e áudio foram implementados e validados. O `BLOCO-12-LAB` criou rubricas por tipo de aula. O `BLOCO-14-LAB` criou `lessonJsonContract.js` e conectou o contrato JSON rígido ao `geminiLessons.js`. O `BLOCO-GERAÇÃO-STATUS-1-LAB` adicionou prova visual de aula nova: `generationMeta`, status de geração, badge no topo da aula e checkbox para substituir aula pendente. Próximo passo: testar deploy; se ok, seguir para `BLOCO-11-LAB` plano primeiro, aula depois."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. Os blocos de prática e áudio foram implementados e validados. O `BLOCO-12-LAB` criou rubricas por tipo de aula. O `BLOCO-14-LAB` criou `lessonJsonContract.js` e conectou o contrato JSON rígido ao `geminiLessons.js`. O `BLOCO-GERAÇÃO-STATUS-1-LAB` foi validado: o app mostra ID gen, contrato e nota. O `BLOCO-GERAÇÃO-VARIAÇÃO-1-LAB` adicionou seed, contexto da aula anterior e instrução de variação real para gerar uma versão diferente do mesmo tema. Próximo passo: testar deploy; se ok, seguir para `BLOCO-11-LAB` plano primeiro, aula depois."
