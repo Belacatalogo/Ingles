@@ -3,7 +3,7 @@ import { BookOpen, CheckCircle2, Clock, Headphones, RefreshCw, Sparkles, Target,
 import { Card } from '../components/ui/Card.jsx';
 import { ReadingLesson } from '../lessons/ReadingLesson.jsx';
 import { GrammarLesson } from '../lessons/GrammarLesson.jsx';
-import { ListeningLesson } from '../lessons/ListeningLesson.jsx';
+import { ListeningLessonClean } from '../lessons/ListeningLessonClean.jsx';
 import { WritingLesson } from '../lessons/WritingLesson.jsx';
 import { PracticeLauncher } from '../practice/PracticeLauncher.jsx';
 import { getCurrentLesson } from '../services/lessonStore.js';
@@ -62,7 +62,7 @@ function getLessonStats(lesson) {
 function LessonRenderer({ lesson }) {
   if (lesson?.type === 'reading') return <ReadingLesson lesson={lesson} />;
   if (lesson?.type === 'grammar') return <GrammarLesson lesson={lesson} />;
-  if (lesson?.type === 'listening') return <ListeningLesson lesson={lesson} />;
+  if (lesson?.type === 'listening') return <ListeningLessonClean lesson={lesson} />;
   if (lesson?.type === 'writing') return <WritingLesson lesson={lesson} />;
 
   return (
