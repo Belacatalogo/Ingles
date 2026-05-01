@@ -7,6 +7,7 @@ import { getLessonKeysStatus, getLessonFlashKeys, getLessonProKey } from '../../
 import { getCurrentLessonRaw, getLastGenerationStatus, saveCurrentLesson } from '../../services/lessonStore.js';
 import { repairLessonForQuality } from '../../services/lessonRepair.js';
 import { attachPedagogicalReview, validateLessonForQuality } from '../../services/lessonValidation.js';
+import { attachTeacherReview, reviewLessonAsTeacher } from '../../services/teacherReviewer.js';
 import { buildSaturdayReviewLesson, shouldPrioritizeSaturdayReview } from '../../services/masteryStore.js';
 
 function formatDateTime(value) {
@@ -122,11 +123,39 @@ export function LessonGeneratorPanel({ onGenerated }) {
 
       diagnostics.log(`Aula aprovada na avaliação pedagógica: ${pedagogicalReview.overallScore}/100.`, 'info', pedagogicalReview);
 
-      const saved = saveCurrentLesson(attachPedagogicalReview(lessonForSave, pedagogicalReview), {
+      diagnostics.setPhase('professor revisor avaliando aula', 'generating');
+      let teacherReview = reviewLessonAsTeacher(lessonForSave, { expectedLevel: nextLesson.level, expectedType: lessonForSave.type, baseReview: pedagogicalReview });
+      diagnostics.log(`Professor revisor avaliou a aula: ${teacherReview.finalScore}/100.`, teacherReview.approved ? 'success' : 'warn', teacherReview);
+
+      if (!teacherReview.approved) {
+        diagnostics.setPhase('professor revisor pediu reparo', 'generating');
+        setMessage(`Professor revisor pediu reparo (${teacherReview.finalScore}/100). Ajustando antes de salvar...`);
+        const repairedByTeacher = repairLessonForQuality(lessonForSave, { expectedLevel: nextLesson.level, expectedType: lessonForSave.type, expectedTitle: nextLesson.title, review: { ...pedagogicalReview, issues: [...(pedagogicalReview.issues || []), ...(teacherReview.issues || [])] } });
+        const repairedPedagogicalReview = validateLessonForQuality(repairedByTeacher, { expectedLevel: nextLesson.level, expectedType: lessonForSave.type });
+        const repairedTeacherReview = reviewLessonAsTeacher(repairedByTeacher, { expectedLevel: nextLesson.level, expectedType: lessonForSave.type, baseReview: repairedPedagogicalReview });
+
+        if (!repairedTeacherReview.approved) {
+          const error = `Aula reprovada pelo professor revisor (${repairedTeacherReview.finalScore}/100). ${repairedTeacherReview.issues.join(' ')}`;
+          diagnostics.setPhase('aula reprovada pelo professor revisor', 'error');
+          diagnostics.log(error, 'error', repairedTeacherReview);
+          setMessage(error);
+          return;
+        }
+
+        autoRepaired = true;
+        lessonForSave = repairedByTeacher;
+        pedagogicalReview = { ...repairedPedagogicalReview, autoRepaired: true, teacherRepair: true };
+        teacherReview = repairedTeacherReview;
+        diagnostics.log(`Professor revisor aprovou após reparo: ${teacherReview.finalScore}/100.`, 'success', teacherReview);
+      }
+
+      const reviewedLesson = attachTeacherReview(attachPedagogicalReview(lessonForSave, pedagogicalReview), teacherReview);
+
+      const saved = saveCurrentLesson(reviewedLesson, {
         source: forceNew ? 'generated-replacement-variation' : 'generated',
         status: 'new',
-        contractVersion: result.lesson.planContract ? `lesson-contract-v1+${result.lesson.planContract}` : 'lesson-contract-v1',
-        pedagogicalScore: pedagogicalReview.overallScore,
+        contractVersion: result.lesson.planContract ? `lesson-contract-v1+${result.lesson.planContract}+teacher-reviewer-v1` : 'lesson-contract-v1+teacher-reviewer-v1',
+        pedagogicalScore: teacherReview.finalScore,
         autoRepaired,
         variationMode: forceNew,
         generationSeed: result.lesson.generationSeed,
@@ -134,7 +163,7 @@ export function LessonGeneratorPanel({ onGenerated }) {
       });
       diagnostics.log(`${saturdayReview ? 'Revisão adaptativa planejada' : forceNew ? 'Nova versão planejada da aula do cronograma' : 'Aula planejada do cronograma'} pronta para abrir: ${saved.title}`, 'info');
       const repairLabel = autoRepaired ? ' corrigida automaticamente,' : '';
-      setMessage(saturdayReview ? `Nova revisão planejada${repairLabel} validada (${pedagogicalReview.overallScore}/100), salva e aberta na aba Aula.` : forceNew ? `Nova versão planejada${repairLabel} validada (${pedagogicalReview.overallScore}/100), salva e aberta na aba Aula.` : `Nova aula planejada${repairLabel} validada (${pedagogicalReview.overallScore}/100), salva e aberta na aba Aula.`);
+      setMessage(saturdayReview ? `Nova revisão planejada${repairLabel} aprovada pelo professor (${teacherReview.finalScore}/100), salva e aberta na aba Aula.` : forceNew ? `Nova versão planejada${repairLabel} aprovada pelo professor (${teacherReview.finalScore}/100), salva e aberta na aba Aula.` : `Nova aula planejada${repairLabel} aprovada pelo professor (${teacherReview.finalScore}/100), salva e aberta na aba Aula.`);
       setForceNew(false);
       onGenerated?.(saved);
     } catch (error) {
