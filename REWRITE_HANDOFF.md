@@ -56,14 +56,14 @@ Diretriz visual nova:
 
 ## BLOCO ATUAL
 
-### `BLOCO-PRACTICE-REBUILD-4-LAB` — UI fullscreen elegante do Fluency IMPLEMENTADO, aguardando build/deploy e teste visual no iPhone
+### `BLOCO-PRACTICE-REBUILD-5-LAB` — Sistema de vidas e erro pedagógico IMPLEMENTADO, aguardando build/deploy e teste no iPhone
 
 Análise antes da alteração:
-- `PracticeFullscreen.jsx` ainda tinha visual de protótipo e não parecia totalmente integrado ao Fluency;
-- `practice-fullscreen.css` ainda usava verde claro agressivo;
-- a prática abria direto na questão, sem tela de entrada que desse sensação de sessão guiada;
-- cards, feedback e botões estavam duros e menos premium;
-- o bloco foi tratado como central para retenção e vontade de estudar.
+- o fullscreen premium foi aprovado visualmente pelo usuário;
+- a prática ainda usava o motor visual atual, mas sem vidas;
+- feedback correto/incorreto/quase certo existia, mas não havia punição pedagógica;
+- erro quase certo já podia permitir tentativa, então não deve tirar vida;
+- a troca para o motor novo completo permanece para os blocos 6/7.
 
 Arquivos alterados:
 - `fluency-clean/src/practice/PracticeFullscreen.jsx`
@@ -71,35 +71,48 @@ Arquivos alterados:
 - `REWRITE_HANDOFF.md`
 
 O que foi implementado:
-- nova tela de entrada da prática com título, habilidade, quantidade de exercícios, tempo estimado e botão `Começar prática`;
+- constante `STARTING_LIVES = 5`;
+- estado `lives`;
+- estado `reviewMode`;
+- componente visual `LivesBar` com corações;
+- tela de entrada agora mostra quantidade de vidas;
+- erro real perde 1 vida;
+- erro quase certo não tira vida;
+- feedback mostra quando perdeu vida e quantas restam;
+- quando vidas chegam a 0, entra em modo revisão;
+- modo revisão troca rótulo da pergunta para `Modo revisão`;
+- tela final diferencia conclusão normal e conclusão com revisão;
+- resultado enviado em `onComplete` agora inclui `mistakes`, `lives` e `reviewMode`;
+- CSS atualizado para vidas discretas e premium, com corações rosados e modo revisão.
+
+Importante:
+- este bloco adiciona vidas na prática fullscreen atual;
+- o motor novo de questões ainda não está conectado;
+- conexão com arquitetura nova fica para blocos 6/7.
+
+Teste recomendado no iPhone quando Vercel estiver Ready:
+1. abrir prática;
+2. confirmar vidas na entrada e no topo da sessão;
+3. errar uma resposta de propósito;
+4. confirmar que perde 1 vida;
+5. testar erro quase certo em escrita/ditado se aparecer;
+6. confirmar que erro quase certo não tira vida;
+7. errar até zerar vidas;
+8. confirmar modo revisão;
+9. finalizar e ver texto de conclusão com revisão.
+
+### `BLOCO-PRACTICE-REBUILD-4-LAB` — UI fullscreen elegante do Fluency IMPLEMENTADO E VISUAL APROVADO PELO USUÁRIO
+
+Arquivos alterados:
+- `fluency-clean/src/practice/PracticeFullscreen.jsx`
+- `fluency-clean/src/styles/practice-fullscreen.css`
+
+O que foi implementado:
+- nova tela de entrada da prática;
 - visual fullscreen redesenhado com fundo escuro premium, gradientes azul/violeta/ciano e efeito glass;
 - removido o verde claro dominante;
 - barra de progresso refeita com gradiente Fluency;
-- botões e cards de alternativas redesenhados com glass, letras A/B/C/D e melhor hierarquia;
-- card da pergunta mais elegante, com título da etapa e pergunta em destaque;
-- botão de áudio redesenhado com gradiente e rótulo `Ouvir`;
-- word bank com área de montagem e chips mais bonitos;
-- textarea e campo de fala com foco visual melhor;
-- feedback correto/incorreto/quase certo redesenhado com cores suaves e painel premium;
-- tela final redesenhada com medalha/ícone e botões refinados;
-- mantida compatibilidade com a prática visual atual enquanto a arquitetura nova ainda será integrada nos blocos 6/7.
-
-Importante:
-- este bloco focou no design/UX visual da prática fullscreen atual;
-- a troca completa para os componentes novos e arquitetura final ainda acontece nos blocos 6 e 7;
-- sistema de vidas entra no `BLOCO-PRACTICE-REBUILD-5-LAB`.
-
-Teste recomendado no iPhone quando Vercel estiver Ready:
-1. abrir aula;
-2. tocar em `Começar prática`;
-3. verificar tela de entrada da prática;
-4. iniciar prática;
-5. testar múltipla escolha;
-6. testar áudio/ditado;
-7. testar word bank;
-8. testar feedback certo/errado;
-9. verificar se o visual está bonito, elegante e coerente com o Fluency;
-10. verificar se não há rolagem estranha ou botão cobrindo conteúdo.
+- cards, botões, feedback e tela final redesenhados.
 
 ### `BLOCO-PRACTICE-REBUILD-3-LAB` — Quality gate forte de questões IMPLEMENTADO
 
@@ -127,14 +140,6 @@ Arquivos criados:
 - `fluency-clean/src/practice/core/builders/writingBuilder.js`
 - `fluency-clean/src/practice/core/builders/speakingBuilder.js`
 
-Arquivos alterados:
-- `fluency-clean/src/practice/core/PracticeBuilder.js`
-
-O que foi implementado:
-- builders separados por habilidade;
-- `PracticeBuilder.js` roteia pelo tipo da aula;
-- questões continuam ordenadas por fases da habilidade.
-
 ### `BLOCO-PRACTICE-REBUILD-1-LAB` — Arquitetura limpa da prática IMPLEMENTADO COMO FUNDAÇÃO
 
 Arquivos criados:
@@ -151,8 +156,8 @@ Arquivos criados:
 1. `BLOCO-PRACTICE-REBUILD-1-LAB` — Arquitetura limpa da prática. STATUS: fundação criada.
 2. `BLOCO-PRACTICE-REBUILD-2-LAB` — Builder pedagógico por fases. STATUS: base criada.
 3. `BLOCO-PRACTICE-REBUILD-3-LAB` — Quality gate forte de questões. STATUS: implementado.
-4. `BLOCO-PRACTICE-REBUILD-4-LAB` — UI fullscreen elegante do Fluency. STATUS: implementado, aguardando validação visual.
-5. `BLOCO-PRACTICE-REBUILD-5-LAB` — Sistema de vidas e erro pedagógico.
+4. `BLOCO-PRACTICE-REBUILD-4-LAB` — UI fullscreen elegante do Fluency. STATUS: implementado e visual aprovado.
+5. `BLOCO-PRACTICE-REBUILD-5-LAB` — Sistema de vidas e erro pedagógico. STATUS: implementado, aguardando validação.
 6. `BLOCO-PRACTICE-REBUILD-6-LAB` — Componentes por tipo de exercício.
 7. `BLOCO-PRACTICE-REBUILD-7-LAB` — Integração limpa com aulas.
 8. `BLOCO-PRACTICE-REBUILD-8-LAB` — Persistência, progresso e revisão.
@@ -164,7 +169,7 @@ Arquivos criados:
 - limpar estruturalmente `ListeningLesson.jsx`;
 - remover prática antiga oculta por CSS;
 - substituir motor atual pela nova arquitetura nos blocos 6/7;
-- adicionar vidas no bloco 5.
+- conectar prática com builder novo e componentes separados.
 
 ## Próximos blocos depois da reformulação de prática
 
@@ -181,4 +186,4 @@ Arquivos criados:
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O antigo protocolo econômico de commit/deploy está temporariamente suspenso por pedido do usuário. Os blocos `BLOCO-PRACTICE-REBUILD-1-LAB`, `2`, `3` e `4` foram implementados. O bloco 4 redesenhou `PracticeFullscreen.jsx` e `practice-fullscreen.css` com visual premium Fluency: entrada da prática, fundo escuro, glass, gradientes azul/violeta/ciano e remoção do verde claro agressivo. Próximo passo: validar build/deploy e testar visual no iPhone. Se aprovado, seguir para `BLOCO-PRACTICE-REBUILD-5-LAB`, sistema de vidas e erro pedagógico. Depois seguir blocos 6 a 10 da reformulação e então 12, 14, 11, 13, 17, 16, 15, 20, CARTAS-3B e AUDITORIA-POLIMENTO-GERAL."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O antigo protocolo econômico de commit/deploy está temporariamente suspenso por pedido do usuário. Os blocos `BLOCO-PRACTICE-REBUILD-1-LAB` a `5` foram implementados. O bloco 4 redesenhou o fullscreen premium e foi aprovado visualmente. O bloco 5 adicionou sistema de vidas no `PracticeFullscreen.jsx` e estilos em `practice-fullscreen.css`: 5 vidas, erro real perde vida, erro quase certo não tira vida, modo revisão quando zera. Próximo passo: validar build/deploy e testar vidas no iPhone. Se aprovado, seguir para `BLOCO-PRACTICE-REBUILD-6-LAB`, componentes por tipo de exercício. Depois bloco 7 para conectar o motor novo de `src/practice/core/` e remover o motor antigo."
