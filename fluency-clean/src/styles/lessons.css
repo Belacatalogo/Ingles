@@ -53,12 +53,39 @@
 .lesson-vocabulary-grid.compact .lesson-vocab-card { padding: 13px; border-radius: 18px; }
 .lesson-vocabulary-grid.compact .lesson-vocab-card strong { font-size: 21px; }
 .transcript-box.compact p { font-size: 16px; line-height: 1.55; }
-.lesson-options-row { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0; }
-.lesson-options-row button { min-height: 36px; padding: 0 12px; border-radius: 999px; border: 1px solid rgba(147,160,213,.22); background: rgba(255,255,255,.05); color: #dbeafe; font-weight: 850; }
-.lesson-options-row button.selected { border-color: rgba(91,156,246,.55); background: rgba(91,156,246,.22); color: white; }
 .compact-shadowing { padding: 0; border: 0; background: transparent; box-shadow: none; }
 .compact-shadowing p { margin: 0 0 8px; font-size: 18px; line-height: 1.45; color: #fff; }
 .compact-shadowing small { color: #9aa7c8; }
+
+.fluency-quiz-card { display: grid; gap: 16px; padding: 18px; border-radius: 26px; border: 1px solid rgba(147,160,213,.20); background: radial-gradient(circle at 20% 0%, rgba(91,156,246,.18), transparent 34%), linear-gradient(180deg, rgba(18, 28, 58, .92), rgba(8, 14, 34, .94)); box-shadow: 0 18px 46px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.04); }
+.fluency-quiz-progress { height: 10px; overflow: hidden; border-radius: 999px; background: rgba(147,160,213,.16); }
+.fluency-quiz-progress span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #68a1ff, #a78bfa); transition: width .25s ease; }
+.fluency-quiz-header { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.fluency-quiz-header span { color: #93c5fd; font-size: 13px; font-weight: 950; text-transform: uppercase; letter-spacing: .13em; }
+.fluency-quiz-header b { color: #d8ccff; font-size: 13px; padding: 6px 10px; border-radius: 999px; background: rgba(124,92,255,.18); border: 1px solid rgba(164,140,255,.24); }
+.fluency-quiz-instruction { margin: 0; color: #9aa7c8; font-size: 15px; line-height: 1.45; }
+.fluency-quiz-card h3 { margin: 0; color: #fff; font-size: clamp(25px, 7vw, 40px); line-height: 1.12; letter-spacing: -.045em; }
+.fluency-quiz-options { display: grid; gap: 10px; }
+.fluency-quiz-options button { min-height: 58px; padding: 12px 15px; border-radius: 18px; border: 1px solid rgba(147,160,213,.20); background: rgba(255,255,255,.055); color: #eaf1ff; font-size: 17px; font-weight: 900; text-align: left; }
+.fluency-quiz-options button.selected { border-color: rgba(91,156,246,.62); background: rgba(91,156,246,.18); }
+.fluency-quiz-options button.right { border-color: rgba(71,220,132,.70); background: rgba(71,220,132,.18); color: #d1fae5; }
+.fluency-quiz-options button.wrong { border-color: rgba(248,113,113,.72); background: rgba(248,113,113,.16); color: #fee2e2; }
+.fluency-quiz-card textarea,
+.fluency-quiz-speaking input { width: 100%; min-height: 92px; resize: vertical; border: 1px solid rgba(147,160,213,.20); border-radius: 20px; background: rgba(2,6,23,.34); color: #fff; padding: 15px; font-size: 17px; outline: none; }
+.fluency-quiz-speaking { display: grid; gap: 11px; }
+.fluency-quiz-speaking button { min-height: 76px; display: inline-flex; align-items: center; justify-content: center; gap: 10px; border: 0; border-radius: 24px; background: linear-gradient(135deg, #68a1ff, #a78bfa); color: white; font-size: 20px; font-weight: 950; box-shadow: 0 16px 40px rgba(91,156,246,.25); }
+.fluency-quiz-feedback { display: flex; gap: 11px; align-items: flex-start; padding: 14px; border-radius: 18px; }
+.fluency-quiz-feedback.right { color: #bbf7d0; background: rgba(34,197,94,.13); border: 1px solid rgba(34,197,94,.30); }
+.fluency-quiz-feedback.wrong { color: #fecaca; background: rgba(248,113,113,.12); border: 1px solid rgba(248,113,113,.30); }
+.fluency-quiz-feedback strong { display: block; font-size: 15px; }
+.fluency-quiz-feedback small { display: block; margin-top: 4px; color: inherit; opacity: .9; line-height: 1.4; }
+.fluency-quiz-actions { display: flex; justify-content: flex-end; }
+.fluency-quiz-actions button,
+.fluency-quiz-finish button { min-height: 50px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 0 18px; border: 0; border-radius: 16px; background: linear-gradient(135deg, #68a1ff, #a78bfa); color: white; font-size: 16px; font-weight: 950; }
+.fluency-quiz-finish { display: grid; justify-items: center; gap: 12px; text-align: center; padding: 16px 6px; }
+.fluency-quiz-finish svg { color: #47dc84; }
+.fluency-quiz-finish h3 { font-size: 30px; }
+.fluency-quiz-finish p { margin: 0; color: #aeb9d8; line-height: 1.5; }
 
 .reference-flashcards-screen { gap: 18px; }
 .flashcards-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
@@ -118,4 +145,7 @@
   .lesson-collapsible-head { min-height: 58px; padding: 14px; }
   .lesson-collapsible-head span { font-size: 14px; letter-spacing: .04em; }
   .lesson-collapsible-head small { font-size: 12px; padding-left: 26px; }
+  .fluency-quiz-card { padding: 15px; border-radius: 24px; }
+  .fluency-quiz-card h3 { font-size: clamp(23px, 7vw, 32px); }
+  .fluency-quiz-options button { min-height: 54px; font-size: 16px; }
 }
