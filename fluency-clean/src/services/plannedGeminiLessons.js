@@ -13,6 +13,18 @@ function resolvePlanType({ prompt = '', forcedType = '' } = {}) {
   return inferLessonTypeFromText(prompt);
 }
 
+const JSON_OUTPUT_GUARD = [
+  'GUARDA DE FORMATO JSON OBRIGATÓRIA:',
+  'A resposta de cada bloco deve começar diretamente com { e terminar com }.',
+  'Nunca retorne JSON como string escapada.',
+  'Nunca comece com {\\"type\\" ou {\\"exercises\\".',
+  'Nunca coloque barra invertida antes de aspas de chaves JSON.',
+  'Forma correta: {"type":"listening","level":"A1"}',
+  'Forma proibida: {\\"type\\":\\"listening\\",\\"level\\":\\"A1\\"}',
+  'Não coloque markdown, texto explicativo, comentários ou aspas envolvendo o objeto JSON.',
+  'Se a API pedir application/json, devolva objeto JSON real, não texto serializado dentro de texto.',
+].join('\n');
+
 export async function generatePlannedLessonDraft(options = {}) {
   const {
     prompt = '',
@@ -37,12 +49,15 @@ export async function generatePlannedLessonDraft(options = {}) {
   diagnostics.log(`Plano pedagógico criado: ${summarizePlanForDiagnostics(plan)}.`, 'info', plan);
 
   const plannedPrompt = [
+    JSON_OUTPUT_GUARD,
+    '',
     buildPlanPromptText(plan),
     '',
     'PEDIDO ORIGINAL DO CRONOGRAMA:',
     prompt,
     '',
     'A geração deve obedecer ao plano pedagógico acima antes de criar estrutura, texto, vocabulário, exercícios e produção.',
+    'Antes de responder cada bloco, confira mentalmente se o primeiro caractere da resposta será { e não texto escapado.',
   ].join('\n');
 
   const result = await generateLessonDraft({
