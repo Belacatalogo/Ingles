@@ -32,7 +32,7 @@ function cacheKey({ text, voiceName, style }) {
 function base64ToUint8Array(base64) {
   const binary = atob(base64);
   const bytes = new Uint8Array(binary.length);
-  for (let index = 0; index < binary.length; index += 1) {
+  for (let index = 0; index < text.length; index += 1) {
     bytes[index] = binary.charCodeAt(index);
   }
   return bytes;
@@ -138,6 +138,24 @@ async function callGeminiTts({ text, key, model, voiceName, style, fetcher }) {
   return inline;
 }
 
+async function playBrowserFallback(cleanText) {
+  const fallback = await speakText(cleanText);
+  if (!fallback.ok) {
+    return {
+      ok: false,
+      audioUrl: '',
+      source: 'browser-fallback-error',
+      error: fallback.error || 'TTS do navegador não iniciou.',
+    };
+  }
+  return {
+    ok: true,
+    audioUrl: '',
+    source: 'browser-fallback',
+    error: null,
+  };
+}
+
 export async function generateGeminiTtsAudio({
   text,
   voiceName = DEFAULT_VOICE,
@@ -170,8 +188,8 @@ export async function generateGeminiTtsAudio({
     const error = 'Nenhuma key de aulas disponível para Gemini TTS natural.';
     diagnostics.log(error, 'error');
     if (!allowBrowserFallback) return { ok: false, audioUrl: '', source: 'missing-keys', error };
-    await speakText(cleanText);
-    return { ok: true, audioUrl: '', source: 'browser-fallback', error };
+    const fallback = await playBrowserFallback(cleanText);
+    return fallback.ok ? fallback : { ...fallback, error: `${error} ${fallback.error || ''}`.trim() };
   }
 
   let lastError = null;
@@ -207,8 +225,8 @@ export async function generateGeminiTtsAudio({
   if (!allowBrowserFallback) return { ok: false, audioUrl: '', source: 'gemini-error', error };
 
   diagnostics.log('Usando TTS do navegador apenas como último recurso.', 'error');
-  await speakText(cleanText);
-  return { ok: true, audioUrl: '', source: 'browser-fallback', error };
+  const fallback = await playBrowserFallback(cleanText);
+  return fallback.ok ? fallback : { ...fallback, error: `${error} ${fallback.error || ''}`.trim() };
 }
 
 export async function playGeminiTtsAudio(options = {}) {
@@ -234,8 +252,9 @@ export async function playGeminiTtsAudio(options = {}) {
         return { ...result, ok: false, source: 'gemini-playback-error', error: error?.message || String(error) };
       }
       diagnostics.log('Usando TTS do navegador apenas como último recurso.', 'error');
-      await speakText(options.text);
-      return { ...result, source: 'browser-fallback', error: error?.message || String(error) };
+      const fallback = await playBrowserFallback(options.text);
+      if (!fallback.ok) return { ...fallback, error: `${error?.message || error}. ${fallback.error || ''}`.trim() };
+      return fallback;
     }
   }
 
