@@ -35,33 +35,43 @@ Observação: em alguns ajustes recentes, o conector bloqueou operações de ár
 
 ## Estado atual implementado
 
-### AJUSTE BLOCO-10B-LAB — Reparo automático especializado para Listening IMPLEMENTADO, aguardando teste
+### AJUSTE BLOCO-10B-LAB — Vocabulário visual e áudio com erro real IMPLEMENTADO, aguardando teste
 
 Contexto:
-- o novo gate bloqueou corretamente uma aula esperada como Listening com conteúdo de Grammar;
-- porém o reparo automático anterior ainda era estrutural demais e não conseguia converter a aula em Listening real;
-- usuário mostrou erro: “Aula reprovada mesmo após correção automática (85/100)” por foco de Grammar.
+- usuário mostrou que o vocabulário da aula aparecia colado, exemplo: `listenouvir`;
+- usuário também informou que ao tocar em ouvir aparecia “Áudio iniciado”, mas não saía som;
+- Diagnóstico indicava bloqueio do Safari/TTS.
 
-Arquivo alterado:
-- `fluency-clean/src/services/lessonRepair.js`
+Arquivos alterados:
+- `fluency-clean/src/styles/lessons.css`
+- `fluency-clean/src/services/geminiTts.js`
 - `REWRITE_HANDOFF.md`
 
 Correção aplicada:
-- quando `expectedType` é `listening`, o reparo agora reconstrói a aula como Listening real;
+- adicionadas classes reais para `lesson-vocabulary-grid` e `lesson-vocab-card`;
+- vocabulário passa a aparecer como card: palavra, tradução em chip separado e exemplo em linha própria;
+- ajuste no retorno do Gemini/browser fallback para não fingir sucesso quando o Safari bloquear o TTS;
+- se Gemini falhar e o fallback do navegador também não iniciar, o retorno agora vem como erro real;
+- corrigido bug no conversor `base64ToUint8Array` introduzido durante o ajuste do áudio.
+
+Teste recomendado:
+1. aguardar deploy Ready;
+2. abrir aula Listening atual;
+3. verificar se o vocabulário aparece separado em cards;
+4. tocar no botão de áudio;
+5. se não tocar, o app deve mostrar erro real em vez de “Áudio iniciado”;
+6. testar tocar novamente diretamente no botão dentro da aula, sem usar painel de diagnóstico.
+
+### AJUSTE BLOCO-10B-LAB — Reparo automático especializado para Listening IMPLEMENTADO
+
+Correção aplicada:
+- quando `expectedType` é `listening`, o reparo reconstrói a aula como Listening real;
 - título muda para `Listening Practice — Daily English Routine`;
 - objetivo passa a focar em compreensão auditiva, escuta global, detalhes, transcrição, vocabulário auditivo e shadowing;
 - `listeningText` passa a ser uma transcrição/roteiro auditivo real;
 - vocabulário do reparo Listening passa a ser vocabulário auditivo com tradução em português;
 - exercícios do reparo Listening passam a ser perguntas de compreensão auditiva baseadas no roteiro;
-- seções do reparo Listening passam a cobrir escuta global, detalhes, transcrição guiada, vocabulário auditivo, compreensão auditiva e shadowing;
-- isso deve permitir que o reparo aprovado pareça uma aula de Listening, não uma Grammar disfarçada.
-
-Teste recomendado:
-1. aguardar deploy Ready;
-2. gerar nova aula Listening;
-3. se o Gemini devolver Grammar disfarçada, observar se o Diagnóstico tenta reparo especializado;
-4. confirmar que a aula salva tem roteiro de escuta, vocabulário auditivo, transcrição e shadowing;
-5. confirmar que o conteúdo não aparece como aula de Grammar.
+- seções do reparo Listening cobrem escuta global, detalhes, transcrição guiada, vocabulário auditivo, compreensão auditiva e shadowing.
 
 ### AJUSTE BLOCO-10B-LAB — Listening especializado e gate contra tipo errado IMPLEMENTADO
 
@@ -166,4 +176,4 @@ Comportamento:
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Use o PROTOCOLO ECONÔMICO DE DEPLOY: cada bloco deve virar 1 commit único, com handoff atualizado no mesmo commit. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. Já foram implementados o BLOCO-10A-LAB, ajustes do BLOCO-10C-LAB, BLOCO-CARTAS-2-LAB, BLOCO-SPEAKING-2-LAB, BLOCO-CARTAS-3-LAB, BLOCO-10B-LAB, renderer/gate de Listening e reparo automático especializado para Listening. Validar primeiro no iPhone. Próximo bloco depois da validação: BLOCO-12-LAB. Depois seguir a ordem: 14, 11, 13, 17, 16, 15, 20, CARTAS-3B para expandir até 2.000 e AUDITORIA-POLIMENTO-GERAL. Não delete `rewrite-fluency-clean-lab` nem `rewrite-fluency-clean`. A produção/main ainda NÃO foi validada no Vercel. Validar primeiro a lab no iPhone, depois sincronizar para `rewrite-fluency-clean`, testar o link estável e só depois decidir nova ida para `main`. Rollback da main: `5047bae031f20ddd9604953dcd3fd821655e56fa`."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Use o PROTOCOLO ECONÔMICO DE DEPLOY: cada bloco deve virar 1 commit único, com handoff atualizado no mesmo commit. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. Já foram implementados o BLOCO-10A-LAB, ajustes do BLOCO-10C-LAB, BLOCO-CARTAS-2-LAB, BLOCO-SPEAKING-2-LAB, BLOCO-CARTAS-3-LAB, BLOCO-10B-LAB, renderer/gate de Listening, reparo automático especializado para Listening e ajuste de vocabulário/áudio. Validar primeiro no iPhone. Próximo bloco depois da validação: BLOCO-12-LAB. Depois seguir a ordem: 14, 11, 13, 17, 16, 15, 20, CARTAS-3B para expandir até 2.000 e AUDITORIA-POLIMENTO-GERAL. Não delete `rewrite-fluency-clean-lab` nem `rewrite-fluency-clean`. A produção/main ainda NÃO foi validada no Vercel. Validar primeiro a lab no iPhone, depois sincronizar para `rewrite-fluency-clean`, testar o link estável e só depois decidir nova ida para `main`. Rollback da main: `5047bae031f20ddd9604953dcd3fd821655e56fa`."
