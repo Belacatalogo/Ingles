@@ -56,18 +56,56 @@ Diretriz visual nova:
 
 ## BLOCO ATUAL
 
-### `BLOCO-PRACTICE-REBUILD-8-LAB` — Persistência, progresso e revisão IMPLEMENTADO, aguardando deploy/teste no iPhone
+### `BLOCO-PRACTICE-REBUILD-9-LAB` — Limpeza final e remoção de legado PARCIALMENTE IMPLEMENTADO, aguardando deploy/teste
 
 Contexto:
-- bloco 7 foi validado: motor novo entrou e a prática fullscreen está funcionando;
-- bloco 7B foi validado pelo usuário como funcionando perfeitamente;
-- agora a prática precisava deixar de ser apenas visual e passar a registrar histórico real.
+- bloco 8 foi validado pelo usuário;
+- o próximo passo era remover duplicidade e legado da prática.
 
 Análise antes da alteração:
-- `PracticeFullscreen.jsx` já retornava `results`, `lives`, `reviewMode`, `correct`, `total`;
-- `PracticeLauncher.jsx` ainda contava exercícios usando `PracticeEngine.js` antigo, apesar de o fullscreen usar o adapter novo;
-- `progressStore.js` tinha histórico de aula, flashcards e speaking, mas não tinha histórico de prática fullscreen;
-- `ProgressScreen.jsx` não exibia precisão, vidas ou erros da prática.
+- `PracticeFullscreen.jsx` já usava `PracticePlanAdapter.js` e não dependia mais do motor antigo;
+- `PracticeLauncher.jsx` já havia sido migrado no bloco 8 para `PracticePlanAdapter.js`;
+- `PracticeEngine.js` era legado não usado no fluxo principal;
+- `ListeningLesson.jsx` ainda continha uma prática antiga interna, separada da prática fullscreen nova;
+- essa prática antiga não deveria continuar aparecendo/competindo com o novo sistema fullscreen.
+
+Arquivos criados:
+- `fluency-clean/src/lessons/ListeningLessonClean.jsx`
+
+Arquivos alterados:
+- `fluency-clean/src/screens/LessonScreen.jsx`
+- `REWRITE_HANDOFF.md`
+
+Arquivos removidos:
+- `fluency-clean/src/practice/PracticeEngine.js`
+
+O que foi implementado:
+- removido o motor antigo `PracticeEngine.js`;
+- criado `ListeningLessonClean.jsx`, uma versão limpa da aula de Listening sem quiz/prática legada interna;
+- mantidos no Listening limpo: áudio natural, transcrição, conceito, vocabulário, shadowing e conclusão da aula;
+- `LessonScreen.jsx` agora importa e renderiza `ListeningLessonClean` para aulas do tipo listening;
+- a prática principal permanece somente no `PracticeLauncher` + `PracticeFullscreen`, usando o core novo;
+- o arquivo antigo `ListeningLesson.jsx` permanece temporariamente no repositório, mas fora do fluxo ativo, para evitar remoção arriscada antes do teste no iPhone.
+
+Teste recomendado no iPhone:
+1. abrir uma aula de Listening;
+2. confirmar que a aula carrega sem tela branca;
+3. confirmar que o card `Prática profunda` continua aparecendo antes do conteúdo da aula;
+4. confirmar que dentro da aula Listening não aparece mais a prática/quiz antiga embutida;
+5. testar áudio principal;
+6. abrir transcrição/vocabulário/conceito;
+7. testar shadowing;
+8. concluir a aula;
+9. abrir prática fullscreen e confirmar que ela continua funcionando.
+
+Pendente no próprio bloco 9:
+- depois de validar no iPhone, remover definitivamente `fluency-clean/src/lessons/ListeningLesson.jsx`;
+- procurar CSS legado de `.fluency-quiz-*` e remover se não houver uso ativo;
+- confirmar se nenhum import ativo referencia `PracticeEngine.js` ou `ListeningLesson.jsx`.
+
+### `BLOCO-PRACTICE-REBUILD-8-LAB` — Persistência, progresso e revisão IMPLEMENTADO E VALIDADO PELO USUÁRIO
+
+O usuário confirmou que funcionou.
 
 Arquivos criados:
 - `fluency-clean/src/components/progress/PracticeProgressSummary.jsx`
@@ -77,67 +115,16 @@ Arquivos alterados:
 - `fluency-clean/src/practice/PracticeLauncher.jsx`
 - `fluency-clean/src/screens/ProgressScreen.jsx`
 - `fluency-clean/src/styles/progress-polish.css`
-- `REWRITE_HANDOFF.md`
-
-O que foi implementado:
-- novo storage `progress.practiceSessions`;
-- função `recordPracticeSession()`;
-- função `getPracticeSessions()`;
-- função `getPracticeSessionsForLesson()`;
-- função `getPracticeReviewQueue()`;
-- função `hasPracticeSessionToday()`;
-- sessão de prática salva: aula, tipo, nível, data, total, acertos, erros, precisão, vidas, modo revisão, itens fracos e resultados compactos;
-- `PracticeLauncher.jsx` agora usa `PracticePlanAdapter.js` também para contar exercícios, não mais `PracticeEngine.js`;
-- ao concluir a prática fullscreen, `PracticeLauncher.jsx` grava a sessão real com `recordPracticeSession()`;
-- card da prática passa a mostrar `Prática registrada`, acertos, precisão, vidas e melhor sessão;
-- botão muda para `Revisar novamente` quando já há sessão salva;
-- criada seção `PracticeProgressSummary` na aba Progresso;
-- aba Progresso agora mostra precisão média, exercícios feitos, erros para revisar, última sessão e fila de revisão;
-- estilos novos para resumo de prática e estado de prática concluída.
-
-Teste recomendado no iPhone:
-1. abrir uma aula;
-2. entrar na prática fullscreen;
-3. responder algumas questões e concluir;
-4. voltar para a aula e confirmar se o card mudou para `Prática registrada`;
-5. confirmar se aparecem acertos, precisão e vidas;
-6. clicar em `Revisar novamente` e garantir que abre a prática de novo;
-7. ir na aba Progresso e confirmar a seção `Prática profunda`;
-8. confirmar se aparecem última prática e fila de revisão caso tenha errado algo.
 
 ### `BLOCO-PRACTICE-REBUILD-7B-LAB` — Saneamento pedagógico e polimento mobile IMPLEMENTADO E VALIDADO PELO USUÁRIO
 
 O usuário confirmou que funcionou perfeitamente.
 
-Arquivos alterados:
-- `fluency-clean/src/practice/core/builders/builderUtils.js`
-- `fluency-clean/src/practice/core/builders/listeningBuilder.js`
-- `fluency-clean/src/practice/core/PracticeQualityGate.js`
-- `fluency-clean/src/practice/PracticePlanAdapter.js`
-- `fluency-clean/src/styles/practice-fullscreen.css`
-
 ### `BLOCO-PRACTICE-REBUILD-7-LAB` — Integração limpa com aulas usando motor novo IMPLEMENTADO E VALIDADO
 
 O bloco 7 foi validado pelo usuário: a prática passou a usar o motor novo, com 26 questões e vidas visíveis.
 
-Arquivos criados:
-- `fluency-clean/src/practice/PracticePlanAdapter.js`
-
-Arquivos alterados:
-- `fluency-clean/src/practice/PracticeFullscreen.jsx`
-
 ### `BLOCO-PRACTICE-REBUILD-6-LAB` — Componentes por tipo de exercício IMPLEMENTADO
-
-Arquivos criados/confirmados:
-- `fluency-clean/src/practice/components/PracticeHeader.jsx`
-- `fluency-clean/src/practice/components/PracticeIntro.jsx`
-- `fluency-clean/src/practice/components/PracticeDone.jsx`
-- `fluency-clean/src/practice/components/ChoiceGrid.jsx`
-- `fluency-clean/src/practice/components/WordBankExercise.jsx`
-- `fluency-clean/src/practice/components/TextExercise.jsx`
-- `fluency-clean/src/practice/components/SpeakExercise.jsx`
-- `fluency-clean/src/practice/components/AudioPrompt.jsx`
-- `fluency-clean/src/practice/components/PracticeFeedback.jsx`
 
 ### `BLOCO-PRACTICE-REBUILD-5-LAB` — Sistema de vidas e erro pedagógico IMPLEMENTADO
 
@@ -159,17 +146,17 @@ Arquivos criados/confirmados:
 6. `BLOCO-PRACTICE-REBUILD-6-LAB` — Componentes por tipo de exercício. STATUS: implementado.
 7. `BLOCO-PRACTICE-REBUILD-7-LAB` — Integração limpa com aulas. STATUS: implementado e validado.
 7B. `BLOCO-PRACTICE-REBUILD-7B-LAB` — Saneamento pedagógico e polimento mobile. STATUS: implementado e validado.
-8. `BLOCO-PRACTICE-REBUILD-8-LAB` — Persistência, progresso e revisão. STATUS: implementado, aguardando teste.
-9. `BLOCO-PRACTICE-REBUILD-9-LAB` — Limpeza final e remoção de legado.
+8. `BLOCO-PRACTICE-REBUILD-8-LAB` — Persistência, progresso e revisão. STATUS: implementado e validado.
+9. `BLOCO-PRACTICE-REBUILD-9-LAB` — Limpeza final e remoção de legado. STATUS: parcialmente implementado, aguardando teste.
 10. `BLOCO-PRACTICE-REBUILD-10-LAB` — Teste completo no iPhone.
 
 ## Pendência técnica importante
 
-- validar bloco 8 no iPhone;
-- limpar estruturalmente `ListeningLesson.jsx`;
-- remover prática antiga oculta por CSS;
-- remover `PracticeEngine.js` somente depois de validação completa do adapter/core;
-- confirmar se o core gera questões suficientes para aulas reais antigas e novas.
+- validar bloco 9 no iPhone;
+- remover definitivamente `ListeningLesson.jsx` após validação;
+- remover CSS legado `.fluency-quiz-*` após confirmar que não há uso ativo;
+- confirmar se o core gera questões suficientes para aulas reais antigas e novas;
+- seguir para teste completo no iPhone.
 
 ## Próximos blocos depois da reformulação de prática
 
@@ -186,4 +173,4 @@ Arquivos criados/confirmados:
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. Os blocos `BLOCO-PRACTICE-REBUILD-1-LAB` a `8` foram implementados. O bloco 7 conectou o motor novo e foi validado. O bloco 7B saneou alternativas e foi validado pelo usuário. O bloco 8 adicionou persistência real da prática: `recordPracticeSession`, histórico `progress.practiceSessions`, card de prática registrada e seção `Prática profunda` na aba Progresso. Próximo passo: verificar deploy e testar bloco 8 no iPhone. Se aprovado, seguir para `BLOCO-PRACTICE-REBUILD-9-LAB`, limpeza final e remoção de legado com muito cuidado."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. Os blocos `BLOCO-PRACTICE-REBUILD-1-LAB` a `8` foram implementados e validados. O bloco 9 removeu `PracticeEngine.js`, criou `ListeningLessonClean.jsx` sem prática legada interna e trocou `LessonScreen.jsx` para usar o Listening limpo. Próximo passo: verificar deploy, testar bloco 9 no iPhone e, se aprovado, remover definitivamente o `ListeningLesson.jsx` antigo e CSS legado `.fluency-quiz-*`."
