@@ -1,7 +1,8 @@
-import { Brain, Clock3, Layers3, Volume2 } from 'lucide-react';
+import { Award, Brain, CheckCircle2, Clock3, Layers3, RotateCcw, Volume2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { playLearningAudio } from '../services/audioPlayback.js';
 import { getCurrentLesson } from '../services/lessonStore.js';
+import { recordFlashcardSession } from '../services/progressStore.js';
 
 function normalizeVocabularyItem(item, index) {
   if (typeof item === 'string') {
@@ -31,29 +32,82 @@ function normalizeVocabularyItem(item, index) {
   };
 }
 
-export function FlashcardsScreen() {
+function initialStats() {
+  return { correct: 0, missed: 0, reviewed: 0 };
+}
+
+export function FlashcardsScreen({ onNavigate }) {
   const [flipped, setFlipped] = useState(false);
   const [cardIndex, setCardIndex] = useState(0);
-  const [sessionStats, setSessionStats] = useState({ correct: 0, missed: 0 });
+  const [sessionStats, setSessionStats] = useState(initialStats);
+  const [sessionDone, setSessionDone] = useState(false);
+  const [sessionRecord, setSessionRecord] = useState(null);
+  const [reviewLog, setReviewLog] = useState([]);
   const [audioMessage, setAudioMessage] = useState('');
   const currentLesson = getCurrentLesson();
   const cards = useMemo(() => (Array.isArray(currentLesson?.vocabulary) ? currentLesson.vocabulary.map(normalizeVocabularyItem) : []), [currentLesson]);
-  const currentCard = cards.length ? cards[cardIndex % cards.length] : null;
-  const sessionPosition = cards.length ? (cardIndex % cards.length) + 1 : 0;
-  const sessionProgress = cards.length ? Math.min(100, (sessionPosition / cards.length) * 100) : 0;
+  const currentCard = cards.length && !sessionDone ? cards[Math.min(cardIndex, cards.length - 1)] : null;
+  const sessionPosition = cards.length ? Math.min(cardIndex + 1, cards.length) : 0;
+  const sessionProgress = cards.length ? Math.min(100, (sessionStats.reviewed / cards.length) * 100) : 0;
   const precision = useMemo(() => {
-    const total = sessionStats.correct + sessionStats.missed;
+    const total = sessionStats.reviewed;
     return total ? Math.round((sessionStats.correct / total) * 100) : 0;
   }, [sessionStats]);
 
-  function handleDifficulty(tone) {
-    if (!cards.length) return;
-    setFlipped(false);
-    setCardIndex((value) => value + 1);
-    setSessionStats((stats) => {
-      if (tone === 'again') return { ...stats, missed: stats.missed + 1 };
-      return { ...stats, correct: stats.correct + 1 };
+  function finishSession(nextStats, nextLog) {
+    const record = recordFlashcardSession({
+      lesson: currentLesson,
+      totalCards: cards.length,
+      reviewedCards: nextStats.reviewed,
+      correctCount: nextStats.correct,
+      needsReviewCount: nextStats.missed,
+      cards: nextLog,
     });
+    setSessionRecord(record);
+    setSessionDone(true);
+    setFlipped(false);
+    setAudioMessage('Sessão de cartas concluída e registrada.');
+  }
+
+  function handleDifficulty(tone) {
+    if (!cards.length || !currentCard || sessionDone) return;
+
+    const isMissed = tone === 'again' || tone === 'hard';
+    const reviewItem = {
+      id: currentCard.id,
+      word: currentCard.word,
+      rating: tone,
+      needsReview: isMissed,
+      reviewedAt: new Date().toISOString(),
+    };
+    const nextLog = [...reviewLog, reviewItem];
+    const nextStats = {
+      correct: sessionStats.correct + (isMissed ? 0 : 1),
+      missed: sessionStats.missed + (isMissed ? 1 : 0),
+      reviewed: sessionStats.reviewed + 1,
+    };
+
+    setReviewLog(nextLog);
+    setSessionStats(nextStats);
+    setFlipped(false);
+
+    const nextIndex = cardIndex + 1;
+    if (nextIndex >= cards.length) {
+      finishSession(nextStats, nextLog);
+      return;
+    }
+
+    setCardIndex(nextIndex);
+  }
+
+  function restartSession() {
+    setFlipped(false);
+    setCardIndex(0);
+    setSessionStats(initialStats());
+    setSessionDone(false);
+    setSessionRecord(null);
+    setReviewLog([]);
+    setAudioMessage('Nova revisão iniciada.');
   }
 
   async function handleCardAudio(text, event) {
@@ -86,7 +140,7 @@ export function FlashcardsScreen() {
         </button>
       </div>
 
-      {!currentCard ? (
+      {!cards.length ? (
         <section className="cards-review-footer">
           <div>
             <Layers3 size={18} />
@@ -96,12 +150,42 @@ export function FlashcardsScreen() {
           <p>As cartas agora só mostram vocabulário real vindo da aula atual. Não há mais baralhos ou contagens fictícias.</p>
           <small><Clock3 size={13} /> volte após gerar uma aula por IA</small>
         </section>
+      ) : sessionDone ? (
+        <section className="cards-complete-card" aria-label="Sessão de flashcards concluída">
+          <div className="cards-complete-icon"><Award size={24} /></div>
+          <span>Sessão concluída</span>
+          <h2>{sessionStats.reviewed} carta(s) revisada(s)</h2>
+          <p>Registro real salvo para Hoje, Progresso e revisão futura.</p>
+
+          <div className="cards-stat-grid cards-complete-grid">
+            <div className="cards-stat-card green">
+              <strong>{sessionStats.correct}</strong>
+              <span>Marcadas ok</span>
+            </div>
+            <div className="cards-stat-card rose">
+              <strong>{sessionStats.missed}</strong>
+              <span>Para revisar</span>
+            </div>
+            <div className="cards-stat-card blue">
+              <strong>{precision}%</strong>
+              <span>Precisão</span>
+            </div>
+          </div>
+
+          {sessionRecord?.completedAt ? <small>Salvo às {new Date(sessionRecord.completedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}.</small> : null}
+
+          <div className="cards-complete-actions">
+            <button type="button" onClick={restartSession}><RotateCcw size={16} /> Revisar novamente</button>
+            <button type="button" onClick={() => onNavigate?.('today')}><CheckCircle2 size={16} /> Voltar para Hoje</button>
+            <button type="button" onClick={() => onNavigate?.('lesson')}>Continuar aula</button>
+          </div>
+        </section>
       ) : (
         <>
           <div className="cards-session-card">
             <div className="cards-session-topline">
               <span>Sessão · carta {sessionPosition} de {cards.length}</span>
-              <strong>{sessionStats.correct + sessionStats.missed} revisada(s)</strong>
+              <strong>{sessionStats.reviewed} revisada(s)</strong>
             </div>
             <div className="cards-progress-track" aria-label={`${Math.round(sessionProgress)}% da sessão`}>
               <span style={{ width: `${sessionProgress}%` }} />
@@ -163,12 +247,7 @@ export function FlashcardsScreen() {
                 { id: 'good', label: 'Bom', time: 'ok', tone: 'blue' },
                 { id: 'easy', label: 'Fácil', time: 'ok', tone: 'green' },
               ].map((button) => (
-                <button
-                  className={`cards-srs-button ${button.tone}`}
-                  key={button.id}
-                  type="button"
-                  onClick={() => handleDifficulty(button.id)}
-                >
+                <button className={`cards-srs-button ${button.tone}`} key={button.id} type="button" onClick={() => handleDifficulty(button.id)}>
                   <strong>{button.label}</strong>
                   <span>{button.time}</span>
                 </button>

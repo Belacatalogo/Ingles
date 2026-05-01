@@ -2,7 +2,7 @@ import { BookOpen, Brain, ChevronRight, Flame, LineChart, Mic, Quote, Sparkles, 
 import { LessonGeneratorPanel } from '../components/lesson/LessonGeneratorPanel.jsx';
 import { getCurrentLesson } from '../services/lessonStore.js';
 import { getLessonStats } from '../services/lessonStats.js';
-import { getLessonCompletions, getProgressSummary } from '../services/progressStore.js';
+import { getLessonCompletions, getProgressSummary, hasFlashcardSessionToday } from '../services/progressStore.js';
 
 const baseTasks = [
   { id: 'lesson', label: 'Aula de hoje', status: 'Aula guiada pela IA', icon: BookOpen, target: 'lesson', color: 'blue' },
@@ -48,10 +48,9 @@ function getWeekDaysFromCompletions(completions) {
   });
 }
 
-function getTodayCompletedCount(completions) {
+function getTodayLessonCompleted(completions) {
   const today = new Date().toISOString().slice(0, 10);
-  const completedToday = completions.filter((item) => String(item.completedAt || '').slice(0, 10) === today).length;
-  return Math.min(completedToday, baseTasks.length);
+  return completions.some((item) => String(item.completedAt || '').slice(0, 10) === today);
 }
 
 export function TodayScreen({ onLessonGenerated, onNavigate }) {
@@ -60,7 +59,9 @@ export function TodayScreen({ onLessonGenerated, onNavigate }) {
   const lessonStats = getLessonStats(currentLesson);
   const completions = getLessonCompletions();
   const weekDays = getWeekDaysFromCompletions(completions);
-  const completed = getTodayCompletedCount(completions);
+  const lessonDoneToday = getTodayLessonCompleted(completions);
+  const cardsDoneToday = hasFlashcardSessionToday();
+  const completed = [lessonDoneToday, cardsDoneToday, false].filter(Boolean).length;
   const totalTasks = baseTasks.length;
   const percent = Math.max(0, Math.min(100, Math.round((completed / totalTasks) * 100)));
   const streak = progress.streakDays || 0;
@@ -70,7 +71,7 @@ export function TodayScreen({ onLessonGenerated, onNavigate }) {
     if (task.id === 'lesson') {
       return {
         ...task,
-        status: currentLesson ? getLessonTypeStatus(currentLesson) : 'Nenhuma aula gerada ainda',
+        status: lessonDoneToday ? 'Aula concluída hoje' : currentLesson ? getLessonTypeStatus(currentLesson) : 'Nenhuma aula gerada ainda',
         time: currentLesson ? `~${lessonStats.minutes} min` : '',
       };
     }
@@ -78,8 +79,8 @@ export function TodayScreen({ onLessonGenerated, onNavigate }) {
     if (task.id === 'cards') {
       return {
         ...task,
-        status: cardsAvailable ? `${cardsAvailable} cards da aula atual` : 'Nenhum card real disponível ainda',
-        time: cardsAvailable ? '~5 min' : '',
+        status: cardsDoneToday ? 'Sessão real concluída hoje' : cardsAvailable ? `${cardsAvailable} cards da aula atual` : 'Nenhum card real disponível ainda',
+        time: cardsDoneToday ? 'feito' : cardsAvailable ? '~5 min' : '',
       };
     }
 

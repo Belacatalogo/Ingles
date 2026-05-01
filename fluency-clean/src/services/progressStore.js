@@ -6,6 +6,7 @@ import { storage } from './storage.js';
 const PROGRESS_KEY = 'progress.summary';
 const LESSON_COMPLETIONS_KEY = 'progress.lessonCompletions';
 const LESSON_DRAFTS_KEY = 'progress.lessonDrafts';
+const FLASHCARD_SESSIONS_KEY = 'progress.flashcardSessions';
 
 function todayKey(date = new Date()) {
   return date.toISOString().slice(0, 10);
@@ -56,6 +57,45 @@ export function getProgressSummary() {
 
 export function getLessonCompletions() {
   return safeArray(storage.get(LESSON_COMPLETIONS_KEY, []));
+}
+
+export function getFlashcardSessions() {
+  return safeArray(storage.get(FLASHCARD_SESSIONS_KEY, []));
+}
+
+export function hasFlashcardSessionToday(date = new Date()) {
+  const day = todayKey(date);
+  return getFlashcardSessions().some((item) => String(item.completedAt || '').slice(0, 10) === day);
+}
+
+export function recordFlashcardSession({ lesson, totalCards = 0, reviewedCards = 0, correctCount = 0, needsReviewCount = 0, cards = [] }) {
+  const now = new Date();
+  const total = Number(totalCards || cards.length || 0);
+  const reviewed = Number(reviewedCards || total || 0);
+  const correct = Number(correctCount || 0);
+  const needsReview = Number(needsReviewCount || 0);
+  const accuracy = reviewed ? Math.round((correct / reviewed) * 100) : 0;
+  const lessonId = getCompletionId(lesson);
+  const session = {
+    id: `flashcards-${lessonId}-${now.getTime()}`,
+    lessonId,
+    title: lesson?.title || 'Aula atual',
+    type: 'flashcards',
+    level: lesson?.level || 'A1',
+    completedAt: now.toISOString(),
+    totalCards: total,
+    reviewedCards: reviewed,
+    correctCount: correct,
+    needsReviewCount: needsReview,
+    accuracy,
+    cards: safeArray(cards).slice(0, 80),
+  };
+
+  const sessions = getFlashcardSessions();
+  const nextSessions = [session, ...sessions].slice(0, 120);
+  storage.set(FLASHCARD_SESSIONS_KEY, nextSessions);
+  diagnostics.log(`Sessão de flashcards concluída: ${reviewed}/${total} cards, ${accuracy}% de precisão.`, 'success');
+  return session;
 }
 
 export function getLessonDrafts() {
@@ -144,11 +184,7 @@ export function completeLesson({ lesson, answers = {}, writtenAnswer = '' }) {
   diagnostics.log(`${alreadyCompleted ? 'Aula já estava concluída' : 'Aula concluída'}: ${completion.title}`, 'info');
   diagnostics.log(`Domínio atualizado para ${lesson?.type || 'pilar'}: ${masteryScore}/100.`, 'info');
 
-  return {
-    completion,
-    progress: nextProgress,
-    alreadyCompleted,
-  };
+  return { completion, progress: nextProgress, alreadyCompleted };
 }
 
 export function isLessonCompleted(lesson) {
