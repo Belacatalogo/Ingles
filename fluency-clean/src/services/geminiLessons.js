@@ -1,6 +1,7 @@
 import { diagnostics } from './diagnostics.js';
-import { inferLessonTypeFromText, normalizeLesson } from './lessonTypes.js';
+import { inferLessonTypeFromText, normalizeLesson, normalizeLessonType } from './lessonTypes.js';
 import { assertJsonContractBlock, buildJsonContractInstruction, stripUnknownBlockKeys } from './lessonJsonContract.js';
+import { sanitizeExerciseBlock, buildAdaptiveExercises } from './exerciseAutoFill.js';
 
 export const GEMINI_LESSON_STATUS = {
   idle: 'idle',
@@ -13,7 +14,7 @@ export const GEMINI_LESSON_STATUS = {
 const FLASH_MODELS = ['gemini-2.5-flash', 'gemini-2.5-flash-lite'];
 const PRO_MODELS = ['gemini-2.5-pro'];
 const RETRYABLE_STATUS = new Set([500, 502, 503, 504]);
-const BLOCK_RETRY_LIMIT = 2;
+const BLOCK_RETRY_LIMIT = 1;
 
 const QUALITY_RULES = [
   'A aula deve ser longa, completa e aprofundada, mesmo em A1.',
@@ -35,12 +36,7 @@ const COMPACT_STRUCTURE_RULES = [
 
 const LESSON_BLUEPRINTS = {
   reading: {
-    label: 'Reading',
-    minMainLength: 1200,
-    minVocabulary: 14,
-    minExercises: 14,
-    minPrompts: 5,
-    minSections: 6,
+    label: 'Reading', minMainLength: 1200, minVocabulary: 14, minExercises: 14, minPrompts: 5, minSections: 6,
     blocks: [
       { id: 'structure', label: 'estrutura compacta da aula Reading', maxOutputTokens: 2400, instruction: [COMPACT_STRUCTURE_RULES, 'Crie somente a estrutura da aula Reading A1.', 'Retorne JSON com: type="reading", level, title, intro, objective, focus, sections e tips.', 'intro deve ter 1 parágrafo claro em português.', 'sections deve conter 6 partes: contexto, pré-leitura, estratégia de leitura, leitura guiada, linguagem útil e revisão.', 'Cada section deve ter somente title e content.', 'tips deve conter 6 dicas curtas e práticas.'].join('\n') },
       { id: 'mainContent', label: 'texto principal longo Reading', maxOutputTokens: 5200, instruction: [QUALITY_RULES, 'Crie somente o texto principal da aula em inglês simples A1.', 'Retorne JSON com apenas a chave listeningText.', 'listeningText deve conter somente o texto em inglês para ler/ouvir.', 'Faça um texto longo para A1 com 10 a 14 parágrafos curtos.', 'Use frases simples, repetição pedagógica e vocabulário controlado.', 'O texto deve ter no mínimo 180 palavras e idealmente 260 a 360 palavras.', 'Não use estruturas gramaticais que ultrapassem o tema/pré-requisitos informados.'].join('\n') },
@@ -64,7 +60,7 @@ const LESSON_BLUEPRINTS = {
       { id: 'structure', label: 'estrutura compacta da aula Listening', maxOutputTokens: 2400, instruction: [COMPACT_STRUCTURE_RULES, 'Crie somente a estrutura da aula Listening A1.', 'Retorne JSON com: type="listening", level, title, intro, objective, focus, sections e tips.', 'intro deve ter 1 parágrafo claro em português.', 'sections deve ter 6 partes: preparação, primeira escuta, segunda escuta, detalhes, shadowing e revisão.', 'Cada section deve ter somente title e content.', 'tips deve ter 6 dicas práticas.'].join('\n') },
       { id: 'mainContent', label: 'transcrição longa Listening', maxOutputTokens: 4600, instruction: [QUALITY_RULES, 'Crie somente a transcrição do áudio em inglês A1.', 'Retorne JSON com apenas a chave listeningText.', 'listeningText deve ter uma conversa ou monólogo natural de 220 a 320 palavras.', 'Use frases curtas, repetições naturais e vocabulário A1.', 'Não coloque tradução, markdown ou instruções dentro de listeningText.'].join('\n') },
       { id: 'vocabulary', label: 'vocabulário Listening', maxOutputTokens: 3000, instruction: [QUALITY_RULES, 'Crie vocabulário auditivo importante.', 'Retorne JSON com apenas a chave vocabulary.', 'vocabulary deve ter 12 a 16 itens com word, meaning e example.'].join('\n') },
-      { id: 'exercises', label: 'bateria completa de exercícios Listening', maxOutputTokens: 4600, instruction: [QUALITY_RULES, 'Crie exercícios de compreensão auditiva.', 'Retorne JSON com apenas a chave exercises.', 'exercises deve ter 12 a 16 perguntas com question, options, answer e explanation.', 'Misture compreensão geral, detalhes, ordem dos eventos e vocabulário ouvido.'].join('\n') },
+      { id: 'exercises', label: 'bateria completa de exercícios Listening', maxOutputTokens: 4600, instruction: [QUALITY_RULES, 'Crie exercícios de compreensão auditiva.', 'Retorne JSON com apenas a chave exercises.', 'exercises deve ter 12 a 16 perguntas com question, options, answer e explanation.', 'Misture compreensão geral, detalhes, ordem dos eventos, vocabulário ouvido e ditado curto.', 'Para spelling, prefira questões de escrever, ditado ou correção; não dê sempre o spelling pronto como alternativa.'].join('\n') },
       { id: 'production', label: 'shadowing Listening', maxOutputTokens: 1800, instruction: [QUALITY_RULES, 'Crie prompts de shadowing e resposta curta.', 'Retorne JSON com apenas a chave prompts.', 'prompts deve ter 5 a 7 comandos graduais.'].join('\n') },
     ],
   },
@@ -105,14 +101,7 @@ function isModelNotFound(error) { return getHttpStatus(error) === 404; }
 function isRetryableError(error) { return RETRYABLE_STATUS.has(getHttpStatus(error)); }
 function makeGenerationSeed() { return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`; }
 function getVariationTheme(seed = '') {
-  const themes = [
-    'situação em sala de aula com professora e aluno novo',
-    'situação em biblioteca, cartão de estudante e soletração de nomes',
-    'situação em cafeteria simples, nomes em pedidos e sons iniciais',
-    'situação em recepção de escola, nomes, letras e números curtos',
-    'situação em chamada de vídeo, apresentação e soletração lenta',
-    'situação em loja pequena, nomes de produtos e primeiras letras',
-  ];
+  const themes = ['situação em sala de aula com professora e aluno novo', 'situação em biblioteca, cartão de estudante e soletração de nomes', 'situação em cafeteria simples, nomes em pedidos e sons iniciais', 'situação em recepção de escola, nomes, letras e números curtos', 'situação em chamada de vídeo, apresentação e soletração lenta', 'situação em loja pequena, nomes de produtos e primeiras letras'];
   const source = String(seed || Date.now());
   const sum = Array.from(source).reduce((total, char) => total + char.charCodeAt(0), 0);
   return themes[sum % themes.length];
@@ -120,34 +109,13 @@ function getVariationTheme(seed = '') {
 function buildPreviousLessonSummary(previousLesson) {
   if (!previousLesson) return '';
   const normalized = normalizeLesson(previousLesson);
-  return JSON.stringify({
-    title: normalized.title,
-    intro: normalized.intro,
-    objective: normalized.objective,
-    focus: normalized.focus,
-    firstTranscript: String(normalized.listeningText || '').slice(0, 700),
-    vocabulary: normalized.vocabulary.slice(0, 12).map((item) => item.word),
-    exercises: normalized.exercises.slice(0, 8).map((item) => item.question),
-  }, null, 2);
+  return JSON.stringify({ title: normalized.title, intro: normalized.intro, objective: normalized.objective, focus: normalized.focus, firstTranscript: String(normalized.listeningText || '').slice(0, 700), vocabulary: normalized.vocabulary.slice(0, 12).map((item) => item.word), exercises: normalized.exercises.slice(0, 8).map((item) => item.question) }, null, 2);
 }
 function buildVariationInstruction({ variationSeed = '', previousLesson = null, forceVariation = false } = {}) {
   if (!forceVariation && !previousLesson) return '';
   const seed = variationSeed || makeGenerationSeed();
-  return [
-    'MODO DE SUBSTITUIÇÃO/VARIAÇÃO REAL ATIVO.',
-    `Seed de variação: ${seed}`,
-    `Nova abordagem obrigatória: ${getVariationTheme(seed)}.`,
-    'Esta é uma nova versão para o MESMO objetivo do cronograma. Não avance para outro tema, mas NÃO copie a aula anterior.',
-    'Obrigatório variar: título, situação comunicativa, nomes dos personagens, roteiro/transcrição, exemplos, vocabulário secundário e exercícios.',
-    'Mantenha os pontos centrais do objetivo pedagógico, mas use outro contexto prático e outra história.',
-    'Não comece com o mesmo texto de introdução da aula anterior.',
-    'Não reutilize a mesma sequência de frases do áudio anterior.',
-    'Não reutilize as mesmas perguntas na mesma ordem.',
-    previousLesson ? 'Resumo da aula anterior para evitar repetição:' : '',
-    previousLesson ? buildPreviousLessonSummary(previousLesson) : '',
-  ].filter(Boolean).join('\n');
+  return ['MODO DE SUBSTITUIÇÃO/VARIAÇÃO REAL ATIVO.', `Seed de variação: ${seed}`, `Nova abordagem obrigatória: ${getVariationTheme(seed)}.`, 'Esta é uma nova versão para o MESMO objetivo do cronograma. Não avance para outro tema, mas NÃO copie a aula anterior.', 'Obrigatório variar: título, situação comunicativa, nomes dos personagens, roteiro/transcrição, exemplos, vocabulário secundário e exercícios.', 'Mantenha os pontos centrais do objetivo pedagógico, mas use outro contexto prático e outra história.', 'Não comece com o mesmo texto de introdução da aula anterior.', 'Não reutilize a mesma sequência de frases do áudio anterior.', 'Não reutilize as mesmas perguntas na mesma ordem.', previousLesson ? 'Resumo da aula anterior para evitar repetição:' : '', previousLesson ? buildPreviousLessonSummary(previousLesson) : ''].filter(Boolean).join('\n');
 }
-
 function buildAttempts({ keys = [], proKey = '' }) {
   const lessonKeys = normalizeLessonKeys(keys);
   const paidKey = normalizeLessonKeys([proKey])[0] ?? '';
@@ -156,53 +124,44 @@ function buildAttempts({ keys = [], proKey = '' }) {
   if (paidKey) for (const model of PRO_MODELS) attempts.push({ key: paidKey, model, paid: true, masked: maskApiKey(paidKey) });
   return attempts;
 }
-
-function extractTextFromGemini(data) {
-  const parts = data?.candidates?.[0]?.content?.parts;
-  if (!Array.isArray(parts)) return '';
-  return parts.map((part) => part?.text ?? '').join('\n').trim();
-}
-
-function parseLessonJson(text) {
-  const clean = String(text ?? '').trim().replace(/^```(?:json)?\s*/i, '').replace(/```$/i, '').trim();
-  const start = clean.indexOf('{');
-  const end = clean.lastIndexOf('}');
-  const jsonText = start >= 0 && end > start ? clean.slice(start, end + 1) : clean;
-  return JSON.parse(jsonText);
-}
-
+function extractTextFromGemini(data) { const parts = data?.candidates?.[0]?.content?.parts; if (!Array.isArray(parts)) return ''; return parts.map((part) => part?.text ?? '').join('\n').trim(); }
+function parseLessonJson(text) { const clean = String(text ?? '').trim().replace(/^```(?:json)?\s*/i, '').replace(/```$/i, '').trim(); const start = clean.indexOf('{'); const end = clean.lastIndexOf('}'); const jsonText = start >= 0 && end > start ? clean.slice(start, end + 1) : clean; return JSON.parse(jsonText); }
 function normalizeText(value) { return String(value ?? '').trim(); }
 function ensureArray(value) { return Array.isArray(value) ? value : []; }
 function getBlueprint(type) { return LESSON_BLUEPRINTS[type] || LESSON_BLUEPRINTS.reading; }
+function resolveLessonType({ prompt, forcedType = '' } = {}) {
+  const normalized = normalizeLessonType(forcedType);
+  if (normalized && normalized !== 'default') return normalized;
+  return inferLessonTypeFromText(prompt);
+}
 
-function assertLessonBlock(block, data, blueprint) {
+function assertLessonBlock(block, data, blueprint, context = {}) {
   assertJsonContractBlock(block.id, data);
   if (!data || typeof data !== 'object') throw new Error(`Bloco ${block.label} retornou JSON inválido.`);
-
   if (block.id === 'structure') {
     if (!normalizeText(data.title)) throw new Error('Bloco estrutura veio sem título.');
     if (!normalizeText(data.intro) || normalizeText(data.intro).length < 90) throw new Error('Bloco estrutura veio com introdução curta demais.');
     if (!normalizeText(data.objective)) throw new Error('Bloco estrutura veio sem objetivo.');
     if (ensureArray(data.sections).length < blueprint.minSections) throw new Error('Bloco estrutura veio com poucas seções.');
   }
-
   if (block.id === 'mainContent') {
     const text = normalizeText(data.listeningText);
     if (text.length < blueprint.minMainLength) throw new Error('Conteúdo principal ficou curto demais.');
   }
-
   if (block.id === 'vocabulary') if (ensureArray(data.vocabulary).length < blueprint.minVocabulary) throw new Error('Vocabulário insuficiente.');
-
   if (block.id === 'exercises') {
+    const partialLesson = composeLessonFromBlocks(context.blockResults || {}, context.lessonType || 'reading');
+    const result = sanitizeExerciseBlock({ data, lesson: partialLesson, lessonType: context.lessonType, minCount: blueprint.minExercises, level: partialLesson.level });
+    data.exercises = result.exercises;
+    if (result.added > 0) diagnostics.log(`Gemini entregou ${result.exercises.length - result.added}/${blueprint.minExercises} exercícios. AutoFill adaptativo completou +${result.added}. Base: ${blueprint.label} · ${partialLesson.level || 'A1'} · dificuldade ${result.levelBand}.`, 'info');
     const exercises = ensureArray(data.exercises);
-    if (exercises.length < blueprint.minExercises) throw new Error('Exercícios insuficientes.');
+    if (exercises.length < blueprint.minExercises) throw new Error('Exercícios insuficientes mesmo após AutoFill.');
     const hasInvalidAnswer = exercises.some((item) => {
       const options = ensureArray(item?.options);
-      return options.length && !options.includes(item?.answer);
+      return options.length && !options.some((option) => String(option).toLowerCase() === String(item?.answer).toLowerCase());
     });
     if (hasInvalidAnswer) throw new Error('Um exercício veio com resposta fora das alternativas.');
   }
-
   if (block.id === 'production') if (ensureArray(data.prompts).length < blueprint.minPrompts) throw new Error('Produção final insuficiente.');
 }
 
@@ -216,77 +175,40 @@ function validateGeneratedLesson(lesson) {
   if (normalized.sections.length < blueprint.minSections) throw new Error('Aula com poucas seções explicativas.');
   if ((normalized.type === 'reading' || normalized.type === 'listening') && (!normalized.listeningText || normalized.listeningText.length < blueprint.minMainLength)) throw new Error('Aula sem texto/transcrição principal suficiente.');
   if (normalized.vocabulary.length < blueprint.minVocabulary) throw new Error('Aula com vocabulário insuficiente.');
+  if (normalized.exercises.length < blueprint.minExercises) {
+    const result = buildAdaptiveExercises({ lesson: normalized, lessonType: normalized.type, minCount: blueprint.minExercises, level: normalized.level });
+    normalized.exercises = result.exercises;
+    if (result.added > 0) diagnostics.log(`Validação final: AutoFill completou +${result.added} exercícios para atingir ${blueprint.minExercises}.`, 'info');
+  }
   if (normalized.exercises.length < blueprint.minExercises) throw new Error('Aula com exercícios insuficientes.');
   if (normalized.prompts.length < blueprint.minPrompts) throw new Error('Aula com produção final insuficiente.');
   return normalized;
 }
 
 function buildBlockPrompt({ block, blueprint, basePrompt, lessonType, partialLesson, retryReason = '', variationInstruction = '' }) {
-  return [
-    'Você é o gerador de aulas do Fluency.',
-    buildJsonContractInstruction({ lessonType, blockId: block.id }),
-    variationInstruction,
-    'Crie conteúdo para aluno brasileiro aprender inglês com uma aula séria, clara, profunda, longa e organizada.',
-    'IMPORTANTE: esta aula NÃO pode ser curta. Se o tema for simples, aprofunde com exemplos, prática, repetição guiada e revisão nos blocos seguintes.',
-    retryReason ? `Correção obrigatória da tentativa anterior: ${retryReason}` : '',
-    `Tipo de aula escolhido pelo app: ${blueprint.label} (${lessonType}).`,
-    'Nível padrão: A1, salvo se o pedido do app indicar outro nível claramente.',
-    '',
-    'Pedido original do app:',
-    String(basePrompt ?? 'Gerar uma aula de inglês A1 do dia.'),
-    '',
-    partialLesson ? 'Conteúdo já aprovado nos blocos anteriores:' : '',
-    partialLesson ? JSON.stringify(partialLesson).slice(0, 9000) : '',
-    '',
-    `Bloco solicitado: ${block.label}`,
-    block.instruction,
-  ].filter(Boolean).join('\n');
+  return ['Você é o gerador de aulas do Fluency.', buildJsonContractInstruction({ lessonType, blockId: block.id }), variationInstruction, 'Crie conteúdo para aluno brasileiro aprender inglês com uma aula séria, clara, profunda, longa e organizada.', 'IMPORTANTE: esta aula NÃO pode ser curta. Se o tema for simples, aprofunde com exemplos, prática, repetição guiada e revisão nos blocos seguintes.', retryReason ? `Correção obrigatória da tentativa anterior: ${retryReason}` : '', `Tipo de aula travado pelo cronograma/app: ${blueprint.label} (${lessonType}). Não mude o tipo da aula.`, 'Nível padrão: A1, salvo se o pedido do app indicar outro nível claramente.', '', 'Pedido original do app:', String(basePrompt ?? 'Gerar uma aula de inglês A1 do dia.'), '', partialLesson ? 'Conteúdo já aprovado nos blocos anteriores:' : '', partialLesson ? JSON.stringify(partialLesson).slice(0, 9000) : '', '', `Bloco solicitado: ${block.label}`, block.instruction].filter(Boolean).join('\n');
 }
-
 async function callGeminiJson({ attempt, prompt, maxOutputTokens, fetcher }) {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(attempt.model)}:generateContent?key=${encodeURIComponent(attempt.key)}`;
   const body = { contents: [{ role: 'user', parts: [{ text: prompt }] }], generationConfig: { temperature: 0.34, maxOutputTokens, responseMimeType: 'application/json' } };
   const response = await fetcher(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
   if (!response || typeof response.ok === 'undefined') throw new Error('Gemini retornou resposta vazia.');
-  if (!response.ok) {
-    const text = await response.text().catch(() => '');
-    throw new Error(`HTTP ${response.status} ${text.slice(0, 180)}`);
-  }
+  if (!response.ok) { const text = await response.text().catch(() => ''); throw new Error(`HTTP ${response.status} ${text.slice(0, 180)}`); }
   const data = await response.json();
   const text = extractTextFromGemini(data);
   return parseLessonJson(text);
 }
-
 function composeLessonFromBlocks(blockResults, lessonType) {
-  return {
-    type: blockResults.structure?.type || lessonType,
-    level: blockResults.structure?.level || 'A1',
-    title: blockResults.structure?.title || `${getBlueprint(lessonType).label} A1`,
-    intro: blockResults.structure?.intro || '',
-    objective: blockResults.structure?.objective || '',
-    focus: blockResults.structure?.focus || '',
-    sections: ensureArray(blockResults.structure?.sections),
-    tips: ensureArray(blockResults.structure?.tips),
-    listeningText: blockResults.mainContent?.listeningText || '',
-    vocabulary: ensureArray(blockResults.vocabulary?.vocabulary),
-    exercises: ensureArray(blockResults.exercises?.exercises),
-    prompts: ensureArray(blockResults.production?.prompts),
-  };
+  return { type: blockResults.structure?.type || lessonType, level: blockResults.structure?.level || 'A1', title: blockResults.structure?.title || `${getBlueprint(lessonType).label} A1`, intro: blockResults.structure?.intro || '', objective: blockResults.structure?.objective || '', focus: blockResults.structure?.focus || '', sections: ensureArray(blockResults.structure?.sections), tips: ensureArray(blockResults.structure?.tips), listeningText: blockResults.mainContent?.listeningText || '', vocabulary: ensureArray(blockResults.vocabulary?.vocabulary), exercises: ensureArray(blockResults.exercises?.exercises), prompts: ensureArray(blockResults.production?.prompts) };
 }
-
 async function generateBlockWithRetry({ attempt, prompt, fetcher, lessonType, blueprint, block, blockResults, blockLabel, variationInstruction }) {
   let retryReason = '';
   for (let retry = 0; retry <= BLOCK_RETRY_LIMIT; retry += 1) {
     try {
       if (retry > 0) diagnostics.log(`Regerando bloco ${blockLabel} por qualidade/JSON: ${retryReason}`, 'info');
-      const data = await callGeminiJson({
-        attempt,
-        prompt: buildBlockPrompt({ block, blueprint, lessonType, basePrompt: prompt, partialLesson: Object.keys(blockResults).length ? composeLessonFromBlocks(blockResults, lessonType) : null, retryReason, variationInstruction }),
-        maxOutputTokens: attempt.paid ? Math.max(block.maxOutputTokens, 5200) : block.maxOutputTokens,
-        fetcher,
-      });
+      const data = await callGeminiJson({ attempt, prompt: buildBlockPrompt({ block, blueprint, lessonType, basePrompt: prompt, partialLesson: Object.keys(blockResults).length ? composeLessonFromBlocks(blockResults, lessonType) : null, retryReason, variationInstruction }), maxOutputTokens: attempt.paid ? Math.max(block.maxOutputTokens, 5200) : block.maxOutputTokens, fetcher });
       const contractedData = stripUnknownBlockKeys(block.id, data);
-      assertLessonBlock(block, contractedData, blueprint);
+      assertLessonBlock(block, contractedData, blueprint, { blockResults, lessonType });
       return contractedData;
     } catch (error) {
       retryReason = error?.message || String(error);
@@ -295,7 +217,6 @@ async function generateBlockWithRetry({ attempt, prompt, fetcher, lessonType, bl
   }
   throw new Error(`Bloco ${block.label} falhou após retries.`);
 }
-
 async function callGeminiInBlocks({ attempt, prompt, fetcher, lessonType, variationInstruction }) {
   const blueprint = getBlueprint(lessonType);
   const blockResults = {};
@@ -310,7 +231,6 @@ async function callGeminiInBlocks({ attempt, prompt, fetcher, lessonType, variat
   }
   return validateGeneratedLesson(composeLessonFromBlocks(blockResults, lessonType));
 }
-
 function summarizeFinalError({ quotaKeys, modelErrors, lastError, attempts }) {
   if (quotaKeys.size && quotaKeys.size >= new Set(attempts.map((attempt) => attempt.key)).size) return 'Todas as keys de aula disponíveis bateram quota/limite. Adicione outra key ou tente novamente mais tarde.';
   if (modelErrors > 0 && !lastError) return 'Os modelos disponíveis não estão aceitando geração agora.';
@@ -321,17 +241,17 @@ function summarizeFinalError({ quotaKeys, modelErrors, lastError, attempts }) {
   return lastError?.message || 'Falha ao gerar aula.';
 }
 
-export async function generateLessonDraft({ prompt, keys = [], proKey = '', fetcher = fetch, previousLesson = null, forceVariation = false } = {}) {
+export async function generateLessonDraft({ prompt, keys = [], proKey = '', fetcher = fetch, previousLesson = null, forceVariation = false, forcedType = '' } = {}) {
   const attempts = buildAttempts({ keys, proKey });
-  const lessonType = inferLessonTypeFromText(prompt);
+  const lessonType = resolveLessonType({ prompt, forcedType });
   const blueprint = getBlueprint(lessonType);
   const variationSeed = makeGenerationSeed();
   const variationInstruction = buildVariationInstruction({ variationSeed, previousLesson, forceVariation });
   diagnostics.setPhase('preparando geração de aula em blocos', GEMINI_LESSON_STATUS.generating);
-  diagnostics.log(`Tipo de aula detectado: ${blueprint.label}.`, 'info');
+  diagnostics.log(`Tipo de aula travado: ${blueprint.label}.`, 'info');
   diagnostics.log(`Contrato JSON rígido ativo para ${blueprint.label}.`, 'info');
   if (forceVariation || previousLesson) diagnostics.log(`Variação real ativa para mesmo tema. Seed: ${variationSeed}.`, 'info');
-  diagnostics.log(`Critério de qualidade: longa, profunda, ${blueprint.minExercises}+ exercícios, ${blueprint.minVocabulary}+ vocabulários.`, 'info');
+  diagnostics.log(`Critério de qualidade: longa, profunda, AutoFill adaptativo, ${blueprint.minExercises}+ exercícios, ${blueprint.minVocabulary}+ vocabulários.`, 'info');
   diagnostics.log(`Plano de geração em blocos: ${attempts.length} tentativa(s), ${blueprint.blocks.length} bloco(s) por tentativa.`, 'info');
 
   if (!attempts.length) {
@@ -342,42 +262,26 @@ export async function generateLessonDraft({ prompt, keys = [], proKey = '', fetc
   let lastError = null;
   let modelErrors = 0;
   const quotaKeys = new Set();
-
   for (let index = 0; index < attempts.length; index += 1) {
     const attempt = attempts[index];
     const attemptLabel = `${index + 1}/${attempts.length}`;
-    if (quotaKeys.has(attempt.key)) {
-      diagnostics.log(`Pulando ${attempt.model}: key ${attempt.masked} já atingiu quota.`, 'info');
-      continue;
-    }
+    if (quotaKeys.has(attempt.key)) { diagnostics.log(`Pulando ${attempt.model}: key ${attempt.masked} já atingiu quota.`, 'info'); continue; }
     diagnostics.setPhase(`tentativa ${attemptLabel}`, GEMINI_LESSON_STATUS.generating);
     diagnostics.log(`Tentativa ${attemptLabel}: ${attempt.model} com key ${attempt.masked}${attempt.paid ? ' (Pro fallback)' : ' (Flash/free)'}`, 'info');
     try {
       const lesson = await callGeminiInBlocks({ attempt, prompt, fetcher, lessonType, variationInstruction });
-      const lessonWithMeta = { ...lesson, generationSeed: variationSeed, variationMode: forceVariation || Boolean(previousLesson) };
+      const lessonWithMeta = { ...lesson, type: lessonType, generationSeed: variationSeed, variationMode: forceVariation || Boolean(previousLesson) };
       diagnostics.setPhase('aula gerada em blocos', GEMINI_LESSON_STATUS.success);
       diagnostics.log(`Aula ${blueprint.label} longa, validada e compatível com contrato JSON usando ${attempt.model}.`, 'info');
       return { status: GEMINI_LESSON_STATUS.success, lesson: lessonWithMeta, error: null };
     } catch (error) {
       lastError = error;
-      if (isQuotaError(error)) {
-        quotaKeys.add(attempt.key);
-        diagnostics.log(`Quota atingida na key ${attempt.masked}. Próximas tentativas com essa key serão puladas.`, 'error');
-        continue;
-      }
-      if (isModelNotFound(error)) {
-        modelErrors += 1;
-        diagnostics.log(`Modelo indisponível: ${attempt.model}.`, 'error');
-        continue;
-      }
+      if (isQuotaError(error)) { quotaKeys.add(attempt.key); diagnostics.log(`Quota atingida na key ${attempt.masked}. Próximas tentativas com essa key serão puladas.`, 'error'); continue; }
+      if (isModelNotFound(error)) { modelErrors += 1; diagnostics.log(`Modelo indisponível: ${attempt.model}.`, 'error'); continue; }
       diagnostics.log(`Falha na tentativa ${attemptLabel}: ${error?.message || error}`, attempt.paid ? 'error' : 'info');
-      if (isRetryableError(error)) {
-        diagnostics.log('Erro temporário do Gemini. Aguardando antes da próxima tentativa...', 'info');
-        await sleep(900);
-      }
+      if (isRetryableError(error)) { diagnostics.log('Erro temporário do Gemini. Aguardando antes da próxima tentativa...', 'info'); await sleep(900); }
     }
   }
-
   const finalError = summarizeFinalError({ quotaKeys, modelErrors, lastError, attempts });
   diagnostics.setPhase('falha na geração de aula', GEMINI_LESSON_STATUS.error);
   diagnostics.log(finalError, 'error');
