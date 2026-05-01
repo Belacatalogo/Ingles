@@ -1,5 +1,5 @@
 import { diagnostics } from './diagnostics.js';
-import { playGeminiTtsAudio } from './geminiTts.js';
+import { playGeminiTtsAudio, stopGeminiTtsAudio } from './geminiTts.js';
 import { speakText, stopSpeech } from './tts.js';
 
 export async function playLearningAudio({
@@ -18,7 +18,7 @@ export async function playLearningAudio({
     return { ok: false, source: 'none', error: 'Texto vazio para reproduzir.' };
   }
 
-  stopSpeech();
+  stopLearningAudio();
 
   if (preferNatural) {
     diagnostics.log(`Tentando áudio natural Gemini primeiro: ${label}.`, 'info');
@@ -51,5 +51,6 @@ export async function playLearningAudio({
 
 export function stopLearningAudio() {
   stopSpeech();
+  stopGeminiTtsAudio();
   diagnostics.log('Áudio interrompido pelo usuário.', 'info');
 }
