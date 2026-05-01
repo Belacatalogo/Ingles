@@ -21,6 +21,7 @@ import { CURRICULUM_LEVELS, getCurriculumLessons, getCurriculumProgress, getCurr
 import { getCurrentWeekStats, getLessonCompletions, getProgressSummary } from '../services/progressStore.js';
 import { getSpeakingHistorySummary } from '../services/speakingHistory.js';
 import { getErrorBankSummary } from '../services/errorBank.js';
+import { getLevelCertificationSummary } from '../services/levelCertification.js';
 
 const cefrLevels = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 const skillConfig = [
@@ -95,6 +96,55 @@ function severityLabel(value) {
   if (value === 'medium') return 'revisar em breve';
   return 'monitorar';
 }
+function certificationTone(status) {
+  if (status === 'certified') return 'certified';
+  if (status === 'ready') return 'ready';
+  if (status === 'almost') return 'almost';
+  return 'progressing';
+}
+
+function CertificationCard({ certification }) {
+  return (
+    <section className={`progress-section-card level-cert-card ${certificationTone(certification.status)}`}>
+      <div className="progress-section-title">
+        <span>Certificação por nível</span>
+        <small>{certification.version}</small>
+      </div>
+      <div className="level-cert-hero">
+        <div>
+          <span>{certification.level} · {certification.title}</span>
+          <strong>{certification.label}</strong>
+          <p>{certification.completed}/{certification.total} aulas · precisa {certification.requiredCompletion}% · nota {certification.score}/100</p>
+        </div>
+        <b>{certification.score}</b>
+      </div>
+      <div className="level-cert-metrics">
+        <article><span>Currículo</span><strong>{certification.completionScore}%</strong></article>
+        <article><span>Habilidades</span><strong>{certification.skillScore}%</strong></article>
+        <article><span>Simulados</span><strong>{certification.checkpointScore}%</strong></article>
+        <article><span>Speaking</span><strong>{certification.speakingScore}%</strong></article>
+      </div>
+      <div className="level-cert-skills">
+        {certification.skills.map((skill) => (
+          <div key={skill.key} className={skill.passed ? 'passed' : 'pending'}>
+            {skill.passed ? <CheckCircle2 size={13} /> : <AlertTriangle size={13} />}
+            <span>{skill.label}</span>
+            <strong>{skill.score}%</strong>
+          </div>
+        ))}
+      </div>
+      {certification.blockers.length ? (
+        <div className="level-cert-blockers">
+          <span><AlertTriangle size={14} /> Para certificar</span>
+          <p>{certification.blockers.slice(0, 3).join(' ')}</p>
+        </div>
+      ) : (
+        <div className="level-cert-ok"><ShieldCheck size={14} /> Dados suficientes para consolidar ou certificar este nível.</div>
+      )}
+      <small className="level-cert-next">Próxima ação: {certification.nextAction}</small>
+    </section>
+  );
+}
 
 function ErrorBankCard({ summary }) {
   return (
@@ -142,6 +192,7 @@ export function ProgressScreen() {
   const curriculumProgress = useMemo(() => getCurriculumProgress(), []);
   const speakingSummary = useMemo(() => getSpeakingHistorySummary({ limit: 4 }), []);
   const errorSummary = useMemo(() => getErrorBankSummary({ limit: 8 }), []);
+  const certification = useMemo(() => getLevelCertificationSummary(curriculum.currentLevel), [curriculum.currentLevel]);
   const curriculumLevels = useMemo(() => getCurriculumLevelRows(curriculumProgress), [curriculumProgress]);
   const upcomingLessons = useMemo(() => getUpcomingLessons(curriculumProgress), [curriculumProgress]);
   const recentCompletions = completions.slice(0, 4);
@@ -159,7 +210,7 @@ export function ProgressScreen() {
         <div>
           <p className="progress-eyebrow">Progresso</p>
           <h1>Sua jornada</h1>
-          <p>Do A1 ao C2, com cronograma, histórico real e banco de erros.</p>
+          <p>Do A1 ao C2, com certificação, histórico real e banco de erros.</p>
         </div>
         <div className="progress-range-toggle" aria-label="Período do progresso">
           {['7d', '30d', 'Tudo'].map((item) => (
@@ -184,6 +235,8 @@ export function ProgressScreen() {
           })}
         </div>
       </section>
+
+      <CertificationCard certification={certification} />
 
       <section className="progress-section-card curriculum-card">
         <div className="progress-section-title"><span>Trilha obrigatória</span><small>{curriculum.completedTotal}/{curriculum.totalLessons} aulas</small></div>
@@ -256,7 +309,7 @@ export function ProgressScreen() {
             { label: `${wordsRegistered} palavras`, icon: Brain, tone: 'violet', locked: wordsRegistered === 0 },
             { label: `${speakingSessions} speaking`, icon: Mic, tone: 'teal', locked: speakingSessions === 0 },
             { label: `${errorSummary.uniqueErrors || 0} erros`, icon: AlertTriangle, tone: 'amber', locked: !errorSummary.uniqueErrors },
-            { label: curriculum.currentLevel, icon: Target, tone: 'green', locked: false },
+            { label: certification.label, icon: ShieldCheck, tone: 'green', locked: certification.status === 'in-progress' },
             { label: 'próxima', icon: Lock, tone: 'muted', locked: true },
           ].map((achievement) => {
             const Icon = achievement.icon;
@@ -282,8 +335,8 @@ export function ProgressScreen() {
 
       <section className="progress-footer-focus">
         <div><Trophy size={18} /> Próximo marco</div>
-        <strong>{lessonsToUnlock} aulas/revisões para liberar o próximo nível</strong>
-        <p>O cronograma escolhe a próxima aula em ordem, respeitando pré-requisitos e consolidação de nível.</p>
+        <strong>{certification.nextAction}</strong>
+        <p>O cronograma escolhe a próxima aula em ordem, mas a certificação mostra se o nível está realmente consolidado.</p>
         <small><Zap size={13} /> progresso seguro para testes no Vercel</small>
       </section>
     </section>
