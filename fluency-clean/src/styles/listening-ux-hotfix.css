@@ -2,3 +2,18 @@
 .listening-lesson-v1 #lesson-answer textarea { display: none; }
 .listening-lesson-v1 #lesson-answer .writing-actions button:first-child { display: none; }
 .listening-lesson-v1 #lesson-answer .writing-actions button:last-child { width: 100%; min-height: 62px; border-radius: 20px; font-size: 19px; }
+
+/* BLOCO-QUIZ-FULLSCREEN-LAB: enquanto a limpeza estrutural do JSX não é concluída,
+   a prática antiga fica oculta para não sobrepor a experiência fullscreen modular. */
+.listening-lesson-v1 #lesson-practice .fluency-quiz-card {
+  display: none !important;
+}
+
+.listening-lesson-v1 #lesson-practice .lesson-collapsible-body::before {
+  content: 'A prática profunda agora abre em tela cheia, com exercícios variados e correção imediata.';
+  display: block;
+  color: #aeb9d8;
+  font-size: 16px;
+  line-height: 1.45;
+  margin-bottom: 14px;
+}
