@@ -1,128 +1,133 @@
-.practice-launcher-card { display: grid; gap: 14px; }
+.practice-launcher-card { display: grid; gap: 14px; position: relative; overflow: hidden; border: 1px solid rgba(147,160,213,.18); background: radial-gradient(circle at 0% 0%, rgba(91,156,246,.22), transparent 34%), radial-gradient(circle at 100% 20%, rgba(167,139,250,.18), transparent 32%), rgba(12,18,40,.72); }
 .practice-launcher-card h2 { margin: 0; color: #fff; font-size: clamp(28px, 7vw, 42px); line-height: 1.05; letter-spacing: -.05em; }
 .practice-launcher-card p { margin: 0; color: #aeb9d8; font-size: 17px; line-height: 1.5; }
 .practice-launcher-meta { display: flex; flex-wrap: wrap; gap: 10px; }
-.practice-launcher-meta span { display: inline-flex; align-items: center; gap: 6px; padding: 8px 11px; border-radius: 999px; background: rgba(255,255,255,.06); border: 1px solid rgba(147,160,213,.16); color: #cbd5e1; font-weight: 900; font-size: 13px; }
+.practice-launcher-meta span { display: inline-flex; align-items: center; gap: 6px; padding: 8px 11px; border-radius: 999px; background: rgba(255,255,255,.07); border: 1px solid rgba(147,160,213,.18); color: #dbeafe; font-weight: 900; font-size: 13px; }
 
 .practice-fullscreen {
+  --practice-bg: #070b18;
+  --practice-panel: rgba(14, 21, 48, .76);
+  --practice-panel-strong: rgba(18, 27, 62, .88);
+  --practice-line: rgba(154, 169, 220, .18);
+  --practice-blue: #6ea8ff;
+  --practice-cyan: #5ee7ff;
+  --practice-violet: #a78bfa;
+  --practice-pink: #f0abfc;
+  --practice-good: #53e6a2;
+  --practice-bad: #ff7c8a;
+  --practice-warn: #ffd166;
   position: fixed;
   inset: 0;
   z-index: 9999;
   display: grid;
-  grid-template-rows: 58px minmax(0, 1fr) auto;
+  grid-template-rows: 64px minmax(0, 1fr) auto;
   height: 100dvh;
   max-height: 100dvh;
   overflow: hidden;
   overscroll-behavior: none;
   touch-action: manipulation;
-  background: #101d22;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(91,156,246,.30), transparent 32%),
+    radial-gradient(circle at 86% 10%, rgba(167,139,250,.24), transparent 34%),
+    linear-gradient(180deg, #07101f 0%, #070b18 46%, #060812 100%);
   color: #f8fafc;
   padding: max(10px, env(safe-area-inset-top)) 18px max(10px, env(safe-area-inset-bottom));
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', Inter, system-ui, sans-serif;
 }
-.practice-topbar { display: grid; grid-template-columns: 46px minmax(0, 1fr) auto; align-items: center; gap: 12px; min-height: 54px; }
-.practice-close { width: 46px; height: 46px; display: grid; place-items: center; border: 0; background: transparent; color: #cbd5e1; }
-.practice-progress { height: 15px; overflow: hidden; border-radius: 999px; background: #3b4c54; }
-.practice-progress span { display: block; height: 100%; border-radius: inherit; background: #8ee02b; transition: width .24s ease; }
-.practice-topbar strong { min-width: 46px; text-align: right; color: #e5e7eb; font-weight: 950; font-size: 18px; }
+.practice-fullscreen::before { content: ''; position: absolute; inset: 0; pointer-events: none; background-image: linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px); background-size: 44px 44px; mask-image: linear-gradient(to bottom, rgba(0,0,0,.55), transparent 70%); }
+.practice-ambient { position: absolute; pointer-events: none; filter: blur(20px); opacity: .55; border-radius: 999px; }
+.practice-ambient-one { width: 160px; height: 160px; left: -70px; top: 110px; background: rgba(94,231,255,.26); }
+.practice-ambient-two { width: 210px; height: 210px; right: -100px; bottom: 110px; background: rgba(167,139,250,.23); }
+.practice-topbar { position: relative; z-index: 2; display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; align-items: center; gap: 12px; min-height: 58px; }
+.practice-close { width: 48px; height: 48px; display: grid; place-items: center; border: 1px solid rgba(255,255,255,.10); border-radius: 18px; background: rgba(255,255,255,.06); color: #dbeafe; backdrop-filter: blur(16px); box-shadow: inset 0 1px 0 rgba(255,255,255,.06); }
+.practice-progress { height: 12px; overflow: hidden; border-radius: 999px; background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.08); box-shadow: inset 0 1px 3px rgba(0,0,0,.25); }
+.practice-progress span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--practice-blue), var(--practice-cyan), var(--practice-violet)); box-shadow: 0 0 18px rgba(94,231,255,.30); transition: width .24s ease; }
+.practice-topbar strong { min-width: 46px; text-align: right; color: #e5e7eb; font-weight: 950; font-size: 17px; }
 
-.practice-question {
-  min-height: 0;
-  overflow: hidden;
-  display: grid;
-  align-content: start;
-  gap: 16px;
-  padding-top: 16px;
-  padding-bottom: 10px;
-}
-.practice-kind { margin: 0; color: #dbeafe; font-size: 12px; font-weight: 950; text-transform: uppercase; letter-spacing: .18em; }
-.practice-question h1 { margin: 0; color: #f8fafc; font-size: clamp(29px, 7.7vw, 42px); line-height: 1.08; letter-spacing: -.055em; }
-.practice-audio-big { width: min(176px, 44vw); aspect-ratio: 1; justify-self: center; display: grid; place-items: center; border: 0; border-radius: 30px; background: linear-gradient(180deg, #4ac3f5, #1b9bd4); color: #102027; box-shadow: inset 0 -8px 0 rgba(0,0,0,.12), 0 24px 60px rgba(0,0,0,.25); }
+.practice-intro,
+.practice-done,
+.practice-question { position: relative; z-index: 2; min-height: 0; overflow: hidden; }
+.practice-intro { display: grid; align-content: center; justify-items: center; gap: 16px; text-align: center; padding: 16px 0 26px; }
+.practice-intro-orb,
+.practice-done-medal { width: 92px; height: 92px; display: grid; place-items: center; border-radius: 32px; background: linear-gradient(135deg, rgba(110,168,255,.95), rgba(167,139,250,.92)); color: white; box-shadow: 0 22px 70px rgba(91,156,246,.30), inset 0 1px 0 rgba(255,255,255,.22); }
+.practice-intro h1,
+.practice-done h1 { margin: 0; color: white; font-size: clamp(42px, 12vw, 62px); line-height: .92; letter-spacing: -.075em; }
+.practice-intro p,
+.practice-done p { max-width: 430px; margin: 0; color: #aeb9d8; font-size: 18px; line-height: 1.5; }
+.practice-intro-stats { width: min(430px, 100%); display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 9px; margin-top: 4px; }
+.practice-intro-stats span { min-height: 58px; display: grid; place-items: center; gap: 4px; padding: 10px 8px; border-radius: 19px; color: #dbeafe; background: rgba(255,255,255,.065); border: 1px solid rgba(154,169,220,.16); font-size: 13px; font-weight: 900; backdrop-filter: blur(14px); }
+.practice-start-button { width: min(430px, 100%); min-height: 64px; border: 0; border-radius: 22px; background: linear-gradient(135deg, var(--practice-blue), var(--practice-violet)); color: white; font-size: 18px; font-weight: 950; letter-spacing: -.01em; box-shadow: 0 18px 48px rgba(91,156,246,.28), inset 0 -4px 0 rgba(0,0,0,.13); }
 
-.practice-choice-grid {
-  min-height: 0;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-  margin-top: 2px;
-}
-.practice-choice-grid button {
-  min-height: clamp(76px, 17dvh, 116px);
-  max-height: 122px;
-  overflow: hidden;
-  padding: 12px;
-  border-radius: 18px;
-  border: 3px solid #40535b;
-  background: transparent;
-  color: #f8fafc;
-  font-size: clamp(19px, 5.2vw, 30px);
-  line-height: 1.08;
-  font-weight: 950;
-  box-shadow: inset 0 -4px 0 rgba(255,255,255,.035);
-}
-.practice-choice-grid button.selected { border-color: #2aa9df; color: #23a9e6; background: rgba(35,169,230,.08); }
-.practice-choice-grid button.right { border-color: #8ee02b; color: #8ee02b; background: rgba(142,224,43,.10); }
-.practice-choice-grid button.wrong { border-color: #ff5f5f; color: #fecaca; background: rgba(255,95,95,.10); }
-.practice-textarea { width: 100%; min-height: 128px; resize: none; border-radius: 22px; border: 3px solid #40535b; background: rgba(0,0,0,.10); color: #fff; padding: 18px; font-size: 21px; line-height: 1.4; outline: none; }
-.practice-wordbank { min-height: 0; display: grid; gap: 16px; }
-.practice-answer-line { min-height: 74px; max-height: 118px; overflow: hidden; display: flex; align-items: center; align-content: flex-start; gap: 9px; flex-wrap: wrap; padding: 12px 0; border-top: 3px solid #40535b; border-bottom: 3px solid #40535b; }
-.practice-answer-line span { color: #6b7d85; font-weight: 850; }
+.practice-question { display: grid; align-content: start; gap: 15px; padding-top: 10px; padding-bottom: 10px; }
+.practice-question-card { padding: 18px; border-radius: 28px; background: linear-gradient(180deg, rgba(20,30,67,.80), rgba(11,17,39,.68)); border: 1px solid rgba(154,169,220,.16); box-shadow: 0 18px 50px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.05); backdrop-filter: blur(18px); }
+.practice-kind { margin: 0 0 8px; color: #93c5fd; font-size: 12px; font-weight: 950; text-transform: uppercase; letter-spacing: .18em; }
+.practice-question h1 { margin: 0; color: #f8fafc; font-size: clamp(27px, 7.2vw, 38px); line-height: 1.08; letter-spacing: -.055em; }
+.practice-audio-big { width: min(178px, 44vw); aspect-ratio: 1; justify-self: center; display: grid; place-items: center; align-content: center; gap: 8px; border: 1px solid rgba(255,255,255,.16); border-radius: 38px; background: radial-gradient(circle at 35% 20%, rgba(255,255,255,.28), transparent 28%), linear-gradient(135deg, var(--practice-blue), var(--practice-cyan)); color: #07101f; box-shadow: 0 24px 70px rgba(94,231,255,.22), inset 0 -8px 0 rgba(0,0,0,.12); font-weight: 950; }
+.practice-audio-big span { font-size: 15px; }
+
+.practice-choice-grid { min-height: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 11px; margin-top: 0; }
+.practice-choice-grid button { min-height: clamp(74px, 15dvh, 108px); max-height: 116px; overflow: hidden; display: grid; grid-template-columns: 34px minmax(0, 1fr); align-items: center; gap: 10px; padding: 12px; border-radius: 22px; border: 1px solid rgba(154,169,220,.18); background: rgba(255,255,255,.065); color: #f8fafc; text-align: left; box-shadow: inset 0 1px 0 rgba(255,255,255,.055), 0 10px 28px rgba(0,0,0,.12); backdrop-filter: blur(16px); }
+.practice-choice-grid button span { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 13px; color: #bfdbfe; background: rgba(110,168,255,.14); font-size: 14px; font-weight: 950; }
+.practice-choice-grid button b { min-width: 0; display: block; color: inherit; font-size: clamp(17px, 4.7vw, 25px); line-height: 1.08; font-weight: 950; overflow: hidden; text-overflow: ellipsis; }
+.practice-choice-grid button.selected { border-color: rgba(94,231,255,.72); background: rgba(94,231,255,.12); color: #e0faff; box-shadow: 0 0 0 1px rgba(94,231,255,.18), 0 16px 38px rgba(94,231,255,.10); }
+.practice-choice-grid button.right { border-color: rgba(83,230,162,.72); background: rgba(83,230,162,.14); color: #d1fae5; }
+.practice-choice-grid button.wrong { border-color: rgba(255,124,138,.72); background: rgba(255,124,138,.13); color: #ffe4e6; }
+.practice-textarea { width: 100%; min-height: 136px; resize: none; border-radius: 24px; border: 1px solid rgba(154,169,220,.20); background: rgba(255,255,255,.065); color: #fff; padding: 18px; font-size: 20px; line-height: 1.4; outline: none; box-shadow: inset 0 1px 0 rgba(255,255,255,.05); backdrop-filter: blur(14px); }
+.practice-textarea:focus,
+.practice-speak-box input:focus { border-color: rgba(94,231,255,.64); box-shadow: 0 0 0 4px rgba(94,231,255,.10); }
+.practice-wordbank { min-height: 0; display: grid; gap: 14px; }
+.practice-answer-line { min-height: 78px; max-height: 128px; overflow: hidden; display: flex; align-items: center; align-content: flex-start; gap: 9px; flex-wrap: wrap; padding: 13px; border-radius: 24px; border: 1px solid rgba(154,169,220,.18); background: rgba(255,255,255,.055); }
+.practice-answer-line span { color: #8fa1c7; font-weight: 850; }
 .practice-answer-line button,
-.practice-word-options button { min-height: 46px; padding: 0 14px; border-radius: 15px; border: 3px solid #40535b; background: #14252b; color: #f8fafc; font-size: 20px; box-shadow: inset 0 -4px 0 rgba(255,255,255,.04); }
-.practice-word-options { max-height: 160px; overflow: hidden; display: flex; justify-content: center; align-content: flex-start; gap: 9px; flex-wrap: wrap; }
-.practice-word-options button.used { opacity: .18; color: transparent; }
+.practice-word-options button { min-height: 46px; padding: 0 14px; border-radius: 16px; border: 1px solid rgba(154,169,220,.18); background: rgba(255,255,255,.08); color: #f8fafc; font-size: 19px; font-weight: 900; box-shadow: inset 0 1px 0 rgba(255,255,255,.055); }
+.practice-word-options { max-height: 158px; overflow: hidden; display: flex; justify-content: center; align-content: flex-start; gap: 9px; flex-wrap: wrap; }
+.practice-word-options button.used { opacity: .18; transform: scale(.96); color: transparent; }
 .practice-speak-box { display: grid; gap: 14px; }
-.practice-speak-box button { min-height: 76px; display: inline-flex; justify-content: center; align-items: center; gap: 10px; border: 0; border-radius: 24px; background: linear-gradient(180deg, #4ac3f5, #1b9bd4); color: #102027; font-size: 23px; font-weight: 950; }
-.practice-speak-box input { min-height: 56px; border-radius: 18px; border: 3px solid #40535b; background: transparent; color: #fff; padding: 0 15px; font-size: 18px; }
+.practice-speak-box button { min-height: 78px; display: inline-flex; justify-content: center; align-items: center; gap: 10px; border: 0; border-radius: 24px; background: linear-gradient(135deg, var(--practice-blue), var(--practice-violet)); color: white; font-size: 23px; font-weight: 950; box-shadow: 0 18px 44px rgba(91,156,246,.22); }
+.practice-speak-box input { min-height: 58px; border-radius: 20px; border: 1px solid rgba(154,169,220,.20); background: rgba(255,255,255,.065); color: #fff; padding: 0 15px; font-size: 18px; outline: none; }
 
-.practice-feedback {
-  min-height: 116px;
-  margin: 0 -18px max(-10px, calc(env(safe-area-inset-bottom) * -1));
-  padding: 14px 18px max(14px, env(safe-area-inset-bottom));
-  background: #24343a;
-  border-top-left-radius: 24px;
-  border-top-right-radius: 24px;
-  display: grid;
-  gap: 10px;
-  box-shadow: 0 -16px 40px rgba(0,0,0,.22);
-}
-.practice-feedback:not(.right):not(.wrong):not(.near) {
-  background: #203238;
-}
-.practice-feedback.right { background: #213d25; color: #8ee02b; }
-.practice-feedback.wrong { background: #432829; color: #ff8b8b; }
-.practice-feedback.near { background: #41351e; color: #ffd166; }
+.practice-feedback { position: relative; z-index: 2; min-height: 122px; margin: 0 -18px max(-10px, calc(env(safe-area-inset-bottom) * -1)); padding: 15px 18px max(15px, env(safe-area-inset-bottom)); background: rgba(13, 20, 45, .92); border-top: 1px solid rgba(154,169,220,.16); border-top-left-radius: 28px; border-top-right-radius: 28px; display: grid; gap: 10px; box-shadow: 0 -18px 50px rgba(0,0,0,.24); backdrop-filter: blur(20px); }
+.practice-feedback.right { background: linear-gradient(180deg, rgba(21,54,49,.96), rgba(11,24,31,.96)); color: #b7f7d4; }
+.practice-feedback.wrong { background: linear-gradient(180deg, rgba(68,35,48,.96), rgba(24,15,30,.96)); color: #fecdd3; }
+.practice-feedback.near { background: linear-gradient(180deg, rgba(74,58,30,.96), rgba(28,22,24,.96)); color: #fde68a; }
+.practice-feedback-placeholder { color: #8fa1c7; font-size: 14px; font-weight: 800; }
 .practice-feedback-text { display: flex; gap: 12px; align-items: flex-start; }
 .practice-feedback-text strong { display: block; font-size: 22px; font-weight: 950; }
 .practice-feedback-text span { display: block; margin-top: 6px; font-size: 17px; color: inherit; opacity: .95; }
 .practice-footer-actions { display: grid; gap: 8px; }
 .practice-footer-actions button,
-.practice-done button { min-height: 58px; border: 0; border-radius: 16px; background: #8ee02b; color: #14252b; font-size: 17px; font-weight: 950; text-transform: uppercase; letter-spacing: .06em; box-shadow: inset 0 -5px 0 rgba(0,0,0,.13); }
-.practice-footer-actions button:disabled { background: #41525a; color: #63737b; box-shadow: none; }
-.practice-footer-actions button.secondary { background: transparent; color: #35d5df; border: 3px solid #35d5df; box-shadow: none; }
-.practice-done { min-height: 0; display: grid; justify-items: center; align-content: center; gap: 16px; text-align: center; overflow: hidden; }
-.practice-done svg { color: #8ee02b; }
-.practice-done h1 { margin: 0; font-size: clamp(36px, 10vw, 54px); letter-spacing: -.06em; }
-.practice-done p { max-width: 420px; margin: 0; color: #cbd5e1; font-size: 19px; line-height: 1.45; }
-.practice-done button { width: min(420px, 100%); }
-.practice-done button.primary { background: #8ee02b; }
+.practice-done button { min-height: 58px; border: 0; border-radius: 18px; background: linear-gradient(135deg, var(--practice-blue), var(--practice-violet)); color: white; font-size: 17px; font-weight: 950; letter-spacing: -.01em; box-shadow: 0 16px 36px rgba(91,156,246,.22), inset 0 -4px 0 rgba(0,0,0,.13); }
+.practice-footer-actions button:disabled { background: rgba(255,255,255,.08); color: #6f7f9f; box-shadow: none; }
+.practice-footer-actions button.secondary { background: rgba(255,255,255,.08); color: #dbeafe; border: 1px solid rgba(154,169,220,.20); box-shadow: none; }
+.practice-done { display: grid; justify-items: center; align-content: center; gap: 14px; text-align: center; padding: 14px 0 24px; }
+.practice-done-medal { color: white; }
+.practice-done button { width: min(430px, 100%); }
+.practice-done button.primary { background: linear-gradient(135deg, var(--practice-blue), var(--practice-violet)); }
 
 @media (max-width: 420px) {
   .practice-fullscreen { padding-left: 16px; padding-right: 16px; }
-  .practice-question { gap: 14px; padding-top: 12px; }
-  .practice-question h1 { font-size: clamp(28px, 7.2vw, 38px); }
+  .practice-question { gap: 13px; padding-top: 8px; }
+  .practice-question-card { padding: 16px; border-radius: 24px; }
+  .practice-question h1 { font-size: clamp(26px, 7vw, 36px); }
   .practice-choice-grid { gap: 10px; }
-  .practice-choice-grid button { min-height: clamp(70px, 15dvh, 104px); padding: 10px; font-size: clamp(18px, 5vw, 27px); }
+  .practice-choice-grid button { min-height: clamp(72px, 14dvh, 100px); padding: 10px; grid-template-columns: 30px minmax(0, 1fr); }
+  .practice-choice-grid button span { width: 30px; height: 30px; border-radius: 11px; }
+  .practice-choice-grid button b { font-size: clamp(16px, 4.6vw, 23px); }
   .practice-feedback { margin-left: -16px; margin-right: -16px; }
 }
 
 @media (max-height: 720px) {
-  .practice-fullscreen { grid-template-rows: 52px minmax(0, 1fr) auto; padding-top: max(8px, env(safe-area-inset-top)); }
-  .practice-topbar { min-height: 50px; }
-  .practice-question { gap: 12px; padding-top: 8px; }
+  .practice-fullscreen { grid-template-rows: 56px minmax(0, 1fr) auto; padding-top: max(8px, env(safe-area-inset-top)); }
+  .practice-topbar { min-height: 52px; }
+  .practice-intro { gap: 12px; }
+  .practice-intro-orb, .practice-done-medal { width: 76px; height: 76px; border-radius: 26px; }
+  .practice-intro h1, .practice-done h1 { font-size: clamp(34px, 9vw, 48px); }
+  .practice-intro p, .practice-done p { font-size: 16px; }
+  .practice-question { gap: 11px; padding-top: 6px; }
   .practice-kind { font-size: 11px; }
-  .practice-question h1 { font-size: clamp(25px, 6.6vw, 34px); }
-  .practice-choice-grid button { min-height: clamp(62px, 13dvh, 92px); font-size: clamp(17px, 4.7vw, 24px); }
-  .practice-feedback { min-height: 104px; }
+  .practice-question h1 { font-size: clamp(24px, 6.4vw, 32px); }
+  .practice-choice-grid button { min-height: clamp(62px, 12.5dvh, 88px); }
+  .practice-audio-big { width: min(142px, 38vw); border-radius: 30px; }
+  .practice-feedback { min-height: 106px; }
   .practice-footer-actions button, .practice-done button { min-height: 52px; }
 }
