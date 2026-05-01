@@ -1,6 +1,6 @@
 import { DEFAULT_PRACTICE_LIMITS, PRACTICE_SKILLS, SKILL_PHASE_PLAN } from './PracticeTypes.js';
 import { normalizeLessonForPractice } from './PracticeNormalizer.js';
-import { filterPracticeQuestions } from './PracticeQualityGate.js';
+import { filterPracticeQuestions, getPracticePlanIssues } from './PracticeQualityGate.js';
 import { buildListeningPractice } from './builders/listeningBuilder.js';
 import { buildSpeakingPractice } from './builders/speakingBuilder.js';
 import { buildReadingPractice } from './builders/readingBuilder.js';
@@ -49,8 +49,7 @@ export function buildPracticePlan(lesson, options = {}) {
   const ordered = orderByPhase(accepted, phasePlan);
   const count = chooseQuestionCount(context, limits, ordered.length);
   const questions = ordered.slice(0, count);
-
-  return {
+  const draftPlan = {
     lessonId: context.id,
     title: context.title,
     skill: context.skill,
@@ -68,6 +67,14 @@ export function buildPracticePlan(lesson, options = {}) {
       vocabulary: context.vocabulary.length,
       exercises: context.exercises.length,
       desiredCount: count,
+    },
+  };
+
+  return {
+    ...draftPlan,
+    quality: {
+      ...draftPlan.quality,
+      planIssues: getPracticePlanIssues(draftPlan, limits),
     },
   };
 }
