@@ -156,6 +156,16 @@ async function playBrowserFallback(cleanText) {
   };
 }
 
+export function stopGeminiTtsAudio() {
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio.currentTime = 0;
+    currentAudio.src = '';
+    currentAudio = null;
+    diagnostics.log('Áudio natural Gemini interrompido.', 'info');
+  }
+}
+
 export async function generateGeminiTtsAudio({
   text,
   voiceName = DEFAULT_VOICE,
@@ -235,11 +245,7 @@ export async function playGeminiTtsAudio(options = {}) {
 
   if (result.audioUrl) {
     try {
-      if (currentAudio) {
-        currentAudio.pause();
-        currentAudio.src = '';
-      }
-
+      stopGeminiTtsAudio();
       currentAudio = new Audio(result.audioUrl);
       currentAudio.playsInline = true;
       currentAudio.preload = 'auto';
