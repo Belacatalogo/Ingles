@@ -9,6 +9,7 @@ import './styles/lab-polish.css';
 import './styles/today-polish.css';
 import './styles/nav-polish.css';
 import './styles/lesson-polish.css';
+import './styles/choice-polish.css';
 import './styles/flashcards-polish.css';
 import './styles/progress-polish.css';
 import './styles/settings-polish.css';

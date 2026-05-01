@@ -50,13 +50,143 @@ function ensureArray(value) {
   return Array.isArray(value) ? value : [];
 }
 
+function cleanText(value) {
+  return String(value ?? '').trim();
+}
+
+function optionText(option) {
+  if (typeof option === 'string' || typeof option === 'number') return cleanText(option);
+  if (!option || typeof option !== 'object') return '';
+  return cleanText(option.text ?? option.label ?? option.option ?? option.value ?? option.answer ?? option.content ?? option.title ?? '');
+}
+
+function isMarkedCorrectOption(option) {
+  if (!option || typeof option !== 'object') return false;
+  return Boolean(option.correct === true || option.isCorrect === true || option.correctAnswer === true || option.is_answer === true || option.isAnswer === true);
+}
+
+function firstNonEmpty(...values) {
+  for (const value of values) {
+    const clean = cleanText(value);
+    if (clean) return clean;
+  }
+  return '';
+}
+
+function arrayFromMaybeDelimited(value) {
+  if (Array.isArray(value)) return value;
+  if (typeof value !== 'string') return [];
+  const parts = value.split(/\n|;|\|/).map((item) => item.trim()).filter(Boolean);
+  return parts.length > 1 ? parts : [];
+}
+
+function getExerciseOptions(item, originalItem = item) {
+  const rawOptions =
+    arrayFromMaybeDelimited(item?.options).length ? arrayFromMaybeDelimited(item.options) :
+    ensureArray(item?.options).length ? item.options :
+    arrayFromMaybeDelimited(item?.choices).length ? arrayFromMaybeDelimited(item.choices) :
+    ensureArray(item?.choices).length ? item.choices :
+    arrayFromMaybeDelimited(item?.alternatives).length ? arrayFromMaybeDelimited(item.alternatives) :
+    ensureArray(item?.alternatives).length ? item.alternatives :
+    ensureArray(item?.answers).length ? item.answers :
+    ensureArray(item?.multipleChoiceOptions).length ? item.multipleChoiceOptions :
+    ensureArray(item?.possibleAnswers).length ? item.possibleAnswers :
+    ensureArray(originalItem?.options).length ? originalItem.options :
+    ensureArray(originalItem?.choices).length ? originalItem.choices :
+    ensureArray(originalItem?.alternatives).length ? originalItem.alternatives :
+    ensureArray(originalItem?.answers).length ? originalItem.answers :
+    ensureArray(originalItem?.multipleChoiceOptions).length ? originalItem.multipleChoiceOptions :
+    ensureArray(originalItem?.possibleAnswers);
+
+  return rawOptions.map(optionText).filter(Boolean);
+}
+
+function answerFromAnswerKey(answerKey, question, index) {
+  if (!answerKey) return '';
+
+  if (Array.isArray(answerKey)) {
+    const match = answerKey[index];
+    if (typeof match === 'string' || typeof match === 'number') return cleanText(match);
+    if (match && typeof match === 'object') return firstNonEmpty(match.answer, match.expectedAnswer, match.correctAnswer, match.value, match.text);
+  }
+
+  if (typeof answerKey === 'object') {
+    const cleanQuestion = cleanText(question);
+    const possibleKeys = [index, String(index), index + 1, String(index + 1), cleanQuestion, cleanQuestion.toLowerCase()];
+    for (const key of possibleKeys) {
+      const match = answerKey[key];
+      if (typeof match === 'string' || typeof match === 'number') return cleanText(match);
+      if (match && typeof match === 'object') {
+        const answer = firstNonEmpty(match.answer, match.expectedAnswer, match.correctAnswer, match.value, match.text);
+        if (answer) return answer;
+      }
+    }
+  }
+
+  return '';
+}
+
+function mapLetterOrNumberToOption(answer, options) {
+  const clean = cleanText(answer);
+  if (!clean || !options.length) return answer;
+  if (/^[A-Da-d]$/.test(clean)) {
+    const index = clean.toUpperCase().charCodeAt(0) - 65;
+    return options[index] || answer;
+  }
+  if (/^\d+$/.test(clean)) {
+    const index = Number(clean) - 1;
+    return options[index] || answer;
+  }
+  return answer;
+}
+
+function getCorrectAnswer(item, lesson, index, options, originalItem = item) {
+  const allRawOptions = [
+    ...ensureArray(item?.options),
+    ...ensureArray(item?.choices),
+    ...ensureArray(item?.alternatives),
+    ...ensureArray(item?.answers),
+    ...ensureArray(item?.multipleChoiceOptions),
+    ...ensureArray(item?.possibleAnswers),
+    ...ensureArray(originalItem?.options),
+    ...ensureArray(originalItem?.choices),
+    ...ensureArray(originalItem?.alternatives),
+    ...ensureArray(originalItem?.answers),
+    ...ensureArray(originalItem?.multipleChoiceOptions),
+    ...ensureArray(originalItem?.possibleAnswers),
+  ];
+
+  const markedCorrectOption = allRawOptions.find(isMarkedCorrectOption);
+  const directAnswer = firstNonEmpty(
+    item?.answer,
+    item?.expectedAnswer,
+    item?.correctAnswer,
+    item?.correct,
+    item?.solution,
+    item?.rightAnswer,
+    item?.answerText,
+    originalItem?.answer,
+    originalItem?.expectedAnswer,
+    originalItem?.correctAnswer,
+    originalItem?.correct,
+    originalItem?.solution,
+    originalItem?.rightAnswer,
+    originalItem?.answerText
+  );
+
+  const answer = firstNonEmpty(
+    optionText(markedCorrectOption),
+    directAnswer,
+    answerFromAnswerKey(lesson?.answerKey || lesson?.answer_key || lesson?.raw?.answerKey || lesson?.raw?.answer_key, item?.question || item?.prompt, index)
+  );
+
+  return mapLetterOrNumberToOption(answer, options);
+}
+
 function normalizeSections(lesson) {
   const sections = ensureArray(lesson.sections).length ? lesson.sections : ensureArray(lesson.steps);
   return sections.map((section, index) => {
-    if (typeof section === 'string') {
-      return { title: `Parte ${index + 1}`, content: section };
-    }
-
+    if (typeof section === 'string') return { title: `Parte ${index + 1}`, content: section };
     return {
       title: section?.title ?? section?.heading ?? section?.label ?? `Parte ${index + 1}`,
       content: section?.content ?? section?.text ?? section?.body ?? section?.explanation ?? '',
@@ -67,12 +197,19 @@ function normalizeSections(lesson) {
 
 function normalizeExercises(lesson) {
   const source = ensureArray(lesson.exercises).length ? lesson.exercises : ensureArray(lesson.questions);
-  return source.map((item, index) => ({
-    question: item?.question ?? item?.prompt ?? `Questão ${index + 1}`,
-    options: ensureArray(item?.options).length ? item.options : ensureArray(item?.choices),
-    answer: item?.answer ?? item?.correctAnswer ?? item?.correct ?? '',
-    explanation: item?.explanation ?? item?.feedback ?? '',
-  }));
+  const originalSource = ensureArray(lesson?.raw?.exercises).length ? lesson.raw.exercises : ensureArray(lesson?.raw?.questions);
+  return source.map((item, index) => {
+    const originalItem = originalSource[index] || item;
+    const question = item?.question ?? item?.prompt ?? item?.instruction ?? originalItem?.question ?? originalItem?.prompt ?? `Questão ${index + 1}`;
+    const options = getExerciseOptions(item, originalItem);
+    const answer = getCorrectAnswer(item, lesson, index, options, originalItem);
+    return {
+      question,
+      options,
+      answer,
+      explanation: item?.explanation ?? item?.feedback ?? originalItem?.explanation ?? originalItem?.feedback ?? '',
+    };
+  });
 }
 
 function normalizeVocabulary(lesson) {
@@ -84,9 +221,7 @@ function normalizeVocabulary(lesson) {
 }
 
 function normalizePrompts(lesson) {
-  return ensureArray(lesson.prompts).length
-    ? ensureArray(lesson.prompts)
-    : ensureArray(lesson.writingPrompts);
+  return ensureArray(lesson.prompts).length ? ensureArray(lesson.prompts) : ensureArray(lesson.writingPrompts);
 }
 
 function normalizeObject(value) {
@@ -113,9 +248,10 @@ export function normalizeLesson(rawLesson) {
     tips: ensureArray(lesson.tips),
     prompts: normalizePrompts(lesson),
     listeningText: lesson.listeningText ?? lesson.listening_text ?? lesson.transcript ?? '',
+    answerKey: lesson.answerKey ?? lesson.answer_key ?? lesson.raw?.answerKey ?? lesson.raw?.answer_key ?? null,
     pedagogicalReview: normalizeObject(lesson.pedagogicalReview),
     quality: normalizeObject(lesson.quality),
-    raw: lesson,
+    raw: lesson.raw && typeof lesson.raw === 'object' ? lesson.raw : lesson,
   };
 }
 

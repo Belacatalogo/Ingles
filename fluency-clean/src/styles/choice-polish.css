@@ -1,0 +1,44 @@
+.lesson-reference-screen .option-button.correct,
+.lesson-reference-screen .option-button.selected.correct {
+  border-color: rgba(52,211,153,.48);
+  background: rgba(52,211,153,.12);
+  color: #bbf7d0;
+}
+
+.lesson-reference-screen .option-button.incorrect,
+.lesson-reference-screen .option-button.selected.incorrect {
+  border-color: rgba(248,113,113,.50);
+  background: rgba(248,113,113,.12);
+  color: #fecaca;
+}
+
+.lesson-reference-screen .option-button.selected:not(.correct):not(.incorrect) {
+  border-color: rgba(91,156,246,.52);
+  background: rgba(91,156,246,.14);
+}
+
+.lesson-reference-screen .question-feedback {
+  margin: 10px 0 0;
+  padding: 10px 12px;
+  border-radius: 14px;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.lesson-reference-screen .question-feedback.correct {
+  border: 1px solid rgba(52,211,153,.28);
+  background: rgba(52,211,153,.08);
+  color: #bbf7d0;
+}
+
+.lesson-reference-screen .question-feedback.incorrect {
+  border: 1px solid rgba(248,113,113,.28);
+  background: rgba(248,113,113,.08);
+  color: #fecaca;
+}
+
+.lesson-reference-screen .question-feedback.missing-options {
+  border: 1px solid rgba(251,191,36,.25);
+  background: rgba(251,191,36,.08);
+  color: #fde68a;
+}
