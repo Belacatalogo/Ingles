@@ -35,19 +35,14 @@ function getBundledAzureSDK() {
 function loadAzureSDKFromScript() {
   if (window.SpeechSDK) return Promise.resolve(window.SpeechSDK);
   if (sdkPromise) return sdkPromise;
-
   sdkPromise = new Promise((resolve, reject) => {
     const script = document.createElement('script');
     script.src = SDK_URL;
     script.async = true;
-    script.onload = () => {
-      if (window.SpeechSDK) resolve(window.SpeechSDK);
-      else reject(new Error('Azure SpeechSDK não foi exposto no window.'));
-    };
+    script.onload = () => window.SpeechSDK ? resolve(window.SpeechSDK) : reject(new Error('Azure SpeechSDK não foi exposto no window.'));
     script.onerror = () => reject(new Error('Falha ao carregar Azure Speech SDK externo.'));
     document.head.appendChild(script);
   });
-
   return sdkPromise;
 }
 
@@ -57,7 +52,6 @@ async function loadAzureSDK() {
     diagnostics.log('Azure Speech SDK carregado do bundle do app.', 'info');
     return bundled;
   }
-
   diagnostics.log('Azure Speech SDK empacotado indisponível. Tentando script externo.', 'warn');
   return loadAzureSDKFromScript();
 }
@@ -68,27 +62,12 @@ async function getAzureToken(fetcher = fetch) {
     diagnostics.log('Azure token reutilizado do cache.', 'info');
     return tokenCache;
   }
-
   const tokenUrl = getTokenUrl();
   const response = await fetcher(tokenUrl, { method: 'GET' });
-  if (!response.ok) {
-    throw new Error(`Token HTTP ${response.status}`);
-  }
-
+  if (!response.ok) throw new Error(`Token HTTP ${response.status}`);
   const data = await response.json();
-  if (!data?.token || !data?.region) {
-    throw new Error('Resposta de token Azure inválida.');
-  }
-
-  tokenCache = {
-    token: data.token,
-    region: data.region,
-    keyIndex: data.keyIndex || data.activeKeyIndex || 1,
-    resourceCount: data.resourceCount || 1,
-    expiresAt: now + TOKEN_TTL_MS,
-    raw: data,
-  };
-
+  if (!data?.token || !data?.region) throw new Error('Resposta de token Azure inválida.');
+  tokenCache = { token: data.token, region: data.region, keyIndex: data.keyIndex || data.activeKeyIndex || 1, resourceCount: data.resourceCount || 1, expiresAt: now + TOKEN_TTL_MS, raw: data };
   diagnostics.log(`Azure token recebido: key ${tokenCache.keyIndex}/${tokenCache.resourceCount}.`, 'info');
   return tokenCache;
 }
@@ -97,55 +76,36 @@ async function decodeAudioBlobToPCM16k(audioBlob) {
   const arrayBuffer = await audioBlob.arrayBuffer();
   const AudioContextClass = window.AudioContext || window.webkitAudioContext;
   const OfflineAudioContextClass = window.OfflineAudioContext || window.webkitOfflineAudioContext;
-
-  if (!AudioContextClass || !OfflineAudioContextClass) {
-    throw new Error('AudioContext indisponível para decodificar áudio.');
-  }
-
+  if (!AudioContextClass || !OfflineAudioContextClass) throw new Error('AudioContext indisponível para decodificar áudio.');
   const context = new AudioContextClass();
   let decoded;
-  try {
-    decoded = await context.decodeAudioData(arrayBuffer.slice(0));
-  } finally {
-    try { await context.close?.(); } catch (_) {}
-  }
-
-  if (!decoded || decoded.duration < 0.2) {
-    throw new Error('Áudio muito curto ou vazio.');
-  }
-
+  try { decoded = await context.decodeAudioData(arrayBuffer.slice(0)); } finally { try { await context.close?.(); } catch (_) {} }
+  if (!decoded || decoded.duration < 0.2) throw new Error('Áudio muito curto ou vazio.');
   const targetRate = 16000;
   const targetLength = Math.max(1, Math.ceil(decoded.duration * targetRate));
   const offline = new OfflineAudioContextClass(1, targetLength, targetRate);
-
   let sourceBuffer = decoded;
   if (decoded.numberOfChannels > 1) {
     sourceBuffer = offline.createBuffer(1, decoded.length, decoded.sampleRate);
     const mono = sourceBuffer.getChannelData(0);
     for (let channel = 0; channel < decoded.numberOfChannels; channel += 1) {
       const data = decoded.getChannelData(channel);
-      for (let index = 0; index < data.length; index += 1) {
-        mono[index] += data[index] / decoded.numberOfChannels;
-      }
+      for (let index = 0; index < data.length; index += 1) mono[index] += data[index] / decoded.numberOfChannels;
     }
   }
-
   const source = offline.createBufferSource();
   source.buffer = sourceBuffer;
   source.connect(offline.destination);
   source.start(0);
-
   const rendered = await offline.startRendering();
   const samples = rendered.getChannelData(0);
   const pcm16 = new Int16Array(samples.length);
-
   for (let index = 0; index < samples.length; index += 1) {
     let sample = samples[index];
     if (sample > 1) sample = 1;
     if (sample < -1) sample = -1;
     pcm16[index] = sample < 0 ? Math.round(sample * 0x8000) : Math.round(sample * 0x7fff);
   }
-
   return pcm16;
 }
 
@@ -153,122 +113,96 @@ function mapAzureWord(word) {
   const assessment = word?.PronunciationAssessment || {};
   const accuracy = round(assessment.AccuracyScore);
   const errorType = assessment.ErrorType || 'None';
-
   let status = 'correct';
   if (errorType === 'Omission') status = 'missing';
   else if (errorType !== 'None') status = accuracy != null && accuracy >= 60 ? 'medium' : 'wrong';
   else if (accuracy != null && accuracy < 60) status = 'wrong';
   else if (accuracy != null && accuracy < 80) status = 'medium';
-
-  return {
-    word: word?.Word || '',
-    status,
-    accuracyScore: accuracy,
-    errorType,
-    phonemes: (word?.Phonemes || []).map((phoneme) => ({
-      phoneme: phoneme.Phoneme,
-      score: round(phoneme?.PronunciationAssessment?.AccuracyScore),
-    })),
-  };
+  return { word: word?.Word || '', status, accuracyScore: accuracy, errorType, phonemes: (word?.Phonemes || []).map((phoneme) => ({ phoneme: phoneme.Phoneme, score: round(phoneme?.PronunciationAssessment?.AccuracyScore) })) };
 }
 
 function normalizeAzureJson(json) {
   const best = json?.NBest?.[0];
   if (!best) throw new Error('Azure não retornou NBest.');
-
   const assessment = best.PronunciationAssessment || {};
   const words = (best.Words || []).map(mapAzureWord);
-  return {
-    recognizedText: best.Display || json.DisplayText || '',
-    accuracyScore: round(assessment.AccuracyScore),
-    fluencyScore: round(assessment.FluencyScore),
-    completenessScore: round(assessment.CompletenessScore),
-    pronunciationScore: round(assessment.PronScore),
-    words,
-    lowestWord: words
-      .filter((word) => word.accuracyScore != null)
-      .sort((a, b) => a.accuracyScore - b.accuracyScore)[0] || null,
-    raw: json,
-  };
+  return { recognizedText: best.Display || json.DisplayText || '', accuracyScore: round(assessment.AccuracyScore), fluencyScore: round(assessment.FluencyScore), completenessScore: round(assessment.CompletenessScore), pronunciationScore: round(assessment.PronScore), words, lowestWord: words.filter((word) => word.accuracyScore != null).sort((a, b) => a.accuracyScore - b.accuracyScore)[0] || null, raw: json };
 }
 
 function recognizeOnce(recognizer, SDK) {
   return new Promise((resolve, reject) => {
-    recognizer.recognizeOnceAsync(
-      (result) => {
-        if (result.reason === SDK.ResultReason.Canceled) {
-          const details = SDK.CancellationDetails.fromResult(result);
-          reject(new Error(`Azure cancelou: ${details.reason} / ${details.errorDetails || ''}`));
-          return;
-        }
-
-        if (result.reason !== SDK.ResultReason.RecognizedSpeech) {
-          reject(new Error(`Azure não reconheceu fala: reason=${result.reason}`));
-          return;
-        }
-
-        resolve(result);
-      },
-      (error) => reject(new Error(error?.message || String(error)))
-    );
+    recognizer.recognizeOnceAsync((result) => {
+      if (result.reason === SDK.ResultReason.Canceled) {
+        const details = SDK.CancellationDetails.fromResult(result);
+        reject(new Error(`Azure cancelou: ${details.reason} / ${details.errorDetails || ''}`));
+        return;
+      }
+      if (result.reason !== SDK.ResultReason.RecognizedSpeech) {
+        reject(new Error(`Azure não reconheceu fala: reason=${result.reason}`));
+        return;
+      }
+      resolve(result);
+    }, (error) => reject(new Error(error?.message || String(error))));
   });
+}
+
+async function createRecognizerFromBlob({ audioBlob, fetcher = fetch }) {
+  const SDK = await loadAzureSDK();
+  const tokenInfo = await getAzureToken(fetcher);
+  const pcm16 = await decodeAudioBlobToPCM16k(audioBlob);
+  const speechConfig = SDK.SpeechConfig.fromAuthorizationToken(tokenInfo.token, tokenInfo.region);
+  speechConfig.speechRecognitionLanguage = 'en-US';
+  const format = SDK.AudioStreamFormat.getWaveFormatPCM(16000, 16, 1);
+  const pushStream = SDK.AudioInputStream.createPushStream(format);
+  pushStream.write(pcm16.buffer.slice(0));
+  pushStream.close();
+  const audioConfig = SDK.AudioConfig.fromStreamInput(pushStream);
+  return { SDK, recognizer: new SDK.SpeechRecognizer(speechConfig, audioConfig) };
+}
+
+export async function recognizeSpeech({ audioBlob, fetcher = fetch } = {}) {
+  diagnostics.setPhase('transcrevendo fala livre', AZURE_PRONUNCIATION_STATUS.analyzing);
+  if (!audioBlob) return { status: AZURE_PRONUNCIATION_STATUS.error, result: null, error: 'Nenhum áudio recebido.' };
+  let recognizer = null;
+  try {
+    diagnostics.setPhase('preparando transcrição Azure', AZURE_PRONUNCIATION_STATUS.analyzing);
+    const created = await createRecognizerFromBlob({ audioBlob, fetcher });
+    recognizer = created.recognizer;
+    const result = await recognizeOnce(recognizer, created.SDK);
+    const raw = result.properties.getProperty(created.SDK.PropertyId.SpeechServiceResponse_JsonResult);
+    const parsed = raw ? JSON.parse(raw) : {};
+    const best = parsed?.NBest?.[0] || {};
+    const recognizedText = best.Display || parsed.DisplayText || result.text || '';
+    diagnostics.setPhase('fala livre transcrita', AZURE_PRONUNCIATION_STATUS.success);
+    diagnostics.log(`Transcrição Azure concluída: ${recognizedText}`, 'info');
+    return { status: AZURE_PRONUNCIATION_STATUS.success, result: { recognizedText, raw: parsed }, error: null };
+  } catch (error) {
+    diagnostics.setPhase('erro na transcrição Azure', AZURE_PRONUNCIATION_STATUS.error);
+    diagnostics.log(`Erro Azure Speech Recognition: ${error?.message || error}`, 'error');
+    return { status: AZURE_PRONUNCIATION_STATUS.error, result: null, error: error?.message || String(error) };
+  } finally {
+    try { recognizer?.close?.(); } catch (_) {}
+  }
 }
 
 export async function analyzePronunciation({ audioBlob, referenceText, fetcher = fetch } = {}) {
   diagnostics.setPhase('preparando análise de pronúncia', AZURE_PRONUNCIATION_STATUS.analyzing);
-
-  if (!audioBlob) {
-    diagnostics.log('Nenhum áudio recebido para análise de pronúncia.', 'error');
-    return { status: AZURE_PRONUNCIATION_STATUS.error, result: null, error: 'Nenhum áudio recebido.' };
-  }
-
-  if (!referenceText) {
-    diagnostics.log('Texto de referência ausente para análise Azure.', 'error');
-    return { status: AZURE_PRONUNCIATION_STATUS.error, result: null, error: 'Texto de referência ausente.' };
-  }
-
+  if (!audioBlob) return { status: AZURE_PRONUNCIATION_STATUS.error, result: null, error: 'Nenhum áudio recebido.' };
+  if (!referenceText) return { status: AZURE_PRONUNCIATION_STATUS.error, result: null, error: 'Texto de referência ausente.' };
   let recognizer = null;
-
   try {
     diagnostics.setPhase('carregando Azure SDK', AZURE_PRONUNCIATION_STATUS.analyzing);
-    const SDK = await loadAzureSDK();
-
-    diagnostics.setPhase('obtendo token Azure', AZURE_PRONUNCIATION_STATUS.analyzing);
-    const tokenInfo = await getAzureToken(fetcher);
-
-    diagnostics.setPhase('decodificando áudio', AZURE_PRONUNCIATION_STATUS.analyzing);
-    const pcm16 = await decodeAudioBlobToPCM16k(audioBlob);
-
-    const speechConfig = SDK.SpeechConfig.fromAuthorizationToken(tokenInfo.token, tokenInfo.region);
-    speechConfig.speechRecognitionLanguage = 'en-US';
-
-    const pronunciationConfig = new SDK.PronunciationAssessmentConfig(
-      String(referenceText),
-      SDK.PronunciationAssessmentGradingSystem.HundredMark,
-      SDK.PronunciationAssessmentGranularity.Phoneme,
-      true
-    );
-
-    const format = SDK.AudioStreamFormat.getWaveFormatPCM(16000, 16, 1);
-    const pushStream = SDK.AudioInputStream.createPushStream(format);
-    pushStream.write(pcm16.buffer.slice(0));
-    pushStream.close();
-
-    const audioConfig = SDK.AudioConfig.fromStreamInput(pushStream);
-    recognizer = new SDK.SpeechRecognizer(speechConfig, audioConfig);
+    const created = await createRecognizerFromBlob({ audioBlob, fetcher });
+    const SDK = created.SDK;
+    recognizer = created.recognizer;
+    const pronunciationConfig = new SDK.PronunciationAssessmentConfig(String(referenceText), SDK.PronunciationAssessmentGradingSystem.HundredMark, SDK.PronunciationAssessmentGranularity.Phoneme, true);
     pronunciationConfig.applyTo(recognizer);
-
     diagnostics.setPhase('analisando pronúncia', AZURE_PRONUNCIATION_STATUS.analyzing);
     const result = await recognizeOnce(recognizer, SDK);
     const raw = result.properties.getProperty(SDK.PropertyId.SpeechServiceResponse_JsonResult);
     const normalized = normalizeAzureJson(JSON.parse(raw));
-
     diagnostics.setPhase('pronúncia analisada', AZURE_PRONUNCIATION_STATUS.success);
-    diagnostics.log('Análise Azure concluída.', 'info', {
-      pronunciationScore: normalized.pronunciationScore,
-      accuracyScore: normalized.accuracyScore,
-    });
-
+    diagnostics.log('Análise Azure concluída.', 'info', { pronunciationScore: normalized.pronunciationScore, accuracyScore: normalized.accuracyScore });
     return { status: AZURE_PRONUNCIATION_STATUS.success, result: normalized, error: null };
   } catch (error) {
     diagnostics.setPhase('erro na análise de pronúncia', AZURE_PRONUNCIATION_STATUS.error);
