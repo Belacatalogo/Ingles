@@ -31,19 +31,45 @@ Regra operacional:
 4. Fluxo ideal: **1 bloco → 1 commit → 1 deploy → teste no iPhone**.
 5. Se a Vercel bloquear novamente, parar commits e aguardar liberação.
 
-Observação: nos últimos ajustes do Speaking, o conector bloqueou a criação de árvore/commit único. Por segurança, a correção foi aplicada via `update_file`, gerando commits separados, sem tocar em `main`, `bundle.js` ou backend Azure.
+Observação: nos últimos ajustes do Speaking e no início do CARTAS-3, o conector bloqueou algumas operações de árvore/commit único. Por segurança, as alterações foram aplicadas via `create_file`/`update_file`, sem tocar em `main`, `bundle.js` ou backend Azure.
 
 ## Estado atual implementado
 
-### AJUSTE BLOCO-SPEAKING-2-LAB — Feedback de pronúncia em cada fala livre IMPLEMENTADO, aguardando teste
+### BLOCO-CARTAS-3-LAB — Banco de vocabulário por tópicos IMPLEMENTADO parcialmente, aguardando teste no iPhone
 
 Contexto:
-- usuário validou que a conversa livre com parada automática funcionou;
-- pediu que, ao finalizar a sessão, houvesse análise de pronúncia em cada frase, mostrando onde errou e onde precisa melhorar.
+- próximo bloco da ordem era `BLOCO-CARTAS-3-LAB — 2.000 palavras por tópicos`;
+- foi criada a base real modular de decks por tópico;
+- a meta das 2.000 palavras ficou registrada no código, mas este commit adiciona o primeiro lote real com 288 palavras organizadas;
+- não foi preenchido com palavras fictícias apenas para bater número.
 
 Arquivos alterados:
-- `fluency-clean/src/screens/SpeakingScreen.jsx`
+- `fluency-clean/src/services/vocabularyDecks.js`
+- `fluency-clean/src/screens/FlashcardsScreen.jsx`
 - `REWRITE_HANDOFF.md`
+
+Correção aplicada:
+- novo serviço `vocabularyDecks.js` com decks temáticos reais;
+- banco atual: 288 palavras em tópicos A1/A2;
+- meta registrada: 2.000 palavras (`VOCABULARY_BANK_TARGET = 2000`);
+- decks iniciais incluem: Essenciais A1, Pessoas e família, Rotina diária, Comida e bebidas, Casa e objetos, Lugares e cidade, Verbos comuns, Adjetivos úteis, Perguntas/conectores, Tempo/números, Trabalho/estudo, Sentimentos/saúde e Viagem/sobrevivência;
+- tela Cartas agora permite escolher decks por tópico além da Aula atual;
+- sessão de flashcards agora pode ser feita com deck temático mesmo sem aula com vocabulário;
+- registro de sessão usa id de deck quando a revisão vem de deck temático;
+- tela mostra contador honesto `288/2000` do banco planejado;
+- próximos lotes podem expandir a base até completar 2.000 sem alterar a arquitetura.
+
+Teste recomendado:
+1. aguardar deploy Ready da `rewrite-fluency-clean-lab`;
+2. abrir Cartas no iPhone;
+3. confirmar que aparecem decks além de Aula atual;
+4. selecionar um deck, por exemplo “Essenciais A1”;
+5. revisar algumas cartas;
+6. confirmar que frente, verso, tradução, exemplo e áudio funcionam;
+7. concluir uma sessão de deck e confirmar tela “Sessão concluída”;
+8. voltar para Hoje e confirmar que Cartas continua sendo reconhecida como tarefa real concluída.
+
+### AJUSTE BLOCO-SPEAKING-2-LAB — Feedback de pronúncia em cada fala livre IMPLEMENTADO E VALIDADO PELO USUÁRIO
 
 Correção aplicada:
 - mantém o modo de fala livre;
@@ -53,18 +79,7 @@ Correção aplicada:
 - cada resposta pode mostrar dica de melhoria;
 - mostra até 3 palavras mais fracas com nota;
 - a média da sessão usa notas reais de pronúncia quando disponíveis;
-- se a análise de pronúncia falhar, mantém a transcrição e não quebra o fluxo.
-
-Teste recomendado:
-1. abrir Speaking no iPhone;
-2. iniciar Nova sessão;
-3. tocar no microfone uma vez;
-4. falar livremente;
-5. aguardar parada automática e análise;
-6. confirmar que aparece a resposta reconhecida;
-7. confirmar que aparece “Pronúncia: X%” abaixo da resposta;
-8. confirmar dica com palavra/ponto a melhorar;
-9. concluir 5 respostas e confirmar média de pronúncia na sessão concluída.
+- usuário informou: “deu certo”.
 
 ### AJUSTE BLOCO-SPEAKING-2-LAB — Conversa livre com parada automática por silêncio IMPLEMENTADO
 
@@ -124,17 +139,18 @@ Comportamento:
 
 ## Próximos blocos, após validar a lab no iPhone
 
-1. `BLOCO-CARTAS-3-LAB` — 2.000 palavras por tópicos.
-2. `BLOCO-10B-LAB` — Correção automática do quality gate.
-3. `BLOCO-12-LAB` — Rubricas por tipo de aula.
-4. `BLOCO-14-LAB` — Contrato JSON rígido.
-5. `BLOCO-11-LAB` — Plano primeiro, aula depois.
-6. `BLOCO-13-LAB` — Professor Gerador/Revisor.
-7. `BLOCO-17-LAB` — Qualidade visível da aula.
-8. `BLOCO-16-LAB` — Histórico real de Speaking.
-9. `BLOCO-15-LAB` — Banco de erros real.
-10. `BLOCO-20-LAB` — Certificação por nível.
+1. `BLOCO-10B-LAB` — Correção automática do quality gate.
+2. `BLOCO-12-LAB` — Rubricas por tipo de aula.
+3. `BLOCO-14-LAB` — Contrato JSON rígido.
+4. `BLOCO-11-LAB` — Plano primeiro, aula depois.
+5. `BLOCO-13-LAB` — Professor Gerador/Revisor.
+6. `BLOCO-17-LAB` — Qualidade visível da aula.
+7. `BLOCO-16-LAB` — Histórico real de Speaking.
+8. `BLOCO-15-LAB` — Banco de erros real.
+9. `BLOCO-20-LAB` — Certificação por nível.
+10. `BLOCO-CARTAS-3B-LAB` — Expandir banco de vocabulário em novos lotes até 2.000 palavras reais.
+11. `BLOCO-AUDITORIA-POLIMENTO-GERAL-LAB` — após concluir os blocos principais, analisar cada página com precisão, listar melhorias possíveis e só então montar blocos de polimento com base nessa auditoria.
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Use o PROTOCOLO ECONÔMICO DE DEPLOY: cada bloco deve virar 1 commit único, com handoff atualizado no mesmo commit. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. Já foram implementados o BLOCO-10A-LAB, ajustes do BLOCO-10C-LAB, BLOCO-CARTAS-2-LAB, BLOCO-SPEAKING-2-LAB, conversa livre com parada automática por silêncio e feedback de pronúncia em cada fala livre. Validar primeiro no iPhone. Próximo bloco depois da validação: BLOCO-CARTAS-3-LAB. Depois seguir a ordem: 10B, 12, 14, 11, 13, 17, 16, 15, 20. Não delete `rewrite-fluency-clean-lab` nem `rewrite-fluency-clean`. A produção/main ainda NÃO foi validada no Vercel. Validar primeiro a lab no iPhone, depois sincronizar para `rewrite-fluency-clean`, testar o link estável e só depois decidir nova ida para `main`. Rollback da main: `5047bae031f20ddd9604953dcd3fd821655e56fa`."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Use o PROTOCOLO ECONÔMICO DE DEPLOY: cada bloco deve virar 1 commit único, com handoff atualizado no mesmo commit. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. Já foram implementados o BLOCO-10A-LAB, ajustes do BLOCO-10C-LAB, BLOCO-CARTAS-2-LAB, BLOCO-SPEAKING-2-LAB, conversa livre com parada automática por silêncio, feedback de pronúncia em cada fala livre e o início do BLOCO-CARTAS-3-LAB com 288 palavras reais em decks. Validar primeiro no iPhone. Próximo bloco depois da validação: BLOCO-10B-LAB. Depois seguir a ordem: 12, 14, 11, 13, 17, 16, 15, 20, CARTAS-3B para expandir até 2.000 e AUDITORIA-POLIMENTO-GERAL. Não delete `rewrite-fluency-clean-lab` nem `rewrite-fluency-clean`. A produção/main ainda NÃO foi validada no Vercel. Validar primeiro a lab no iPhone, depois sincronizar para `rewrite-fluency-clean`, testar o link estável e só depois decidir nova ida para `main`. Rollback da main: `5047bae031f20ddd9604953dcd3fd821655e56fa`."
