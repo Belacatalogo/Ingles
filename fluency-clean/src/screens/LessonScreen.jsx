@@ -5,6 +5,7 @@ import { ReadingLesson } from '../lessons/ReadingLesson.jsx';
 import { GrammarLesson } from '../lessons/GrammarLesson.jsx';
 import { ListeningLesson } from '../lessons/ListeningLesson.jsx';
 import { WritingLesson } from '../lessons/WritingLesson.jsx';
+import { PracticeLauncher } from '../practice/PracticeLauncher.jsx';
 import { getCurrentLesson } from '../services/lessonStore.js';
 
 const fallbackLesson = {
@@ -126,6 +127,10 @@ export function LessonScreen({ lessonRevision = 0 }) {
           <strong>{activeSection + 1}/{lessonSections.length}</strong>
         </div>
         <i><b style={{ width: `${currentProgress}%` }} /></i>
+      </section>
+
+      <section className="lesson-practice-mount">
+        <PracticeLauncher lesson={lesson} />
       </section>
 
       <LessonRenderer lesson={lesson} />
