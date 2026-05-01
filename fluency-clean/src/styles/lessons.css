@@ -73,15 +73,19 @@
 .fluency-quiz-card textarea,
 .fluency-quiz-speaking input { width: 100%; min-height: 92px; resize: vertical; border: 1px solid rgba(147,160,213,.20); border-radius: 20px; background: rgba(2,6,23,.34); color: #fff; padding: 15px; font-size: 17px; outline: none; }
 .fluency-quiz-speaking { display: grid; gap: 11px; }
-.fluency-quiz-speaking button { min-height: 76px; display: inline-flex; align-items: center; justify-content: center; gap: 10px; border: 0; border-radius: 24px; background: linear-gradient(135deg, #68a1ff, #a78bfa); color: white; font-size: 20px; font-weight: 950; box-shadow: 0 16px 40px rgba(91,156,246,.25); }
+.fluency-quiz-speaking button,
+.fluency-quiz-dictation button { min-height: 62px; display: inline-flex; align-items: center; justify-content: center; gap: 10px; border: 0; border-radius: 20px; background: linear-gradient(135deg, #68a1ff, #a78bfa); color: white; font-size: 18px; font-weight: 950; box-shadow: 0 16px 40px rgba(91,156,246,.25); }
+.fluency-quiz-dictation { display: grid; gap: 11px; }
 .fluency-quiz-feedback { display: flex; gap: 11px; align-items: flex-start; padding: 14px; border-radius: 18px; }
 .fluency-quiz-feedback.right { color: #bbf7d0; background: rgba(34,197,94,.13); border: 1px solid rgba(34,197,94,.30); }
 .fluency-quiz-feedback.wrong { color: #fecaca; background: rgba(248,113,113,.12); border: 1px solid rgba(248,113,113,.30); }
+.fluency-quiz-feedback.near { color: #fde68a; background: rgba(251,191,36,.12); border: 1px solid rgba(251,191,36,.28); }
 .fluency-quiz-feedback strong { display: block; font-size: 15px; }
 .fluency-quiz-feedback small { display: block; margin-top: 4px; color: inherit; opacity: .9; line-height: 1.4; }
-.fluency-quiz-actions { display: flex; justify-content: flex-end; }
+.fluency-quiz-actions { display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap; }
 .fluency-quiz-actions button,
 .fluency-quiz-finish button { min-height: 50px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 0 18px; border: 0; border-radius: 16px; background: linear-gradient(135deg, #68a1ff, #a78bfa); color: white; font-size: 16px; font-weight: 950; }
+.fluency-quiz-actions button.secondary { background: rgba(255,255,255,.08); color: #fde68a; border: 1px solid rgba(251,191,36,.28); }
 .fluency-quiz-finish { display: grid; justify-items: center; gap: 12px; text-align: center; padding: 16px 6px; }
 .fluency-quiz-finish svg { color: #47dc84; }
 .fluency-quiz-finish h3 { font-size: 30px; }
