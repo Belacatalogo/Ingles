@@ -33,7 +33,41 @@ Regra operacional:
 
 ## Estado atual implementado
 
-### BLOCO-SPEAKING-2-LAB — Speaking por nível e registro real IMPLEMENTADO, aguardando teste no iPhone
+### AJUSTE BLOCO-SPEAKING-2-LAB — Gravação segura no iPhone e resposta não cortada IMPLEMENTADO, aguardando teste
+
+Contexto do teste:
+- usuário falou uma frase completa, mas o Azure reconheceu só pedaços como “Like.” e “Me family.”;
+- isso fazia a conversa avançar/concluir com áudio parcial;
+- provável causa: parada rápida da gravação/coleta incompleta de chunks no iPhone e referência aberta demais para avaliação.
+
+Arquivos alterados:
+- `fluency-clean/src/screens/SpeakingScreen.jsx`
+- `fluency-clean/src/services/recorder.js`
+- `REWRITE_HANDOFF.md`
+
+Correção aplicada:
+- `recorder.js` agora inicia `MediaRecorder` com coleta contínua de chunks (`start(250)`);
+- antes de parar, chama `requestData()` e espera um pequeno intervalo para capturar o último pedaço do áudio;
+- gravação usa `echoCancellation`, `noiseSuppression` e `autoGainControl`;
+- Speaking agora exige tempo mínimo de aproximadamente 3 segundos antes de permitir analisar;
+- se o usuário tocar para parar cedo demais, mostra aviso e continua gravando;
+- conversa A1 agora usa pergunta + frase-modelo de resposta;
+- Azure avalia a fala contra a frase-modelo A1, não contra a pergunta do robô;
+- se o Azure reconhecer menos de 2 palavras, a tentativa não conta e a sessão não avança;
+- app pede para gravar de novo em vez de aceitar resposta cortada;
+- conclusão da sessão só conta tentativas válidas.
+
+Teste recomendado:
+1. abrir Speaking no iPhone;
+2. iniciar uma nova sessão;
+3. tocar no microfone e falar uma frase completa;
+4. tentar parar antes de 3 segundos e confirmar que aparece aviso;
+5. gravar novamente falando a frase inteira e esperar um instante antes de parar;
+6. confirmar que o texto reconhecido aparece mais completo;
+7. confirmar que respostas muito curtas/cortadas não avançam a sessão;
+8. concluir 5 respostas válidas e conferir “Conversação concluída hoje”.
+
+### BLOCO-SPEAKING-2-LAB — Speaking por nível e registro real IMPLEMENTADO
 
 Arquivos alterados:
 - `fluency-clean/src/screens/SpeakingScreen.jsx`
@@ -45,27 +79,13 @@ Arquivos alterados:
 
 Correção aplicada:
 - Conversa não usa mais cenário B1 fixo quando o aluno está em A1;
-- A1 agora usa prompts simples: nome, país/cidade, rotina da manhã, comida preferida e família;
+- A1 agora usa prompts simples;
 - Pronúncia também usa frases A1 quando o nível atual é A1;
 - Imersão foi mantida em cenários A1 simples;
 - Conversa registra sessão real ao completar 5 respostas analisadas ou 3 minutos de prática;
 - registro real salvo em `progress.speakingSessions`;
-- registro inclui `level`, `scenario`, `mode`, `spokenCount`, `durationMs`, `averageScore`, `completedAt` e tentativas resumidas;
-- se já houver sessão real de Speaking hoje para a aula/nível atual, a aba abre mostrando “Conversação concluída hoje”;
-- botão “Nova sessão” permite praticar de novo sem apagar o registro anterior;
-- tela Hoje agora marca Conversação como concluída somente se existir sessão real de Speaking hoje;
+- Hoje marca Conversação como concluída somente se existir sessão real de Speaking hoje;
 - não houve alteração no backend Azure privado.
-
-Teste recomendado:
-1. aguardar deploy Ready da `rewrite-fluency-clean-lab`;
-2. abrir Speaking no iPhone;
-3. confirmar que o cenário da conversa aparece como A1, sem B1/past continuous;
-4. gravar 5 respostas curtas;
-5. confirmar que aparece “Conversação concluída hoje”;
-6. voltar para Hoje;
-7. confirmar que Conversação aparece como “Conversação real concluída hoje”;
-8. voltar para Speaking e confirmar que a tela ainda mostra concluída;
-9. tocar “Nova sessão” e confirmar que começa uma nova prática limpa.
 
 ### AJUSTE BLOCO-CARTAS-2-LAB — Restaurar sessão concluída ao voltar de Hoje IMPLEMENTADO E VALIDADO PELO USUÁRIO
 
@@ -88,13 +108,6 @@ Correção aplicada:
 - normalização dos exercícios aceita `options`, `choices`, `alternatives`, `answers`, `multipleChoiceOptions` e `possibleAnswers`;
 - resposta correta aceita `answer`, `expectedAnswer`, `correctAnswer`, `correct`, `solution`, `rightAnswer`, `answerText` ou `answerKey`;
 - respostas como `A`, `B`, `1` ou `2` são mapeadas para a alternativa correspondente.
-
-### AJUSTE BLOCO-10C-LAB — Respostas e botão “Ver resposta” IMPLEMENTADO
-
-Correção aplicada:
-- resposta esperada só aparece quando o aluno toca em “Ver resposta”;
-- digitar no campo não revela mais a resposta automaticamente;
-- botão “Ver resposta” ficou compacto em pílula.
 
 ### BLOCO-10A-LAB — Quality Gate Pedagógico Local IMPLEMENTADO
 
@@ -119,4 +132,4 @@ Comportamento:
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Use o PROTOCOLO ECONÔMICO DE DEPLOY: cada bloco deve virar 1 commit único, com handoff atualizado no mesmo commit. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. Já foram implementados o BLOCO-10A-LAB, os ajustes do BLOCO-10C-LAB, o BLOCO-CARTAS-2-LAB e o BLOCO-SPEAKING-2-LAB. Validar primeiro no iPhone. Próximo bloco depois da validação: BLOCO-CARTAS-3-LAB. Depois seguir a ordem: 10B, 12, 14, 11, 13, 17, 16, 15, 20. Não delete `rewrite-fluency-clean-lab` nem `rewrite-fluency-clean`. A produção/main ainda NÃO foi validada no Vercel. Validar primeiro a lab no iPhone, depois sincronizar para `rewrite-fluency-clean`, testar o link estável e só depois decidir nova ida para `main`. Rollback da main: `5047bae031f20ddd9604953dcd3fd821655e56fa`."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Use o PROTOCOLO ECONÔMICO DE DEPLOY: cada bloco deve virar 1 commit único, com handoff atualizado no mesmo commit. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. Já foram implementados o BLOCO-10A-LAB, ajustes do BLOCO-10C-LAB, BLOCO-CARTAS-2-LAB, BLOCO-SPEAKING-2-LAB e ajuste de gravação segura no iPhone. Validar primeiro no iPhone. Próximo bloco depois da validação: BLOCO-CARTAS-3-LAB. Depois seguir a ordem: 10B, 12, 14, 11, 13, 17, 16, 15, 20. Não delete `rewrite-fluency-clean-lab` nem `rewrite-fluency-clean`. A produção/main ainda NÃO foi validada no Vercel. Validar primeiro a lab no iPhone, depois sincronizar para `rewrite-fluency-clean`, testar o link estável e só depois decidir nova ida para `main`. Rollback da main: `5047bae031f20ddd9604953dcd3fd821655e56fa`."

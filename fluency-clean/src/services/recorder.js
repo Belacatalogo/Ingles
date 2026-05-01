@@ -19,7 +19,13 @@ export async function startRecording() {
   }
 
   try {
-    activeStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    activeStream = await navigator.mediaDevices.getUserMedia({
+      audio: {
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: true,
+      },
+    });
     chunks = [];
 
     const mimeType = MediaRecorder.isTypeSupported?.('audio/webm') ? 'audio/webm' : '';
@@ -29,11 +35,11 @@ export async function startRecording() {
       if (event.data?.size) chunks.push(event.data);
     };
 
-    activeRecorder.start();
+    activeRecorder.start(250);
     diagnostics.setPhase('gravando áudio', 'recording');
-    diagnostics.log('Gravação iniciada.', 'info');
+    diagnostics.log('Gravação iniciada com coleta contínua de chunks.', 'info');
 
-    return { ok: true };
+    return { ok: true, startedAt: Date.now() };
   } catch (error) {
     diagnostics.log(`Erro ao iniciar gravação: ${error?.message || error}`, 'error');
     return { ok: false, error: error?.message || String(error) };
@@ -47,11 +53,14 @@ export function stopRecording() {
       return;
     }
 
-    activeRecorder.onstop = () => {
-      const blob = new Blob(chunks, { type: activeRecorder.mimeType || 'audio/webm' });
+    const recorder = activeRecorder;
+    const stream = activeStream;
+
+    recorder.onstop = () => {
+      const blob = new Blob(chunks, { type: recorder.mimeType || 'audio/webm' });
       chunks = [];
 
-      activeStream?.getTracks?.().forEach((track) => track.stop());
+      stream?.getTracks?.().forEach((track) => track.stop());
       activeStream = null;
       activeRecorder = null;
 
@@ -60,7 +69,15 @@ export function stopRecording() {
       resolve({ ok: true, audioBlob: blob });
     };
 
-    activeRecorder.stop();
+    try { recorder.requestData?.(); } catch (_) {}
+    setTimeout(() => {
+      try {
+        if (recorder.state !== 'inactive') recorder.stop();
+      } catch (error) {
+        diagnostics.log(`Erro ao parar gravação: ${error?.message || error}`, 'error');
+        resolve({ ok: false, error: error?.message || String(error) });
+      }
+    }, 140);
   });
 }
 
