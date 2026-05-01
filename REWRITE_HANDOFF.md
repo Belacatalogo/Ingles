@@ -47,7 +47,63 @@ Princípio máximo:
 
 ## BLOCO ATUAL
 
-### `BLOCO-LISTENING-ORDEM-1-LAB` — Ordem da aula Listening e conceito recolhido IMPLEMENTADO, aguardando deploy/teste
+### `BLOCO-ANTI-FALSO-DOMÍNIO-LAB` — Reparo local contra falso domínio IMPLEMENTADO, aguardando deploy/teste
+
+Contexto:
+- usuário viu no painel `Qualidade visível` o ponto de atenção: risco de falso domínio por excesso de reconhecimento e pouca produção;
+- apesar da nota alta, a aula ainda podia fazer o aluno acertar por múltipla escolha sem produzir sozinho;
+- objetivo: quando esse risco aparecer, a aula deve ser reparada antes de salvar, adicionando recuperação ativa e produção real.
+
+Arquivos criados:
+- `fluency-clean/src/services/antiFalseDomainRepair.js`
+
+Arquivos alterados:
+- `fluency-clean/src/components/lesson/LessonGeneratorPanel.jsx`
+- `REWRITE_HANDOFF.md`
+
+O que foi implementado:
+- novo serviço modular `antiFalseDomainRepair.js`;
+- função `needsAntiFalseDomainRepair()` detecta risco por:
+  - issue do professor revisor com `falso domínio` / `pouca produção` / `excesso de reconhecimento`;
+  - nota `antiIllusion` baixa;
+  - excesso de múltipla escolha;
+  - poucos exercícios abertos ou poucos prompts de produção;
+- função `repairLessonAgainstFalseDomain()` adiciona exercícios de produção ativa sem alternativas;
+- reparo é adaptado por tipo de aula:
+  - listening: escrever frase ouvida, palavras-chave, frase de shadowing, ideia principal em inglês simples;
+  - grammar: criar frase afirmativa, transformar em pergunta, corrigir erro, criar frase pessoal;
+  - reading: resumir de memória, criar frase com vocabulário, parafrasear detalhe, responder ideia principal;
+  - writing: escrever versão própria, reescrever frase, autocorrigir, usar palavra nova;
+  - speaking: falar sem ler, repetir frase difícil, responder em voz alta, criar frase própria;
+- o fluxo de geração em `LessonGeneratorPanel.jsx` agora faz:
+  1. gerar aula planejada;
+  2. validar pedagogicamente;
+  3. professor revisor avaliar;
+  4. se houver risco de falso domínio, aplicar reparo local;
+  5. revalidar pedagogicamente;
+  6. professor revisor reavaliar;
+  7. salvar com contrato `+anti-false-domain-v1` quando aplicado;
+- metadados salvos incluem:
+  - `antiFalseDomainRepaired`;
+  - `antiFalseDomain` na aula;
+  - `quality.antiFalseDomainRepair`;
+  - quantidade de exercícios/prompt de produção adicionados;
+- diagnóstico mostra quando o reparo foi aplicado.
+
+Commits:
+- `f3fb92056807af8b710a9cfcaeef7b22fb4308dc` — adiciona reparador anti falso domínio;
+- `41e6834752f87c5bebc4c37c7e17252e131b93c9` — integra reparo anti falso domínio na geração.
+
+Teste recomendado no iPhone:
+1. aguardar deploy da branch lab;
+2. gerar uma aula nova, preferencialmente Listening;
+3. observar o diagnóstico durante a geração;
+4. confirmar se aparece mensagem de reparo anti falso domínio quando o professor detectar risco;
+5. abrir o painel `Qualidade visível` e verificar se contrato pode mostrar `anti-false-domain-v1`;
+6. abrir a aula e confirmar que existem exercícios abertos sem alternativas, além dos exercícios de escolha;
+7. confirmar que as respostas não aparecem antes da tentativa na tela da aula.
+
+### `BLOCO-LISTENING-ORDEM-1-LAB` — Ordem da aula Listening e conceito recolhido IMPLEMENTADO, aguardando teste
 
 Contexto:
 - usuário testou a aula no iPhone e achou o bloco `Conceito e explicação` pesado demais;
@@ -82,15 +138,6 @@ Commits:
 - `6352cd9795558a60c7b5d07177522123a4cada0b` — reorganiza aula listening e recolhe conceito por padrão;
 - `0894dd905d19cac96a5d71258b807bc5cb43a18a` — compacta conceito e feedback dos exercícios listening.
 
-Teste recomendado no iPhone:
-1. aguardar deploy da branch lab;
-2. abrir uma aula Listening gerada;
-3. confirmar que `Conceito e explicação` não abre sozinho;
-4. confirmar que o início da aula mostra escuta guiada e texto;
-5. abrir vocabulário, exercícios, shadowing e finalizar;
-6. confirmar que respostas de exercícios não aparecem antes da escolha;
-7. confirmar que o botão `Concluir Listening` aparece apenas no bloco final.
-
 ### `BLOCO-17-LAB` — Qualidade visível da aula IMPLEMENTADO
 
 Contexto:
@@ -122,33 +169,6 @@ O que foi implementado:
 - CSS foi integrado ao `lesson-polish.css`, sem criar sobreposição visual.
 
 ### `BLOCO-13-LAB` — Professor Gerador/Revisor IMPLEMENTADO
-
-Contexto:
-- usuário quer maior garantia de que não está perdendo tempo com aulas rasas;
-- após o plano pedagógico, faltava uma camada de professor revisor antes de salvar a aula;
-- o objetivo é detectar coerência, profundidade, alinhamento da habilidade, exercícios fracos, falso domínio e dificuldade inadequada.
-
-Arquivos criados:
-- `fluency-clean/src/services/teacherReviewer.js`
-
-Arquivos alterados:
-- `fluency-clean/src/components/lesson/LessonGeneratorPanel.jsx`
-- `REWRITE_HANDOFF.md`
-
-O que foi implementado:
-- `teacherReviewer.js` avalia a aula como um professor;
-- critérios do professor revisor:
-  - coerência entre objetivo, cenário e conteúdo;
-  - profundidade de seções, vocabulário e produção;
-  - utilidade real dos exercícios;
-  - alinhamento com o tipo da aula: listening, grammar, reading, writing ou speaking;
-  - risco de falso domínio por excesso de múltipla escolha e pouca produção;
-  - segurança de nível para A1/A2;
-- detecta pergunta fraca de spelling quando a alternativa entrega a resposta pronta;
-- gera `teacherReview` com nota final, nota do professor, issues e aprovação;
-- fluxo agora: gerar aula planejada → validar rubricamente → reparar se necessário → professor revisor → reparar se necessário → salvar se aprovado;
-- contrato salvo agora pode aparecer como `lesson-contract-v1+lesson-plan-v1+teacher-reviewer-v1`;
-- qualidade salva agora inclui `teacherScore`, `teacherApproved`, `teacherIssues` e `reviewer`.
 
 ### `BLOCO-11-LAB` — Plano primeiro, aula depois IMPLEMENTADO
 
@@ -197,7 +217,7 @@ Pendente técnica:
 
 ## NOVA ORDEM DE BLOCOS — QUALIDADE REAL DAS AULAS
 
-1. `BLOCO-LISTENING-ORDEM-1-LAB` — Ordem da aula Listening e conceito recolhido. STATUS: implementado, aguardando teste.
+1. `BLOCO-ANTI-FALSO-DOMÍNIO-LAB` — Reparo local contra falso domínio. STATUS: implementado, aguardando teste.
 2. `BLOCO-16-LAB` — Histórico real de Speaking.
 3. `BLOCO-15-LAB` — Banco de erros real.
 4. `BLOCO-20-LAB` — Certificação por nível.
@@ -258,6 +278,7 @@ Ordem recomendada após os blocos principais:
 
 ## Pendência técnica importante
 
+- testar deploy do `BLOCO-ANTI-FALSO-DOMÍNIO-LAB` no iPhone;
 - testar deploy do `BLOCO-LISTENING-ORDEM-1-LAB` no iPhone;
 - remover definitivamente `ListeningLesson.jsx` antigo quando o conector permitir SHA correto;
 - confirmar se o painel de qualidade não ficou pesado no iPhone;
@@ -265,4 +286,4 @@ Ordem recomendada após os blocos principais:
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O bloco atual implementado foi `BLOCO-LISTENING-ORDEM-1-LAB`: `ListeningLessonClean.jsx` agora começa com escuta guiada e texto, deixa conceito fechado por padrão, renderiza vocabulário, exercícios, shadowing e finalizar nessa ordem, com o botão concluir apenas no bloco final. Próximo passo: testar deploy no iPhone; se ok, seguir para `BLOCO-16-LAB` Histórico real de Speaking."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O bloco atual implementado foi `BLOCO-ANTI-FALSO-DOMÍNIO-LAB`: foi criado `antiFalseDomainRepair.js` e integrado em `LessonGeneratorPanel.jsx`; se o professor detectar falso domínio, a aula ganha exercícios de produção ativa antes de salvar e o contrato pode receber `anti-false-domain-v1`. Testar no iPhone; se ok, seguir para `BLOCO-16-LAB` Histórico real de Speaking."
