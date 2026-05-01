@@ -56,22 +56,58 @@ Diretriz visual nova:
 
 ## BLOCO ATUAL
 
-### `BLOCO-PRACTICE-REBUILD-7B-LAB` — Saneamento pedagógico e polimento mobile IMPLEMENTADO, aguardando validação no iPhone
+### `BLOCO-PRACTICE-REBUILD-8-LAB` — Persistência, progresso e revisão IMPLEMENTADO, aguardando deploy/teste no iPhone
 
-Contexto do teste do usuário:
-- bloco 7 entrou corretamente e o motor novo foi usado;
-- a prática fullscreen está bonita e funcional;
-- ainda apareceram algumas alternativas estranhas/truncadas;
-- o ditado estava exigindo frase longa demais para A1 inicial;
-- ao digitar no iPhone, teclado/campo/rodapé podiam ficar sobrepostos.
+Contexto:
+- bloco 7 foi validado: motor novo entrou e a prática fullscreen está funcionando;
+- bloco 7B foi validado pelo usuário como funcionando perfeitamente;
+- agora a prática precisava deixar de ser apenas visual e passar a registrar histórico real.
 
 Análise antes da alteração:
-- `makeMeaningOptions()` ainda usava distratores genéricos como `frase`, `pergunta`, `som`, causando alternativas pobres ou estranhas;
-- `makeSentenceOptions()` aceitava frases grandes demais para cards mobile;
-- `listeningBuilder.js` criava ditado com frases inteiras logo em A1 inicial;
-- `PracticeQualityGate.js` ainda permitia alternativa genérica e ditado longo;
-- `PracticePlanAdapter.js` precisava de um último filtro de segurança para bloquear opções que escapassem dos builders;
-- `practice-fullscreen.css` precisava de modo especial para teclado do iPhone.
+- `PracticeFullscreen.jsx` já retornava `results`, `lives`, `reviewMode`, `correct`, `total`;
+- `PracticeLauncher.jsx` ainda contava exercícios usando `PracticeEngine.js` antigo, apesar de o fullscreen usar o adapter novo;
+- `progressStore.js` tinha histórico de aula, flashcards e speaking, mas não tinha histórico de prática fullscreen;
+- `ProgressScreen.jsx` não exibia precisão, vidas ou erros da prática.
+
+Arquivos criados:
+- `fluency-clean/src/components/progress/PracticeProgressSummary.jsx`
+
+Arquivos alterados:
+- `fluency-clean/src/services/progressStore.js`
+- `fluency-clean/src/practice/PracticeLauncher.jsx`
+- `fluency-clean/src/screens/ProgressScreen.jsx`
+- `fluency-clean/src/styles/progress-polish.css`
+- `REWRITE_HANDOFF.md`
+
+O que foi implementado:
+- novo storage `progress.practiceSessions`;
+- função `recordPracticeSession()`;
+- função `getPracticeSessions()`;
+- função `getPracticeSessionsForLesson()`;
+- função `getPracticeReviewQueue()`;
+- função `hasPracticeSessionToday()`;
+- sessão de prática salva: aula, tipo, nível, data, total, acertos, erros, precisão, vidas, modo revisão, itens fracos e resultados compactos;
+- `PracticeLauncher.jsx` agora usa `PracticePlanAdapter.js` também para contar exercícios, não mais `PracticeEngine.js`;
+- ao concluir a prática fullscreen, `PracticeLauncher.jsx` grava a sessão real com `recordPracticeSession()`;
+- card da prática passa a mostrar `Prática registrada`, acertos, precisão, vidas e melhor sessão;
+- botão muda para `Revisar novamente` quando já há sessão salva;
+- criada seção `PracticeProgressSummary` na aba Progresso;
+- aba Progresso agora mostra precisão média, exercícios feitos, erros para revisar, última sessão e fila de revisão;
+- estilos novos para resumo de prática e estado de prática concluída.
+
+Teste recomendado no iPhone:
+1. abrir uma aula;
+2. entrar na prática fullscreen;
+3. responder algumas questões e concluir;
+4. voltar para a aula e confirmar se o card mudou para `Prática registrada`;
+5. confirmar se aparecem acertos, precisão e vidas;
+6. clicar em `Revisar novamente` e garantir que abre a prática de novo;
+7. ir na aba Progresso e confirmar a seção `Prática profunda`;
+8. confirmar se aparecem última prática e fila de revisão caso tenha errado algo.
+
+### `BLOCO-PRACTICE-REBUILD-7B-LAB` — Saneamento pedagógico e polimento mobile IMPLEMENTADO E VALIDADO PELO USUÁRIO
+
+O usuário confirmou que funcionou perfeitamente.
 
 Arquivos alterados:
 - `fluency-clean/src/practice/core/builders/builderUtils.js`
@@ -79,39 +115,8 @@ Arquivos alterados:
 - `fluency-clean/src/practice/core/PracticeQualityGate.js`
 - `fluency-clean/src/practice/PracticePlanAdapter.js`
 - `fluency-clean/src/styles/practice-fullscreen.css`
-- `REWRITE_HANDOFF.md`
 
-O que foi implementado:
-- adicionados bloqueios para distratores genéricos: `resposta`, `pergunta`, `frase`, `palavra`, `answer`, `question`, `sentence`, etc.;
-- `makeWordOptions()` agora limita opções a termos compactos;
-- `makeSentenceOptions()` agora limita frases por quantidade de palavras e caracteres;
-- `makeMeaningOptions()` agora usa preferencialmente vocabulário real da aula e fallback curto/seguro;
-- criado `getA1DictationUnits()` para ditados A1 com palavra, keyword ou frase muito curta;
-- `makeVocabularyQuestions()` ignora significados longos demais;
-- `makeExistingExerciseQuestions()` evita transformar respostas longas em múltipla escolha;
-- `listeningBuilder.js` detecta A1 inicial e reduz dificuldade;
-- em A1 inicial, ditado passa a usar palavras/trechos curtos antes de frases;
-- `listeningBuilder.js` usa `shortSentences` para word bank, fill blank e shadowing;
-- `PracticeQualityGate.js` bloqueia alternativas genéricas/truncadas;
-- `PracticeQualityGate.js` reduz limite de ditado para 64 caracteres e 8 palavras;
-- `PracticeQualityGate.js` reduz frases de fala longas demais;
-- `PracticePlanAdapter.js` filtra opções na camada final antes da UI;
-- `PracticePlanAdapter.js` bloqueia alternativa `resposta/...` e opções longas demais;
-- `PracticePlanAdapter.js` impede ditado renderizável acima de 64 caracteres/8 palavras;
-- CSS recebeu modo `:has(.practice-textarea:focus)` e `:has(.practice-speak-box input:focus)` para iOS;
-- no modo teclado, vidas somem temporariamente, pergunta compacta, áudio reduz, textarea menor e feedback fica fixo com menos altura;
-- objetivo: evitar sobreposição com o teclado do iPhone.
-
-Teste recomendado no iPhone:
-1. abrir a prática da aula A1 Listening;
-2. verificar se alternativas tipo `resposta/...` sumiram;
-3. verificar se vocabulário mostra opções curtas e naturais;
-4. chegar em ditado e confirmar se agora pede palavra ou frase curta, não frase longa;
-5. tocar no campo de escrita com teclado aberto;
-6. confirmar se o botão/feedback não cobre o campo;
-7. testar erro e acerto para confirmar vidas e feedback.
-
-### `BLOCO-PRACTICE-REBUILD-7-LAB` — Integração limpa com aulas usando motor novo IMPLEMENTADO E VALIDADO PARCIALMENTE
+### `BLOCO-PRACTICE-REBUILD-7-LAB` — Integração limpa com aulas usando motor novo IMPLEMENTADO E VALIDADO
 
 O bloco 7 foi validado pelo usuário: a prática passou a usar o motor novo, com 26 questões e vidas visíveis.
 
@@ -120,16 +125,6 @@ Arquivos criados:
 
 Arquivos alterados:
 - `fluency-clean/src/practice/PracticeFullscreen.jsx`
-
-O que foi implementado:
-- adapter entre `src/practice/core/` e UI;
-- fallback seguro para `PracticeEngine.js` antigo;
-- `write` renderizado como texto;
-- `sourceEngine` salvo por resposta.
-
-Importante:
-- `PracticeEngine.js` ainda não foi removido;
-- ele permanece como fallback seguro até validação completa.
 
 ### `BLOCO-PRACTICE-REBUILD-6-LAB` — Componentes por tipo de exercício IMPLEMENTADO
 
@@ -144,47 +139,15 @@ Arquivos criados/confirmados:
 - `fluency-clean/src/practice/components/AudioPrompt.jsx`
 - `fluency-clean/src/practice/components/PracticeFeedback.jsx`
 
-Arquivos alterados:
-- `fluency-clean/src/practice/PracticeFullscreen.jsx`
-
 ### `BLOCO-PRACTICE-REBUILD-5-LAB` — Sistema de vidas e erro pedagógico IMPLEMENTADO
-
-Arquivos alterados:
-- `fluency-clean/src/practice/PracticeFullscreen.jsx`
-- `fluency-clean/src/styles/practice-fullscreen.css`
 
 ### `BLOCO-PRACTICE-REBUILD-4-LAB` — UI fullscreen elegante do Fluency IMPLEMENTADO E VISUAL APROVADO PELO USUÁRIO
 
-Arquivos alterados:
-- `fluency-clean/src/practice/PracticeFullscreen.jsx`
-- `fluency-clean/src/styles/practice-fullscreen.css`
-
 ### `BLOCO-PRACTICE-REBUILD-3-LAB` — Quality gate forte de questões IMPLEMENTADO
-
-Arquivos alterados:
-- `fluency-clean/src/practice/core/PracticeQualityGate.js`
-- `fluency-clean/src/practice/core/PracticeBuilder.js`
 
 ### `BLOCO-PRACTICE-REBUILD-2-LAB` — Builder pedagógico por fases IMPLEMENTADO COMO BASE
 
-Arquivos criados:
-- `fluency-clean/src/practice/core/builders/builderUtils.js`
-- `fluency-clean/src/practice/core/builders/listeningBuilder.js`
-- `fluency-clean/src/practice/core/builders/readingBuilder.js`
-- `fluency-clean/src/practice/core/builders/grammarBuilder.js`
-- `fluency-clean/src/practice/core/builders/writingBuilder.js`
-- `fluency-clean/src/practice/core/builders/speakingBuilder.js`
-
 ### `BLOCO-PRACTICE-REBUILD-1-LAB` — Arquitetura limpa da prática IMPLEMENTADO COMO FUNDAÇÃO
-
-Arquivos criados:
-- `fluency-clean/src/practice/core/PracticeTypes.js`
-- `fluency-clean/src/practice/core/PracticeNormalizer.js`
-- `fluency-clean/src/practice/core/PracticeQualityGate.js`
-- `fluency-clean/src/practice/core/PracticeAnswerChecker.js`
-- `fluency-clean/src/practice/core/PracticeSessionState.js`
-- `fluency-clean/src/practice/core/PracticeBuilder.js`
-- `fluency-clean/src/practice/core/index.js`
 
 ## NOVA ORDEM DE BLOCOS — REFORMULAÇÃO DA PRÁTICA
 
@@ -194,15 +157,15 @@ Arquivos criados:
 4. `BLOCO-PRACTICE-REBUILD-4-LAB` — UI fullscreen elegante do Fluency. STATUS: implementado e visual aprovado.
 5. `BLOCO-PRACTICE-REBUILD-5-LAB` — Sistema de vidas e erro pedagógico. STATUS: implementado.
 6. `BLOCO-PRACTICE-REBUILD-6-LAB` — Componentes por tipo de exercício. STATUS: implementado.
-7. `BLOCO-PRACTICE-REBUILD-7-LAB` — Integração limpa com aulas. STATUS: implementado e validado parcialmente.
-7B. `BLOCO-PRACTICE-REBUILD-7B-LAB` — Saneamento pedagógico e polimento mobile. STATUS: implementado, aguardando teste.
-8. `BLOCO-PRACTICE-REBUILD-8-LAB` — Persistência, progresso e revisão.
+7. `BLOCO-PRACTICE-REBUILD-7-LAB` — Integração limpa com aulas. STATUS: implementado e validado.
+7B. `BLOCO-PRACTICE-REBUILD-7B-LAB` — Saneamento pedagógico e polimento mobile. STATUS: implementado e validado.
+8. `BLOCO-PRACTICE-REBUILD-8-LAB` — Persistência, progresso e revisão. STATUS: implementado, aguardando teste.
 9. `BLOCO-PRACTICE-REBUILD-9-LAB` — Limpeza final e remoção de legado.
 10. `BLOCO-PRACTICE-REBUILD-10-LAB` — Teste completo no iPhone.
 
 ## Pendência técnica importante
 
-- validar bloco 7B no iPhone;
+- validar bloco 8 no iPhone;
 - limpar estruturalmente `ListeningLesson.jsx`;
 - remover prática antiga oculta por CSS;
 - remover `PracticeEngine.js` somente depois de validação completa do adapter/core;
@@ -223,4 +186,4 @@ Arquivos criados:
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. Os blocos `BLOCO-PRACTICE-REBUILD-1-LAB` a `7B` foram implementados. O bloco 4 redesenhou o fullscreen premium e foi aprovado visualmente. O bloco 7 conectou o motor novo e foi validado parcialmente pelo usuário. O bloco 7B saneou alternativas, reduziu dificuldade de ditado A1 e ajustou teclado iOS. Próximo passo: verificar deploy e testar 7B no iPhone. Se aprovado, seguir para `BLOCO-PRACTICE-REBUILD-8-LAB`, persistência, progresso e revisão."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. Os blocos `BLOCO-PRACTICE-REBUILD-1-LAB` a `8` foram implementados. O bloco 7 conectou o motor novo e foi validado. O bloco 7B saneou alternativas e foi validado pelo usuário. O bloco 8 adicionou persistência real da prática: `recordPracticeSession`, histórico `progress.practiceSessions`, card de prática registrada e seção `Prática profunda` na aba Progresso. Próximo passo: verificar deploy e testar bloco 8 no iPhone. Se aprovado, seguir para `BLOCO-PRACTICE-REBUILD-9-LAB`, limpeza final e remoção de legado com muito cuidado."
