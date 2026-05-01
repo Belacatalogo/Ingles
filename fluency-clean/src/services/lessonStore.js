@@ -36,6 +36,8 @@ export function saveGenerationStatus(status = {}) {
     contractVersion: status.contractVersion || '',
     pedagogicalScore: Number(status.pedagogicalScore || 0),
     source: status.source || 'unknown',
+    variationMode: Boolean(status.variationMode),
+    generationSeed: status.generationSeed || '',
     createdAt: status.createdAt || new Date().toISOString(),
   };
   storage.set(LAST_GENERATION_STATUS_KEY, payload);
@@ -47,17 +49,21 @@ export function saveCurrentLesson(lesson, meta = {}) {
   const normalized = normalizeLesson(lesson);
   const previous = storage.get(CURRENT_LESSON_KEY, null);
   const existingMeta = previous?.generationMeta && typeof previous.generationMeta === 'object' ? previous.generationMeta : {};
+  const variationMode = Boolean(meta.variationMode || lesson?.variationMode || lesson?.generationMeta?.variationMode);
   const generationMeta = {
     ...existingMeta,
-    id: meta.generationId || lesson?.generationMeta?.id || existingMeta.id || makeGenerationId(now),
-    source: meta.source || lesson?.generationMeta?.source || existingMeta.source || 'generated',
+    id: meta.generationId || lesson?.generationMeta?.id || makeGenerationId(now),
+    source: meta.source || lesson?.generationMeta?.source || 'generated',
     status: meta.status || lesson?.generationMeta?.status || 'new',
     generatedAt: meta.generatedAt || lesson?.generationMeta?.generatedAt || now.toISOString(),
     savedAt: now.toISOString(),
     contractVersion: meta.contractVersion || lesson?.generationMeta?.contractVersion || lesson?.quality?.contractVersion || 'lesson-contract-v1',
     pedagogicalScore: Number(meta.pedagogicalScore || lesson?.pedagogicalReview?.overallScore || lesson?.quality?.pedagogicalScore || 0),
     autoRepaired: Boolean(meta.autoRepaired || lesson?.pedagogicalReview?.autoRepaired),
-    replacedPreviousLessonId: previous?.id && previous.id !== normalized.id ? previous.id : '',
+    variationMode,
+    generationSeed: meta.generationSeed || lesson?.generationSeed || lesson?.generationMeta?.generationSeed || '',
+    replacedPreviousLessonId: previous?.id || '',
+    replacedPreviousGenerationId: previous?.generationMeta?.id || '',
   };
   const payload = { ...normalized, generationMeta };
 
@@ -66,22 +72,24 @@ export function saveCurrentLesson(lesson, meta = {}) {
   const history = storage.get(LESSON_HISTORY_KEY, []);
   const nextHistory = [
     { ...payload, savedAt: now.toISOString() },
-    ...history.filter((item) => item.id !== payload.id),
+    ...history.filter((item) => item.generationMeta?.id !== payload.generationMeta?.id),
   ].slice(0, 30);
 
   storage.set(LESSON_HISTORY_KEY, nextHistory);
   saveGenerationStatus({
     id: generationMeta.id,
     event: 'saved',
-    message: generationMeta.status === 'new' ? 'Nova aula gerada e salva.' : 'Aula salva.',
+    message: variationMode ? 'Nova versão diferente gerada e salva.' : generationMeta.status === 'new' ? 'Nova aula gerada e salva.' : 'Aula salva.',
     lessonId: payload.id,
     lessonTitle: payload.title,
     contractVersion: generationMeta.contractVersion,
     pedagogicalScore: generationMeta.pedagogicalScore,
     source: generationMeta.source,
+    variationMode: generationMeta.variationMode,
+    generationSeed: generationMeta.generationSeed,
     createdAt: generationMeta.generatedAt,
   });
-  diagnostics.log(`Aula salva: ${payload.title} · ${generationMeta.id}`, 'info');
+  diagnostics.log(`Aula salva: ${payload.title} · ${generationMeta.id}${variationMode ? ' · variação real' : ''}`, 'info');
   return payload;
 }
 
