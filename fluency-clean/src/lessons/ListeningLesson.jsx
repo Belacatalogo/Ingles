@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { BookOpen, CheckCircle2, ChevronDown, ChevronUp, Eye, Headphones, ListChecks, MessageSquareText, Pause, Play, Repeat2, RotateCcw, Save, Volume2 } from 'lucide-react';
 import { playLearningAudio, stopLearningAudio } from '../services/audioPlayback.js';
 import { diagnostics } from '../services/diagnostics.js';
@@ -136,7 +136,7 @@ export function ListeningLesson({ lesson }) {
   const [completedAt, setCompletedAt] = useState('');
   const [shadowingIndex, setShadowingIndex] = useState(0);
   const [openSections, setOpenSections] = useState({ guide: true, concept: true, vocab: false, transcript: false, practice: false, answer: false, shadowing: true });
-  const refs = { guide: useRef(null), concept: useRef(null), practice: useRef(null) };
+  const refs = { guide: useRef(null), concept: useRef(null), practice: useRef(null), shadowing: useRef(null) };
 
   const transcript = useMemo(() => splitTranscript(lesson?.listeningText), [lesson?.listeningText]);
   const questions = useMemo(() => normalizeQuestions(lesson), [lesson]);
@@ -147,15 +147,23 @@ export function ListeningLesson({ lesson }) {
   const audioText = transcript.join(' ');
   const currentShadowingLine = shadowingLines[shadowingIndex] || shadowingLines[0] || prompts[0];
 
+  useEffect(() => {
+    function handleJump(event) {
+      const target = event?.detail?.section;
+      const map = { warmup: 'guide', core: 'concept', practice: 'practice', speak: 'shadowing', review: 'answer' };
+      const id = map[target] || 'guide';
+      setOpenSections((current) => ({ ...current, [id]: true }));
+      requestAnimationFrame(() => {
+        const refKey = id === 'answer' ? 'practice' : id;
+        refs[refKey]?.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    }
+    window.addEventListener('fluency:lesson-jump', handleJump);
+    return () => window.removeEventListener('fluency:lesson-jump', handleJump);
+  }, []);
+
   function toggleSection(id) {
     setOpenSections((current) => ({ ...current, [id]: !current[id] }));
-  }
-
-  function jumpTo(area) {
-    const map = { warmup: 'guide', core: 'concept', practice: 'practice' };
-    const id = map[area] || area;
-    setOpenSections((current) => ({ ...current, [id]: true }));
-    requestAnimationFrame(() => refs[area === 'warmup' ? 'guide' : area === 'core' ? 'concept' : 'practice']?.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
   }
 
   async function handleListen() {
@@ -197,6 +205,7 @@ export function ListeningLesson({ lesson }) {
 
   function handleStop() {
     stopLearningAudio();
+    setAudioState('idle');
     setMessage('Áudio interrompido.');
   }
 
@@ -242,12 +251,6 @@ export function ListeningLesson({ lesson }) {
 
   return (
     <article className="pillar-lesson listening-lesson-v1 listening-light-layout">
-      <div className="lesson-local-tabs" aria-label="Navegação da aula Listening">
-        <button type="button" onClick={() => jumpTo('warmup')}>Aquecimento</button>
-        <button type="button" onClick={() => jumpTo('core')}>Conceito</button>
-        <button type="button" onClick={() => jumpTo('practice')}>Prática</button>
-      </div>
-
       <div ref={refs.guide}>
         <section className="pillar-card listening-audio-card listening-focus-card" id="lesson-guide">
           <div className="pillar-card-title"><Headphones size={17} /> Escuta guiada</div>
@@ -329,18 +332,20 @@ export function ListeningLesson({ lesson }) {
         {completedAt ? <small>Listening concluída às {completedAt}.</small> : null}
       </CollapsibleSection>
 
-      <CollapsibleSection id="lesson-shadowing" title="Shadowing real" icon={Repeat2} summary={`frase ${shadowingIndex + 1}/${shadowingLines.length || 1}`} open={openSections.shadowing} onToggle={() => toggleSection('shadowing')}>
-        <div className="pillar-finish-card compact-shadowing">
-          <div>
-            <p>{currentShadowingLine}</p>
-            <small>Repita tentando copiar ritmo, pausas e pronúncia.</small>
+      <div ref={refs.shadowing}>
+        <CollapsibleSection id="lesson-shadowing" title="Shadowing real" icon={Repeat2} summary={`frase ${shadowingIndex + 1}/${shadowingLines.length || 1}`} open={openSections.shadowing} onToggle={() => toggleSection('shadowing')}>
+          <div className="pillar-finish-card compact-shadowing">
+            <div>
+              <p>{currentShadowingLine}</p>
+              <small>Repita tentando copiar ritmo, pausas e pronúncia.</small>
+            </div>
+            <div className="writing-actions">
+              <button type="button" onClick={handleShadowingListen}><Volume2 size={16} /> Ouvir frase</button>
+              <button type="button" onClick={nextShadowingLine}><RotateCcw size={16} /> Próxima frase</button>
+            </div>
           </div>
-          <div className="writing-actions">
-            <button type="button" onClick={handleShadowingListen}><Volume2 size={16} /> Ouvir frase</button>
-            <button type="button" onClick={nextShadowingLine}><RotateCcw size={16} /> Próxima frase</button>
-          </div>
-        </div>
-      </CollapsibleSection>
+        </CollapsibleSection>
+      </div>
     </article>
   );
 }
