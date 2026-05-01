@@ -38,7 +38,6 @@ function getLessonTypeLabel(lesson) {
     listening: 'Escuta',
     writing: 'Escrita',
   };
-
   return labels[lesson?.type] || 'Aula';
 }
 
@@ -55,17 +54,8 @@ function getLessonStats(lesson) {
   const sectionWords = Array.isArray(lesson?.sections)
     ? lesson.sections.reduce((total, section) => total + countWords(`${section?.title || ''} ${section?.content || ''}`), 0)
     : 0;
-
-  const estimatedMinutes = Math.max(
-    8,
-    Math.ceil((mainWords + sectionWords + vocabularyCount * 18 + exerciseCount * 32 + promptCount * 24) / 95)
-  );
-
-  return {
-    minutes: estimatedMinutes,
-    exercises: exerciseCount || 0,
-    sections: sectionCount,
-  };
+  const estimatedMinutes = Math.max(8, Math.ceil((mainWords + sectionWords + vocabularyCount * 18 + exerciseCount * 32 + promptCount * 24) / 95));
+  return { minutes: estimatedMinutes, exercises: exerciseCount || 0, sections: sectionCount };
 }
 
 function LessonRenderer({ lesson }) {
@@ -90,6 +80,11 @@ export function LessonScreen({ lessonRevision = 0 }) {
   const usingGenerated = Boolean(savedLesson);
   const currentProgress = Math.round(((activeSection + 1) / lessonSections.length) * 100);
 
+  function jumpToSection(section, index) {
+    setActiveSection(index);
+    window.dispatchEvent(new CustomEvent('fluency:lesson-jump', { detail: { section: section.id } }));
+  }
+
   return (
     <section className="lesson-reference-screen">
       <section className="lesson-reference-hero">
@@ -98,18 +93,14 @@ export function LessonScreen({ lessonRevision = 0 }) {
           <span className="lesson-chip">{getLessonTypeLabel(lesson)}</span>
           <span className="lesson-chip violet">{lesson?.level || 'A1'}</span>
         </div>
-
         <h1>{getLessonTitle(lesson)}</h1>
         <p>{getLessonDescription(lesson)}</p>
-
         <footer>
           <div>
             <span><Clock size={13} /> {lessonStats.minutes} min</span>
             <span><Target size={13} /> {lessonStats.exercises} ex.</span>
           </div>
-          <button type="button" aria-label="Regenerar com IA">
-            <RefreshCw size={14} />
-          </button>
+          <button type="button" aria-label="Regenerar com IA"><RefreshCw size={14} /></button>
         </footer>
       </section>
 
@@ -120,12 +111,7 @@ export function LessonScreen({ lessonRevision = 0 }) {
             const active = index === activeSection;
             const done = index < activeSection;
             return (
-              <button
-                type="button"
-                key={section.id}
-                className={active ? 'active' : done ? 'done' : ''}
-                onClick={() => setActiveSection(index)}
-              >
+              <button type="button" key={section.id} className={active ? 'active' : done ? 'done' : ''} onClick={() => jumpToSection(section, index)}>
                 <Icon size={12} />
                 {section.title}
               </button>
