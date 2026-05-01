@@ -35,7 +35,40 @@ Nova regra operacional enquanto a reconstrução da prática estiver em andament
 
 ## BLOCO ATUAL
 
-### `BLOCO-GERAÇÃO-VARIAÇÃO-1-LAB` — Aula nova precisa variar de verdade IMPLEMENTADO, aguardando deploy/teste
+### `BLOCO-GERAÇÃO-VARIAÇÃO-2-LAB` — Bloqueio de repetição e reparo sem fallback antigo IMPLEMENTADO, aguardando deploy/teste
+
+Contexto:
+- usuário mandou print da transcrição e comprovou que a aula continuava com o mesmo roteiro: Ana, Maria, apple, book, cat;
+- investigação encontrou a causa exata em `fluency-clean/src/services/lessonRepair.js`;
+- o reparador local tinha `LISTENING_PROFILES.alphabet` hardcoded com a transcrição antiga completa;
+- quando a aula era reprovada, o reparador sobrescrevia a geração do Gemini com esse fallback fixo, destruindo qualquer variação.
+
+Arquivo alterado:
+- `fluency-clean/src/services/lessonRepair.js`
+- `REWRITE_HANDOFF.md`
+
+O que foi implementado:
+- perfil antigo foi renomeado para `alphabetClassroom` e marcado como `bannedWhenVariation`;
+- foram adicionados perfis alternativos reais para a mesma aula:
+  - `alphabetReception`: escola/recepção, Leo, Tom, map, pen, sun;
+  - `alphabetCafe`: cafeteria, Nina, Ben, tea, milk, cake;
+  - `alphabetVideoCall`: videochamada, Rita, Sam, red, bag, desk;
+- `getListeningProfile()` agora recebe `rawLesson` e detecta `variationMode`/`generationSeed`;
+- quando há variação ativa, o reparador escolhe somente perfis alternativos e não usa mais Ana/Maria/apple/book/cat;
+- a seleção usa seed para variar o perfil;
+- `repairLessonForQuality()` agora passa `rawLesson` para `getListeningProfile()`;
+- `quality` passa a registrar `repairedWithVariation` e `repairProfileTitle`.
+
+Teste recomendado:
+1. aguardar deploy;
+2. abrir geração de aula;
+3. marcar `Substituir aula atual e gerar uma versão diferente`;
+4. gerar a aula;
+5. se a aula for corrigida automaticamente, verificar que a transcrição NÃO usa mais Ana/Maria/apple/book/cat;
+6. conferir se aparece um contexto alternativo: recepção, cafeteria ou videochamada;
+7. se ainda aparecer o texto antigo, limpar cache/PWA ou verificar se o deploy correto está carregado.
+
+### `BLOCO-GERAÇÃO-VARIAÇÃO-1-LAB` — Aula nova precisa variar de verdade IMPLEMENTADO
 
 Contexto:
 - usuário confirmou que a prova visual funcionou: apareceu ID `gen-...`, contrato `lesson-contract-v1` e nota 96/100;
@@ -61,15 +94,6 @@ O que foi implementado:
 - `lessonStore.js` salva `generationSeed`, `variationMode`, `replacedPreviousLessonId` e `replacedPreviousGenerationId` dentro de `generationMeta`;
 - último status agora pode mostrar `Nova versão diferente gerada e salva.`;
 - diagnóstico registra `Variação real ativa para mesmo tema. Seed: ...`.
-
-Teste recomendado:
-1. aguardar deploy;
-2. abrir geração de aula;
-3. marcar `Substituir aula atual e gerar uma versão diferente`;
-4. gerar;
-5. no Diagnóstico, confirmar `Variação real ativa para mesmo tema. Seed: ...`;
-6. abrir Aula e verificar se o ID `gen-...` mudou;
-7. conferir se o título, contexto/roteiro e transcrição mudaram de verdade, mesmo mantendo o tema do cronograma.
 
 ### `BLOCO-GERAÇÃO-STATUS-1-LAB` — Prova visual de aula nova IMPLEMENTADO E VALIDADO PELO USUÁRIO
 
@@ -140,7 +164,7 @@ Pendente técnica:
 
 ## NOVA ORDEM DE BLOCOS — QUALIDADE REAL DAS AULAS
 
-1. `BLOCO-GERAÇÃO-VARIAÇÃO-1-LAB` — Aula nova precisa variar de verdade. STATUS: implementado, aguardando teste.
+1. `BLOCO-GERAÇÃO-VARIAÇÃO-2-LAB` — Bloqueio de repetição e reparo sem fallback antigo. STATUS: implementado, aguardando teste.
 2. `BLOCO-11-LAB` — Plano primeiro, aula depois. STATUS: próximo.
 3. `BLOCO-13-LAB` — Professor Gerador/Revisor.
 4. `BLOCO-17-LAB` — Qualidade visível da aula.
@@ -152,11 +176,11 @@ Pendente técnica:
 
 ## Pendência técnica importante
 
-- testar deploy do `BLOCO-GERAÇÃO-VARIAÇÃO-1-LAB`;
+- testar deploy do `BLOCO-GERAÇÃO-VARIAÇÃO-2-LAB`;
 - remover definitivamente `ListeningLesson.jsx` antigo quando o conector permitir SHA correto;
 - confirmar se o contrato não ficou restritivo demais para Flash/free;
 - se o contrato reprovar muitas gerações, ajustar no bloco de plano/reparo sem afrouxar qualidade.
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. Os blocos de prática e áudio foram implementados e validados. O `BLOCO-12-LAB` criou rubricas por tipo de aula. O `BLOCO-14-LAB` criou `lessonJsonContract.js` e conectou o contrato JSON rígido ao `geminiLessons.js`. O `BLOCO-GERAÇÃO-STATUS-1-LAB` foi validado: o app mostra ID gen, contrato e nota. O `BLOCO-GERAÇÃO-VARIAÇÃO-1-LAB` adicionou seed, contexto da aula anterior e instrução de variação real para gerar uma versão diferente do mesmo tema. Próximo passo: testar deploy; se ok, seguir para `BLOCO-11-LAB` plano primeiro, aula depois."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. Os blocos de prática e áudio foram implementados e validados. O `BLOCO-12-LAB` criou rubricas por tipo de aula. O `BLOCO-14-LAB` criou `lessonJsonContract.js` e conectou o contrato JSON rígido ao `geminiLessons.js`. O `BLOCO-GERAÇÃO-STATUS-1-LAB` foi validado: o app mostra ID gen, contrato e nota. O `BLOCO-GERAÇÃO-VARIAÇÃO-1-LAB` adicionou seed, contexto da aula anterior e instrução de variação real. O `BLOCO-GERAÇÃO-VARIAÇÃO-2-LAB` removeu o problema principal: o reparador local tinha fallback fixo com Ana/Maria/apple/book/cat e agora usa perfis alternativos quando há variação. Próximo passo: testar deploy; se ok, seguir para `BLOCO-11-LAB` plano primeiro, aula depois."
