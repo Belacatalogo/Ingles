@@ -56,50 +56,68 @@ Diretriz visual nova:
 
 ## BLOCO ATUAL
 
-### `BLOCO-PRACTICE-REBUILD-5-LAB` — Sistema de vidas e erro pedagógico IMPLEMENTADO, aguardando build/deploy e teste no iPhone
+### `BLOCO-PRACTICE-REBUILD-6-LAB` — Componentes por tipo de exercício IMPLEMENTADO, aguardando build/deploy
 
 Análise antes da alteração:
-- o fullscreen premium foi aprovado visualmente pelo usuário;
-- a prática ainda usava o motor visual atual, mas sem vidas;
-- feedback correto/incorreto/quase certo existia, mas não havia punição pedagógica;
-- erro quase certo já podia permitir tentativa, então não deve tirar vida;
-- a troca para o motor novo completo permanece para os blocos 6/7.
+- deploy do bloco 5 estava `success` no Vercel;
+- o fullscreen premium estava visualmente aprovado;
+- `PracticeFullscreen.jsx` ainda concentrava UI, estado, tipos de exercício, feedback e tela final em um único arquivo;
+- isso dificultaria a integração limpa do motor novo no bloco 7;
+- o objetivo do bloco 6 foi separar componentes sem alterar o comportamento visual aprovado.
+
+Arquivos criados/confirmados:
+- `fluency-clean/src/practice/components/PracticeHeader.jsx`
+- `fluency-clean/src/practice/components/PracticeIntro.jsx`
+- `fluency-clean/src/practice/components/PracticeDone.jsx`
+- `fluency-clean/src/practice/components/ChoiceGrid.jsx`
+- `fluency-clean/src/practice/components/WordBankExercise.jsx`
+- `fluency-clean/src/practice/components/TextExercise.jsx`
+- `fluency-clean/src/practice/components/SpeakExercise.jsx`
+- `fluency-clean/src/practice/components/AudioPrompt.jsx`
+- `fluency-clean/src/practice/components/PracticeFeedback.jsx`
+
+Arquivos alterados:
+- `fluency-clean/src/practice/PracticeFullscreen.jsx`
+- `REWRITE_HANDOFF.md`
+
+O que foi implementado:
+- `PracticeHeader.jsx` separa barra superior e vidas;
+- `PracticeIntro.jsx` separa tela inicial;
+- `PracticeDone.jsx` separa tela final;
+- `ChoiceGrid.jsx` separa alternativas;
+- `WordBankExercise.jsx` separa montagem de frase;
+- `TextExercise.jsx` separa escrita/ditado/correção;
+- `SpeakExercise.jsx` separa fala;
+- `AudioPrompt.jsx` separa botão de áudio;
+- `PracticeFeedback.jsx` separa feedback e ações;
+- `PracticeFullscreen.jsx` foi limpo para orquestrar estado, áudio, fala, vidas, avanço e conclusão.
+
+Importante:
+- o comportamento ainda usa `PracticeEngine.js` antigo;
+- a arquitetura nova em `src/practice/core/` ainda será conectada no bloco 7;
+- este bloco não deveria mudar visualmente a prática aprovada, apenas modularizar.
+
+Teste recomendado quando Vercel estiver Ready:
+1. abrir prática;
+2. confirmar que visual segue igual ao aprovado;
+3. testar uma múltipla escolha;
+4. testar feedback;
+5. testar vidas;
+6. confirmar que nada sumiu após separar componentes.
+
+### `BLOCO-PRACTICE-REBUILD-5-LAB` — Sistema de vidas e erro pedagógico IMPLEMENTADO
 
 Arquivos alterados:
 - `fluency-clean/src/practice/PracticeFullscreen.jsx`
 - `fluency-clean/src/styles/practice-fullscreen.css`
-- `REWRITE_HANDOFF.md`
 
 O que foi implementado:
-- constante `STARTING_LIVES = 5`;
-- estado `lives`;
-- estado `reviewMode`;
-- componente visual `LivesBar` com corações;
-- tela de entrada agora mostra quantidade de vidas;
+- 5 vidas;
 - erro real perde 1 vida;
 - erro quase certo não tira vida;
-- feedback mostra quando perdeu vida e quantas restam;
-- quando vidas chegam a 0, entra em modo revisão;
-- modo revisão troca rótulo da pergunta para `Modo revisão`;
-- tela final diferencia conclusão normal e conclusão com revisão;
-- resultado enviado em `onComplete` agora inclui `mistakes`, `lives` e `reviewMode`;
-- CSS atualizado para vidas discretas e premium, com corações rosados e modo revisão.
-
-Importante:
-- este bloco adiciona vidas na prática fullscreen atual;
-- o motor novo de questões ainda não está conectado;
-- conexão com arquitetura nova fica para blocos 6/7.
-
-Teste recomendado no iPhone quando Vercel estiver Ready:
-1. abrir prática;
-2. confirmar vidas na entrada e no topo da sessão;
-3. errar uma resposta de propósito;
-4. confirmar que perde 1 vida;
-5. testar erro quase certo em escrita/ditado se aparecer;
-6. confirmar que erro quase certo não tira vida;
-7. errar até zerar vidas;
-8. confirmar modo revisão;
-9. finalizar e ver texto de conclusão com revisão.
+- modo revisão quando zera;
+- feedback mostra vida perdida;
+- tela final diferencia conclusão normal e revisão.
 
 ### `BLOCO-PRACTICE-REBUILD-4-LAB` — UI fullscreen elegante do Fluency IMPLEMENTADO E VISUAL APROVADO PELO USUÁRIO
 
@@ -119,16 +137,6 @@ O que foi implementado:
 Arquivos alterados:
 - `fluency-clean/src/practice/core/PracticeQualityGate.js`
 - `fluency-clean/src/practice/core/PracticeBuilder.js`
-
-O que foi implementado:
-- bloqueio de enunciado vazio, curto ou genérico demais;
-- regra para enunciado principal orientar em português, exceto fala direta;
-- bloqueio de respostas vagas, pessoais ou exemplos como resposta objetiva;
-- validação de fase pedagógica;
-- validação de compatibilidade entre fase e tipo de questão;
-- validação de alternativas repetidas, longas, vagas ou pessoais;
-- validação de formatos de alternativas;
-- `PracticeBuilder.js` retorna `quality.planIssues`.
 
 ### `BLOCO-PRACTICE-REBUILD-2-LAB` — Builder pedagógico por fases IMPLEMENTADO COMO BASE
 
@@ -157,8 +165,8 @@ Arquivos criados:
 2. `BLOCO-PRACTICE-REBUILD-2-LAB` — Builder pedagógico por fases. STATUS: base criada.
 3. `BLOCO-PRACTICE-REBUILD-3-LAB` — Quality gate forte de questões. STATUS: implementado.
 4. `BLOCO-PRACTICE-REBUILD-4-LAB` — UI fullscreen elegante do Fluency. STATUS: implementado e visual aprovado.
-5. `BLOCO-PRACTICE-REBUILD-5-LAB` — Sistema de vidas e erro pedagógico. STATUS: implementado, aguardando validação.
-6. `BLOCO-PRACTICE-REBUILD-6-LAB` — Componentes por tipo de exercício.
+5. `BLOCO-PRACTICE-REBUILD-5-LAB` — Sistema de vidas e erro pedagógico. STATUS: implementado.
+6. `BLOCO-PRACTICE-REBUILD-6-LAB` — Componentes por tipo de exercício. STATUS: implementado, aguardando validação.
 7. `BLOCO-PRACTICE-REBUILD-7-LAB` — Integração limpa com aulas.
 8. `BLOCO-PRACTICE-REBUILD-8-LAB` — Persistência, progresso e revisão.
 9. `BLOCO-PRACTICE-REBUILD-9-LAB` — Limpeza final e remoção de legado.
@@ -168,7 +176,7 @@ Arquivos criados:
 
 - limpar estruturalmente `ListeningLesson.jsx`;
 - remover prática antiga oculta por CSS;
-- substituir motor atual pela nova arquitetura nos blocos 6/7;
+- substituir motor atual pela nova arquitetura nos blocos 7/9;
 - conectar prática com builder novo e componentes separados.
 
 ## Próximos blocos depois da reformulação de prática
@@ -186,4 +194,4 @@ Arquivos criados:
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O antigo protocolo econômico de commit/deploy está temporariamente suspenso por pedido do usuário. Os blocos `BLOCO-PRACTICE-REBUILD-1-LAB` a `5` foram implementados. O bloco 4 redesenhou o fullscreen premium e foi aprovado visualmente. O bloco 5 adicionou sistema de vidas no `PracticeFullscreen.jsx` e estilos em `practice-fullscreen.css`: 5 vidas, erro real perde vida, erro quase certo não tira vida, modo revisão quando zera. Próximo passo: validar build/deploy e testar vidas no iPhone. Se aprovado, seguir para `BLOCO-PRACTICE-REBUILD-6-LAB`, componentes por tipo de exercício. Depois bloco 7 para conectar o motor novo de `src/practice/core/` e remover o motor antigo."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O antigo protocolo econômico de commit/deploy está temporariamente suspenso por pedido do usuário. Os blocos `BLOCO-PRACTICE-REBUILD-1-LAB` a `6` foram implementados. O bloco 4 redesenhou o fullscreen premium e foi aprovado visualmente. O bloco 5 adicionou vidas. O bloco 6 separou a UI em componentes dentro de `src/practice/components/` e limpou `PracticeFullscreen.jsx`, mas ainda usa `PracticeEngine.js` antigo. Próximo passo: validar build/deploy. Se aprovado, seguir para `BLOCO-PRACTICE-REBUILD-7-LAB`, integração limpa com aulas usando o motor novo de `src/practice/core/`."
