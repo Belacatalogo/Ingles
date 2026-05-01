@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { BookOpen, CheckCircle2, ChevronDown, ChevronUp, Eye, Headphones, ListChecks, MessageSquareText, Pause, Play, Repeat2, RotateCcw, Save, Volume2 } from 'lucide-react';
+import { BookOpen, CheckCircle2, ChevronDown, ChevronRight, ChevronUp, Headphones, ListChecks, MessageSquareText, Mic, Pause, Play, Repeat2, RotateCcw, Save, Volume2, XCircle } from 'lucide-react';
 import { playLearningAudio, stopLearningAudio } from '../services/audioPlayback.js';
 import { diagnostics } from '../services/diagnostics.js';
 import { completeLesson, getLessonDraft, saveLessonDraft } from '../services/progressStore.js';
@@ -22,6 +22,10 @@ function cleanText(value) {
     .replace(/^\s*[-*]\s+/gm, '')
     .replace(/\n{3,}/g, '\n\n')
     .trim();
+}
+
+function normalizeForCheck(value) {
+  return cleanText(value).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9\s-]/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
 function splitTranscript(value) {
@@ -58,7 +62,8 @@ function normalizeQuestions(lesson) {
     const question = cleanText(item.question || item.prompt || item.instruction || `Question ${index + 1}`);
     const answer = cleanText(item.answer || item.expectedAnswer || item.correctAnswer || item.solution || answerFromKey(lesson?.answerKey, question, index) || '');
     const options = Array.isArray(item.options || item.choices || item.alternatives) ? (item.options || item.choices || item.alternatives).map(cleanText).filter(Boolean) : [];
-    return { question, answer, options };
+    const explanation = cleanText(item.explanation || item.feedback || 'Compare sua resposta com o áudio e a transcrição.');
+    return { question, answer, options, explanation };
   }).filter((item) => item.question);
 }
 
@@ -112,6 +117,67 @@ function safeJsonParse(value) {
   }
 }
 
+function makeDistractors(answer, vocabulary) {
+  const base = ['A', 'B', 'C', 'D', 'True', 'False', 'book', 'cat', 'apple', 'name', 'letter', 'spell'];
+  const words = vocabulary.map((item) => item.word).filter(Boolean);
+  const pool = [...words, ...base].filter((item) => normalizeForCheck(item) !== normalizeForCheck(answer));
+  return [...new Set(pool)].slice(0, 3);
+}
+
+function buildQuizItems(questions, vocabulary, transcript, shadowingLines) {
+  const items = [];
+  const firstQuestionWithOptions = questions.find((item) => item.options?.length >= 2);
+  if (firstQuestionWithOptions) {
+    items.push({ ...firstQuestionWithOptions, type: 'choice', title: 'Escolha a resposta correta', instruction: 'Toque na alternativa que combina com o áudio.' });
+  } else if (questions[0]) {
+    const answer = questions[0].answer || 'A';
+    items.push({ ...questions[0], type: 'choice', title: 'Escolha a resposta correta', instruction: 'Toque na melhor resposta.', options: [answer, ...makeDistractors(answer, vocabulary)].slice(0, 4) });
+  }
+
+  const vocab = vocabulary.find((item) => item.word && item.meaning) || vocabulary[0];
+  if (vocab) {
+    items.push({ type: 'choice', title: 'Vocabulário rápido', instruction: `Qual é o significado de “${vocab.word}”?`, question: `Escolha a tradução correta de “${vocab.word}”.`, answer: vocab.meaning, options: [vocab.meaning, 'pergunta', 'letra', 'ouvir'].filter(Boolean) });
+  }
+
+  const trueFalseQuestion = questions.find((item) => /true|false/i.test(item.question) || item.options?.some((option) => /true|false/i.test(option))) || questions[1];
+  if (trueFalseQuestion) {
+    const tfAnswer = /false/i.test(trueFalseQuestion.answer) ? 'False' : (/true/i.test(trueFalseQuestion.answer) ? 'True' : 'True');
+    items.push({ ...trueFalseQuestion, type: 'truefalse', title: 'Certo ou errado?', instruction: 'Decida se a frase combina com o áudio.', question: trueFalseQuestion.question, answer: tfAnswer, options: ['True', 'False'] });
+  }
+
+  const correctionSource = transcript.find((line) => /spell|name|letter|alphabet|sound/i.test(line)) || transcript[0];
+  if (correctionSource) {
+    const correct = cleanText(correctionSource.split('. ')[0]).replace(/\.$/, '');
+    const wrong = correct.replace(/Ana/i, 'Anna').replace(/A-N-A/i, 'A-M-A').replace(/apple/i, 'aple');
+    items.push({ type: 'correct', title: 'Corrija a frase', instruction: 'Leia a frase e escreva a forma correta.', question: wrong === correct ? `${correct} (corrija se necessário)` : wrong, answer: correct, options: [] });
+  }
+
+  const writeQuestion = questions.find((item) => !item.options?.length && item.answer) || questions[2];
+  if (writeQuestion) {
+    items.push({ ...writeQuestion, type: 'write', title: 'Escreva a resposta', instruction: 'Digite uma resposta curta em inglês.' });
+  }
+
+  const speakLine = shadowingLines.find((line) => line.length <= 90) || shadowingLines[0] || 'My name is Ana.';
+  items.push({ type: 'speak', title: 'Fale em voz alta', instruction: 'Toque no microfone e repita a frase. Se o Safari bloquear, digite o que você falou.', question: speakLine, answer: speakLine, options: [] });
+
+  return items.filter(Boolean).slice(0, 8);
+}
+
+function isAnswerCorrect(item, value) {
+  const user = normalizeForCheck(value);
+  const expected = normalizeForCheck(item.answer);
+  if (!user || !expected) return false;
+  if (item.type === 'choice' || item.type === 'truefalse') return user === expected;
+  if (item.type === 'correct') return user === expected || user.includes(expected.slice(0, Math.min(18, expected.length)));
+  const expectedTokens = expected.split(' ').filter((token) => token.length > 2);
+  const hits = expectedTokens.filter((token) => user.includes(token)).length;
+  return user === expected || hits >= Math.max(1, Math.ceil(expectedTokens.length * 0.45));
+}
+
+function getSpeechRecognition() {
+  return window.SpeechRecognition || window.webkitSpeechRecognition || null;
+}
+
 function CollapsibleSection({ id, title, icon, summary, open, onToggle, children }) {
   const Icon = icon;
   return (
@@ -131,11 +197,15 @@ export function ListeningLesson({ lesson }) {
   const [audioState, setAudioState] = useState('idle');
   const [answer, setAnswer] = useState(() => getLessonDraft(writtenDraftKey(lesson)));
   const [questionAnswers, setQuestionAnswers] = useState(() => safeJsonParse(getLessonDraft(questionDraftKey(lesson))));
-  const [revealedAnswers, setRevealedAnswers] = useState({});
+  const [quizIndex, setQuizIndex] = useState(0);
+  const [quizInput, setQuizInput] = useState('');
+  const [quizFeedback, setQuizFeedback] = useState(null);
+  const [quizResults, setQuizResults] = useState([]);
+  const [speakingState, setSpeakingState] = useState('idle');
   const [savedAt, setSavedAt] = useState('');
   const [completedAt, setCompletedAt] = useState('');
   const [shadowingIndex, setShadowingIndex] = useState(0);
-  const [openSections, setOpenSections] = useState({ guide: true, concept: true, vocab: false, transcript: false, practice: false, answer: false, shadowing: true });
+  const [openSections, setOpenSections] = useState({ guide: true, concept: true, vocab: false, transcript: false, practice: true, answer: false, shadowing: true });
   const refs = { guide: useRef(null), concept: useRef(null), practice: useRef(null), shadowing: useRef(null) };
 
   const transcript = useMemo(() => splitTranscript(lesson?.listeningText), [lesson?.listeningText]);
@@ -144,8 +214,12 @@ export function ListeningLesson({ lesson }) {
   const sections = useMemo(() => normalizeSections(lesson), [lesson]);
   const vocabulary = useMemo(() => normalizeVocabulary(lesson), [lesson]);
   const shadowingLines = useMemo(() => normalizeShadowingLines(transcript, prompts), [transcript, prompts]);
+  const quizItems = useMemo(() => buildQuizItems(questions, vocabulary, transcript, shadowingLines), [questions, vocabulary, transcript, shadowingLines]);
   const audioText = transcript.join(' ');
   const currentShadowingLine = shadowingLines[shadowingIndex] || shadowingLines[0] || prompts[0];
+  const currentQuiz = quizItems[quizIndex];
+  const quizDone = quizItems.length > 0 && quizIndex >= quizItems.length;
+  const correctCount = quizResults.filter((item) => item.correct).length;
 
   useEffect(() => {
     function handleJump(event) {
@@ -209,12 +283,75 @@ export function ListeningLesson({ lesson }) {
     setMessage('Áudio interrompido.');
   }
 
-  function updateQuestionAnswer(index, value) {
-    setQuestionAnswers((current) => ({ ...current, [index]: value }));
+  function submitQuiz(value = quizInput) {
+    if (!currentQuiz || quizFeedback) return;
+    const finalValue = cleanText(value);
+    if (!finalValue) {
+      setQuizFeedback({ correct: false, empty: true, message: 'Responda antes de conferir.' });
+      return;
+    }
+    const correct = isAnswerCorrect(currentQuiz, finalValue);
+    const feedback = {
+      correct,
+      answer: finalValue,
+      expected: currentQuiz.answer,
+      message: correct ? 'Muito bem! Resposta correta.' : 'Quase. Veja a resposta correta e siga para a próxima.',
+    };
+    setQuizFeedback(feedback);
+    setQuizResults((current) => [...current, { index: quizIndex, type: currentQuiz.type, correct, answer: finalValue, expected: currentQuiz.answer }]);
+    setQuestionAnswers((current) => ({ ...current, [quizIndex]: finalValue }));
+    diagnostics.log(`Quiz Listening: questão ${quizIndex + 1}/${quizItems.length} ${correct ? 'correta' : 'incorreta'}.`, correct ? 'success' : 'warn');
   }
 
-  function revealAnswer(index) {
-    setRevealedAnswers((current) => ({ ...current, [index]: true }));
+  function nextQuiz() {
+    setQuizInput('');
+    setQuizFeedback(null);
+    setQuizIndex((current) => Math.min(current + 1, quizItems.length));
+  }
+
+  function restartQuiz() {
+    setQuizIndex(0);
+    setQuizInput('');
+    setQuizFeedback(null);
+    setQuizResults([]);
+  }
+
+  function selectOption(option) {
+    setQuizInput(option);
+    submitQuiz(option);
+  }
+
+  function startSpeakingQuiz() {
+    if (!currentQuiz) return;
+    const SpeechRecognition = getSpeechRecognition();
+    if (!SpeechRecognition) {
+      setSpeakingState('unsupported');
+      setQuizFeedback({ correct: false, empty: true, message: 'Reconhecimento de voz indisponível no Safari. Digite o que você falou.' });
+      return;
+    }
+    try {
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'en-US';
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+      setSpeakingState('listening');
+      setQuizFeedback(null);
+      recognition.onresult = (event) => {
+        const text = event.results?.[0]?.[0]?.transcript || '';
+        setSpeakingState('idle');
+        setQuizInput(text);
+        submitQuiz(text);
+      };
+      recognition.onerror = () => {
+        setSpeakingState('unsupported');
+        setQuizFeedback({ correct: false, empty: true, message: 'Não consegui ouvir. Digite o que você falou ou tente novamente.' });
+      };
+      recognition.onend = () => setSpeakingState((current) => current === 'listening' ? 'idle' : current);
+      recognition.start();
+    } catch {
+      setSpeakingState('unsupported');
+      setQuizFeedback({ correct: false, empty: true, message: 'Microfone indisponível aqui. Digite o que você falou.' });
+    }
   }
 
   function nextShadowingLine() {
@@ -228,7 +365,7 @@ export function ListeningLesson({ lesson }) {
 
   function saveDrafts() {
     saveLessonDraft({ lesson, answer });
-    saveLessonDraft({ lesson: { ...lesson, id: questionDraftKey(lesson), title: `${lesson?.title || 'Listening'} · respostas` }, answer: JSON.stringify(questionAnswers) });
+    saveLessonDraft({ lesson: { ...lesson, id: questionDraftKey(lesson), title: `${lesson?.title || 'Listening'} · respostas` }, answer: JSON.stringify({ quizResults, questionAnswers }) });
     const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     setSavedAt(time);
     diagnostics.log(`Listening: rascunho salvo para ${lesson?.title || 'aula atual'}.`, 'success');
@@ -242,7 +379,7 @@ export function ListeningLesson({ lesson }) {
 
   function handleComplete() {
     saveDrafts();
-    const result = completeLesson({ lesson, answers: { summary: answer, comprehensionAnswers: questionAnswers, shadowing: { currentPhrase: currentShadowingLine, totalPhrases: shadowingLines.length }, updatedAt: new Date().toISOString() }, writtenAnswer: answer });
+    const result = completeLesson({ lesson, answers: { summary: answer, quizResults, comprehensionAnswers: questionAnswers, shadowing: { currentPhrase: currentShadowingLine, totalPhrases: shadowingLines.length }, updatedAt: new Date().toISOString() }, writtenAnswer: answer });
     const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     setCompletedAt(time);
     setMessage(result.alreadyCompleted ? 'Listening já estava concluída. Progresso mantido.' : '+25 XP. Listening concluída e progresso salvo.');
@@ -303,21 +440,58 @@ export function ListeningLesson({ lesson }) {
       </CollapsibleSection>
 
       <div ref={refs.practice}>
-        <CollapsibleSection id="lesson-practice" title="Compreensão" icon={ListChecks} summary={`${questions.length} exercícios`} open={openSections.practice} onToggle={() => toggleSection('practice')}>
-          <p className="lesson-helper-text">Responda primeiro. A resposta esperada só aparece quando você tocar em “Ver resposta”.</p>
-          <div className="listening-question-list">
-            {questions.map((item, index) => {
-              const currentAnswer = questionAnswers[index] || '';
-              const canReveal = Boolean(revealedAnswers[index]);
-              return (
-                <label key={`${item.question}-${index}`}>
-                  <span>{index + 1}. {item.question}</span>
-                  {item.options?.length ? <div className="lesson-options-row">{item.options.map((option) => <button type="button" key={option} onClick={() => updateQuestionAnswer(index, option)} className={currentAnswer === option ? 'selected' : ''}>{option}</button>)}</div> : null}
-                  <input value={currentAnswer} onChange={(event) => updateQuestionAnswer(index, event.target.value)} placeholder="Write a short answer..." autoCapitalize="sentences" autoCorrect="on" spellCheck="true" />
-                  {item.answer ? (canReveal ? <small>Resposta esperada: {item.answer}</small> : <button type="button" className="inline-lesson-action" onClick={() => revealAnswer(index)}><Eye size={14} /> Ver resposta</button>) : null}
-                </label>
-              );
-            })}
+        <CollapsibleSection id="lesson-practice" title="Prática guiada" icon={ListChecks} summary={quizDone ? `${correctCount}/${quizItems.length} corretas` : `questão ${Math.min(quizIndex + 1, quizItems.length)}/${quizItems.length}`} open={openSections.practice} onToggle={() => toggleSection('practice')}>
+          <div className="fluency-quiz-card">
+            <div className="fluency-quiz-progress"><span style={{ width: `${quizItems.length ? ((Math.min(quizIndex, quizItems.length) + (quizFeedback ? 1 : 0)) / quizItems.length) * 100 : 0}%` }} /></div>
+            {quizDone ? (
+              <div className="fluency-quiz-finish">
+                <CheckCircle2 size={34} />
+                <h3>Prática concluída</h3>
+                <p>Você acertou {correctCount} de {quizItems.length}. Revise os erros e finalize a aula quando estiver pronto.</p>
+                <button type="button" onClick={restartQuiz}><RotateCcw size={16} /> Refazer prática</button>
+              </div>
+            ) : currentQuiz ? (
+              <>
+                <header className="fluency-quiz-header">
+                  <span>{currentQuiz.title}</span>
+                  <b>{quizIndex + 1}/{quizItems.length}</b>
+                </header>
+                <p className="fluency-quiz-instruction">{currentQuiz.instruction}</p>
+                <h3>{currentQuiz.question}</h3>
+
+                {(currentQuiz.type === 'choice' || currentQuiz.type === 'truefalse') ? (
+                  <div className="fluency-quiz-options">
+                    {currentQuiz.options.map((option) => {
+                      const selected = normalizeForCheck(quizInput) === normalizeForCheck(option);
+                      const right = quizFeedback && normalizeForCheck(option) === normalizeForCheck(currentQuiz.answer);
+                      const wrong = quizFeedback && selected && !right;
+                      return <button type="button" key={option} className={right ? 'right' : wrong ? 'wrong' : selected ? 'selected' : ''} onClick={() => selectOption(option)} disabled={Boolean(quizFeedback)}>{option}</button>;
+                    })}
+                  </div>
+                ) : currentQuiz.type === 'speak' ? (
+                  <div className="fluency-quiz-speaking">
+                    <button type="button" onClick={startSpeakingQuiz} disabled={speakingState === 'listening' || Boolean(quizFeedback)}><Mic size={20} /> {speakingState === 'listening' ? 'Ouvindo...' : 'Falar agora'}</button>
+                    <input value={quizInput} onChange={(event) => setQuizInput(event.target.value)} placeholder="Ou digite o que você falou..." disabled={Boolean(quizFeedback)} />
+                  </div>
+                ) : (
+                  <textarea value={quizInput} onChange={(event) => setQuizInput(event.target.value)} placeholder={currentQuiz.type === 'correct' ? 'Escreva a frase corrigida...' : 'Digite sua resposta...'} disabled={Boolean(quizFeedback)} />
+                )}
+
+                {quizFeedback ? (
+                  <div className={`fluency-quiz-feedback ${quizFeedback.correct ? 'right' : 'wrong'}`}>
+                    {quizFeedback.correct ? <CheckCircle2 size={19} /> : <XCircle size={19} />}
+                    <div>
+                      <strong>{quizFeedback.message}</strong>
+                      {!quizFeedback.correct && !quizFeedback.empty ? <small>Resposta esperada: {currentQuiz.answer}</small> : null}
+                    </div>
+                  </div>
+                ) : null}
+
+                <footer className="fluency-quiz-actions">
+                  {!quizFeedback ? <button type="button" onClick={() => submitQuiz()}>{currentQuiz.type === 'choice' || currentQuiz.type === 'truefalse' ? 'Conferir' : 'Responder'}</button> : <button type="button" onClick={nextQuiz}>Continuar <ChevronRight size={16} /></button>}
+                </footer>
+              </>
+            ) : null}
           </div>
         </CollapsibleSection>
       </div>
