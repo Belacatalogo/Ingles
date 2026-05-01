@@ -15,6 +15,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import { PracticeProgressSummary } from '../components/progress/PracticeProgressSummary.jsx';
 import { CURRICULUM_LEVELS, getCurriculumLessons, getCurriculumProgress, getCurriculumSummary } from '../services/curriculumPlan.js';
 import { getCurrentWeekStats, getLessonCompletions, getProgressSummary } from '../services/progressStore.js';
 
@@ -256,6 +257,8 @@ export function ProgressScreen() {
           <small>sessões registradas</small>
         </article>
       </div>
+
+      <PracticeProgressSummary />
 
       <section className="progress-section-card">
         <div className="progress-section-title">
