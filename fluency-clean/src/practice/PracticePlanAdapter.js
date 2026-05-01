@@ -13,13 +13,46 @@ const TYPE_TO_UI = Object.freeze({
   [QUESTION_TYPES.TRUE_FALSE]: 'choice',
 });
 
+const BAD_OPTION = /(resposta\/|^resposta\b|^answer\b|resposta pessoal|personal answer|exemplo:|example:|undefined|null)/i;
+const GENERIC_OPTIONS = new Set(['resposta', 'pergunta', 'frase', 'palavra', 'coisa', 'exemplo', 'texto', 'aula', 'answer', 'question', 'sentence', 'word', 'thing', 'example', 'text', 'lesson']);
+
 function clean(value) {
-  return String(value ?? '').trim();
+  return String(value ?? '').replace(/\s+/g, ' ').trim();
+}
+
+function wordCount(value) {
+  return clean(value).split(/\s+/).filter(Boolean).length;
+}
+
+function isSafeOption(value, answer = '') {
+  const option = clean(value);
+  if (!option) return false;
+  if (BAD_OPTION.test(option)) return false;
+  if (GENERIC_OPTIONS.has(normalizePracticeText(option))) return false;
+  if (option.length > 62) return false;
+  if (wordCount(option) > 8) return false;
+  if (answer && wordCount(answer) <= 2 && wordCount(option) > 4) return false;
+  return true;
+}
+
+function uniqueOptions(values) {
+  const seen = new Set();
+  return values.map(clean).filter(Boolean).filter((value) => {
+    const key = normalizePracticeText(value);
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 }
 
 function normalizeOptions(question) {
   if (question.type === QUESTION_TYPES.TRUE_FALSE) return ['True', 'False'];
-  return Array.isArray(question.options) ? question.options.map(clean).filter(Boolean) : [];
+  const answer = clean(question.answer);
+  const raw = Array.isArray(question.options) ? question.options : [];
+  const filtered = uniqueOptions(raw).filter((option) => isSafeOption(option, answer));
+  const hasAnswer = filtered.some((option) => normalizePracticeText(option) === normalizePracticeText(answer));
+  const withAnswer = hasAnswer ? filtered : [answer, ...filtered].filter((option) => isSafeOption(option, answer));
+  return uniqueOptions(withAnswer).slice(0, 4);
 }
 
 function adaptQuestion(question, index) {
@@ -31,7 +64,7 @@ function adaptQuestion(question, index) {
     prompt: clean(question.prompt),
     answer: clean(question.answer),
     options: normalizeOptions(question),
-    words: Array.isArray(question.words) ? question.words.map(clean).filter(Boolean) : [],
+    words: Array.isArray(question.words) ? question.words.map(clean).filter(Boolean).filter((word) => word.length <= 24).slice(0, 12) : [],
     audioText: clean(question.audioText || question.answer),
     phase: question.phase,
     skill: question.skill,
@@ -44,6 +77,7 @@ function hasRenderableShape(item) {
   if (!item?.type || !item?.prompt || !item?.answer) return false;
   if (['choice', 'listenChoice', 'fillBlank'].includes(item.type)) return Array.isArray(item.options) && item.options.length >= 2;
   if (item.type === 'wordBank') return Array.isArray(item.words) && item.words.length >= 3;
+  if (item.type === 'dictation') return item.answer.length <= 64 && wordCount(item.answer) <= 8;
   return true;
 }
 
