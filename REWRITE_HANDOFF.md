@@ -47,15 +47,74 @@ Princípio máximo:
 
 ## BLOCO ATUAL
 
-### `BLOCO-15-LAB` — Banco de erros real IMPLEMENTADO, aguardando deploy/teste
+### `BLOCO-20-LAB` — Certificação por nível IMPLEMENTADO, aguardando deploy/teste
 
 Contexto:
-- objetivo é transformar erros reais em material de revisão;
-- nada fictício: usa dados já persistidos pelo app;
-- fontes usadas:
-  - erros da prática profunda em `progress.practiceSessions` / `weakItems`;
-  - palavras fracas do Speaking/Azure em `progress.speakingSessions`;
-  - produção escrita final curta demais em `lessonCompletions`.
+- após histórico real de Speaking e banco de erros real, faltava uma leitura clara de consolidação por nível;
+- objetivo é mostrar se o nível atual está apenas em andamento, quase pronto, pronto para certificação ou certificado;
+- certificação não deve depender só de aulas concluídas, mas também de habilidades, simulados/checkpoints, Speaking real e banco de erros.
+
+Arquivos criados:
+- `fluency-clean/src/services/levelCertification.js`
+- `fluency-clean/src/styles/level-certification.css`
+
+Arquivos alterados:
+- `fluency-clean/src/screens/ProgressScreen.jsx`
+- `fluency-clean/src/main.jsx`
+- `REWRITE_HANDOFF.md`
+
+O que foi implementado:
+- novo serviço `levelCertification.js`;
+- `getLevelCertificationSummary(level)` calcula certificação usando dados reais:
+  - progresso do currículo por nível;
+  - aulas concluídas do nível;
+  - cobertura por habilidade: Reading, Listening, Writing, Speaking e Grammar;
+  - Speaking real via `speakingHistory.js`;
+  - banco de erros real via `errorBank.js`;
+  - checkpoints finais do currículo: revisão final, produção final, simulados e mastery lock quando existirem;
+- status possíveis:
+  - `in-progress` / `Em andamento`;
+  - `almost` / `Quase pronto`;
+  - `ready` / `Pronto para certificação`;
+  - `certified` / `Certificado`;
+- a certificação calcula nota geral de 0 a 100 usando:
+  - 35% currículo concluído;
+  - 22% cobertura das habilidades;
+  - 20% checkpoints/simulados;
+  - 13% Speaking real;
+  - 10% penalidade inversa do banco de erros;
+- gera bloqueios claros, como:
+  - concluir aulas/revisões restantes;
+  - equilibrar habilidades;
+  - concluir simulados/produção final;
+  - fazer mais Speaking real;
+  - reduzir erros de alta prioridade;
+- `ProgressScreen.jsx` agora mostra card `Certificação por nível` logo abaixo do mapa CEFR;
+- card mostra:
+  - nível atual;
+  - status;
+  - nota geral;
+  - currículo, habilidades, simulados e Speaking;
+  - status de cada habilidade;
+  - bloqueios e próxima ação;
+- conquistas também passam a mostrar o status da certificação;
+- CSS modular em `level-certification.css`, importado no `main.jsx`.
+
+Commits:
+- `bbdbd462ee2064a01ed1dea8f7067ff852e84f8b` — adiciona certificação real por nível;
+- `af5889ad21352252b0e9a605bb750e67bad62fc7` — mostra certificação por nível no progresso;
+- `786d08864ca1454a478cdc944f6539670829e2a0` — estiliza certificação por nível;
+- `35c2c94a8f9393277f991c71064281eafb1f4b4a` — importa estilos da certificação por nível.
+
+Teste recomendado no iPhone:
+1. aguardar deploy da branch lab;
+2. abrir aba Progresso;
+3. confirmar card `Certificação por nível` abaixo do mapa CEFR;
+4. verificar se mostra o nível atual, nota, status e bloqueios;
+5. confirmar se Speaking real e banco de erros influenciam a certificação;
+6. confirmar se a tela não ficou pesada demais no iPhone.
+
+### `BLOCO-15-LAB` — Banco de erros real IMPLEMENTADO
 
 Arquivos criados:
 - `fluency-clean/src/services/errorBank.js`
@@ -67,48 +126,9 @@ Arquivos alterados:
 - `REWRITE_HANDOFF.md`
 
 O que foi implementado:
-- novo serviço `errorBank.js` monta banco de erros real derivado dos dados locais;
-- agrega erros por chave/categoria, conta recorrência, severidade e próxima revisão;
-- categorias iniciais:
-  - grammar;
-  - vocabulary;
-  - pronunciation;
-  - listening;
-  - reading;
-  - writing;
-  - practice;
-- severidade:
-  - low: monitorar;
-  - medium: revisar em breve;
-  - high: alta prioridade;
-- `getErrorBankSummary()` retorna:
-  - total de erros;
-  - erros únicos;
-  - alta prioridade;
-  - revisões vencidas/para hoje;
-  - erros por categoria;
-  - top erros;
-  - erros recentes;
-- `ProgressScreen.jsx` agora mostra card `Banco de erros real`;
-- o card mostra métricas e top erros com nota/contexto quando houver;
-- conquistas agora também podem mostrar quantidade de erros reais;
-- CSS modular em `error-bank.css`, importado no `main.jsx`.
-
-Commits:
-- `3fe82bb1fdf845fb82483ec21642171e561de87c` — adiciona banco de erros real;
-- `43b34365f3902fb8026e593e5e853468a7bd2ee9` — mostra banco de erros real no progresso;
-- `a1c4152a7142d30fc5ff243c45b99dd07ff7c6a3` — estiliza banco de erros real;
-- `d520ec1fab42193dc7320eb5c5edc101931bb4e9` — importa estilos do banco de erros.
-
-Teste recomendado no iPhone:
-1. aguardar deploy da branch lab;
-2. abrir Progresso e confirmar card `Banco de erros real`;
-3. errar questões na prática profunda e concluir a prática;
-4. voltar ao Progresso e verificar se erros aparecem;
-5. fazer tentativa de Pronúncia com palavra fraca;
-6. verificar se aparece como erro de pronúncia;
-7. concluir aula com produção escrita muito curta e verificar se entra como escrita fraca;
-8. confirmar que não há dados fictícios.
+- `errorBank.js` monta banco de erros real derivado dos dados locais;
+- fontes: prática profunda, Speaking/Azure e produção escrita curta;
+- Progresso mostra card `Banco de erros real`.
 
 ### `BLOCO-16-LAB` — Histórico real de Speaking IMPLEMENTADO
 
@@ -173,10 +193,9 @@ Pendente técnica:
 
 ## NOVA ORDEM DE BLOCOS — QUALIDADE REAL DAS AULAS
 
-1. `BLOCO-15-LAB` — Banco de erros real. STATUS: implementado, aguardando teste.
-2. `BLOCO-20-LAB` — Certificação por nível.
-3. `BLOCO-CARTAS-3B-LAB` — Expandir banco de vocabulário em novos lotes até 2.000 palavras reais.
-4. `BLOCO-AUDITORIA-POLIMENTO-GERAL-LAB` — após concluir os blocos principais, analisar cada página com precisão, listar melhorias possíveis e montar blocos de polimento.
+1. `BLOCO-20-LAB` — Certificação por nível. STATUS: implementado, aguardando teste.
+2. `BLOCO-CARTAS-3B-LAB` — Expandir banco de vocabulário em novos lotes até 2.000 palavras reais.
+3. `BLOCO-AUDITORIA-POLIMENTO-GERAL-LAB` — após concluir os blocos principais, analisar cada página com precisão, listar melhorias possíveis e montar blocos de polimento.
 
 ## FASE EXTRA — GARANTIA PEDAGÓGICA MÁXIMA
 
@@ -199,13 +218,12 @@ Ordem recomendada após os blocos principais:
 
 ## Pendência técnica importante
 
-- testar deploy do `BLOCO-15-LAB` no iPhone;
-- confirmar card `Banco de erros real` na aba Progresso;
-- confirmar que erros da prática profunda aparecem;
-- confirmar que palavras fracas de Speaking/Azure aparecem;
-- continuar depois para `BLOCO-20-LAB` — Certificação por nível;
+- testar deploy do `BLOCO-20-LAB` no iPhone;
+- confirmar card `Certificação por nível` na aba Progresso;
+- confirmar que status muda conforme currículo, Speaking real, checkpoints e banco de erros;
+- seguir depois para `BLOCO-CARTAS-3B-LAB`;
 - remover definitivamente `ListeningLesson.jsx` antigo quando o conector permitir SHA correto.
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O bloco atual implementado foi `BLOCO-15-LAB`: criado `errorBank.js`, Progresso mostra `Banco de erros real`, erros vêm de prática profunda, Speaking/Azure e produção escrita curta. Testar no iPhone; se ok, seguir para `BLOCO-20-LAB` Certificação por nível."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O bloco atual implementado foi `BLOCO-20-LAB`: criado `levelCertification.js`, Progresso mostra `Certificação por nível`, calculada por currículo, habilidades, checkpoints, Speaking real e banco de erros. Testar no iPhone; se ok, seguir para `BLOCO-CARTAS-3B-LAB`."
