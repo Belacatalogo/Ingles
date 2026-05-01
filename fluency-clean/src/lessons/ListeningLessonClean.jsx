@@ -18,6 +18,16 @@ function cleanText(value) {
     .trim();
 }
 
+function getAudioMessage(result, naturalLabel = 'Áudio natural iniciado.') {
+  if (!result?.ok) return result?.error || 'Não foi possível reproduzir áudio.';
+  if (result.source === 'cache') return 'Áudio natural carregado do cache.';
+  if (result.source === 'segmented-cache') return `Áudio natural em ${result.segments || 'vários'} trechos, usando cache.`;
+  if (result.source === 'segmented-gemini') return `Áudio natural em ${result.segments || 'vários'} trechos iniciado.`;
+  if (result.source === 'segmented-browser-fallback') return 'Áudio em trechos usando voz do dispositivo como fallback.';
+  if (result.source === 'browser-fallback') return 'Áudio natural indisponível agora. Usando voz do dispositivo.';
+  return naturalLabel;
+}
+
 function splitTranscript(value) {
   const clean = cleanText(value);
   if (!clean) return fallbackTranscript;
@@ -115,7 +125,7 @@ export function ListeningLessonClean({ lesson }) {
   async function handleListen() {
     diagnostics.log('Clique recebido no botão Ouvir da aula Listening.', 'info');
     setAudioState('loading');
-    setMessage('Preparando áudio natural Gemini...');
+    setMessage(audioText.length > 360 ? 'Preparando áudio natural em trechos...' : 'Preparando áudio natural Gemini...');
     const result = await playLearningAudio({
       text: audioText,
       label: 'Listening · transcrição',
@@ -123,9 +133,10 @@ export function ListeningLessonClean({ lesson }) {
       style: 'Natural, warm teacher voice for A1 English listening practice. Clear pronunciation, human rhythm, not robotic.',
       preferNatural: true,
       allowBrowserFallback: true,
+      segmentLongText: true,
     });
     setAudioState('idle');
-    setMessage(result.ok ? (result.source === 'browser-fallback' ? 'Gemini falhou; áudio do navegador iniciado.' : 'Áudio natural iniciado.') : (result.error || 'Não foi possível reproduzir áudio.'));
+    setMessage(getAudioMessage(result));
   }
 
   async function handleShadowingListen() {
@@ -144,9 +155,10 @@ export function ListeningLessonClean({ lesson }) {
       style: 'Natural pronunciation model for English shadowing practice. Clear, slow enough to repeat, human rhythm.',
       preferNatural: true,
       allowBrowserFallback: true,
+      segmentLongText: false,
     });
     setAudioState('idle');
-    setMessage(result.ok ? (result.source === 'browser-fallback' ? 'Fallback do navegador iniciado para shadowing.' : 'Áudio natural de shadowing iniciado.') : (result.error || 'Não foi possível reproduzir a frase de shadowing.'));
+    setMessage(getAudioMessage(result, 'Áudio natural de shadowing iniciado.'));
   }
 
   function handleStop() {
