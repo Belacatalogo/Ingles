@@ -53,6 +53,30 @@ function getContract(meta = {}, lesson = {}) {
   return meta.contractVersion || lesson.planContract || lesson.quality?.contractVersion || 'sem contrato antigo';
 }
 
+function countArray(value) {
+  return Array.isArray(value) ? value.length : 0;
+}
+
+function buildFallbackReviewedAreas(lesson = {}) {
+  const sections = countArray(lesson.sections);
+  const vocabulary = countArray(lesson.vocabulary);
+  const exercises = countArray(lesson.exercises);
+  const prompts = countArray(lesson.prompts);
+  const hasText = Boolean(lesson.listeningText || lesson.intro || lesson.objective);
+  return {
+    text: { label: 'Texto da aula', reviewed: hasText, status: hasText ? 'analisado' : 'não encontrado', detail: 'introdução, objetivo e texto/transcrição.' },
+    concept: { label: 'Conceito e explicação', reviewed: sections > 0, status: sections ? `${sections} parte(s)` : 'não encontrado', detail: 'seções explicativas da aula.' },
+    vocabulary: { label: 'Vocabulário', reviewed: vocabulary > 0, status: vocabulary ? `${vocabulary} palavra(s)` : 'não encontrado', detail: 'palavras-chave, significados e exemplos.' },
+    deepPractice: { label: 'Prática profunda', reviewed: exercises > 0, status: exercises ? `${exercises} questão(ões)` : 'não encontrado', detail: 'exercícios usados pela prática profunda.' },
+    shadowing: { label: 'Shadowing', reviewed: prompts > 0, status: prompts ? `${prompts} prompt(s)` : 'não encontrado', detail: 'prompts de fala, repetição ou produção oral.' },
+    finalProduction: { label: 'Produção final', reviewed: prompts > 0 || exercises > 0, status: prompts ? `${prompts} comando(s)` : exercises ? 'via exercícios abertos' : 'não encontrado', detail: 'produção própria para provar domínio.' },
+  };
+}
+
+function getReviewedAreas(lesson = {}, teacher = {}, quality = {}) {
+  return teacher.reviewedAreas || quality.reviewedAreas || lesson.reviewedAreas || buildFallbackReviewedAreas(lesson);
+}
+
 export function LessonQualityPanel({ lesson }) {
   if (!lesson) return null;
 
@@ -72,6 +96,8 @@ export function LessonQualityPanel({ lesson }) {
   const falseMasteryRisk = getRiskLabel(teacher, quality);
   const contract = getContract(meta, lesson);
   const repaired = Boolean(meta.autoRepaired || pedagogical.autoRepaired || pedagogical.teacherRepair);
+  const reviewedAreas = getReviewedAreas(lesson, teacher, quality);
+  const reviewedAreaList = Object.entries(reviewedAreas).map(([key, area]) => ({ key, ...area }));
 
   const dimensions = [
     { label: 'Coerência', value: teacher.coherence, hint: 'objetivo, cenário e conteúdo' },
@@ -126,6 +152,20 @@ export function LessonQualityPanel({ lesson }) {
           <Zap size={16} />
           <span>Contrato</span>
           <strong>{contract}</strong>
+        </div>
+      </div>
+
+      <div className="quality-reviewed-areas">
+        <span><GraduationCap size={14} /> Professor analisou</span>
+        <div>
+          {reviewedAreaList.map((area) => (
+            <article key={area.key} className={area.reviewed ? 'reviewed' : 'missing'}>
+              {area.reviewed ? <CheckCircle2 size={14} /> : <AlertTriangle size={14} />}
+              <strong>{area.label}</strong>
+              <small>{area.status}</small>
+              <p>{area.detail}</p>
+            </article>
+          ))}
         </div>
       </div>
 
