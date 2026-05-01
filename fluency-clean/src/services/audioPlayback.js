@@ -2,6 +2,11 @@ import { diagnostics } from './diagnostics.js';
 import { playGeminiTtsAudio } from './geminiTts.js';
 import { speakText, stopSpeech } from './tts.js';
 
+function isIOSLike() {
+  const ua = navigator.userAgent || '';
+  return /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+}
+
 export async function playLearningAudio({
   text,
   label = 'áudio',
@@ -19,6 +24,20 @@ export async function playLearningAudio({
   }
 
   stopSpeech();
+
+  if (isIOSLike() && allowBrowserFallback) {
+    diagnostics.log(`iOS detectado: usando TTS do navegador primeiro para preservar o gesto do toque: ${label}.`, 'info');
+    const fallback = await speakText(cleanText, { rate: 0.88, pitch: 1, lang: 'en-US' });
+    if (fallback.ok) {
+      return { ok: true, source: 'browser-ios', error: null };
+    }
+    diagnostics.log(`TTS iOS falhou em ${label}: ${fallback.error || 'erro desconhecido'}`, 'error');
+    return {
+      ok: false,
+      source: 'browser-ios-error',
+      error: fallback.error || 'O Safari bloqueou o áudio. Toque novamente em Ouvir dentro da aula.',
+    };
+  }
 
   if (preferNatural) {
     diagnostics.log(`Tentando áudio natural Gemini primeiro: ${label}.`, 'info');
