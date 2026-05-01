@@ -47,7 +47,56 @@ Princípio máximo:
 
 ## BLOCO ATUAL
 
-### `BLOCO-ANTI-FALSO-DOMÍNIO-LAB` — Reparo local contra falso domínio IMPLEMENTADO, aguardando deploy/teste
+### `BLOCO-GERAÇÃO-JSON-RESILIENTE-2-LAB` — Fallback contra JSON escapado IMPLEMENTADO, aguardando deploy/teste
+
+Contexto:
+- usuário testou geração no iPhone e a aula travou no diagnóstico com erro:
+  - `JSON Parse error: Unrecognized token '\\'`;
+  - preview mostrava JSON escapado: `{\"type\":\"listening\"...}`;
+- o prompt já proibia JSON escapado, mas o Gemini ainda devolveu o objeto serializado/escapado;
+- para não bloquear a geração, foi criado um fallback resiliente separado, sem mexer em `bundle.js` e sem gambiarra de DOM.
+
+Arquivos criados:
+- `fluency-clean/src/services/resilientGeminiLessonDraft.js`
+
+Arquivos alterados:
+- `fluency-clean/src/components/lesson/LessonGeneratorPanel.jsx`
+- `REWRITE_HANDOFF.md`
+
+O que foi implementado:
+- novo serviço `resilientGeminiLessonDraft.js`;
+- parser resiliente `parseResilientGeminiJson()` que tenta:
+  1. JSON normal;
+  2. JSON serializado como string;
+  3. JSON com aspas escapadas `{\"type\":...}`;
+  4. reparo de caracteres de controle e vírgulas sobrando;
+- fallback gera uma aula completa em chamada única quando a geração planejada em blocos falha por JSON escapado;
+- `LessonGeneratorPanel.jsx` agora detecta falhas como:
+  - `JSON Parse error`;
+  - `Unrecognized token`;
+  - `Expected ']'`;
+  - preview com `{\"type\"...}`;
+- quando detecta esse erro, mostra no diagnóstico que ativou o parser resiliente e tenta gerar/salvar a aula;
+- contrato da aula pode receber `resilient-json-v1` quando o fallback for usado;
+- o fluxo posterior continua igual:
+  - validação pedagógica;
+  - professor revisor;
+  - reparo anti falso domínio, se necessário;
+  - salvar aula aprovada.
+
+Commits:
+- `d6f693f0e352d3e455a3529890fa6c65b84e02b8` — adiciona fallback resiliente para JSON escapado do Gemini;
+- `92402468a9ee4237523fdea7642aa009165d1bf5` — usa fallback resiliente quando Gemini retorna JSON escapado.
+
+Teste recomendado no iPhone:
+1. aguardar deploy da branch lab;
+2. gerar aula novamente;
+3. se aparecer erro de JSON escapado na geração em blocos, verificar se logo depois aparece fallback/parser resiliente;
+4. confirmar se a aula termina salva e abre na aba Aula;
+5. no painel de qualidade, verificar contrato com `resilient-json-v1` se o fallback tiver sido usado;
+6. confirmar se a aula contém texto, vocabulário, exercícios, shadowing e conclusão.
+
+### `BLOCO-ANTI-FALSO-DOMÍNIO-LAB` — Reparo local contra falso domínio IMPLEMENTADO, aguardando teste
 
 Contexto:
 - usuário viu no painel `Qualidade visível` o ponto de atenção: risco de falso domínio por excesso de reconhecimento e pouca produção;
@@ -63,45 +112,14 @@ Arquivos alterados:
 
 O que foi implementado:
 - novo serviço modular `antiFalseDomainRepair.js`;
-- função `needsAntiFalseDomainRepair()` detecta risco por:
-  - issue do professor revisor com `falso domínio` / `pouca produção` / `excesso de reconhecimento`;
-  - nota `antiIllusion` baixa;
-  - excesso de múltipla escolha;
-  - poucos exercícios abertos ou poucos prompts de produção;
+- função `needsAntiFalseDomainRepair()` detecta risco por issue do professor, nota `antiIllusion` baixa, excesso de múltipla escolha e pouca produção;
 - função `repairLessonAgainstFalseDomain()` adiciona exercícios de produção ativa sem alternativas;
-- reparo é adaptado por tipo de aula:
-  - listening: escrever frase ouvida, palavras-chave, frase de shadowing, ideia principal em inglês simples;
-  - grammar: criar frase afirmativa, transformar em pergunta, corrigir erro, criar frase pessoal;
-  - reading: resumir de memória, criar frase com vocabulário, parafrasear detalhe, responder ideia principal;
-  - writing: escrever versão própria, reescrever frase, autocorrigir, usar palavra nova;
-  - speaking: falar sem ler, repetir frase difícil, responder em voz alta, criar frase própria;
-- o fluxo de geração em `LessonGeneratorPanel.jsx` agora faz:
-  1. gerar aula planejada;
-  2. validar pedagogicamente;
-  3. professor revisor avaliar;
-  4. se houver risco de falso domínio, aplicar reparo local;
-  5. revalidar pedagogicamente;
-  6. professor revisor reavaliar;
-  7. salvar com contrato `+anti-false-domain-v1` quando aplicado;
-- metadados salvos incluem:
-  - `antiFalseDomainRepaired`;
-  - `antiFalseDomain` na aula;
-  - `quality.antiFalseDomainRepair`;
-  - quantidade de exercícios/prompt de produção adicionados;
-- diagnóstico mostra quando o reparo foi aplicado.
+- reparo é adaptado por tipo de aula: listening, grammar, reading, writing e speaking;
+- contrato pode receber `+anti-false-domain-v1` quando aplicado.
 
 Commits:
 - `f3fb92056807af8b710a9cfcaeef7b22fb4308dc` — adiciona reparador anti falso domínio;
 - `41e6834752f87c5bebc4c37c7e17252e131b93c9` — integra reparo anti falso domínio na geração.
-
-Teste recomendado no iPhone:
-1. aguardar deploy da branch lab;
-2. gerar uma aula nova, preferencialmente Listening;
-3. observar o diagnóstico durante a geração;
-4. confirmar se aparece mensagem de reparo anti falso domínio quando o professor detectar risco;
-5. abrir o painel `Qualidade visível` e verificar se contrato pode mostrar `anti-false-domain-v1`;
-6. abrir a aula e confirmar que existem exercícios abertos sem alternativas, além dos exercícios de escolha;
-7. confirmar que as respostas não aparecem antes da tentativa na tela da aula.
 
 ### `BLOCO-LISTENING-ORDEM-1-LAB` — Ordem da aula Listening e conceito recolhido IMPLEMENTADO, aguardando teste
 
@@ -139,34 +157,6 @@ Commits:
 - `0894dd905d19cac96a5d71258b807bc5cb43a18a` — compacta conceito e feedback dos exercícios listening.
 
 ### `BLOCO-17-LAB` — Qualidade visível da aula IMPLEMENTADO
-
-Contexto:
-- usuário quer enxergar se uma aula é confiável antes de estudar;
-- já havia `LessonQualityPanel.jsx`, mas era básico;
-- o bloco amplia o painel em vez de criar UI paralela, mantendo arquitetura limpa.
-
-Arquivos alterados:
-- `fluency-clean/src/components/lesson/LessonQualityPanel.jsx`
-- `fluency-clean/src/styles/lesson-polish.css`
-- `REWRITE_HANDOFF.md`
-
-O que foi implementado:
-- painel agora mostra uma leitura mais clara de confiança da aula;
-- mostra nota final, rubrica pedagógica e professor revisor;
-- mostra se o plano pedagógico está ativo;
-- mostra se houve correção automática;
-- mostra contrato da aula, incluindo `lesson-plan-v1` e `teacher-reviewer-v1` quando presentes;
-- mostra risco de falso domínio;
-- mostra cenário/plano usado;
-- adiciona barras por dimensão quando houver professor revisor:
-  - coerência;
-  - profundidade;
-  - exercícios úteis;
-  - alinhamento;
-  - anti-ilusão;
-  - nível seguro;
-- mantém pontos de atenção visíveis;
-- CSS foi integrado ao `lesson-polish.css`, sem criar sobreposição visual.
 
 ### `BLOCO-13-LAB` — Professor Gerador/Revisor IMPLEMENTADO
 
@@ -217,7 +207,7 @@ Pendente técnica:
 
 ## NOVA ORDEM DE BLOCOS — QUALIDADE REAL DAS AULAS
 
-1. `BLOCO-ANTI-FALSO-DOMÍNIO-LAB` — Reparo local contra falso domínio. STATUS: implementado, aguardando teste.
+1. `BLOCO-GERAÇÃO-JSON-RESILIENTE-2-LAB` — Fallback contra JSON escapado. STATUS: implementado, aguardando teste.
 2. `BLOCO-16-LAB` — Histórico real de Speaking.
 3. `BLOCO-15-LAB` — Banco de erros real.
 4. `BLOCO-20-LAB` — Certificação por nível.
@@ -231,53 +221,22 @@ Esses blocos foram adicionados por pedido do usuário para reduzir ao máximo o 
 Ordem recomendada após os blocos principais:
 
 1. `BLOCO-DOMÍNIO-1-LAB` — Travas reais de progressão.
-   - O aluno não avança apenas por concluir aula.
-   - Avança quando prova domínio por habilidade e tópico.
-
 2. `BLOCO-DIAGNÓSTICO-PROFUNDO-1-LAB` — Teste inicial e reavaliações.
-   - Testar grammar, vocabulary, listening, reading, writing e speaking.
-   - Reavaliar por semana, unidade e fim de nível.
-
 3. `BLOCO-MAPA-DE-DOMÍNIO-1-LAB` — Mapa real do que o aluno sabe.
-   - Percentuais por tópico e habilidade.
-   - Exemplo: to be, simple present, spelling, short dialogues, pronunciation clarity.
-
 4. `BLOCO-REVISÃO-INTELIGENTE-1-LAB` — Revisão espaçada real.
-   - Revisar erros em 1, 3, 7 e 15 dias.
-   - Conectar exercícios, speaking, writing, vocabulário e flashcards.
-
 5. `BLOCO-PROVA-DE-DOMÍNIO-1-LAB` — Mini provas por unidade.
-   - Listening sem transcrição, reading, grammar, writing e speaking.
-   - Se reprovar, gerar revisão em vez de avançar normalmente.
-
 6. `BLOCO-ANTI-ILUSÃO-1-LAB` — Detectar falso domínio.
-   - Identificar quando o aluno acerta por alternativa fácil, dica, memória imediata ou reconhecimento, mas falha em escrita/fala sem ajuda.
-
 7. `BLOCO-QUESTÕES-QUALIDADE-2-LAB` — Auditor de exercícios.
-   - Bloquear perguntas bobas ou que entregam a resposta.
-   - Trocar por escrita, ditado, correção, fala ou construção quando fizer mais sentido.
-
 8. `BLOCO-WRITING-CORRECTION-1-LAB` — Correção séria de escrita.
-   - Corrigir frase, classificar erro, explicar, pedir reescrita e salvar no banco de erros.
-
 9. `BLOCO-SPEAKING-COACH-2-LAB` — Evolução real de pronúncia.
-   - Mapear sons problemáticos, palavras difíceis, clareza, ritmo e evolução semanal.
-
 10. `BLOCO-CONTEÚDO-REAL-1-LAB` — Inglês autêntico progressivo.
-    - A1: microdiálogos.
-    - A2: mensagens, menus, avisos e emails simples.
-    - B1: vídeos curtos, posts e notícias fáceis.
-    - B2: entrevistas, artigos e podcasts guiados.
-    - C1: conteúdo real com menos adaptação.
-
 11. `BLOCO-MODO-PROFESSOR-1-LAB` — Explicar de outro jeito quando o aluno não entende.
-    - Se errar repetidamente, gerar explicação alternativa, analogia em português, exemplos menores e prática mais fácil.
-
 12. `BLOCO-RELATÓRIO-SEMANAL-1-LAB` — Prova de evolução.
-    - Mostrar horas estudadas, aulas concluídas, erros comuns, melhorias, pontos fracos, vocabulário retido e próxima prioridade.
 
 ## Pendência técnica importante
 
+- testar deploy do `BLOCO-GERAÇÃO-JSON-RESILIENTE-2-LAB` no iPhone;
+- testar se a geração não para mais no erro `{\"type\"...}`;
 - testar deploy do `BLOCO-ANTI-FALSO-DOMÍNIO-LAB` no iPhone;
 - testar deploy do `BLOCO-LISTENING-ORDEM-1-LAB` no iPhone;
 - remover definitivamente `ListeningLesson.jsx` antigo quando o conector permitir SHA correto;
@@ -286,4 +245,4 @@ Ordem recomendada após os blocos principais:
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O bloco atual implementado foi `BLOCO-ANTI-FALSO-DOMÍNIO-LAB`: foi criado `antiFalseDomainRepair.js` e integrado em `LessonGeneratorPanel.jsx`; se o professor detectar falso domínio, a aula ganha exercícios de produção ativa antes de salvar e o contrato pode receber `anti-false-domain-v1`. Testar no iPhone; se ok, seguir para `BLOCO-16-LAB` Histórico real de Speaking."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O bloco atual implementado foi `BLOCO-GERAÇÃO-JSON-RESILIENTE-2-LAB`: foi criado `resilientGeminiLessonDraft.js` e integrado em `LessonGeneratorPanel.jsx`; se a geração planejada falhar por JSON escapado `{\"type\"...}`, o app aciona fallback resiliente com parser próprio e continua para validação, professor revisor e anti falso domínio. Testar no iPhone; se ok, seguir para `BLOCO-16-LAB` Histórico real de Speaking."
