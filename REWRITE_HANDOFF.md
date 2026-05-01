@@ -31,61 +31,59 @@ Regra operacional:
 4. Fluxo ideal: **1 bloco → 1 commit → 1 deploy → teste no iPhone**.
 5. Se a Vercel bloquear novamente, parar commits e aguardar liberação.
 
+Observação: no ajuste de parada automática do Speaking, o conector bloqueou a criação de árvore/commit único. Por segurança, a correção foi aplicada via `update_file`, gerando commits separados, sem tocar em `main`, `bundle.js` ou backend Azure.
+
 ## Estado atual implementado
 
-### AJUSTE BLOCO-SPEAKING-2-LAB — Gravação segura no iPhone e resposta não cortada IMPLEMENTADO, aguardando teste
+### AJUSTE BLOCO-SPEAKING-2-LAB — Conversa livre com parada automática por silêncio IMPLEMENTADO, aguardando teste
 
 Contexto do teste:
-- usuário falou uma frase completa, mas o Azure reconheceu só pedaços como “Like.” e “Me family.”;
-- isso fazia a conversa avançar/concluir com áudio parcial;
-- provável causa: parada rápida da gravação/coleta incompleta de chunks no iPhone e referência aberta demais para avaliação.
+- usuário informou que a correção anterior não resolveu o corte de fala;
+- o usuário não quer repetir um modelo fixo;
+- o Speaking precisa ser válido para aprendizado real, permitindo responder com as próprias palavras;
+- usuário pediu: tocar no botão, falar, o sistema parar sozinho quando detectar silêncio e iniciar análise automaticamente.
 
 Arquivos alterados:
 - `fluency-clean/src/screens/SpeakingScreen.jsx`
 - `fluency-clean/src/services/recorder.js`
+- `fluency-clean/src/services/azurePronunciation.js`
 - `REWRITE_HANDOFF.md`
 
 Correção aplicada:
-- `recorder.js` agora inicia `MediaRecorder` com coleta contínua de chunks (`start(250)`);
-- antes de parar, chama `requestData()` e espera um pequeno intervalo para capturar o último pedaço do áudio;
-- gravação usa `echoCancellation`, `noiseSuppression` e `autoGainControl`;
-- Speaking agora exige tempo mínimo de aproximadamente 3 segundos antes de permitir analisar;
-- se o usuário tocar para parar cedo demais, mostra aviso e continua gravando;
-- conversa A1 agora usa pergunta + frase-modelo de resposta;
-- Azure avalia a fala contra a frase-modelo A1, não contra a pergunta do robô;
-- se o Azure reconhecer menos de 2 palavras, a tentativa não conta e a sessão não avança;
-- app pede para gravar de novo em vez de aceitar resposta cortada;
-- conclusão da sessão só conta tentativas válidas.
+- Conversa voltou a ser fala livre, sem mostrar “Modelo: ...”;
+- botão de conversa agora é de toque único: toca, fala, o sistema escuta;
+- gravador detecta silêncio usando `AudioContext`/`AnalyserNode`;
+- ao detectar silêncio após a fala, para automaticamente;
+- análise/transcrição Azure começa automaticamente após parar;
+- conversa usa `recognizeSpeech()` sem avaliação por frase-modelo;
+- a aba Pronúncia continua usando `analyzePronunciation()` com frase de referência;
+- tentativas muito curtas/cortadas com menos de 2 palavras não avançam a sessão;
+- conversa avança com base no texto realmente reconhecido;
+- conclusão continua em 5 respostas válidas ou 3 minutos;
+- não houve alteração no backend Azure privado.
 
 Teste recomendado:
 1. abrir Speaking no iPhone;
-2. iniciar uma nova sessão;
-3. tocar no microfone e falar uma frase completa;
-4. tentar parar antes de 3 segundos e confirmar que aparece aviso;
-5. gravar novamente falando a frase inteira e esperar um instante antes de parar;
-6. confirmar que o texto reconhecido aparece mais completo;
-7. confirmar que respostas muito curtas/cortadas não avançam a sessão;
-8. concluir 5 respostas válidas e conferir “Conversação concluída hoje”.
+2. iniciar Nova sessão, se já estiver concluída;
+3. tocar uma vez no microfone;
+4. falar livremente uma resposta completa;
+5. parar de falar e aguardar;
+6. confirmar que a gravação para sozinha;
+7. confirmar que a análise começa sem segundo toque;
+8. confirmar que a resposta reconhecida não aparece mais como frase-modelo;
+9. confirmar que respostas cortadas/curtas não avançam;
+10. concluir 5 respostas válidas e conferir Hoje.
 
 ### BLOCO-SPEAKING-2-LAB — Speaking por nível e registro real IMPLEMENTADO
 
-Arquivos alterados:
-- `fluency-clean/src/screens/SpeakingScreen.jsx`
-- `fluency-clean/src/screens/TodayScreen.jsx`
-- `fluency-clean/src/services/progressStore.js`
-- `fluency-clean/src/styles/speaking-session.css`
-- `fluency-clean/src/main.jsx`
-- `REWRITE_HANDOFF.md`
-
 Correção aplicada:
 - Conversa não usa mais cenário B1 fixo quando o aluno está em A1;
-- A1 agora usa prompts simples;
-- Pronúncia também usa frases A1 quando o nível atual é A1;
+- A1 usa prompts simples;
+- Pronúncia usa frases A1 quando o nível atual é A1;
 - Imersão foi mantida em cenários A1 simples;
-- Conversa registra sessão real ao completar 5 respostas analisadas ou 3 minutos de prática;
+- Conversa registra sessão real ao completar 5 respostas válidas ou 3 minutos;
 - registro real salvo em `progress.speakingSessions`;
-- Hoje marca Conversação como concluída somente se existir sessão real de Speaking hoje;
-- não houve alteração no backend Azure privado.
+- Hoje marca Conversação como concluída somente se existir sessão real de Speaking hoje.
 
 ### AJUSTE BLOCO-CARTAS-2-LAB — Restaurar sessão concluída ao voltar de Hoje IMPLEMENTADO E VALIDADO PELO USUÁRIO
 
@@ -132,4 +130,4 @@ Comportamento:
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Use o PROTOCOLO ECONÔMICO DE DEPLOY: cada bloco deve virar 1 commit único, com handoff atualizado no mesmo commit. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. Já foram implementados o BLOCO-10A-LAB, ajustes do BLOCO-10C-LAB, BLOCO-CARTAS-2-LAB, BLOCO-SPEAKING-2-LAB e ajuste de gravação segura no iPhone. Validar primeiro no iPhone. Próximo bloco depois da validação: BLOCO-CARTAS-3-LAB. Depois seguir a ordem: 10B, 12, 14, 11, 13, 17, 16, 15, 20. Não delete `rewrite-fluency-clean-lab` nem `rewrite-fluency-clean`. A produção/main ainda NÃO foi validada no Vercel. Validar primeiro a lab no iPhone, depois sincronizar para `rewrite-fluency-clean`, testar o link estável e só depois decidir nova ida para `main`. Rollback da main: `5047bae031f20ddd9604953dcd3fd821655e56fa`."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Use o PROTOCOLO ECONÔMICO DE DEPLOY: cada bloco deve virar 1 commit único, com handoff atualizado no mesmo commit. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. Já foram implementados o BLOCO-10A-LAB, ajustes do BLOCO-10C-LAB, BLOCO-CARTAS-2-LAB, BLOCO-SPEAKING-2-LAB e o ajuste de conversa livre com parada automática por silêncio. Validar primeiro no iPhone. Próximo bloco depois da validação: BLOCO-CARTAS-3-LAB. Depois seguir a ordem: 10B, 12, 14, 11, 13, 17, 16, 15, 20. Não delete `rewrite-fluency-clean-lab` nem `rewrite-fluency-clean`. A produção/main ainda NÃO foi validada no Vercel. Validar primeiro a lab no iPhone, depois sincronizar para `rewrite-fluency-clean`, testar o link estável e só depois decidir nova ida para `main`. Rollback da main: `5047bae031f20ddd9604953dcd3fd821655e56fa`."
