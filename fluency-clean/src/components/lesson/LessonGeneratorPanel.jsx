@@ -10,6 +10,7 @@ import { repairLessonForQuality } from '../../services/lessonRepair.js';
 import { attachPedagogicalReview, validateLessonForQuality } from '../../services/lessonValidation.js';
 import { attachTeacherReview, reviewLessonAsTeacher } from '../../services/teacherReviewer.js';
 import { needsAntiFalseDomainRepair, repairLessonAgainstFalseDomain } from '../../services/antiFalseDomainRepair.js';
+import { repairListeningCoherence, validateListeningCoherence } from '../../services/listeningCoherence.js';
 import { attachStudyReadiness, evaluateStudyReadiness } from '../../services/studyReadiness.js';
 import { buildSaturdayReviewLesson, shouldPrioritizeSaturdayReview } from '../../services/masteryStore.js';
 
@@ -115,6 +116,7 @@ export function LessonGeneratorPanel({ onGenerated }) {
       let lessonForSave = lessonToValidate;
       let autoRepaired = false;
       let antiFalseDomainRepaired = false;
+      let listeningCoherenceRepaired = false;
 
       if (!pedagogicalReview.approved) {
         diagnostics.setPhase('corrigindo aula automaticamente', 'generating');
@@ -137,6 +139,27 @@ export function LessonGeneratorPanel({ onGenerated }) {
           setMessage(error);
           return;
         }
+      }
+
+      const listeningCoherence = validateListeningCoherence(lessonForSave);
+      if (!listeningCoherence.approved) {
+        diagnostics.setPhase('checando coerência do listening', 'generating');
+        diagnostics.log('Listening desalinhado: transcrição, vocabulário ou questões não batem. Tentando reparo local.', 'warn', listeningCoherence);
+        setMessage('Listening veio com texto, vocabulário ou questões desalinhados. Tentando reparar antes de salvar...');
+        const repairedListening = repairListeningCoherence(lessonForSave);
+        const repairedCoherence = validateListeningCoherence(repairedListening);
+        if (!repairedCoherence.approved) {
+          const error = `Aula bloqueada: Listening incoerente. ${repairedCoherence.issues.join(' ')}`;
+          diagnostics.setPhase('listening bloqueado por incoerência', 'error');
+          diagnostics.log(error, 'error', repairedCoherence);
+          setMessage(error);
+          return;
+        }
+        lessonForSave = repairedListening;
+        listeningCoherenceRepaired = true;
+        autoRepaired = true;
+        pedagogicalReview = validateLessonForQuality(lessonForSave, { expectedLevel: nextLesson.level, expectedType: lessonForSave.type });
+        diagnostics.log('Coerência do Listening reparada e aprovada antes de salvar.', 'success', repairedCoherence);
       }
 
       diagnostics.log(`Aula aprovada na avaliação pedagógica: ${pedagogicalReview.overallScore}/100.`, 'info', pedagogicalReview);
@@ -233,10 +256,11 @@ export function LessonGeneratorPanel({ onGenerated }) {
       const saved = saveCurrentLesson(reviewedLesson, {
         source: forceNew ? 'generated-replacement-variation' : result.lesson.planContract === 'resilient-json-v1' ? 'generated-resilient-json' : 'generated',
         status: 'new',
-        contractVersion: result.lesson.planContract ? `lesson-contract-v1+${result.lesson.planContract}+teacher-reviewer-v1+study-readiness-v1${antiFalseDomainRepaired ? '+anti-false-domain-v1' : ''}` : `lesson-contract-v1+teacher-reviewer-v1+study-readiness-v1${antiFalseDomainRepaired ? '+anti-false-domain-v1' : ''}`,
+        contractVersion: result.lesson.planContract ? `lesson-contract-v1+${result.lesson.planContract}+teacher-reviewer-v1+study-readiness-v1${listeningCoherenceRepaired ? '+listening-coherence-v1' : ''}${antiFalseDomainRepaired ? '+anti-false-domain-v1' : ''}` : `lesson-contract-v1+teacher-reviewer-v1+study-readiness-v1${listeningCoherenceRepaired ? '+listening-coherence-v1' : ''}${antiFalseDomainRepaired ? '+anti-false-domain-v1' : ''}`,
         pedagogicalScore: teacherReview.finalScore,
         autoRepaired,
         antiFalseDomainRepaired,
+        listeningCoherenceRepaired,
         studyReady: studyReadiness.status !== 'do-not-study',
         studyReadiness: studyReadiness.status,
         variationMode: forceNew,
@@ -244,7 +268,7 @@ export function LessonGeneratorPanel({ onGenerated }) {
         planSeed: result.lesson.planSeed,
       });
       diagnostics.log(`${saturdayReview ? 'Revisão adaptativa planejada' : forceNew ? 'Nova versão planejada da aula do cronograma' : 'Aula planejada do cronograma'} pronta para abrir: ${saved.title}`, 'info');
-      const repairLabel = antiFalseDomainRepaired ? ' com produção ativa anti falso domínio,' : autoRepaired ? ' corrigida automaticamente,' : '';
+      const repairLabel = listeningCoherenceRepaired ? ' com coerência de Listening reparada,' : antiFalseDomainRepaired ? ' com produção ativa anti falso domínio,' : autoRepaired ? ' corrigida automaticamente,' : '';
       setMessage(saturdayReview ? `Nova revisão planejada${repairLabel} ${studyReadiness.label.toLowerCase()} (${teacherReview.finalScore}/100), salva e aberta na aba Aula.` : forceNew ? `Nova versão planejada${repairLabel} ${studyReadiness.label.toLowerCase()} (${teacherReview.finalScore}/100), salva e aberta na aba Aula.` : `Nova aula planejada${repairLabel} ${studyReadiness.label.toLowerCase()} (${teacherReview.finalScore}/100), salva e aberta na aba Aula.`);
       setForceNew(false);
       onGenerated?.(saved);
