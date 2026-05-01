@@ -56,7 +56,39 @@ Diretriz visual nova:
 
 ## BLOCO ATUAL
 
-### `BLOCO-AUDIO-CACHE-1B-LAB` — Player iOS/Comet com fila mais segura IMPLEMENTADO, aguardando deploy/teste
+### `BLOCO-12-LAB` — Rubricas por tipo de aula IMPLEMENTADO, aguardando deploy/teste
+
+Objetivo:
+- centralizar critérios pedagógicos por tipo de aula;
+- reduzir perguntas vagas e respostas aleatórias;
+- preparar base limpa para `BLOCO-14-LAB` contrato JSON rígido e para conectar rubricas diretamente ao prompt do Gemini depois.
+
+Arquivos criados:
+- `fluency-clean/src/services/lessonRubrics.js`
+
+Arquivos alterados:
+- `fluency-clean/src/services/lessonValidation.js`
+- `REWRITE_HANDOFF.md`
+
+O que foi implementado:
+- rubricas centralizadas para `reading`, `grammar`, `listening`, `writing`, `speaking` e `vocabulary`;
+- cada rubrica define mínimos de seções, vocabulário, exercícios, prompts, texto principal e sinais obrigatórios;
+- cada rubrica define critérios qualitativos específicos do tipo de aula;
+- `lessonValidation.js` agora usa `getLessonTypeRequirements()` e `LESSON_RUBRIC_APPROVAL_SCORE` vindos de `lessonRubrics.js`;
+- review pedagógico agora carrega `rubricCriteria` dentro de `pedagogicalReview` e `quality`;
+- regras duplicadas em `lessonValidation.js` foram removidas.
+
+Teste recomendado:
+1. aguardar deploy da lab;
+2. abrir o app e confirmar que não houve tela branca;
+3. gerar ou abrir aula existente;
+4. verificar se a aula ainda carrega;
+5. conferir se diagnóstico/progresso não acusam erro de importação.
+
+Próximo passo sugerido:
+- `BLOCO-14-LAB` — Contrato JSON rígido, conectando as rubricas ao formato esperado da aula gerada.
+
+### `BLOCO-AUDIO-CACHE-1B-LAB` — Player iOS/Comet com fila mais segura IMPLEMENTADO E VALIDADO PELO USUÁRIO
 
 Contexto:
 - usuário testou o bloco de áudio e a segmentação funcionou: apareceu `trecho 1/4`;
@@ -78,15 +110,7 @@ O que foi corrigido:
 - a fila de trechos passa a esperar o trecho atual terminar antes de preparar/tocar o próximo;
 - isso reduz falhas causadas por disparar vários áudios sequenciais fora do gesto original.
 
-Teste recomendado:
-1. abrir Listening no Comet/iPhone;
-2. tocar no áudio principal;
-3. confirmar que não aparece mais mensagem citando Safari;
-4. confirmar se o trecho 1 toca e depois avança para os demais;
-5. testar parar no meio da fila;
-6. testar tocar novamente para verificar cache.
-
-### `BLOCO-AUDIO-CACHE-1-LAB` — Áudio segmentado + cache local limitado IMPLEMENTADO
+### `BLOCO-AUDIO-CACHE-1-LAB` — Áudio segmentado + cache local limitado IMPLEMENTADO E VALIDADO PELO USUÁRIO
 
 Arquivos criados:
 - `fluency-clean/src/services/audioCache.js`
@@ -109,7 +133,7 @@ O que foi implementado:
 - `stopLearningAudio()` interrompe também a fila segmentada;
 - `ListeningLessonClean.jsx` mostra mensagens melhores: cache, áudio segmentado, fallback do dispositivo.
 
-### `BLOCO-PRACTICE-REBUILD-9-LAB` — Limpeza final e remoção de legado PARCIALMENTE IMPLEMENTADO, aguardando validação final
+### `BLOCO-PRACTICE-REBUILD-9-LAB` — Limpeza final e remoção de legado PARCIALMENTE IMPLEMENTADO
 
 Contexto:
 - bloco 8 foi validado pelo usuário;
@@ -130,10 +154,10 @@ Correção pós-erro de build:
 - isso causou erro no Vercel após remover `PracticeEngine.js`;
 - foi corrigido removendo o import/fallback legado e deixando o adapter 100% no core novo.
 
-Pendente no bloco 9:
-- depois de validar no iPhone, remover definitivamente `fluency-clean/src/lessons/ListeningLesson.jsx`;
-- procurar CSS legado de `.fluency-quiz-*` e remover se não houver uso ativo;
-- confirmar se nenhum import ativo referencia `PracticeEngine.js` ou `ListeningLesson.jsx`.
+Pendente técnica:
+- tentativa de remover/substituir `fluency-clean/src/lessons/ListeningLesson.jsx` antigo foi bloqueada por SHA inconsistente retornado pelo conector;
+- a tela ativa já usa `ListeningLessonClean.jsx` via `LessonScreen.jsx`, então o app não depende do arquivo antigo;
+- tentar limpar novamente depois ou via PR separado.
 
 ### `BLOCO-PRACTICE-REBUILD-8-LAB` — Persistência, progresso e revisão IMPLEMENTADO E VALIDADO PELO USUÁRIO
 
@@ -164,33 +188,30 @@ Pendente no bloco 9:
 7. `BLOCO-PRACTICE-REBUILD-7-LAB` — Integração limpa com aulas. STATUS: implementado e validado.
 7B. `BLOCO-PRACTICE-REBUILD-7B-LAB` — Saneamento pedagógico e polimento mobile. STATUS: implementado e validado.
 8. `BLOCO-PRACTICE-REBUILD-8-LAB` — Persistência, progresso e revisão. STATUS: implementado e validado.
-9. `BLOCO-PRACTICE-REBUILD-9-LAB` — Limpeza final e remoção de legado. STATUS: parcialmente implementado, aguardando teste.
-9A. `BLOCO-AUDIO-CACHE-1-LAB` — Áudio segmentado + cache local limitado. STATUS: implementado.
-9B. `BLOCO-AUDIO-CACHE-1B-LAB` — Player iOS/Comet com fila mais segura. STATUS: implementado, aguardando teste.
+9. `BLOCO-PRACTICE-REBUILD-9-LAB` — Limpeza final e remoção de legado. STATUS: parcialmente implementado; arquivo antigo travado por SHA, mas fora do fluxo ativo.
+9A. `BLOCO-AUDIO-CACHE-1-LAB` — Áudio segmentado + cache local limitado. STATUS: implementado e validado.
+9B. `BLOCO-AUDIO-CACHE-1B-LAB` — Player iOS/Comet com fila mais segura. STATUS: implementado e validado.
 10. `BLOCO-PRACTICE-REBUILD-10-LAB` — Teste completo no iPhone.
 
 ## Pendência técnica importante
 
-- validar bloco de áudio no iPhone/Comet;
-- validar bloco 9 no iPhone;
-- remover definitivamente `ListeningLesson.jsx` após validação;
-- remover CSS legado `.fluency-quiz-*` após confirmar que não há uso ativo;
+- testar deploy do `BLOCO-12-LAB`;
+- remover definitivamente `ListeningLesson.jsx` antigo quando o conector permitir SHA correto;
 - confirmar se o core gera questões suficientes para aulas reais antigas e novas;
-- seguir para teste completo no iPhone.
+- seguir para `BLOCO-14-LAB` se o app iniciar normalmente.
 
 ## Próximos blocos depois da reformulação de prática
 
-1. `BLOCO-12-LAB` — Rubricas por tipo de aula.
-2. `BLOCO-14-LAB` — Contrato JSON rígido.
-3. `BLOCO-11-LAB` — Plano primeiro, aula depois.
-4. `BLOCO-13-LAB` — Professor Gerador/Revisor.
-5. `BLOCO-17-LAB` — Qualidade visível da aula.
-6. `BLOCO-16-LAB` — Histórico real de Speaking.
-7. `BLOCO-15-LAB` — Banco de erros real.
-8. `BLOCO-20-LAB` — Certificação por nível.
-9. `BLOCO-CARTAS-3B-LAB` — Expandir banco de vocabulário em novos lotes até 2.000 palavras reais.
-10. `BLOCO-AUDITORIA-POLIMENTO-GERAL-LAB` — após concluir os blocos principais, analisar cada página com precisão, listar melhorias possíveis e montar blocos de polimento.
+1. `BLOCO-14-LAB` — Contrato JSON rígido.
+2. `BLOCO-11-LAB` — Plano primeiro, aula depois.
+3. `BLOCO-13-LAB` — Professor Gerador/Revisor.
+4. `BLOCO-17-LAB` — Qualidade visível da aula.
+5. `BLOCO-16-LAB` — Histórico real de Speaking.
+6. `BLOCO-15-LAB` — Banco de erros real.
+7. `BLOCO-20-LAB` — Certificação por nível.
+8. `BLOCO-CARTAS-3B-LAB` — Expandir banco de vocabulário em novos lotes até 2.000 palavras reais.
+9. `BLOCO-AUDITORIA-POLIMENTO-GERAL-LAB` — após concluir os blocos principais, analisar cada página com precisão, listar melhorias possíveis e montar blocos de polimento.
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. Os blocos `BLOCO-PRACTICE-REBUILD-1-LAB` a `8` foram implementados e validados. O bloco 9 removeu `PracticeEngine.js`, criou `ListeningLessonClean.jsx` sem prática legada interna e trocou `LessonScreen.jsx` para usar o Listening limpo. Depois foram implementados `BLOCO-AUDIO-CACHE-1-LAB` e `BLOCO-AUDIO-CACHE-1B-LAB`: cache local limitado a 40 áudios, áudio longo segmentado, fila aguardando fim de cada trecho e mensagens sem citar Safari. Próximo passo: verificar deploy, testar áudio no Comet/iPhone e, se aprovado, concluir limpeza final do bloco 9 removendo `ListeningLesson.jsx` antigo e CSS legado `.fluency-quiz-*`."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. Os blocos `BLOCO-PRACTICE-REBUILD-1-LAB` a `8` foram implementados e validados. O bloco 9 removeu `PracticeEngine.js`, criou `ListeningLessonClean.jsx` sem prática legada interna e trocou `LessonScreen.jsx` para usar o Listening limpo, mas `ListeningLesson.jsx` antigo ficou pendente por conflito de SHA no conector e está fora do fluxo ativo. Depois foram implementados e validados `BLOCO-AUDIO-CACHE-1-LAB` e `BLOCO-AUDIO-CACHE-1B-LAB`. O `BLOCO-12-LAB` criou `lessonRubrics.js` e conectou `lessonValidation.js` às rubricas por tipo de aula. Próximo passo: testar deploy do bloco 12; se ok, seguir para `BLOCO-14-LAB` contrato JSON rígido."
