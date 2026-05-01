@@ -33,6 +33,18 @@ Nova regra operacional enquanto a reconstrução da prática estiver em andament
 4. Continuar usando apenas a branch `rewrite-fluency-clean-lab`.
 5. Não avançar para `rewrite-fluency-clean` ou `main` sem validação no iPhone.
 
+## OBJETIVO PEDAGÓGICO FINAL
+
+O Fluency não deve ser apenas um gerador de aulas bonitas.
+
+Meta final do sistema:
+
+`diagnosticar → ensinar → praticar → corrigir → revisar → testar → só então avançar`
+
+Princípio máximo:
+
+`o aluno só avança quando prova domínio, não apenas quando conclui uma aula.`
+
 ## BLOCO ATUAL
 
 ### `BLOCO-11-LAB` — Plano primeiro, aula depois IMPLEMENTADO via wrapper limpo, aguardando deploy/teste
@@ -155,6 +167,58 @@ Pendente técnica:
 7. `BLOCO-CARTAS-3B-LAB` — Expandir banco de vocabulário em novos lotes até 2.000 palavras reais.
 8. `BLOCO-AUDITORIA-POLIMENTO-GERAL-LAB` — após concluir os blocos principais, analisar cada página com precisão, listar melhorias possíveis e montar blocos de polimento.
 
+## FASE EXTRA — GARANTIA PEDAGÓGICA MÁXIMA
+
+Esses blocos foram adicionados por pedido do usuário para reduzir ao máximo o risco de perder tempo com conteúdo raso ou falso progresso.
+
+Ordem recomendada após os blocos principais:
+
+1. `BLOCO-DOMÍNIO-1-LAB` — Travas reais de progressão.
+   - O aluno não avança apenas por concluir aula.
+   - Avança quando prova domínio por habilidade e tópico.
+
+2. `BLOCO-DIAGNÓSTICO-PROFUNDO-1-LAB` — Teste inicial e reavaliações.
+   - Testar grammar, vocabulary, listening, reading, writing e speaking.
+   - Reavaliar por semana, unidade e fim de nível.
+
+3. `BLOCO-MAPA-DE-DOMÍNIO-1-LAB` — Mapa real do que o aluno sabe.
+   - Percentuais por tópico e habilidade.
+   - Exemplo: to be, simple present, spelling, short dialogues, pronunciation clarity.
+
+4. `BLOCO-REVISÃO-INTELIGENTE-1-LAB` — Revisão espaçada real.
+   - Revisar erros em 1, 3, 7 e 15 dias.
+   - Conectar exercícios, speaking, writing, vocabulário e flashcards.
+
+5. `BLOCO-PROVA-DE-DOMÍNIO-1-LAB` — Mini provas por unidade.
+   - Listening sem transcrição, reading, grammar, writing e speaking.
+   - Se reprovar, gerar revisão em vez de avançar normalmente.
+
+6. `BLOCO-ANTI-ILUSÃO-1-LAB` — Detectar falso domínio.
+   - Identificar quando o aluno acerta por alternativa fácil, dica, memória imediata ou reconhecimento, mas falha em escrita/fala sem ajuda.
+
+7. `BLOCO-QUESTÕES-QUALIDADE-2-LAB` — Auditor de exercícios.
+   - Bloquear perguntas bobas ou que entregam a resposta.
+   - Trocar por escrita, ditado, correção, fala ou construção quando fizer mais sentido.
+
+8. `BLOCO-WRITING-CORRECTION-1-LAB` — Correção séria de escrita.
+   - Corrigir frase, classificar erro, explicar, pedir reescrita e salvar no banco de erros.
+
+9. `BLOCO-SPEAKING-COACH-2-LAB` — Evolução real de pronúncia.
+   - Mapear sons problemáticos, palavras difíceis, clareza, ritmo e evolução semanal.
+
+10. `BLOCO-CONTEÚDO-REAL-1-LAB` — Inglês autêntico progressivo.
+    - A1: microdiálogos.
+    - A2: mensagens, menus, avisos e emails simples.
+    - B1: vídeos curtos, posts e notícias fáceis.
+    - B2: entrevistas, artigos e podcasts guiados.
+    - C1: conteúdo real com menos adaptação.
+
+11. `BLOCO-MODO-PROFESSOR-1-LAB` — Explicar de outro jeito quando o aluno não entende.
+    - Se errar repetidamente, gerar explicação alternativa, analogia em português, exemplos menores e prática mais fácil.
+
+12. `BLOCO-RELATÓRIO-SEMANAL-1-LAB` — Prova de evolução.
+    - Mostrar horas estudadas, aulas concluídas, erros comuns, melhorias, pontos fracos, vocabulário retido e próxima prioridade.
+
 ## Pendência técnica importante
 
 - testar deploy do `BLOCO-11-LAB`;
@@ -164,4 +228,4 @@ Pendente técnica:
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. Os blocos de prática e áudio foram implementados e validados. O `BLOCO-GERAÇÃO-ESTABILIDADE-1B-LAB` foi validado. O `BLOCO-11-LAB` criou `lessonPlan.js` e `plannedGeminiLessons.js`, e o `LessonGeneratorPanel.jsx` agora usa `generatePlannedLessonDraft`. Próximo passo: testar deploy; se ok, seguir para `BLOCO-13-LAB` Professor Gerador/Revisor."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. Os blocos de prática e áudio foram implementados e validados. O `BLOCO-GERAÇÃO-ESTABILIDADE-1B-LAB` foi validado. O `BLOCO-11-LAB` criou `lessonPlan.js` e `plannedGeminiLessons.js`, e o `LessonGeneratorPanel.jsx` agora usa `generatePlannedLessonDraft`. Também foram adicionados ao handoff os blocos extras de garantia pedagógica máxima, de `BLOCO-DOMÍNIO-1-LAB` até `BLOCO-RELATÓRIO-SEMANAL-1-LAB`. Próximo passo: testar deploy do bloco 11; se ok, seguir para `BLOCO-13-LAB` Professor Gerador/Revisor."
