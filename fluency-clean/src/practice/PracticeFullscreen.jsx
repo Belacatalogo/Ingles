@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { playLearningAudio } from '../services/audioPlayback.js';
-import { buildPracticeItems, evaluatePracticeAnswer, normalizeForPractice } from './PracticeEngine.js';
+import { buildPracticeItems, evaluatePracticeAnswer, normalizeForPractice } from './PracticePlanAdapter.js';
 import { AudioPrompt } from './components/AudioPrompt.jsx';
 import { ChoiceGrid } from './components/ChoiceGrid.jsx';
 import { PracticeDone } from './components/PracticeDone.jsx';
@@ -35,6 +35,7 @@ function getQuestionActionLabel(type) {
   if (type === 'dictation') return 'Conferir escrita';
   if (type === 'wordBank') return 'Conferir frase';
   if (type === 'speak') return 'Conferir fala';
+  if (type === 'write') return 'Conferir resposta';
   return 'Verificar';
 }
 
@@ -89,7 +90,7 @@ export function PracticeFullscreen({ lesson, open, onClose, onComplete }) {
       setFeedback({ ...evaluation, near: true, message: 'Quase certo. Ajuste só um detalhe.', lifeLost: false });
       return;
     }
-    const lifeLost = !evaluation.correct;
+    const lifeLost = evaluation.loseLife ?? !evaluation.correct;
     let nextLives = lives;
     if (lifeLost) {
       nextLives = Math.max(0, lives - 1);
@@ -106,8 +107,9 @@ export function PracticeFullscreen({ lesson, open, onClose, onComplete }) {
       type: current.type,
       correct: evaluation.correct,
       answer: finalValue,
-      expected: current.answer,
+      expected: evaluation.expected || current.answer,
       lifeLost,
+      sourceEngine: current.sourceEngine,
     }]);
   }
 
@@ -218,7 +220,7 @@ export function PracticeFullscreen({ lesson, open, onClose, onComplete }) {
             <ChoiceGrid item={current} value={value} feedback={feedback} normalize={normalizeForPractice} onSelect={selectOption} />
           ) : null}
 
-          {current.type === 'dictation' || current.type === 'correction' ? (
+          {current.type === 'dictation' || current.type === 'correction' || current.type === 'write' ? (
             <TextExercise value={value} feedback={feedback} onChange={setValue} />
           ) : null}
 
