@@ -47,7 +47,51 @@ Princípio máximo:
 
 ## BLOCO ATUAL
 
-### `BLOCO-17-LAB` — Qualidade visível da aula IMPLEMENTADO, aguardando deploy/teste
+### `BLOCO-LISTENING-ORDEM-1-LAB` — Ordem da aula Listening e conceito recolhido IMPLEMENTADO, aguardando deploy/teste
+
+Contexto:
+- usuário testou a aula no iPhone e achou o bloco `Conceito e explicação` pesado demais;
+- o conceito estava abrindo por padrão e ocupando a tela antes do conteúdo principal;
+- usuário pediu ordem: primeiro texto, depois vocabulário, depois exercícios, depois shadowing e só no final concluir aula;
+- também havia exercícios gerados, mas o layout `ListeningLessonClean.jsx` não os renderizava nessa tela.
+
+Arquivos alterados:
+- `fluency-clean/src/lessons/ListeningLessonClean.jsx`
+- `fluency-clean/src/styles/lesson-polish.css`
+- `REWRITE_HANDOFF.md`
+
+O que foi implementado:
+- `Conceito e explicação` agora começa fechado por padrão;
+- `Shadowing real`, `Vocabulário`, `Exercícios` e `Finalizar aula` também começam fechados para deixar a tela mais leve;
+- `Texto da aula` começa aberto logo após a escuta guiada;
+- ordem visual da aula Listening agora é:
+  1. Escuta guiada / player;
+  2. Texto da aula;
+  3. Conceito e explicação recolhido;
+  4. Vocabulário;
+  5. Exercícios;
+  6. Shadowing real;
+  7. Finalizar aula / Salvar rascunho / Concluir Listening;
+- exercícios da aula agora são renderizados no layout clean;
+- respostas dos exercícios ficam ocultas até o aluno escolher uma alternativa;
+- seleção de respostas é salva junto na conclusão;
+- jump do stepper foi remapeado para a nova ordem: core → texto, practice → exercícios, speak → shadowing, review → finalizar;
+- CSS compactou o cabeçalho dos accordions, reduziu o peso visual do conceito e adicionou feedback visual para exercícios.
+
+Commits:
+- `6352cd9795558a60c7b5d07177522123a4cada0b` — reorganiza aula listening e recolhe conceito por padrão;
+- `0894dd905d19cac96a5d71258b807bc5cb43a18a` — compacta conceito e feedback dos exercícios listening.
+
+Teste recomendado no iPhone:
+1. aguardar deploy da branch lab;
+2. abrir uma aula Listening gerada;
+3. confirmar que `Conceito e explicação` não abre sozinho;
+4. confirmar que o início da aula mostra escuta guiada e texto;
+5. abrir vocabulário, exercícios, shadowing e finalizar;
+6. confirmar que respostas de exercícios não aparecem antes da escolha;
+7. confirmar que o botão `Concluir Listening` aparece apenas no bloco final.
+
+### `BLOCO-17-LAB` — Qualidade visível da aula IMPLEMENTADO
 
 Contexto:
 - usuário quer enxergar se uma aula é confiável antes de estudar;
@@ -76,14 +120,6 @@ O que foi implementado:
   - nível seguro;
 - mantém pontos de atenção visíveis;
 - CSS foi integrado ao `lesson-polish.css`, sem criar sobreposição visual.
-
-Teste recomendado:
-1. aguardar deploy;
-2. abrir uma aula gerada após o `BLOCO-13-LAB`;
-3. verificar se aparece painel `Qualidade visível`;
-4. conferir se mostra professor revisor, plano pedagógico, contrato e risco de falso domínio;
-5. verificar se o layout não ficou pesado no iPhone;
-6. se a aula antiga não tiver professor, painel deve continuar funcionando com dados parciais.
 
 ### `BLOCO-13-LAB` — Professor Gerador/Revisor IMPLEMENTADO
 
@@ -161,7 +197,7 @@ Pendente técnica:
 
 ## NOVA ORDEM DE BLOCOS — QUALIDADE REAL DAS AULAS
 
-1. `BLOCO-17-LAB` — Qualidade visível da aula. STATUS: implementado, aguardando teste.
+1. `BLOCO-LISTENING-ORDEM-1-LAB` — Ordem da aula Listening e conceito recolhido. STATUS: implementado, aguardando teste.
 2. `BLOCO-16-LAB` — Histórico real de Speaking.
 3. `BLOCO-15-LAB` — Banco de erros real.
 4. `BLOCO-20-LAB` — Certificação por nível.
@@ -222,11 +258,11 @@ Ordem recomendada após os blocos principais:
 
 ## Pendência técnica importante
 
-- testar deploy do `BLOCO-17-LAB`;
+- testar deploy do `BLOCO-LISTENING-ORDEM-1-LAB` no iPhone;
 - remover definitivamente `ListeningLesson.jsx` antigo quando o conector permitir SHA correto;
 - confirmar se o painel de qualidade não ficou pesado no iPhone;
 - confirmar se aulas antigas sem professor revisor continuam renderizando.
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. Os blocos de prática e áudio foram implementados e validados. O `BLOCO-11-LAB` criou plano pedagógico antes da geração. O `BLOCO-13-LAB` criou professor revisor. O `BLOCO-17-LAB` ampliou `LessonQualityPanel.jsx` e `lesson-polish.css` para mostrar qualidade visível, contrato, plano, professor, risco de falso domínio e dimensões de avaliação. Próximo passo: testar deploy do bloco 17; se ok, seguir para `BLOCO-16-LAB` Histórico real de Speaking."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O bloco atual implementado foi `BLOCO-LISTENING-ORDEM-1-LAB`: `ListeningLessonClean.jsx` agora começa com escuta guiada e texto, deixa conceito fechado por padrão, renderiza vocabulário, exercícios, shadowing e finalizar nessa ordem, com o botão concluir apenas no bloco final. Próximo passo: testar deploy no iPhone; se ok, seguir para `BLOCO-16-LAB` Histórico real de Speaking."
