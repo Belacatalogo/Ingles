@@ -56,12 +56,45 @@ Diretriz visual nova:
 
 ## BLOCO ATUAL
 
-### `BLOCO-PRACTICE-REBUILD-2-LAB` — Builder pedagógico por fases IMPLEMENTADO COMO BASE, aguardando build/deploy
+### `BLOCO-PRACTICE-REBUILD-3-LAB` — Quality gate forte de questões IMPLEMENTADO, aguardando build/deploy
 
 Análise antes da alteração:
-- `BLOCO-PRACTICE-REBUILD-1-LAB` criou a fundação em `src/practice/core/`;
-- o `PracticeBuilder.js` ainda era genérico e montava candidatos parecidos para todas as habilidades;
-- a correção necessária era separar builders por habilidade para Listening, Speaking, Reading, Grammar e Writing terem fluxos diferentes.
+- o quality gate existente barrava apenas problemas básicos: vazio, alternativa faltando, resposta correta fora das alternativas e alguns tipos incompatíveis;
+- ainda faltavam regras pedagógicas mais fortes para enunciado, idioma, equilíbrio de alternativas, repetição e qualidade do plano completo;
+- o builder por habilidade do bloco 2 já roteia questões por tipo de aula, mas precisava de uma camada mais rígida para impedir perguntas vagas antes da UI final.
+
+Arquivos alterados:
+- `fluency-clean/src/practice/core/PracticeQualityGate.js`
+- `fluency-clean/src/practice/core/PracticeBuilder.js`
+- `REWRITE_HANDOFF.md`
+
+O que foi implementado:
+- bloqueio de enunciado vazio, curto ou genérico demais;
+- regra para enunciado principal orientar em português, exceto fala direta;
+- bloqueio de respostas vagas, pessoais ou exemplos como resposta objetiva;
+- validação de fase pedagógica;
+- validação de compatibilidade entre fase e tipo de questão;
+- validação de alternativas repetidas;
+- validação de alternativas longas, vagas, pessoais ou inválidas;
+- validação de alternativas com formatos muito diferentes;
+- validação de alternativas parecidas demais entre si;
+- regra específica para True/False usar apenas `True` e `False`;
+- limite de tamanho para ditado, fala e resposta escrita curta;
+- bloqueio de repetição excessiva do mesmo tipo de questão na mesma fase;
+- `getPracticePlanIssues()` para avaliar o plano completo;
+- `PracticeBuilder.js` agora retorna `quality.planIssues` além das questões aceitas/rejeitadas.
+
+Importante:
+- este bloco ainda não troca a UI visual;
+- ele reforça a qualidade interna antes do bloco de design;
+- se o deploy passar, o próximo bloco é `BLOCO-PRACTICE-REBUILD-4-LAB`, visual fullscreen elegante do Fluency.
+
+Teste recomendado:
+1. aguardar deploy;
+2. abrir app e confirmar que não há tela branca;
+3. se build passar, seguir para `BLOCO-PRACTICE-REBUILD-4-LAB`.
+
+### `BLOCO-PRACTICE-REBUILD-2-LAB` — Builder pedagógico por fases IMPLEMENTADO COMO BASE
 
 Arquivos criados:
 - `fluency-clean/src/practice/core/builders/builderUtils.js`
@@ -73,28 +106,11 @@ Arquivos criados:
 
 Arquivos alterados:
 - `fluency-clean/src/practice/core/PracticeBuilder.js`
-- `REWRITE_HANDOFF.md`
 
 O que foi implementado:
-- `builderUtils.js` concentra funções reutilizáveis para criar questão, opções, word bank, fill blank, correção, vocabulário e exercícios existentes;
-- `listeningBuilder.js` cria prática com vocabulário, reconhecimento auditivo, compreensão, ditado, produção guiada e shadowing;
-- `readingBuilder.js` cria prática com vocabulário, ideia principal, compreensão, lacunas, montagem de frase e resposta curta;
-- `grammarBuilder.js` cria prática com reconhecimento, lacunas, correção, organizar estrutura e produção escrita;
-- `writingBuilder.js` cria prática com vocabulário, produção guiada, montagem de frase e escrita curta;
-- `speakingBuilder.js` cria prática com repetição, fala guiada, produção oral e fallback futuro;
-- `PracticeBuilder.js` agora roteia pelo tipo da aula usando `getBuilderForSkill()`;
-- o plano ainda passa pelo `PracticeQualityGate` antes de ser entregue;
-- as questões continuam ordenadas por fases da habilidade.
-
-Importante:
-- este bloco ainda não substitui visualmente a prática atual;
-- o objetivo foi tornar o builder pedagógico por habilidade;
-- o próximo bloco deve reforçar o quality gate para barrar questões vagas, alternativas ruins e enunciados fracos antes da UI final.
-
-Teste recomendado:
-1. aguardar deploy;
-2. abrir app e confirmar que não há tela branca;
-3. se build passar, seguir para `BLOCO-PRACTICE-REBUILD-3-LAB`.
+- builders separados por habilidade;
+- `PracticeBuilder.js` roteia pelo tipo da aula;
+- questões continuam ordenadas por fases da habilidade.
 
 ### `BLOCO-PRACTICE-REBUILD-1-LAB` — Arquitetura limpa da prática IMPLEMENTADO COMO FUNDAÇÃO
 
@@ -109,19 +125,17 @@ Arquivos criados:
 
 O que foi implementado:
 - tipos centrais de habilidade, fase, pergunta, resposta e status;
-- plano de fases por habilidade: Listening, Speaking, Reading, Grammar, Writing e Mixed;
 - normalizador de aula para prática;
 - quality gate independente;
 - answer checker independente;
 - estado de sessão independente;
-- builder base;
 - export central.
 
 ## NOVA ORDEM DE BLOCOS — REFORMULAÇÃO DA PRÁTICA
 
 1. `BLOCO-PRACTICE-REBUILD-1-LAB` — Arquitetura limpa da prática. STATUS: fundação criada.
 2. `BLOCO-PRACTICE-REBUILD-2-LAB` — Builder pedagógico por fases. STATUS: base criada.
-3. `BLOCO-PRACTICE-REBUILD-3-LAB` — Quality gate forte de questões.
+3. `BLOCO-PRACTICE-REBUILD-3-LAB` — Quality gate forte de questões. STATUS: implementado, aguardando validação.
 4. `BLOCO-PRACTICE-REBUILD-4-LAB` — UI fullscreen elegante do Fluency.
 5. `BLOCO-PRACTICE-REBUILD-5-LAB` — Sistema de vidas e erro pedagógico.
 6. `BLOCO-PRACTICE-REBUILD-6-LAB` — Componentes por tipo de exercício.
@@ -164,4 +178,4 @@ Pendência técnica importante:
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O antigo protocolo econômico de commit/deploy está temporariamente suspenso por pedido do usuário. O `BLOCO-PRACTICE-REBUILD-1-LAB` criou a fundação nova em `src/practice/core/`. O `BLOCO-PRACTICE-REBUILD-2-LAB` adicionou builders por habilidade em `src/practice/core/builders/` e roteou `PracticeBuilder.js` por tipo de aula. Ainda não substituiu a prática visual atual. Próximo passo: validar build/deploy; se passar, iniciar `BLOCO-PRACTICE-REBUILD-3-LAB`, quality gate forte de questões. Instruções/enunciados em português, conteúdo treinado em inglês, feedback em português. Remover verde claro agressivo e usar gradientes azul/violeta/glass do Fluency nos blocos de UI. Depois seguir blocos 3 a 10 da reformulação e então 12, 14, 11, 13, 17, 16, 15, 20, CARTAS-3B e AUDITORIA-POLIMENTO-GERAL."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O antigo protocolo econômico de commit/deploy está temporariamente suspenso por pedido do usuário. O `BLOCO-PRACTICE-REBUILD-1-LAB` criou a fundação nova em `src/practice/core/`. O `BLOCO-PRACTICE-REBUILD-2-LAB` adicionou builders por habilidade em `src/practice/core/builders/`. O `BLOCO-PRACTICE-REBUILD-3-LAB` reforçou `PracticeQualityGate.js` e adicionou `quality.planIssues` no builder. Ainda não substituiu a prática visual atual. Próximo passo: validar build/deploy; se passar, iniciar `BLOCO-PRACTICE-REBUILD-4-LAB`, UI fullscreen elegante do Fluency. Instruções/enunciados em português, conteúdo treinado em inglês, feedback em português. Remover verde claro agressivo e usar gradientes azul/violeta/glass do Fluency nos blocos de UI. Depois seguir blocos 4 a 10 da reformulação e então 12, 14, 11, 13, 17, 16, 15, 20, CARTAS-3B e AUDITORIA-POLIMENTO-GERAL."
