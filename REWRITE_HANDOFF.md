@@ -47,12 +47,55 @@ Princípio máximo:
 
 ## BLOCO ATUAL
 
-### `BLOCO-20-LAB` — Certificação por nível IMPLEMENTADO, aguardando deploy/teste
+### `BLOCO-LISTENING-COERENCIA-1-LAB` — Fonte única da aula Listening IMPLEMENTADO, aguardando deploy/teste
 
 Contexto:
-- após histórico real de Speaking e banco de erros real, faltava uma leitura clara de consolidação por nível;
-- objetivo é mostrar se o nível atual está apenas em andamento, quase pronto, pronto para certificação ou certificado;
-- certificação não deve depender só de aulas concluídas, mas também de habilidades, simulados/checkpoints, Speaking real e banco de erros.
+- usuário identificou uma aula Listening em que o texto falava apenas de biblioteca, nome e sobrenome;
+- vocabulário e questões cobravam detalhes que não apareciam claramente no texto, como autor do livro;
+- isso revelou que texto, vocabulário e questões podiam vir de versões internas diferentes da mesma aula;
+- usuário também pediu que diálogos mostrem quem está falando cada frase.
+
+Arquivos criados:
+- `fluency-clean/src/services/listeningCoherence.js`
+
+Arquivos alterados:
+- `fluency-clean/src/components/lesson/LessonGeneratorPanel.jsx`
+- `fluency-clean/src/services/plannedGeminiLessons.js`
+- `REWRITE_HANDOFF.md`
+
+O que foi implementado:
+- novo verificador `validateListeningCoherence()`;
+- para aulas `listening`, a transcrição/listeningText vira fonte única de verdade;
+- valida se:
+  - transcrição é suficiente para sustentar vocabulário e questões;
+  - vocabulário principal aparece na transcrição;
+  - questões não cobram informação que não aparece claramente no listeningText;
+  - diálogos com múltiplas falas têm nome/papel do falante antes da fala;
+- novo reparador `repairListeningCoherence()`;
+- o fluxo de geração em `LessonGeneratorPanel.jsx` agora roda a checagem antes do professor revisor e antes de salvar;
+- se houver incoerência, tenta reparo local;
+- se continuar incoerente, bloqueia a aula e mostra no diagnóstico;
+- quando reparar, contrato pode incluir `listening-coherence-v1`;
+- `plannedGeminiLessons.js` agora reforça no prompt:
+  - listeningText é a fonte única de verdade;
+  - vocabulário e questões só podem sair da transcrição;
+  - se houver autor, livro, número, sobrenome ou qualquer detalhe cobrado, esse detalhe precisa aparecer no listeningText;
+  - diálogos precisam usar `Falante: frase`.
+
+Commits:
+- `c8a7740c1caa767009e9ab97e8b667433046e915` — adiciona verificador de coerência listening;
+- `d9177694fbafb0f506c024bd0a3a747408793f59` — integra checagem de coerência listening;
+- `4a8669611483f8bc4d0f68d09c6d1fc57121b4fc` — reforça fonte única em aulas listening.
+
+Teste recomendado no iPhone:
+1. aguardar deploy da branch lab;
+2. gerar uma nova aula Listening;
+3. conferir se o texto tem falantes quando for diálogo;
+4. conferir se vocabulário aparece no texto;
+5. conferir se as questões só perguntam coisas presentes na transcrição;
+6. se vier aula incoerente, confirmar se o diagnóstico bloqueia ou repara antes de salvar.
+
+### `BLOCO-20-LAB` — Certificação por nível IMPLEMENTADO
 
 Arquivos criados:
 - `fluency-clean/src/services/levelCertification.js`
@@ -64,89 +107,12 @@ Arquivos alterados:
 - `REWRITE_HANDOFF.md`
 
 O que foi implementado:
-- novo serviço `levelCertification.js`;
-- `getLevelCertificationSummary(level)` calcula certificação usando dados reais:
-  - progresso do currículo por nível;
-  - aulas concluídas do nível;
-  - cobertura por habilidade: Reading, Listening, Writing, Speaking e Grammar;
-  - Speaking real via `speakingHistory.js`;
-  - banco de erros real via `errorBank.js`;
-  - checkpoints finais do currículo: revisão final, produção final, simulados e mastery lock quando existirem;
-- status possíveis:
-  - `in-progress` / `Em andamento`;
-  - `almost` / `Quase pronto`;
-  - `ready` / `Pronto para certificação`;
-  - `certified` / `Certificado`;
-- a certificação calcula nota geral de 0 a 100 usando:
-  - 35% currículo concluído;
-  - 22% cobertura das habilidades;
-  - 20% checkpoints/simulados;
-  - 13% Speaking real;
-  - 10% penalidade inversa do banco de erros;
-- gera bloqueios claros, como:
-  - concluir aulas/revisões restantes;
-  - equilibrar habilidades;
-  - concluir simulados/produção final;
-  - fazer mais Speaking real;
-  - reduzir erros de alta prioridade;
-- `ProgressScreen.jsx` agora mostra card `Certificação por nível` logo abaixo do mapa CEFR;
-- card mostra:
-  - nível atual;
-  - status;
-  - nota geral;
-  - currículo, habilidades, simulados e Speaking;
-  - status de cada habilidade;
-  - bloqueios e próxima ação;
-- conquistas também passam a mostrar o status da certificação;
-- CSS modular em `level-certification.css`, importado no `main.jsx`.
-
-Commits:
-- `bbdbd462ee2064a01ed1dea8f7067ff852e84f8b` — adiciona certificação real por nível;
-- `af5889ad21352252b0e9a605bb750e67bad62fc7` — mostra certificação por nível no progresso;
-- `786d08864ca1454a478cdc944f6539670829e2a0` — estiliza certificação por nível;
-- `35c2c94a8f9393277f991c71064281eafb1f4b4a` — importa estilos da certificação por nível.
-
-Teste recomendado no iPhone:
-1. aguardar deploy da branch lab;
-2. abrir aba Progresso;
-3. confirmar card `Certificação por nível` abaixo do mapa CEFR;
-4. verificar se mostra o nível atual, nota, status e bloqueios;
-5. confirmar se Speaking real e banco de erros influenciam a certificação;
-6. confirmar se a tela não ficou pesada demais no iPhone.
+- `levelCertification.js` calcula certificação por nível usando currículo, habilidades, checkpoints, Speaking real e banco de erros;
+- Progresso mostra card `Certificação por nível`.
 
 ### `BLOCO-15-LAB` — Banco de erros real IMPLEMENTADO
 
-Arquivos criados:
-- `fluency-clean/src/services/errorBank.js`
-- `fluency-clean/src/styles/error-bank.css`
-
-Arquivos alterados:
-- `fluency-clean/src/screens/ProgressScreen.jsx`
-- `fluency-clean/src/main.jsx`
-- `REWRITE_HANDOFF.md`
-
-O que foi implementado:
-- `errorBank.js` monta banco de erros real derivado dos dados locais;
-- fontes: prática profunda, Speaking/Azure e produção escrita curta;
-- Progresso mostra card `Banco de erros real`.
-
 ### `BLOCO-16-LAB` — Histórico real de Speaking IMPLEMENTADO
-
-Arquivos criados:
-- `fluency-clean/src/services/speakingHistory.js`
-- `fluency-clean/src/styles/speaking-history.css`
-
-Arquivos alterados:
-- `fluency-clean/src/screens/SpeakingScreen.jsx`
-- `fluency-clean/src/screens/ProgressScreen.jsx`
-- `fluency-clean/src/main.jsx`
-- `REWRITE_HANDOFF.md`
-
-O que foi implementado:
-- `speakingHistory.js` lê `progress.speakingSessions` e monta resumo real;
-- `SpeakingScreen.jsx` mostra card `Histórico real de Speaking`;
-- Pronúncia e Imersão registram tentativas reais quando o Azure analisa;
-- Progresso usa histórico real de Speaking.
 
 ### `BLOCO-CONFIANÇA-DE-ESTUDO-LAB` — Aula vale estudar + painel compacto IMPLEMENTADO
 
@@ -193,7 +159,7 @@ Pendente técnica:
 
 ## NOVA ORDEM DE BLOCOS — QUALIDADE REAL DAS AULAS
 
-1. `BLOCO-20-LAB` — Certificação por nível. STATUS: implementado, aguardando teste.
+1. `BLOCO-LISTENING-COERENCIA-1-LAB` — Fonte única da aula Listening. STATUS: implementado, aguardando teste.
 2. `BLOCO-CARTAS-3B-LAB` — Expandir banco de vocabulário em novos lotes até 2.000 palavras reais.
 3. `BLOCO-AUDITORIA-POLIMENTO-GERAL-LAB` — após concluir os blocos principais, analisar cada página com precisão, listar melhorias possíveis e montar blocos de polimento.
 
@@ -218,12 +184,13 @@ Ordem recomendada após os blocos principais:
 
 ## Pendência técnica importante
 
-- testar deploy do `BLOCO-20-LAB` no iPhone;
-- confirmar card `Certificação por nível` na aba Progresso;
-- confirmar que status muda conforme currículo, Speaking real, checkpoints e banco de erros;
+- testar deploy do `BLOCO-LISTENING-COERENCIA-1-LAB` no iPhone;
+- gerar nova aula Listening para validar fonte única;
+- confirmar que questões e vocabulário batem com listeningText;
+- confirmar falantes identificados em diálogos;
 - seguir depois para `BLOCO-CARTAS-3B-LAB`;
 - remover definitivamente `ListeningLesson.jsx` antigo quando o conector permitir SHA correto.
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O bloco atual implementado foi `BLOCO-20-LAB`: criado `levelCertification.js`, Progresso mostra `Certificação por nível`, calculada por currículo, habilidades, checkpoints, Speaking real e banco de erros. Testar no iPhone; se ok, seguir para `BLOCO-CARTAS-3B-LAB`."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O bloco atual implementado foi `BLOCO-LISTENING-COERENCIA-1-LAB`: criado `listeningCoherence.js`, integrado em `LessonGeneratorPanel.jsx`, e prompt em `plannedGeminiLessons.js` reforça listeningText como fonte única. Testar no iPhone; se ok, seguir para `BLOCO-CARTAS-3B-LAB`."
