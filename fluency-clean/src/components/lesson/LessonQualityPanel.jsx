@@ -1,4 +1,5 @@
-import { AlertTriangle, CheckCircle2, ClipboardCheck, GraduationCap, ShieldCheck, Sparkles, Target, Zap } from 'lucide-react';
+import { useState } from 'react';
+import { AlertTriangle, CheckCircle2, ChevronDown, ChevronUp, ClipboardCheck, GraduationCap, ShieldCheck, Sparkles, Target, Zap } from 'lucide-react';
 
 function clampScore(value) {
   const score = Number(value || 0);
@@ -77,7 +78,26 @@ function getReviewedAreas(lesson = {}, teacher = {}, quality = {}) {
   return teacher.reviewedAreas || quality.reviewedAreas || lesson.reviewedAreas || buildFallbackReviewedAreas(lesson);
 }
 
+function getStudyReadiness(lesson = {}, finalScore = 0, approved = false, issues = []) {
+  const readiness = lesson.studyReadiness || lesson.quality?.studyReadiness;
+  if (readiness && typeof readiness === 'object') return readiness;
+  if (!approved || finalScore < 82) {
+    return { status: 'do-not-study', label: 'Não estudar ainda', confidence: 'baixa', message: 'Aula precisa de revisão antes de valer seu tempo.', warnings: [], missing: issues };
+  }
+  if (issues.length || finalScore < 90) {
+    return { status: 'study-with-attention', label: 'Pode estudar com atenção', confidence: 'moderada', message: 'Aula é concreta, mas há pontos para observar.', warnings: issues, missing: [] };
+  }
+  return { status: 'study-ready', label: 'Pode estudar', confidence: 'concreta', message: 'Aula tem estrutura suficiente para estudar com confiança prática.', warnings: [], missing: [] };
+}
+
+function readinessClass(status) {
+  if (status === 'study-ready') return 'ready';
+  if (status === 'study-with-attention') return 'attention';
+  return 'blocked';
+}
+
 export function LessonQualityPanel({ lesson }) {
+  const [open, setOpen] = useState(false);
   if (!lesson) return null;
 
   const meta = lesson.generationMeta || {};
@@ -98,6 +118,8 @@ export function LessonQualityPanel({ lesson }) {
   const repaired = Boolean(meta.autoRepaired || pedagogical.autoRepaired || pedagogical.teacherRepair);
   const reviewedAreas = getReviewedAreas(lesson, teacher, quality);
   const reviewedAreaList = Object.entries(reviewedAreas).map(([key, area]) => ({ key, ...area }));
+  const studyReadiness = getStudyReadiness(lesson, finalScore, approved, issues);
+  const readinessTone = readinessClass(studyReadiness.status);
 
   const dimensions = [
     { label: 'Coerência', value: teacher.coherence, hint: 'objetivo, cenário e conteúdo' },
@@ -109,95 +131,118 @@ export function LessonQualityPanel({ lesson }) {
   ].filter((item) => Number(item.value || 0) > 0);
 
   return (
-    <section className={`lesson-quality-panel ${scoreType}`}>
-      <div className="lesson-quality-header">
+    <section className={`lesson-quality-panel compact-quality ${scoreType} ${readinessTone}`}>
+      <button className="quality-compact-head" type="button" onClick={() => setOpen((value) => !value)} aria-expanded={open}>
         <div>
-          <span className="quality-eyebrow"><ShieldCheck size={13} /> Qualidade visível</span>
-          <h2>{scoreLabel(finalScore)} · {finalScore}/100</h2>
-          <p>{approved ? `Esta aula tem ${confidence} para estudo. Ela passou por plano, rubrica e professor revisor quando disponíveis.` : 'Esta aula tem alertas e não deveria ser usada sem revisão.'}</p>
+          <span className="quality-eyebrow"><ShieldCheck size={13} /> Confiança de estudo</span>
+          <h2>{studyReadiness.label} · {finalScore}/100</h2>
+          <p>{studyReadiness.message}</p>
         </div>
-        <div className="quality-score-ring" aria-label={`Nota ${finalScore} de 100`}>
-          <strong>{finalScore}</strong>
-          <small>/100</small>
+        <div className="quality-compact-side">
+          <div className="quality-score-ring" aria-label={`Nota ${finalScore} de 100`}>
+            <strong>{finalScore}</strong>
+            <small>/100</small>
+          </div>
+          <span>{open ? <ChevronUp size={18} /> : <ChevronDown size={18} />} Detalhes</span>
         </div>
-      </div>
+      </button>
 
-      <div className="quality-grid">
-        <div className="quality-card">
-          <ClipboardCheck size={16} />
-          <span>Rubrica pedagógica</span>
-          <strong>{pedagogicalScore || finalScore}/100</strong>
-        </div>
-        <div className="quality-card">
-          <GraduationCap size={16} />
-          <span>Professor revisor</span>
-          <strong>{hasTeacher ? `${teacherScore}/100` : 'não aplicado'}</strong>
-        </div>
-        <div className="quality-card">
-          <Sparkles size={16} />
-          <span>Plano pedagógico</span>
-          <strong>{hasPlan ? 'ativo' : 'não aplicado'}</strong>
-        </div>
-        <div className="quality-card">
-          <CheckCircle2 size={16} />
-          <span>Correção automática</span>
-          <strong>{repaired ? 'sim' : 'não'}</strong>
-        </div>
-        <div className="quality-card">
-          <Target size={16} />
-          <span>Risco falso domínio</span>
-          <strong>{falseMasteryRisk}</strong>
-        </div>
-        <div className="quality-card">
-          <Zap size={16} />
-          <span>Contrato</span>
-          <strong>{contract}</strong>
-        </div>
-      </div>
+      {open ? (
+        <div className="quality-details-body">
+          <div className="study-readiness-box">
+            <span>{studyReadiness.status === 'study-ready' ? <CheckCircle2 size={15} /> : <AlertTriangle size={15} />} Status para estudo</span>
+            <strong>{studyReadiness.label}</strong>
+            <p>{studyReadiness.message}</p>
+            {studyReadiness.missing?.length ? <small>Bloqueios: {studyReadiness.missing.slice(0, 3).join(' ')}</small> : null}
+            {studyReadiness.warnings?.length ? <small>Atenção: {studyReadiness.warnings.slice(0, 3).join(' ')}</small> : null}
+          </div>
 
-      <div className="quality-reviewed-areas">
-        <span><GraduationCap size={14} /> Professor analisou</span>
-        <div>
-          {reviewedAreaList.map((area) => (
-            <article key={area.key} className={area.reviewed ? 'reviewed' : 'missing'}>
-              {area.reviewed ? <CheckCircle2 size={14} /> : <AlertTriangle size={14} />}
-              <strong>{area.label}</strong>
-              <small>{area.status}</small>
-              <p>{area.detail}</p>
-            </article>
-          ))}
-        </div>
-      </div>
-
-      {hasPlan ? (
-        <div className="quality-plan-box">
-          <span><Sparkles size={14} /> Plano usado</span>
-          <p>{getPlanScenario(lesson)}</p>
-        </div>
-      ) : null}
-
-      {dimensions.length ? (
-        <div className="quality-dimensions">
-          {dimensions.map((item) => (
-            <div key={item.label}>
-              <div><span>{item.label}</span><strong>{formatPercent(item.value)}</strong></div>
-              <i><b style={{ width: `${clampScore(item.value)}%` }} /></i>
-              <small>{item.hint}</small>
+          <div className="lesson-quality-header nested">
+            <div>
+              <span className="quality-eyebrow"><ShieldCheck size={13} /> Qualidade visível</span>
+              <h2>{scoreLabel(finalScore)} · {finalScore}/100</h2>
+              <p>{approved ? `Esta aula tem ${confidence} para estudo. Ela passou por plano, rubrica e professor revisor quando disponíveis.` : 'Esta aula tem alertas e não deveria ser usada sem revisão.'}</p>
             </div>
-          ))}
+          </div>
+
+          <div className="quality-grid">
+            <div className="quality-card">
+              <ClipboardCheck size={16} />
+              <span>Rubrica pedagógica</span>
+              <strong>{pedagogicalScore || finalScore}/100</strong>
+            </div>
+            <div className="quality-card">
+              <GraduationCap size={16} />
+              <span>Professor revisor</span>
+              <strong>{hasTeacher ? `${teacherScore}/100` : 'não aplicado'}</strong>
+            </div>
+            <div className="quality-card">
+              <Sparkles size={16} />
+              <span>Plano pedagógico</span>
+              <strong>{hasPlan ? 'ativo' : 'não aplicado'}</strong>
+            </div>
+            <div className="quality-card">
+              <CheckCircle2 size={16} />
+              <span>Correção automática</span>
+              <strong>{repaired ? 'sim' : 'não'}</strong>
+            </div>
+            <div className="quality-card">
+              <Target size={16} />
+              <span>Risco falso domínio</span>
+              <strong>{falseMasteryRisk}</strong>
+            </div>
+            <div className="quality-card">
+              <Zap size={16} />
+              <span>Contrato</span>
+              <strong>{contract}</strong>
+            </div>
+          </div>
+
+          <div className="quality-reviewed-areas">
+            <span><GraduationCap size={14} /> Professor analisou</span>
+            <div>
+              {reviewedAreaList.map((area) => (
+                <article key={area.key} className={area.reviewed ? 'reviewed' : 'missing'}>
+                  {area.reviewed ? <CheckCircle2 size={14} /> : <AlertTriangle size={14} />}
+                  <strong>{area.label}</strong>
+                  <small>{area.status}</small>
+                  <p>{area.detail}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+
+          {hasPlan ? (
+            <div className="quality-plan-box">
+              <span><Sparkles size={14} /> Plano usado</span>
+              <p>{getPlanScenario(lesson)}</p>
+            </div>
+          ) : null}
+
+          {dimensions.length ? (
+            <div className="quality-dimensions">
+              {dimensions.map((item) => (
+                <div key={item.label}>
+                  <div><span>{item.label}</span><strong>{formatPercent(item.value)}</strong></div>
+                  <i><b style={{ width: `${clampScore(item.value)}%` }} /></i>
+                  <small>{item.hint}</small>
+                </div>
+              ))}
+            </div>
+          ) : null}
+
+          {issues.length ? (
+            <div className="quality-alerts">
+              <span><AlertTriangle size={15} /> Pontos de atenção</span>
+              <ul>
+                {issues.map((issue) => <li key={issue}>{issue}</li>)}
+              </ul>
+            </div>
+          ) : (
+            <div className="quality-ok"><CheckCircle2 size={15} /> Nenhum alerta crítico de qualidade foi registrado.</div>
+          )}
         </div>
       ) : null}
-
-      {issues.length ? (
-        <div className="quality-alerts">
-          <span><AlertTriangle size={15} /> Pontos de atenção</span>
-          <ul>
-            {issues.map((issue) => <li key={issue}>{issue}</li>)}
-          </ul>
-        </div>
-      ) : (
-        <div className="quality-ok"><CheckCircle2 size={15} /> Nenhum alerta crítico de qualidade foi registrado.</div>
-      )}
     </section>
   );
 }
