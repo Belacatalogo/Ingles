@@ -35,42 +35,48 @@ Nova regra operacional enquanto a reconstrução da prática estiver em andament
 
 ## BLOCO ATUAL
 
-### `BLOCO-GERAÇÃO-ESTABILIDADE-1B-LAB` — Parser JSON tolerante IMPLEMENTADO, aguardando deploy/teste
+### `BLOCO-11-LAB` — Plano primeiro, aula depois IMPLEMENTADO via wrapper limpo, aguardando deploy/teste
+
+Contexto:
+- usuário quer ter certeza de que as aulas têm qualidade real e não conteúdo raso;
+- tentativa inicial de integrar diretamente no `geminiLessons.js` foi bloqueada porque o arquivo é grande/truncado pelo conector e `update_file` exige SHA exato;
+- para não arriscar quebrar o gerador já funcional, foi escolhida arquitetura segura: módulo de plano + wrapper planejado + troca da chamada no painel.
+
+Arquivos criados:
+- `fluency-clean/src/services/lessonPlan.js`
+- `fluency-clean/src/services/plannedGeminiLessons.js`
+
+Arquivos alterados:
+- `fluency-clean/src/components/lesson/LessonGeneratorPanel.jsx`
+- `REWRITE_HANDOFF.md`
+
+O que foi implementado:
+- `lessonPlan.js` cria um plano pedagógico antes da aula;
+- plano considera tipo da aula: listening, grammar, reading, writing, speaking;
+- plano define missão, cenário, sequência pedagógica, mix ideal de exercícios, critérios de qualidade e itens proibidos;
+- para Listening A1, o plano proíbe ditado longo cedo e spelling fraco com resposta pronta em múltipla escolha;
+- `plannedGeminiLessons.js` envolve `generateLessonDraft()` sem mexer no `geminiLessons.js` grande;
+- o wrapper injeta o plano pedagógico no prompt final usado pelo gerador;
+- `LessonGeneratorPanel.jsx` agora usa `generatePlannedLessonDraft()`;
+- diagnóstico deve registrar: `Plano pedagógico criado: ...` antes da geração;
+- aulas salvas passam a carregar `lessonPlan`, `planSeed` e contrato `lesson-contract-v1+lesson-plan-v1`.
+
+Teste recomendado:
+1. aguardar deploy;
+2. gerar uma aula nova com substituição ativa se for a mesma etapa;
+3. verificar no Diagnóstico se aparece `Plano pedagógico criado`;
+4. confirmar que a aula ainda passa pelos blocos do Gemini;
+5. conferir se a aula gerada parece seguir um cenário mais coerente;
+6. verificar se as perguntas de spelling/listening ficaram menos bobas.
+
+### `BLOCO-GERAÇÃO-ESTABILIDADE-1B-LAB` — Parser JSON tolerante IMPLEMENTADO E VALIDADO PELO USUÁRIO
 
 Contexto:
 - após o AutoFill adaptativo, o novo gargalo passou a ser `JSON Parse error` vindo do Gemini;
 - erros vistos pelo usuário:
   - `JSON Parse error: Expected ']'`
-  - `JSON Parse error: Invalid escape character`
-- isso acontece quando o Gemini entrega JSON quase correto, mas com escapes quebrados, markdown ou caracteres inválidos.
-
-Arquivo alterado:
-- `fluency-clean/src/services/geminiLessons.js`
-- `REWRITE_HANDOFF.md`
-
-O que foi implementado:
-- adicionadas regras fortes de segurança JSON (`JSON_SAFETY_RULES`) em todos os blocos;
-- prompt agora instrui explicitamente:
-  - retornar somente JSON válido;
-  - usar aspas duplas;
-  - não usar barra invertida antes de apóstrofo;
-  - não usar markdown/comentários/vírgula sobrando;
-- `parseLessonJson()` agora tenta primeiro JSON puro;
-- se falhar, aplica reparo automático:
-  - remove/controla caracteres invisíveis;
-  - troca `\'` por `'`;
-  - duplica barras invertidas inválidas;
-  - remove vírgula antes de `}` ou `]`;
-- se o reparo funcionar, o diagnóstico registra que o JSON foi reparado;
-- se ainda falhar, a mensagem agora mostra um preview curto do JSON problemático;
-- temperatura da geração caiu de `0.34` para `0.28` para reduzir criatividade problemática no JSON.
-
-Teste recomendado:
-1. aguardar deploy;
-2. gerar aula novamente;
-3. se aparecer JSON imperfeito, verificar se aparece mensagem de reparo automático em vez de falhar;
-4. validar se a geração passa dos blocos 1/5 e 4/5;
-5. confirmar se AutoFill continua funcionando quando exercícios vierem insuficientes.
+  - `JSON Parse error: Invalid escape character`;
+- usuário confirmou que funcionou.
 
 ### `BLOCO-GERAÇÃO-ESTABILIDADE-1-LAB` — AutoFill adaptativo por progresso IMPLEMENTADO
 
@@ -140,23 +146,22 @@ Pendente técnica:
 
 ## NOVA ORDEM DE BLOCOS — QUALIDADE REAL DAS AULAS
 
-1. `BLOCO-GERAÇÃO-ESTABILIDADE-1B-LAB` — Parser JSON tolerante. STATUS: implementado, aguardando teste.
-2. `BLOCO-11-LAB` — Plano primeiro, aula depois. STATUS: próximo após validação.
-3. `BLOCO-13-LAB` — Professor Gerador/Revisor.
-4. `BLOCO-17-LAB` — Qualidade visível da aula.
-5. `BLOCO-16-LAB` — Histórico real de Speaking.
-6. `BLOCO-15-LAB` — Banco de erros real.
-7. `BLOCO-20-LAB` — Certificação por nível.
-8. `BLOCO-CARTAS-3B-LAB` — Expandir banco de vocabulário em novos lotes até 2.000 palavras reais.
-9. `BLOCO-AUDITORIA-POLIMENTO-GERAL-LAB` — após concluir os blocos principais, analisar cada página com precisão, listar melhorias possíveis e montar blocos de polimento.
+1. `BLOCO-11-LAB` — Plano primeiro, aula depois. STATUS: implementado, aguardando teste.
+2. `BLOCO-13-LAB` — Professor Gerador/Revisor.
+3. `BLOCO-17-LAB` — Qualidade visível da aula.
+4. `BLOCO-16-LAB` — Histórico real de Speaking.
+5. `BLOCO-15-LAB` — Banco de erros real.
+6. `BLOCO-20-LAB` — Certificação por nível.
+7. `BLOCO-CARTAS-3B-LAB` — Expandir banco de vocabulário em novos lotes até 2.000 palavras reais.
+8. `BLOCO-AUDITORIA-POLIMENTO-GERAL-LAB` — após concluir os blocos principais, analisar cada página com precisão, listar melhorias possíveis e montar blocos de polimento.
 
 ## Pendência técnica importante
 
-- testar deploy do `BLOCO-GERAÇÃO-ESTABILIDADE-1B-LAB`;
+- testar deploy do `BLOCO-11-LAB`;
 - remover definitivamente `ListeningLesson.jsx` antigo quando o conector permitir SHA correto;
 - confirmar se o contrato não ficou restritivo demais para Flash/free;
 - se o contrato reprovar muitas gerações, ajustar no bloco de plano/reparo sem afrouxar qualidade.
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. Os blocos de prática e áudio foram implementados e validados. O `BLOCO-GERAÇÃO-ESTABILIDADE-1-LAB` criou AutoFill adaptativo e travou o tipo da aula pelo cronograma. O `BLOCO-GERAÇÃO-ESTABILIDADE-1B-LAB` adicionou parser JSON tolerante e regras de JSON seguro no Gemini. Próximo passo: testar deploy; se ok, seguir para `BLOCO-11-LAB` plano primeiro, aula depois."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. Os blocos de prática e áudio foram implementados e validados. O `BLOCO-GERAÇÃO-ESTABILIDADE-1B-LAB` foi validado. O `BLOCO-11-LAB` criou `lessonPlan.js` e `plannedGeminiLessons.js`, e o `LessonGeneratorPanel.jsx` agora usa `generatePlannedLessonDraft`. Próximo passo: testar deploy; se ok, seguir para `BLOCO-13-LAB` Professor Gerador/Revisor."
