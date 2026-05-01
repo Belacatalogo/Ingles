@@ -47,7 +47,52 @@ Princípio máximo:
 
 ## BLOCO ATUAL
 
-### `BLOCO-11-LAB` — Plano primeiro, aula depois IMPLEMENTADO via wrapper limpo, aguardando deploy/teste
+### `BLOCO-13-LAB` — Professor Gerador/Revisor IMPLEMENTADO, aguardando deploy/teste
+
+Contexto:
+- usuário quer maior garantia de que não está perdendo tempo com aulas rasas;
+- após o plano pedagógico, faltava uma camada de professor revisor antes de salvar a aula;
+- o objetivo é detectar coerência, profundidade, alinhamento da habilidade, exercícios fracos, falso domínio e dificuldade inadequada.
+
+Arquivos criados:
+- `fluency-clean/src/services/teacherReviewer.js`
+
+Arquivos alterados:
+- `fluency-clean/src/components/lesson/LessonGeneratorPanel.jsx`
+- `REWRITE_HANDOFF.md`
+
+O que foi implementado:
+- `teacherReviewer.js` avalia a aula como um professor;
+- critérios do professor revisor:
+  - coerência entre objetivo, cenário e conteúdo;
+  - profundidade de seções, vocabulário e produção;
+  - utilidade real dos exercícios;
+  - alinhamento com o tipo da aula: listening, grammar, reading, writing ou speaking;
+  - risco de falso domínio por excesso de múltipla escolha e pouca produção;
+  - segurança de nível para A1/A2;
+- detecta pergunta fraca de spelling quando a alternativa entrega a resposta pronta;
+- gera `teacherReview` com nota final, nota do professor, issues e aprovação;
+- o fluxo agora é:
+  - gerar aula planejada;
+  - validar rubricamente;
+  - se necessário reparar;
+  - professor revisor avalia;
+  - se reprovar, tenta reparo com issues do professor;
+  - só salva se o professor aprovar;
+- contrato salvo agora pode aparecer como `lesson-contract-v1+lesson-plan-v1+teacher-reviewer-v1`;
+- qualidade salva agora inclui `teacherScore`, `teacherApproved`, `teacherIssues` e `reviewer`.
+
+Teste recomendado:
+1. aguardar deploy;
+2. gerar aula nova;
+3. confirmar no Diagnóstico:
+   - `Plano pedagógico criado`;
+   - `Professor revisor avaliou a aula`;
+4. se o professor reprovar, confirmar se tenta reparo;
+5. se salvar, conferir se a mensagem final diz `aprovada pelo professor`;
+6. abrir a aula e conferir se a qualidade parece mais coerente.
+
+### `BLOCO-11-LAB` — Plano primeiro, aula depois IMPLEMENTADO
 
 Contexto:
 - usuário quer ter certeza de que as aulas têm qualidade real e não conteúdo raso;
@@ -73,49 +118,9 @@ O que foi implementado:
 - diagnóstico deve registrar: `Plano pedagógico criado: ...` antes da geração;
 - aulas salvas passam a carregar `lessonPlan`, `planSeed` e contrato `lesson-contract-v1+lesson-plan-v1`.
 
-Teste recomendado:
-1. aguardar deploy;
-2. gerar uma aula nova com substituição ativa se for a mesma etapa;
-3. verificar no Diagnóstico se aparece `Plano pedagógico criado`;
-4. confirmar que a aula ainda passa pelos blocos do Gemini;
-5. conferir se a aula gerada parece seguir um cenário mais coerente;
-6. verificar se as perguntas de spelling/listening ficaram menos bobas.
-
 ### `BLOCO-GERAÇÃO-ESTABILIDADE-1B-LAB` — Parser JSON tolerante IMPLEMENTADO E VALIDADO PELO USUÁRIO
 
-Contexto:
-- após o AutoFill adaptativo, o novo gargalo passou a ser `JSON Parse error` vindo do Gemini;
-- erros vistos pelo usuário:
-  - `JSON Parse error: Expected ']'`
-  - `JSON Parse error: Invalid escape character`;
-- usuário confirmou que funcionou.
-
 ### `BLOCO-GERAÇÃO-ESTABILIDADE-1-LAB` — AutoFill adaptativo por progresso IMPLEMENTADO
-
-Contexto:
-- usuário reportou que as gerações estavam travando por `Exercícios insuficientes`;
-- também apareceu `gerando estrutura compacta da aula Grammar` quando a próxima aula visualmente era Listening;
-- usuário questionou com razão que questões de soletrar em múltipla escolha são fracas quando o objetivo real é produzir spelling.
-
-Arquivos criados:
-- `fluency-clean/src/services/exerciseAutoFill.js`
-
-Arquivos alterados:
-- `fluency-clean/src/services/geminiLessons.js`
-- `fluency-clean/src/components/lesson/LessonGeneratorPanel.jsx`
-- `REWRITE_HANDOFF.md`
-
-O que foi implementado:
-- criado `exerciseAutoFill.js` como módulo separado, limpo e adaptativo;
-- AutoFill completa exercícios faltantes quando o Gemini entrega pouco;
-- AutoFill usa tipo da aula, nível, transcrição/texto, vocabulário e modo de entrada;
-- para Listening A1, spelling agora prioriza escrever, ditado curto, corrigir spelling e falar;
-- múltipla escolha ficou reservada para reconhecimento, som inicial, vocabulário e verdadeiro/falso simples;
-- `geminiLessons.js` passou a aceitar `forcedType`;
-- `LessonGeneratorPanel.jsx` envia `forcedType = nextLesson.type`, exceto revisão adaptativa;
-- o tipo da aula agora fica travado pelo cronograma/app;
-- `BLOCK_RETRY_LIMIT` caiu para 1 porque AutoFill resolve ausência de exercícios antes de gastar novas tentativas;
-- diagnóstico agora pode mostrar mensagens como `Tipo de aula travado: Listening` e `AutoFill adaptativo completou +X`.
 
 ### `BLOCO-GERAÇÃO-VARIAÇÃO-2-LAB` — Bloqueio de repetição e reparo sem fallback antigo IMPLEMENTADO
 
@@ -158,14 +163,13 @@ Pendente técnica:
 
 ## NOVA ORDEM DE BLOCOS — QUALIDADE REAL DAS AULAS
 
-1. `BLOCO-11-LAB` — Plano primeiro, aula depois. STATUS: implementado, aguardando teste.
-2. `BLOCO-13-LAB` — Professor Gerador/Revisor.
-3. `BLOCO-17-LAB` — Qualidade visível da aula.
-4. `BLOCO-16-LAB` — Histórico real de Speaking.
-5. `BLOCO-15-LAB` — Banco de erros real.
-6. `BLOCO-20-LAB` — Certificação por nível.
-7. `BLOCO-CARTAS-3B-LAB` — Expandir banco de vocabulário em novos lotes até 2.000 palavras reais.
-8. `BLOCO-AUDITORIA-POLIMENTO-GERAL-LAB` — após concluir os blocos principais, analisar cada página com precisão, listar melhorias possíveis e montar blocos de polimento.
+1. `BLOCO-13-LAB` — Professor Gerador/Revisor. STATUS: implementado, aguardando teste.
+2. `BLOCO-17-LAB` — Qualidade visível da aula.
+3. `BLOCO-16-LAB` — Histórico real de Speaking.
+4. `BLOCO-15-LAB` — Banco de erros real.
+5. `BLOCO-20-LAB` — Certificação por nível.
+6. `BLOCO-CARTAS-3B-LAB` — Expandir banco de vocabulário em novos lotes até 2.000 palavras reais.
+7. `BLOCO-AUDITORIA-POLIMENTO-GERAL-LAB` — após concluir os blocos principais, analisar cada página com precisão, listar melhorias possíveis e montar blocos de polimento.
 
 ## FASE EXTRA — GARANTIA PEDAGÓGICA MÁXIMA
 
@@ -221,11 +225,11 @@ Ordem recomendada após os blocos principais:
 
 ## Pendência técnica importante
 
-- testar deploy do `BLOCO-11-LAB`;
+- testar deploy do `BLOCO-13-LAB`;
 - remover definitivamente `ListeningLesson.jsx` antigo quando o conector permitir SHA correto;
-- confirmar se o contrato não ficou restritivo demais para Flash/free;
-- se o contrato reprovar muitas gerações, ajustar no bloco de plano/reparo sem afrouxar qualidade.
+- confirmar se o professor revisor não está restritivo demais para A1;
+- se reprovar aulas boas demais, ajustar pesos do professor sem afrouxar qualidade.
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. Os blocos de prática e áudio foram implementados e validados. O `BLOCO-GERAÇÃO-ESTABILIDADE-1B-LAB` foi validado. O `BLOCO-11-LAB` criou `lessonPlan.js` e `plannedGeminiLessons.js`, e o `LessonGeneratorPanel.jsx` agora usa `generatePlannedLessonDraft`. Também foram adicionados ao handoff os blocos extras de garantia pedagógica máxima, de `BLOCO-DOMÍNIO-1-LAB` até `BLOCO-RELATÓRIO-SEMANAL-1-LAB`. Próximo passo: testar deploy do bloco 11; se ok, seguir para `BLOCO-13-LAB` Professor Gerador/Revisor."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. Os blocos de prática e áudio foram implementados e validados. O `BLOCO-GERAÇÃO-ESTABILIDADE-1B-LAB` foi validado. O `BLOCO-11-LAB` criou plano pedagógico antes da geração. O `BLOCO-13-LAB` criou `teacherReviewer.js` e integrou o professor revisor no `LessonGeneratorPanel.jsx`, aprovando ou reparando aulas antes de salvar. Próximo passo: testar deploy do bloco 13; se ok, seguir para `BLOCO-17-LAB` Qualidade visível da aula."
