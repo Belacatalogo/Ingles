@@ -223,11 +223,11 @@ export function ListeningLesson({ lesson }) {
 
       <section className="pillar-card">
         <div className="pillar-card-title"><ListChecks size={17} /> Compreensão</div>
-        <p className="lesson-helper-text">Responda primeiro. A resposta esperada só aparece depois que você escrever ou tocar em "Ver resposta".</p>
+        <p className="lesson-helper-text">Responda primeiro. A resposta esperada só aparece quando você tocar em "Ver resposta".</p>
         <div className="listening-question-list">
           {questions.map((item, index) => {
             const currentAnswer = questionAnswers[index] || '';
-            const canReveal = Boolean(currentAnswer.trim()) || revealedAnswers[index];
+            const canReveal = Boolean(revealedAnswers[index]);
             return (
               <label key={`${item.question}-${index}`}>
                 <span>{index + 1}. {item.question}</span>

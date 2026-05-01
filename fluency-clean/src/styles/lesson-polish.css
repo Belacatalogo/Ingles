@@ -618,6 +618,28 @@
   line-height: 1.45;
 }
 
+.lesson-reference-screen .pillar-card button.inline-lesson-action {
+  justify-self: start;
+  width: auto;
+  max-width: max-content;
+  min-height: 30px;
+  padding: 6px 10px;
+  border: 1px solid rgba(91,156,246,.24);
+  border-radius: 999px;
+  color: #93c5fd;
+  background: rgba(91,156,246,.10);
+  box-shadow: none;
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.lesson-reference-screen .pillar-card button.inline-lesson-action svg {
+  width: 13px;
+  height: 13px;
+}
+
 .pillar-finish-card {
   display: grid;
   gap: 14px;
