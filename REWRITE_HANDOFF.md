@@ -35,7 +35,44 @@ Nova regra operacional enquanto a reconstrução da prática estiver em andament
 
 ## BLOCO ATUAL
 
-### `BLOCO-GERAÇÃO-ESTABILIDADE-1-LAB` — AutoFill adaptativo por progresso IMPLEMENTADO, aguardando deploy/teste
+### `BLOCO-GERAÇÃO-ESTABILIDADE-1B-LAB` — Parser JSON tolerante IMPLEMENTADO, aguardando deploy/teste
+
+Contexto:
+- após o AutoFill adaptativo, o novo gargalo passou a ser `JSON Parse error` vindo do Gemini;
+- erros vistos pelo usuário:
+  - `JSON Parse error: Expected ']'`
+  - `JSON Parse error: Invalid escape character`
+- isso acontece quando o Gemini entrega JSON quase correto, mas com escapes quebrados, markdown ou caracteres inválidos.
+
+Arquivo alterado:
+- `fluency-clean/src/services/geminiLessons.js`
+- `REWRITE_HANDOFF.md`
+
+O que foi implementado:
+- adicionadas regras fortes de segurança JSON (`JSON_SAFETY_RULES`) em todos os blocos;
+- prompt agora instrui explicitamente:
+  - retornar somente JSON válido;
+  - usar aspas duplas;
+  - não usar barra invertida antes de apóstrofo;
+  - não usar markdown/comentários/vírgula sobrando;
+- `parseLessonJson()` agora tenta primeiro JSON puro;
+- se falhar, aplica reparo automático:
+  - remove/controla caracteres invisíveis;
+  - troca `\'` por `'`;
+  - duplica barras invertidas inválidas;
+  - remove vírgula antes de `}` ou `]`;
+- se o reparo funcionar, o diagnóstico registra que o JSON foi reparado;
+- se ainda falhar, a mensagem agora mostra um preview curto do JSON problemático;
+- temperatura da geração caiu de `0.34` para `0.28` para reduzir criatividade problemática no JSON.
+
+Teste recomendado:
+1. aguardar deploy;
+2. gerar aula novamente;
+3. se aparecer JSON imperfeito, verificar se aparece mensagem de reparo automático em vez de falhar;
+4. validar se a geração passa dos blocos 1/5 e 4/5;
+5. confirmar se AutoFill continua funcionando quando exercícios vierem insuficientes.
+
+### `BLOCO-GERAÇÃO-ESTABILIDADE-1-LAB` — AutoFill adaptativo por progresso IMPLEMENTADO
 
 Contexto:
 - usuário reportou que as gerações estavam travando por `Exercícios insuficientes`;
@@ -54,56 +91,15 @@ O que foi implementado:
 - criado `exerciseAutoFill.js` como módulo separado, limpo e adaptativo;
 - AutoFill completa exercícios faltantes quando o Gemini entrega pouco;
 - AutoFill usa tipo da aula, nível, transcrição/texto, vocabulário e modo de entrada;
-- para Listening A1, spelling agora prioriza:
-  - escrever spelling;
-  - ditado curto de palavra;
-  - ditado de frase muito curta;
-  - corrigir spelling;
-  - falar nome e soletrar;
+- para Listening A1, spelling agora prioriza escrever, ditado curto, corrigir spelling e falar;
 - múltipla escolha ficou reservada para reconhecimento, som inicial, vocabulário e verdadeiro/falso simples;
 - `geminiLessons.js` passou a aceitar `forcedType`;
 - `LessonGeneratorPanel.jsx` envia `forcedType = nextLesson.type`, exceto revisão adaptativa;
-- o tipo da aula agora fica travado pelo cronograma/app, reduzindo risco de Listening virar Grammar;
-- `BLOCK_RETRY_LIMIT` caiu para 1 porque agora AutoFill resolve ausência de exercícios antes de gastar novas tentativas;
-- `assertLessonBlock()` agora sanitiza exercícios, corrige alternativas onde possível e completa faltantes;
-- `validateGeneratedLesson()` também tem fallback final de AutoFill se ainda faltar exercício;
-- diagnóstico agora pode mostrar mensagens como:
-  - `Tipo de aula travado: Listening.`
-  - `Gemini entregou 8/12 exercícios. AutoFill adaptativo completou +4.`
-  - `Validação final: AutoFill completou +X exercícios.`
-
-Teste recomendado:
-1. aguardar deploy;
-2. gerar aula marcada como Listening;
-3. confirmar no diagnóstico: `Tipo de aula travado: Listening`;
-4. se Gemini entregar poucos exercícios, confirmar diagnóstico de AutoFill;
-5. verificar se a geração não fica presa em loops de `Exercícios insuficientes`;
-6. abrir prática e verificar se spelling não fica só como múltipla escolha com resposta pronta;
-7. conferir se existem exercícios de escrever, ouvir/escrever, corrigir spelling e speaking.
+- o tipo da aula agora fica travado pelo cronograma/app;
+- `BLOCK_RETRY_LIMIT` caiu para 1 porque AutoFill resolve ausência de exercícios antes de gastar novas tentativas;
+- diagnóstico agora pode mostrar mensagens como `Tipo de aula travado: Listening` e `AutoFill adaptativo completou +X`.
 
 ### `BLOCO-GERAÇÃO-VARIAÇÃO-2-LAB` — Bloqueio de repetição e reparo sem fallback antigo IMPLEMENTADO
-
-Contexto:
-- usuário mandou print da transcrição e comprovou que a aula continuava com o mesmo roteiro: Ana, Maria, apple, book, cat;
-- investigação encontrou a causa exata em `fluency-clean/src/services/lessonRepair.js`;
-- o reparador local tinha `LISTENING_PROFILES.alphabet` hardcoded com a transcrição antiga completa;
-- quando a aula era reprovada, o reparador sobrescrevia a geração do Gemini com esse fallback fixo, destruindo qualquer variação.
-
-Arquivo alterado:
-- `fluency-clean/src/services/lessonRepair.js`
-- `REWRITE_HANDOFF.md`
-
-O que foi implementado:
-- perfil antigo foi renomeado para `alphabetClassroom` e marcado como `bannedWhenVariation`;
-- foram adicionados perfis alternativos reais para a mesma aula:
-  - `alphabetReception`: escola/recepção, Leo, Tom, map, pen, sun;
-  - `alphabetCafe`: cafeteria, Nina, Ben, tea, milk, cake;
-  - `alphabetVideoCall`: videochamada, Rita, Sam, red, bag, desk;
-- `getListeningProfile()` agora recebe `rawLesson` e detecta `variationMode`/`generationSeed`;
-- quando há variação ativa, o reparador escolhe somente perfis alternativos e não usa mais Ana/Maria/apple/book/cat;
-- a seleção usa seed para variar o perfil;
-- `repairLessonForQuality()` agora passa `rawLesson` para `getListeningProfile()`;
-- `quality` passa a registrar `repairedWithVariation` e `repairProfileTitle`.
 
 ### `BLOCO-GERAÇÃO-VARIAÇÃO-1-LAB` — Aula nova precisa variar de verdade IMPLEMENTADO
 
@@ -144,7 +140,7 @@ Pendente técnica:
 
 ## NOVA ORDEM DE BLOCOS — QUALIDADE REAL DAS AULAS
 
-1. `BLOCO-GERAÇÃO-ESTABILIDADE-1-LAB` — AutoFill adaptativo por progresso. STATUS: implementado, aguardando teste.
+1. `BLOCO-GERAÇÃO-ESTABILIDADE-1B-LAB` — Parser JSON tolerante. STATUS: implementado, aguardando teste.
 2. `BLOCO-11-LAB` — Plano primeiro, aula depois. STATUS: próximo após validação.
 3. `BLOCO-13-LAB` — Professor Gerador/Revisor.
 4. `BLOCO-17-LAB` — Qualidade visível da aula.
@@ -156,11 +152,11 @@ Pendente técnica:
 
 ## Pendência técnica importante
 
-- testar deploy do `BLOCO-GERAÇÃO-ESTABILIDADE-1-LAB`;
+- testar deploy do `BLOCO-GERAÇÃO-ESTABILIDADE-1B-LAB`;
 - remover definitivamente `ListeningLesson.jsx` antigo quando o conector permitir SHA correto;
 - confirmar se o contrato não ficou restritivo demais para Flash/free;
 - se o contrato reprovar muitas gerações, ajustar no bloco de plano/reparo sem afrouxar qualidade.
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. Os blocos de prática e áudio foram implementados e validados. O `BLOCO-12-LAB` criou rubricas por tipo de aula. O `BLOCO-14-LAB` criou `lessonJsonContract.js` e conectou o contrato JSON rígido ao `geminiLessons.js`. O `BLOCO-GERAÇÃO-STATUS-1-LAB` foi validado. O `BLOCO-GERAÇÃO-VARIAÇÃO-2-LAB` removeu o fallback fixo de Ana/Maria/apple/book/cat do reparador. O `BLOCO-GERAÇÃO-ESTABILIDADE-1-LAB` criou AutoFill adaptativo para completar exercícios faltantes e travou o tipo da aula pelo cronograma. Próximo passo: testar deploy; se ok, seguir para `BLOCO-11-LAB` plano primeiro, aula depois."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. Os blocos de prática e áudio foram implementados e validados. O `BLOCO-GERAÇÃO-ESTABILIDADE-1-LAB` criou AutoFill adaptativo e travou o tipo da aula pelo cronograma. O `BLOCO-GERAÇÃO-ESTABILIDADE-1B-LAB` adicionou parser JSON tolerante e regras de JSON seguro no Gemini. Próximo passo: testar deploy; se ok, seguir para `BLOCO-11-LAB` plano primeiro, aula depois."
