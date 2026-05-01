@@ -1,0 +1,4 @@
+.listening-lesson-v1 .fluency-quiz-instruction { display: none; }
+.listening-lesson-v1 #lesson-answer textarea { display: none; }
+.listening-lesson-v1 #lesson-answer .writing-actions button:first-child { display: none; }
+.listening-lesson-v1 #lesson-answer .writing-actions button:last-child { width: 100%; min-height: 62px; border-radius: 20px; font-size: 19px; }
