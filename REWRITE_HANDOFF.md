@@ -56,14 +56,59 @@ Diretriz visual nova:
 
 ## BLOCO ATUAL
 
-### `BLOCO-PRACTICE-REBUILD-6-LAB` — Componentes por tipo de exercício IMPLEMENTADO, aguardando build/deploy
+### `BLOCO-PRACTICE-REBUILD-7-LAB` — Integração limpa com aulas usando motor novo IMPLEMENTADO, aguardando validação futura no Vercel/iPhone
+
+Contexto importante:
+- a Vercel está com limite de build temporário, então este bloco foi implementado sem validação visual imediata;
+- o usuário autorizou continuar sem Vercel enquanto o limite não libera;
+- o objetivo foi conectar a prática fullscreen ao motor novo sem alterar o visual premium aprovado.
 
 Análise antes da alteração:
-- deploy do bloco 5 estava `success` no Vercel;
-- o fullscreen premium estava visualmente aprovado;
-- `PracticeFullscreen.jsx` ainda concentrava UI, estado, tipos de exercício, feedback e tela final em um único arquivo;
-- isso dificultaria a integração limpa do motor novo no bloco 7;
-- o objetivo do bloco 6 foi separar componentes sem alterar o comportamento visual aprovado.
+- `PracticeFullscreen.jsx` ainda importava `buildPracticeItems`, `evaluatePracticeAnswer` e `normalizeForPractice` diretamente do `PracticeEngine.js` antigo;
+- a UI já estava modularizada no bloco 6;
+- o motor novo de `src/practice/core/` usa tipos diferentes (`multiple_choice`, `audio_choice`, `dictation`, `word_bank`, `fill_blank`, `correction`, `write_short`, `speak_response`, `true_false`);
+- era necessário criar uma camada adaptadora para transformar os tipos do core nos tipos que a UI já renderiza (`choice`, `listenChoice`, `dictation`, `wordBank`, `fillBlank`, `correction`, `write`, `speak`);
+- também faltava renderizar corretamente o tipo `write` como exercício de texto.
+
+Arquivos criados:
+- `fluency-clean/src/practice/PracticePlanAdapter.js`
+
+Arquivos alterados:
+- `fluency-clean/src/practice/PracticeFullscreen.jsx`
+- `REWRITE_HANDOFF.md`
+
+O que foi implementado:
+- `PracticePlanAdapter.js` conecta o motor novo `buildPracticePlan()` ao fullscreen;
+- `PracticePlanAdapter.js` adapta tipos do core para tipos renderizáveis pela UI;
+- `PracticePlanAdapter.js` usa `checkPracticeAnswer()` do motor novo para corrigir respostas;
+- fallback seguro para `PracticeEngine.js` antigo caso o core falhe ou gere poucas questões renderizáveis;
+- cada item vindo do core recebe `sourceEngine: 'core'`;
+- cada item vindo do legado recebe `sourceEngine: 'legacy'`;
+- `PracticeFullscreen.jsx` agora importa `buildPracticeItems`, `evaluatePracticeAnswer` e `normalizeForPractice` de `PracticePlanAdapter.js`;
+- `PracticeFullscreen.jsx` renderiza `write` com `TextExercise`;
+- `PracticeFullscreen.jsx` respeita `evaluation.loseLife` do checker novo antes de descontar vidas;
+- resultado da sessão salva `sourceEngine` em cada resposta para diagnóstico futuro.
+
+Importante:
+- `PracticeEngine.js` ainda não foi removido;
+- ele permanece como fallback seguro;
+- a remoção definitiva do legado fica para o bloco 9, somente depois de validação no iPhone;
+- este bloco é a conexão real do motor novo com a UI.
+
+Teste recomendado quando a Vercel liberar build:
+1. abrir uma aula existente;
+2. abrir prática fullscreen;
+3. verificar se as questões não são mais as antigas ruins;
+4. verificar se aparecem questões de escrita (`write`) corretamente;
+5. testar múltipla escolha;
+6. testar ditado/áudio;
+7. testar word bank;
+8. testar fala;
+9. confirmar se o visual premium continua igual;
+10. confirmar se o feedback e as vidas continuam funcionando;
+11. se questões antigas ainda aparecerem, verificar se o adapter caiu em fallback legacy por falta de questões válidas no core.
+
+### `BLOCO-PRACTICE-REBUILD-6-LAB` — Componentes por tipo de exercício IMPLEMENTADO
 
 Arquivos criados/confirmados:
 - `fluency-clean/src/practice/components/PracticeHeader.jsx`
@@ -78,32 +123,11 @@ Arquivos criados/confirmados:
 
 Arquivos alterados:
 - `fluency-clean/src/practice/PracticeFullscreen.jsx`
-- `REWRITE_HANDOFF.md`
 
 O que foi implementado:
-- `PracticeHeader.jsx` separa barra superior e vidas;
-- `PracticeIntro.jsx` separa tela inicial;
-- `PracticeDone.jsx` separa tela final;
-- `ChoiceGrid.jsx` separa alternativas;
-- `WordBankExercise.jsx` separa montagem de frase;
-- `TextExercise.jsx` separa escrita/ditado/correção;
-- `SpeakExercise.jsx` separa fala;
-- `AudioPrompt.jsx` separa botão de áudio;
-- `PracticeFeedback.jsx` separa feedback e ações;
-- `PracticeFullscreen.jsx` foi limpo para orquestrar estado, áudio, fala, vidas, avanço e conclusão.
-
-Importante:
-- o comportamento ainda usa `PracticeEngine.js` antigo;
-- a arquitetura nova em `src/practice/core/` ainda será conectada no bloco 7;
-- este bloco não deveria mudar visualmente a prática aprovada, apenas modularizar.
-
-Teste recomendado quando Vercel estiver Ready:
-1. abrir prática;
-2. confirmar que visual segue igual ao aprovado;
-3. testar uma múltipla escolha;
-4. testar feedback;
-5. testar vidas;
-6. confirmar que nada sumiu após separar componentes.
+- fullscreen modularizado;
+- `PracticeFullscreen.jsx` virou orquestrador de estado e fluxo;
+- UI separada por responsabilidade.
 
 ### `BLOCO-PRACTICE-REBUILD-5-LAB` — Sistema de vidas e erro pedagógico IMPLEMENTADO
 
@@ -166,18 +190,19 @@ Arquivos criados:
 3. `BLOCO-PRACTICE-REBUILD-3-LAB` — Quality gate forte de questões. STATUS: implementado.
 4. `BLOCO-PRACTICE-REBUILD-4-LAB` — UI fullscreen elegante do Fluency. STATUS: implementado e visual aprovado.
 5. `BLOCO-PRACTICE-REBUILD-5-LAB` — Sistema de vidas e erro pedagógico. STATUS: implementado.
-6. `BLOCO-PRACTICE-REBUILD-6-LAB` — Componentes por tipo de exercício. STATUS: implementado, aguardando validação.
-7. `BLOCO-PRACTICE-REBUILD-7-LAB` — Integração limpa com aulas.
+6. `BLOCO-PRACTICE-REBUILD-6-LAB` — Componentes por tipo de exercício. STATUS: implementado.
+7. `BLOCO-PRACTICE-REBUILD-7-LAB` — Integração limpa com aulas. STATUS: implementado, aguardando validação quando Vercel liberar.
 8. `BLOCO-PRACTICE-REBUILD-8-LAB` — Persistência, progresso e revisão.
 9. `BLOCO-PRACTICE-REBUILD-9-LAB` — Limpeza final e remoção de legado.
 10. `BLOCO-PRACTICE-REBUILD-10-LAB` — Teste completo no iPhone.
 
 ## Pendência técnica importante
 
+- validar o bloco 7 no iPhone quando Vercel liberar;
 - limpar estruturalmente `ListeningLesson.jsx`;
 - remover prática antiga oculta por CSS;
-- substituir motor atual pela nova arquitetura nos blocos 7/9;
-- conectar prática com builder novo e componentes separados.
+- remover `PracticeEngine.js` somente depois de validação do adapter/core;
+- confirmar se o core gera questões suficientes para aulas reais antigas e novas.
 
 ## Próximos blocos depois da reformulação de prática
 
@@ -194,4 +219,4 @@ Arquivos criados:
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O antigo protocolo econômico de commit/deploy está temporariamente suspenso por pedido do usuário. Os blocos `BLOCO-PRACTICE-REBUILD-1-LAB` a `6` foram implementados. O bloco 4 redesenhou o fullscreen premium e foi aprovado visualmente. O bloco 5 adicionou vidas. O bloco 6 separou a UI em componentes dentro de `src/practice/components/` e limpou `PracticeFullscreen.jsx`, mas ainda usa `PracticeEngine.js` antigo. Próximo passo: validar build/deploy. Se aprovado, seguir para `BLOCO-PRACTICE-REBUILD-7-LAB`, integração limpa com aulas usando o motor novo de `src/practice/core/`."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O antigo protocolo econômico de commit/deploy está temporariamente suspenso por pedido do usuário. Os blocos `BLOCO-PRACTICE-REBUILD-1-LAB` a `7` foram implementados. O bloco 4 redesenhou o fullscreen premium e foi aprovado visualmente. O bloco 5 adicionou vidas. O bloco 6 separou a UI em componentes. O bloco 7 criou `PracticePlanAdapter.js` e conectou `PracticeFullscreen.jsx` ao motor novo de `src/practice/core/`, com fallback seguro para `PracticeEngine.js`. Vercel está temporariamente bloqueada por limite de build, então o bloco 7 aguarda validação real no iPhone. Próximo bloco possível sem Vercel: `BLOCO-PRACTICE-REBUILD-8-LAB`, persistência, progresso e revisão, mas evitar remoção de legado até testar."
