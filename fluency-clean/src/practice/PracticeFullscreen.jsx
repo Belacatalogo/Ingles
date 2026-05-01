@@ -1,7 +1,15 @@
 import { useMemo, useState } from 'react';
-import { CheckCircle2, ChevronRight, Heart, Headphones, Mic, RotateCcw, Sparkles, Volume2, X, XCircle } from 'lucide-react';
 import { playLearningAudio } from '../services/audioPlayback.js';
 import { buildPracticeItems, evaluatePracticeAnswer, normalizeForPractice } from './PracticeEngine.js';
+import { AudioPrompt } from './components/AudioPrompt.jsx';
+import { ChoiceGrid } from './components/ChoiceGrid.jsx';
+import { PracticeDone } from './components/PracticeDone.jsx';
+import { PracticeFeedback } from './components/PracticeFeedback.jsx';
+import { PracticeHeader, LivesBar } from './components/PracticeHeader.jsx';
+import { PracticeIntro } from './components/PracticeIntro.jsx';
+import { SpeakExercise } from './components/SpeakExercise.jsx';
+import { TextExercise } from './components/TextExercise.jsx';
+import { WordBankExercise } from './components/WordBankExercise.jsx';
 
 const STARTING_LIVES = 5;
 
@@ -30,57 +38,11 @@ function getQuestionActionLabel(type) {
   return 'Verificar';
 }
 
-function LivesBar({ lives, maxLives = STARTING_LIVES, reviewMode }) {
-  return (
-    <div className={`practice-lives ${reviewMode ? 'review' : ''}`} aria-label={`${lives} vidas restantes`}>
-      {Array.from({ length: maxLives }).map((_, index) => (
-        <span key={index} className={index < lives ? 'on' : 'off'}><Heart size={14} fill="currentColor" /></span>
-      ))}
-    </div>
-  );
-}
-
-function ChoiceGrid({ item, value, feedback, onSelect }) {
-  return (
-    <div className="practice-choice-grid">
-      {item.options.map((option, index) => {
-        const selected = normalizeForPractice(value) === normalizeForPractice(option);
-        const right = feedback && normalizeForPractice(option) === normalizeForPractice(item.answer);
-        const wrong = feedback && selected && !right;
-        return (
-          <button type="button" key={option} onClick={() => onSelect(option)} disabled={Boolean(feedback)} className={right ? 'right' : wrong ? 'wrong' : selected ? 'selected' : ''}>
-            <span>{String.fromCharCode(65 + index)}</span>
-            <b>{option}</b>
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
-function WordBank({ item, selectedWords, feedback, onChange }) {
-  const selectedKeys = selectedWords.map((word, index) => `${word}-${index}`);
-  function add(word) {
-    if (feedback) return;
-    onChange([...selectedWords, word]);
-  }
-  function remove(index) {
-    if (feedback) return;
-    onChange(selectedWords.filter((_, itemIndex) => itemIndex !== index));
-  }
-  return (
-    <div className="practice-wordbank">
-      <div className="practice-answer-line">
-        {selectedWords.length ? selectedWords.map((word, index) => <button key={`${word}-${index}`} type="button" onClick={() => remove(index)}>{word}</button>) : <span>Toque nas palavras para montar a frase</span>}
-      </div>
-      <div className="practice-word-options">
-        {item.words.map((word, index) => {
-          const used = selectedKeys.includes(`${word}-${index}`) || selectedWords.filter((itemWord) => itemWord === word).length >= item.words.filter((itemWord) => itemWord === word).slice(0, index + 1).length;
-          return <button type="button" key={`${word}-${index}`} onClick={() => add(word)} disabled={Boolean(feedback) || used} className={used ? 'used' : ''}>{word}</button>;
-        })}
-      </div>
-    </div>
-  );
+function canSubmitQuestion(current, value, wordBankValue) {
+  if (!current) return false;
+  if (['choice', 'listenChoice', 'fillBlank'].includes(current.type)) return true;
+  if (current.type === 'wordBank') return Boolean(clean(wordBankValue.join(' ')));
+  return Boolean(clean(value));
 }
 
 export function PracticeFullscreen({ lesson, open, onClose, onComplete }) {
@@ -212,36 +174,35 @@ export function PracticeFullscreen({ lesson, open, onClose, onComplete }) {
       <div className="practice-ambient practice-ambient-one" />
       <div className="practice-ambient practice-ambient-two" />
 
-      <header className="practice-topbar">
-        <button type="button" className="practice-close" onClick={onClose} aria-label="Fechar prática"><X size={26} /></button>
-        <div className="practice-progress"><span style={{ width: `${done ? 100 : started ? progress : 0}%` }} /></div>
-        <strong>{done ? `${correctCount}/${items.length}` : started ? `${index + 1}/${items.length}` : `${items.length}`}</strong>
-      </header>
+      <PracticeHeader
+        done={done}
+        started={started}
+        progress={progress}
+        index={index}
+        total={items.length}
+        correctCount={correctCount}
+        onClose={onClose}
+      />
 
       {started && !done ? <LivesBar lives={lives} reviewMode={reviewMode} /> : null}
 
       {!started && !done ? (
-        <main className="practice-intro">
-          <div className="practice-intro-orb"><Sparkles size={34} /></div>
-          <p className="practice-kind">{skillLabel}</p>
-          <h1>Prática da aula</h1>
-          <p>Treine o conteúdo em etapas curtas, com correção imediata e exercícios variados.</p>
-          <div className="practice-intro-stats">
-            <span><Headphones size={15} /> {items.length} exercícios</span>
-            <span><Heart size={15} fill="currentColor" /> {STARTING_LIVES} vidas</span>
-            <span>nível {lesson?.level || 'A1'}</span>
-          </div>
-          <button type="button" className="practice-start-button" onClick={() => setStarted(true)}>Começar prática</button>
-        </main>
+        <PracticeIntro
+          skillLabel={skillLabel}
+          total={items.length}
+          level={lesson?.level}
+          startingLives={STARTING_LIVES}
+          onStart={() => setStarted(true)}
+        />
       ) : done ? (
-        <main className="practice-done">
-          <div className="practice-done-medal"><CheckCircle2 size={52} /></div>
-          <p className="practice-kind">{reviewMode ? 'Revisão recomendada' : 'Sessão finalizada'}</p>
-          <h1>{reviewMode ? 'Você concluiu revisando' : 'Prática concluída'}</h1>
-          <p>{reviewMode ? `Você acertou ${correctCount} de ${items.length}. Refaça a prática para fortalecer os pontos fracos.` : `Você acertou ${correctCount} de ${items.length} e terminou com ${lives} vida(s). Continue assim.`}</p>
-          <button type="button" onClick={restart}><RotateCcw size={18} /> Refazer prática</button>
-          <button type="button" className="primary" onClick={finish}>Voltar para aula</button>
-        </main>
+        <PracticeDone
+          reviewMode={reviewMode}
+          correctCount={correctCount}
+          total={items.length}
+          lives={lives}
+          onRestart={restart}
+          onFinish={finish}
+        />
       ) : current ? (
         <main className="practice-question">
           <div className="practice-question-card">
@@ -250,52 +211,40 @@ export function PracticeFullscreen({ lesson, open, onClose, onComplete }) {
           </div>
 
           {(current.type === 'listenChoice' || current.type === 'dictation') ? (
-            <button type="button" className="practice-audio-big" onClick={() => playAudio(current.audioText || current.answer)} disabled={listening}>
-              <Volume2 size={48} />
-              <span>{listening ? 'Tocando...' : 'Ouvir'}</span>
-            </button>
+            <AudioPrompt listening={listening} onPlay={() => playAudio(current.audioText || current.answer)} />
           ) : null}
 
           {(current.type === 'choice' || current.type === 'listenChoice' || current.type === 'fillBlank') ? (
-            <ChoiceGrid item={current} value={value} feedback={feedback} onSelect={selectOption} />
+            <ChoiceGrid item={current} value={value} feedback={feedback} normalize={normalizeForPractice} onSelect={selectOption} />
           ) : null}
 
           {current.type === 'dictation' || current.type === 'correction' ? (
-            <textarea className="practice-textarea" value={value} onChange={(event) => setValue(event.target.value)} placeholder="Digite sua resposta..." disabled={Boolean(feedback && !feedback.retryable)} />
+            <TextExercise value={value} feedback={feedback} onChange={setValue} />
           ) : null}
 
           {current.type === 'wordBank' ? (
-            <WordBank item={current} selectedWords={wordBankValue} feedback={feedback} onChange={setWordBankValue} />
+            <WordBankExercise item={current} selectedWords={wordBankValue} feedback={feedback} onChange={setWordBankValue} />
           ) : null}
 
           {current.type === 'speak' ? (
-            <div className="practice-speak-box">
-              <button type="button" onClick={speak} disabled={Boolean(feedback && !feedback.retryable)}><Mic size={28} /> Falar agora</button>
-              <input value={value} onChange={(event) => setValue(event.target.value)} placeholder="Ou digite o que falou..." disabled={Boolean(feedback && !feedback.retryable)} />
-            </div>
+            <SpeakExercise value={value} feedback={feedback} onSpeak={speak} onChange={setValue} />
           ) : null}
         </main>
       ) : null}
 
       {started && !done && current ? (
-        <footer className={`practice-feedback ${feedback ? feedback.correct ? 'right' : feedback.near ? 'near' : 'wrong' : ''}`}>
-          {feedback ? (
-            <div className="practice-feedback-text">
-              {feedback.correct ? <CheckCircle2 size={24} /> : <XCircle size={24} />}
-              <div>
-                <strong>{feedback.message}</strong>
-                {feedback.lifeLost ? <span>Você perdeu 1 vida. Restam {lives}.</span> : null}
-                {!feedback.correct && !feedback.near ? <span>Resposta: {current.answer}</span> : null}
-                {feedback.near ? <span>Erro pequeno não tira vida.</span> : null}
-                {feedback.near && hintVisible && feedback.hintWord ? <span>Dica: confira “{feedback.hintWord}”.</span> : null}
-              </div>
-            </div>
-          ) : <div className="practice-feedback-placeholder">Respire, responda com calma e siga no seu ritmo.</div>}
-          <div className="practice-footer-actions">
-            {feedback?.near ? <button type="button" className="secondary" onClick={() => setHintVisible(true)}>Ver dica</button> : null}
-            {feedback?.near ? <button type="button" onClick={retry}><RotateCcw size={16} /> Tentar de novo</button> : feedback ? <button type="button" onClick={continueNext}>Continuar <ChevronRight size={16} /></button> : <button type="button" disabled={!clean(current.type === 'wordBank' ? wordBankValue.join(' ') : value) && !['choice', 'listenChoice', 'fillBlank'].includes(current.type)} onClick={() => submit()}>{getQuestionActionLabel(current.type)}</button>}
-          </div>
-        </footer>
+        <PracticeFeedback
+          feedback={feedback}
+          current={current}
+          lives={lives}
+          hintVisible={hintVisible}
+          onShowHint={() => setHintVisible(true)}
+          onRetry={retry}
+          onContinue={continueNext}
+          onSubmit={() => submit()}
+          actionLabel={getQuestionActionLabel(current.type)}
+          canSubmit={canSubmitQuestion(current, value, wordBankValue)}
+        />
       ) : null}
     </div>
   );
