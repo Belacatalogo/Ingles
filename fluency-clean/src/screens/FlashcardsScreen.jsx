@@ -1,8 +1,8 @@
 import { Award, Brain, CheckCircle2, Clock3, Layers3, RotateCcw, Volume2 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { playLearningAudio } from '../services/audioPlayback.js';
 import { getCurrentLesson } from '../services/lessonStore.js';
-import { recordFlashcardSession } from '../services/progressStore.js';
+import { getFlashcardSessions, recordFlashcardSession } from '../services/progressStore.js';
 
 function normalizeVocabularyItem(item, index) {
   if (typeof item === 'string') {
@@ -36,15 +36,41 @@ function initialStats() {
   return { correct: 0, missed: 0, reviewed: 0 };
 }
 
+function getLessonId(lesson) {
+  return lesson?.id || `${lesson?.type || 'lesson'}-${lesson?.title || 'untitled'}`;
+}
+
+function todayKey(date = new Date()) {
+  return date.toISOString().slice(0, 10);
+}
+
+function findTodaySession(lesson) {
+  const lessonId = getLessonId(lesson);
+  const today = todayKey();
+  return getFlashcardSessions().find((session) => (
+    session?.lessonId === lessonId && String(session?.completedAt || '').slice(0, 10) === today
+  )) || null;
+}
+
+function statsFromSession(session) {
+  if (!session) return initialStats();
+  return {
+    correct: Number(session.correctCount || 0),
+    missed: Number(session.needsReviewCount || 0),
+    reviewed: Number(session.reviewedCards || 0),
+  };
+}
+
 export function FlashcardsScreen({ onNavigate }) {
+  const currentLesson = getCurrentLesson();
+  const persistedSession = useMemo(() => findTodaySession(currentLesson), [currentLesson?.id, currentLesson?.title]);
   const [flipped, setFlipped] = useState(false);
   const [cardIndex, setCardIndex] = useState(0);
-  const [sessionStats, setSessionStats] = useState(initialStats);
-  const [sessionDone, setSessionDone] = useState(false);
-  const [sessionRecord, setSessionRecord] = useState(null);
+  const [sessionStats, setSessionStats] = useState(() => statsFromSession(persistedSession));
+  const [sessionDone, setSessionDone] = useState(() => Boolean(persistedSession));
+  const [sessionRecord, setSessionRecord] = useState(() => persistedSession);
   const [reviewLog, setReviewLog] = useState([]);
-  const [audioMessage, setAudioMessage] = useState('');
-  const currentLesson = getCurrentLesson();
+  const [audioMessage, setAudioMessage] = useState(() => persistedSession ? 'Sessão de cartas já concluída hoje.' : '');
   const cards = useMemo(() => (Array.isArray(currentLesson?.vocabulary) ? currentLesson.vocabulary.map(normalizeVocabularyItem) : []), [currentLesson]);
   const currentCard = cards.length && !sessionDone ? cards[Math.min(cardIndex, cards.length - 1)] : null;
   const sessionPosition = cards.length ? Math.min(cardIndex + 1, cards.length) : 0;
@@ -53,6 +79,16 @@ export function FlashcardsScreen({ onNavigate }) {
     const total = sessionStats.reviewed;
     return total ? Math.round((sessionStats.correct / total) * 100) : 0;
   }, [sessionStats]);
+
+  useEffect(() => {
+    if (!persistedSession) return;
+    setFlipped(false);
+    setCardIndex(0);
+    setSessionStats(statsFromSession(persistedSession));
+    setSessionDone(true);
+    setSessionRecord(persistedSession);
+    setAudioMessage('Sessão de cartas já concluída hoje.');
+  }, [persistedSession?.id]);
 
   function finishSession(nextStats, nextLog) {
     const record = recordFlashcardSession({
@@ -154,7 +190,7 @@ export function FlashcardsScreen({ onNavigate }) {
         <section className="cards-complete-card" aria-label="Sessão de flashcards concluída">
           <div className="cards-complete-icon"><Award size={24} /></div>
           <span>Sessão concluída</span>
-          <h2>{sessionStats.reviewed} carta(s) revisada(s)</h2>
+          <h2>{sessionStats.reviewed || sessionRecord?.reviewedCards || cards.length} carta(s) revisada(s)</h2>
           <p>Registro real salvo para Hoje, Progresso e revisão futura.</p>
 
           <div className="cards-stat-grid cards-complete-grid">

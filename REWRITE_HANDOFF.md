@@ -47,6 +47,33 @@ Link funcional enquanto produção não é validada:
 
 ## Estado atual implementado
 
+### AJUSTE BLOCO-CARTAS-2-LAB — Restaurar sessão concluída ao voltar de Hoje IMPLEMENTADO, aguardando teste no iPhone
+
+Contexto do teste:
+- usuário concluiu/validou parcialmente o fluxo de Cartas;
+- ao voltar da aba Hoje para Cartas, a tela remontava e reiniciava visualmente em “carta 1 de 14”;
+- usuário quer que, depois de uma sessão concluída hoje, a aba Cartas continue mostrando “Sessão concluída” com botão “Revisar novamente”.
+
+Arquivos alterados:
+- `fluency-clean/src/screens/FlashcardsScreen.jsx`
+- `REWRITE_HANDOFF.md`
+
+Correção aplicada:
+- Cartas agora consulta `getFlashcardSessions()` ao montar;
+- se existir sessão real concluída hoje para a aula atual, a tela já abre em “Sessão concluída”;
+- estatísticas são restauradas da sessão salva: revisadas, marcadas ok, para revisar e precisão;
+- mantém o botão “Revisar novamente” para iniciar nova sessão limpa;
+- mantém “Voltar para Hoje” e “Continuar aula”.
+
+Teste recomendado:
+1. concluir uma sessão de Cartas;
+2. tocar “Voltar para Hoje”;
+3. voltar para Cartas;
+4. confirmar que NÃO aparece carta 1 novamente;
+5. confirmar que aparece “Sessão concluída”;
+6. tocar “Revisar novamente”;
+7. confirmar que uma nova sessão começa limpa em carta 1.
+
 ### BLOCO-CARTAS-2-LAB — Finalização real da sessão de flashcards IMPLEMENTADO, aguardando teste no iPhone
 
 Arquivos alterados:
@@ -59,37 +86,19 @@ Arquivos alterados:
 
 Correção aplicada:
 - ao classificar a última carta, a sessão não reinicia/reset silenciosamente;
-- agora aparece tela final clara de “Sessão concluída”;
-- a tela final mostra cards revisados, cards marcados ok, cards para revisar e precisão;
-- foram adicionados botões: “Revisar novamente”, “Voltar para Hoje” e “Continuar aula”;
-- a sessão de flashcards agora registra evento real em `progress.flashcardSessions`;
-- evento salvo inclui `lessonId`, `title`, `level`, `completedAt`, `totalCards`, `reviewedCards`, `correctCount`, `needsReviewCount`, `accuracy` e lista resumida de cards revisados;
-- `De novo` e `Difícil` entram como cards para revisar;
-- `Bom` e `Fácil` entram como marcadas ok;
-- a tela Hoje agora marca Cartas como concluída somente se existir sessão real de flashcards hoje;
-- a contagem diária em Hoje usa aula concluída hoje + sessão real de cartas hoje, sem fingir flashcards concluídos.
+- aparece tela final clara de “Sessão concluída”;
+- mostra cards revisados, cards marcados ok, cards para revisar e precisão;
+- botões: “Revisar novamente”, “Voltar para Hoje” e “Continuar aula”;
+- sessão de flashcards registra evento real em `progress.flashcardSessions`;
+- Hoje marca Cartas como concluída somente se existir sessão real de flashcards hoje.
 
-Teste recomendado:
-1. aguardar deploy Ready da `rewrite-fluency-clean-lab`;
-2. abrir no iPhone;
-3. ir em Cartas com uma aula que tenha vocabulário;
-4. revisar até a última carta;
-5. confirmar que não reinicia sozinho;
-6. confirmar tela “Sessão concluída”;
-7. confirmar cards revisados, precisão e cards para revisar;
-8. tocar “Voltar para Hoje”;
-9. confirmar que a tarefa “Revisar flashcards” aparece como “Sessão real concluída hoje”;
-10. tocar “Revisar novamente” e confirmar que começa uma nova sessão limpa;
-11. tocar “Continuar aula” e confirmar navegação para Aula.
-
-### AJUSTE BLOCO-10C-LAB — Múltipla escolha em aulas renderizadas IMPLEMENTADO, aguardando teste no iPhone
+### AJUSTE BLOCO-10C-LAB — Múltipla escolha em aulas renderizadas IMPLEMENTADO
 
 Correção aplicada:
 - normalização dos exercícios aceita `options`, `choices`, `alternatives`, `answers`, `multipleChoiceOptions` e `possibleAnswers`;
 - resposta correta aceita `answer`, `expectedAnswer`, `correctAnswer`, `correct`, `solution`, `rightAnswer`, `answerText` ou `answerKey`;
 - respostas como `A`, `B`, `1` ou `2` são mapeadas para a alternativa correspondente;
-- opções com `correct: true`, `isCorrect: true`, etc. são reconhecidas;
-- CSS de correta/incorreta foi isolado em `choice-polish.css`.
+- opções com `correct: true`, `isCorrect: true`, etc. são reconhecidas.
 
 ### AJUSTE BLOCO-10C-LAB — Respostas e botão “Ver resposta” IMPLEMENTADO
 
@@ -98,16 +107,6 @@ Correção aplicada:
 - digitar no campo não revela mais a resposta automaticamente;
 - botão “Ver resposta” ficou compacto em pílula;
 - rascunho e Shadowing real foram preservados.
-
-### BLOCO-10C-LAB — Corrigir aula renderizada IMPLEMENTADO
-
-Principais correções:
-- respostas esperadas não aparecem automaticamente antes da tentativa;
-- perguntas de compreensão têm estado próprio de resposta;
-- respostas de compreensão são salvas como rascunho;
-- “Concluir Listening” salva e chama `completeLesson()`;
-- Shadowing usa frases reais da transcrição/listeningText;
-- botão redundante “Concluir” dentro do Shadowing foi removido.
 
 ### BLOCO-10A-LAB — Quality Gate Pedagógico Local IMPLEMENTADO
 
@@ -134,4 +133,4 @@ Comportamento:
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Use o PROTOCOLO ECONÔMICO DE DEPLOY: cada bloco deve virar 1 commit único, com handoff atualizado no mesmo commit; fluxo ideal 1 bloco → 1 commit → 1 deploy → teste no iPhone. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. Já foram implementados o BLOCO-10A-LAB, os ajustes do BLOCO-10C-LAB e o BLOCO-CARTAS-2-LAB. Validar primeiro no iPhone. Próximo bloco depois da validação: BLOCO-SPEAKING-2-LAB, Speaking por nível e registro real. Depois seguir a ordem: CARTAS-3, 10B, 12, 14, 11, 13, 17, 16, 15, 20. Não delete `rewrite-fluency-clean-lab` nem `rewrite-fluency-clean`. A produção/main ainda NÃO foi validada no Vercel. Validar primeiro a lab no iPhone, depois sincronizar para `rewrite-fluency-clean`, testar o link estável e só depois decidir nova ida para `main`. Rollback da main: `5047bae031f20ddd9604953dcd3fd821655e56fa`."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Use o PROTOCOLO ECONÔMICO DE DEPLOY: cada bloco deve virar 1 commit único, com handoff atualizado no mesmo commit. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. Já foram implementados o BLOCO-10A-LAB, os ajustes do BLOCO-10C-LAB, o BLOCO-CARTAS-2-LAB e o ajuste para restaurar sessão concluída de Cartas ao voltar de Hoje. Validar primeiro no iPhone. Próximo bloco depois da validação: BLOCO-SPEAKING-2-LAB. Depois seguir a ordem: CARTAS-3, 10B, 12, 14, 11, 13, 17, 16, 15, 20. Não delete `rewrite-fluency-clean-lab` nem `rewrite-fluency-clean`. A produção/main ainda NÃO foi validada no Vercel. Validar primeiro a lab no iPhone, depois sincronizar para `rewrite-fluency-clean`, testar o link estável e só depois decidir nova ida para `main`. Rollback da main: `5047bae031f20ddd9604953dcd3fd821655e56fa`."
