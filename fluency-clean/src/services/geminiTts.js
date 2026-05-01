@@ -1,11 +1,10 @@
 import { diagnostics } from './diagnostics.js';
 import { getLessonFlashKeys, getLessonProKey } from './lessonKeys.js';
 import { maskApiKey, normalizeLessonKeys } from './geminiLessons.js';
-import { storage } from './storage.js';
 import { speakText } from './tts.js';
 import { unlockAudioForIOS } from './audioUnlock.js';
+import { getCachedAudio, makeAudioCacheId, setCachedAudio } from './audioCache.js';
 
-const CACHE_PREFIX = 'tts.gemini.cache.';
 const TTS_MODELS = [
   'gemini-2.5-flash-preview-tts',
   'gemini-2.5-flash-tts',
@@ -15,19 +14,6 @@ const TTS_MODELS = [
 const DEFAULT_VOICE = 'Kore';
 const DEFAULT_SAMPLE_RATE = 24000;
 let currentAudio = null;
-
-function hashText(value) {
-  const text = String(value ?? '');
-  let hash = 0;
-  for (let index = 0; index < text.length; index += 1) {
-    hash = ((hash << 5) - hash + text.charCodeAt(index)) | 0;
-  }
-  return Math.abs(hash).toString(36);
-}
-
-function cacheKey({ text, voiceName, style }) {
-  return `${CACHE_PREFIX}${hashText(`${voiceName}|${style}|${text}`)}`;
-}
 
 function base64ToUint8Array(base64) {
   const binary = atob(base64);
@@ -44,9 +30,7 @@ function pcmToWavBlob(pcmBytes, sampleRate = DEFAULT_SAMPLE_RATE) {
   const view = new DataView(buffer);
 
   function writeString(offset, value) {
-    for (let index = 0; index < value.length; index += 1) {
-      view.setUint8(offset + index, value.charCodeAt(index));
-    }
+    for (let index = 0; index < value.length; index += 1) view.setUint8(offset + index, value.charCodeAt(index));
   }
 
   writeString(0, 'RIFF');
@@ -72,10 +56,7 @@ function extractInlineAudio(data) {
   const audioPart = parts.find((part) => part?.inlineData?.data || part?.inline_data?.data);
   const inline = audioPart?.inlineData || audioPart?.inline_data;
   if (!inline?.data) return null;
-  return {
-    base64: inline.data,
-    mimeType: inline.mimeType || inline.mime_type || 'audio/pcm',
-  };
+  return { base64: inline.data, mimeType: inline.mimeType || inline.mime_type || 'audio/pcm' };
 }
 
 function buildTtsPrompt(text, style) {
@@ -90,15 +71,11 @@ function buildAttempts({ flashKeys, proKey }) {
   const attempts = [];
 
   for (const key of flash) {
-    for (const model of TTS_MODELS.filter((model) => model.includes('flash'))) {
-      attempts.push({ key, model, masked: maskApiKey(key), paid: false });
-    }
+    for (const model of TTS_MODELS.filter((model) => model.includes('flash'))) attempts.push({ key, model, masked: maskApiKey(key), paid: false });
   }
 
   if (proKeyValue) {
-    for (const model of TTS_MODELS) {
-      attempts.push({ key: proKeyValue, model, masked: maskApiKey(proKeyValue), paid: true });
-    }
+    for (const model of TTS_MODELS) attempts.push({ key: proKeyValue, model, masked: maskApiKey(proKeyValue), paid: true });
   }
 
   return attempts;
@@ -110,22 +87,11 @@ async function callGeminiTts({ text, key, model, voiceName, style, fetcher }) {
     contents: [{ role: 'user', parts: [{ text: buildTtsPrompt(text, style) }] }],
     generationConfig: {
       responseModalities: ['AUDIO'],
-      speechConfig: {
-        voiceConfig: {
-          prebuiltVoiceConfig: {
-            voiceName,
-          },
-        },
-      },
+      speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName } } },
     },
   };
 
-  const response = await fetcher(url, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify(body),
-  });
-
+  const response = await fetcher(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
   if (!response.ok) {
     const errorText = await response.text().catch(() => '');
     throw new Error(`HTTP ${response.status} ${errorText.slice(0, 160)}`);
@@ -134,26 +100,13 @@ async function callGeminiTts({ text, key, model, voiceName, style, fetcher }) {
   const data = await response.json();
   const inline = extractInlineAudio(data);
   if (!inline) throw new Error('Gemini TTS não retornou áudio inline.');
-
   return inline;
 }
 
 async function playBrowserFallback(cleanText) {
   const fallback = await speakText(cleanText);
-  if (!fallback.ok) {
-    return {
-      ok: false,
-      audioUrl: '',
-      source: 'browser-fallback-error',
-      error: fallback.error || 'TTS do navegador não iniciou.',
-    };
-  }
-  return {
-    ok: true,
-    audioUrl: '',
-    source: 'browser-fallback',
-    error: null,
-  };
+  if (!fallback.ok) return { ok: false, audioUrl: '', source: 'browser-fallback-error', error: fallback.error || 'TTS do navegador não iniciou.' };
+  return { ok: true, audioUrl: '', source: 'browser-fallback', error: null };
 }
 
 export function stopGeminiTtsAudio() {
@@ -166,14 +119,7 @@ export function stopGeminiTtsAudio() {
   }
 }
 
-export async function generateGeminiTtsAudio({
-  text,
-  voiceName = DEFAULT_VOICE,
-  style = '',
-  fetcher = fetch,
-  useCache = true,
-  allowBrowserFallback = true,
-} = {}) {
+export async function generateGeminiTtsAudio({ text, voiceName = DEFAULT_VOICE, style = '', fetcher = fetch, useCache = true, allowBrowserFallback = true } = {}) {
   const cleanText = String(text ?? '').trim();
   diagnostics.log('Botão de áudio acionado: preparando Gemini TTS natural.', 'info');
 
@@ -181,13 +127,13 @@ export async function generateGeminiTtsAudio({
 
   await unlockAudioForIOS();
 
-  const key = cacheKey({ text: cleanText, voiceName, style });
+  const cacheId = makeAudioCacheId({ text: cleanText, voiceName, style });
   if (useCache) {
-    const cached = storage.get(key, null);
+    const cached = getCachedAudio(cacheId);
     if (cached?.base64) {
-      const blob = pcmToWavBlob(base64ToUint8Array(cached.base64));
-      diagnostics.log('Áudio natural Gemini carregado do cache.', 'info');
-      return { ok: true, audioUrl: URL.createObjectURL(blob), source: 'cache', error: null };
+      const blob = pcmToWavBlob(base64ToUint8Array(cached.base64), cached.sampleRate || DEFAULT_SAMPLE_RATE);
+      diagnostics.log('Áudio natural Gemini carregado do cache local.', 'info');
+      return { ok: true, audioUrl: URL.createObjectURL(blob), source: 'cache', error: null, cacheId };
     }
   }
 
@@ -210,19 +156,11 @@ export async function generateGeminiTtsAudio({
     diagnostics.log(`Gemini TTS natural tentativa ${index + 1}/${attempts.length}: ${attempt.model} com ${attempt.masked}`, 'info');
 
     try {
-      const inline = await callGeminiTts({
-        text: cleanText,
-        key: attempt.key,
-        model: attempt.model,
-        voiceName,
-        style,
-        fetcher,
-      });
-
-      storage.set(key, { base64: inline.base64, mimeType: inline.mimeType, savedAt: new Date().toISOString() });
+      const inline = await callGeminiTts({ text: cleanText, key: attempt.key, model: attempt.model, voiceName, style, fetcher });
+      setCachedAudio(cacheId, { base64: inline.base64, mimeType: inline.mimeType, sampleRate: DEFAULT_SAMPLE_RATE, textPreview: cleanText });
       const blob = pcmToWavBlob(base64ToUint8Array(inline.base64));
       diagnostics.log(`Áudio natural Gemini gerado com ${attempt.model}.`, 'info');
-      return { ok: true, audioUrl: URL.createObjectURL(blob), source: 'gemini', error: null };
+      return { ok: true, audioUrl: URL.createObjectURL(blob), source: 'gemini', error: null, cacheId };
     } catch (error) {
       lastError = error;
       diagnostics.log(`Falha Gemini TTS natural: ${error?.message || error}`, attempt.paid ? 'error' : 'info');
@@ -231,10 +169,9 @@ export async function generateGeminiTtsAudio({
 
   const error = lastError?.message || 'Gemini TTS natural falhou em todas as tentativas.';
   diagnostics.log(`Gemini TTS natural falhou em todas as tentativas: ${error}`, 'error');
-
   if (!allowBrowserFallback) return { ok: false, audioUrl: '', source: 'gemini-error', error };
 
-  diagnostics.log('Usando TTS do navegador apenas como último recurso.', 'error');
+  diagnostics.log('Usando TTS do navegador apenas como último recurso.', 'warn');
   const fallback = await playBrowserFallback(cleanText);
   return fallback.ok ? fallback : { ...fallback, error: `${error} ${fallback.error || ''}`.trim() };
 }
@@ -249,15 +186,12 @@ export async function playGeminiTtsAudio(options = {}) {
       currentAudio = new Audio(result.audioUrl);
       currentAudio.playsInline = true;
       currentAudio.preload = 'auto';
-
       await currentAudio.play();
       diagnostics.log('Reprodução do áudio natural Gemini iniciada.', 'info');
     } catch (error) {
-      diagnostics.log(`Safari bloqueou/erro ao tocar áudio natural Gemini: ${error?.message || error}.`, 'error');
-      if (options.allowBrowserFallback === false) {
-        return { ...result, ok: false, source: 'gemini-playback-error', error: error?.message || String(error) };
-      }
-      diagnostics.log('Usando TTS do navegador apenas como último recurso.', 'error');
+      diagnostics.log(`Plataforma/navegador bloqueou ou falhou ao tocar áudio natural Gemini: ${error?.message || error}.`, 'error');
+      if (options.allowBrowserFallback === false) return { ...result, ok: false, source: 'gemini-playback-error', error: error?.message || String(error) };
+      diagnostics.log('Usando TTS do navegador apenas como último recurso.', 'warn');
       const fallback = await playBrowserFallback(options.text);
       if (!fallback.ok) return { ...fallback, error: `${error?.message || error}. ${fallback.error || ''}`.trim() };
       return fallback;
