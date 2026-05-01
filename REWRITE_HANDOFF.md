@@ -35,12 +35,33 @@ Observação: em alguns ajustes recentes, o conector bloqueou operações de ár
 
 ## Estado atual implementado
 
-### BLOCO-10B-LAB — Correção automática do quality gate IMPLEMENTADO, aguardando teste no iPhone
+### AJUSTE BLOCO-10B-LAB — Renderer Listening mostra conceito e vocabulário IMPLEMENTADO, aguardando teste
 
-Arquivos alterados:
-- `fluency-clean/src/services/lessonRepair.js`
-- `fluency-clean/src/components/lesson/LessonGeneratorPanel.jsx`
+Contexto:
+- usuário gerou uma aula que passou no quality gate, mas visualmente ficou ruim;
+- a tela mostrava duas caixas com conteúdo parecido, depois ia direto para questões;
+- faltava aula real, explicação/conceito e vocabulário da aula.
+
+Arquivo alterado:
+- `fluency-clean/src/lessons/ListeningLesson.jsx`
 - `REWRITE_HANDOFF.md`
+
+Correção aplicada:
+- renderer de Listening agora mostra seções reais da aula em “Conceito e explicação”;
+- renderer de Listening agora mostra “Vocabulário da aula” antes da transcrição e dos exercícios;
+- primeira caixa de áudio agora usa `objective` como orientação, não repete `intro` como se fosse transcrição/conteúdo;
+- fluxo visual esperado: Escuta guiada → Conceito e explicação → Vocabulário da aula → Transcrição → Compreensão → Sua resposta → Shadowing;
+- isso corrige o caso de aula aprovada mas escondida pelo layout.
+
+Teste recomendado:
+1. aguardar deploy Ready;
+2. abrir a aula atual gerada;
+3. confirmar que aparece “Conceito e explicação” antes da transcrição;
+4. confirmar que aparece “Vocabulário da aula” antes das questões;
+5. confirmar que a aula não pula direto para exercícios;
+6. testar botão de áudio, respostas, Salvar rascunho, Concluir Listening e Shadowing.
+
+### BLOCO-10B-LAB — Correção automática do quality gate IMPLEMENTADO
 
 Correção aplicada:
 - se uma aula gerada reprovar no quality gate, o app não descarta imediatamente;
@@ -52,14 +73,6 @@ Correção aplicada:
 - se aprovar, salva com marca `autoRepaired: true` no review/quality;
 - se ainda reprovar, não salva aula ruim e mostra os problemas;
 - Diagnóstico informa quando a correção automática foi tentada e quando foi aprovada/reprovada.
-
-Teste recomendado:
-1. gerar uma nova aula no iPhone;
-2. observar o Diagnóstico;
-3. se a primeira geração vier fraca, deve aparecer tentativa de correção automática;
-4. se a correção aprovar, a aula deve salvar e abrir;
-5. se não aprovar, deve bloquear o salvamento e mostrar os problemas;
-6. confirmar que uma aula aprovada normalmente continua salvando sem passar por reparo.
 
 ### BLOCO-CARTAS-3-LAB — Banco de vocabulário por tópicos IMPLEMENTADO parcialmente e VALIDADO APÓS CORREÇÃO DE BUILD
 
@@ -143,4 +156,4 @@ Comportamento:
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Use o PROTOCOLO ECONÔMICO DE DEPLOY: cada bloco deve virar 1 commit único, com handoff atualizado no mesmo commit. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. Já foram implementados o BLOCO-10A-LAB, ajustes do BLOCO-10C-LAB, BLOCO-CARTAS-2-LAB, BLOCO-SPEAKING-2-LAB, BLOCO-CARTAS-3-LAB e BLOCO-10B-LAB. Validar primeiro no iPhone. Próximo bloco depois da validação: BLOCO-12-LAB. Depois seguir a ordem: 14, 11, 13, 17, 16, 15, 20, CARTAS-3B para expandir até 2.000 e AUDITORIA-POLIMENTO-GERAL. Não delete `rewrite-fluency-clean-lab` nem `rewrite-fluency-clean`. A produção/main ainda NÃO foi validada no Vercel. Validar primeiro a lab no iPhone, depois sincronizar para `rewrite-fluency-clean`, testar o link estável e só depois decidir nova ida para `main`. Rollback da main: `5047bae031f20ddd9604953dcd3fd821655e56fa`."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Use o PROTOCOLO ECONÔMICO DE DEPLOY: cada bloco deve virar 1 commit único, com handoff atualizado no mesmo commit. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. Já foram implementados o BLOCO-10A-LAB, ajustes do BLOCO-10C-LAB, BLOCO-CARTAS-2-LAB, BLOCO-SPEAKING-2-LAB, BLOCO-CARTAS-3-LAB, BLOCO-10B-LAB e o ajuste do renderer Listening para exibir conceito/vocabulário. Validar primeiro no iPhone. Próximo bloco depois da validação: BLOCO-12-LAB. Depois seguir a ordem: 14, 11, 13, 17, 16, 15, 20, CARTAS-3B para expandir até 2.000 e AUDITORIA-POLIMENTO-GERAL. Não delete `rewrite-fluency-clean-lab` nem `rewrite-fluency-clean`. A produção/main ainda NÃO foi validada no Vercel. Validar primeiro a lab no iPhone, depois sincronizar para `rewrite-fluency-clean`, testar o link estável e só depois decidir nova ida para `main`. Rollback da main: `5047bae031f20ddd9604953dcd3fd821655e56fa`."
