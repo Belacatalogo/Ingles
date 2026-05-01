@@ -64,8 +64,9 @@ export function LessonGeneratorPanel({ onGenerated }) {
 
       if (!saturdayReview) setActiveCurriculumLesson(nextLesson.id);
       const prompt = nextLesson.promptOverride || buildCurriculumPrompt(nextLesson);
+      const forcedType = nextLesson.type === 'review' ? '' : nextLesson.type;
 
-      const result = await generateLessonDraft({ prompt, keys: flashKeys, proKey, previousLesson: forceNew ? currentLesson : null, forceVariation: forceNew });
+      const result = await generateLessonDraft({ prompt, keys: flashKeys, proKey, previousLesson: forceNew ? currentLesson : null, forceVariation: forceNew, forcedType });
 
       if (result.status !== 'success' || !result.lesson) {
         setMessage(result.error || 'Não foi possível gerar a aula.');
