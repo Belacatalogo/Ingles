@@ -43,8 +43,8 @@ export function LessonGeneratorPanel({ onGenerated }) {
     }
 
     setLoading(true);
-    setMessage(saturdayReview ? 'Gerando revisão adaptativa de sábado dos 4 pilares...' : forceNew ? 'Substituindo aula atual e gerando uma nova...' : 'Gerando a próxima aula do cronograma... acompanhe o diagnóstico.');
-    diagnostics.log(saturdayReview ? 'Botão Gerar revisão adaptativa de sábado acionado.' : forceNew ? 'Botão Gerar nova aula com substituição acionado.' : 'Botão Gerar próxima aula do cronograma acionado.', 'info');
+    setMessage(saturdayReview ? 'Gerando revisão adaptativa de sábado dos 4 pilares...' : forceNew ? 'Substituindo aula atual e gerando uma versão diferente...' : 'Gerando a próxima aula do cronograma... acompanhe o diagnóstico.');
+    diagnostics.log(saturdayReview ? 'Botão Gerar revisão adaptativa de sábado acionado.' : forceNew ? 'Botão Gerar nova aula com substituição e variação acionado.' : 'Botão Gerar próxima aula do cronograma acionado.', 'info');
 
     try {
       const flashKeys = getLessonFlashKeys();
@@ -65,7 +65,7 @@ export function LessonGeneratorPanel({ onGenerated }) {
       if (!saturdayReview) setActiveCurriculumLesson(nextLesson.id);
       const prompt = nextLesson.promptOverride || buildCurriculumPrompt(nextLesson);
 
-      const result = await generateLessonDraft({ prompt, keys: flashKeys, proKey });
+      const result = await generateLessonDraft({ prompt, keys: flashKeys, proKey, previousLesson: forceNew ? currentLesson : null, forceVariation: forceNew });
 
       if (result.status !== 'success' || !result.lesson) {
         setMessage(result.error || 'Não foi possível gerar a aula.');
@@ -122,15 +122,17 @@ export function LessonGeneratorPanel({ onGenerated }) {
       diagnostics.log(`Aula aprovada na avaliação pedagógica: ${pedagogicalReview.overallScore}/100.`, 'info', pedagogicalReview);
 
       const saved = saveCurrentLesson(attachPedagogicalReview(lessonForSave, pedagogicalReview), {
-        source: forceNew ? 'generated-replacement' : 'generated',
+        source: forceNew ? 'generated-replacement-variation' : 'generated',
         status: 'new',
         contractVersion: 'lesson-contract-v1',
         pedagogicalScore: pedagogicalReview.overallScore,
         autoRepaired,
+        variationMode: forceNew,
+        generationSeed: result.lesson.generationSeed,
       });
-      diagnostics.log(`${saturdayReview ? 'Revisão adaptativa' : 'Aula do cronograma'} pronta para abrir: ${saved.title}`, 'info');
+      diagnostics.log(`${saturdayReview ? 'Revisão adaptativa' : forceNew ? 'Nova versão da aula do cronograma' : 'Aula do cronograma'} pronta para abrir: ${saved.title}`, 'info');
       const repairLabel = autoRepaired ? ' corrigida automaticamente,' : '';
-      setMessage(saturdayReview ? `Nova revisão${repairLabel} validada (${pedagogicalReview.overallScore}/100), salva e aberta na aba Aula.` : `Nova aula${repairLabel} validada (${pedagogicalReview.overallScore}/100), salva e aberta na aba Aula.`);
+      setMessage(saturdayReview ? `Nova revisão${repairLabel} validada (${pedagogicalReview.overallScore}/100), salva e aberta na aba Aula.` : forceNew ? `Nova versão${repairLabel} validada (${pedagogicalReview.overallScore}/100), salva e aberta na aba Aula.` : `Nova aula${repairLabel} validada (${pedagogicalReview.overallScore}/100), salva e aberta na aba Aula.`);
       setForceNew(false);
       onGenerated?.(saved);
     } catch (error) {
@@ -171,7 +173,7 @@ export function LessonGeneratorPanel({ onGenerated }) {
       {pendingSameLesson ? (
         <label className="generation-replace-toggle">
           <input type="checkbox" checked={forceNew} onChange={(event) => setForceNew(event.target.checked)} />
-          <span>Substituir aula atual e gerar uma nova de verdade</span>
+          <span>Substituir aula atual e gerar uma versão diferente</span>
         </label>
       ) : null}
 
@@ -181,7 +183,7 @@ export function LessonGeneratorPanel({ onGenerated }) {
 
       <button type="button" className="primary-button" onClick={handleGenerate} disabled={loading}>
         {loading ? <Loader2 size={16} className="spin" /> : <Sparkles size={16} />}
-        {loading ? 'Gerando aula...' : saturdayReview ? 'Gerar revisão de sábado' : pendingSameLesson && !forceNew ? 'Manter aula atual' : 'Gerar nova aula'}
+        {loading ? 'Gerando aula...' : saturdayReview ? 'Gerar revisão de sábado' : pendingSameLesson && !forceNew ? 'Manter aula atual' : forceNew ? 'Gerar versão diferente' : 'Gerar nova aula'}
       </button>
 
       {message ? <p className="generator-message">{message}</p> : null}
