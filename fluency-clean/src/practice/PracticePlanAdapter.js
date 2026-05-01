@@ -1,4 +1,3 @@
-import { buildPracticeItems as buildLegacyPracticeItems, evaluatePracticeAnswer as evaluateLegacyPracticeAnswer, normalizeForPractice as normalizeLegacyPractice } from './PracticeEngine.js';
 import { buildPracticePlan, checkPracticeAnswer, normalizePracticeText, QUESTION_TYPES } from './core/index.js';
 
 const TYPE_TO_UI = Object.freeze({
@@ -86,25 +85,22 @@ export function normalizeForPractice(value) {
 }
 
 export function buildPracticeItems(lesson, options = {}) {
-  try {
-    const plan = buildPracticePlan(lesson, {
-      minQuestions: options.min || 14,
-      maxQuestions: options.max || 36,
-      idealQuestions: Math.min(options.max || 36, 26),
-    });
-    const items = plan.questions.map(adaptQuestion).filter(hasRenderableShape);
-    if (items.length >= Math.min(options.min || 14, 8)) {
-      return items.map((item) => ({ ...item, practicePlanQuality: plan.quality, practicePlanSummary: plan.contextSummary }));
-    }
-  } catch (error) {
-    console.warn('[Fluency Practice] Core practice builder failed, falling back to legacy engine.', error);
-  }
+  const plan = buildPracticePlan(lesson, {
+    minQuestions: options.min || 14,
+    maxQuestions: options.max || 36,
+    idealQuestions: Math.min(options.max || 36, 26),
+  });
 
-  return buildLegacyPracticeItems(lesson, options).map((item) => ({ ...item, sourceEngine: 'legacy' }));
+  const items = plan.questions.map(adaptQuestion).filter(hasRenderableShape);
+  return items.map((item) => ({
+    ...item,
+    practicePlanQuality: plan.quality,
+    practicePlanSummary: plan.contextSummary,
+  }));
 }
 
 export function evaluatePracticeAnswer(item, value) {
-  if (item?.sourceEngine === 'core' && item.coreQuestion) {
+  if (item?.coreQuestion) {
     const result = checkPracticeAnswer(item.coreQuestion, value);
     return {
       correct: result.correct,
@@ -115,13 +111,23 @@ export function evaluatePracticeAnswer(item, value) {
       expected: result.expected || item.answer,
     };
   }
-  return evaluateLegacyPracticeAnswer(item, value);
+
+  const user = normalizePracticeText(Array.isArray(value) ? value.join(' ') : value);
+  const expected = normalizePracticeText(item?.answer);
+  return {
+    correct: Boolean(user && expected && user === expected),
+    retryable: false,
+    empty: !user,
+    hintWord: '',
+    loseLife: true,
+    expected: item?.answer || '',
+  };
 }
 
 export function getPracticeEngineName(item) {
-  return item?.sourceEngine || 'unknown';
+  return item?.sourceEngine || 'core';
 }
 
 export function normalizeForPracticeLegacySafe(value) {
-  return normalizeLegacyPractice(value);
+  return normalizePracticeText(value);
 }
