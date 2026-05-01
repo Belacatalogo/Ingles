@@ -47,12 +47,64 @@ Princípio máximo:
 
 ## BLOCO ATUAL
 
-### `BLOCO-QUALIDADE-POR-ABA-LAB` — Áreas analisadas pelo professor IMPLEMENTADO, aguardando deploy/teste
+### `BLOCO-CONFIANÇA-DE-ESTUDO-LAB` — Aula vale estudar + painel compacto IMPLEMENTADO, aguardando deploy/teste
 
 Contexto:
-- usuário perguntou como saber qual aba/parte da aula foi analisada pelo professor;
-- antes o painel mostrava apenas a nota geral do professor revisor;
-- faltava deixar explícito se o professor analisou texto, conceito, vocabulário, prática profunda, shadowing e produção final.
+- usuário quer estudar com segurança prática: não precisa ser perfeito, mas precisa ser concreto, útil e confiável;
+- usuário também pediu que dados do professor/qualidade não poluam a página de aula;
+- painel de qualidade estava grande demais e ocupava muito espaço.
+
+Arquivos criados:
+- `fluency-clean/src/services/studyReadiness.js`
+
+Arquivos alterados:
+- `fluency-clean/src/components/lesson/LessonGeneratorPanel.jsx`
+- `fluency-clean/src/components/lesson/LessonQualityPanel.jsx`
+- `fluency-clean/src/styles/lesson-polish.css`
+- `REWRITE_HANDOFF.md`
+
+O que foi implementado:
+- novo serviço `studyReadiness.js` avalia se a aula vale estudar;
+- status possíveis:
+  - `study-ready` / `Pode estudar`;
+  - `study-with-attention` / `Pode estudar com atenção`;
+  - `do-not-study` / `Não estudar ainda`;
+- critérios por tipo de aula:
+  - Listening: texto/áudio, vocabulário, prática profunda, shadowing/escuta e produção ativa;
+  - Grammar: regra, uso, afirmativa, negativa, pergunta, erros comuns, exemplos, exercícios e produção;
+  - Reading: texto principal, vocabulário, compreensão, detalhe/inferência e produção final;
+  - Writing: modelo, estrutura, escrita guiada, revisão/reescrita/checklist;
+  - Speaking: fala ativa, repetição, pronúncia e produção oral;
+- `LessonGeneratorPanel.jsx` agora aplica a trava antes de salvar;
+- se status for `Não estudar ainda`, tenta reparo automático;
+- se continuar ruim após reparo, bloqueia o salvamento da aula e mostra erro no diagnóstico;
+- contrato salvo agora pode incluir `study-readiness-v1`;
+- metadados salvos:
+  - `studyReadiness`;
+  - `quality.studyReadiness`;
+  - `quality.studyReady`;
+  - `generationMeta.studyReady`;
+- `LessonQualityPanel.jsx` foi compactado:
+  - fechado por padrão;
+  - mostra apenas resumo `Confiança de estudo`, status e nota;
+  - botão `Detalhes` abre professor, rubrica, áreas analisadas, plano, contrato e alertas;
+- CSS novo mantém visual compacto e reduz poluição da aba Aula.
+
+Commits:
+- `a80d2e0f2eac8a1579ca921ee52b1e7ed8a048af` — adiciona verificador de confiança de estudo;
+- `7436a2688750ad62ffab2940d36a8e95a86b8b37` — aplica trava de confiança antes de salvar aula;
+- `0a70dfd16d59be8bab680bce46bdf300e3260cbc` — compacta painel de qualidade com detalhes expansíveis;
+- `1af5abc87804912576f9ee902aa3aec6b9ecc663` — estiliza painel compacto de confiança.
+
+Teste recomendado no iPhone:
+1. aguardar deploy da branch lab;
+2. abrir a aula atual e confirmar que o painel de qualidade aparece compacto;
+3. tocar em `Detalhes` para abrir professor/rubrica/áreas analisadas;
+4. gerar uma aula nova para ver `study-readiness-v1` no contrato;
+5. confirmar que, se a aula vier insuficiente, o diagnóstico tenta reparar ou bloqueia o salvamento;
+6. testar especialmente uma aula Grammar para confirmar que o sistema exige explicação mais concreta.
+
+### `BLOCO-QUALIDADE-POR-ABA-LAB` — Áreas analisadas pelo professor IMPLEMENTADO
 
 Arquivos alterados:
 - `fluency-clean/src/services/teacherReviewer.js`
@@ -61,91 +113,29 @@ Arquivos alterados:
 - `REWRITE_HANDOFF.md`
 
 O que foi implementado:
-- `teacherReviewer.js` agora cria `reviewedAreas` dentro de `teacherReview`;
-- `attachTeacherReview()` também salva `quality.reviewedAreas`;
-- áreas marcadas:
-  1. Texto da aula;
-  2. Conceito e explicação;
-  3. Vocabulário;
-  4. Prática profunda;
-  5. Shadowing;
-  6. Produção final;
-- cada área tem:
-  - `label`;
-  - `reviewed`;
-  - `status`;
-  - `detail`;
-- `Prática profunda` usa os exercícios da aula como fonte analisada, mas a renderização fica apenas no `PracticeLauncher`;
-- `LessonQualityPanel.jsx` agora mostra a seção `Professor analisou` com os cards de cada área;
-- para aulas antigas sem `reviewedAreas`, o painel monta uma leitura fallback baseada no conteúdo existente;
-- CSS novo em `.quality-reviewed-areas` mantém o painel compacto no iPhone.
+- `teacherReviewer.js` cria `reviewedAreas` dentro de `teacherReview`;
+- `attachTeacherReview()` salva `quality.reviewedAreas`;
+- áreas marcadas: Texto, Conceito, Vocabulário, Prática profunda, Shadowing e Produção final;
+- `Prática profunda` usa os exercícios da aula como fonte analisada, mas renderização fica apenas no `PracticeLauncher`;
+- `LessonQualityPanel.jsx` mostra `Professor analisou` dentro dos detalhes compactos.
 
 Commits:
 - `4e9a9f601fe4bf1df3395996c271768ee33e5693` — marca áreas revisadas pelo professor;
 - `129dae3ac7cfd8e8c2ca4b6b094c8a9cc23b8887` — mostra áreas revisadas no painel de qualidade;
 - `98e8cfe63e5368aaf2a12d5ceaddad4567390cb8` — estiliza áreas analisadas pelo professor.
 
-Teste recomendado no iPhone:
-1. aguardar deploy da branch lab;
-2. gerar aula nova ou abrir aula com professor revisor;
-3. no painel `Qualidade visível`, procurar a seção `Professor analisou`;
-4. confirmar se aparecem cards para Texto, Conceito, Vocabulário, Prática profunda, Shadowing e Produção final;
-5. confirmar se `Prática profunda` indica as questões revisadas, mas as questões aparecem apenas na prática profunda, não duplicadas embaixo da aula.
-
 ### `BLOCO-LISTENING-DUPLICIDADE-PRATICA-LAB` — Exercícios duplicados removidos da aula Listening IMPLEMENTADO
-
-Contexto:
-- usuário identificou erro grave no iPhone: as questões apareciam duas vezes;
-- a prática profunda correta aparecia no topo por `PracticeLauncher`;
-- os mesmos exercícios também estavam sendo renderizados dentro de `ListeningLessonClean.jsx`, criando uma segunda aba/lista embaixo.
-
-Arquivos alterados:
-- `fluency-clean/src/lessons/ListeningLessonClean.jsx`
-- `REWRITE_HANDOFF.md`
-
-O que foi implementado:
-- removida a seção `Exercícios` de `ListeningLessonClean.jsx`;
-- removido estado local `selectedAnswers`;
-- removida função `normalizeExercises()`;
-- removida função `chooseExerciseAnswer()`;
-- conclusão da aula Listening não salva mais respostas duplicadas da lista interna;
-- o stepper `Prática` agora aponta para `.lesson-practice-mount`, onde fica a `Prática profunda` verdadeira;
-- exercícios interativos ficam exclusivamente na prática profunda.
 
 Commit:
 - `4b89e02ad6f580f5b7113cff51592fad2a448422` — remove exercícios duplicados da aula listening.
 
 ### `BLOCO-GERAÇÃO-JSON-RESILIENTE-2-LAB` — Fallback contra JSON escapado IMPLEMENTADO
 
-Arquivos criados:
-- `fluency-clean/src/services/resilientGeminiLessonDraft.js`
-
-Arquivos alterados:
-- `fluency-clean/src/components/lesson/LessonGeneratorPanel.jsx`
-- `REWRITE_HANDOFF.md`
-
-O que foi implementado:
-- fallback quando a geração em blocos falha com JSON escapado `{\"type\":...}`;
-- parser resiliente tenta JSON normal, serializado como string, aspas escapadas e reparos;
-- contrato pode receber `resilient-json-v1`.
-
 Commits:
 - `d6f693f0e352d3e455a3529890fa6c65b84e02b8` — adiciona fallback resiliente para JSON escapado do Gemini;
 - `92402468a9ee4237523fdea7642aa009165d1bf5` — usa fallback resiliente quando Gemini retorna JSON escapado.
 
 ### `BLOCO-ANTI-FALSO-DOMÍNIO-LAB` — Reparo local contra falso domínio IMPLEMENTADO
-
-Arquivos criados:
-- `fluency-clean/src/services/antiFalseDomainRepair.js`
-
-Arquivos alterados:
-- `fluency-clean/src/components/lesson/LessonGeneratorPanel.jsx`
-- `REWRITE_HANDOFF.md`
-
-O que foi implementado:
-- `needsAntiFalseDomainRepair()` detecta falso domínio por issue do professor, nota `antiIllusion` baixa, excesso de múltipla escolha e pouca produção;
-- `repairLessonAgainstFalseDomain()` adiciona exercícios de produção ativa sem alternativas;
-- contrato pode receber `+anti-false-domain-v1` quando aplicado.
 
 Commits:
 - `f3fb92056807af8b710a9cfcaeef7b22fb4308dc` — adiciona reparador anti falso domínio;
@@ -208,7 +198,7 @@ Pendente técnica:
 
 ## NOVA ORDEM DE BLOCOS — QUALIDADE REAL DAS AULAS
 
-1. `BLOCO-QUALIDADE-POR-ABA-LAB` — Áreas analisadas pelo professor. STATUS: implementado, aguardando teste.
+1. `BLOCO-CONFIANÇA-DE-ESTUDO-LAB` — Aula vale estudar + painel compacto. STATUS: implementado, aguardando teste.
 2. `BLOCO-16-LAB` — Histórico real de Speaking.
 3. `BLOCO-15-LAB` — Banco de erros real.
 4. `BLOCO-20-LAB` — Certificação por nível.
@@ -236,15 +226,15 @@ Ordem recomendada após os blocos principais:
 
 ## Pendência técnica importante
 
-- testar deploy do `BLOCO-QUALIDADE-POR-ABA-LAB` no iPhone;
-- confirmar que o painel mostra `Professor analisou`;
-- confirmar que `Prática profunda` aparece como área analisada;
-- confirmar que as questões continuam aparecendo apenas em `Prática profunda`;
-- testar se a geração não para mais no erro `{\"type\"...}`;
-- remover definitivamente `ListeningLesson.jsx` antigo quando o conector permitir SHA correto;
-- confirmar se o painel de qualidade não ficou pesado no iPhone;
-- confirmar se aulas antigas sem professor revisor continuam renderizando.
+- testar deploy do `BLOCO-CONFIANÇA-DE-ESTUDO-LAB` no iPhone;
+- confirmar que o painel de qualidade ficou compacto;
+- confirmar que `Detalhes` abre professor/rubrica/áreas analisadas;
+- gerar aula nova para validar `study-readiness-v1` no contrato;
+- testar especialmente uma aula Grammar;
+- confirmar que aulas ruins são reparadas ou bloqueadas;
+- confirmar que questões continuam aparecendo apenas em `Prática profunda`;
+- remover definitivamente `ListeningLesson.jsx` antigo quando o conector permitir SHA correto.
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O bloco atual implementado foi `BLOCO-QUALIDADE-POR-ABA-LAB`: `teacherReviewer.js` agora salva `reviewedAreas`; `LessonQualityPanel.jsx` mostra `Professor analisou` com Texto, Conceito, Vocabulário, Prática profunda, Shadowing e Produção final; CSS em `lesson-polish.css`. Testar no iPhone; se ok, seguir para `BLOCO-16-LAB` Histórico real de Speaking."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O bloco atual implementado foi `BLOCO-CONFIANÇA-DE-ESTUDO-LAB`: criado `studyReadiness.js`, integrado em `LessonGeneratorPanel.jsx` antes de salvar, e `LessonQualityPanel.jsx` agora fica compacto com botão Detalhes. Testar no iPhone; se ok, seguir para `BLOCO-16-LAB` Histórico real de Speaking."
