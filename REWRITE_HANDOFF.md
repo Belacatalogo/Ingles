@@ -56,19 +56,37 @@ Diretriz visual nova:
 
 ## BLOCO ATUAL
 
-### `BLOCO-AUDIO-CACHE-1-LAB` — Áudio segmentado + cache local limitado IMPLEMENTADO, aguardando deploy/teste
+### `BLOCO-AUDIO-CACHE-1B-LAB` — Player iOS/Comet com fila mais segura IMPLEMENTADO, aguardando deploy/teste
 
 Contexto:
-- usuário informou que não está usando Safari, está usando Comet;
-- ainda assim, no iOS/Comet o áudio natural Gemini pode falhar por restrição da plataforma/navegador;
-- textos longos de Listening estavam falhando como áudio único;
-- usuário pediu cache com limite de 40 áudios para evitar gerar de novo.
+- usuário testou o bloco de áudio e a segmentação funcionou: apareceu `trecho 1/4`;
+- ainda havia mensagem antiga citando Safari, vinda de `tts.js`;
+- o fallback do navegador também podia ser bloqueado no Comet/iOS;
+- a fila segmentada tentava seguir para próximos trechos sem aguardar corretamente o fim do áudio Gemini.
 
-Análise antes da alteração:
-- `geminiTts.js` já tinha cache simples por texto, mas sem índice, sem limite e sem limpeza automática;
-- `audioPlayback.js` tentava tocar textos longos como um áudio único;
-- mensagens técnicas ainda citavam Safari, mesmo quando o usuário usa Comet;
-- o melhor caminho era segmentar textos longos e cachear cada trecho.
+Arquivos alterados:
+- `fluency-clean/src/services/tts.js`
+- `fluency-clean/src/services/geminiTts.js`
+- `fluency-clean/src/services/audioPlayback.js`
+- `REWRITE_HANDOFF.md`
+
+O que foi corrigido:
+- removida a mensagem antiga `Safari pode ter bloqueado a voz` do `tts.js`;
+- agora a mensagem usa `plataforma/navegador`;
+- `geminiTts.js` ganhou opção `waitUntilEnded` para aguardar o fim real do áudio natural;
+- `audioPlayback.js` agora usa `waitUntilEnded: true` na fila segmentada;
+- a fila de trechos passa a esperar o trecho atual terminar antes de preparar/tocar o próximo;
+- isso reduz falhas causadas por disparar vários áudios sequenciais fora do gesto original.
+
+Teste recomendado:
+1. abrir Listening no Comet/iPhone;
+2. tocar no áudio principal;
+3. confirmar que não aparece mais mensagem citando Safari;
+4. confirmar se o trecho 1 toca e depois avança para os demais;
+5. testar parar no meio da fila;
+6. testar tocar novamente para verificar cache.
+
+### `BLOCO-AUDIO-CACHE-1-LAB` — Áudio segmentado + cache local limitado IMPLEMENTADO
 
 Arquivos criados:
 - `fluency-clean/src/services/audioCache.js`
@@ -85,23 +103,11 @@ O que foi implementado:
 - limite automático de 40 áudios;
 - quando passa de 40, remove os mais antigos automaticamente;
 - cache usa hash por texto + voz + estilo + modelo;
-- `geminiTts.js` agora usa `audioCache.js` em vez de cache solto antigo;
 - textos longos em `audioPlayback.js` passam a ser divididos em trechos de até cerca de 260 caracteres;
 - reprodução longa toca em fila: trecho 1, trecho 2, trecho 3 etc.;
 - cada trecho pode usar cache, Gemini novo ou fallback do navegador;
-- `stopLearningAudio()` agora interrompe também a fila segmentada;
-- mensagens técnicas foram alteradas para `plataforma/navegador`, sem falar Safari;
+- `stopLearningAudio()` interrompe também a fila segmentada;
 - `ListeningLessonClean.jsx` mostra mensagens melhores: cache, áudio segmentado, fallback do dispositivo.
-
-Teste recomendado no iPhone/Comet:
-1. abrir aula de Listening;
-2. tocar no áudio principal da escuta guiada;
-3. confirmar se aparece `Preparando áudio natural em trechos...` quando o texto for longo;
-4. confirmar se o áudio toca em trechos ou usa fallback sem travar;
-5. tocar novamente no mesmo áudio para ver se carrega do cache;
-6. testar botão de pausar/parar durante a fila;
-7. testar uma frase curta de shadowing;
-8. verificar se o diagnóstico não fica repetindo `Safari`.
 
 ### `BLOCO-PRACTICE-REBUILD-9-LAB` — Limpeza final e remoção de legado PARCIALMENTE IMPLEMENTADO, aguardando validação final
 
@@ -159,7 +165,8 @@ Pendente no bloco 9:
 7B. `BLOCO-PRACTICE-REBUILD-7B-LAB` — Saneamento pedagógico e polimento mobile. STATUS: implementado e validado.
 8. `BLOCO-PRACTICE-REBUILD-8-LAB` — Persistência, progresso e revisão. STATUS: implementado e validado.
 9. `BLOCO-PRACTICE-REBUILD-9-LAB` — Limpeza final e remoção de legado. STATUS: parcialmente implementado, aguardando teste.
-9A. `BLOCO-AUDIO-CACHE-1-LAB` — Áudio segmentado + cache local limitado. STATUS: implementado, aguardando teste.
+9A. `BLOCO-AUDIO-CACHE-1-LAB` — Áudio segmentado + cache local limitado. STATUS: implementado.
+9B. `BLOCO-AUDIO-CACHE-1B-LAB` — Player iOS/Comet com fila mais segura. STATUS: implementado, aguardando teste.
 10. `BLOCO-PRACTICE-REBUILD-10-LAB` — Teste completo no iPhone.
 
 ## Pendência técnica importante
@@ -186,4 +193,4 @@ Pendente no bloco 9:
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. Os blocos `BLOCO-PRACTICE-REBUILD-1-LAB` a `8` foram implementados e validados. O bloco 9 removeu `PracticeEngine.js`, criou `ListeningLessonClean.jsx` sem prática legada interna e trocou `LessonScreen.jsx` para usar o Listening limpo. Depois foi implementado `BLOCO-AUDIO-CACHE-1-LAB`: cache local limitado a 40 áudios, áudio longo segmentado, fila de reprodução e mensagens sem citar Safari. Próximo passo: verificar deploy, testar áudio no Comet/iPhone e, se aprovado, concluir limpeza final do bloco 9 removendo `ListeningLesson.jsx` antigo e CSS legado `.fluency-quiz-*`."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. Os blocos `BLOCO-PRACTICE-REBUILD-1-LAB` a `8` foram implementados e validados. O bloco 9 removeu `PracticeEngine.js`, criou `ListeningLessonClean.jsx` sem prática legada interna e trocou `LessonScreen.jsx` para usar o Listening limpo. Depois foram implementados `BLOCO-AUDIO-CACHE-1-LAB` e `BLOCO-AUDIO-CACHE-1B-LAB`: cache local limitado a 40 áudios, áudio longo segmentado, fila aguardando fim de cada trecho e mensagens sem citar Safari. Próximo passo: verificar deploy, testar áudio no Comet/iPhone e, se aprovado, concluir limpeza final do bloco 9 removendo `ListeningLesson.jsx` antigo e CSS legado `.fluency-quiz-*`."
