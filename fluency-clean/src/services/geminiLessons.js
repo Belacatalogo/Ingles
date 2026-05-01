@@ -103,6 +103,50 @@ function getHttpStatus(error) { const match = String(error?.message || error).ma
 function isQuotaError(error) { return getHttpStatus(error) === 429; }
 function isModelNotFound(error) { return getHttpStatus(error) === 404; }
 function isRetryableError(error) { return RETRYABLE_STATUS.has(getHttpStatus(error)); }
+function makeGenerationSeed() { return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`; }
+function getVariationTheme(seed = '') {
+  const themes = [
+    'situação em sala de aula com professora e aluno novo',
+    'situação em biblioteca, cartão de estudante e soletração de nomes',
+    'situação em cafeteria simples, nomes em pedidos e sons iniciais',
+    'situação em recepção de escola, nomes, letras e números curtos',
+    'situação em chamada de vídeo, apresentação e soletração lenta',
+    'situação em loja pequena, nomes de produtos e primeiras letras',
+  ];
+  const source = String(seed || Date.now());
+  const sum = Array.from(source).reduce((total, char) => total + char.charCodeAt(0), 0);
+  return themes[sum % themes.length];
+}
+function buildPreviousLessonSummary(previousLesson) {
+  if (!previousLesson) return '';
+  const normalized = normalizeLesson(previousLesson);
+  return JSON.stringify({
+    title: normalized.title,
+    intro: normalized.intro,
+    objective: normalized.objective,
+    focus: normalized.focus,
+    firstTranscript: String(normalized.listeningText || '').slice(0, 700),
+    vocabulary: normalized.vocabulary.slice(0, 12).map((item) => item.word),
+    exercises: normalized.exercises.slice(0, 8).map((item) => item.question),
+  }, null, 2);
+}
+function buildVariationInstruction({ variationSeed = '', previousLesson = null, forceVariation = false } = {}) {
+  if (!forceVariation && !previousLesson) return '';
+  const seed = variationSeed || makeGenerationSeed();
+  return [
+    'MODO DE SUBSTITUIÇÃO/VARIAÇÃO REAL ATIVO.',
+    `Seed de variação: ${seed}`,
+    `Nova abordagem obrigatória: ${getVariationTheme(seed)}.`,
+    'Esta é uma nova versão para o MESMO objetivo do cronograma. Não avance para outro tema, mas NÃO copie a aula anterior.',
+    'Obrigatório variar: título, situação comunicativa, nomes dos personagens, roteiro/transcrição, exemplos, vocabulário secundário e exercícios.',
+    'Mantenha os pontos centrais do objetivo pedagógico, mas use outro contexto prático e outra história.',
+    'Não comece com o mesmo texto de introdução da aula anterior.',
+    'Não reutilize a mesma sequência de frases do áudio anterior.',
+    'Não reutilize as mesmas perguntas na mesma ordem.',
+    previousLesson ? 'Resumo da aula anterior para evitar repetição:' : '',
+    previousLesson ? buildPreviousLessonSummary(previousLesson) : '',
+  ].filter(Boolean).join('\n');
+}
 
 function buildAttempts({ keys = [], proKey = '' }) {
   const lessonKeys = normalizeLessonKeys(keys);
@@ -177,10 +221,11 @@ function validateGeneratedLesson(lesson) {
   return normalized;
 }
 
-function buildBlockPrompt({ block, blueprint, basePrompt, lessonType, partialLesson, retryReason = '' }) {
+function buildBlockPrompt({ block, blueprint, basePrompt, lessonType, partialLesson, retryReason = '', variationInstruction = '' }) {
   return [
     'Você é o gerador de aulas do Fluency.',
     buildJsonContractInstruction({ lessonType, blockId: block.id }),
+    variationInstruction,
     'Crie conteúdo para aluno brasileiro aprender inglês com uma aula séria, clara, profunda, longa e organizada.',
     'IMPORTANTE: esta aula NÃO pode ser curta. Se o tema for simples, aprofunde com exemplos, prática, repetição guiada e revisão nos blocos seguintes.',
     retryReason ? `Correção obrigatória da tentativa anterior: ${retryReason}` : '',
@@ -200,7 +245,7 @@ function buildBlockPrompt({ block, blueprint, basePrompt, lessonType, partialLes
 
 async function callGeminiJson({ attempt, prompt, maxOutputTokens, fetcher }) {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(attempt.model)}:generateContent?key=${encodeURIComponent(attempt.key)}`;
-  const body = { contents: [{ role: 'user', parts: [{ text: prompt }] }], generationConfig: { temperature: 0.18, maxOutputTokens, responseMimeType: 'application/json' } };
+  const body = { contents: [{ role: 'user', parts: [{ text: prompt }] }], generationConfig: { temperature: 0.34, maxOutputTokens, responseMimeType: 'application/json' } };
   const response = await fetcher(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
   if (!response || typeof response.ok === 'undefined') throw new Error('Gemini retornou resposta vazia.');
   if (!response.ok) {
@@ -229,14 +274,14 @@ function composeLessonFromBlocks(blockResults, lessonType) {
   };
 }
 
-async function generateBlockWithRetry({ attempt, prompt, fetcher, lessonType, blueprint, block, blockResults, blockLabel }) {
+async function generateBlockWithRetry({ attempt, prompt, fetcher, lessonType, blueprint, block, blockResults, blockLabel, variationInstruction }) {
   let retryReason = '';
   for (let retry = 0; retry <= BLOCK_RETRY_LIMIT; retry += 1) {
     try {
       if (retry > 0) diagnostics.log(`Regerando bloco ${blockLabel} por qualidade/JSON: ${retryReason}`, 'info');
       const data = await callGeminiJson({
         attempt,
-        prompt: buildBlockPrompt({ block, blueprint, lessonType, basePrompt: prompt, partialLesson: Object.keys(blockResults).length ? composeLessonFromBlocks(blockResults, lessonType) : null, retryReason }),
+        prompt: buildBlockPrompt({ block, blueprint, lessonType, basePrompt: prompt, partialLesson: Object.keys(blockResults).length ? composeLessonFromBlocks(blockResults, lessonType) : null, retryReason, variationInstruction }),
         maxOutputTokens: attempt.paid ? Math.max(block.maxOutputTokens, 5200) : block.maxOutputTokens,
         fetcher,
       });
@@ -251,7 +296,7 @@ async function generateBlockWithRetry({ attempt, prompt, fetcher, lessonType, bl
   throw new Error(`Bloco ${block.label} falhou após retries.`);
 }
 
-async function callGeminiInBlocks({ attempt, prompt, fetcher, lessonType }) {
+async function callGeminiInBlocks({ attempt, prompt, fetcher, lessonType, variationInstruction }) {
   const blueprint = getBlueprint(lessonType);
   const blockResults = {};
   for (let index = 0; index < blueprint.blocks.length; index += 1) {
@@ -259,7 +304,7 @@ async function callGeminiInBlocks({ attempt, prompt, fetcher, lessonType }) {
     const blockLabel = `${index + 1}/${blueprint.blocks.length}`;
     diagnostics.setPhase(`gerando bloco ${blockLabel}`, GEMINI_LESSON_STATUS.generating);
     diagnostics.log(`Bloco ${blockLabel}: gerando ${block.label}.`, 'info');
-    const data = await generateBlockWithRetry({ attempt, prompt, fetcher, lessonType, blueprint, block, blockResults, blockLabel });
+    const data = await generateBlockWithRetry({ attempt, prompt, fetcher, lessonType, blueprint, block, blockResults, blockLabel, variationInstruction });
     blockResults[block.id] = data;
     diagnostics.log(`Bloco ${blockLabel} aprovado pelo contrato JSON: ${block.label}.`, 'info');
   }
@@ -276,13 +321,16 @@ function summarizeFinalError({ quotaKeys, modelErrors, lastError, attempts }) {
   return lastError?.message || 'Falha ao gerar aula.';
 }
 
-export async function generateLessonDraft({ prompt, keys = [], proKey = '', fetcher = fetch } = {}) {
+export async function generateLessonDraft({ prompt, keys = [], proKey = '', fetcher = fetch, previousLesson = null, forceVariation = false } = {}) {
   const attempts = buildAttempts({ keys, proKey });
   const lessonType = inferLessonTypeFromText(prompt);
   const blueprint = getBlueprint(lessonType);
+  const variationSeed = makeGenerationSeed();
+  const variationInstruction = buildVariationInstruction({ variationSeed, previousLesson, forceVariation });
   diagnostics.setPhase('preparando geração de aula em blocos', GEMINI_LESSON_STATUS.generating);
   diagnostics.log(`Tipo de aula detectado: ${blueprint.label}.`, 'info');
   diagnostics.log(`Contrato JSON rígido ativo para ${blueprint.label}.`, 'info');
+  if (forceVariation || previousLesson) diagnostics.log(`Variação real ativa para mesmo tema. Seed: ${variationSeed}.`, 'info');
   diagnostics.log(`Critério de qualidade: longa, profunda, ${blueprint.minExercises}+ exercícios, ${blueprint.minVocabulary}+ vocabulários.`, 'info');
   diagnostics.log(`Plano de geração em blocos: ${attempts.length} tentativa(s), ${blueprint.blocks.length} bloco(s) por tentativa.`, 'info');
 
@@ -305,10 +353,11 @@ export async function generateLessonDraft({ prompt, keys = [], proKey = '', fetc
     diagnostics.setPhase(`tentativa ${attemptLabel}`, GEMINI_LESSON_STATUS.generating);
     diagnostics.log(`Tentativa ${attemptLabel}: ${attempt.model} com key ${attempt.masked}${attempt.paid ? ' (Pro fallback)' : ' (Flash/free)'}`, 'info');
     try {
-      const lesson = await callGeminiInBlocks({ attempt, prompt, fetcher, lessonType });
+      const lesson = await callGeminiInBlocks({ attempt, prompt, fetcher, lessonType, variationInstruction });
+      const lessonWithMeta = { ...lesson, generationSeed: variationSeed, variationMode: forceVariation || Boolean(previousLesson) };
       diagnostics.setPhase('aula gerada em blocos', GEMINI_LESSON_STATUS.success);
       diagnostics.log(`Aula ${blueprint.label} longa, validada e compatível com contrato JSON usando ${attempt.model}.`, 'info');
-      return { status: GEMINI_LESSON_STATUS.success, lesson, error: null };
+      return { status: GEMINI_LESSON_STATUS.success, lesson: lessonWithMeta, error: null };
     } catch (error) {
       lastError = error;
       if (isQuotaError(error)) {
