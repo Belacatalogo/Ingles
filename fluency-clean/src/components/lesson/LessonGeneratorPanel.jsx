@@ -2,7 +2,7 @@ import { AlertCircle, Clock3, Loader2, RefreshCw, Sparkles } from 'lucide-react'
 import { useMemo, useState } from 'react';
 import { buildCurriculumPrompt, getCurriculumSummary, setActiveCurriculumLesson } from '../../services/curriculumPlan.js';
 import { diagnostics } from '../../services/diagnostics.js';
-import { generateLessonDraft } from '../../services/geminiLessons.js';
+import { generatePlannedLessonDraft } from '../../services/plannedGeminiLessons.js';
 import { getLessonKeysStatus, getLessonFlashKeys, getLessonProKey } from '../../services/lessonKeys.js';
 import { getCurrentLessonRaw, getLastGenerationStatus, saveCurrentLesson } from '../../services/lessonStore.js';
 import { repairLessonForQuality } from '../../services/lessonRepair.js';
@@ -43,7 +43,7 @@ export function LessonGeneratorPanel({ onGenerated }) {
     }
 
     setLoading(true);
-    setMessage(saturdayReview ? 'Gerando revisão adaptativa de sábado dos 4 pilares...' : forceNew ? 'Substituindo aula atual e gerando uma versão diferente...' : 'Gerando a próxima aula do cronograma... acompanhe o diagnóstico.');
+    setMessage(saturdayReview ? 'Planejando e gerando revisão adaptativa de sábado...' : forceNew ? 'Planejando substituição da aula atual e gerando versão diferente...' : 'Planejando a próxima aula antes de gerar... acompanhe o diagnóstico.');
     diagnostics.log(saturdayReview ? 'Botão Gerar revisão adaptativa de sábado acionado.' : forceNew ? 'Botão Gerar nova aula com substituição e variação acionado.' : 'Botão Gerar próxima aula do cronograma acionado.', 'info');
 
     try {
@@ -66,7 +66,7 @@ export function LessonGeneratorPanel({ onGenerated }) {
       const prompt = nextLesson.promptOverride || buildCurriculumPrompt(nextLesson);
       const forcedType = nextLesson.type === 'review' ? '' : nextLesson.type;
 
-      const result = await generateLessonDraft({ prompt, keys: flashKeys, proKey, previousLesson: forceNew ? currentLesson : null, forceVariation: forceNew, forcedType });
+      const result = await generatePlannedLessonDraft({ prompt, keys: flashKeys, proKey, previousLesson: forceNew ? currentLesson : null, forceVariation: forceNew, forcedType, level: nextLesson.level || 'A1' });
 
       if (result.status !== 'success' || !result.lesson) {
         setMessage(result.error || 'Não foi possível gerar a aula.');
@@ -125,15 +125,16 @@ export function LessonGeneratorPanel({ onGenerated }) {
       const saved = saveCurrentLesson(attachPedagogicalReview(lessonForSave, pedagogicalReview), {
         source: forceNew ? 'generated-replacement-variation' : 'generated',
         status: 'new',
-        contractVersion: 'lesson-contract-v1',
+        contractVersion: result.lesson.planContract ? `lesson-contract-v1+${result.lesson.planContract}` : 'lesson-contract-v1',
         pedagogicalScore: pedagogicalReview.overallScore,
         autoRepaired,
         variationMode: forceNew,
         generationSeed: result.lesson.generationSeed,
+        planSeed: result.lesson.planSeed,
       });
-      diagnostics.log(`${saturdayReview ? 'Revisão adaptativa' : forceNew ? 'Nova versão da aula do cronograma' : 'Aula do cronograma'} pronta para abrir: ${saved.title}`, 'info');
+      diagnostics.log(`${saturdayReview ? 'Revisão adaptativa planejada' : forceNew ? 'Nova versão planejada da aula do cronograma' : 'Aula planejada do cronograma'} pronta para abrir: ${saved.title}`, 'info');
       const repairLabel = autoRepaired ? ' corrigida automaticamente,' : '';
-      setMessage(saturdayReview ? `Nova revisão${repairLabel} validada (${pedagogicalReview.overallScore}/100), salva e aberta na aba Aula.` : forceNew ? `Nova versão${repairLabel} validada (${pedagogicalReview.overallScore}/100), salva e aberta na aba Aula.` : `Nova aula${repairLabel} validada (${pedagogicalReview.overallScore}/100), salva e aberta na aba Aula.`);
+      setMessage(saturdayReview ? `Nova revisão planejada${repairLabel} validada (${pedagogicalReview.overallScore}/100), salva e aberta na aba Aula.` : forceNew ? `Nova versão planejada${repairLabel} validada (${pedagogicalReview.overallScore}/100), salva e aberta na aba Aula.` : `Nova aula planejada${repairLabel} validada (${pedagogicalReview.overallScore}/100), salva e aberta na aba Aula.`);
       setForceNew(false);
       onGenerated?.(saved);
     } catch (error) {
