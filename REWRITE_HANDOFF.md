@@ -35,7 +35,36 @@ Observação: neste bloco o conector do GitHub aceitou apenas arquivos/atualiza�
 
 ## Estado atual implementado
 
-### BLOCO-QUIZ-FULLSCREEN-LAB — Prática profunda fullscreen por tipo de aula IMPLEMENTADO PARCIALMENTE, aguardando deploy/teste
+### HOTFIX QUIZ FULLSCREEN — Polimento sem scroll IMPLEMENTADO, aguardando teste
+
+Contexto:
+- usuário testou a tela fullscreen e informou que a página estava rolando para cima/baixo sem ter conteúdo;
+- botão inferior estava cobrindo opções;
+- alternativas grandes demais ficavam cortadas/baixo da tela;
+- faltava polimento de qualidade visual.
+
+Arquivo alterado:
+- `fluency-clean/src/styles/practice-fullscreen.css`
+
+Correção aplicada:
+- `.practice-fullscreen` agora usa `height: 100dvh`, `max-height: 100dvh`, `overflow: hidden` e `overscroll-behavior: none`;
+- layout virou grid fixo: topo, conteúdo e rodapé;
+- área da questão não deve mais criar scroll solto;
+- altura dos cards de alternativa foi reduzida e limitada com `clamp()`;
+- fonte das alternativas foi reduzida para caber melhor no iPhone;
+- botão/rodapé inferior ficou menor e com sombra controlada;
+- ajustes extras para telas baixas com `@media (max-height: 720px)`;
+- objetivo: caber a questão, opções e botão em uma tela sem rolagem vertical desnecessária.
+
+Teste recomendado:
+1. aguardar deploy Ready;
+2. abrir prática fullscreen no iPhone;
+3. confirmar que a tela não rola para cima/baixo;
+4. confirmar que o botão `Verificar` não cobre alternativas;
+5. testar questão com 4 alternativas longas;
+6. testar ditado, word bank e complete lacuna.
+
+### BLOCO-QUIZ-FULLSCREEN-LAB — Prática profunda fullscreen por tipo de aula IMPLEMENTADO PARCIALMENTE
 
 Objetivo:
 - substituir a prática pesada dentro da aula por uma experiência fullscreen inspirada no fluxo de apps de idiomas;
@@ -73,20 +102,6 @@ Pendência técnica importante:
 - no momento a prática antiga está apenas oculta por CSS para evitar sobreposição;
 - depois de validar deploy, fazer um hotfix limpo no JSX do Listening para remover código morto e manter apenas `PracticeLauncher`/finalização.
 
-Teste recomendado no iPhone:
-1. aguardar Vercel Ready;
-2. abrir aula atual;
-3. confirmar card “Prática profunda”;
-4. tocar em “Começar prática”;
-5. confirmar fullscreen com X e barra de progresso;
-6. testar múltipla escolha;
-7. testar escuta/áudio;
-8. testar ditado;
-9. testar banco de palavras;
-10. testar complete lacuna;
-11. testar fala ou fallback de digitação;
-12. finalizar e confirmar volta para a aula.
-
 ## Próximo passo imediato
 
 Validar build/deploy. Se quebrar, corrigir apenas build. Se funcionar, testar no iPhone e depois fazer limpeza estrutural do `ListeningLesson.jsx` para remover a prática antiga e rascunho visual de vez.
@@ -108,4 +123,4 @@ Validar build/deploy. Se quebrar, corrigir apenas build. Se funcionar, testar no
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O BLOCO-QUIZ-FULLSCREEN-LAB foi iniciado com módulo próprio em `src/practice/`, CSS importado e `PracticeLauncher` conectado em `LessonScreen.jsx`. A prática antiga do `ListeningLesson.jsx` está oculta por CSS, mas ainda precisa ser removida estruturalmente depois da validação. Validar primeiro build/deploy e teste no iPhone. Próximo passo imediato: se o deploy estiver Ready e a prática fullscreen funcionar, limpar `ListeningLesson.jsx` removendo prática antiga/rascunho. Depois seguir para aplicar prática modular aos outros tipos de aula e continuar a ordem: 12, 14, 11, 13, 17, 16, 15, 20, CARTAS-3B e AUDITORIA-POLIMENTO-GERAL."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O BLOCO-QUIZ-FULLSCREEN-LAB foi iniciado com módulo próprio em `src/practice/`, CSS importado e `PracticeLauncher` conectado em `LessonScreen.jsx`. O hotfix de polimento sem scroll do fullscreen foi aplicado em `practice-fullscreen.css`. A prática antiga do `ListeningLesson.jsx` está oculta por CSS, mas ainda precisa ser removida estruturalmente depois da validação. Validar primeiro build/deploy e teste no iPhone. Próximo passo imediato: se o deploy estiver Ready e a prática fullscreen funcionar, limpar `ListeningLesson.jsx` removendo prática antiga/rascunho. Depois seguir para aplicar prática modular aos outros tipos de aula e continuar a ordem: 12, 14, 11, 13, 17, 16, 15, 20, CARTAS-3B e AUDITORIA-POLIMENTO-GERAL."
