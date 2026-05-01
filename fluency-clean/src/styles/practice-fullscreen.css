@@ -108,6 +108,47 @@
 .practice-done button { width: min(430px, 100%); }
 .practice-done button.primary { background: linear-gradient(135deg, var(--practice-blue), var(--practice-violet)); }
 
+.practice-fullscreen:has(.practice-textarea:focus),
+.practice-fullscreen:has(.practice-speak-box input:focus) {
+  grid-template-rows: 52px auto minmax(0, 1fr) auto;
+  padding-top: max(6px, env(safe-area-inset-top));
+}
+.practice-fullscreen:has(.practice-textarea:focus) .practice-lives,
+.practice-fullscreen:has(.practice-speak-box input:focus) .practice-lives { display: none; }
+.practice-fullscreen:has(.practice-textarea:focus) .practice-question,
+.practice-fullscreen:has(.practice-speak-box input:focus) .practice-question {
+  gap: 9px;
+  overflow-y: auto;
+  padding-bottom: 150px;
+  -webkit-overflow-scrolling: touch;
+}
+.practice-fullscreen:has(.practice-textarea:focus) .practice-question-card,
+.practice-fullscreen:has(.practice-speak-box input:focus) .practice-question-card { padding: 13px 15px; border-radius: 22px; }
+.practice-fullscreen:has(.practice-textarea:focus) .practice-kind,
+.practice-fullscreen:has(.practice-speak-box input:focus) .practice-kind { font-size: 10px; margin-bottom: 5px; }
+.practice-fullscreen:has(.practice-textarea:focus) .practice-question h1,
+.practice-fullscreen:has(.practice-speak-box input:focus) .practice-question h1 { font-size: clamp(20px, 5.4vw, 28px); }
+.practice-fullscreen:has(.practice-textarea:focus) .practice-audio-big { width: 86px; border-radius: 24px; }
+.practice-fullscreen:has(.practice-textarea:focus) .practice-audio-big svg { width: 30px; height: 30px; }
+.practice-fullscreen:has(.practice-textarea:focus) .practice-textarea {
+  min-height: 96px;
+  max-height: 122px;
+  font-size: 18px;
+  padding: 14px;
+}
+.practice-fullscreen:has(.practice-textarea:focus) .practice-feedback,
+.practice-fullscreen:has(.practice-speak-box input:focus) .practice-feedback {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  min-height: 104px;
+  padding: 12px 18px max(12px, env(safe-area-inset-bottom));
+  border-radius: 24px 24px 0 0;
+}
+.practice-fullscreen:has(.practice-textarea:focus) .practice-feedback-placeholder,
+.practice-fullscreen:has(.practice-speak-box input:focus) .practice-feedback-placeholder { display: none; }
+
 @media (max-width: 420px) {
   .practice-fullscreen { padding-left: 16px; padding-right: 16px; }
   .practice-question { gap: 13px; padding-top: 8px; }
