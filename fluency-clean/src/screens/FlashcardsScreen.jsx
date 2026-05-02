@@ -91,7 +91,7 @@ function VocabularyActivityCard({ activity, selected, builtWords, feedback, onCh
       ) : isBuild ? (
         <div className="vocab-build-body"><p>{activity.prompt}</p><div className="vocab-built-answer">{builtWords.length ? builtWords.map((word, index) => <button key={`${word}-${index}`} type="button" onClick={() => onRemoveBuildWord(index)}>{word}</button>) : <span>Monte aqui...</span>}</div><div className="vocab-build-options">{activity.options.map((word, index) => <button key={`${word}-${index}`} type="button" onClick={() => onBuildWord(word)}>{word}</button>)}</div></div>
       ) : (
-        <div className="vocab-choice-body"><p>{isListen ? 'Escolha o que você ouviu.' : activity.prompt}</p><div className="vocab-choice-options">{activity.options.map((option) => <button className={selected === option ? 'selected' : ''} key={option} type="button" onClick={() => onChoose(option)}>{option}</button>)}</div></div>
+        <div className="vocab-choice-body"><p>{isListen ? 'Escolha o que você ouviu.' : activity.prompt}</p>{activity.hint ? <em className="vocab-meaning-hint">Sentido: {activity.hint}</em> : null}<div className="vocab-choice-options">{activity.options.map((option) => <button className={selected === option ? 'selected' : ''} key={option} type="button" onClick={() => onChoose(option)}>{option}</button>)}</div></div>
       )}
       {feedback ? <div className={`vocab-feedback ${feedback.correct ? 'correct' : 'wrong'}`}>{feedback.correct ? 'Correto.' : `Resposta certa: ${feedback.expected}`}</div> : null}
       <button className="cards-primary-action" type="button" onClick={onContinue} disabled={!canCheck}>{buttonLabel}</button>
