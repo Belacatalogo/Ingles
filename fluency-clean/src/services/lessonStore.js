@@ -22,16 +22,89 @@ function shortText(value, max) {
   return text.length > max ? `${text.slice(0, max)}…` : text;
 }
 
-function compactLesson(lesson) {
+function compactReview(review = {}, maxIssues = 8) {
+  if (!review || typeof review !== 'object') return review;
+  return {
+    approved: Boolean(review.approved),
+    overallScore: Number(review.overallScore || review.finalScore || 0),
+    finalScore: Number(review.finalScore || review.overallScore || 0),
+    label: shortText(review.label || '', 160),
+    advice: shortText(review.advice || review.message || '', 700),
+    issues: Array.isArray(review.issues) ? review.issues.slice(0, maxIssues).map((item) => shortText(item, 260)) : [],
+    strengths: Array.isArray(review.strengths) ? review.strengths.slice(0, maxIssues).map((item) => shortText(item, 220)) : [],
+    missing: Array.isArray(review.missing) ? review.missing.slice(0, maxIssues).map((item) => shortText(item, 220)) : [],
+    criticalIssues: Array.isArray(review.criticalIssues) ? review.criticalIssues.slice(0, maxIssues).map((item) => shortText(item, 260)) : [],
+    status: review.status || '',
+  };
+}
+
+function compactLessonPlan(plan = {}) {
+  if (!plan || typeof plan !== 'object') return null;
+  return {
+    contract: plan.contract || '',
+    lessonType: plan.lessonType || plan.type || '',
+    level: plan.level || '',
+    profile: plan.profile || '',
+    objective: shortText(plan.objective || '', 500),
+    focus: shortText(plan.focus || '', 420),
+    constraints: Array.isArray(plan.constraints) ? plan.constraints.slice(0, 10).map((item) => shortText(item, 220)) : [],
+  };
+}
+
+function stripStorageHeavyFields(lesson) {
   const base = normalizeLesson(lesson);
   return {
     ...base,
-    intro: shortText(base.intro, 1800),
-    listeningText: shortText(base.listeningText, 5200),
-    sections: Array.isArray(base.sections) ? base.sections.slice(0, 10).map((section) => ({ ...section, content: shortText(section?.content, 1800), explanation: shortText(section?.explanation, 1200) })) : base.sections,
-    vocabulary: Array.isArray(base.vocabulary) ? base.vocabulary.slice(0, 45) : base.vocabulary,
-    exercises: Array.isArray(base.exercises) ? base.exercises.slice(0, 45) : base.exercises,
-    prompts: Array.isArray(base.prompts) ? base.prompts.slice(0, 24) : base.prompts,
+    intro: shortText(base.intro, 1600),
+    objective: shortText(base.objective, 700),
+    focus: shortText(base.focus, 700),
+    listeningText: shortText(base.listeningText, 4200),
+    sections: Array.isArray(base.sections) ? base.sections.slice(0, 10).map((section) => ({
+      title: shortText(section?.title, 180),
+      content: shortText(section?.content, 2400),
+      sectionContract: section?.sectionContract || '',
+      wordCount: Number(section?.wordCount || 0),
+    })) : [],
+    tips: Array.isArray(base.tips) ? base.tips.slice(0, 10).map((item) => shortText(item, 240)) : [],
+    vocabulary: Array.isArray(base.vocabulary) ? base.vocabulary.slice(0, 28).map((item) => ({
+      word: shortText(item?.word, 120),
+      meaning: shortText(item?.meaning, 220),
+      example: shortText(item?.example, 280),
+    })) : [],
+    exercises: Array.isArray(base.exercises) ? base.exercises.slice(0, 28).map((item) => ({
+      question: shortText(item?.question, 380),
+      options: Array.isArray(item?.options) ? item.options.slice(0, 4).map((option) => shortText(option, 180)) : [],
+      answer: shortText(item?.answer, 180),
+      explanation: shortText(item?.explanation, 420),
+    })) : [],
+    prompts: Array.isArray(base.prompts) ? base.prompts.slice(0, 12).map((item) => shortText(item, 420)) : [],
+    lessonPlan: compactLessonPlan(lesson?.lessonPlan),
+    pedagogicalReview: compactReview(lesson?.pedagogicalReview || lesson?.quality),
+    teacherReview: compactReview(lesson?.teacherReview),
+    studyReadiness: compactReview(lesson?.studyReadiness),
+    quality: lesson?.quality ? compactReview(lesson.quality) : undefined,
+    deepGrammarAudit: undefined,
+    rawResponse: undefined,
+    debug: undefined,
+    diagnostics: undefined,
+  };
+}
+
+function compactLesson(lesson, mode = 'normal') {
+  const base = stripStorageHeavyFields(lesson);
+  const sectionLimit = mode === 'emergency' ? 1600 : 2400;
+  const exerciseLimit = mode === 'emergency' ? 20 : 28;
+  return {
+    ...base,
+    intro: shortText(base.intro, mode === 'emergency' ? 900 : 1600),
+    listeningText: shortText(base.listeningText, mode === 'emergency' ? 1800 : 4200),
+    sections: Array.isArray(base.sections) ? base.sections.slice(0, 10).map((section) => ({
+      ...section,
+      content: shortText(section?.content, sectionLimit),
+    })) : [],
+    vocabulary: Array.isArray(base.vocabulary) ? base.vocabulary.slice(0, mode === 'emergency' ? 18 : 28) : [],
+    exercises: Array.isArray(base.exercises) ? base.exercises.slice(0, exerciseLimit) : [],
+    prompts: Array.isArray(base.prompts) ? base.prompts.slice(0, mode === 'emergency' ? 8 : 12) : [],
   };
 }
 
@@ -43,20 +116,29 @@ function verifySavedLesson(expected) {
 }
 
 function persistCurrentLesson(payload) {
-  storage.set(CURRENT_LESSON_KEY, payload);
-  if (verifySavedLesson(payload)) return { ok: true, payload, compacted: false };
+  const storagePayload = { ...stripStorageHeavyFields(payload), generationMeta: payload.generationMeta };
+  storage.set(CURRENT_LESSON_KEY, storagePayload);
+  if (verifySavedLesson(storagePayload)) return { ok: true, payload: storagePayload, compacted: false };
 
   diagnostics.log('Storage recusou a aula completa. Limpando histórico e tentando novamente.', 'warn');
   storage.remove(LESSON_HISTORY_KEY);
-  storage.set(CURRENT_LESSON_KEY, payload);
-  if (verifySavedLesson(payload)) return { ok: true, payload, compacted: false };
+  storage.set(CURRENT_LESSON_KEY, storagePayload);
+  if (verifySavedLesson(storagePayload)) return { ok: true, payload: storagePayload, compacted: false };
 
   const compact = { ...compactLesson(payload), generationMeta: { ...payload.generationMeta, compactedForStorage: true } };
   diagnostics.log('Storage ainda recusou. Tentando salvar versão compacta da aula.', 'warn');
   storage.set(CURRENT_LESSON_KEY, compact);
   if (verifySavedLesson(compact)) return { ok: true, payload: compact, compacted: true };
 
-  return { ok: false, payload: compact, compacted: true };
+  const emergency = { ...compactLesson(payload, 'emergency'), generationMeta: { ...payload.generationMeta, compactedForStorage: true, emergencyCompactedForStorage: true } };
+  diagnostics.log('Storage recusou a versão compacta. Limpando cache antigo e tentando versão emergencial.', 'warn');
+  storage.remove(LESSON_HISTORY_KEY);
+  storage.remove('diagnostics.logs');
+  storage.remove('cloud.sync.queue');
+  storage.set(CURRENT_LESSON_KEY, emergency);
+  if (verifySavedLesson(emergency)) return { ok: true, payload: emergency, compacted: true, emergency: true };
+
+  return { ok: false, payload: emergency, compacted: true, emergency: true };
 }
 
 function findHistoryLessonByStatus(history = [], status = null) {
@@ -133,7 +215,7 @@ export function saveCurrentLesson(lesson, meta = {}) {
     replacedPreviousGenerationId: previous?.generationMeta?.id || '',
   };
 
-  const persisted = persistCurrentLesson({ ...normalized, generationMeta });
+  const persisted = persistCurrentLesson({ ...normalized, ...lesson, generationMeta });
   if (!persisted.ok) {
     const status = saveGenerationStatus({ id: generationMeta.id, event: 'storage-failed', message: 'Aula gerada, mas não foi possível gravar a aula atual no armazenamento local.', lessonId: normalized.id, lessonTitle: normalized.title, contractVersion: generationMeta.contractVersion, pedagogicalScore: generationMeta.pedagogicalScore, source: generationMeta.source, createdAt: generationMeta.generatedAt });
     diagnostics.log('Falha crítica: a aula não foi persistida como lesson.current. Status saved não foi gravado.', 'error');
@@ -142,11 +224,11 @@ export function saveCurrentLesson(lesson, meta = {}) {
   }
 
   const payload = persisted.payload;
-  if (persisted.compacted) diagnostics.log('Aula salva em modo compacto para caber no armazenamento local.', 'warn');
+  if (persisted.compacted) diagnostics.log(persisted.emergency ? 'Aula salva em modo emergencial para caber no armazenamento local.' : 'Aula salva em modo compacto para caber no armazenamento local.', 'warn');
 
   const history = storage.get(LESSON_HISTORY_KEY, []);
-  const nextHistory = [{ ...payload, savedAt: now.toISOString() }, ...(Array.isArray(history) ? history : []).filter((item) => item?.generationMeta?.id !== payload.generationMeta.id)].slice(0, 6);
-  if (!storage.set(LESSON_HISTORY_KEY, nextHistory)) storage.set(LESSON_HISTORY_KEY, [{ ...payload, savedAt: now.toISOString() }]);
+  const nextHistory = [{ ...compactLesson(payload, 'emergency'), savedAt: now.toISOString() }, ...(Array.isArray(history) ? history : []).filter((item) => item?.generationMeta?.id !== payload.generationMeta.id)].slice(0, 2);
+  if (!storage.set(LESSON_HISTORY_KEY, nextHistory)) storage.set(LESSON_HISTORY_KEY, [{ ...compactLesson(payload, 'emergency'), savedAt: now.toISOString() }]);
 
   const status = saveGenerationStatus({ id: payload.generationMeta.id, event: 'saved', message: payload.generationMeta.variationMode ? 'Nova versão diferente gerada e salva.' : payload.generationMeta.status === 'new' ? 'Nova aula gerada e salva.' : 'Aula salva.', lessonId: payload.id, lessonTitle: payload.title, contractVersion: payload.generationMeta.contractVersion, pedagogicalScore: payload.generationMeta.pedagogicalScore, source: payload.generationMeta.source, variationMode: payload.generationMeta.variationMode, generationSeed: payload.generationMeta.generationSeed, createdAt: payload.generationMeta.generatedAt });
   diagnostics.log(`Aula salva: ${payload.title} · ${payload.generationMeta.id}${payload.generationMeta.variationMode ? ' · variação real' : ''}`, 'info');
