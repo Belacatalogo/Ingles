@@ -45,6 +45,32 @@ Princípio máximo:
 
 `o aluno só avança quando prova domínio, não apenas quando conclui uma aula.`
 
+## META OFICIAL — CARTAS / VOCABULÁRIO
+
+A aba Cartas deve substituir o uso do Duolingo para vocabulário, frases e chunks.
+
+Regra importante:
+- as bolhas finais da trilha não devem depender de IA para gerar conteúdo;
+- o conteúdo principal deve ser fixo, auditável e versionado em arquivos reais do projeto;
+- IA pode ajudar em aulas, mas a trilha de vocabulário deve ter currículo próprio.
+
+Meta revisada para competir com cursos grandes do Duolingo:
+
+`5.000 palavras/expressões + 2.500 frases/chunks = 7.500 itens treináveis`
+
+Distribuição planejada:
+- A1: 700 palavras/expressões + 500 frases/chunks;
+- A2: 900 palavras/expressões + 600 frases/chunks;
+- B1: 1.200 palavras/expressões + 650 frases/chunks;
+- B2: 1.200 palavras/expressões + 500 frases/chunks;
+- C1: 700 palavras/expressões + 200 frases/chunks;
+- C2: 300 palavras/expressões + 50 frases/chunks.
+
+Bloco responsável:
+- `BLOCO-CARTAS-CURRICULO-FIXO-8-LAB`.
+
+Esse bloco deve criar arquivos reais em `fluency-clean/src/data/vocabulary/`, organizados por nível, tópico, bolha, palavra, frase, chunk, collocation e mini-diálogo.
+
 ## BLOCO ATUAL
 
 ### `BLOCO-CARTAS-SRS-3-LAB` — Revisão espaçada real por palavra/frase IMPLEMENTADO, aguardando deploy/teste
@@ -178,7 +204,7 @@ Pendente técnica:
 3. `BLOCO-CARTAS-MIX-5-LAB` — misturar palavras novas com antigas.
 4. `BLOCO-CARTAS-LISTENING-SPEAKING-6-LAB` — áudio, shadowing e pronúncia.
 5. `BLOCO-CARTAS-MASTERY-7-LAB` — bolha só passa com domínio mínimo.
-6. `BLOCO-CARTAS-CURRICULO-FIXO-8-LAB` — currículo fixo sem IA, meta 2.000 palavras + 1.000 frases/chunks.
+6. `BLOCO-CARTAS-CURRICULO-FIXO-8-LAB` — currículo fixo sem IA, meta 5.000 palavras/expressões + 2.500 frases/chunks.
 7. `BLOCO-AUDITORIA-POLIMENTO-GERAL-LAB` — após concluir os blocos principais, analisar cada página com precisão, listar melhorias possíveis e montar blocos de polimento.
 
 ## FASE EXTRA — GARANTIA PEDAGÓGICA MÁXIMA
@@ -211,4 +237,4 @@ Ordem recomendada após os blocos principais:
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O bloco atual implementado foi `BLOCO-CARTAS-SRS-3-LAB`: criado `vocabularySrs.js`, Cartas atualiza SRS por palavra/frase ao concluir sessão e Hoje mostra revisões vencidas. Testar no iPhone; se ok, seguir para `BLOCO-CARTAS-USO-4-LAB`."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O bloco atual implementado foi `BLOCO-CARTAS-SRS-3-LAB`: criado `vocabularySrs.js`, Cartas atualiza SRS por palavra/frase ao concluir sessão e Hoje mostra revisões vencidas. A meta oficial da trilha fixa de Cartas foi atualizada para 5.000 palavras/expressões + 2.500 frases/chunks, sem IA gerando bolhas. Testar no iPhone; se ok, seguir para `BLOCO-CARTAS-USO-4-LAB`."
