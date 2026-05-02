@@ -23,6 +23,52 @@ Princípio máximo:
 
 `o aluno só avança quando prova domínio, não apenas quando conclui uma aula.`
 
+## BLOCO ATUAL
+
+### `BLOCO-HOTFIX-CLOUD-SYNC-AULA-SEGURA-LAB` — IMPLEMENTADO, aguardando deploy/teste
+
+Contexto:
+- Diagnóstico mostrou o bug com precisão:
+  - `Atual`: aula antiga da biblioteca;
+  - `Histórico 0`: aula antiga `Alfabeto...`;
+  - `Status título`: aula nova `Present Simple: Verbs 'To Be' and 'To Have'`;
+  - `Histórico total`: 1.
+- Isso indica que `lesson.lastGenerationStatus` estava localmente novo, mas `lesson.current` e `lesson.history` estavam antigos.
+- Ao inspecionar `cloudSync.js`, foi identificado que o Cloud Sync sincronizava `lesson.current` e `lesson.history`, mas não sincronizava `lesson.lastGenerationStatus`, e aplicava dados da nuvem de forma perigosa para aulas.
+
+Arquivos alterados:
+- `fluency-clean/src/services/cloudSync.js`
+- `REWRITE_HANDOFF.md`
+
+O que foi corrigido:
+- `lesson.lastGenerationStatus` foi adicionado a `CLOUD_SYNC_KEYS`;
+- Cloud Sync agora faz merge seguro de aulas:
+  - `lesson.current`: escolhe o mais recente entre local e nuvem;
+  - `lesson.history`: mescla local + nuvem por ID de geração/aula/título e ordena por data;
+  - `lesson.lastGenerationStatus`: escolhe o status mais recente;
+- adicionadas funções auxiliares:
+  - `readTime()`;
+  - `readStatusTime()`;
+  - `lessonKey()`;
+  - `mergeLessonHistory()`;
+  - `chooseNewest()`;
+- corrigido erro de sintaxe introduzido durante o patch no `catch` do `pushToCloud()`.
+
+Commits:
+- `0a4221693b4d10d949bc80e9d21cc4a1b467bdb5` — corrige sintaxe do Cloud Sync seguro.
+
+Teste recomendado no iPhone:
+1. aguardar deploy do commit `0a42216`;
+2. fechar e reabrir o app/PWA ou recarregar a página;
+3. gerar uma nova revisão/aula;
+4. abrir Diagnóstico > `Aula no storage`;
+5. confirmar que `Atual`, `Histórico 0` e `Status título` mostram a mesma aula nova;
+6. abrir aba Aula e confirmar que mostra a aula nova.
+
+Observação:
+- a aula nova antiga que estava só no status provavelmente não pode ser recuperada, porque ela não estava no `lesson.current` nem no `lesson.history`.
+- Após este hotfix, a próxima geração deve gravar e permanecer corretamente.
+
 ## META OFICIAL — CARTAS / VOCABULÁRIO
 
 A aba Cartas deve substituir o uso do Duolingo para vocabulário, frases, chunks, tradução, listening, speaking, stories, revisão e domínio.
@@ -31,60 +77,11 @@ Meta planejada:
 
 `5.000 palavras/expressões + 2.500 frases/chunks = 7.500 itens treináveis`
 
-## BLOCO ATUAL
-
-### `BLOCO-HOTFIX-DIAGNOSTICO-STORAGE-AULA-LAB` — IMPLEMENTADO, aguardando deploy/teste
-
-Contexto:
-- mesmo após sincronização por `lesson.current`, `lesson.history[0]` e `lesson.lastGenerationStatus`, a aba Aula não trocou;
-- o usuário tocou no botão de atualizar e nada aconteceu;
-- precisamos parar de inferir e ver os valores reais que estão no storage do iPhone.
-
-Arquivos criados:
-- `fluency-clean/src/services/lessonStorageDebug.js`
-
-Arquivos alterados:
-- `fluency-clean/src/components/system/DiagnosticPanel.jsx`
-- `REWRITE_HANDOFF.md`
-
-O que foi implementado:
-- criado `getLessonStorageDebugSnapshot()`;
-- o painel Diagnóstico agora mostra seção `Aula no storage` com:
-  - `Atual` = `lesson.current.title`;
-  - `Atual gen` = `lesson.current.generationMeta.id`;
-  - `Histórico 0` = `lesson.history[0].title`;
-  - `Histórico 0 gen` = `lesson.history[0].generationMeta.id`;
-  - `Status título` = `lesson.lastGenerationStatus.lessonTitle`;
-  - `Status gen` = `lesson.lastGenerationStatus.id`;
-  - `Histórico total`;
-- inclui botão `Atualizar` nessa seção para reler o storage.
-
-Commits relacionados recentes:
-- `10a77e0f0fb1baebd3c949759b05696b7b7967b3` — sincroniza aula atual pelo último status salvo;
-- `895ecb7068f28addd1b0bac767173e1a942d0849` — atualiza handoff da sincronização pelo último status;
-- `e491b07f46617dd401c584d5644d58d96ae343e4` — adiciona diagnóstico do storage da aula atual;
-- `5269ad90953e6fb02105a4b501bc58282311f431` — mostra snapshot do storage da aula no diagnóstico.
-
-Teste recomendado no iPhone:
-1. aguardar deploy do commit `5269ad9` ou posterior;
-2. abrir o painel Diagnóstico;
-3. procurar a seção `Aula no storage`;
-4. enviar print mostrando todos os campos:
-   - Atual;
-   - Atual gen;
-   - Histórico 0;
-   - Histórico 0 gen;
-   - Status título;
-   - Status gen;
-   - Histórico total.
-
-Interpretação esperada:
-- se `Atual` e `Histórico 0` forem ambos a aula antiga, então a geração não está gravando a aula nova em storage apesar do log;
-- se `Histórico 0` for a aula nova e `Atual` antiga, então o sync ainda não está sendo acionado pela aba Aula;
-- se `Status título` for a aula nova, mas `Histórico 0` antiga, então `saveGenerationStatus` está atualizando, mas `saveCurrentLesson`/history não está persistindo corretamente;
-- se todos forem antigos, o log mostrado pode estar vindo apenas de diagnóstico antigo/replay.
-
 ## Blocos recentes implementados
+
+### `BLOCO-HOTFIX-DIAGNOSTICO-STORAGE-AULA-LAB` — IMPLEMENTADO
+- Criado `lessonStorageDebug.js`.
+- Diagnóstico mostra `lesson.current`, `lesson.history[0]` e `lesson.lastGenerationStatus`.
 
 ### `BLOCO-HOTFIX-AULA-ATUAL-SYNC-STATUS-LAB` — IMPLEMENTADO
 - `lessonStore` sincroniza `lesson.current` usando `lesson.lastGenerationStatus` e histórico.
@@ -93,40 +90,19 @@ Interpretação esperada:
 - Criado `vocabularyVisualReferences.js`.
 - Conectado em Cartas para mostrar ícones/categorias visuais na etapa Palavras novas e no gloss flutuante.
 
-### `BLOCO-CARTAS-GLOSS-FLUTUANTE-E-ORDEM-PEDAGOGICA-LAB` — IMPLEMENTADO
-- Tradução da palavra nova abre caixa flutuante sobreposta.
-- `Monte a frase` foi empurrado para depois de exposição/reconhecimento.
+## NOVA ORDEM DE BLOCOS
 
-## NOVA ORDEM DE BLOCOS — CARTAS COMO SUBSTITUTO DO DUOLINGO
-
-1. `BLOCO-HOTFIX-DIAGNOSTICO-STORAGE-AULA-LAB` — STATUS: implementado, aguardando teste.
-2. corrigir definitivamente troca da aula atual com base no snapshot do Diagnóstico.
+1. `BLOCO-HOTFIX-CLOUD-SYNC-AULA-SEGURA-LAB` — STATUS: implementado, aguardando teste.
+2. confirmar nova geração persistindo em `Atual`, `Histórico 0` e `Status título`.
 3. `BLOCO-CARTAS-PAREAMENTO-10-LAB` — pareamento palavra ↔ tradução.
 4. `BLOCO-CARTAS-PAREAMENTO-IMAGEM-10B-LAB` — pareamento palavra ↔ imagem.
 5. `BLOCO-CARTAS-SIGNIFICADO-10C-LAB` — escolha de significado refinada.
 6. `BLOCO-CARTAS-TRADUCAO-GUIADA-11-LAB` — tradução com banco de palavras.
-7. `BLOCO-CARTAS-TRADUCAO-DIGITADA-11B-LAB` — digitação livre opcional.
-8. `BLOCO-CARTAS-COMPLETAR-TRADUCAO-11C-LAB` — lacunas melhores.
-9. `BLOCO-CARTAS-GLOSS-INLINE-12-LAB` — clicar na palavra e ver tradução dentro das frases.
-10. `BLOCO-CARTAS-CLIQUE-SIGNIFICADO-12B-LAB` — clique na palavra que significa.
-11. `BLOCO-CARTAS-LISTENING-ATIVO-13-LAB` — digite o que ouve.
-12. `BLOCO-CARTAS-LISTENING-WORDBANK-13B-LAB` — ouça e monte frase.
-13. `BLOCO-CARTAS-LISTENING-LACUNA-13C-LAB` — ouça e complete lacuna.
-14. `BLOCO-CARTAS-SPEAKING-14-LAB` — repetir frase.
-15. `BLOCO-CARTAS-SPEAKING-RESPOSTA-14B-LAB` — responder oralmente.
-16. `BLOCO-CARTAS-SOUND-DRILLS-14C-LAB` — sons difíceis.
-17. `BLOCO-CARTAS-STORIES-15-LAB` — mini-histórias.
-18. `BLOCO-CARTAS-STORIES-COMPREENSION-15B-LAB` — compreensão de stories.
-19. `BLOCO-CARTAS-MIX-16-LAB` — novas + antigas + fracas.
-20. `BLOCO-CARTAS-PRACTICE-HUB-16B-LAB` — prática por habilidade.
-21. `BLOCO-CARTAS-MASTERY-17-LAB` — domínio mínimo.
-22. `BLOCO-CARTAS-LEGENDARY-18-LAB` — modo lendário.
-23. `BLOCO-CARTAS-CERTIFICACAO-TOPICO-18B-LAB` — prova por tópico.
-24. `BLOCO-CARTAS-QUESTS-19-LAB` — missões diárias.
-25. `BLOCO-CARTAS-XP-STREAK-19B-LAB` — XP e recompensas.
-26. `BLOCO-CARTAS-AUDITORIA-GERAL-20-LAB` — auditoria final dos tipos.
-27. `BLOCO-CARTAS-POLIMENTO-UI-20B-LAB` — acabamento visual.
+7. `BLOCO-CARTAS-GLOSS-INLINE-12-LAB` — clicar na palavra e ver tradução dentro das frases.
+8. `BLOCO-CARTAS-LISTENING-ATIVO-13-LAB` — digite o que ouve.
+9. `BLOCO-CARTAS-SPEAKING-14-LAB` — repetir frase.
+10. `BLOCO-CARTAS-STORIES-15-LAB` — mini-histórias.
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O bloco atual implementado foi `BLOCO-HOTFIX-DIAGNOSTICO-STORAGE-AULA-LAB`: o Diagnóstico agora mostra `lesson.current`, `lesson.history[0]` e `lesson.lastGenerationStatus`. Testar no iPhone e usar o print para corrigir definitivamente a troca da aula atual."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O bloco atual implementado foi `BLOCO-HOTFIX-CLOUD-SYNC-AULA-SEGURA-LAB`: Cloud Sync agora sincroniza `lesson.lastGenerationStatus`, preserva a aula local mais recente e mescla histórico. Testar nova geração no iPhone; se ok, seguir para `BLOCO-CARTAS-PAREAMENTO-10-LAB`."
