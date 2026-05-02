@@ -65,10 +65,6 @@ function asSentence(value) {
   return /[.!?]$/.test(text) ? text : `${text}.`;
 }
 
-function getExample(card) {
-  return clean(card?.example || card?.sentence || `I use ${card?.word || 'English'}.`);
-}
-
 function normalizeCard(card, index) {
   return {
     id: card?.id || `${card?.word || 'card'}-${index}`,
@@ -113,11 +109,11 @@ function activityIntro(card, index) {
     type: 'intro',
     cardId: card.id,
     word: card.word,
-    title: 'Nova palavra',
+    title: 'Frase modelo',
     prompt: card.word,
     answer: card.translation || card.definition,
     example: card.example,
-    instruction: 'Observe o significado, ouça e repita a frase.',
+    instruction: 'Veja a palavra dentro de uma frase antes de produzir sozinho.',
   };
 }
 
@@ -173,10 +169,10 @@ function activityBuild(card, index) {
     cardId: card.id,
     word: card.word,
     title: 'Monte a frase',
-    prompt: 'Monte a frase em inglês.',
+    prompt: `Monte a frase já estudada: “${card.example}”`,
     answer: words.join(' '),
     options: stableShuffle(words, `build-${card.id}-${index}`),
-    instruction: 'Toque nas palavras na ordem correta.',
+    instruction: 'Você já viu essa frase antes. Agora toque nas palavras na ordem correta.',
   };
 }
 
@@ -214,33 +210,36 @@ function targetQuestionCount(level, selectedCount) {
   return Math.min(20, Math.max(18, selectedCount * 3));
 }
 
-function interleaveActivities(groups, seedText, maxCount) {
-  const safeGroups = groups.map((group) => group.filter(activityLooksSafe));
-  const shuffledGroups = safeGroups.map((group, index) => stableShuffle(group, `${seedText}-group-${index}`));
-  const result = [];
-  let cursor = 0;
-  while (result.length < maxCount && shuffledGroups.some((group) => group.length)) {
-    const groupIndex = cursor % shuffledGroups.length;
-    const next = shuffledGroups[groupIndex].shift();
-    if (next) result.push(next);
-    cursor += 1;
-  }
-  return stableShuffle(result, `${seedText}-final-order`).slice(0, maxCount);
-}
+function stagedPracticeOrder({ intro, meaning, complete, listen, build }, seed, targetCount, level) {
+  const warmup = stableShuffle([...intro, ...meaning], `${seed}-warmup`).filter(activityLooksSafe);
+  const middle = stableShuffle([...meaning, ...complete, ...listen], `${seed}-middle`).filter(activityLooksSafe);
+  const production = stableShuffle([...build], `${seed}-production`).filter(activityLooksSafe);
+  const review = stableShuffle([...meaning, ...complete, ...listen, ...build], `${seed}-review`).filter(activityLooksSafe);
 
-function repeatToTarget(groups, seed, targetCount) {
-  const safeGroups = groups.map((group) => group.filter(activityLooksSafe));
-  const base = interleaveActivities(safeGroups, seed, targetCount);
-  if (base.length >= targetCount) return base;
-  const flattened = safeGroups.flat();
-  const repeated = [...base];
-  let index = 0;
-  while (repeated.length < targetCount && flattened.length) {
-    const source = flattened[index % flattened.length];
-    repeated.push({ ...source, id: `${source.id}-review-${index}` });
-    index += 1;
+  const result = [];
+  const pushUnique = (items, limit = Infinity) => {
+    for (const item of items) {
+      if (result.length >= targetCount || result.length >= limit) break;
+      if (!result.some((existing) => existing.id === item.id)) result.push(item);
+    }
+  };
+
+  pushUnique(warmup, level <= 1 ? Math.min(8, targetCount) : Math.min(6, targetCount));
+  pushUnique(middle, Math.max(result.length, targetCount - Math.min(4, production.length)));
+  pushUnique(production, targetCount);
+
+  let reviewIndex = 0;
+  while (result.length < targetCount && review.length) {
+    const source = review[reviewIndex % review.length];
+    if (source.type === 'build' && result.length < Math.ceil(targetCount * 0.55)) {
+      reviewIndex += 1;
+      continue;
+    }
+    result.push({ ...source, id: `${source.id}-review-${reviewIndex}` });
+    reviewIndex += 1;
   }
-  return stableShuffle(repeated.filter(activityLooksSafe), `${seed}-review-fill`).slice(0, targetCount);
+
+  return result.slice(0, targetCount);
 }
 
 export function buildVocabularyPracticeActivities(rawCards = [], { level = 1 } = {}) {
@@ -255,9 +254,7 @@ export function buildVocabularyPracticeActivities(rawCards = [], { level = 1 } =
   const listen = selected.map((card, index) => activityListen(card, cards, index));
   const build = selected.filter((card) => card.example).map((card, index) => activityBuild(card, index));
 
-  if (level <= 1) return repeatToTarget([intro, meaning, complete], seed, targetCount);
-  if (level === 2) return repeatToTarget([meaning, complete, listen], seed, targetCount);
-  return repeatToTarget([meaning, complete, listen, build], seed, targetCount);
+  return stagedPracticeOrder({ intro, meaning, complete, listen, build }, seed, targetCount, level);
 }
 
 export function scoreVocabularyPractice(activity, userAnswer) {
