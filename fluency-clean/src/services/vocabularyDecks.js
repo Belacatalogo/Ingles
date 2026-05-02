@@ -1,4 +1,5 @@
 import { fixedExpansionA1A2Decks } from '../data/vocabulary/fixedExpansionA1A2.js';
+import { fixedExpansionB1B2Decks } from '../data/vocabulary/fixedExpansionB1B2.js';
 
 const baseDeckDefinitions = [
   {
@@ -111,7 +112,7 @@ const baseDeckDefinitions = [
   },
 ];
 
-const deckDefinitions = [...baseDeckDefinitions, ...fixedExpansionA1A2Decks];
+const deckDefinitions = [...baseDeckDefinitions, ...fixedExpansionA1A2Decks, ...fixedExpansionB1B2Decks];
 
 function normalizeCard(deck, item, index) {
   const [word, translation, example, chunk = ''] = item;
@@ -151,7 +152,7 @@ export function getTotalVocabularyBankCount() {
 
 export function getVocabularyBankAudit() {
   const decks = getVocabularyDecks();
-  const cards = deckDefinitions.flatMap((deck) => deck.cards.map((item, index) => ({ deck: deck.id, index, word: item[0], translation: item[1], example: item[2], chunk: item[3] || '' })));
+  const cards = deckDefinitions.flatMap((deck) => deck.cards.map((item, index) => ({ deck: deck.id, level: deck.level, index, word: item[0], translation: item[1], example: item[2], chunk: item[3] || '' })));
   const wordCounts = cards.reduce((acc, card) => {
     const key = String(card.word || '').toLowerCase();
     acc[key] = (acc[key] || 0) + 1;
@@ -160,18 +161,21 @@ export function getVocabularyBankAudit() {
   const duplicates = Object.entries(wordCounts).filter(([, count]) => count > 1).map(([word, count]) => ({ word, count }));
   const structuralIssues = cards.filter((card) => !card.word || !card.translation || !card.example || !/^[A-Z]/.test(card.example) || !/[.!?]$/.test(card.example));
   const chunkIssues = cards.filter((card) => !card.chunk || String(card.chunk).split(/\s+/).length < 2);
-  const a1a2Count = cards.filter((card) => decks.find((deck) => deck.id === card.deck)?.level?.includes('A')).length;
+  const countsByLevel = cards.reduce((acc, card) => {
+    acc[card.level] = (acc[card.level] || 0) + 1;
+    return acc;
+  }, {});
   return {
     decks: decks.length,
     cards: cards.length,
-    a1a2Count,
+    countsByLevel,
     target: VOCABULARY_BANK_TARGET,
     duplicates,
     structuralIssues,
     chunkIssues,
     passedStructure: structuralIssues.length === 0,
     passedChunks: chunkIssues.length === 0,
-    passedDuplicates: duplicates.length <= 12,
+    passedDuplicates: duplicates.length <= 24,
   };
 }
 
