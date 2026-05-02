@@ -27,7 +27,51 @@ Motivo:
 - Groq é promissor, mas instável em limite/cota e ainda precisa teste final real com 7 sections.
 - Cerebras passou tecnicamente em alguns testes, mas teve conteúdo mais repetitivo, genérico e com erros pedagógicos.
 
-## ESTADO ATUAL — BLOCO GRAMMAR RENDER SAFETY GATE
+## ESTADO ATUAL — GRAMMAR APROVADA NA LAB
+
+### `BLOCO-GRAMMAR-APPROVAL-LAB` — IMPLEMENTADO
+
+Status:
+- Grammar foi testada no iPhone após o `BLOCO-GRAMMAR-RENDER-SAFETY-GATE-LAB`.
+- Usuário confirmou: `tudo ok`.
+- A tela Grammar fica considerada aprovada visualmente na branch `rewrite-fluency-clean-lab`.
+
+Base aprovada:
+- Parser seguro modular em `fluency-clean/src/lessons/grammar/grammarRenderParser.js`.
+- `GrammarLesson.jsx` conectado ao parser seguro.
+- Cards de exemplos com fallback seguro.
+- Render report lateral funcionando:
+  - `Grammar render: OK`;
+  - `Exemplos: N`;
+  - `Cards bloqueados: N`;
+  - `Texto preservado: sim`.
+
+Regras preservadas para próximos trabalhos:
+- Não mexer em Grammar agora, a menos que apareça regressão real em teste.
+- Não mexer no parser seguro sem motivo claro.
+- Se houver dúvida no parser, renderizar como parágrafo, não como card.
+- Não alterar geração, modelo, prompts, fallback, professor revisor, `deepGrammarPipeline.js` ou backend.
+
+Arquivos envolvidos na base aprovada:
+- `fluency-clean/src/lessons/GrammarLesson.jsx`
+- `fluency-clean/src/lessons/grammar/grammarRenderParser.js`
+- `fluency-clean/src/styles/grammar-examples-hotfix.css`
+- `fluency-clean/src/main.jsx`
+
+Próximo bloco recomendado:
+- `BLOCO-LISTENING-RENDER-REVIEW-LAB`
+
+Objetivo do próximo bloco:
+- Revisar a renderização da aula Listening no iPhone.
+- Garantir que áudio, botões, salvar/concluir e prática estejam funcionando.
+- Evitar respostas aparecendo antes da hora.
+- Melhorar leitura e fluxo sem mexer no backend Azure privado.
+- Manter tudo modular e sem DOM injection, bundle patch ou HTML remendado.
+
+Commit:
+- Este bloco é documental/controle de estado: registra aprovação visual de Grammar e libera o avanço para Listening.
+
+## ESTADO ANTERIOR — BLOCO GRAMMAR RENDER SAFETY GATE
 
 ### `BLOCO-GRAMMAR-RENDER-SAFETY-GATE-LAB` — IMPLEMENTADO
 
@@ -75,15 +119,6 @@ Escopo preservado:
 Commits:
 - `8387eef477f1cd8801a89ad546e6fe15da71ae15` — cria parser seguro da Grammar.
 - `16e3436937dbc31f39f45bcbd45ad9e8d8d81cf6` — conecta Grammar ao parser seguro.
-
-Próximo teste recomendado no iPhone:
-1. Aguardar o deploy da branch `rewrite-fluency-clean-lab`.
-2. Abrir a mesma aula Grammar já aprovada visualmente.
-3. Confirmar que o visual não regrediu.
-4. Confirmar que aparece o card lateral `Render seguro`.
-5. Confirmar se o relatório mostra `Grammar render: OK` e `Texto preservado: sim`.
-6. Confirmar que os cards continuam limpos.
-7. Confirmar que Salvar rascunho e Concluir Grammar continuam funcionando.
 
 ## ESTADO ANTERIOR — HOTFIX GRAMMAR CARD SPLIT V6
 
@@ -169,4 +204,4 @@ Arquivos alterados:
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. O bloco `BLOCO-GRAMMAR-RENDER-SAFETY-GATE-LAB` foi implementado: foi criado `fluency-clean/src/lessons/grammar/grammarRenderParser.js`, a Grammar foi conectada a esse parser seguro e agora mostra relatório `Render seguro` com exemplos, cards bloqueados e texto preservado. Não mexer em `main`, `rewrite-fluency-clean`, `bundle.js`, backend Azure privado, `deepGrammarPipeline.js`, revisor ou política de chaves. Próximo passo: testar no iPhone se a aula Grammar não regrediu e se o relatório aparece corretamente."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. Grammar foi aprovada visualmente na lab após o `BLOCO-GRAMMAR-RENDER-SAFETY-GATE-LAB`. Não mexer em Grammar agora, a menos que apareça regressão real. Não mexer em `main`, `rewrite-fluency-clean`, `bundle.js`, backend Azure privado, `deepGrammarPipeline.js`, revisor ou política de chaves. Próximo bloco recomendado: `BLOCO-LISTENING-RENDER-REVIEW-LAB`, revisar renderização Listening, áudio, botões, salvar/concluir e respostas antecipadas no iPhone."
