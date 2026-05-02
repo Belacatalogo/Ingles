@@ -15,60 +15,66 @@ Branch estável protegida: `rewrite-fluency-clean`
 - Não mexer no backend Azure privado.
 - Manter tudo modular em `fluency-clean/src/`, `fluency-clean/public/` ou arquivos reais de configuração.
 
-## ESTADO ATUAL — HOTFIX MOTOR PURO PARA COMPARAÇÃO
+## ESTADO ATUAL — HOTFIX PROVEDORES EXTERNOS ROBUSTOS
 
-### `HOTFIX-MOTOR-PURO-GROQ-CEREBRAS-LAB` — IMPLEMENTADO, aguardando deploy/teste
+### `HOTFIX-EXTERNAL-PROVIDERS-ROBUST-LAB` — IMPLEMENTADO, aguardando deploy/teste
 
 Contexto:
-- O teste forçando Groq mostrou que o esqueleto da aula foi gerado pelo Groq.
-- Porém a Cirurgia 2 / Grammar 1B reescreveu as sections usando Gemini Flash.
-- Isso invalidava a comparação pura entre motores.
+- Groq puro falhou com HTTP 429 por limite de tokens por minuto no modelo `llama-3.3-70b-versatile`.
+- Cerebras com `llama3.1-8b` deixou de dar 404, mas falhou por JSON quebrado: `JSON Parse error: Expected ']'`.
+- Em teste forçado, o app ainda voltava para Gemini, contaminando a comparação.
 
 O que foi corrigido:
-- Quando o usuário ativa `Forçar Groq na próxima geração`, o processo inteiro de Grammar usa Groq:
-  - esqueleto/aula inicial;
-  - sections 1B sequenciais;
-  - validação local continua igual.
-- Quando o usuário ativa `Forçar Cerebras na próxima geração`, o processo inteiro de Grammar usa Cerebras:
-  - esqueleto/aula inicial;
-  - sections 1B sequenciais;
-  - validação local continua igual.
-- `externalLessonProviders.js` agora exporta `generateExternalGrammarSection()`.
-- `grammarSectionGenerator.js` aceita `externalProvider` e usa Groq/Cerebras nas sections quando o teste estiver forçado.
-- `plannedGeminiLessons.js` passa o provider externo usado no esqueleto para o 1B.
-
-Diagnóstico esperado em teste puro Groq:
-- `Modo teste ativo: pulando Gemini e chamando fallback externo groq.`
-- `Groq gerou aula para validacao local.`
-- `Cirurgia 2 Grammar ativa... usando groq em todo o 1B.`
-- `Grammar 1B section 1: usando provedor externo puro groq.`
-- `Grammar section 1 aprovada: ... palavras · groq/...`
-
-Diagnóstico esperado em teste puro Cerebras:
-- `Modo teste ativo: pulando Gemini e chamando fallback externo cerebras.`
-- `Cerebras gerou aula para validacao local.`
-- `Cirurgia 2 Grammar ativa... usando cerebras em todo o 1B.`
-- `Grammar 1B section 1: usando provedor externo puro cerebras.`
-- `Grammar section 1 aprovada: ... palavras · cerebras/...`
+- `externalLessonProviders.js` agora tem retry/backoff em HTTP 429:
+  - lê `retry-after` quando disponível;
+  - espera alguns segundos;
+  - retoma a mesma chamada;
+  - registra no diagnóstico a espera e a tentativa.
+- Parser JSON externo ficou mais tolerante:
+  - remove code fences;
+  - tenta encontrar objeto JSON balanceado;
+  - repara vírgulas sobrando;
+  - tenta fechar `]` e `}` faltantes;
+  - tenta uma segunda passada com chaves sem aspas.
+- Cerebras 1B agora recebe prompt final mais restrito:
+  - objeto simples `{ "title": "...", "content": "..." }`;
+  - sem arrays;
+  - sem markdown.
+- Cerebras 1B usa saída menor (`2600`) para reduzir chance de JSON cortado.
+- Se JSON mode falhar ou vier JSON quebrado, tenta chamada simples mais curta.
+- `plannedGeminiLessons.js` agora, em teste forçado Groq/Cerebras, NÃO volta para Gemini se o provedor falhar.
+  - Isso evita comparação contaminada.
+  - O diagnóstico passa a mostrar o erro real do provedor externo.
 
 Arquivos alterados:
 - `fluency-clean/src/services/externalLessonProviders.js`
-- `fluency-clean/src/services/grammarSectionGenerator.js`
 - `fluency-clean/src/services/plannedGeminiLessons.js`
 - `REWRITE_HANDOFF.md`
+
+Commits:
+- `dfe4ed42f7b0ae424f68d8b8a6b7d33fec310e58` — retry e parser tolerante.
+- `e01094350fc4b9ef3d5dd62f6538030e76805855` — não contamina teste forçado.
+
+Teste obrigatório agora:
+1. aguardar deploy da branch `rewrite-fluency-clean-lab` com commit `e010943` ou posterior;
+2. testar `Forçar Groq na próxima geração`;
+3. se der 429, observar se aparece mensagem de espera/retry, sem cair imediatamente;
+4. testar `Forçar Cerebras na próxima geração` com modelo `llama3.1-8b`;
+5. confirmar se ele não volta para Gemini quando falha;
+6. se Cerebras ainda falhar, printar o novo erro do parser.
+
+## ESTADO ANTERIOR — HOTFIX MOTOR PURO PARA COMPARAÇÃO
+
+### `HOTFIX-MOTOR-PURO-GROQ-CEREBRAS-LAB` — IMPLEMENTADO
+
+- Quando força Groq, esqueleto e Grammar 1B usam Groq.
+- Quando força Cerebras, esqueleto e Grammar 1B usam Cerebras.
+- Validação local/revisor permanece igual.
 
 Commits:
 - `7a843c232c99508227a4839aa1a63a556672bfe7` — expõe geração externa de section grammar.
 - `afdd920bc0d0206743f123f705cda9e4af4473f3` — usa provedor externo nas sections.
 - `331323a8872fd343ca553e16dcd3733069b0ba16` — passa provedor alvo ao 1B.
-
-Teste obrigatório agora:
-1. aguardar deploy da branch `rewrite-fluency-clean-lab` com commit `331323a` ou posterior;
-2. ir em Ajustes > Chaves de aulas;
-3. ativar `Forçar Groq na próxima geração`;
-4. gerar a aula;
-5. confirmar nos logs que as sections 1B NÃO usam Gemini Flash;
-6. repetir depois com `Forçar Cerebras na próxima geração`.
 
 ## PENDENTE VISUAL ANOTADO — NÃO MEXER AINDA
 
@@ -125,13 +131,12 @@ Correção futura, somente depois da comparação de motores:
 
 ## Próximo teste recomendado
 
-1. Testar Groq puro.
-2. Confirmar no diagnóstico que sections 1B usam Groq, não Gemini.
-3. Avaliar nota/qualidade/hash.
-4. Testar Cerebras puro.
-5. Comparar Flash x Groq x Cerebras.
-6. Só depois decidir motor prioritário e corrigir visual dos exemplos.
+1. Esperar deploy com `e010943` ou posterior.
+2. Testar Groq puro.
+3. Testar Cerebras puro com `llama3.1-8b`.
+4. Comparar nota/qualidade/hash se salvar.
+5. Só depois decidir motor prioritário e corrigir visual dos exemplos.
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. O último hotfix foi `331323a`: quando forçar Groq/Cerebras, o esqueleto e as sections Grammar 1B usam o mesmo provedor externo, sem voltar para Gemini Flash. Próximo passo é testar Groq puro e confirmar logs `usando provedor externo puro groq`. Não mexer em Cirurgia 3/deepGrammarPipeline ainda. Não corrigir visual dos exemplos antes da comparação. Não mexer em `main`, `rewrite-fluency-clean`, `bundle.js` ou backend Azure privado."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. O último hotfix foi `e010943`: Groq agora tem retry/backoff em 429; Cerebras tem parser JSON mais tolerante e saída menor no 1B; teste forçado não volta mais para Gemini para não contaminar comparação. Próximo passo é testar Groq puro e Cerebras puro. Não mexer em Cirurgia 3/deepGrammarPipeline ainda. Não corrigir visual dos exemplos antes da comparação. Não mexer em `main`, `rewrite-fluency-clean`, `bundle.js` ou backend Azure privado."
