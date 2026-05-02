@@ -1,0 +1,23 @@
+.vocab-choice-options button.selected strong {
+  color: #c4b5fd !important;
+  text-shadow: 0 0 18px rgba(196, 181, 253, .34);
+}
+
+.vocab-choice-options button:not(.selected) strong {
+  color: #f8fbff !important;
+  text-shadow: none;
+}
+
+.vocab-choice-options button.selected span {
+  color: #d8b4fe !important;
+}
+
+.vocab-choice-options button:not(.selected) span {
+  color: #8f9bb8 !important;
+}
+
+.vocab-choice-options button.selected {
+  background: linear-gradient(135deg, rgba(124, 58, 237, .26), rgba(91, 156, 246, .12));
+  border-color: rgba(196, 181, 253, .62);
+  box-shadow: 0 0 0 1px rgba(196, 181, 253, .16), 0 18px 44px rgba(124, 58, 237, .18);
+}
