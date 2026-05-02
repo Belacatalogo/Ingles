@@ -10,14 +10,21 @@ const FLASHCARD_SESSIONS_KEY = 'progress.flashcardSessions';
 const SPEAKING_SESSIONS_KEY = 'progress.speakingSessions';
 const PRACTICE_SESSIONS_KEY = 'progress.practiceSessions';
 
-function todayKey(date = new Date()) { return date.toISOString().slice(0, 10); }
+function pad(value) { return String(value).padStart(2, '0'); }
+export function localDateKey(value = new Date()) {
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}
+function todayKey(date = new Date()) { return localDateKey(date); }
+function itemLocalDateKey(item) { return localDateKey(item?.completedAt || item?.createdAt || item); }
 function weekKey(date = new Date()) {
-  const copy = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-  const day = copy.getUTCDay() || 7;
-  copy.setUTCDate(copy.getUTCDate() + 4 - day);
-  const yearStart = new Date(Date.UTC(copy.getUTCFullYear(), 0, 1));
+  const copy = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const day = copy.getDay() || 7;
+  copy.setDate(copy.getDate() + 4 - day);
+  const yearStart = new Date(copy.getFullYear(), 0, 1);
   const weekNo = Math.ceil((((copy - yearStart) / 86400000) + 1) / 7);
-  return `${copy.getUTCFullYear()}-W${String(weekNo).padStart(2, '0')}`;
+  return `${copy.getFullYear()}-W${String(weekNo).padStart(2, '0')}`;
 }
 function safeObject(value) { return value && typeof value === 'object' && !Array.isArray(value) ? value : {}; }
 function safeArray(value) { return Array.isArray(value) ? value : []; }
@@ -27,8 +34,8 @@ function normalizeProgress(value = {}) {
 }
 function isYesterday(dateA, dateB) {
   if (!dateA || !dateB) return false;
-  const a = new Date(`${dateA}T00:00:00Z`);
-  const b = new Date(`${dateB}T00:00:00Z`);
+  const a = new Date(`${dateA}T00:00:00`);
+  const b = new Date(`${dateB}T00:00:00`);
   return Math.round((b - a) / 86400000) === 1;
 }
 function getCompletionId(lesson) { return lesson?.id || `${lesson?.type || 'lesson'}-${lesson?.title || 'untitled'}`; }
@@ -56,9 +63,9 @@ export function getPracticeSessionsForLesson(lesson) {
   const lessonId = getCompletionId(lesson);
   return getPracticeSessions().filter((item) => item.lessonId === lessonId);
 }
-export function hasFlashcardSessionToday(date = new Date()) { const day = todayKey(date); return getFlashcardSessions().some((item) => String(item.completedAt || '').slice(0, 10) === day); }
-export function hasSpeakingSessionToday(date = new Date()) { const day = todayKey(date); return getSpeakingSessions().some((item) => String(item.completedAt || '').slice(0, 10) === day); }
-export function hasPracticeSessionToday(date = new Date()) { const day = todayKey(date); return getPracticeSessions().some((item) => String(item.completedAt || '').slice(0, 10) === day); }
+export function hasFlashcardSessionToday(date = new Date()) { const day = todayKey(date); return getFlashcardSessions().some((item) => itemLocalDateKey(item) === day); }
+export function hasSpeakingSessionToday(date = new Date()) { const day = todayKey(date); return getSpeakingSessions().some((item) => itemLocalDateKey(item) === day); }
+export function hasPracticeSessionToday(date = new Date()) { const day = todayKey(date); return getPracticeSessions().some((item) => itemLocalDateKey(item) === day); }
 
 export function recordPracticeSession({ lesson, total = 0, correct = 0, mistakes = 0, lives = 0, reviewMode = false, results = [] }) {
   const now = new Date();
