@@ -27,7 +27,58 @@ Motivo:
 - Groq é promissor, mas instável em limite/cota e ainda precisa teste final real com 7 sections.
 - Cerebras passou tecnicamente em alguns testes, mas teve conteúdo mais repetitivo, genérico e com erros pedagógicos.
 
-## ESTADO ATUAL — HOTFIX GRAMMAR STRICT CLASSIFIER
+## ESTADO ATUAL — BLOCO RENDER GRAMMAR V3
+
+### `BLOCO-GRAMMAR-RENDERER-V3-LAB` — IMPLEMENTADO
+
+Objetivo executado:
+- Reestruturar o sistema de renderização da aula Grammar para reduzir bugs visuais no iPhone.
+- Parar de transformar pedaços incompletos como `I am` em card de exemplo.
+- Evitar que explicações longas em português sejam quebradas indevidamente em vários cards.
+- Preservar conteúdo pedagógico sem mexer em geração, modelo, prompts, professor revisor, `deepGrammarPipeline.js`, fallback ou backend.
+
+Arquivos alterados:
+- `fluency-clean/src/lessons/GrammarLesson.jsx`
+- `REWRITE_HANDOFF.md`
+
+O que foi feito:
+- Reescrito o parser visual local da aula Grammar em `GrammarLesson.jsx`.
+- A renderização agora prioriza blocos estáveis:
+  - parágrafos explicativos;
+  - listas numeradas reais;
+  - cards apenas dentro de seções com cabeçalho explícito de exemplos.
+- `Exemplos do professor` deixou de varrer a seção inteira tentando transformar qualquer frase em card.
+- Cards de exemplo agora exigem frase em inglês mais completa, com sujeito + estrutura mínima; fragmentos como `I am`, `You are`, `She is` isolados não viram mais card.
+- Tradução em português só é destacada quando parece tradução real; regra/explicação continua como texto normal.
+- Citações e parênteses continuam suportados quando a frase em inglês é confiável.
+- `splitParagraphs` ficou menos agressivo: não quebra toda frase comum; só separa por quebras fortes e conectores pedagógicos.
+- `splitNumberedList` ficou mais seguro para listas numeradas reais.
+- Adicionada classe `grammar-renderer-system-v3` para identificar o novo render no DOM/CSS sem mexer em bundle.
+
+Escopo preservado:
+- Não mexeu em `main`.
+- Não mexeu em `rewrite-fluency-clean`.
+- Não mexeu em `bundle.js`.
+- Não mexeu no backend Azure privado.
+- Não mexeu no `deepGrammarPipeline.js`.
+- Não mexeu no professor revisor.
+- Não mexeu na política de chaves/modelos.
+- Não alterou geração, prompts, fallback ou motor.
+
+Observação operacional:
+- O commit de código foi `0538d2a9f80214961dbfe7303e342a6b4e888c0e`.
+- Por limitação do fluxo via ferramenta, o handoff ficou em commit posterior, mas o escopo prático do bloco é o renderer V3 + handoff atualizado.
+
+Próximo teste recomendado no iPhone:
+1. Aguardar o deploy da branch `rewrite-fluency-clean-lab`.
+2. Abrir a mesma aula Grammar que estava bugada.
+3. Conferir se `I am` sozinho não aparece mais como card grande.
+4. Conferir se explicações como `Por exemplo...` e `Outro lado...` aparecem como parágrafos normais.
+5. Conferir se exemplos completos, como `I am happy`, continuam podendo aparecer como card com tradução.
+6. Conferir se nenhum conteúdo foi cortado.
+7. Conferir se a navbar não impede o uso dos botões de Salvar/Concluir ao final da aula.
+
+## ESTADO ANTERIOR — HOTFIX GRAMMAR STRICT CLASSIFIER
 
 ### `HOTFIX-GRAMMAR-EXAMPLES-STRICT-CLASSIFIER-LAB` — IMPLEMENTADO
 
@@ -52,26 +103,6 @@ O que foi feito:
 - Tradução em português só é destacada quando parece tradução, não regra explicativa.
 - Conteúdo posterior aos exemplos é preservado como parágrafo normal.
 
-Escopo preservado:
-- Não mexeu em `main`.
-- Não mexeu em `rewrite-fluency-clean`.
-- Não mexeu em `bundle.js`.
-- Não mexeu no backend Azure privado.
-- Não mexeu no `deepGrammarPipeline.js`.
-- Não mexeu no professor revisor.
-- Não mexeu na política de chaves/modelos.
-- Não alterou geração, prompts, fallback ou motor.
-
-Próximo teste recomendado no iPhone:
-1. Aguardar o deploy da branch `rewrite-fluency-clean-lab`.
-2. Abrir a aula Grammar Flash já salva.
-3. Conferir se `Correto, pois I combina com am` NÃO aparece mais como frase principal em negrito de card.
-4. Conferir se `Correto, pois She combina com is` fica como explicação/nota, não como exemplo principal.
-5. Conferir se parágrafos longos tipo `Cada um desses exemplos demonstra...` não viram `Exemplo 7` indevido.
-6. Conferir se exemplos reais em inglês continuam em cards.
-7. Conferir se conteúdo não foi cortado.
-8. Conferir se textarea, Salvar rascunho e Concluir Grammar continuam funcionando.
-
 ## ESTADO ANTERIOR — HOTFIX VISUAL GRAMMAR
 
 ### `HOTFIX-GRAMMAR-EXEMPLOS-VISUAIS-LAB` — IMPLEMENTADO
@@ -87,21 +118,6 @@ Arquivos alterados:
 - `fluency-clean/src/styles/grammar-examples-hotfix.css`
 - `fluency-clean/src/main.jsx`
 - `REWRITE_HANDOFF.md`
-
-O que foi feito:
-- Criada limpeza visual local em `GrammarLesson.jsx` para corrigir pontuação grudada como `.Por exemplo`, `.Já`, `.Outro`, `).Veja`.
-- Normalizadas quebras antes de conectores como `Já`, `Outro exemplo`, `Veja`, `Assim`, `Portanto`, `Além disso`, `Na prática`, `Observe` e `Agora`.
-- `Por exemplo` deixou de ser forçado como começo de novo card em qualquer lugar, para evitar card quebrado com apenas `Por`.
-- `SectionContent` separa explicação em parágrafos mais legíveis.
-- Blocos de `Exemplos do professor` viram cards visuais quando há cabeçalho de exemplos ou frase em inglês detectável.
-- Parser dos exemplos foi corrigido após teste por imagens no iPhone:
-  - não deixa mais vírgula solta antes da tradução;
-  - evita pegar palavras soltas como `ser` como tradução;
-  - preserva explicações longas sem cortar conteúdo;
-  - mantém exemplos numerados como cards, não como lista comum.
-- Cada card pode destacar frase em inglês, tradução quando existir e explicação quando existir.
-- Criado CSS isolado `grammar-examples-hotfix.css`, importado em `main.jsx`, sem mexer no CSS gigante principal.
-- Visual mantido sério/elegante, sem gamificação.
 
 ## ESTADO ANTERIOR — HOTFIX GROQ DIÁRIO FORTE 7 SECTIONS REAL
 
@@ -159,4 +175,4 @@ Commits:
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. O bloco `HOTFIX-GRAMMAR-EXAMPLES-STRICT-CLASSIFIER-LAB` foi implementado: parser visual dos exemplos ficou mais estrito, só cria cards para frases em inglês confiáveis e deixa explicações em português como parágrafo normal. Não mexer em `main`, `rewrite-fluency-clean`, `bundle.js`, backend Azure privado, `deepGrammarPipeline.js`, revisor ou política de chaves. Próximo passo: testar no iPhone se `Correto, pois...` e parágrafos longos não viram cards de exemplo indevidos, sem cortar conteúdo."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. O bloco `BLOCO-GRAMMAR-RENDERER-V3-LAB` foi implementado: o sistema de renderização da aula Grammar foi reestruturado para priorizar parágrafos, listas numeradas reais e cards apenas em exemplos explícitos. Fragmentos como `I am` isolado não devem mais virar card. Não mexer em `main`, `rewrite-fluency-clean`, `bundle.js`, backend Azure privado, `deepGrammarPipeline.js`, revisor ou política de chaves. Próximo passo: testar no iPhone se a aula bugada renderiza sem cards quebrados e sem cortar conteúdo."
