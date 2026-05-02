@@ -25,119 +25,51 @@ Princípio máximo:
 
 ## BLOCO ATUAL
 
-### `BLOCO-GRAMMAR-PIPELINE-DIDATICO-PROFUNDO-LAB` — IMPLEMENTADO, aguardando deploy/teste
+### `BLOCO-HOTFIX-GRAMMAR-REPARO-FINAL-LAB` — IMPLEMENTADO, aguardando deploy/teste
 
 Contexto:
-- o contrato profundo melhorou a intenção, mas a aula ainda podia passar na rubrica com conteúdo vago/repetitivo;
-- a análise mostrou que o sistema estava avaliando muito por contagem: partes, vocabulário, questões e prompts;
-- era necessário atacar dois pontos:
-  1. criar uma camada didática específica para Grammar;
-  2. endurecer o professor revisor para penalizar superficialidade, repetição e exemplos reciclados.
+- O teste no iPhone mostrou que a trava nova funcionou: uma Grammar com 93/100 foi bloqueada por problemas reais.
+- Mensagem exibida:
+  - risco de falso domínio por excesso de reconhecimento e pouca produção;
+  - falta de progressão didática real com abertura, analogia, camadas, uso real e resumo;
+  - exemplos precisam ser inéditos, contextualizados e explicar por que estão corretos.
+- Isso confirmou que o professor revisor ficou mais rigoroso.
+- Porém revelou falha de fluxo: depois do reparo anti falso domínio, se ainda restassem problemas específicos de Grammar profunda, o sistema tentava um reparo genérico e bloqueava, sem reaplicar o pipeline Grammar específico.
 
-Arquivos criados:
-- `fluency-clean/src/services/deepGrammarPipeline.js`
-
-Arquivos alterados:
-- `fluency-clean/src/services/teacherReviewer.js`
+Arquivo alterado:
 - `fluency-clean/src/components/lesson/LessonGeneratorPanel.jsx`
 - `REWRITE_HANDOFF.md`
 
-O que foi implementado:
+O que foi corrigido:
+- criado helper `teacherNeedsDeepGrammarRepair(teacherReview)`;
+- se o professor revisor reprovar por termos ligados a Grammar profunda, o fluxo agora:
+  1. faz o reparo genérico como antes;
+  2. reaplica `repairDeepGrammarLesson()` por cima;
+  3. marca `deepGrammarRepaired = true`;
+  4. revalida pedagogicamente;
+  5. reexecuta professor revisor;
+  6. só bloqueia se ainda reprovar.
+- também foi adicionado reparo Grammar específico no caminho da `studyReadiness`, quando a trava de confiança aciona e os problemas anteriores eram de Grammar profunda.
 
-### 1. Novo serviço `deepGrammarPipeline.js`
-
-Exporta:
-- `auditDeepGrammarLesson(rawLesson)`;
-- `repairDeepGrammarLesson(rawLesson)`.
-
-A auditoria mede Grammar por critérios qualitativos:
-- progressão didática real;
-- presença de abertura do professor;
-- analogia/conceito central;
-- regra em camadas;
-- exemplos guiados inéditos;
-- certo vs errado;
-- microdiálogo/uso real;
-- checagem mental;
-- produção final;
-- repetição entre seções;
-- exemplos que copiam a explicação;
-- profundidade da prática.
-
-O reparo local adiciona seções didáticas obrigatórias quando a IA vem vaga:
-- Abertura do professor;
-- Conceito central com analogia;
-- Regra em camadas;
-- Exemplos guiados inéditos;
-- Certo vs errado;
-- Uso real em microdiálogo;
-- Checagem mental antes da prática;
-- Resumo final do que dominar.
-
-Também adiciona prompts finais de produção própria:
-- explicar diferença com as próprias palavras;
-- criar frases afirmativas;
-- criar frases negativas e perguntas;
-- escrever uma frase errada, corrigir e explicar.
-
-### 2. Professor revisor endurecido para Grammar
-
-`teacherReviewer.js` agora importa `auditDeepGrammarLesson` e incorpora `deepGrammarAudit` no score.
-
-Mudanças:
-- Grammar ganhou sinais extras: analogia, certo/errado e uso real;
-- `teacherScore` agora inclui peso do auditor profundo;
-- aprovação de Grammar exige `deepGrammarAudit.score >= 78`;
-- issues do auditor são adicionadas no professor revisor;
-- painel de qualidade ganha área `Grammar profunda` dentro de `reviewedAreas`;
-- `quality.deepGrammarAudit` é anexado à aula.
-
-### 3. Gerador conectado ao pipeline
-
-`LessonGeneratorPanel.jsx` agora:
-- reforça ainda mais `DEEP_GRAMMAR_CONTRACT` com:
-  - exemplos 100% inéditos;
-  - microdiálogo obrigatório;
-  - certo vs errado obrigatório;
-  - exemplos que não repetem a teoria;
-- identifica `grammarTarget`;
-- executa `auditDeepGrammarLesson()` após a geração inicial;
-- se a auditoria reprovar, aplica `repairDeepGrammarLesson()` antes do professor revisor;
-- registra no diagnóstico:
-  - `Auditoria Grammar profunda inicial: X/100.`
-  - `Pipeline Grammar profundo aplicado: X/100.`
-- se o reparo foi usado, o contrato salvo ganha:
-  - `deep-grammar-pipeline-v1`;
-- a mensagem final informa `com pipeline didático Grammar profundo` quando aplicado.
-
-Commits:
-- `3f562d63247013a982f4f19b01077a268e032c00` — cria pipeline didático profundo para grammar;
-- `def01175b8be5b602036b571b6bcbc2a113c9bab` — endurece professor revisor para grammar profunda;
-- `7952837cf51c59d6d9cddcfe8fd614b7de65ffd5` — conecta pipeline profundo de grammar na geração.
+Commit:
+- `df3bb1152893050e76df9e981927296c5c70d88b` — reaplica reparo profundo quando professor reprova grammar.
 
 Teste recomendado no iPhone:
-1. aguardar deploy do commit final deste bloco;
-2. gerar/substituir uma aula Grammar;
-3. no Diagnóstico, confirmar logs:
-   - `Contrato de Grammar profunda ativado...`;
-   - `Auditoria Grammar profunda inicial: X/100.`;
-   - se necessário: `Pipeline Grammar profundo aplicado: X/100.`;
-4. abrir a aula;
-5. confirmar que aparecem seções como:
-   - analogia;
-   - regra em camadas;
-   - exemplos guiados;
-   - certo vs errado;
-   - microdiálogo;
-   - checagem mental;
-   - resumo final;
-6. abrir Detalhes de qualidade e verificar área `Grammar profunda`;
-7. confirmar que a aula não depende apenas de contagem de partes/vocabulário/questões.
-
-Observação:
-- este bloco ainda não muda temperatura da API, porque isso provavelmente fica dentro do serviço real de chamada ao Gemini/backend. A melhoria aplicada agora é estrutural, local e segura.
+1. aguardar deploy do commit `df3bb11` ou posterior;
+2. gerar/substituir Grammar novamente;
+3. observar diagnóstico:
+   - se o professor reprovar inicialmente, deve aparecer:
+     `Professor revisor pediu reparo específico de Grammar profunda. Reaplicando pipeline didático antes de bloquear.`
+   - depois deve aparecer aprovação ou bloqueio final justificado;
+4. se salvar, abrir a aula e conferir se seções de Grammar profunda aparecem de forma real;
+5. se bloquear de novo, o próximo bloco deve endurecer a geração em `plannedGeminiLessons.js`/blueprint, porque o reparo local já terá sido tentado no ponto correto.
 
 ## Blocos recentes implementados
+
+### `BLOCO-GRAMMAR-PIPELINE-DIDATICO-PROFUNDO-LAB` — IMPLEMENTADO
+- Criado `deepGrammarPipeline.js`.
+- Professor revisor usa `deepGrammarAudit`.
+- `LessonGeneratorPanel` aplica auditoria/reparo profundo em Grammar antes de salvar.
 
 ### `BLOCO-GRAMMAR-CONTRATO-AULA-PROFUNDA-LAB` — IMPLEMENTADO
 - `LessonGeneratorPanel` adiciona `DEEP_GRAMMAR_CONTRACT` ao prompt de Grammar.
@@ -154,9 +86,6 @@ Observação:
 - Removidos exercícios estáticos da Grammar.
 - `PracticeFullscreen` congela as questões por sessão.
 
-### `BLOCO-HOTFIX-PERSISTENCIA-VERIFICADA-AULA-LAB` — IMPLEMENTADO
-- `saveCurrentLesson()` só grava status `saved` depois de confirmar que `lesson.current` realmente foi persistido.
-
 ## META OFICIAL — CARTAS / VOCABULÁRIO
 
 A aba Cartas deve substituir o uso do Duolingo para vocabulário, frases, chunks, tradução, listening, speaking, stories, revisão e domínio.
@@ -167,8 +96,8 @@ Meta planejada:
 
 ## NOVA ORDEM DE BLOCOS
 
-1. `BLOCO-GRAMMAR-PIPELINE-DIDATICO-PROFUNDO-LAB` — STATUS: implementado, aguardando teste.
-2. se Grammar ainda vier vaga, endurecer `plannedGeminiLessons.js`/`geminiLessons.js` no blueprint de JSON e/ou ajustar temperatura se disponível.
+1. `BLOCO-HOTFIX-GRAMMAR-REPARO-FINAL-LAB` — STATUS: implementado, aguardando teste.
+2. se Grammar ainda bloquear por conteúdo vago, endurecer `plannedGeminiLessons.js`/`geminiLessons.js` no blueprint de JSON e/ou ajustar temperatura se disponível.
 3. se ok, voltar para `BLOCO-CARTAS-PAREAMENTO-10-LAB`.
 4. `BLOCO-CARTAS-PAREAMENTO-IMAGEM-10B-LAB`.
 5. `BLOCO-CARTAS-SIGNIFICADO-10C-LAB`.
@@ -180,4 +109,4 @@ Meta planejada:
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O bloco atual implementado foi `BLOCO-GRAMMAR-PIPELINE-DIDATICO-PROFUNDO-LAB`: foi criado `deepGrammarPipeline.js`, o professor revisor agora usa `deepGrammarAudit`, e `LessonGeneratorPanel` aplica auditoria/reparo profundo em Grammar antes de salvar. Testar gerando nova Grammar. Se ok, seguir para `BLOCO-CARTAS-PAREAMENTO-10-LAB`."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O bloco atual implementado foi `BLOCO-HOTFIX-GRAMMAR-REPARO-FINAL-LAB`: quando o professor reprova Grammar por profundidade, `LessonGeneratorPanel` reaplica `repairDeepGrammarLesson()` antes de bloquear. Testar gerando nova Grammar. Se ainda bloquear por conteúdo vago, endurecer blueprint em `plannedGeminiLessons.js`/`geminiLessons.js`; se ok, voltar para Cartas."
