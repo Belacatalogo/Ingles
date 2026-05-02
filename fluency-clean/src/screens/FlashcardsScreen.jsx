@@ -80,6 +80,8 @@ function VocabularyActivityCard({ activity, selected, builtWords, feedback, onCh
   const isBuild = activity.type === 'build';
   const isListen = activity.type === 'listen';
   const builtAnswer = builtWords.join(' ');
+  const canCheck = isIntro || feedback || (isBuild && builtAnswer) || (!isBuild && !isIntro && selected);
+  const buttonLabel = feedback || isIntro ? 'Continuar' : isBuild ? 'Verificar' : selected ? 'Verificar resposta' : 'Escolha uma resposta';
   return (
     <section className={`vocab-activity-card ${activity.type}`}>
       <div className="vocab-activity-top"><span>{activity.title}</span><small>{activity.instruction}</small></div>
@@ -92,7 +94,7 @@ function VocabularyActivityCard({ activity, selected, builtWords, feedback, onCh
         <div className="vocab-choice-body"><p>{isListen ? 'Escolha o que você ouviu.' : activity.prompt}</p><div className="vocab-choice-options">{activity.options.map((option) => <button className={selected === option ? 'selected' : ''} key={option} type="button" onClick={() => onChoose(option)}>{option}</button>)}</div></div>
       )}
       {feedback ? <div className={`vocab-feedback ${feedback.correct ? 'correct' : 'wrong'}`}>{feedback.correct ? 'Correto.' : `Resposta certa: ${feedback.expected}`}</div> : null}
-      <button className="cards-primary-action" type="button" onClick={onContinue} disabled={!isIntro && !feedback && !(isBuild && builtAnswer)}>{feedback || isIntro ? 'Continuar' : isBuild ? 'Verificar' : 'Escolha uma resposta'}</button>
+      <button className="cards-primary-action" type="button" onClick={onContinue} disabled={!canCheck}>{buttonLabel}</button>
     </section>
   );
 }
