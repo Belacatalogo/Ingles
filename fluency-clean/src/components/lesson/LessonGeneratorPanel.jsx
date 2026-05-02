@@ -56,6 +56,11 @@ function isGrammarTarget(nextLesson) {
   return type === 'grammar' || /grammar|gram[aá]tica|present simple|verb|verbo|tense|tempo verbal/i.test(title);
 }
 
+function teacherNeedsDeepGrammarRepair(teacherReview) {
+  const text = [...(teacherReview?.issues || []), teacherReview?.advice || ''].join(' ');
+  return /grammar profunda|progressão didática|progressao didatica|exemplos precisam|contextualizados|analogia|camadas|uso real/i.test(text);
+}
+
 function buildPromptForLesson(nextLesson, saturdayReview) {
   const basePrompt = nextLesson.promptOverride || buildCurriculumPrompt(nextLesson);
   if (!isGrammarTarget(nextLesson) || saturdayReview) return basePrompt;
@@ -269,7 +274,14 @@ export function LessonGeneratorPanel({ onGenerated }) {
       if (!teacherReview.approved) {
         diagnostics.setPhase('professor revisor pediu reparo', 'generating');
         setMessage(`Professor revisor pediu reparo (${teacherReview.finalScore}/100). Ajustando antes de salvar...`);
-        const repairedByTeacher = repairLessonForQuality(lessonForSave, { expectedLevel: nextLesson.level, expectedType: lessonForSave.type, expectedTitle: nextLesson.title, review: { ...pedagogicalReview, issues: [...(pedagogicalReview.issues || []), ...(teacherReview.issues || [])] } });
+        let repairedByTeacher = repairLessonForQuality(lessonForSave, { expectedLevel: nextLesson.level, expectedType: lessonForSave.type, expectedTitle: nextLesson.title, review: { ...pedagogicalReview, issues: [...(pedagogicalReview.issues || []), ...(teacherReview.issues || [])] } });
+
+        if (grammarTarget && teacherNeedsDeepGrammarRepair(teacherReview)) {
+          diagnostics.log('Professor revisor pediu reparo específico de Grammar profunda. Reaplicando pipeline didático antes de bloquear.', 'warn', teacherReview);
+          repairedByTeacher = repairDeepGrammarLesson(repairedByTeacher);
+          deepGrammarRepaired = true;
+        }
+
         const repairedPedagogicalReview = validateLessonForQuality(repairedByTeacher, { expectedLevel: nextLesson.level, expectedType: lessonForSave.type });
         const repairedTeacherReview = reviewLessonAsTeacher(repairedByTeacher, { expectedLevel: nextLesson.level, expectedType: lessonForSave.type, baseReview: repairedPedagogicalReview });
 
@@ -283,7 +295,7 @@ export function LessonGeneratorPanel({ onGenerated }) {
 
         autoRepaired = true;
         lessonForSave = repairedByTeacher;
-        pedagogicalReview = { ...repairedPedagogicalReview, autoRepaired: true, teacherRepair: true };
+        pedagogicalReview = { ...repairedPedagogicalReview, autoRepaired: true, teacherRepair: true, deepGrammarRepair: deepGrammarRepaired };
         teacherReview = repairedTeacherReview;
         diagnostics.log(`Professor revisor aprovou após reparo: ${teacherReview.finalScore}/100.`, 'success', teacherReview);
       }
@@ -293,7 +305,12 @@ export function LessonGeneratorPanel({ onGenerated }) {
         diagnostics.setPhase('trava de estudo pediu reparo', 'generating');
         diagnostics.log(`Trava de confiança bloqueou a aula: ${studyReadiness.message}`, 'warn', studyReadiness);
         setMessage('A aula ainda não vale seu tempo. Tentando reparo de confiança antes de salvar...');
-        const readinessRepairedLesson = repairLessonForQuality(lessonForSave, { expectedLevel: nextLesson.level, expectedType: lessonForSave.type, expectedTitle: nextLesson.title, review: { ...pedagogicalReview, issues: [...(pedagogicalReview.issues || []), ...(teacherReview.issues || []), ...(studyReadiness.missing || []), ...(studyReadiness.criticalIssues || [])] } });
+        let readinessRepairedLesson = repairLessonForQuality(lessonForSave, { expectedLevel: nextLesson.level, expectedType: lessonForSave.type, expectedTitle: nextLesson.title, review: { ...pedagogicalReview, issues: [...(pedagogicalReview.issues || []), ...(teacherReview.issues || []), ...(studyReadiness.missing || []), ...(studyReadiness.criticalIssues || [])] } });
+        if (grammarTarget && teacherNeedsDeepGrammarRepair(teacherReview)) {
+          diagnostics.log('Trava de confiança acionou reparo específico de Grammar profunda.', 'warn', studyReadiness);
+          readinessRepairedLesson = repairDeepGrammarLesson(readinessRepairedLesson);
+          deepGrammarRepaired = true;
+        }
         const readinessReview = validateLessonForQuality(readinessRepairedLesson, { expectedLevel: nextLesson.level, expectedType: lessonForSave.type });
         const readinessTeacherReview = reviewLessonAsTeacher(readinessRepairedLesson, { expectedLevel: nextLesson.level, expectedType: lessonForSave.type, baseReview: readinessReview });
         const readinessCheck = evaluateStudyReadiness(readinessRepairedLesson, { teacherReview: readinessTeacherReview, pedagogicalReview: readinessReview });
@@ -308,7 +325,7 @@ export function LessonGeneratorPanel({ onGenerated }) {
 
         autoRepaired = true;
         lessonForSave = readinessRepairedLesson;
-        pedagogicalReview = { ...readinessReview, autoRepaired: true, studyReadinessRepair: true };
+        pedagogicalReview = { ...readinessReview, autoRepaired: true, studyReadinessRepair: true, deepGrammarRepair: deepGrammarRepaired };
         teacherReview = readinessTeacherReview;
         studyReadiness = readinessCheck;
         diagnostics.log(`Trava de confiança liberou após reparo: ${studyReadiness.label}.`, 'success', studyReadiness);
