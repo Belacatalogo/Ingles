@@ -7,6 +7,7 @@ import { getTotalVocabularyBankCount, VOCABULARY_BANK_TARGET } from '../services
 import { completeVocabularyBubbleLevel, getBubbleCardsForLevel, getNextVocabularyTarget, getVocabularyPathState, getVocabularyPathStats, getVocabularyTopicPath } from '../services/vocabularyPath.js';
 import { buildVocabularyPracticeActivities, scoreVocabularyPractice } from '../services/vocabularyPractice.js';
 import { getVocabularySrsState, getVocabularySrsSummary, updateVocabularySrsFromReviewLog } from '../services/vocabularySrs.js';
+import { getVocabularyVisualReference } from '../services/vocabularyVisualReferences.js';
 
 function cardFrom(item, index) {
   if (typeof item === 'string') return { id: `${item}-${index}`, word: item, translation: '', definition: 'Vocabulário da aula atual.', example: '', deck: 'Aula atual' };
@@ -49,21 +50,12 @@ function statusFor(card, srsState) {
   return { label: 'revisão', intro: true };
 }
 
-function visualFor(card) {
-  const text = `${card.word || ''} ${card.translation || ''} ${card.deck || ''}`.toLowerCase();
-  if (text.includes('food') || text.includes('water') || text.includes('coffee')) return 'FOOD';
-  if (text.includes('family') || text.includes('friend') || text.includes('people')) return 'PEOPLE';
-  if (text.includes('work') || text.includes('job') || text.includes('career')) return 'WORK';
-  if (text.includes('school') || text.includes('study') || text.includes('book')) return 'STUDY';
-  if (text.includes('travel') || text.includes('city') || text.includes('hotel')) return 'TRAVEL';
-  return 'WORD';
-}
-
 function FloatingGloss({ card, onClose }) {
   if (!card) return null;
+  const visual = getVocabularyVisualReference(card);
   return <div style={{ position: 'fixed', inset: 0, zIndex: 80, display: 'grid', placeItems: 'center', padding: 18, background: 'rgba(2,6,23,.28)', backdropFilter: 'blur(4px)' }} onClick={onClose}>
     <section style={{ width: 'min(360px, 92vw)', border: '1px solid rgba(196,181,253,.42)', borderRadius: 22, background: 'linear-gradient(180deg, rgba(25,32,62,.98), rgba(10,16,36,.98))', boxShadow: '0 24px 70px rgba(0,0,0,.42), 0 0 0 1px rgba(196,181,253,.10)', padding: 18 }} onClick={(event) => event.stopPropagation()}>
-      <span style={{ display: 'block', color: '#c4b5fd', fontSize: 11, fontWeight: 950, letterSpacing: '.14em', textTransform: 'uppercase', marginBottom: 8 }}>Dica rápida</span>
+      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, color: '#c4b5fd', fontSize: 11, fontWeight: 950, letterSpacing: '.14em', textTransform: 'uppercase', marginBottom: 10 }}><b style={{ fontSize: 24, lineHeight: 1 }}>{visual.icon}</b>{visual.label}</span>
       <strong style={{ display: 'block', color: '#f8fbff', fontSize: 30, lineHeight: 1, letterSpacing: '-.04em', marginBottom: 10 }}>{card.word}</strong>
       <p style={{ margin: '0 0 12px', color: '#dbeafe', fontSize: 18, fontWeight: 850 }}>{card.translation || card.definition}</p>
       {card.example ? <p style={{ margin: '0 0 14px', color: '#aeb8d4', fontSize: 14, lineHeight: 1.45 }}>{card.example}</p> : null}
@@ -82,7 +74,7 @@ function PathMap({ path, selectedBubble, onSelectBubble }) {
 
 function NewWordsStep({ deck, bubble, level, cards, seen, openId, setOpenId, markSeen, onStart, onBack }) {
   const openCard = cards.find((card) => card.id === openId);
-  return <><header className="cards-study-header"><button type="button" onClick={onBack}><ArrowLeft size={18} /> Voltar</button><div><span>{deck.title}</span><strong>Palavras novas</strong><small>Bolha {bubble?.number} · Nível {level}/3</small></div></header><section className="vocab-activity-card"><div className="vocab-activity-top"><span>Início da bolha</span><small>Toque nas palavras destacadas para ver a tradução. Depois comece os exercícios.</small></div><div className="vocab-choice-options">{cards.map((card) => { const isSeen = seen.includes(card.id); return <button key={card.id} type="button" className={isSeen ? '' : 'selected'} onClick={() => { markSeen(card.id); setOpenId(card.id); }}><span style={{ display: 'block', fontSize: 11, color: '#8f9bb8', letterSpacing: '.12em' }}>{visualFor(card)} · {isSeen ? 'vista' : 'nova'}</span><strong style={{ display: 'block', fontSize: 24 }}>{card.word}</strong></button>; })}</div><button className="cards-primary-action" type="button" onClick={onStart}>Continuar para exercícios</button></section><FloatingGloss card={openCard} onClose={() => setOpenId('')} /></>;
+  return <><header className="cards-study-header"><button type="button" onClick={onBack}><ArrowLeft size={18} /> Voltar</button><div><span>{deck.title}</span><strong>Palavras novas</strong><small>Bolha {bubble?.number} · Nível {level}/3</small></div></header><section className="vocab-activity-card"><div className="vocab-activity-top"><span>Início da bolha</span><small>Toque nas palavras destacadas para ver a tradução. Depois comece os exercícios.</small></div><div className="vocab-choice-options">{cards.map((card) => { const isSeen = seen.includes(card.id); const visual = getVocabularyVisualReference(card); return <button key={card.id} type="button" className={isSeen ? '' : 'selected'} onClick={() => { markSeen(card.id); setOpenId(card.id); }}><span style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, color: '#8f9bb8', letterSpacing: '.12em' }}><b style={{ fontSize: 22, lineHeight: 1, letterSpacing: 0 }}>{visual.icon}</b>{visual.label} · {isSeen ? 'vista' : 'nova'}</span><strong style={{ display: 'block', fontSize: 24 }}>{card.word}</strong></button>; })}</div><button className="cards-primary-action" type="button" onClick={onStart}>Continuar para exercícios</button></section><FloatingGloss card={openCard} onClose={() => setOpenId('')} /></>;
 }
 
 function ActivityCard({ activity, selected, builtWords, feedback, onChoose, onBuildWord, onRemoveBuildWord, onContinue, onAudio }) {
