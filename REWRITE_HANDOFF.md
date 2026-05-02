@@ -15,48 +15,65 @@ Branch estável protegida: `rewrite-fluency-clean`
 - Não mexer no backend Azure privado.
 - Manter tudo modular em `fluency-clean/src/`, `fluency-clean/public/` ou arquivos reais de configuração.
 
-## ESTADO ATUAL — HOTFIX GROQ ECONÔMICO 5 SECTIONS
+## ESTADO ATUAL — HOTFIX GROQ QUALIDADE + TRAVA DE OBJETIVO GRAMMAR
 
-### `HOTFIX-GROQ-ECONOMICO-5-SECTIONS-LAB` — IMPLEMENTADO, aguardando deploy/teste
+### `HOTFIX-GROQ-QUALITY-STUDY-READINESS-LAB` — IMPLEMENTADO, aguardando deploy/teste
 
-Contexto:
-- Groq puro mostrou boa qualidade parcial, mas bateu limite diário/TPM por usar 7 chamadas 1B.
-- O usuário vai testar outra key Groq e pediu a política nova:
-  1. reduzir sections de 7 para 5 quando o motor for Groq;
-  2. cada section Groq mirar 260–320 palavras;
-  3. remover expansão preventiva abaixo de 220; manter expansão só abaixo de 180;
-  4. reduzir exemplos repetidos no prompt;
-  5. usar menos chamadas totais.
+Contexto do teste mais recente:
+- A nova política Groq de 5 sections funcionou operacionalmente e concluiu as 5 sections.
+- Sections geradas no teste:
+  - section 1: 242 palavras;
+  - section 2: 347 palavras;
+  - section 3: 252 palavras;
+  - section 4: 315 palavras;
+  - section 5: 274 palavras.
+- O professor revisor avaliou em 96/100.
+- A avaliação pedagógica ficou 95/100.
+- A aula ainda foi bloqueada pela trava de confiança por metadado: `Objetivo da aula está ausente ou curto demais`.
 
-Correção aplicada:
-- `externalLessonProviders.js`
-  - Skeleton Grammar do Groq agora pede exatamente 5 sections.
-  - Se Groq vier sem sections, fallback local cria 5 sections, não 7.
-  - `planContract` recebe `groq-5-section-economy-v1`.
-  - Skeleton Groq usa menos tokens (`1900`).
-  - Diagnóstico registra: `Modo Groq econômico ativo: usando 5 sections longas em vez de 7 chamadas.`
+Correções aplicadas agora:
 - `grammarSectionGenerator.js`
-  - Em `externalProvider === 'groq'`, o 1B usa no máximo 5 sections.
-  - Prompt Groq mira 260–320 palavras por section.
-  - Expansão automática do Groq agora só acontece abaixo de 180 palavras, não abaixo de 220.
-  - Contexto anterior do Groq reduzido para 90 caracteres por section.
-  - Microexemplo do prompt Groq reduzido para diminuir repetição e token gasto.
-  - Pausa Groq ajustada para 6,5s entre sections.
-  - `grammarSectionContract` recebe sufixo `groq-5-sections`.
+  - Groq continua com 5 sections, mas agora são 5 sections fortes.
+  - Minimum real do Groq subiu para 240 palavras por section.
+  - Prompt Groq agora mira 280–340 palavras.
+  - Sections Groq abaixo de 240 pedem expansão.
+  - `grammarSectionContract` agora usa sufixo `groq-5-strong-sections`.
+- `studyReadiness.js`
+  - Antes da trava de confiança, aula Grammar com objetivo ausente/curto recebe objetivo local seguro.
+  - Se o objetivo foi reparado localmente, issues antigas de `objetivo ausente/curto demais` não bloqueiam a aula.
+  - O reparo fica marcado em `readinessAutoRepair.objective = grammar-objective-autofilled-v1`.
+  - `attachStudyReadiness` passa a preservar a aula reparada.
+  - Versão passa para `study-readiness-v1+grammar-objective-repair`.
+
+Commits:
+- `32ccc827fadd4a27fa460154a744f770996cc9c8` — reforça mínimo real das sections Groq.
+- `87ce9aa1c2d48b6fba7d3eb67374e18ba65294f3` — repara objetivo Grammar antes da trava.
+- `840877e4674e2b5c133945e7e468058adf6d10fc` — ignora issue reparável de objetivo Grammar.
+
+Teste obrigatório agora:
+1. aguardar deploy da branch `rewrite-fluency-clean-lab` com commit `840877e` ou posterior;
+2. testar Groq puro novamente com a nova key;
+3. confirmar no diagnóstico:
+   - sections Groq acima de 240 palavras;
+   - revisor ≥ 90;
+   - avaliação pedagógica ≥ 90;
+   - se objetivo vier curto, a trava deve reparar e não bloquear por esse mesmo motivo;
+4. se salvar, abrir a aula e mandar prints para comparação real com Flash.
+
+## ESTADO ANTERIOR — HOTFIX GROQ ECONÔMICO 5 SECTIONS
+
+### `HOTFIX-GROQ-ECONOMICO-5-SECTIONS-LAB` — IMPLEMENTADO
+
+- Groq usa 5 sections em vez de 7.
+- Skeleton Grammar do Groq pede exatamente 5 sections.
+- Se Groq vier sem sections, fallback local cria 5 sections.
+- Prompt Groq mirava 260–320 palavras.
+- Expansão automática do Groq ocorria só abaixo de 180 palavras.
+- Isso economizou chamadas, mas deixou passar sections fracas como 188 e 211 palavras.
 
 Commits:
 - `5e326af39cc88dd4e166d16c50ea24191cec538e` — reduz skeleton grammar para 5 sections.
 - `bed84b96417d3634830951a178a00f8aafb28244` — 1B com 5 sections longas.
-
-Teste obrigatório agora:
-1. aguardar deploy da branch `rewrite-fluency-clean-lab` com commit `bed84b9` ou posterior;
-2. colocar a nova key Groq;
-3. ativar `Forçar Groq na próxima geração`;
-4. confirmar no diagnóstico:
-   - `Modo Groq econômico ativo: usando 5 sections longas em vez de 7 chamadas.`
-   - `Cirurgia 2 Grammar ativa... modo Groq econômico 5 sections longas.`
-   - sections mirando 260–320 palavras;
-5. se salvar, comparar aula completa com Flash.
 
 ## LEITURA PARCIAL DA COMPARAÇÃO FLASH X GROQ X CEREBRAS
 
@@ -69,9 +86,9 @@ Teste obrigatório agora:
 ### Groq
 - Não está idêntico ao Flash.
 - O conteúdo observado tem frases e organização diferentes.
-- Já gerou sections aprovadas de 241, 281 e 224 palavras em testes anteriores.
-- O problema principal é operacional: limite TPM/rate limit, não falta de qualidade.
-- Nova política reduz chamadas totais de 7 para 5 para tentar viabilizar o teste completo.
+- Com 5 sections fortes, o teste mais recente chegou a revisor 96/100 e avaliação pedagógica 95/100.
+- O problema restante era metadado/objetivo curto, agora reparado localmente antes da trava.
+- Groq parece promissor como alternativa/fallback, desde que a cota permita.
 
 ### Cerebras `llama3.1-8b`
 - Entrou no 1B, mas veio curto demais.
@@ -92,18 +109,6 @@ Correção futura, somente depois da comparação de motores:
 - separar cada exemplo em linha própria;
 - destacar frase em inglês, tradução e explicação;
 - corrigir pontuação grudada sem reduzir conteúdo.
-
-## ESTADO ANTERIOR — HOTFIX EXTERNAL 1B: ALVO MAIOR E EXPANSÃO PREVENTIVA
-
-### `HOTFIX-EXTERNAL-1B-TARGET-MIN-LAB` — IMPLEMENTADO
-
-- Criado alvo preventivo externo `EXTERNAL_SECTION_TARGET_MIN = 220` para não-Groq.
-- Prompt externo mira 240–280 palavras.
-- Contexto anterior externo foi reduzido.
-- Pausa Groq tinha sido aumentada para 9s antes da política econômica.
-
-Commit:
-- `d520b09543d70d2016f2eb1b900fb01e7512742d` — alvo maior para sections externas.
 
 ## ESTADO ANTERIOR — HOTFIX EXTERNAL PROVIDERS: ESQUELETO LEVE + 1B PURO
 
@@ -134,12 +139,11 @@ Commit:
 
 ## Próximo teste recomendado
 
-1. Esperar deploy com `bed84b9` ou posterior.
-2. Colocar nova key Groq.
-3. Testar Groq puro.
-4. Se Groq salvar, comparar aula completa com Flash.
-5. Só depois decidir motor prioritário e corrigir visual dos exemplos.
+1. Esperar deploy com `840877e` ou posterior.
+2. Testar Groq puro novamente.
+3. Se Groq salvar, comparar aula completa com Flash.
+4. Só depois decidir motor prioritário e corrigir visual dos exemplos.
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. O último hotfix foi `bed84b9`: modo Groq econômico usa 5 sections longas, mira 260–320 palavras e só expande abaixo de 180. Próximo passo é testar Groq puro com nova key e comparar com Flash se salvar. Não mexer em Cirurgia 3/deepGrammarPipeline ainda. Não corrigir visual dos exemplos antes da comparação. Não mexer em `main`, `rewrite-fluency-clean`, `bundle.js` ou backend Azure privado."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. O último hotfix foi `840877e`: Groq 5 sections agora exige 240+ palavras por section e a trava de confiança repara objetivo Grammar curto antes de bloquear. Próximo passo é testar Groq puro e comparar com Flash se salvar. Não mexer em Cirurgia 3/deepGrammarPipeline ainda. Não corrigir visual dos exemplos antes da comparação. Não mexer em `main`, `rewrite-fluency-clean`, `bundle.js` ou backend Azure privado."
