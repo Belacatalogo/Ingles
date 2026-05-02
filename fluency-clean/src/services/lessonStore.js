@@ -25,10 +25,47 @@ function lessonTime(lesson) {
   return parsed || 0;
 }
 
+function findHistoryLessonByStatus(history = [], status = null) {
+  if (!Array.isArray(history) || !status) return null;
+  const statusId = status.id || '';
+  const statusLessonId = status.lessonId || '';
+  const statusTitle = status.lessonTitle || '';
+
+  if (statusId) {
+    const byGeneration = history.find((lesson) => lesson?.generationMeta?.id === statusId);
+    if (byGeneration) return byGeneration;
+  }
+
+  if (statusLessonId) {
+    const byLessonId = history.find((lesson) => lesson?.id === statusLessonId || lesson?.curriculumId === statusLessonId);
+    if (byLessonId) return byLessonId;
+  }
+
+  if (statusTitle) {
+    const byTitle = history.find((lesson) => lesson?.title === statusTitle || lesson?.expectedTitle === statusTitle);
+    if (byTitle) return byTitle;
+  }
+
+  return null;
+}
+
 function getFreshestLessonRaw() {
   const current = storage.get(CURRENT_LESSON_KEY, null);
   const history = storage.get(LESSON_HISTORY_KEY, []);
   const latestHistory = Array.isArray(history) ? history[0] : null;
+  const lastStatus = storage.get(LAST_GENERATION_STATUS_KEY, null);
+  const statusLesson = findHistoryLessonByStatus(history, lastStatus);
+
+  if (statusLesson) {
+    const currentGenerationId = current?.generationMeta?.id || '';
+    const statusGenerationId = statusLesson?.generationMeta?.id || '';
+    const statusIsNewer = lessonTime(statusLesson) >= lessonTime(current);
+    if (!current || statusGenerationId !== currentGenerationId || statusIsNewer) {
+      storage.set(CURRENT_LESSON_KEY, statusLesson);
+      diagnostics.log(`Aula atual sincronizada pelo último status salvo: ${statusLesson.title || 'sem título'}`, 'info');
+      return statusLesson;
+    }
+  }
 
   if (!current) return latestHistory || null;
   if (!latestHistory) return current;
