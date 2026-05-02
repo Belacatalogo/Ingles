@@ -94,16 +94,10 @@ export function LessonGeneratorPanel({ onGenerated }) {
   async function handleGenerate() {
     setVersion((value) => value + 1);
 
-    if (pendingSameLesson && !forceNew) {
-      const msg = 'Existe uma aula atual pendente para esta etapa. Ative “Substituir aula atual” para gerar uma nova de verdade.';
-      diagnostics.log(msg, 'warn');
-      setMessage(msg);
-      return;
-    }
-
     setLoading(true);
-    setMessage(saturdayReview ? 'Planejando e gerando revisão adaptativa de sábado...' : forceNew ? 'Planejando substituição da aula atual e gerando versão diferente...' : 'Planejando a próxima aula antes de gerar... acompanhe o diagnóstico.');
-    diagnostics.log(saturdayReview ? 'Botão Gerar revisão adaptativa de sábado acionado.' : forceNew ? 'Botão Gerar nova aula com substituição e variação acionado.' : 'Botão Gerar próxima aula do cronograma acionado.', 'info');
+    const regeneratingCurrent = pendingSameLesson && !forceNew;
+    setMessage(saturdayReview ? 'Planejando e gerando revisão adaptativa de sábado...' : regeneratingCurrent ? 'Regenerando a aula atual com o mesmo objetivo para teste...' : forceNew ? 'Planejando substituição da aula atual e gerando versão diferente...' : 'Planejando a próxima aula antes de gerar... acompanhe o diagnóstico.');
+    diagnostics.log(saturdayReview ? 'Botão Gerar revisão adaptativa de sábado acionado.' : regeneratingCurrent ? 'Botão Regenerar aula atual acionado sem variação obrigatória.' : forceNew ? 'Botão Gerar nova aula com substituição e variação acionado.' : 'Botão Gerar próxima aula do cronograma acionado.', 'info');
 
     try {
       const flashKeys = getLessonFlashKeys();
@@ -337,7 +331,7 @@ export function LessonGeneratorPanel({ onGenerated }) {
       const grammarContract = lessonForSave.type === 'grammar' ? `+deep-grammar-contract-v1${deepGrammarRepaired ? '+deep-grammar-pipeline-v1' : ''}` : '';
 
       const saved = saveCurrentLesson(reviewedLesson, {
-        source: forceNew ? 'generated-replacement-variation' : result.lesson.planContract === 'resilient-json-v1' ? 'generated-resilient-json' : 'generated',
+        source: forceNew ? 'generated-replacement-variation' : regeneratingCurrent ? 'generated-regeneration-same-lesson' : result.lesson.planContract === 'resilient-json-v1' ? 'generated-resilient-json' : 'generated',
         status: 'new',
         contractVersion: result.lesson.planContract ? `lesson-contract-v1+${result.lesson.planContract}+teacher-reviewer-v1+study-readiness-v1${listeningCoherenceRepaired ? '+listening-coherence-v1' : ''}${antiFalseDomainRepaired ? '+anti-false-domain-v1' : ''}${grammarContract}` : `lesson-contract-v1+teacher-reviewer-v1+study-readiness-v1${listeningCoherenceRepaired ? '+listening-coherence-v1' : ''}${antiFalseDomainRepaired ? '+anti-false-domain-v1' : ''}${grammarContract}`,
         pedagogicalScore: teacherReview.finalScore,
@@ -351,9 +345,9 @@ export function LessonGeneratorPanel({ onGenerated }) {
         generationSeed: result.lesson.generationSeed,
         planSeed: result.lesson.planSeed,
       });
-      diagnostics.log(`${saturdayReview ? 'Revisão adaptativa planejada' : forceNew ? 'Nova versão planejada da aula do cronograma' : 'Aula planejada do cronograma'} pronta para abrir: ${saved.title}`, 'info');
+      diagnostics.log(`${saturdayReview ? 'Revisão adaptativa planejada' : regeneratingCurrent ? 'Aula atual regenerada' : forceNew ? 'Nova versão planejada da aula do cronograma' : 'Aula planejada do cronograma'} pronta para abrir: ${saved.title}`, 'info');
       const repairLabel = deepGrammarRepaired ? ' com pipeline didático Grammar profundo,' : listeningCoherenceRepaired ? ' com coerência de Listening reparada,' : antiFalseDomainRepaired ? ' com produção ativa anti falso domínio,' : autoRepaired ? ' corrigida automaticamente,' : '';
-      setMessage(saturdayReview ? `Nova revisão planejada${repairLabel} ${studyReadiness.label.toLowerCase()} (${teacherReview.finalScore}/100), salva e aberta na aba Aula.` : forceNew ? `Nova versão planejada${repairLabel} ${studyReadiness.label.toLowerCase()} (${teacherReview.finalScore}/100), salva e aberta na aba Aula.` : `Nova aula planejada${repairLabel} ${studyReadiness.label.toLowerCase()} (${teacherReview.finalScore}/100), salva e aberta na aba Aula.`);
+      setMessage(saturdayReview ? `Nova revisão planejada${repairLabel} ${studyReadiness.label.toLowerCase()} (${teacherReview.finalScore}/100), salva e aberta na aba Aula.` : regeneratingCurrent ? `Aula atual regenerada${repairLabel} ${studyReadiness.label.toLowerCase()} (${teacherReview.finalScore}/100), salva e aberta na aba Aula.` : forceNew ? `Nova versão planejada${repairLabel} ${studyReadiness.label.toLowerCase()} (${teacherReview.finalScore}/100), salva e aberta na aba Aula.` : `Nova aula planejada${repairLabel} ${studyReadiness.label.toLowerCase()} (${teacherReview.finalScore}/100), salva e aberta na aba Aula.`);
       setForceNew(false);
       onGenerated?.(saved);
     } catch (error) {
@@ -389,12 +383,12 @@ export function LessonGeneratorPanel({ onGenerated }) {
 
       <div className="generation-status-box"><div><span>Nível atual</span><strong>{curriculum.currentLevel}</strong></div><div><span>Progresso do nível</span><strong>{curriculum.completedInLevel}/{curriculum.levelTotal}</strong></div></div>
 
-      {nextLesson ? (<div className="inline-warning curriculum-next-box"><Sparkles size={16} /><span>{saturdayReview ? 'Sábado: ' : 'Próxima: '}<b>{nextLesson.level}</b> · {nextLesson.type} · {nextLesson.title}</span></div>) : null}
+      {nextLesson ? (<div className="inline-warning curriculum-next-box"><Sparkles size={16} /><span>{saturdayReview ? 'Sábado: ' : pendingSameLesson ? 'Atual: ' : 'Próxima: '}<b>{nextLesson.level}</b> · {nextLesson.type} · {nextLesson.title}</span></div>) : null}
 
       {pendingSameLesson ? (
         <label className="generation-replace-toggle">
           <input type="checkbox" checked={forceNew} onChange={(event) => setForceNew(event.target.checked)} />
-          <span>Substituir aula atual e gerar uma versão diferente</span>
+          <span>Gerar versão diferente com outro contexto</span>
         </label>
       ) : null}
 
@@ -404,7 +398,7 @@ export function LessonGeneratorPanel({ onGenerated }) {
 
       <button type="button" className="primary-button" onClick={handleGenerate} disabled={loading}>
         {loading ? <Loader2 size={16} className="spin" /> : <Sparkles size={16} />}
-        {loading ? 'Gerando aula...' : saturdayReview ? 'Gerar revisão de sábado' : pendingSameLesson && !forceNew ? 'Manter aula atual' : forceNew ? 'Gerar versão diferente' : 'Gerar nova aula'}
+        {loading ? 'Gerando aula...' : saturdayReview ? 'Gerar revisão de sábado' : pendingSameLesson && !forceNew ? 'Regenerar aula atual' : forceNew ? 'Gerar versão diferente' : 'Gerar nova aula'}
       </button>
 
       {message ? <p className="generator-message">{message}</p> : null}
