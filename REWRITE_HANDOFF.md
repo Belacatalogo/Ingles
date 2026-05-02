@@ -15,7 +15,47 @@ Branch estável protegida: `rewrite-fluency-clean`
 - Não mexer no backend Azure privado.
 - Manter tudo modular em `fluency-clean/src/`, `fluency-clean/public/` ou arquivos reais de configuração.
 
-## ESTADO ATUAL — LISTENING MULTI-SPEAKER + PLANO ANTI-PAUSA
+## ESTADO ATUAL — HOTFIX BLIND LISTENING CONTROL
+
+### `HOTFIX-LISTENING-BLIND-FIRST-CONTROL-LAB` — IMPLEMENTADO
+
+Motivação:
+- O multi-speaker funcionou: personagens `Ana` e `João` aparecem, vozes `Kore` e `Puck`, e o áudio multi-voz iniciou como áudio único.
+- Problema encontrado no iPhone: o `Controle por fala` mostrava a frase antes da transcrição, quebrando o objetivo da primeira etapa: ouvir sem ler.
+
+Objetivo executado:
+- Manter o objetivo pedagógico de Listening: primeira escuta sem leitura.
+- Ocultar o texto do controle por fala/trecho por padrão.
+- Permitir mostrar o texto manualmente apenas quando o usuário quiser conferir.
+
+Arquivos alterados:
+- `fluency-clean/src/lessons/ListeningLessonClean.jsx`
+- `fluency-clean/src/styles/listening-ux-hotfix.css`
+- `REWRITE_HANDOFF.md`
+
+O que foi feito:
+- Adicionado estado `showSegmentText`.
+- O controle por fala/trecho agora mostra por padrão: `Texto oculto para manter a primeira escuta sem leitura.`
+- Adicionado botão `Mostrar texto` / `Ocultar texto`.
+- Ao tocar em `Próximo trecho`, o texto volta a ficar oculto automaticamente.
+- Adicionada classe `listening-blind-first-v2`.
+- Estilizado placeholder oculto com borda tracejada e texto discreto.
+
+Commits:
+- `23128bc477a4f8b31f2195ec815e387a4970faad` — oculta fala antes da transcrição Listening.
+- `69b21eeaa4fffdecc985c1eccd429dd35d43a3b8` — ajusta blind listening no controle por fala.
+
+Próximo teste recomendado no iPhone:
+1. Aguardar deploy da branch `rewrite-fluency-clean-lab`.
+2. Abrir `Aula` > `Testar Diálogo`.
+3. Confirmar que `Ana` e `João` aparecem.
+4. Confirmar que o controle por fala NÃO mostra a frase de início.
+5. Tocar áudio principal sem ler a transcrição.
+6. Usar `Ouvir trecho atual` sem ver texto.
+7. Tocar `Mostrar texto` apenas depois de ouvir.
+8. Tocar `Próximo trecho` e confirmar que o texto volta a ficar oculto.
+
+## ESTADO ANTERIOR — LISTENING MULTI-SPEAKER + PLANO ANTI-PAUSA
 
 ### `BLOCO-LISTENING-MULTI-SPEAKER-TTS-LAB` — IMPLEMENTADO
 
@@ -57,7 +97,7 @@ O que foi feito — áudio sem quebra de imersão:
 - Essa solução permite textos maiores no futuro sem reduzir conteúdo, preservando imersão.
 
 O que foi feito — preview:
-- O preview temporário `Testar Listening` agora usa um diálogo A1 com Ana e João.
+- O preview temporário `Testar Listening`/`Testar Diálogo` usa um diálogo A1 com Ana e João.
 - Isso permite testar imediatamente se o parser detecta personagens e se as vozes alternam.
 
 Limitações conhecidas:
@@ -65,29 +105,12 @@ Limitações conhecidas:
 - Se o navegador bloquear a reprodução inicial do arquivo único, ainda pode haver fallback/erro de plataforma.
 - Para textos muito longos avançados, o próximo bloco ideal seria criar um cache/pipeline de pré-carregamento e montagem contínua para qualquer texto, não apenas diálogo.
 
-Escopo preservado:
-- Não mexeu em `main`.
-- Não mexeu em `rewrite-fluency-clean`.
-- Não mexeu em `bundle.js`.
-- Não mexeu no backend Azure privado.
-- Não mexeu em geração, prompts, modelos, chaves ou fallback de aula.
-- Não mexeu na Grammar aprovada.
-
 Commits:
 - `37432d34c936ec0a2f0c147b9185aa9b28db1bfe` — cria TTS multi-personagem para Listening.
-- `e8075ade3f663b92b2c44f5be03f39c5839b2b3c` — conecta Listening ao TTS multi-personagem.
+- `e8075ade3f663b92b2c44f5be03f39c5839b2c` — conecta Listening ao TTS multi-personagem.
 - `c6a7fb27ac45eb64174a8cf60ed6a7563c033b60` — estiliza diálogo multi-voz Listening.
 - `0044926aa00757679495f1986fe0813157a5db26` — adiciona diálogo ao preview Listening.
-
-Próximo teste recomendado no iPhone:
-1. Aguardar deploy da branch `rewrite-fluency-clean-lab`.
-2. Abrir `Aula` > `Testar Listening`.
-3. Confirmar se aparece a faixa de personagens `Ana` e `João`.
-4. Tocar áudio principal.
-5. Conferir se o diagnóstico mostra diálogo multi-voz.
-6. Conferir se a transcrição abre em formato de conversa.
-7. Testar o controle por fala/trecho.
-8. Confirmar se o áudio toca com menos pausas do que antes.
+- `37679e6f5b275d2ae064ba8e7fb7c9ff3c5da74e` — adiciona botão explícito para testar diálogo Listening.
 
 Próximo bloco recomendado se ainda houver pausa automática:
 - `BLOCO-LISTENING-CONTINUOUS-AUDIO-PIPELINE-LAB`
@@ -150,7 +173,7 @@ O que foi feito — prática profunda:
 
 ### `BLOCO-TEMP-LESSON-PREVIEW-SWITCH-LAB` — IMPLEMENTADO
 
-- Seletor temporário na aba Aula com `Aula real`, `Testar Listening`, `Testar Reading` e `Abrir Speaking`.
+- Seletor temporário na aba Aula com `Aula real`, `Testar Listening`, `Testar Diálogo`, `Testar Reading` e `Abrir Speaking`.
 - O preview usa samples locais e não substitui a aula real.
 
 ## ESTADO ANTERIOR — GRAMMAR APROVADA NA LAB
@@ -173,4 +196,4 @@ Status:
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. Foi implementado `BLOCO-LISTENING-MULTI-SPEAKER-TTS-LAB`: Listening detecta diálogos `Nome: fala`, mostra personagens, usa vozes diferentes por personagem, tenta montar áudio único WAV no frontend para reduzir pausas e atualizou o preview Listening com diálogo Ana/João. Próximo teste: `Aula > Testar Listening` no iPhone. Se ainda houver pausa automática, próximo bloco recomendado é `BLOCO-LISTENING-CONTINUOUS-AUDIO-PIPELINE-LAB`, para pré-gerar e concatenar qualquer texto longo em áudio único contínuo."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. Foi implementado `HOTFIX-LISTENING-BLIND-FIRST-CONTROL-LAB`: o controle por fala/trecho não mostra mais o texto antes da primeira escuta; há botão `Mostrar texto`/`Ocultar texto`, e `Próximo trecho` volta a ocultar automaticamente. Multi-speaker já funciona com Ana/João. Próximo teste: `Aula > Testar Diálogo` no iPhone e confirmar que o texto fica oculto até o usuário pedir."
