@@ -15,65 +15,61 @@ Branch estável protegida: `rewrite-fluency-clean`
 - Não mexer no backend Azure privado.
 - Manter tudo modular em `fluency-clean/src/`, `fluency-clean/public/` ou arquivos reais de configuração.
 
-## ESTADO ATUAL — HOTFIX GROQ QUALIDADE + TRAVA DE OBJETIVO GRAMMAR
+## ESTADO ATUAL — HOTFIX GROQ DIÁRIO FORTE 7 SECTIONS
 
-### `HOTFIX-GROQ-QUALITY-STUDY-READINESS-LAB` — IMPLEMENTADO, aguardando deploy/teste
+### `HOTFIX-GROQ-DAILY-7-SECTIONS-LAB` — IMPLEMENTADO, aguardando deploy/teste
 
-Contexto do teste mais recente:
-- A nova política Groq de 5 sections funcionou operacionalmente e concluiu as 5 sections.
-- Sections geradas no teste:
-  - section 1: 242 palavras;
-  - section 2: 347 palavras;
-  - section 3: 252 palavras;
-  - section 4: 315 palavras;
-  - section 5: 274 palavras.
-- O professor revisor avaliou em 96/100.
-- A avaliação pedagógica ficou 95/100.
-- A aula ainda foi bloqueada pela trava de confiança por metadado: `Objetivo da aula está ausente ou curto demais`.
+Contexto:
+- O modo Groq econômico com 5 sections ajudou a concluir a geração, mas o usuário decidiu simular a aula diária real.
+- Como será apenas 1 geração por dia, prioridade agora é qualidade máxima, não economia de chamadas.
+- Pedido do usuário: voltar Groq para 7 sections fortes usando uma nova key no teste final.
 
-Correções aplicadas agora:
+Correção aplicada:
+- `externalLessonProviders.js`
+  - Groq deixou de usar skeleton econômico de 5 sections.
+  - Skeleton Grammar do Groq agora exige 7 sections.
+  - Fallback local de skeleton Grammar também cria 7 sections.
+  - Diagnóstico registra: `Modo Groq diário forte ativo: usando 7 sections profundas para simular aula diária.`
+  - `planContract` recebe `groq-7-section-daily-v1`.
+  - Max tokens do skeleton Groq subiu para 2400.
 - `grammarSectionGenerator.js`
-  - Groq continua com 5 sections, mas agora são 5 sections fortes.
-  - Minimum real do Groq subiu para 240 palavras por section.
-  - Prompt Groq agora mira 280–340 palavras.
-  - Sections Groq abaixo de 240 pedem expansão.
-  - `grammarSectionContract` agora usa sufixo `groq-5-strong-sections`.
-- `studyReadiness.js`
-  - Antes da trava de confiança, aula Grammar com objetivo ausente/curto recebe objetivo local seguro.
-  - Se o objetivo foi reparado localmente, issues antigas de `objetivo ausente/curto demais` não bloqueiam a aula.
-  - O reparo fica marcado em `readinessAutoRepair.objective = grammar-objective-autofilled-v1`.
-  - `attachStudyReadiness` passa a preservar a aula reparada.
-  - Versão passa para `study-readiness-v1+grammar-objective-repair`.
+  - Groq usa até 7 sections no 1B.
+  - Cada section Groq mantém mínimo forte de 240 palavras.
+  - Prompt Groq mira 280–340 palavras.
+  - Sections abaixo de 240 pedem expansão ao mesmo provedor.
+  - Diagnóstico registra: `modo Groq diário forte 7 sections`.
+  - `grammarSectionContract` recebe sufixo `groq-7-daily-sections`.
+
+Commits:
+- `03fef31cfbabbe1fa84b209243de53ae468dc88e` — skeleton Groq forte com 7 sections.
+- commit seguinte em `grammarSectionGenerator.js` — 1B Groq forte com 7 sections.
+
+Teste obrigatório agora:
+1. aguardar deploy da branch `rewrite-fluency-clean-lab` com os commits acima;
+2. colocar uma nova key Groq;
+3. ativar `Forçar Groq na próxima geração`;
+4. gerar a aula Grammar diária;
+5. confirmar no diagnóstico:
+   - `Modo Groq diário forte ativo: usando 7 sections profundas para simular aula diária.`
+   - `Cirurgia 2 Grammar ativa... modo Groq diário forte 7 sections`;
+   - 7 sections aprovadas;
+   - cada section com 240+ palavras;
+   - professor revisor ≥ 90;
+   - avaliação pedagógica ≥ 90;
+   - trava de confiança não bloquear por objetivo curto reparável.
+
+## ESTADO ANTERIOR — HOTFIX GROQ QUALIDADE + TRAVA DE OBJETIVO GRAMMAR
+
+### `HOTFIX-GROQ-QUALITY-STUDY-READINESS-LAB` — IMPLEMENTADO
+
+- Groq 5 sections foi reforçado para 240+ palavras por section.
+- Study Readiness passou a reparar objetivo Grammar ausente/curto antes de bloquear.
+- Issues antigas de objetivo curto não bloqueiam se o objetivo foi reparado localmente.
 
 Commits:
 - `32ccc827fadd4a27fa460154a744f770996cc9c8` — reforça mínimo real das sections Groq.
 - `87ce9aa1c2d48b6fba7d3eb67374e18ba65294f3` — repara objetivo Grammar antes da trava.
 - `840877e4674e2b5c133945e7e468058adf6d10fc` — ignora issue reparável de objetivo Grammar.
-
-Teste obrigatório agora:
-1. aguardar deploy da branch `rewrite-fluency-clean-lab` com commit `840877e` ou posterior;
-2. testar Groq puro novamente com a nova key;
-3. confirmar no diagnóstico:
-   - sections Groq acima de 240 palavras;
-   - revisor ≥ 90;
-   - avaliação pedagógica ≥ 90;
-   - se objetivo vier curto, a trava deve reparar e não bloquear por esse mesmo motivo;
-4. se salvar, abrir a aula e mandar prints para comparação real com Flash.
-
-## ESTADO ANTERIOR — HOTFIX GROQ ECONÔMICO 5 SECTIONS
-
-### `HOTFIX-GROQ-ECONOMICO-5-SECTIONS-LAB` — IMPLEMENTADO
-
-- Groq usa 5 sections em vez de 7.
-- Skeleton Grammar do Groq pede exatamente 5 sections.
-- Se Groq vier sem sections, fallback local cria 5 sections.
-- Prompt Groq mirava 260–320 palavras.
-- Expansão automática do Groq ocorria só abaixo de 180 palavras.
-- Isso economizou chamadas, mas deixou passar sections fracas como 188 e 211 palavras.
-
-Commits:
-- `5e326af39cc88dd4e166d16c50ea24191cec538e` — reduz skeleton grammar para 5 sections.
-- `bed84b96417d3634830951a178a00f8aafb28244` — 1B com 5 sections longas.
 
 ## LEITURA PARCIAL DA COMPARAÇÃO FLASH X GROQ X CEREBRAS
 
@@ -86,9 +82,9 @@ Commits:
 ### Groq
 - Não está idêntico ao Flash.
 - O conteúdo observado tem frases e organização diferentes.
-- Com 5 sections fortes, o teste mais recente chegou a revisor 96/100 e avaliação pedagógica 95/100.
-- O problema restante era metadado/objetivo curto, agora reparado localmente antes da trava.
-- Groq parece promissor como alternativa/fallback, desde que a cota permita.
+- Com 5 sections fortes, chegou a revisor 96/100 e avaliação pedagógica 95/100.
+- Agora será testado em modo diário forte com 7 sections.
+- Groq parece promissor, mas precisa validar com uma key limpa para não bater limite.
 
 ### Cerebras `llama3.1-8b`
 - Entrou no 1B, mas veio curto demais.
@@ -139,11 +135,12 @@ Commit:
 
 ## Próximo teste recomendado
 
-1. Esperar deploy com `840877e` ou posterior.
-2. Testar Groq puro novamente.
-3. Se Groq salvar, comparar aula completa com Flash.
-4. Só depois decidir motor prioritário e corrigir visual dos exemplos.
+1. Esperar deploy com o hotfix Groq diário forte.
+2. Colocar nova key Groq.
+3. Testar Groq puro com 7 sections.
+4. Se Groq salvar, comparar aula completa com Flash.
+5. Só depois decidir motor prioritário e corrigir visual dos exemplos.
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. O último hotfix foi `840877e`: Groq 5 sections agora exige 240+ palavras por section e a trava de confiança repara objetivo Grammar curto antes de bloquear. Próximo passo é testar Groq puro e comparar com Flash se salvar. Não mexer em Cirurgia 3/deepGrammarPipeline ainda. Não corrigir visual dos exemplos antes da comparação. Não mexer em `main`, `rewrite-fluency-clean`, `bundle.js` ou backend Azure privado."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. O último hotfix foi Groq diário forte: Groq voltou para 7 sections, cada section exige 240+ palavras e mira 280–340, simulando uma única geração diária. Próximo passo é testar Groq puro com nova key e comparar com Flash se salvar. Não mexer em Cirurgia 3/deepGrammarPipeline ainda. Não corrigir visual dos exemplos antes da comparação. Não mexer em `main`, `rewrite-fluency-clean`, `bundle.js` ou backend Azure privado."
