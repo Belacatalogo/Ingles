@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { CheckCircle2, Cloud, RefreshCw, ShieldAlert, TriangleAlert } from 'lucide-react';
 import { useDiagnostics } from '../../hooks/useDiagnostics.js';
 import { getSystemHealthChecklist, logSystemHealth } from '../../services/systemHealth.js';
+import { getLessonStorageDebugSnapshot } from '../../services/lessonStorageDebug.js';
 
 function statusIcon(status) {
   if (status === 'ok') return <CheckCircle2 size={14} />;
@@ -9,11 +10,16 @@ function statusIcon(status) {
   return <TriangleAlert size={14} />;
 }
 
+function DebugRow({ label, value }) {
+  return <div className="diagnostic-row"><span>{label}</span><b>{value || '—'}</b></div>;
+}
+
 export function DiagnosticPanel() {
   const diagnostics = useDiagnostics();
   const [refreshKey, setRefreshKey] = useState(0);
   const latestLogs = diagnostics.logs.slice(-6).reverse();
   const health = useMemo(() => getSystemHealthChecklist(), [diagnostics.status, diagnostics.phase, diagnostics.logs.length, refreshKey]);
+  const lessonDebug = useMemo(() => getLessonStorageDebugSnapshot(), [refreshKey, diagnostics.logs.length, diagnostics.phase]);
 
   function handleRunChecklist() {
     logSystemHealth();
@@ -40,6 +46,27 @@ export function DiagnosticPanel() {
           <b>{diagnostics.lastError || '—'}</b>
         </div>
       </div>
+
+      <section className="health-check-card">
+        <header>
+          <div>
+            <Cloud size={15} />
+            <strong>Aula no storage</strong>
+          </div>
+          <button type="button" onClick={() => setRefreshKey((value) => value + 1)}>
+            <RefreshCw size={13} /> Atualizar
+          </button>
+        </header>
+        <div className="diagnostic-list">
+          <DebugRow label="Atual" value={lessonDebug.current.title} />
+          <DebugRow label="Atual gen" value={lessonDebug.current.generationId} />
+          <DebugRow label="Histórico 0" value={lessonDebug.history0.title} />
+          <DebugRow label="Histórico 0 gen" value={lessonDebug.history0.generationId} />
+          <DebugRow label="Status título" value={lessonDebug.status.title} />
+          <DebugRow label="Status gen" value={lessonDebug.status.generationId} />
+          <DebugRow label="Histórico total" value={lessonDebug.counts.history} />
+        </div>
+      </section>
 
       <section className="health-check-card">
         <header>
