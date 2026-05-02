@@ -113,9 +113,10 @@ export async function generatePlannedLessonDraft(options = {}) {
     'Antes de responder cada bloco, confira mentalmente se o primeiro caractere da resposta será { e não texto escapado.',
   ].join('\n');
 
-  const forceExternal = shouldForceExternalLessonProviderOnce();
-  if (forceExternal) {
-    diagnostics.log('Modo teste ativo: pulando Gemini e chamando fallback externo Groq/Cerebras.', 'warn');
+  const forceExternalTarget = shouldForceExternalLessonProviderOnce();
+  if (forceExternalTarget) {
+    const targetLabel = forceExternalTarget === 'external' ? 'Groq/Cerebras' : forceExternalTarget;
+    diagnostics.log(`Modo teste ativo: pulando Gemini e chamando fallback externo ${targetLabel}.`, 'warn');
     const forcedExternalResult = await generateExternalLessonDraft({
       ...options,
       prompt: plannedPrompt,
@@ -123,7 +124,8 @@ export async function generatePlannedLessonDraft(options = {}) {
       level,
       previousLesson,
       forceVariation,
-      reason: 'modo teste forçado pelo usuário',
+      reason: `modo teste forçado pelo usuário${forceExternalTarget !== 'external' ? ` (${forceExternalTarget})` : ''}`,
+      targetProvider: forceExternalTarget === 'external' ? '' : forceExternalTarget,
     });
     if (forcedExternalResult?.status === 'success' && forcedExternalResult.lesson) {
       return attachPlanToResult(forcedExternalResult, plan, planSeed, options);
