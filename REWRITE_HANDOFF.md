@@ -68,43 +68,36 @@ Distribuição planejada:
 
 ## BLOCO ATUAL
 
-### `BLOCO-CARTAS-HOTFIX-AMBIGUIDADE-CONTADOR-1-LAB` — Ambiguidade e contador corrigidos IMPLEMENTADO, aguardando deploy/teste
+### `BLOCO-CARTAS-HOTFIX-COMPLETE-SENTIDO-1-LAB` — Completar frase desambiguado IMPLEMENTADO, aguardando deploy/teste
 
 Contexto:
-- usuário encontrou bugs reais no nível 2 da bolha:
-  1. exercício `Variação de uso` ficava confuso e ambíguo;
-  2. havia frases gramaticalmente erradas como `I use we.` e `I use she.`;
-  3. questões como `Qual frase combina melhor com o significado estudado?` tinham várias alternativas potencialmente corretas;
-  4. contador/progresso passava do total, exibindo `17/16` e `18/16`.
+- usuário encontrou outro caso ambíguo no exercício `Complete a frase`;
+- exemplo: `____ are my friend.` com opções `she`, `I`, `we`, `you`;
+- mesmo quando uma resposta era a esperada pelo card, o enunciado não deixava claro o significado-alvo;
+- para estudo sério, o exercício precisa testar frase + significado, não só uma lacuna gramatical solta.
 
-Arquivos alterados:
+Arquivo alterado:
 - `fluency-clean/src/services/vocabularyPractice.js`
-- `fluency-clean/src/screens/FlashcardsScreen.jsx`
 - `REWRITE_HANDOFF.md`
 
 O que foi implementado:
-- removidos exercícios artificiais de `Variação de uso` do fluxo automático atual;
-- removida geração automática perigosa de frases como `I use we`/`I use she`;
-- `activityExample` foi substituído por `activityFindExample`, com pergunta objetiva:
-  - `Escolha a frase que usa “palavra” corretamente.`;
-- `Chunk natural` agora pergunta pelo bloco pertencente à frase estudada, sem lacunas ambíguas;
-- nível 2 agora mistura tipos seguros: significado, frase com a palavra, chunk, completar frase e listening;
-- nível 3 usa tipos seguros: significado, frase com a palavra, chunk, completar frase, listening e montar frase;
-- contador visual agora usa índice real da atividade/card;
-- progresso visual usa `reviewedForDisplay`, travado no máximo do total;
-- registro salvo limita `reviewedCards` ao total real;
-- tela de conclusão também limita etapas revisadas ao total.
+- `activityComplete()` agora inclui o significado/tradução-alvo no prompt;
+- exemplo novo esperado:
+  - `Complete com a palavra que significa “você”: ____ are my friend.`;
+- instrução alterada para: `Use o significado pedido para escolher a única resposta correta.`;
+- isso reduz ambiguidade quando mais de uma palavra poderia encaixar gramaticalmente.
 
-Commits:
-- `1b7603e8beeb0ac83b9a970998865547afd8b75a` — remove exercícios ambíguos das cartas;
-- `398dc98591c8c2abeb497db263a6b997de627013` — corrige contador da sessão de cartas.
+Commit:
+- `0641a3f6d425489e7131513d9ae0d4154322f883` — desambigua completar frase nas cartas.
 
 Teste recomendado no iPhone:
 1. abrir Cartas > Essenciais A1 > bolha nível 2;
-2. confirmar que não aparece mais `Variação de uso` ambígua;
-3. confirmar que não aparece frase impossível como `I use we` ou `I use she`;
-4. conferir que as perguntas têm uma resposta claramente correta;
-5. concluir a sessão e confirmar que o contador não passa de `16/16`, `18/18` ou `20/20`.
+2. procurar exercícios `Complete a frase`;
+3. confirmar que o prompt mostra o significado-alvo, como `Complete com a palavra que significa “você”`;
+4. confirmar que a resposta fica clara por sentido;
+5. observar se ainda aparece algum caso onde mais de uma opção possa estar correta.
+
+### `BLOCO-CARTAS-HOTFIX-AMBIGUIDADE-CONTADOR-1-LAB` — Ambiguidade e contador corrigidos IMPLEMENTADO
 
 ### `BLOCO-CARTAS-HOTFIX-DESBLOQUEIO-TESTE-1-LAB` — Marcos liberados para teste IMPLEMENTADO
 
@@ -132,23 +125,9 @@ Observação:
 
 ### `BLOCO-CARTAS-TRILHA-1-LAB` — Cartas em trilha estilo Duolingo IMPLEMENTADO
 
-### `BLOCO-LISTENING-COERENCIA-1B-LAB` — Fechamento narrativo do Listening IMPLEMENTADO
-
-### `BLOCO-LISTENING-COERENCIA-1-LAB` — Fonte única da aula Listening IMPLEMENTADO
-
-### `BLOCO-20-LAB` — Certificação por nível IMPLEMENTADO
-
-### `BLOCO-15-LAB` — Banco de erros real IMPLEMENTADO
-
-### `BLOCO-16-LAB` — Histórico real de Speaking IMPLEMENTADO
-
-### `BLOCO-CONFIANÇA-DE-ESTUDO-LAB` — Aula vale estudar + painel compacto IMPLEMENTADO
-
-### `BLOCO-QUALIDADE-POR-ABA-LAB` — Áreas analisadas pelo professor IMPLEMENTADO
-
 ## NOVA ORDEM DE BLOCOS — CARTAS COMO SUBSTITUTO DO DUOLINGO
 
-1. `BLOCO-CARTAS-HOTFIX-AMBIGUIDADE-CONTADOR-1-LAB` — ambiguidade e contador corrigidos. STATUS: implementado, aguardando teste.
+1. `BLOCO-CARTAS-HOTFIX-COMPLETE-SENTIDO-1-LAB` — completar frase desambiguado. STATUS: implementado, aguardando teste.
 2. `BLOCO-CARTAS-CURRICULO-FIXO-8B-LAB` — expansão B1/B2.
 3. `BLOCO-CARTAS-CURRICULO-FIXO-8C-LAB` — C1/C2 + auditoria tripla profunda.
 4. `BLOCO-CARTAS-PREVIEW-9A-LAB` — prévia da bolha com palavras, tradução e referência visual.
@@ -161,11 +140,11 @@ Observação:
 
 ## Pendência técnica importante
 
-- testar deploy do `BLOCO-CARTAS-HOTFIX-AMBIGUIDADE-CONTADOR-1-LAB` no iPhone;
-- confirmar que não há mais perguntas ambíguas ou frases gramaticalmente impossíveis;
-- confirmar que contador não passa do total;
+- testar deploy do `BLOCO-CARTAS-HOTFIX-COMPLETE-SENTIDO-1-LAB` no iPhone;
+- confirmar que `Complete a frase` mostra significado-alvo;
+- confirmar que não há mais perguntas ambíguas na bolha;
 - seguir para `BLOCO-CARTAS-CURRICULO-FIXO-8B-LAB` se estiver ok.
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O bloco atual implementado foi `BLOCO-CARTAS-HOTFIX-AMBIGUIDADE-CONTADOR-1-LAB`: removidos exercícios ambíguos/variações automáticas perigosas das Cartas e corrigido contador que passava do total. Testar no iPhone; se ok, seguir para `BLOCO-CARTAS-CURRICULO-FIXO-8B-LAB`."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O bloco atual implementado foi `BLOCO-CARTAS-HOTFIX-COMPLETE-SENTIDO-1-LAB`: `activityComplete()` agora mostra o significado-alvo no prompt para evitar ambiguidade, por exemplo `Complete com a palavra que significa “você”`. Testar no iPhone; se ok, seguir para `BLOCO-CARTAS-CURRICULO-FIXO-8B-LAB`."
