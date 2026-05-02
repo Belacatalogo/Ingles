@@ -40,7 +40,6 @@ const connectorBreaks = [
 ];
 
 const englishSignals = /\b(I|you|he|she|it|we|they|am|are|is|was|were|have|has|had|do|does|did|can|could|will|would|should|must|go|goes|went|work|works|study|studies|live|lives|like|likes|want|wants|need|needs|make|makes|take|takes|there|this|that|these|those|because|although|if|when|where|what|why|how)\b/i;
-const portugueseSignals = /\b(eu|você|voce|ele|ela|nós|nos|eles|elas|meu|minha|significa|quer dizer|tradução|traducao|porque|quando|onde|como|exemplo|frase)\b/i;
 
 function normalizeVisualSpacing(value) {
   const connectorPattern = connectorBreaks.join('|');
@@ -180,11 +179,11 @@ function collectProfessorExamples(content) {
 
   candidates.forEach((candidate) => {
     const parsed = parseExampleCard(candidate);
-    const isExample = Boolean(parsed.english) || /\b(Por exemplo|Outro exemplo|Veja|Observe)\b/i.test(candidate);
+    const isExample = Boolean(headerSplit) || Boolean(parsed.english) || /\b(Por exemplo|Outro exemplo|Veja|Observe)\b/i.test(candidate);
 
     if (isExample) {
       examples.push(parsed);
-    } else if (!headerSplit) {
+    } else {
       explanation.push(...splitParagraphs(candidate));
     }
   });
