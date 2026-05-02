@@ -15,7 +15,88 @@ Branch estável protegida: `rewrite-fluency-clean`
 - Não mexer no backend Azure privado.
 - Manter tudo modular em `fluency-clean/src/`, `fluency-clean/public/` ou arquivos reais de configuração.
 
-## ESTADO ATUAL — PREVIEW TEMPORÁRIO DE TIPOS DE AULA
+## ESTADO ATUAL — HOTFIX LISTENING AUDIO + PRACTICE DEPTH
+
+### `HOTFIX-LISTENING-AUDIO-PRACTICE-DEPTH-LAB` — IMPLEMENTADO
+
+Motivação:
+- No iPhone, o áudio principal da aula Listening tocou até perto da metade e depois parou.
+- Diagnóstico mostrou bloqueio/limitação da plataforma/navegador durante continuação de TTS segmentado.
+- Usuário pediu análise profunda de melhorias da aba Listening, incluindo prática profunda mais focada em escuta, aleatória, mas sem avançar demais em relação ao progresso.
+
+Arquivos alterados:
+- `fluency-clean/src/services/audioPlayback.js`
+- `fluency-clean/src/services/tts.js`
+- `fluency-clean/src/practice/PracticePlanAdapter.js`
+- `fluency-clean/src/lessons/ListeningLessonClean.jsx`
+- `fluency-clean/src/styles/listening-ux-hotfix.css`
+- `REWRITE_HANDOFF.md`
+
+O que foi feito — áudio:
+- `audioPlayback.js` agora detecta ambiente iOS/iPadOS.
+- No iPhone, o limite para segmentar áudio foi reduzido.
+- Segmentos no iPhone ficam mais curtos para diminuir chance de bloqueio na transição.
+- O intervalo entre segmentos no iOS foi reduzido.
+- Se o iPhone bloquear a continuação automática após alguns trechos, o resultado volta como `partial`, com mensagem mais clara para o usuário.
+- `tts.js` passou a aceitar `waitUntilEnded`.
+- Quando a fila segmentada usa fallback do navegador, ela agora aguarda o fim real do TTS antes de passar para o próximo segmento, em vez de considerar sucesso logo no início.
+
+O que foi feito — Listening UI:
+- Adicionado controle manual por trecho dentro da aula Listening:
+  - `Ouvir trecho atual`;
+  - `Próximo trecho`.
+- Esse controle é especialmente útil no iPhone quando a reprodução automática de múltiplos trechos é bloqueada.
+- A mensagem de erro foi melhorada para orientar o usuário a usar o controle por trecho.
+- Classe adicionada: `listening-audio-stability-v2`.
+
+O que foi feito — prática profunda:
+- `PracticePlanAdapter.js` agora trata Listening de forma especial.
+- Prática de Listening passa a priorizar:
+  1. `listenChoice`;
+  2. `dictation`;
+  3. `speak`/shadowing;
+  4. `wordBank`;
+  5. `fillBlank`;
+  6. escolha/compreensão;
+  7. escrita curta/correção só quando fizer sentido.
+- Para A1, a prática fica mais segura:
+  - evita `correction` e escrita longa;
+  - limita dictation a frases curtas;
+  - evita perguntas muito acima do nível.
+- A ordem dos exercícios de Listening fica levemente aleatória por dia/lesson id, mas preservando prioridade pedagógica de escuta.
+- O total ideal de questões em Listening foi reduzido por nível para não passar muito à frente do progresso.
+
+Escopo preservado:
+- Não mexeu em `main`.
+- Não mexeu em `rewrite-fluency-clean`.
+- Não mexeu em `bundle.js`.
+- Não mexeu no backend Azure privado.
+- Não mexeu em geração, prompts, modelos, chaves ou fallback de aula.
+- Não mexeu na Grammar aprovada.
+
+Commits:
+- `4557442d66eb34680e0e9f673667c39e40b6a873` — adapta prática de Listening ao progresso.
+- `ebeeb4f358a141e2f4b3a6f4778f6b2082ab1d9f` — estabiliza áudio segmentado no iPhone.
+- `0748fc38a27073cd2d39a5b5dd287c341303a86f` — aguarda fim real do TTS do navegador.
+- `1d8073863939cca89bcb43fc94551d84dff74a94` — adiciona controle manual de trechos Listening.
+- `93c129545e7ed0bf68892bb9f45cf38a156888aa` — estiliza controle por trecho Listening.
+
+Próximo teste recomendado no iPhone:
+1. Aguardar o deploy da branch `rewrite-fluency-clean-lab`.
+2. Abrir `Aula` > `Testar Listening`.
+3. Tocar o áudio principal.
+4. Se o iPhone bloquear a continuação, verificar se aparece orientação para usar controle por trecho.
+5. Testar `Ouvir trecho atual` e `Próximo trecho`.
+6. Abrir `Começar prática` e conferir se os exercícios são mais focados em escuta.
+7. Confirmar que a prática não está difícil demais para A1.
+8. Testar `Shadowing real`.
+9. Testar `Salvar rascunho` e `Concluir Listening`.
+
+Próximo bloco provável:
+- Se estiver OK: `BLOCO-LISTENING-APPROVAL-LAB`.
+- Se o áudio ainda for bloqueado no iPhone: `HOTFIX-LISTENING-IOS-MANUAL-AUDIO-ONLY-LAB`, deixando o modo manual por trecho como caminho principal no iOS e o áudio longo como opcional.
+
+## ESTADO ANTERIOR — PREVIEW TEMPORÁRIO DE TIPOS DE AULA
 
 ### `BLOCO-TEMP-LESSON-PREVIEW-SWITCH-LAB` — IMPLEMENTADO
 
@@ -40,52 +121,11 @@ O que foi feito:
   - `Testar Listening`;
   - `Testar Reading`;
   - `Abrir Speaking`.
-- `Testar Listening` troca apenas a renderização local da aba Aula para uma aula sample Listening.
-- `Testar Reading` troca apenas a renderização local da aba Aula para uma aula sample Reading.
-- `Abrir Speaking` navega para a aba Speaking real.
-- `Aula real` volta para a aula salva/gerada real.
-- O modo preview mostra chip `Preview temporário` e card `LAB temporário`, deixando claro que não substitui a aula real.
-- Criado CSS próprio `lesson-preview-lab.css` e importado em `main.jsx`.
-
-Escopo preservado:
-- Não mexeu em `main`.
-- Não mexeu em `rewrite-fluency-clean`.
-- Não mexeu em `bundle.js`.
-- Não mexeu no backend Azure privado.
-- Não mexeu em geração, prompts, modelos, chaves ou fallback.
-- Não mexeu na Grammar aprovada.
-- Não substituiu aula real salva.
-
-Commits:
-- `3f2b91b9a8316beefe0cc0e9ff97a88bb95848de` — cria amostras temporárias de aulas para teste.
-- `0e5bd0e2f7aee744aa533ed8006c95880e9e6a6e` — adiciona seletor temporário de preview de aulas.
-- `7e31734b02c2267d2f55dcd8dd8fd650abee4185` — cria estilo do seletor temporário de aulas.
-- `2c9b791fc5c9947b363db5bfa48f131c9b4d7c4b` — importa estilo do preview temporário.
-
-Próximo teste recomendado no iPhone:
-1. Aguardar deploy da branch `rewrite-fluency-clean-lab`.
-2. Abrir aba Aula.
-3. Conferir se aparece o card `Teste temporário de abas`.
-4. Tocar `Testar Listening` e validar a tela Listening recém-reestruturada.
-5. Tocar `Testar Reading` e validar a tela Reading.
-6. Tocar `Abrir Speaking` e validar a aba Speaking real.
-7. Tocar `Aula real` e confirmar que volta para a aula gerada/salva real.
-8. Confirmar que o preview não substitui a aula real.
-
-Próximo bloco provável:
-- Se o preview estiver OK, usar esse seletor para testar Listening e registrar `BLOCO-LISTENING-APPROVAL-LAB` ou aplicar hotfix baseado em print.
+- O preview usa samples locais e não substitui a aula real.
 
 ## ESTADO ANTERIOR — BLOCO LISTENING RENDER REVIEW
 
 ### `BLOCO-LISTENING-RENDER-REVIEW-LAB` — IMPLEMENTADO
-
-Objetivo executado:
-- Fazer uma análise estrutural da aula Listening e reorganizar a tela para o fluxo correto no iPhone.
-- Manter a escuta cega como primeiro passo.
-- Evitar que a transcrição fique aberta antes da escuta.
-- Destacar prática em tela cheia como etapa própria.
-- Melhorar acesso a áudio, shadowing, salvar e concluir.
-- Não mexer no backend Azure privado, geração, modelo, prompts, chaves ou `bundle.js`.
 
 Estrutura pedagógica definida para Listening:
 1. Ouvir sem ler.
@@ -112,12 +152,6 @@ Status:
 - Usuário confirmou: `tudo ok`.
 - A tela Grammar fica considerada aprovada visualmente na branch `rewrite-fluency-clean-lab`.
 
-Base aprovada:
-- Parser seguro modular em `fluency-clean/src/lessons/grammar/grammarRenderParser.js`.
-- `GrammarLesson.jsx` conectado ao parser seguro.
-- Cards de exemplos com fallback seguro.
-- Render report lateral funcionando.
-
 ## NÃO FAZER AGORA
 
 - Não implementar Cirurgia 3 ainda.
@@ -131,4 +165,4 @@ Base aprovada:
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. Foi implementado `BLOCO-TEMP-LESSON-PREVIEW-SWITCH-LAB`: na aba Aula há um seletor temporário com `Aula real`, `Testar Listening`, `Testar Reading` e `Abrir Speaking`. O preview usa samples locais e não substitui a aula real. Não mexer em `main`, `rewrite-fluency-clean`, `bundle.js`, backend Azure privado, Grammar aprovada, geração, prompts, modelos ou chaves. Próximo passo: testar no iPhone o seletor e usar `Testar Listening` para validar o bloco Listening recém-reestruturado."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. Foi implementado `HOTFIX-LISTENING-AUDIO-PRACTICE-DEPTH-LAB`: áudio segmentado foi estabilizado para iPhone, TTS fallback agora aguarda fim real, Listening ganhou controle manual por trecho, e a prática profunda de Listening foi adaptada para ser mais focada em escuta, aleatória por dia, e segura para o nível A1. Não mexer em `main`, `rewrite-fluency-clean`, `bundle.js`, backend Azure privado, Grammar aprovada, geração, prompts, modelos ou chaves. Próximo passo: testar no iPhone `Testar Listening`, áudio principal, controle por trecho e prática fullscreen."
