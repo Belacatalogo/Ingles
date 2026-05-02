@@ -1,31 +1,37 @@
-import { BookOpen, Brain, ChevronRight, Flame, LineChart, Mic, Quote, Sparkles, Target, Volume2, Zap } from 'lucide-react';
+import { BookOpen, Brain, ChevronRight, Flame, LineChart, Map, Mic, Quote, Sparkles, Target, Volume2, Zap } from 'lucide-react';
 import { LessonGeneratorPanel } from '../components/lesson/LessonGeneratorPanel.jsx';
 import { getCurrentLesson } from '../services/lessonStore.js';
 import { getLessonStats } from '../services/lessonStats.js';
-import { getLessonCompletions, getProgressSummary, hasFlashcardSessionToday, hasSpeakingSessionToday } from '../services/progressStore.js';
+import { getFlashcardSessions, getLessonCompletions, getProgressSummary, hasFlashcardSessionToday, hasSpeakingSessionToday, localDateKey } from '../services/progressStore.js';
 
 const baseTasks = [
   { id: 'lesson', label: 'Aula de hoje', status: 'Aula guiada pela IA', icon: BookOpen, target: 'lesson', color: 'blue' },
   { id: 'cards', label: 'Revisar flashcards', status: 'Aguardando cards reais', icon: Brain, target: 'cards', color: 'violet' },
+  { id: 'vocab-bubble', label: 'Concluir 1 bolha da trilha', status: 'Vocabulário em prática guiada', icon: Map, target: 'cards', color: 'blue' },
   { id: 'speaking', label: 'Conversação', status: 'Speaking guiado com IA', time: '~8 min', icon: Mic, target: 'speaking', color: 'teal' },
 ];
 
 function getGreeting() { const hour = new Date().getHours(); if (hour < 12) return 'Bom dia'; if (hour < 18) return 'Boa tarde'; return 'Boa noite'; }
 function getLessonTypeStatus(lesson) { const labels = { reading: 'Reading gerada pela IA', grammar: 'Grammar gerada pela IA', listening: 'Listening gerada pela IA', writing: 'Writing gerada pela IA' }; return labels[lesson?.type] || 'Aula guiada pela IA'; }
+function getItemLocalDate(value) { return localDateKey(value?.completedAt || value?.createdAt || value); }
 function getWeekDaysFromCompletions(completions) {
   const labels = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
   const today = new Date();
-  const start = new Date(today);
-  start.setDate(today.getDate() - 4);
+  const start = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  start.setDate(start.getDate() - 4);
   return Array.from({ length: 5 }, (_, index) => {
     const date = new Date(start);
     date.setDate(start.getDate() + index);
-    const key = date.toISOString().slice(0, 10);
-    const count = completions.filter((item) => String(item.completedAt || '').slice(0, 10) === key).length;
-    return { day: labels[date.getDay()], value: Math.min(100, count * 50), label: count ? `${count} aula${count > 1 ? 's' : ''}` : 'sem registro', active: key === today.toISOString().slice(0, 10) };
+    const key = localDateKey(date);
+    const count = completions.filter((item) => getItemLocalDate(item) === key).length;
+    return { day: labels[date.getDay()], value: Math.min(100, count * 50), label: count ? `${count} aula${count > 1 ? 's' : ''}` : 'sem registro', active: key === localDateKey(today) };
   });
 }
-function getTodayLessonCompleted(completions) { const today = new Date().toISOString().slice(0, 10); return completions.some((item) => String(item.completedAt || '').slice(0, 10) === today); }
+function getTodayLessonCompleted(completions) { const today = localDateKey(); return completions.some((item) => getItemLocalDate(item) === today); }
+function getTodayVocabularyBubbleCompleted() {
+  const today = localDateKey();
+  return getFlashcardSessions().some((session) => String(session.lessonId || '').startsWith('path-') && getItemLocalDate(session) === today);
+}
 
 export function TodayScreen({ onLessonGenerated, onNavigate }) {
   const progress = getProgressSummary();
@@ -35,8 +41,9 @@ export function TodayScreen({ onLessonGenerated, onNavigate }) {
   const weekDays = getWeekDaysFromCompletions(completions);
   const lessonDoneToday = getTodayLessonCompleted(completions);
   const cardsDoneToday = hasFlashcardSessionToday();
+  const vocabBubbleDoneToday = getTodayVocabularyBubbleCompleted();
   const speakingDoneToday = hasSpeakingSessionToday();
-  const completed = [lessonDoneToday, cardsDoneToday, speakingDoneToday].filter(Boolean).length;
+  const completed = [lessonDoneToday, cardsDoneToday, vocabBubbleDoneToday, speakingDoneToday].filter(Boolean).length;
   const totalTasks = baseTasks.length;
   const percent = Math.max(0, Math.min(100, Math.round((completed / totalTasks) * 100)));
   const streak = progress.streakDays || 0;
@@ -45,6 +52,7 @@ export function TodayScreen({ onLessonGenerated, onNavigate }) {
   const tasks = baseTasks.map((task) => {
     if (task.id === 'lesson') return { ...task, status: lessonDoneToday ? 'Aula concluída hoje' : currentLesson ? getLessonTypeStatus(currentLesson) : 'Nenhuma aula gerada ainda', time: currentLesson ? `~${lessonStats.minutes} min` : '' };
     if (task.id === 'cards') return { ...task, status: cardsDoneToday ? 'Sessão real concluída hoje' : cardsAvailable ? `${cardsAvailable} cards da aula atual` : 'Nenhum card real disponível ainda', time: cardsDoneToday ? 'feito' : cardsAvailable ? '~5 min' : '' };
+    if (task.id === 'vocab-bubble') return { ...task, status: vocabBubbleDoneToday ? 'Bolha da trilha concluída hoje' : 'Complete uma bolha para fixar vocabulário', time: vocabBubbleDoneToday ? 'feito' : '~8 min' };
     if (task.id === 'speaking') return { ...task, status: speakingDoneToday ? 'Conversação real concluída hoje' : 'Speaking A1 com Azure', time: speakingDoneToday ? 'feito' : '~5 falas' };
     return task;
   });
@@ -54,7 +62,7 @@ export function TodayScreen({ onLessonGenerated, onNavigate }) {
       <section className="today-hero-card">
         <div className="today-hero-copy"><span>{getGreeting()}, Luis</span><h1><b>{completed || 0} de {totalTasks}</b> tarefas</h1><p>{completed >= totalTasks ? 'Dia completo. Excelente consistência.' : 'Continue para fechar sua rotina de inglês.'}</p></div>
         <div className="today-ring" style={{ '--today-progress': `${percent}%` }}><strong>{percent}%</strong></div>
-        <div className="today-hero-actions"><button className="today-primary-action" type="button" onClick={() => onNavigate?.(completed >= 2 ? 'speaking' : 'lesson')}><Zap size={16} /> Continuar agora</button><button className="today-secondary-action" type="button" onClick={() => onNavigate?.('progress')} aria-label="Ver progresso"><LineChart size={16} /></button></div>
+        <div className="today-hero-actions"><button className="today-primary-action" type="button" onClick={() => onNavigate?.(lessonDoneToday ? 'cards' : 'lesson')}><Zap size={16} /> Continuar agora</button><button className="today-secondary-action" type="button" onClick={() => onNavigate?.('progress')} aria-label="Ver progresso"><LineChart size={16} /></button></div>
       </section>
       <div className="today-summary-grid">
         <article className="today-summary-card"><div className="today-card-heading"><span>Ofensiva</span><Flame size={15} /></div><strong>{streak} <small>dias</small></strong><div className="today-streak-days" aria-hidden="true">{['S', 'T', 'Q', 'Q', 'S', 'S', 'D'].map((day, index) => <div key={`${day}-${index}`}><i className={index < Math.min(streak, 7) ? 'active' : ''} /><span>{day}</span></div>)}</div></article>
