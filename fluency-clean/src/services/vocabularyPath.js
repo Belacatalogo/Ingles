@@ -3,6 +3,7 @@ import { getVocabularyDeckCards, getVocabularyDecks } from './vocabularyDecks.js
 const STORAGE_KEY = 'fluency.vocabularyPath.v1';
 const BUBBLE_SIZE = 6;
 const LEVEL_CARD_STEPS = [4, 5, 6];
+const LAB_UNLOCK_LEVEL_MARKERS = new Set(['A1', 'A1-A2', 'A2']);
 
 function safeJsonParse(value, fallback) {
   try { return value ? JSON.parse(value) : fallback; } catch { return fallback; }
@@ -33,6 +34,11 @@ function getBubbleLevel(progress, bubbleIndex) {
   return Number(progress.bubbles?.[bubbleIndex] || 0);
 }
 
+function isFirstDeckForLevel(decks, deck, index) {
+  if (!LAB_UNLOCK_LEVEL_MARKERS.has(deck.level)) return false;
+  return decks.findIndex((item) => item.level === deck.level) === index;
+}
+
 export function getVocabularyPathState() {
   const decks = getVocabularyDecks();
   const state = readState();
@@ -43,13 +49,14 @@ export function getVocabularyPathState() {
       const progress = getDeckProgress(state, deck.id);
       const previousDeck = decks[index - 1];
       const previousComplete = index === 0 || getDeckProgress(state, previousDeck?.id).completed;
+      const labMarkerUnlocked = isFirstDeckForLevel(decks, deck, index);
       const bubbles = chunkCards(getVocabularyDeckCards(deck.id));
       const completedBubbles = bubbles.filter((_, bubbleIndex) => getBubbleLevel(progress, bubbleIndex) >= 3).length;
       const currentBubble = Math.min(completedBubbles, Math.max(0, bubbles.length - 1));
       return {
         ...deck,
         order: index + 1,
-        unlocked: previousComplete,
+        unlocked: previousComplete || labMarkerUnlocked,
         completed: Boolean(progress.completed),
         completedBubbles,
         totalBubbles: bubbles.length,
