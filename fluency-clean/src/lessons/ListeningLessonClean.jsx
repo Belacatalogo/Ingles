@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { BookOpen, CheckCircle2, ChevronDown, ChevronUp, Headphones, Pause, Play, Repeat2, Save, ShieldCheck, Target, Volume2 } from 'lucide-react';
+import { BookOpen, CheckCircle2, ChevronDown, ChevronUp, Eye, Headphones, Pause, Play, Repeat2, Save, ShieldCheck, Target, Volume2 } from 'lucide-react';
 import { playLearningAudio, stopLearningAudio } from '../services/audioPlayback.js';
 import { parseDialogueTurns, playMultiSpeakerDialogue, stopMultiSpeakerAudio } from '../services/multiSpeakerAudio.js';
 import { diagnostics } from '../services/diagnostics.js';
@@ -93,6 +93,7 @@ export function ListeningLessonClean({ lesson }) {
   const [shadowingIndex, setShadowingIndex] = useState(0);
   const [listenSegmentIndex, setListenSegmentIndex] = useState(0);
   const [hasListened, setHasListened] = useState(false);
+  const [showSegmentText, setShowSegmentText] = useState(false);
   const [openSections, setOpenSections] = useState({ guide: true, transcript: false, concept: false, vocab: false, shadowing: true, answer: false });
   const refs = { guide: useRef(null), transcript: useRef(null), concept: useRef(null), vocab: useRef(null), shadowing: useRef(null), answer: useRef(null) };
 
@@ -164,12 +165,12 @@ export function ListeningLessonClean({ lesson }) {
   }
 
   function handleStop() { stopLearningAudio(); stopMultiSpeakerAudio(); setAudioState('idle'); setMessage('Áudio interrompido.'); }
-  function nextListenSegment() { setListenSegmentIndex((current) => transcript.length ? (current + 1) % transcript.length : 0); setMessage('Trecho atualizado. Toque em “Ouvir trecho atual”.'); }
+  function nextListenSegment() { setListenSegmentIndex((current) => transcript.length ? (current + 1) % transcript.length : 0); setShowSegmentText(false); setMessage('Trecho atualizado. Toque em “Ouvir trecho atual”.'); }
   function nextShadowingLine() { setShadowingIndex((current) => shadowingLines.length ? (current + 1) % shadowingLines.length : 0); setMessage('Frase de shadowing atualizada.'); }
   function handleSave() { saveLessonDraft({ lesson, answer }); const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); setSavedAt(time); setMessage(`Rascunho salvo às ${time}.`); diagnostics.log(`Listening: rascunho salvo para ${lesson?.title || 'aula atual'}.`, 'success'); }
   function handleComplete() { saveLessonDraft({ lesson, answer }); const result = completeLesson({ lesson, answers: { summary: answer, transcriptLines: transcript.length, shadowing: { currentPhrase: currentShadowingLine, totalPhrases: shadowingLines.length }, renderReport, updatedAt: new Date().toISOString() }, writtenAnswer: answer }); const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); setCompletedAt(time); setMessage(result.alreadyCompleted ? 'Listening já estava concluída. Progresso mantido.' : '+25 XP. Listening concluída e progresso salvo.'); }
 
-  return <article className="pillar-lesson listening-lesson-v1 listening-light-layout listening-render-review-v1 listening-audio-stability-v2 listening-multi-speaker-v1">
+  return <article className="pillar-lesson listening-lesson-v1 listening-light-layout listening-render-review-v1 listening-audio-stability-v2 listening-multi-speaker-v1 listening-blind-first-v2">
     <div ref={refs.guide}><section className="pillar-card listening-audio-card listening-focus-card listening-hero-card" id="lesson-guide">
       <div className="pillar-card-title"><Headphones size={17} /> Escuta guiada</div>
       <h2>{lesson?.title || 'Listening — A morning routine'}</h2>
@@ -178,7 +179,7 @@ export function ListeningLessonClean({ lesson }) {
       <div className="listening-flow-map" aria-label="Estrutura da aula Listening">{flow.map(([label, detail]) => <span key={label}><b>{label}</b><small>{detail}</small></span>)}</div>
       <div className="listening-player listening-primary-player"><button type="button" onClick={handleListen} disabled={audioState === 'loading'}><Play size={20} /></button><div><span /><span /><span /><span /><span /><span /></div><button type="button" onClick={handleStop}><Pause size={18} /></button></div>
       <small>{message}</small>
-      <div className="listening-segment-card"><span>{dialogue.isDialogue ? `Controle por fala · ${currentSegmentSpeaker}` : 'Controle por trecho · útil no iPhone'}</span><p>{currentSegment}</p><div><button type="button" onClick={handleListenSegment} disabled={audioState === 'loading'}><Play size={15} /> Ouvir trecho atual</button><button type="button" onClick={nextListenSegment}><Repeat2 size={15} /> Próximo trecho</button></div></div>
+      <div className="listening-segment-card listening-blind-segment-card"><span>{dialogue.isDialogue ? `Controle por fala · ${currentSegmentSpeaker}` : 'Controle por trecho · útil no iPhone'}</span>{showSegmentText ? <p>{currentSegment}</p> : <p className="listening-hidden-line">Texto oculto para manter a primeira escuta sem leitura.</p>}<div><button type="button" onClick={handleListenSegment} disabled={audioState === 'loading'}><Play size={15} /> Ouvir trecho atual</button><button type="button" onClick={nextListenSegment}><Repeat2 size={15} /> Próximo trecho</button><button type="button" onClick={() => setShowSegmentText((value) => !value)}><Eye size={15} /> {showSegmentText ? 'Ocultar texto' : 'Mostrar texto'}</button></div></div>
       <div className="listening-quick-actions"><button type="button" onClick={() => openSection('transcript')}><Volume2 size={15} /> Conferir texto</button><button type="button" onClick={goToPractice}><Target size={15} /> Começar prática</button><button type="button" onClick={() => openSection('answer')}><CheckCircle2 size={15} /> Finalizar</button></div>
     </section></div>
 
