@@ -38,7 +38,10 @@ const connectorBreaks = [
   'Agora',
 ];
 
-const englishSignals = /\b(I|you|he|she|it|we|they|am|are|is|was|were|have|has|had|do|does|did|can|could|will|would|should|must|student|doctor|brazilian|happy|car|book|home|lunch)\b/i;
+const englishSignals = /\b(I|you|he|she|it|we|they|am|are|is|was|were|have|has|had|do|does|did|can|could|will|would|should|must|student|doctor|brazilian|happy|car|book|home|lunch|ready|kind|friends|table|class|Brazil|from|here|good|new)\b/i;
+const strictEnglishPattern = /\b(?:I\s+am|I'm|You\s+are|You're|He\s+is|He's|She\s+is|She's|It\s+is|It's|We\s+are|We're|They\s+are|They're|Am\s+I|Is\s+(?:he|she|it|you|we|they|the|this|that|there|[A-Z][a-z]+)|Are\s+(?:you|we|they|there|the|these|those|[A-Z][a-z]+)|The\s+\w+\s+is|This\s+\w+\s+is|That\s+\w+\s+is)\b/i;
+const portugueseMixSignals = /\b(correto|pois|combina|com|para|fixar|significa|exemplo|outro|cada|desses|demonstra|regra|portugu[eê]s|verbo|muda|termina[cç][aã]o|forma|falantes|brasileiros|pergunta|frase|aqui|dizendo|como|lembre-se|garante|quest[aã]o|classe|alunos|esquecer|sempre|antes|sujeito|pode|ser|substitu[ií]do|pronto|mesa|livro|gentil|todos|novo|estudante|ela|ele|eles|elas|n[oó]s|voc[eê]|isso|essa|esses|essas|uma|um|o|a|os|as)\b/i;
+const shortCuePattern = /^(?:para fixar|exemplo|outro exemplo|frase|modelo)\s*:?$/i;
 const connectorPatternText = connectorBreaks.join('|');
 const exampleHeaderPattern = /\b(Exemplos? do professor|Exemplos? guiados|Exemplos?)\s*:?\s*/i;
 
@@ -58,6 +61,10 @@ function normalizeVisualSpacing(value) {
 
 function cleanText(value) {
   return normalizeVisualSpacing(value);
+}
+
+function stripQuotes(value) {
+  return cleanText(value).replace(/^["'“”]+|["'“”]+$/g, '').trim();
 }
 
 function splitSentences(text) {
@@ -90,11 +97,13 @@ function splitNumberedList(text) {
 }
 
 function looksLikeEnglish(text) {
-  const value = cleanText(text);
+  const value = stripQuotes(text);
   if (!value) return false;
+  const words = value.split(/\s+/).filter(Boolean);
   const hasEnglishSignal = englishSignals.test(value);
   const hasPortugueseAccent = /[áàâãéêíóôõúç]/i.test(value);
-  return hasEnglishSignal && !hasPortugueseAccent;
+  const hasPortugueseMix = portugueseMixSignals.test(value);
+  return words.length >= 2 && value.length <= 150 && hasEnglishSignal && !hasPortugueseAccent && !hasPortugueseMix && strictEnglishPattern.test(value);
 }
 
 function splitByExampleHeader(text) {
@@ -118,40 +127,136 @@ function splitExampleCandidates(text) {
     .filter(Boolean);
 }
 
+function splitCueFromEnglish(text) {
+  const clean = cleanText(text).replace(/^[,.;:\s]+/, '').trim();
+  const colonMatch = clean.match(/^([^:]{2,42}:)\s*(.{2,160})$/);
+  if (!colonMatch) return null;
+
+  const before = cleanText(colonMatch[1]).replace(/:$/, '').trim();
+  const after = stripQuotes(colonMatch[2]);
+  if (!looksLikeEnglish(after)) return null;
+
+  return {
+    english: after,
+    before: shortCuePattern.test(before) ? '' : before,
+    after: '',
+  };
+}
+
+function splitParentheticalEnglish(text) {
+  const clean = cleanText(text).replace(/^[,.;:\s]+/, '').trim();
+  const parenthetical = clean.match(/^([^(]{2,160}?)\s*\(([^)]{2,160})\)\s*(.*)$/i);
+
+  if (!parenthetical) return null;
+  const english = stripQuotes(parenthetical[1]);
+  if (!looksLikeEnglish(english)) return null;
+
+  return {
+    english,
+    translation: cleanText(parenthetical[2]),
+    before: '',
+    after: cleanText(parenthetical[3]).replace(/^[,.;:\s]+/, '').trim(),
+  };
+}
+
+function splitQuotedEnglish(text) {
+  const clean = cleanText(text).replace(/^[,.;:\s]+/, '').trim();
+  const quoteMatches = [...clean.matchAll(/["'“”]([^"'“”]{2,150})["'“”]/g)];
+  const match = quoteMatches.find((item) => looksLikeEnglish(item[1]));
+  if (!match || typeof match.index !== 'number') return null;
+
+  return {
+    english: stripQuotes(match[1]),
+    before: cleanText(clean.slice(0, match.index)).replace(/^[,.;:\s]+|[,.;:\s]+$/g, '').trim(),
+    after: cleanText(clean.slice(match.index + match[0].length)).replace(/^[,.;:\s]+/, '').trim(),
+  };
+}
+
+function splitDirectEnglish(text) {
+  const clean = stripQuotes(text).replace(/^[,.;:\s]+/, '').trim();
+  if (!looksLikeEnglish(clean)) return null;
+  return { english: clean, before: '', after: '' };
+}
+
 function splitEnglishLead(text) {
   const clean = cleanText(text).replace(/^[,.;:\s]+/, '').trim();
-  const parenthetical = clean.match(/^([^()]{2,90}?\b(?:am|are|is|was|were|have|has|had|do|does|did|can|will|would|should|must)\b[^()]{0,70}?)\s*\(([^)]{2,120})\)\s*(.*)$/i);
+  const result = splitParentheticalEnglish(clean) || splitCueFromEnglish(clean) || splitDirectEnglish(clean) || splitQuotedEnglish(clean);
 
-  if (parenthetical && looksLikeEnglish(parenthetical[1])) {
+  if (!result) {
+    return { english: '', translation: '', rest: clean };
+  }
+
+  const translationResult = extractTranslation(result.after || '');
+  const restParts = [result.before, translationResult.rest]
+    .map((part) => cleanText(part).replace(/^[,.;:\s]+|[,.;:\s]+$/g, '').trim())
+    .filter(Boolean)
+    .filter((part) => !shortCuePattern.test(part));
+
+  return {
+    english: result.english,
+    translation: result.translation || translationResult.translation,
+    rest: restParts.join(' '),
+  };
+}
+
+function extractTranslation(text) {
+  const clean = cleanText(text).replace(/^[,.;:\s]+/, '').trim();
+  if (!clean) return { translation: '', rest: '' };
+
+  const meaningMatch = clean.match(/^(?:significa|quer dizer|traduzindo)\s*["'“”]?([^"'“”]+?[.!?]?)["'“”]?\s*(.*)$/i);
+  if (meaningMatch && looksLikePortugueseTranslation(meaningMatch[1])) {
     return {
-      english: cleanText(parenthetical[1].replace(/[“”"']/g, '')).replace(/^[,.;:\s]+/, '').trim(),
-      translation: cleanText(parenthetical[2]),
-      rest: cleanText(parenthetical[3]).replace(/^[,.;:\s]+/, '').trim(),
+      translation: cleanText(meaningMatch[1]),
+      rest: cleanText(meaningMatch[2]),
     };
   }
 
-  const quoted = clean.match(/^['“”"]([^'“”"]{2,90})['“”"]\s*(.*)$/);
-  if (quoted && looksLikeEnglish(quoted[1])) {
+  const sentences = splitSentences(clean);
+  if (sentences.length && looksLikePortugueseTranslation(sentences[0])) {
     return {
-      english: cleanText(quoted[1]),
-      translation: '',
-      rest: cleanText(quoted[2]).replace(/^[,.;:\s]+/, '').trim(),
+      translation: stripQuotes(sentences[0]),
+      rest: cleanText(sentences.slice(1).join(' ')),
     };
   }
 
-  return { english: '', translation: '', rest: clean };
+  return { translation: '', rest: clean };
+}
+
+function looksLikePortugueseTranslation(text) {
+  const value = stripQuotes(text);
+  if (!value || looksLikeEnglish(value)) return false;
+  if (/^(correto|pois|aqui|cada|em portugu[eê]s|o erro|lembre-se|para perguntar)\b/i.test(value)) return false;
+  return /[áàâãéêíóôõúç]/i.test(value) || /^(Eu|Ele|Ela|Nós|Nos|Eles|Elas|Você|Vocês|O|A|Os|As)\b/.test(value);
 }
 
 function parseExampleCard(rawExample) {
   const text = cleanText(rawExample).replace(/^[,.;:\s]+/, '').trim();
-  const { english, translation, rest } = splitEnglishLead(text);
+  const sentences = splitSentences(text);
+  const fallback = { original: text, english: '', translation: '', explanation: text };
 
-  return {
-    original: text,
-    english,
-    translation,
-    explanation: cleanText(rest || (!english ? text : '')).replace(/^(,|\.|;|:|significa\s*\.?|quer dizer\s*\.?)\s*/i, '').trim(),
-  };
+  for (let index = 0; index < sentences.length; index += 1) {
+    const current = sentences[index];
+    const parsed = splitEnglishLead(current);
+    if (!parsed.english) continue;
+
+    const before = sentences.slice(0, index).join(' ');
+    const afterSource = [parsed.rest, ...sentences.slice(index + 1)].filter(Boolean).join(' ');
+    const translationResult = parsed.translation ? { translation: parsed.translation, rest: afterSource } : extractTranslation(afterSource);
+    const explanation = cleanText([before, translationResult.rest]
+      .filter(Boolean)
+      .join(' '))
+      .replace(/^(,|\.|;|:|significa\s*\.?|quer dizer\s*\.?)\s*/i, '')
+      .trim();
+
+    return {
+      original: text,
+      english: parsed.english,
+      translation: translationResult.translation,
+      explanation,
+    };
+  }
+
+  return fallback;
 }
 
 function collectProfessorExamples(content) {
@@ -161,6 +266,7 @@ function collectProfessorExamples(content) {
   const candidates = splitExampleCandidates(exampleSource);
   const examples = [];
   const explanation = [];
+  const afterExamples = [];
 
   if (headerSplit?.before) {
     explanation.push(...splitParagraphs(headerSplit.before));
@@ -168,13 +274,15 @@ function collectProfessorExamples(content) {
 
   candidates.forEach((candidate) => {
     const parsed = parseExampleCard(candidate);
-    const isExample = Boolean(headerSplit) || Boolean(parsed.english);
+    const isExample = Boolean(parsed.english);
 
     if (isExample) {
       examples.push(parsed);
-    } else {
-      explanation.push(...splitParagraphs(candidate));
+      return;
     }
+
+    const destination = examples.length ? afterExamples : explanation;
+    destination.push(...splitParagraphs(candidate));
   });
 
   if (!headerSplit && !examples.length) {
@@ -188,6 +296,7 @@ function collectProfessorExamples(content) {
       return {
         explanation: sentences.filter((sentence) => !exampleOriginals.has(sentence)),
         examples: detectedExamples,
+        afterExamples: [],
       };
     }
   }
@@ -195,6 +304,7 @@ function collectProfessorExamples(content) {
   return {
     explanation: explanation.length ? explanation : splitParagraphs(explanationSource),
     examples,
+    afterExamples,
   };
 }
 
@@ -221,7 +331,6 @@ function ExampleCard({ example, index }) {
       {example.english ? <strong className="grammar-example-english">{example.english}</strong> : null}
       {example.translation ? <p className="grammar-example-translation">{example.translation}</p> : null}
       {example.explanation ? <p className="grammar-example-explanation">{example.explanation}</p> : null}
-      {!example.english && !example.explanation ? <p className="grammar-example-explanation">{example.original}</p> : null}
     </article>
   );
 }
@@ -241,7 +350,7 @@ function SectionContent({ content }) {
     );
   }
 
-  const { explanation, examples } = collectProfessorExamples(content);
+  const { explanation, examples, afterExamples } = collectProfessorExamples(content);
   return (
     <div className="grammar-deep-content grammar-readable-content">
       {explanation.length ? explanation.map((paragraph, index) => <p key={`${paragraph}-${index}`}>{paragraph}</p>) : <p>{cleanText(content)}</p>}
@@ -253,6 +362,7 @@ function SectionContent({ content }) {
           </div>
         </div>
       ) : null}
+      {afterExamples.length ? afterExamples.map((paragraph, index) => <p key={`after-${paragraph}-${index}`}>{paragraph}</p>) : null}
     </div>
   );
 }
