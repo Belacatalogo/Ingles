@@ -68,49 +68,58 @@ Distribuição planejada:
 
 ## BLOCO ATUAL
 
-### `BLOCO-CARTAS-AUDITORIA-ATIVIDADES-1-LAB` — Auditoria das perguntas geradas IMPLEMENTADO, aguardando deploy/teste
+### `BLOCO-CARTAS-CURRICULO-FIXO-8B-LAB` — Expansão fixa B1/B2 IMPLEMENTADO, aguardando deploy/teste
 
 Contexto:
-- usuário pediu uma análise completa da estrutura de perguntas e respostas;
-- foram encontrados riscos restantes mesmo após remover tipos ruins;
-- o problema principal não é só um tipo específico, mas a falta de uma trava que valide a atividade pronta antes de mostrar ao aluno.
+- usuário pediu seguir para o próximo bloco após auditoria das atividades;
+- o próximo bloco oficial era expansão B1/B2;
+- objetivo é ampliar o banco fixo sem IA e manter conteúdo modular/auditável;
+- não foi prometido concluir os 7.500 itens em um bloco só.
 
-Arquivo alterado:
-- `fluency-clean/src/services/vocabularyPractice.js`
+Arquivos criados:
+- `fluency-clean/src/data/vocabulary/fixedExpansionB1B2.js`
+
+Arquivos alterados:
+- `fluency-clean/src/services/vocabularyDecks.js`
 - `REWRITE_HANDOFF.md`
 
-Análise feita:
-1. Tipos anteriores `Frase com a palavra` e `Chunk natural` eram ruins porque entregavam resposta e já foram removidos.
-2. `repeatToTarget()` pode gerar repetição, mas é aceitável temporariamente para manter 15–20 questões sem reintroduzir tipos ruins.
-3. `Complete a frase` ficou mais seguro porque mostra o significado-alvo.
-4. `Monte a frase` ainda deve ser melhorado depois para tratar tokens usados por ID e não permitir confusão visual.
-5. O banco tem repetições intencionais entre tópicos, mas isso precisa virar revisão marcada no bloco `BLOCO-CARTAS-MIX-5-LAB`.
-
 O que foi implementado:
-- criado `activityLooksSafe()`;
-- criado `includesNormalized()`;
-- `interleaveActivities()` agora filtra atividades inseguras antes de montar a sessão;
-- `repeatToTarget()` também só repete atividades que passam na auditoria;
-- regras atuais da auditoria:
-  - atividade precisa existir;
-  - escolha múltipla precisa ter pelo menos 3 opções;
-  - opções duplicadas são bloqueadas;
-  - a resposta precisa estar entre as opções;
-  - se a resposta aparece literalmente no enunciado principal, a atividade é bloqueada;
-  - em `Complete a frase`, se a resposta aparecer na parte mascarada, a atividade é bloqueada;
-  - em `Listen`, prompt e resposta precisam bater exatamente após normalização;
-- a auditoria impede que tipos futuros voltem a entregar resposta por acidente.
+- criado arquivo modular de expansão B1/B2;
+- adicionados 8 novos tópicos/decks:
+  1. `Trabalho e carreira`;
+  2. `Opiniões e argumentos`;
+  3. `Problemas do dia a dia`;
+  4. `Mídia e tecnologia`;
+  5. `Saúde e estilo de vida`;
+  6. `Educação e aprendizado`;
+  7. `Viagem e cultura`;
+  8. `Meio ambiente e sociedade`;
+- adicionados 192 novos cards fixos B1/B2;
+- banco passou de 504 para 696 palavras/expressões planejadas no app;
+- cada item segue formato `[word, translation, example, chunk]`;
+- exemplos foram mantidos simples, naturais e compatíveis com B1/B2;
+- `vocabularyDecks.js` agora importa `fixedExpansionB1B2Decks`;
+- `deckDefinitions` agora une base + A1/A2 + B1/B2;
+- `getVocabularyBankAudit()` agora retorna `countsByLevel`;
+- duplicatas permitidas na auditoria subiram de 12 para 24, pois algumas repetições são intencionais entre níveis e devem virar revisão no bloco de mix.
+
+Revisões feitas neste bloco:
+1. Revisão estrutural: todos os itens do novo arquivo usam 4 campos obrigatórios.
+2. Revisão de uso: exemplos evitam estruturas muito avançadas para B1/B2 e usam collocations úteis.
+3. Revisão de integração: expansão entra por import modular, sem `bundle.js`, sem DOM injection e sem HTML remendado.
 
 Commits:
-- `b69c81c8168ec95d86c120b41fd63f1e5bcd6288` — remove tipos que entregavam resposta nas cartas;
-- `fe010a0fb36baa775718a6740fa4c104c6ccec8f` — adiciona auditoria das atividades de cartas.
+- `2409c28b52b461a1708be8c9904c77180946757a` — adiciona expansão fixa B1 B2 de vocabulário;
+- `9cef29fcc5ffff5f5b8f181a8992adaba07b2eed` — conecta expansão fixa B1 B2 ao vocabulário.
 
 Teste recomendado no iPhone:
-1. abrir Cartas > Essenciais A1 > bolha nível 2;
-2. confirmar que `Frase com a palavra` e `Chunk natural` não aparecem;
-3. confirmar que perguntas restantes não entregam resposta no enunciado;
-4. confirmar que ainda há sessão suficiente, perto de 15–20 exercícios;
-5. testar um tópico novo A1-A2 ou A2 para ver se a auditoria não esvaziou as atividades.
+1. abrir Cartas > Trilha de vocabulário;
+2. confirmar que contador subiu para aproximadamente `696/7500`;
+3. procurar tópicos B1/B2 na lista, como `Trabalho e carreira`, `Mídia e tecnologia`, `Meio ambiente e sociedade`;
+4. se estiverem bloqueados, apenas confirmar que aparecem na ordem;
+5. se algum marco B1/B2 estiver aberto no futuro, iniciar uma bolha e confirmar que as perguntas passam pela auditoria.
+
+### `BLOCO-CARTAS-AUDITORIA-ATIVIDADES-1-LAB` — Auditoria das perguntas geradas IMPLEMENTADO
 
 ### `BLOCO-CARTAS-HOTFIX-TIPOS-OBVIOS-1-LAB` — Tipos que entregavam resposta removidos IMPLEMENTADO
 
@@ -146,24 +155,23 @@ Observação:
 
 ## NOVA ORDEM DE BLOCOS — CARTAS COMO SUBSTITUTO DO DUOLINGO
 
-1. `BLOCO-CARTAS-AUDITORIA-ATIVIDADES-1-LAB` — auditoria das perguntas geradas. STATUS: implementado, aguardando teste.
-2. `BLOCO-CARTAS-CURRICULO-FIXO-8B-LAB` — expansão B1/B2.
-3. `BLOCO-CARTAS-CURRICULO-FIXO-8C-LAB` — C1/C2 + auditoria tripla profunda.
-4. `BLOCO-CARTAS-PREVIEW-9A-LAB` — prévia da bolha com palavras, tradução e referência visual.
-5. `BLOCO-CARTAS-GLOSS-INLINE-9B-LAB` — clicar na palavra e abrir mini-caixa com tradução.
-6. `BLOCO-CARTAS-TRADUCAO-GUIADA-9C-LAB` — traduzir com bolhas de palavras + escrita opcional.
-7. `BLOCO-CARTAS-MIX-5-LAB` — misturar palavras novas com antigas.
-8. `BLOCO-CARTAS-LISTENING-SPEAKING-6-LAB` — áudio, shadowing e pronúncia.
-9. `BLOCO-CARTAS-MASTERY-7-LAB` — bolha só passa com domínio mínimo.
-10. `BLOCO-AUDITORIA-POLIMENTO-GERAL-LAB` — auditoria geral e polimento final.
+1. `BLOCO-CARTAS-CURRICULO-FIXO-8B-LAB` — expansão B1/B2. STATUS: implementado, aguardando teste.
+2. `BLOCO-CARTAS-CURRICULO-FIXO-8C-LAB` — C1/C2 + auditoria tripla profunda.
+3. `BLOCO-CARTAS-PREVIEW-9A-LAB` — prévia da bolha com palavras, tradução e referência visual.
+4. `BLOCO-CARTAS-GLOSS-INLINE-9B-LAB` — clicar na palavra e abrir mini-caixa com tradução.
+5. `BLOCO-CARTAS-TRADUCAO-GUIADA-9C-LAB` — traduzir com bolhas de palavras + escrita opcional.
+6. `BLOCO-CARTAS-MIX-5-LAB` — misturar palavras novas com antigas.
+7. `BLOCO-CARTAS-LISTENING-SPEAKING-6-LAB` — áudio, shadowing e pronúncia.
+8. `BLOCO-CARTAS-MASTERY-7-LAB` — bolha só passa com domínio mínimo.
+9. `BLOCO-AUDITORIA-POLIMENTO-GERAL-LAB` — auditoria geral e polimento final.
 
 ## Pendência técnica importante
 
-- testar deploy do `BLOCO-CARTAS-AUDITORIA-ATIVIDADES-1-LAB` no iPhone;
-- confirmar que a auditoria não esvaziou sessões;
-- confirmar que não aparecem tipos óbvios/ruins;
-- seguir para `BLOCO-CARTAS-CURRICULO-FIXO-8B-LAB` se estiver ok.
+- testar deploy do `BLOCO-CARTAS-CURRICULO-FIXO-8B-LAB` no iPhone;
+- confirmar contador aproximado `696/7500`;
+- confirmar novos tópicos B1/B2 na lista;
+- se ok, seguir para `BLOCO-CARTAS-CURRICULO-FIXO-8C-LAB`.
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O bloco atual implementado foi `BLOCO-CARTAS-AUDITORIA-ATIVIDADES-1-LAB`: `vocabularyPractice.js` agora filtra atividades inseguras com `activityLooksSafe()` antes de mostrar ao aluno. Testar no iPhone; se ok, seguir para `BLOCO-CARTAS-CURRICULO-FIXO-8B-LAB`."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O bloco atual implementado foi `BLOCO-CARTAS-CURRICULO-FIXO-8B-LAB`: criado `fixedExpansionB1B2.js`, conectado em `vocabularyDecks.js`, banco subiu para cerca de 696/7500 itens. Testar no iPhone; se ok, seguir para `BLOCO-CARTAS-CURRICULO-FIXO-8C-LAB`."
