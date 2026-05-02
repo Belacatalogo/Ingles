@@ -1,5 +1,5 @@
 import { Activity, BookOpen, Brain, Flame, Home, LineChart, Mic, Settings, X } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { AccessGate } from './components/auth/AccessGate.jsx';
 import { BottomNav } from './components/layout/BottomNav.jsx';
 import { DiagnosticPanel } from './components/system/DiagnosticPanel.jsx';
@@ -27,6 +27,15 @@ function AppContent() {
   const current = useMemo(() => tabs.find((tab) => tab.id === activeTab) ?? tabs[0], [activeTab]);
   const progress = useMemo(() => getProgressSummary(), [lessonRevision, activeTab]);
   const Screen = current.component;
+
+  useEffect(() => {
+    function handleLessonUpdated() {
+      setLessonRevision((value) => value + 1);
+    }
+
+    window.addEventListener('fluency:lesson-updated', handleLessonUpdated);
+    return () => window.removeEventListener('fluency:lesson-updated', handleLessonUpdated);
+  }, []);
 
   function handleLessonGenerated() {
     setLessonRevision((value) => value + 1);
