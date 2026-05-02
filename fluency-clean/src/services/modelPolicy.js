@@ -10,6 +10,7 @@ export const LESSON_MODEL_POLICY = {
     optionalFallbackModels: ['gemini-2.5-pro'],
     allowProOnFreeKeys: false,
     blockOnProUnavailable: false,
+    externalFallback: ['groq', 'cerebras'],
     contract: 'grammar-stable-flash-policy-v1',
   },
   default: {
@@ -19,7 +20,21 @@ export const LESSON_MODEL_POLICY = {
     optionalFallbackModels: ['gemini-2.5-pro'],
     allowProOnFreeKeys: false,
     blockOnProUnavailable: false,
+    externalFallback: ['groq', 'cerebras'],
     contract: 'lesson-stable-flash-policy-v1',
+  },
+};
+
+export const EXTERNAL_PROVIDER_POLICY = {
+  groq: {
+    keyStorage: 'lesson.groq.key',
+    modelStorage: 'lesson.groq.model',
+    defaultModel: 'llama-3.3-70b-versatile',
+  },
+  cerebras: {
+    keyStorage: 'lesson.cerebras.key',
+    modelStorage: 'lesson.cerebras.model',
+    defaultModel: 'llama-3.3-70b',
   },
 };
 
@@ -28,9 +43,14 @@ export function getLessonModelPolicy(lessonType = 'default') {
   return LESSON_MODEL_POLICY[key] || LESSON_MODEL_POLICY.default;
 }
 
+export function getExternalProviderPolicy() {
+  return EXTERNAL_PROVIDER_POLICY;
+}
+
 export function summarizeModelPolicyForDiagnostics(lessonType = 'default') {
   const policy = getLessonModelPolicy(lessonType);
   const primary = policy.primaryModels.join(' / ');
   const fallback = policy.optionalFallbackModels.join(' / ');
-  return `Política de modelos ${MODEL_POLICY_VERSION}: keys free usam ${primary}; key Pro paga usa ${fallback} apenas como fallback opcional; Pro em keys free está desativado.`;
+  const external = policy.externalFallback.join(' / ');
+  return `Política de modelos ${MODEL_POLICY_VERSION}: keys free usam ${primary}; key Pro paga usa ${fallback} apenas como fallback opcional; Pro em keys free está desativado; fallback externo opcional: ${external}.`;
 }
