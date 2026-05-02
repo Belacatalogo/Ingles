@@ -60,7 +60,11 @@ function getLessonStats(lesson) {
   const sectionWords = Array.isArray(lesson?.sections)
     ? lesson.sections.reduce((total, section) => total + countWords(`${section?.title || ''} ${section?.content || ''}`), 0)
     : 0;
-  const estimatedMinutes = Math.max(8, Math.ceil((mainWords + sectionWords + vocabularyCount * 18 + exerciseCount * 32 + promptCount * 24) / 95));
+  const baseMinutes = Math.ceil((mainWords + sectionWords + vocabularyCount * 18 + exerciseCount * 32 + promptCount * 24) / 95);
+  const grammarDepthMinutes = String(lesson?.type || '').toLowerCase() === 'grammar'
+    ? Math.ceil((sectionWords * 1.25 + exerciseCount * 45 + promptCount * 35 + vocabularyCount * 20) / 85)
+    : 0;
+  const estimatedMinutes = Math.max(8, baseMinutes, grammarDepthMinutes);
   return { minutes: estimatedMinutes, exercises: exerciseCount || 0, sections: sectionCount };
 }
 
