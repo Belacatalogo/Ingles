@@ -23,89 +23,77 @@ Princípio máximo:
 
 `o aluno só avança quando prova domínio, não apenas quando conclui uma aula.`
 
-## PRÓXIMO PASSO PLANEJADO
+## ESTADO ATUAL — CIRURGIA 1 ISOLADA
 
-### `BLOCO-MODEL-TEST-GRAMMAR-PRO-LAB` — NÃO IMPLEMENTADO
-
-Objetivo:
-- testar um modelo mais forte para gerar **somente aulas Grammar profundas**;
-- fazer isso em branch separada, sem risco para a lab principal.
-
-Branch de teste planejada:
-- criar `rewrite-fluency-clean-lab-model-test` a partir da branch atual `rewrite-fluency-clean-lab`.
-
-Escopo obrigatório:
-- não mexer em `main`;
-- não mexer em `rewrite-fluency-clean`;
-- não mexer em `rewrite-fluency-clean-lab`, exceto se for atualizar handoff;
-- não mexer em `bundle.js`;
-- não criar bundle patch;
-- não usar DOM injection;
-- não mexer no backend Azure privado.
-
-Ideia do bloco:
-- identificar onde o modelo Gemini é escolhido no fluxo de geração;
-- manter modelo atual para aulas normais;
-- testar modelo mais forte apenas em Grammar profunda, de preferência `gemini-2.5-pro` se estiver disponível no fluxo atual e nas keys do usuário;
-- manter fallback para o modelo atual caso o modelo forte falhe, gere erro, limite ou resposta inválida;
-- registrar no diagnóstico qual modelo foi usado;
-- salvar no `contractVersion` algo como `grammar-model-test-gemini-2.5-pro` quando a aula usar esse teste;
-- não trocar o modelo de Listening, Reading, Writing ou Cartas neste bloco.
-
-Critério de sucesso:
-- gerar uma nova aula Grammar sem quebrar o sistema;
-- diagnóstico mostrar o modelo usado;
-- aula salvar normalmente;
-- qualidade didática ser comparável ou melhor que a geração anterior;
-- se der erro, abandonar branch `rewrite-fluency-clean-lab-model-test` e voltar para `rewrite-fluency-clean-lab`.
-
-Observação:
-- a última Grammar testada foi bloqueada corretamente pelo professor revisor, mostrando que a trava de qualidade está funcionando;
-- o próximo teste de modelo é para tentar melhorar a origem da geração antes de depender demais de reparos locais.
-
-## BLOCO ATUAL IMPLEMENTADO
-
-### `BLOCO-HOTFIX-GRAMMAR-REPARO-FINAL-LAB` — IMPLEMENTADO, aguardando deploy/teste
+### `BLOCO-GRAMMAR-MOTOR-ESTAVEL-FLASH-LAB` — CIRURGIA 1 IMPLEMENTADA, aguardando deploy/teste
 
 Contexto:
-- O teste no iPhone mostrou que a trava nova funcionou: uma Grammar com 93/100 foi bloqueada por problemas reais.
-- Mensagem exibida:
-  - risco de falso domínio por excesso de reconhecimento e pouca produção;
-  - falta de progressão didática real com abertura, analogia, camadas, uso real e resumo;
-  - exemplos precisam ser inéditos, contextualizados e explicar por que estão corretos.
-- Isso confirmou que o professor revisor ficou mais rigoroso.
-- Porém revelou falha de fluxo: depois do reparo anti falso domínio, se ainda restassem problemas específicos de Grammar profunda, o sistema tentava um reparo genérico e bloqueava, sem reaplicar o pipeline Grammar específico.
+- O plano anexado de correções cirúrgicas foi lido.
+- A Cirurgia 1 original do plano sugeria testar `gemini-2.5-pro` usando `flashKeys`, mas isso foi explicitamente descartado por regra do usuário.
+- O diagnóstico aceito é: o problema principal não deve ser tratado como problema de modelo; o foco continua em motor pedagógico, pipeline de Grammar, revisor final e reparo/salvamento.
 
-Arquivo alterado:
-- `fluency-clean/src/components/lesson/LessonGeneratorPanel.jsx`
+O que foi feito nesta Cirurgia 1:
+- criado `fluency-clean/src/services/modelPolicy.js`;
+- registrada uma política estável e explícita de modelos:
+  - keys free/de aula → `gemini-2.5-flash` e `gemini-2.5-flash-lite`;
+  - key Pro paga → `gemini-2.5-pro` somente como fallback opcional;
+  - Pro em keys free desativado (`allowProOnFreeKeys: false`);
+  - indisponibilidade de Pro não bloqueia aula (`blockOnProUnavailable: false`).
+
+Arquivos alterados:
+- `fluency-clean/src/services/modelPolicy.js`
 - `REWRITE_HANDOFF.md`
 
-O que foi corrigido:
-- criado helper `teacherNeedsDeepGrammarRepair(teacherReview)`;
-- se o professor revisor reprovar por termos ligados a Grammar profunda, o fluxo agora:
-  1. faz o reparo genérico como antes;
-  2. reaplica `repairDeepGrammarLesson()` por cima;
-  3. marca `deepGrammarRepaired = true`;
-  4. revalida pedagogicamente;
-  5. reexecuta professor revisor;
-  6. só bloqueia se ainda reprovar.
-- também foi adicionado reparo Grammar específico no caminho da `studyReadiness`, quando a trava de confiança aciona e os problemas anteriores eram de Grammar profunda.
-
 Commit:
-- `df3bb1152893050e76df9e981927296c5c70d88b` — reaplica reparo profundo quando professor reprova grammar.
-- `afa50c86e5cf051b231351ff4cf585f014ccd647` — atualiza handoff do hotfix de reparo grammar final.
+- `718d9bf0aa83b8d097dde359cf6f4e569f6fe8e7` — adiciona política estável de modelos.
 
-Teste recomendado no iPhone:
-1. aguardar deploy do commit `df3bb11` ou posterior;
-2. gerar/substituir Grammar novamente;
-3. observar diagnóstico:
-   - se o professor reprovar inicialmente, deve aparecer:
-     `Professor revisor pediu reparo específico de Grammar profunda. Reaplicando pipeline didático antes de bloquear.`
-   - depois deve aparecer aprovação ou bloqueio final justificado;
-4. se salvar, abrir a aula e conferir se seções de Grammar profunda aparecem de forma real;
-5. se bloquear de novo, o próximo bloco deve endurecer a geração em `plannedGeminiLessons.js`/blueprint, porque o reparo local já terá sido tentado no ponto correto.
+Importante:
+- A Cirurgia 1 foi mantida propositalmente mínima.
+- O fluxo real de geração ainda não foi refatorado para provedores externos.
+- Nenhuma alteração foi feita em `main`, `rewrite-fluency-clean`, `bundle.js` ou backend Azure privado.
+- Nenhuma mudança da branch `rewrite-fluency-clean-lab-model-test` relacionada a `gemini-2.5-pro` em keys free deve ser portada.
+
+Teste obrigatório antes da Cirurgia 2:
+1. aguardar deploy da branch `rewrite-fluency-clean-lab` com commit `718d9bf` ou posterior;
+2. abrir o preview da lab no iPhone;
+3. gerar/substituir uma aula;
+4. confirmar que:
+   - a tela não quebrou;
+   - o botão de geração funciona;
+   - diagnóstico continua aparecendo;
+   - aula salva/abre normalmente ou bloqueia com justificativa real;
+5. só depois seguir para Cirurgia 2.
+
+## NÃO FAZER AGORA
+
+- Não implementar Cirurgia 2 antes do teste de geração.
+- Não dividir o bloco de Grammar ainda.
+- Não mexer no auditor por section ainda.
+- Não reescrever `deepGrammarPipeline.js` ainda.
+- Não adicionar provedores externos sem UI/keys reais.
+- Não usar `gemini-2.5-pro` nas 3 keys free.
+- Não salvar aula fraca só para evitar bloqueio.
+
+## Próximo bloco se o teste da Cirurgia 1 passar
+
+### `CIRURGIA-2-GRAMMAR-BLOCO-1-PROFUNDO-LAB` — PENDENTE
+
+Objetivo:
+- refatorar o Bloco 1 de Grammar para aumentar profundidade por section.
+- Deve ser feito somente depois de uma aula gerada/testada com a Cirurgia 1.
+
+Direção provável:
+- ajustar `fluency-clean/src/services/geminiLessons.js`;
+- manter geração por blocos;
+- aumentar a profundidade do blueprint Grammar;
+- evitar mudança ampla no motor;
+- testar no iPhone antes de continuar.
 
 ## Blocos recentes implementados
+
+### `BLOCO-HOTFIX-GRAMMAR-REPARO-FINAL-LAB` — IMPLEMENTADO
+- `LessonGeneratorPanel` reaplica `repairDeepGrammarLesson()` quando o professor revisor reprova por problemas de Grammar profunda.
+- Também adiciona reparo Grammar específico no caminho da `studyReadiness` quando a trava de confiança aciona por problemas de Grammar profunda.
 
 ### `BLOCO-GRAMMAR-PIPELINE-DIDATICO-PROFUNDO-LAB` — IMPLEMENTADO
 - Criado `deepGrammarPipeline.js`.
@@ -135,20 +123,6 @@ Meta planejada:
 
 `5.000 palavras/expressões + 2.500 frases/chunks = 7.500 itens treináveis`
 
-## NOVA ORDEM DE BLOCOS
-
-1. `BLOCO-MODEL-TEST-GRAMMAR-PRO-LAB` — criar branch separada `rewrite-fluency-clean-lab-model-test` e testar modelo mais forte só para Grammar profunda.
-2. se o teste de modelo não for feito, continuar testando `BLOCO-HOTFIX-GRAMMAR-REPARO-FINAL-LAB` na lab atual.
-3. se Grammar ainda bloquear por conteúdo vago, endurecer `plannedGeminiLessons.js`/`geminiLessons.js` no blueprint de JSON e/ou ajustar temperatura se disponível.
-4. se ok, voltar para `BLOCO-CARTAS-PAREAMENTO-10-LAB`.
-5. `BLOCO-CARTAS-PAREAMENTO-IMAGEM-10B-LAB`.
-6. `BLOCO-CARTAS-SIGNIFICADO-10C-LAB`.
-7. `BLOCO-CARTAS-TRADUCAO-GUIADA-11-LAB`.
-8. `BLOCO-CARTAS-GLOSS-INLINE-12-LAB`.
-9. `BLOCO-CARTAS-LISTENING-ATIVO-13-LAB`.
-10. `BLOCO-CARTAS-SPEAKING-14-LAB`.
-11. `BLOCO-CARTAS-STORIES-15-LAB`.
-
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal de trabalho atual é `rewrite-fluency-clean-lab`, mas o próximo bloco deve ser feito em branch separada de teste: `rewrite-fluency-clean-lab-model-test`, criada a partir da lab. Não mexa em `main`, não mexa em `rewrite-fluency-clean`, não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O próximo bloco planejado é `BLOCO-MODEL-TEST-GRAMMAR-PRO-LAB`: testar modelo mais forte somente para Grammar profunda, manter fallback para o modelo atual, registrar no diagnóstico qual modelo foi usado e salvar no contrato `grammar-model-test-gemini-2.5-pro` ou equivalente. Se der erro grave, abandonar a branch de teste e voltar para `rewrite-fluency-clean-lab`."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal de trabalho é `rewrite-fluency-clean-lab`. A Cirurgia 1 do plano de correções cirúrgicas foi implementada de forma mínima: criado `fluency-clean/src/services/modelPolicy.js` com política estável de modelos. Não portar `gemini-2.5-pro` para keys free; keys free continuam em `gemini-2.5-flash` / `gemini-2.5-flash-lite`; key Pro paga é fallback opcional. Antes de qualquer Cirurgia 2, gerar uma aula no preview da lab para confirmar que nada quebrou. Não mexer em `main`, `rewrite-fluency-clean`, `bundle.js` ou backend Azure privado."
