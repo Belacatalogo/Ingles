@@ -14,6 +14,24 @@ import { repairListeningCoherence, validateListeningCoherence } from '../../serv
 import { attachStudyReadiness, evaluateStudyReadiness } from '../../services/studyReadiness.js';
 import { buildSaturdayReviewLesson, shouldPrioritizeSaturdayReview } from '../../services/masteryStore.js';
 
+const DEEP_GRAMMAR_CONTRACT = [
+  'CONTRATO ESPECIAL PARA GRAMMAR PROFUNDA — OBRIGATÓRIO:',
+  'A aula deve parecer uma aula de professor particular, não artigo, não Wikipedia, não resumo.',
+  'Não encurte o conteúdo. Aprofunde o tema com explicação, exemplos, contraste, prática guiada e produção.',
+  'Escreva como professor falando com um aluno brasileiro iniciante: acolhedor, claro, sério e didático.',
+  'Evite parágrafos enciclopédicos. Cada seção precisa ter uma função pedagógica clara.',
+  'Não coloque sequências do tipo 1. 2. 3. dentro do mesmo parágrafo. Quando listar, use frases separadas com ponto e explicação curta.',
+  'Não despeje regra sem contexto. Explique primeiro para que serve, depois como formar, depois como usar.',
+  'Cada seção de grammar deve conter: explicação em português, exemplos em inglês A1, tradução natural quando ajudar, e um alerta de erro comum quando fizer sentido.',
+  'Inclua muitas frases-modelo naturais, mas não revele respostas dos exercícios.',
+  'A estrutura ideal da aula Grammar é: abertura do professor, mapa da aula, conceito central, regra em camadas, forma afirmativa, negativa, interrogativa, exemplos guiados, certo vs errado, uso real, erros comuns, checagem mental, produção própria e resumo final.',
+  'O aluno deve sentir que estudou de verdade. A aula deve ter profundidade suficiente para 30 a 45 minutos quando somada à prática.',
+  'Use exemplos conectados à vida real: escola, casa, rotina, família, estudos, trabalho simples e apresentações.',
+  'Para A1, mantenha inglês simples, mas a explicação em português pode ser profunda.',
+  'Exercícios devem vir depois da explicação, com 18 a 24 questões variadas e com uma única resposta correta.',
+  'Produção final deve forçar o aluno a criar frases próprias, não apenas reconhecer alternativas.',
+].join('\n');
+
 function formatDateTime(value) {
   if (!value) return '';
   try {
@@ -26,6 +44,26 @@ function formatDateTime(value) {
 function shouldUseResilientFallback(result) {
   const text = String(result?.error || '');
   return /JSON Parse error|Unrecognized token|Expected ']"|Expected ']'|JSON resiliente|\\"type\\"|Preview: \{\\"/i.test(text);
+}
+
+function buildPromptForLesson(nextLesson, saturdayReview) {
+  const basePrompt = nextLesson.promptOverride || buildCurriculumPrompt(nextLesson);
+  const type = String(nextLesson?.type || '').toLowerCase();
+  const title = String(nextLesson?.title || '');
+  const isGrammar = type === 'grammar' || /grammar|gram[aá]tica|present simple|verb|verbo|tense|tempo verbal/i.test(title);
+
+  if (!isGrammar || saturdayReview) return basePrompt;
+
+  return [
+    basePrompt,
+    '',
+    DEEP_GRAMMAR_CONTRACT,
+    '',
+    'FORMATO OBRIGATÓRIO PARA AS SEÇÕES:',
+    'Cada section.content deve ser texto didático profundo. Não use markdown. Não use listas com números coladas em uma única frase.',
+    'Prefira blocos como: explicação, exemplos, contraste certo/errado e uso real, tudo em linguagem natural.',
+    'A aula pode ser longa. Não reduza por ser A1. Simplifique o inglês, mas aprofunde a explicação em português.',
+  ].join('\n');
 }
 
 export function LessonGeneratorPanel({ onGenerated }) {
@@ -73,8 +111,12 @@ export function LessonGeneratorPanel({ onGenerated }) {
       }
 
       if (!saturdayReview) setActiveCurriculumLesson(nextLesson.id);
-      const prompt = nextLesson.promptOverride || buildCurriculumPrompt(nextLesson);
+      const prompt = buildPromptForLesson(nextLesson, saturdayReview);
       const forcedType = nextLesson.type === 'review' ? '' : nextLesson.type;
+
+      if (String(nextLesson?.type || '').toLowerCase() === 'grammar') {
+        diagnostics.log('Contrato de Grammar profunda ativado: aula longa, guiada e não enciclopédica.', 'info');
+      }
 
       let result = await generatePlannedLessonDraft({ prompt, keys: flashKeys, proKey, previousLesson: forceNew ? currentLesson : null, forceVariation: forceNew, forcedType, level: nextLesson.level || 'A1' });
 
@@ -256,7 +298,7 @@ export function LessonGeneratorPanel({ onGenerated }) {
       const saved = saveCurrentLesson(reviewedLesson, {
         source: forceNew ? 'generated-replacement-variation' : result.lesson.planContract === 'resilient-json-v1' ? 'generated-resilient-json' : 'generated',
         status: 'new',
-        contractVersion: result.lesson.planContract ? `lesson-contract-v1+${result.lesson.planContract}+teacher-reviewer-v1+study-readiness-v1${listeningCoherenceRepaired ? '+listening-coherence-v1' : ''}${antiFalseDomainRepaired ? '+anti-false-domain-v1' : ''}` : `lesson-contract-v1+teacher-reviewer-v1+study-readiness-v1${listeningCoherenceRepaired ? '+listening-coherence-v1' : ''}${antiFalseDomainRepaired ? '+anti-false-domain-v1' : ''}`,
+        contractVersion: result.lesson.planContract ? `lesson-contract-v1+${result.lesson.planContract}+teacher-reviewer-v1+study-readiness-v1${listeningCoherenceRepaired ? '+listening-coherence-v1' : ''}${antiFalseDomainRepaired ? '+anti-false-domain-v1' : ''}${lessonForSave.type === 'grammar' ? '+deep-grammar-contract-v1' : ''}` : `lesson-contract-v1+teacher-reviewer-v1+study-readiness-v1${listeningCoherenceRepaired ? '+listening-coherence-v1' : ''}${antiFalseDomainRepaired ? '+anti-false-domain-v1' : ''}${lessonForSave.type === 'grammar' ? '+deep-grammar-contract-v1' : ''}`,
         pedagogicalScore: teacherReview.finalScore,
         autoRepaired,
         antiFalseDomainRepaired,
