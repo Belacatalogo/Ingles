@@ -136,11 +136,12 @@ export function FlashcardsScreen({ onNavigate }) {
     return getBubbleCardsForLevel(activeDeckId, bubble?.index || 0, activeLevel).map(normalizeVocabularyItem);
   }, [mode, activeDeckId, selectedBubble?.id, activeLevel, currentLessonCards, nextTarget.bubble?.id]);
   const activities = useMemo(() => mode === 'path' ? buildVocabularyPracticeActivities(cards, { level: activeLevel }) : [], [mode, cards, activeLevel]);
-  const currentActivity = mode === 'path' && !sessionDone ? activities[Math.min(activityIndex, activities.length - 1)] : null;
-  const currentCard = mode === 'lesson' && cards.length && !sessionDone ? cards[Math.min(cardIndex, cards.length - 1)] : null;
+  const currentActivity = mode === 'path' && !sessionDone ? activities[Math.min(activityIndex, Math.max(0, activities.length - 1))] : null;
+  const currentCard = mode === 'lesson' && cards.length && !sessionDone ? cards[Math.min(cardIndex, Math.max(0, cards.length - 1))] : null;
   const totalSteps = mode === 'path' ? activities.length : cards.length;
-  const currentStep = mode === 'path' ? Math.min(activityIndex + 1, activities.length) : Math.min(cardIndex + 1, cards.length);
-  const sessionProgress = totalSteps ? Math.min(100, (sessionStats.reviewed / totalSteps) * 100) : 0;
+  const currentStep = totalSteps ? Math.min((mode === 'path' ? activityIndex : cardIndex) + 1, totalSteps) : 0;
+  const reviewedForDisplay = Math.min(sessionStats.reviewed, totalSteps || sessionStats.reviewed);
+  const sessionProgress = totalSteps ? Math.min(100, (reviewedForDisplay / totalSteps) * 100) : 0;
   const precision = useMemo(() => sessionStats.reviewed ? Math.round((sessionStats.correct / sessionStats.reviewed) * 100) : 0, [sessionStats]);
   const isPathStudy = mode === 'path' && studyMode;
 
@@ -155,7 +156,7 @@ export function FlashcardsScreen({ onNavigate }) {
   function finishSession(nextStats, nextLog) {
     updateVocabularySrsFromReviewLog(nextLog, { deck: topicPath.deck?.title || 'Aula atual', level: sessionTarget?.level || 'A1' });
     setSrsVersion((value) => value + 1);
-    const record = recordFlashcardSession({ lesson: sessionTarget, totalCards: totalSteps, reviewedCards: nextStats.reviewed, correctCount: nextStats.correct, needsReviewCount: nextStats.missed, cards: nextLog });
+    const record = recordFlashcardSession({ lesson: sessionTarget, totalCards: totalSteps, reviewedCards: Math.min(nextStats.reviewed, totalSteps), correctCount: nextStats.correct, needsReviewCount: nextStats.missed, cards: nextLog });
     if (mode === 'path' && selectedBubble && nextStats.reviewed >= totalSteps) {
       completeVocabularyBubbleLevel({ deckId: activeDeckId, bubbleIndex: selectedBubble.index, level: activeLevel });
       setPathVersion((value) => value + 1);
@@ -247,13 +248,13 @@ export function FlashcardsScreen({ onNavigate }) {
         <section className="cards-review-footer"><div><Layers3 size={18} /><span>Sem cards reais</span></div><strong>selecione um tópico desbloqueado</strong><p>As cartas usam vocabulário real da aula atual e uma trilha progressiva por tema.</p></section>
       ) : sessionDone ? (
         <section className="cards-complete-card" aria-label="Sessão de cartas concluída">
-          <div className="cards-complete-icon"><Award size={24} /></div><span>{mode === 'path' ? `Bolha nível ${activeLevel} concluído` : 'Sessão concluída'}</span><h2>{sessionStats.reviewed || sessionRecord?.reviewedCards || totalSteps} etapa(s) revisada(s)</h2><p>{mode === 'path' ? 'SRS atualizado. Complete os 3 níveis para liberar a próxima bolha.' : 'Registro real salvo para Hoje, Progresso e revisão futura.'}</p>
+          <div className="cards-complete-icon"><Award size={24} /></div><span>{mode === 'path' ? `Bolha nível ${activeLevel} concluído` : 'Sessão concluída'}</span><h2>{Math.min(sessionStats.reviewed || sessionRecord?.reviewedCards || totalSteps, totalSteps)} etapa(s) revisada(s)</h2><p>{mode === 'path' ? 'SRS atualizado. Complete os 3 níveis para liberar a próxima bolha.' : 'Registro real salvo para Hoje, Progresso e revisão futura.'}</p>
           <div className="cards-stat-grid cards-complete-grid"><div className="cards-stat-card green"><strong>{sessionStats.correct}</strong><span>Acertos</span></div><div className="cards-stat-card rose"><strong>{sessionStats.missed}</strong><span>Erros</span></div><div className="cards-stat-card blue"><strong>{precision}%</strong><span>Precisão</span></div></div>
           <div className="cards-complete-actions"><button type="button" onClick={restartSession}><RotateCcw size={16} /> Revisar novamente</button><button type="button" onClick={() => setStudyMode(false)}><Map size={16} /> Voltar para trilha</button><button type="button" onClick={() => onNavigate?.('today')}><CheckCircle2 size={16} /> Voltar para Hoje</button></div>
         </section>
       ) : (mode === 'lesson' || isPathStudy) ? (
         <>
-          <div className="cards-session-card"><div className="cards-session-topline"><span>{mode === 'path' ? `${topicPath.deck.title} · ${currentStep}/${totalSteps}` : `Sessão · carta ${currentStep} de ${totalSteps}`}</span><strong>{sessionStats.reviewed}/{totalSteps}</strong></div><div className="cards-progress-track"><span style={{ width: `${sessionProgress}%` }} /></div></div>
+          <div className="cards-session-card"><div className="cards-session-topline"><span>{mode === 'path' ? `${topicPath.deck.title} · ${currentStep}/${totalSteps}` : `Sessão · carta ${currentStep} de ${totalSteps}`}</span><strong>{reviewedForDisplay}/{totalSteps}</strong></div><div className="cards-progress-track"><span style={{ width: `${sessionProgress}%` }} /></div></div>
           {mode === 'path' ? (
             <VocabularyActivityCard activity={currentActivity} selected={selectedAnswer} builtWords={builtWords} feedback={feedback} onChoose={(option) => { setSelectedAnswer(option); setFeedback(null); }} onBuildWord={addBuildWord} onRemoveBuildWord={removeBuildWord} onContinue={handleActivityContinue} onAudio={(text) => handleCardAudio(text)} />
           ) : (
