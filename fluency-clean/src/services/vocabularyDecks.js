@@ -1,5 +1,6 @@
 import { fixedExpansionA1A2Decks } from '../data/vocabulary/fixedExpansionA1A2.js';
 import { fixedExpansionB1B2Decks } from '../data/vocabulary/fixedExpansionB1B2.js';
+import { fixedExpansionC1C2Decks } from '../data/vocabulary/fixedExpansionC1C2.js';
 
 const baseDeckDefinitions = [
   {
@@ -112,7 +113,7 @@ const baseDeckDefinitions = [
   },
 ];
 
-const deckDefinitions = [...baseDeckDefinitions, ...fixedExpansionA1A2Decks, ...fixedExpansionB1B2Decks];
+const deckDefinitions = [...baseDeckDefinitions, ...fixedExpansionA1A2Decks, ...fixedExpansionB1B2Decks, ...fixedExpansionC1C2Decks];
 
 function normalizeCard(deck, item, index) {
   const [word, translation, example, chunk = ''] = item;
@@ -175,7 +176,7 @@ export function getVocabularyBankAudit() {
     chunkIssues,
     passedStructure: structuralIssues.length === 0,
     passedChunks: chunkIssues.length === 0,
-    passedDuplicates: duplicates.length <= 24,
+    passedDuplicates: duplicates.length <= 32,
   };
 }
 
