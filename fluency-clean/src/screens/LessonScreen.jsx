@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { BookOpen, CheckCircle2, Clock, Headphones, Mic, RefreshCw, ShieldCheck, Sparkles, Target, Zap } from 'lucide-react';
+import { BookOpen, CheckCircle2, Clock, Headphones, MessageCircle, Mic, RefreshCw, ShieldCheck, Sparkles, Target, Zap } from 'lucide-react';
 import { Card } from '../components/ui/Card.jsx';
 import { LessonQualityPanel } from '../components/lesson/LessonQualityPanel.jsx';
 import { ReadingLesson } from '../lessons/ReadingLesson.jsx';
@@ -29,6 +29,7 @@ const lessonSections = [
 const previewOptions = [
   { id: 'real', label: 'Aula real', icon: Sparkles },
   { id: 'listening', label: 'Testar Listening', icon: Headphones },
+  { id: 'listeningDialogue', label: 'Testar Diálogo', icon: MessageCircle },
   { id: 'reading', label: 'Testar Reading', icon: BookOpen },
   { id: 'speaking', label: 'Abrir Speaking', icon: Mic },
 ];
