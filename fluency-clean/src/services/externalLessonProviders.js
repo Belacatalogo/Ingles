@@ -5,6 +5,7 @@ import { maskApiKey } from './geminiLessons.js';
 import { MODEL_POLICY_VERSION, getExternalProviderPolicy } from './modelPolicy.js';
 
 const FORCE_EXTERNAL_NEXT_STORAGE = 'lesson.external.forceNext';
+const FORCE_EXTERNAL_PROVIDER_STORAGE = 'lesson.external.forceProvider';
 
 function text(value) {
   return String(value ?? '').trim();
@@ -50,6 +51,11 @@ function clearLocalText(name) {
   writeRawLocalStorage(name, '');
 }
 
+function normalizeForcedProvider(value) {
+  const provider = text(value).toLowerCase();
+  return provider === 'groq' || provider === 'cerebras' ? provider : '';
+}
+
 function jsonFromText(value) {
   const raw = text(value).replace(/^```(?:json)?\s*/i, '').replace(/```$/i, '').trim();
   const start = raw.indexOf('{');
@@ -58,11 +64,12 @@ function jsonFromText(value) {
   return JSON.parse(sliced.replace(/,\s*([}\]])/g, '$1'));
 }
 
-function providersFromLocalStorage() {
+function providersFromLocalStorage(targetProvider = '') {
   const policy = getExternalProviderPolicy();
+  const forced = normalizeForcedProvider(targetProvider);
   const groqSecret = readLocalText(policy.groq.keyStorage);
   const cerebrasSecret = readLocalText(policy.cerebras.keyStorage);
-  return [
+  const providers = [
     groqSecret ? {
       id: 'groq',
       label: 'Groq',
@@ -80,6 +87,7 @@ function providersFromLocalStorage() {
       model: readLocalText(policy.cerebras.modelStorage) || policy.cerebras.defaultModel,
     } : null,
   ].filter(Boolean);
+  return forced ? providers.filter((provider) => provider.id === forced) : providers;
 }
 
 function buildPrompt({ prompt = '', forcedType = '', level = 'A1', forceVariation = false } = {}) {
@@ -160,11 +168,13 @@ export function getExternalLessonProviderStatus() {
   const cerebrasKey = readLocalText(policy.cerebras.keyStorage);
   const groqModel = readLocalText(policy.groq.modelStorage) || policy.groq.defaultModel;
   const cerebrasModel = readLocalText(policy.cerebras.modelStorage) || policy.cerebras.defaultModel;
-  const providers = providersFromLocalStorage();
   const forceExternalNext = Boolean(storage.get(FORCE_EXTERNAL_NEXT_STORAGE, false)) || readRawLocalStorage(FORCE_EXTERNAL_NEXT_STORAGE) === 'true';
+  const forceProvider = normalizeForcedProvider(readLocalText(FORCE_EXTERNAL_PROVIDER_STORAGE));
+  const providers = providersFromLocalStorage(forceProvider);
   return {
-    enabled: providers.length > 0,
+    enabled: providersFromLocalStorage().length > 0,
     forceExternalNext,
+    forceProvider,
     groq: {
       configured: Boolean(groqKey),
       masked: maskApiKey(groqKey),
@@ -181,18 +191,20 @@ export function getExternalLessonProviderStatus() {
   };
 }
 
-export function setForceExternalLessonProviderNext(value) {
+export function setForceExternalLessonProviderNext(value, provider = '') {
   const enabled = Boolean(value);
+  const forcedProvider = normalizeForcedProvider(provider);
   storage.set(FORCE_EXTERNAL_NEXT_STORAGE, enabled);
   writeRawLocalStorage(FORCE_EXTERNAL_NEXT_STORAGE, enabled ? 'true' : '');
-  diagnostics.log(`Modo teste fallback externo ${enabled ? 'ativado para a próxima geração' : 'desativado'}.`, enabled ? 'warn' : 'info');
+  saveLocalText(FORCE_EXTERNAL_PROVIDER_STORAGE, enabled ? forcedProvider : '');
+  diagnostics.log(`Modo teste fallback externo ${enabled ? `ativado para a próxima geração${forcedProvider ? ` usando ${forcedProvider}` : ''}` : 'desativado'}.`, enabled ? 'warn' : 'info');
   return getExternalLessonProviderStatus();
 }
 
 export function shouldForceExternalLessonProviderOnce() {
-  const enabled = getExternalLessonProviderStatus().forceExternalNext;
-  if (enabled) setForceExternalLessonProviderNext(false);
-  return enabled;
+  const status = getExternalLessonProviderStatus();
+  if (status.forceExternalNext) setForceExternalLessonProviderNext(false);
+  return status.forceExternalNext ? status.forceProvider || 'external' : '';
 }
 
 export function saveExternalLessonProviderKey(provider, keyValue, modelValue = '') {
@@ -226,11 +238,13 @@ export function clearExternalLessonProvider(provider) {
   return getExternalLessonProviderStatus();
 }
 
-export async function generateExternalLessonDraft({ prompt = '', forcedType = '', level = 'A1', fetcher = fetch, forceVariation = false, reason = '' } = {}) {
-  const providers = providersFromLocalStorage();
+export async function generateExternalLessonDraft({ prompt = '', forcedType = '', level = 'A1', fetcher = fetch, forceVariation = false, reason = '', targetProvider = '' } = {}) {
+  const providers = providersFromLocalStorage(targetProvider);
+  const forced = normalizeForcedProvider(targetProvider);
   if (!providers.length) {
-    diagnostics.log('Fallback externo indisponivel: nenhuma chave Groq/Cerebras no localStorage.', 'info');
-    return { status: 'missing-keys', lesson: null, error: 'Nenhuma chave externa configurada.' };
+    const msg = forced ? `Nenhuma chave configurada para ${forced}.` : 'Nenhuma chave externa configurada.';
+    diagnostics.log(`Fallback externo indisponivel: ${msg}`, 'info');
+    return { status: 'missing-keys', lesson: null, error: msg };
   }
   const externalPrompt = buildPrompt({ prompt, forcedType, level, forceVariation });
   diagnostics.setPhase('fallback externo de aula', 'generating');
