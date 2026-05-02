@@ -28,6 +28,7 @@ const fallbackTips = [
 const connectorBreaks = [
   'Já',
   'Outro exemplo',
+  'Outro lado',
   'Outro',
   'Veja',
   'Assim',
@@ -46,6 +47,7 @@ const englishFunctionWords = /\b(?:am|are|is|was|were|have|has|had|do|does|did|c
 const portugueseSignals = /\b(?:eu|ele|ela|n[oó]s|voc[eê]|voc[eê]s|eles|elas|estou|est[aá]|estamos|feliz|m[eé]dica|m[eé]dico|profiss[aã]o|estado|descreve|indicar|posse|pertence|algu[eé]m|carro|livro|mesa|exemplo|correto|pois|porque|verbo|frase|regra|aluno|brasileiro|portugu[eê]s|ingl[eê]s|pessoa|pessoas|outro|lado|no entanto|diferente|amigo|amigos|novo|nova|gentil|todos|todas|aqui)\b/i;
 const translationStarterPattern = /^(?:Eu|Ele|Ela|Nós|Nos|Eles|Elas|Você|Vocês|O|A|Os|As|Meu|Minha|Seu|Sua|Isso|Este|Esta|Esse|Essa)\b/;
 const bareBePattern = /^(?:I am|You are|He is|She is|It is|We are|They are|I'm|You're|He's|She's|It's|We're|They're)$/i;
+const exampleOverflowPattern = /(?:^|\s)(?=(?:Já|Outro exemplo|Outro lado|Outro|No entanto|Diferente disso)\b\s*["'“”]?(?:I|You|He|She|It|We|They|This|That|The|A|An|My|Your|His|Her|Our|Their)\b)/i;
 
 function normalizeVisualSpacing(value) {
   const connectorPatternText = connectorBreaks.join('|');
@@ -55,7 +57,7 @@ function normalizeVisualSpacing(value) {
     .replace(/\r\n/g, '\n')
     .replace(/^\s*[-*]\s+/gm, '')
     .replace(/([.!?])(?=[A-ZÁÉÍÓÚÂÊÔÃÕÇ])/g, '$1 ')
-    .replace(/\)(?=(Já|Outro exemplo|Outro|Veja|Assim|Portanto|Além disso|Na prática|Observe|Agora|No entanto|Diferente disso)\b)/g, ') ')
+    .replace(/\)(?=(Já|Outro exemplo|Outro lado|Outro|Veja|Assim|Portanto|Além disso|Na prática|Observe|Agora|No entanto|Diferente disso)\b)/g, ') ')
     .replace(/([,;:])(?=\S)/g, '$1 ')
     .replace(new RegExp(`\\s*([.!?])\\s*(?=(${connectorPatternText})\\b)`, 'gi'), '$1\n\n')
     .replace(new RegExp(`\\s+(?=(${connectorPatternText})\\b)`, 'gi'), '\n\n')
@@ -116,7 +118,7 @@ function splitByExampleHeader(text) {
   if (!match || typeof match.index !== 'number') return null;
 
   return {
-    before: clean.slice(0, match.index).replace(/\bPor exemplo\s*:?\s*$/i, '').trim(),
+    before: clean.slice(0, match.index).replace(/\bPor exemplo\s*:?\s*$/i, '').replace(/\bPor\s*$/i, '').trim(),
     after: clean.slice(match.index + match[0].length).trim(),
   };
 }
@@ -194,6 +196,21 @@ function findEnglishLead(text) {
   return null;
 }
 
+function splitExampleOverflow(explanation) {
+  const clean = cleanText(explanation);
+  if (!clean) return { explanation: '', overflow: '' };
+
+  const match = clean.match(exampleOverflowPattern);
+  if (!match || typeof match.index !== 'number') {
+    return { explanation: clean, overflow: '' };
+  }
+
+  return {
+    explanation: clean.slice(0, match.index).trim(),
+    overflow: clean.slice(match.index).trim(),
+  };
+}
+
 function extractTranslation(rest) {
   const clean = cleanText(rest).replace(/^[,.;:\s]+/, '').trim();
   if (!clean) return { translation: '', explanation: '' };
@@ -222,18 +239,20 @@ function parseExampleCard(rawExample) {
   const englishLead = findEnglishLead(original);
 
   if (!englishLead) {
-    return { original, english: '', translation: '', explanation: original };
+    return { original, english: '', translation: '', explanation: original, overflow: '' };
   }
 
   const translationResult = englishLead.translation
     ? { translation: englishLead.translation, explanation: englishLead.rest }
     : extractTranslation(englishLead.rest);
+  const safeExplanation = splitExampleOverflow(translationResult.explanation);
 
   return {
     original,
     english: englishLead.english,
     translation: translationResult.translation,
-    explanation: cleanText(translationResult.explanation),
+    explanation: safeExplanation.explanation,
+    overflow: safeExplanation.overflow,
   };
 }
 
@@ -256,6 +275,9 @@ function collectProfessorExamples(content) {
     const parsed = parseExampleCard(candidate);
     if (parsed.english) {
       examples.push(parsed);
+      if (parsed.overflow) {
+        afterExamples.push(...splitParagraphs(parsed.overflow));
+      }
     } else {
       afterExamples.push(...splitParagraphs(parsed.explanation));
     }
@@ -358,7 +380,7 @@ export function GrammarLesson({ lesson }) {
   }
 
   return (
-    <article className="grammar-layout grammar-lesson-v1 grammar-deep-lesson-v2 grammar-renderer-system-v3">
+    <article className="grammar-layout grammar-lesson-v1 grammar-deep-lesson-v2 grammar-renderer-system-v3 grammar-renderer-overflow-v4">
       <Card
         eyebrow={`Grammar profunda · ${lesson.level}`}
         title={lesson.title}
