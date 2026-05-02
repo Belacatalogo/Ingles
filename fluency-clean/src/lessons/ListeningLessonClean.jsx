@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { BookOpen, CheckCircle2, ChevronDown, ChevronUp, Headphones, Pause, Play, Repeat2, Save, Volume2 } from 'lucide-react';
+import { BookOpen, CheckCircle2, ChevronDown, ChevronUp, Headphones, Pause, Play, Repeat2, Save, ShieldCheck, Target, Volume2 } from 'lucide-react';
 import { playLearningAudio, stopLearningAudio } from '../services/audioPlayback.js';
 import { diagnostics } from '../services/diagnostics.js';
 import { completeLesson, getLessonDraft, saveLessonDraft } from '../services/progressStore.js';
@@ -10,11 +10,22 @@ const fallbackTranscript = [
   'The first letter is A.',
 ];
 
+const listeningFlow = [
+  { id: 'guide', label: '1. Ouvir sem ler', detail: 'treine ouvido puro' },
+  { id: 'transcript', label: '2. Confirmar texto', detail: 'abra depois do áudio' },
+  { id: 'practice', label: '3. Praticar', detail: 'exercícios em tela cheia' },
+  { id: 'shadowing', label: '4. Repetir', detail: 'ritmo e pronúncia' },
+  { id: 'answer', label: '5. Concluir', detail: 'salvar progresso' },
+];
+
 function cleanText(value) {
   return String(value ?? '')
     .replace(/\*\*(.*?)\*\*/g, '$1')
     .replace(/^\s*[-*]\s+/gm, '')
+    .replace(/([.!?])(?=[A-ZÁÉÍÓÚÂÊÔÃÕÇ])/g, '$1 ')
+    .replace(/([,;:])(?=\S)/g, '$1 ')
     .replace(/\n{3,}/g, '\n\n')
+    .replace(/[ \t]{2,}/g, ' ')
     .trim();
 }
 
@@ -32,9 +43,9 @@ function splitTranscript(value) {
   const clean = cleanText(value);
   if (!clean) return fallbackTranscript;
   const paragraphs = clean.split(/\n\s*\n+/).map((item) => item.trim()).filter(Boolean);
-  if (paragraphs.length > 1) return paragraphs;
+  if (paragraphs.length > 1) return paragraphs.slice(0, 16);
   const sentences = clean.split(/(?<=[.!?])\s+/).map((item) => item.trim()).filter(Boolean);
-  return sentences.length ? sentences.slice(0, 12) : fallbackTranscript;
+  return sentences.length ? sentences.slice(0, 16) : fallbackTranscript;
 }
 
 function normalizePrompts(lesson) {
@@ -74,11 +85,23 @@ function writtenDraftKey(lesson) {
   return lesson?.id || lesson?.title || 'listening';
 }
 
+function buildListeningRenderReport({ transcript, sections, vocabulary, shadowingLines, audioText }) {
+  return {
+    ok: Boolean(transcript.length && audioText.length),
+    transcriptLines: transcript.length,
+    conceptBlocks: sections.length,
+    vocabularyItems: vocabulary.length,
+    shadowingLines: shadowingLines.length,
+    blindListening: true,
+    answersHidden: true,
+  };
+}
+
 function CollapsibleSection({ id, title, icon, summary, open, onToggle, children }) {
   const Icon = icon;
   return (
-    <section className={`pillar-card lesson-collapsible-card ${open ? 'is-open' : 'is-closed'}`} id={id}>
-      <button className="lesson-collapsible-head" type="button" onClick={onToggle} aria-expanded={open}>
+    <section className={`pillar-card lesson-collapsible-card listening-collapsible-card ${open ? 'is-open' : 'is-closed'}`} id={id}>
+      <button className="lesson-collapsible-head listening-collapsible-head" type="button" onClick={onToggle} aria-expanded={open}>
         <span><Icon size={17} /> {title}</span>
         <small>{summary}</small>
         {open ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
@@ -89,13 +112,14 @@ function CollapsibleSection({ id, title, icon, summary, open, onToggle, children
 }
 
 export function ListeningLessonClean({ lesson }) {
-  const [message, setMessage] = useState('Ouça o áudio natural antes de abrir a transcrição.');
+  const [message, setMessage] = useState('Comece ouvindo sem abrir o texto. Depois confira a transcrição.');
   const [audioState, setAudioState] = useState('idle');
   const [answer, setAnswer] = useState(() => getLessonDraft(writtenDraftKey(lesson)));
   const [savedAt, setSavedAt] = useState('');
   const [completedAt, setCompletedAt] = useState('');
   const [shadowingIndex, setShadowingIndex] = useState(0);
-  const [openSections, setOpenSections] = useState({ guide: true, transcript: true, concept: false, vocab: false, shadowing: false, answer: false });
+  const [hasListened, setHasListened] = useState(false);
+  const [openSections, setOpenSections] = useState({ guide: true, transcript: false, concept: false, vocab: false, shadowing: true, answer: false });
   const refs = { guide: useRef(null), transcript: useRef(null), concept: useRef(null), vocab: useRef(null), shadowing: useRef(null), answer: useRef(null) };
 
   const transcript = useMemo(() => splitTranscript(lesson?.listeningText), [lesson?.listeningText]);
@@ -105,6 +129,7 @@ export function ListeningLessonClean({ lesson }) {
   const shadowingLines = useMemo(() => normalizeShadowingLines(transcript, prompts), [transcript, prompts]);
   const audioText = transcript.join(' ');
   const currentShadowingLine = shadowingLines[shadowingIndex] || shadowingLines[0] || prompts[0];
+  const renderReport = useMemo(() => buildListeningRenderReport({ transcript, sections, vocabulary, shadowingLines, audioText }), [transcript, sections, vocabulary, shadowingLines, audioText]);
 
   useEffect(() => {
     function handleJump(event) {
@@ -126,20 +151,30 @@ export function ListeningLessonClean({ lesson }) {
     setOpenSections((current) => ({ ...current, [id]: !current[id] }));
   }
 
+  function openSection(id) {
+    setOpenSections((current) => ({ ...current, [id]: true }));
+    requestAnimationFrame(() => refs[id]?.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+  }
+
+  function goToPractice() {
+    document.querySelector('.lesson-practice-mount')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
   async function handleListen() {
-    diagnostics.log('Clique recebido no botão Ouvir da aula Listening.', 'info');
+    diagnostics.log('Listening: usuário iniciou escuta principal.', 'info');
     setAudioState('loading');
     setMessage(audioText.length > 360 ? 'Preparando áudio natural em trechos...' : 'Preparando áudio natural Gemini...');
     const result = await playLearningAudio({
       text: audioText,
       label: 'Listening · transcrição',
       voiceName: 'Kore',
-      style: 'Natural, warm teacher voice for A1 English listening practice. Clear pronunciation, human rhythm, not robotic.',
+      style: 'Natural, warm teacher voice for English listening practice. Clear pronunciation, human rhythm, not robotic.',
       preferNatural: true,
       allowBrowserFallback: true,
       segmentLongText: true,
     });
     setAudioState('idle');
+    setHasListened(Boolean(result.ok));
     setMessage(getAudioMessage(result));
   }
 
@@ -149,7 +184,7 @@ export function ListeningLessonClean({ lesson }) {
       setMessage('Nenhuma frase de shadowing disponível nesta aula.');
       return;
     }
-    diagnostics.log(`Shadowing iniciado: frase ${shadowingIndex + 1}/${shadowingLines.length}.`, 'info');
+    diagnostics.log(`Listening shadowing: frase ${shadowingIndex + 1}/${shadowingLines.length}.`, 'info');
     setAudioState('loading');
     setMessage('Preparando áudio natural para shadowing...');
     const result = await playLearningAudio({
@@ -174,7 +209,7 @@ export function ListeningLessonClean({ lesson }) {
   function nextShadowingLine() {
     setShadowingIndex((current) => {
       const nextIndex = shadowingLines.length ? (current + 1) % shadowingLines.length : 0;
-      diagnostics.log(`Shadowing: próxima frase ${nextIndex + 1}/${shadowingLines.length || 1}.`, 'info');
+      diagnostics.log(`Listening shadowing: próxima frase ${nextIndex + 1}/${shadowingLines.length || 1}.`, 'info');
       return nextIndex;
     });
     setMessage('Frase de shadowing atualizada. Toque em "Ouvir frase" e repita em voz alta.');
@@ -196,6 +231,7 @@ export function ListeningLessonClean({ lesson }) {
         summary: answer,
         transcriptLines: transcript.length,
         shadowing: { currentPhrase: currentShadowingLine, totalPhrases: shadowingLines.length },
+        renderReport,
         updatedAt: new Date().toISOString(),
       },
       writtenAnswer: answer,
@@ -207,24 +243,46 @@ export function ListeningLessonClean({ lesson }) {
   }
 
   return (
-    <article className="pillar-lesson listening-lesson-v1 listening-light-layout">
+    <article className="pillar-lesson listening-lesson-v1 listening-light-layout listening-render-review-v1">
       <div ref={refs.guide}>
-        <section className="pillar-card listening-audio-card listening-focus-card" id="lesson-guide">
+        <section className="pillar-card listening-audio-card listening-focus-card listening-hero-card" id="lesson-guide">
           <div className="pillar-card-title"><Headphones size={17} /> Escuta guiada</div>
           <h2>{lesson?.title || 'Listening — A morning routine'}</h2>
           <p>{cleanText(lesson?.objective || 'Ouça primeiro sem ler. Depois use a transcrição para confirmar detalhes e repetir em voz alta.')}</p>
-          <div className="listening-player">
+
+          <div className="listening-flow-map" aria-label="Estrutura da aula Listening">
+            {listeningFlow.map((item) => <span key={item.id}><b>{item.label}</b><small>{item.detail}</small></span>)}
+          </div>
+
+          <div className="listening-player listening-primary-player">
             <button type="button" onClick={handleListen} disabled={audioState === 'loading'} aria-label="Ouvir áudio natural da aula"><Play size={20} /></button>
             <div><span /><span /><span /><span /><span /><span /></div>
             <button type="button" onClick={handleStop} aria-label="Parar áudio"><Pause size={18} /></button>
           </div>
           <small>{message}</small>
+
+          <div className="listening-quick-actions">
+            <button type="button" onClick={() => openSection('transcript')}><Volume2 size={15} /> Conferir texto</button>
+            <button type="button" onClick={goToPractice}><Target size={15} /> Começar prática</button>
+            <button type="button" onClick={() => openSection('answer')}><CheckCircle2 size={15} /> Finalizar</button>
+          </div>
         </section>
       </div>
 
+      <section className="pillar-card listening-render-report-card">
+        <div className="pillar-card-title"><ShieldCheck size={17} /> Render seguro Listening</div>
+        <div className="listening-report-grid">
+          <span><b>{renderReport.ok ? 'OK' : 'atenção'}</b><small>render</small></span>
+          <span><b>{renderReport.transcriptLines}</b><small>trechos</small></span>
+          <span><b>{renderReport.shadowingLines}</b><small>shadowing</small></span>
+          <span><b>{renderReport.answersHidden ? 'sim' : 'não'}</b><small>respostas ocultas</small></span>
+        </div>
+        <p>{hasListened ? 'Áudio principal já foi iniciado. Agora confira o texto ou avance para a prática.' : 'Transcrição começa fechada para proteger a escuta cega.'}</p>
+      </section>
+
       <div ref={refs.transcript}>
-        <CollapsibleSection id="lesson-transcript" title="Texto da aula" icon={Volume2} summary={`${transcript.length} trechos`} open={openSections.transcript} onToggle={() => toggleSection('transcript')}>
-          <div className="transcript-box compact">
+        <CollapsibleSection id="lesson-transcript" title="Transcrição controlada" icon={Volume2} summary={openSections.transcript ? `${transcript.length} trechos abertos` : 'fechada até você decidir conferir'} open={openSections.transcript} onToggle={() => toggleSection('transcript')}>
+          <div className="transcript-box compact listening-transcript-box">
             {transcript.map((line, index) => <p key={`${line}-${index}`}><b>{index + 1}</b>{line}</p>)}
           </div>
         </CollapsibleSection>
@@ -232,8 +290,8 @@ export function ListeningLessonClean({ lesson }) {
 
       {sections.length ? (
         <div ref={refs.concept}>
-          <CollapsibleSection id="lesson-concept" title="Conceito e explicação" icon={BookOpen} summary={`${sections.length} passos · fechado para deixar a tela leve`} open={openSections.concept} onToggle={() => toggleSection('concept')}>
-            <div className="lesson-section-stack compact concept-compact-list">
+          <CollapsibleSection id="lesson-concept" title="Conceito e explicação" icon={BookOpen} summary={`${sections.length} passos · apoio após a escuta`} open={openSections.concept} onToggle={() => toggleSection('concept')}>
+            <div className="lesson-section-stack compact concept-compact-list listening-concept-list">
               {sections.map((section, index) => (
                 <article className="lesson-content-block" key={`${section.title}-${index}`}>
                   <small>Passo {index + 1}</small>
@@ -250,7 +308,7 @@ export function ListeningLessonClean({ lesson }) {
       {vocabulary.length ? (
         <div ref={refs.vocab}>
           <CollapsibleSection id="lesson-vocab" title="Vocabulário da aula" icon={BookOpen} summary={`${vocabulary.length} palavras-chave`} open={openSections.vocab} onToggle={() => toggleSection('vocab')}>
-            <div className="lesson-vocabulary-grid compact">
+            <div className="lesson-vocabulary-grid compact listening-vocabulary-grid">
               {vocabulary.map((item, index) => (
                 <article className="lesson-vocab-card" key={`${item.word}-${index}`}>
                   <strong>{item.word || item.meaning}</strong>
@@ -265,21 +323,22 @@ export function ListeningLessonClean({ lesson }) {
 
       <div ref={refs.shadowing}>
         <CollapsibleSection id="lesson-shadowing" title="Shadowing real" icon={Repeat2} summary={`frase ${shadowingIndex + 1}/${shadowingLines.length || 1}`} open={openSections.shadowing} onToggle={() => toggleSection('shadowing')}>
-          <div className="shadowing-card compact">
+          <div className="shadowing-card compact listening-shadowing-card">
+            <span>Repita copiando ritmo, pausas e pronúncia</span>
             <p>{currentShadowingLine}</p>
             <div className="shadowing-actions">
               <button type="button" onClick={handleShadowingListen} disabled={audioState === 'loading'}><Play size={15} /> Ouvir frase</button>
               <button type="button" onClick={nextShadowingLine}><Repeat2 size={15} /> Próxima</button>
             </div>
-            <small>Repita em voz alta copiando ritmo, pausas e pronúncia.</small>
           </div>
         </CollapsibleSection>
       </div>
 
       <div ref={refs.answer}>
         <CollapsibleSection id="lesson-answer" title="Finalizar aula" icon={Save} summary={completedAt ? `concluída às ${completedAt}` : savedAt ? `rascunho salvo às ${savedAt}` : 'último passo'} open={openSections.answer} onToggle={() => toggleSection('answer')}>
-          <div className="lesson-written-answer compact">
-            <textarea value={answer} onChange={(event) => setAnswer(event.target.value)} placeholder="Escreva um resumo curto do que você entendeu, ou uma frase nova usando o conteúdo da aula." />
+          <div className="lesson-written-answer compact listening-final-card">
+            <label htmlFor="listening-summary">Resumo rápido da escuta</label>
+            <textarea id="listening-summary" value={answer} onChange={(event) => setAnswer(event.target.value)} placeholder="Escreva uma frase do áudio, uma palavra nova ou um resumo curto do que você entendeu." />
             <button type="button" onClick={handleSave}><Save size={16} /> Salvar rascunho</button>
             <button type="button" className="primary-action" onClick={handleComplete}><CheckCircle2 size={17} /> Concluir Listening</button>
           </div>
