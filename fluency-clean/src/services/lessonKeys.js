@@ -5,7 +5,7 @@ import { isValidGeminiKey, maskApiKey, normalizeLessonKeys } from './geminiLesso
 const FLASH_KEYS_STORAGE = 'lesson.gemini.flashKeys';
 const PRO_KEY_STORAGE = 'lesson.gemini.proKey';
 const MAX_FLASH_KEYS = 3;
-const IGNORE_PAID_PRO_KEY_IN_GRAMMAR_MODEL_TEST = true;
+const USE_FIRST_FREE_KEY_AS_PRO_MODEL_TEST = true;
 
 export function getLessonFlashKeys() {
   return normalizeLessonKeys(storage.get(FLASH_KEYS_STORAGE, []));
@@ -36,7 +36,9 @@ export function removeLessonFlashKey(index) {
 }
 
 export function getLessonProKey() {
-  if (IGNORE_PAID_PRO_KEY_IN_GRAMMAR_MODEL_TEST) return '';
+  if (USE_FIRST_FREE_KEY_AS_PRO_MODEL_TEST) {
+    return getLessonFlashKeys()[0] ?? '';
+  }
   return normalizeLessonKeys([storage.getText(PRO_KEY_STORAGE, '')])[0] ?? '';
 }
 
@@ -71,7 +73,7 @@ export function getLessonKeysStatus() {
     proMasked: maskApiKey(proKey),
     hasAnyKey: flashKeys.length > 0 || Boolean(proKey),
     maxFlashKeys: MAX_FLASH_KEYS,
-    paidProIgnoredForModelTest: IGNORE_PAID_PRO_KEY_IN_GRAMMAR_MODEL_TEST,
+    usingFirstFreeKeyAsProModelTest: USE_FIRST_FREE_KEY_AS_PRO_MODEL_TEST,
   };
 }
 
@@ -90,9 +92,9 @@ export function buildLessonKeyPlan() {
       ? [{
           key: status.proKey,
           masked: maskApiKey(status.proKey),
-          slot: 'pro',
+          slot: 'pro-free-test',
           models: ['gemini-2.5-pro'],
-          paid: true,
+          paid: false,
         }]
       : [],
   };
