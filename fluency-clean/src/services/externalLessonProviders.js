@@ -239,7 +239,7 @@ export async function generateExternalLessonDraft({ prompt = '', forcedType = ''
   for (const provider of providers) {
     try {
       diagnostics.log(`Tentando ${provider.label} com modelo ${provider.model} e chave ${provider.masked}.`, 'info');
-      const lesson = await callProviderWithFallback(provider, externalPrompt, fetch);
+      const lesson = await callProviderWithFallback(provider, externalPrompt, fetcher);
       diagnostics.log(`${provider.label} gerou aula para validacao local.`, 'success');
       return { status: 'success', lesson: withMeta(lesson, provider), provider: provider.id, model: provider.model };
     } catch (error) {
