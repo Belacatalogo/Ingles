@@ -7,12 +7,23 @@ import {
   removeLessonFlashKey,
   saveLessonProKey,
 } from '../../services/lessonKeys.js';
+import {
+  clearExternalLessonProvider,
+  getExternalLessonProviderStatus,
+  saveExternalLessonProviderKey,
+  saveExternalLessonProviderModel,
+} from '../../services/externalLessonProviders.js';
 
 export function LessonKeysPanel() {
   const [draftFlashKey, setDraftFlashKey] = useState('');
   const [draftProKey, setDraftProKey] = useState('');
+  const [draftGroqKey, setDraftGroqKey] = useState('');
+  const [draftGroqModel, setDraftGroqModel] = useState('');
+  const [draftCerebrasKey, setDraftCerebrasKey] = useState('');
+  const [draftCerebrasModel, setDraftCerebrasModel] = useState('');
   const [version, setVersion] = useState(0);
   const status = useMemo(() => getLessonKeysStatus(), [version]);
+  const externalStatus = useMemo(() => getExternalLessonProviderStatus(), [version]);
 
   function refresh() {
     setVersion((value) => value + 1);
@@ -32,6 +43,42 @@ export function LessonKeysPanel() {
 
   function handleClearPro() {
     clearLessonProKey();
+    refresh();
+  }
+
+  function handleSaveGroq() {
+    saveExternalLessonProviderKey('groq', draftGroqKey, draftGroqModel || externalStatus.groq.defaultModel);
+    setDraftGroqKey('');
+    setDraftGroqModel('');
+    refresh();
+  }
+
+  function handleSaveGroqModel() {
+    saveExternalLessonProviderModel('groq', draftGroqModel || externalStatus.groq.defaultModel);
+    setDraftGroqModel('');
+    refresh();
+  }
+
+  function handleClearGroq() {
+    clearExternalLessonProvider('groq');
+    refresh();
+  }
+
+  function handleSaveCerebras() {
+    saveExternalLessonProviderKey('cerebras', draftCerebrasKey, draftCerebrasModel || externalStatus.cerebras.defaultModel);
+    setDraftCerebrasKey('');
+    setDraftCerebrasModel('');
+    refresh();
+  }
+
+  function handleSaveCerebrasModel() {
+    saveExternalLessonProviderModel('cerebras', draftCerebrasModel || externalStatus.cerebras.defaultModel);
+    setDraftCerebrasModel('');
+    refresh();
+  }
+
+  function handleClearCerebras() {
+    clearExternalLessonProvider('cerebras');
     refresh();
   }
 
@@ -97,6 +144,81 @@ export function LessonKeysPanel() {
         </div>
         {status.proMasked ? (
           <button type="button" className="danger-button" onClick={handleClearPro}><Trash2 size={15} /> Remover Pro {status.proMasked}</button>
+        ) : null}
+      </div>
+
+      <div className="lesson-key-status">
+        <div>
+          <ShieldCheck size={17} />
+          <span>Groq fallback</span>
+          <strong>{externalStatus.groq.configured ? externalStatus.groq.masked : 'não configurada'}</strong>
+        </div>
+        <div>
+          <ShieldCheck size={17} />
+          <span>Cerebras fallback</span>
+          <strong>{externalStatus.cerebras.configured ? externalStatus.cerebras.masked : 'não configurada'}</strong>
+        </div>
+      </div>
+
+      <div className="key-form pro-form">
+        <label htmlFor="lesson-groq-key">Groq fallback externo</label>
+        <div>
+          <input
+            id="lesson-groq-key"
+            value={draftGroqKey}
+            onChange={(event) => setDraftGroqKey(event.target.value)}
+            placeholder="gsk_..."
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck="false"
+          />
+          <button type="button" onClick={handleSaveGroq}><Plus size={16} /> Salvar Groq</button>
+        </div>
+        <div>
+          <input
+            value={draftGroqModel}
+            onChange={(event) => setDraftGroqModel(event.target.value)}
+            placeholder={externalStatus.groq.model || externalStatus.groq.defaultModel}
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck="false"
+          />
+          <button type="button" onClick={handleSaveGroqModel}>Modelo</button>
+        </div>
+        <p className="empty-note">Modelo atual: {externalStatus.groq.model}</p>
+        {externalStatus.groq.configured ? (
+          <button type="button" className="danger-button" onClick={handleClearGroq}><Trash2 size={15} /> Remover Groq {externalStatus.groq.masked}</button>
+        ) : null}
+      </div>
+
+      <div className="key-form pro-form">
+        <label htmlFor="lesson-cerebras-key">Cerebras fallback externo</label>
+        <div>
+          <input
+            id="lesson-cerebras-key"
+            value={draftCerebrasKey}
+            onChange={(event) => setDraftCerebrasKey(event.target.value)}
+            placeholder="csk_..."
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck="false"
+          />
+          <button type="button" onClick={handleSaveCerebras}><Plus size={16} /> Salvar Cerebras</button>
+        </div>
+        <div>
+          <input
+            value={draftCerebrasModel}
+            onChange={(event) => setDraftCerebrasModel(event.target.value)}
+            placeholder={externalStatus.cerebras.model || externalStatus.cerebras.defaultModel}
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck="false"
+          />
+          <button type="button" onClick={handleSaveCerebrasModel}>Modelo</button>
+        </div>
+        <p className="empty-note">Modelo atual: {externalStatus.cerebras.model}</p>
+        {externalStatus.cerebras.configured ? (
+          <button type="button" className="danger-button" onClick={handleClearCerebras}><Trash2 size={15} /> Remover Cerebras {externalStatus.cerebras.masked}</button>
         ) : null}
       </div>
     </section>
