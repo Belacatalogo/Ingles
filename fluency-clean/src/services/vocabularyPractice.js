@@ -64,85 +64,12 @@ function looksLikeSentence(value) {
   return words.length >= 3 && /^[A-ZI]/.test(clean(value));
 }
 
-function hasWord(sentence, word) {
-  if (!sentence || !word) return false;
-  const escaped = clean(word).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  return new RegExp(`\\b${escaped}\\b`, 'i').test(sentence);
-}
-
-function sameSurfaceCue(card, option) {
-  const word = clean(card.word);
-  if (!word) return false;
-  return hasWord(option, word);
-}
-
 function getExample(card) {
   return clean(card?.example || card?.sentence || `I use ${card?.word || 'English'}.`);
 }
 
-function deriveChunk(card) {
-  const word = clean(card.word);
-  const example = getExample(card);
-  if (!word) return '';
-  const words = sentenceWords(example);
-  const index = words.findIndex((item) => normalizeOption(item) === normalizeOption(word));
-  if (index >= 0) {
-    const start = Math.max(0, index - 1);
-    const end = Math.min(words.length, index + 3);
-    const chunk = words.slice(start, end).join(' ');
-    if (chunk && chunk.toLowerCase() !== word.toLowerCase()) return chunk;
-  }
-  return word.length <= 3 ? `${word} am` : `use ${word}`;
-}
-
-function applySafeSentenceVariations(example) {
-  const base = clean(example).replace(/[.!?]$/, '');
-  const variations = [];
-  if (/^I am\b/i.test(base)) variations.push(base.replace(/^I am\b/i, 'You are'), base.replace(/^I am\b/i, 'We are'));
-  if (/^You are\b/i.test(base)) variations.push(base.replace(/^You are\b/i, 'I am'), base.replace(/^You are\b/i, 'We are'));
-  if (/^He is\b/i.test(base)) variations.push(base.replace(/^He is\b/i, 'She is'), base.replace(/^He is\b/i, 'They are'));
-  if (/^She is\b/i.test(base)) variations.push(base.replace(/^She is\b/i, 'He is'), base.replace(/^She is\b/i, 'They are'));
-  if (/^I have\b/i.test(base)) variations.push(base.replace(/^I have\b/i, 'You have'), base.replace(/^I have\b/i, 'We have'));
-  if (/^I need\b/i.test(base)) variations.push(base.replace(/^I need\b/i, 'You need'), `Do you ${base.replace(/^I\s+/i, '')}?`);
-  if (/^I want\b/i.test(base)) variations.push(base.replace(/^I want\b/i, 'You want'), `Do you ${base.replace(/^I\s+/i, '')}?`);
-  if (/^I like\b/i.test(base)) variations.push(base.replace(/^I like\b/i, 'You like'), `Do you ${base.replace(/^I\s+/i, '')}?`);
-  if (/^I go\b/i.test(base)) variations.push(base.replace(/^I go\b/i, 'We go'));
-  if (/^I study\b/i.test(base)) variations.push(base.replace(/^I study\b/i, 'We study'));
-  if (/^My\b/i.test(base)) variations.push(base.replace(/^My\b/i, 'Your'));
-  return variations.map(asSentence).filter(looksLikeSentence);
-}
-
-function deriveVariations(card) {
-  const word = clean(card.word);
-  const example = asSentence(getExample(card));
-  const variations = [example, ...applySafeSentenceVariations(example)];
-  if (word && variations.length < 3 && looksLikeSentence(`I use ${word}.`)) variations.push(`I use ${word}.`);
-  if (word && variations.length < 3 && looksLikeSentence(`I need ${word}.`)) variations.push(`I need ${word}.`);
-  return uniqueBy(variations.filter(looksLikeSentence).slice(0, 5), normalizeOption);
-}
-
-function deriveMiniDialogue(card) {
-  const word = clean(card.word);
-  const example = asSentence(getExample(card));
-  const translation = clean(card.translation || card.definition || word);
-  return {
-    prompt: `A: Do you understand “${word}”?`,
-    answer: `B: Yes. ${example}`,
-    meaning: translation,
-  };
-}
-
 function normalizeArray(value) {
   return Array.isArray(value) ? value.map(clean).filter(Boolean) : [];
-}
-
-function normalizeMiniDialogues(value, card) {
-  const fromCard = Array.isArray(value) ? value : [];
-  const normalized = fromCard.map((dialogue) => {
-    if (typeof dialogue === 'string') return { prompt: 'A:', answer: dialogue, meaning: card.translation || card.definition || card.word };
-    return { prompt: clean(dialogue?.prompt || dialogue?.a || 'A:'), answer: clean(dialogue?.answer || dialogue?.b || ''), meaning: clean(dialogue?.meaning || card.translation || card.definition || card.word) };
-  }).filter((dialogue) => dialogue.answer);
-  return normalized.length ? normalized : [deriveMiniDialogue(card)];
 }
 
 function normalizeCard(card, index) {
@@ -155,10 +82,10 @@ function normalizeCard(card, index) {
     deck: clean(card?.deck || card?.category),
     level: clean(card?.level || card?.due || 'A1'),
   };
-  normalized.chunk = clean(card?.chunk || card?.collocation || deriveChunk(normalized));
-  normalized.chunks = uniqueBy([...normalizeArray(card?.chunks), normalized.chunk], normalizeOption);
-  normalized.variations = uniqueBy([...normalizeArray(card?.variations).map(asSentence).filter(looksLikeSentence), ...deriveVariations(normalized)], normalizeOption).slice(0, 6);
-  normalized.miniDialogues = normalizeMiniDialogues(card?.miniDialogues || card?.dialogues, normalized).slice(0, 3);
+  normalized.chunk = clean(card?.chunk || card?.collocation || normalized.example.replace(/[.!?]$/, ''));
+  normalized.chunks = uniqueBy([...normalizeArray(card?.chunks), normalized.chunk].filter((item) => sentenceWords(item).length >= 2), normalizeOption);
+  normalized.variations = uniqueBy(normalizeArray(card?.variations).map(asSentence).filter(looksLikeSentence), normalizeOption).slice(0, 6);
+  normalized.miniDialogues = [];
   return normalized;
 }
 
@@ -167,9 +94,7 @@ function distractorsFor(cards, target, field = 'translation', limit = 6) {
     cards
       .filter((card) => card.id !== target.id)
       .map((card) => {
-        if (field === 'chunk') return card.chunk || card.chunks?.[0];
-        if (field === 'variation') return card.variations?.find((item) => normalizeOption(item) !== normalizeOption(card.example)) || card.variations?.[0] || card.example;
-        if (field === 'dialogue') return card.miniDialogues?.[0]?.answer || card.example;
+        if (field === 'chunk') return card.chunk || card.example.replace(/[.!?]$/, '');
         return clean(card[field] || card.translation || card.word);
       })
       .filter(Boolean),
@@ -191,13 +116,6 @@ function maskExample(card) {
   const index = Math.min(words.length - 1, Math.max(0, Math.floor(words.length / 2)));
   words[index] = '____';
   return words.join(' ');
-}
-
-function maskChunk(chunk) {
-  const words = sentenceWords(chunk);
-  if (words.length <= 1) return '____';
-  const index = words.length === 2 ? 1 : Math.floor(words.length / 2);
-  return words.map((word, itemIndex) => itemIndex === index ? '____' : word).join(' ');
 }
 
 function activityIntro(card, index) {
@@ -229,71 +147,35 @@ function activityMeaning(card, cards, index) {
   };
 }
 
-function activityExample(card, cards, index) {
-  const correct = card.example || `I use ${card.word}.`;
-  const rawDistractors = distractorsFor(cards, card, 'example', 8);
-  const sameCueDistractors = rawDistractors.filter((option) => sameSurfaceCue(card, option));
-  const regularDistractors = rawDistractors.filter((option) => !sameSurfaceCue(card, option));
-  const distractors = sameCueDistractors.length >= 2 ? sameCueDistractors : rawDistractors;
+function activityFindExample(card, cards, index) {
+  const correct = card.example;
   return {
-    id: `example-${card.id}-${index}`,
+    id: `find-example-${card.id}-${index}`,
     type: 'choice',
     cardId: card.id,
     word: card.word,
-    title: 'Uso em frase',
-    prompt: 'Qual frase combina melhor com o significado estudado?',
+    title: 'Frase com a palavra',
+    prompt: `Escolha a frase que usa “${card.word}” corretamente.`,
     hint: card.translation || card.definition || card.word,
     answer: correct,
-    options: makeOptions(correct, [...distractors, ...regularDistractors], `example-${card.id}-${index}`),
-    instruction: 'Escolha pelo sentido da frase, não apenas por uma palavra solta.',
+    options: makeOptions(correct, distractorsFor(cards, card, 'example'), `find-example-${card.id}-${index}`),
+    instruction: 'Agora existe apenas uma frase correta para esta palavra.',
   };
 }
 
 function activityChunk(card, cards, index) {
-  const correct = card.chunk || card.chunks?.[0] || card.word;
+  const correct = card.chunk || card.example.replace(/[.!?]$/, '');
   return {
     id: `chunk-${card.id}-${index}`,
     type: 'choice',
     cardId: card.id,
     word: card.word,
     title: 'Chunk natural',
-    prompt: `Complete o bloco natural: ${maskChunk(correct)}`,
+    prompt: `Qual bloco pertence à frase “${card.example}”?`,
     hint: `Palavra base: ${card.word}`,
     answer: correct,
     options: makeOptions(correct, distractorsFor(cards, card, 'chunk'), `chunk-${card.id}-${index}`),
-    instruction: 'Aprenda a palavra em bloco, como ela aparece em frases reais.',
-  };
-}
-
-function activityVariation(card, cards, index) {
-  const correct = card.variations.find((item) => normalizeOption(item) !== normalizeOption(card.example)) || card.variations[0] || card.example;
-  return {
-    id: `variation-${card.id}-${index}`,
-    type: 'choice',
-    cardId: card.id,
-    word: card.word,
-    title: 'Variação de uso',
-    prompt: 'Escolha outra frase natural com o mesmo vocabulário.',
-    hint: card.translation || card.definition || card.word,
-    answer: correct,
-    options: makeOptions(correct, distractorsFor(cards, card, 'variation'), `variation-${card.id}-${index}`),
-    instruction: 'Treine variações para não decorar só uma frase.',
-  };
-}
-
-function activityMiniDialogue(card, cards, index) {
-  const dialogue = card.miniDialogues[0] || deriveMiniDialogue(card);
-  return {
-    id: `dialogue-${card.id}-${index}`,
-    type: 'choice',
-    cardId: card.id,
-    word: card.word,
-    title: 'Mini-diálogo',
-    prompt: dialogue.prompt,
-    hint: dialogue.meaning,
-    answer: dialogue.answer,
-    options: makeOptions(dialogue.answer, distractorsFor(cards, card, 'dialogue'), `dialogue-${card.id}-${index}`),
-    instruction: 'Escolha a resposta que completa o mini-diálogo.',
+    instruction: 'Escolha o bloco natural da própria frase estudada.',
   };
 }
 
@@ -369,17 +251,15 @@ export function buildVocabularyPracticeActivities(rawCards = [], { level = 1 } =
 
   const intro = selected.map((card, index) => activityIntro(card, index));
   const meaning = selected.map((card, index) => activityMeaning(card, cards, index));
-  const example = selected.map((card, index) => activityExample(card, cards, index));
+  const example = selected.map((card, index) => activityFindExample(card, cards, index));
   const chunk = selected.map((card, index) => activityChunk(card, cards, index));
   const complete = selected.map((card, index) => activityComplete(card, cards, index));
   const listen = selected.map((card, index) => activityListen(card, cards, index));
-  const variation = selected.map((card, index) => activityVariation(card, cards, index));
   const build = selected.filter((card) => card.example).map((card, index) => activityBuild(card, index));
-  const dialogue = selected.map((card, index) => activityMiniDialogue(card, cards, index));
 
   if (level <= 1) return interleaveActivities([intro, meaning, example, chunk], seed, targetCount);
-  if (level === 2) return interleaveActivities([meaning, example, chunk, complete, listen, variation], seed, targetCount);
-  return interleaveActivities([meaning, example, chunk, complete, listen, variation, build, dialogue], seed, targetCount);
+  if (level === 2) return interleaveActivities([meaning, example, chunk, complete, listen], seed, targetCount);
+  return interleaveActivities([meaning, example, chunk, complete, listen, build], seed, targetCount);
 }
 
 export function scoreVocabularyPractice(activity, userAnswer) {
