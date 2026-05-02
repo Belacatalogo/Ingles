@@ -21,6 +21,7 @@ import './styles/progress-polish.css';
 import './styles/settings-polish.css';
 import './styles/listening-ux-hotfix.css';
 import './styles/practice-fullscreen.css';
+import './styles/grammar-examples-hotfix.css';
 
 const rootElement = document.getElementById('root');
 const root = createRoot(rootElement);
