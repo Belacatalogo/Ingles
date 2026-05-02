@@ -238,7 +238,9 @@ function ExampleCard({ example, index }) {
 }
 
 function SectionContent({ content }) {
-  const numbered = splitNumberedList(content);
+  const hasExampleHeader = Boolean(splitByExampleHeader(content));
+  const numbered = hasExampleHeader ? null : splitNumberedList(content);
+
   if (numbered) {
     return (
       <div className="grammar-deep-content">
