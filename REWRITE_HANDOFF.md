@@ -47,12 +47,46 @@ Princípio máximo:
 
 ## BLOCO ATUAL
 
-### `BLOCO-CARTAS-METODO-2-LAB` — Bolhas com método de aquisição IMPLEMENTADO, aguardando deploy/teste
+### `BLOCO-CARTAS-METODO-2B-LAB` — Bolha abre em tela dedicada IMPLEMENTADO, aguardando deploy/teste
 
 Contexto:
-- usuário quer que a aba Cartas substitua o Duolingo para aprender palavras e frases;
-- não basta ter flashcards: cada palavra/frase precisa ser treinada em uso, áudio, frase, completar e montar frase;
-- objetivo é aumentar vocabulário, mas também ensinar como usar esse vocabulário.
+- usuário testou a aba Cartas no iPhone;
+- ao tocar na bolha, a prática da bolha aparecia abaixo do mapa, deixando o estudo pesado e confuso;
+- o comportamento desejado é que a bolha abra uma tela de estudo dedicada, parecida com a prática normal, e não um bloco abaixo da trilha.
+
+Arquivos alterados:
+- `fluency-clean/src/screens/FlashcardsScreen.jsx`
+- `fluency-clean/src/styles/flashcards-polish.css`
+- `REWRITE_HANDOFF.md`
+
+O que foi implementado:
+- adicionado `studyMode` em `FlashcardsScreen.jsx`;
+- ao tocar em uma bolha desbloqueada, o sistema entra em modo de estudo da bolha;
+- mapa, tópicos e cabeçalho principal ficam ocultos durante o estudo;
+- aparece um cabeçalho dedicado com:
+  - botão `Voltar para trilha`;
+  - tópico;
+  - bolha;
+  - nível;
+  - progresso da sessão;
+- ao concluir a sessão, o botão `Voltar para trilha` retorna ao mapa;
+- ao trocar de tópico ou avançar versão da trilha, o modo de estudo fecha com segurança;
+- CSS novo para `cards-study-mode` e `cards-study-header`.
+
+Commits:
+- `cc35dff9870bb3c260297d90c43e5e35f754d65a` — abre estudo da bolha em tela dedicada;
+- `64779d441ec198cacf2936e69e65cceb7225650e` — estiliza modo dedicado de estudo da bolha.
+
+Teste recomendado no iPhone:
+1. abrir Cartas;
+2. entrar em Trilha de vocabulário;
+3. tocar na primeira bolha;
+4. confirmar que o mapa some e a sessão ocupa a tela da aba Cartas;
+5. confirmar botão `Voltar para trilha`;
+6. concluir a sessão e confirmar avanço 1/3;
+7. confirmar que voltar mostra o mapa novamente.
+
+### `BLOCO-CARTAS-METODO-2-LAB` — Bolhas com método de aquisição IMPLEMENTADO
 
 Arquivos criados:
 - `fluency-clean/src/services/vocabularyPractice.js`
@@ -64,38 +98,10 @@ Arquivos alterados:
 
 O que foi implementado:
 - novo motor `vocabularyPractice.js`;
-- cada bolha da trilha agora gera exercícios variados, não apenas flip card;
-- atividades criadas:
-  1. introdução da palavra/frase;
-  2. reconhecer significado;
-  3. escolher frase correta de uso;
-  4. completar frase;
-  5. ouvir frase e escolher;
-  6. montar frase com blocos de palavras;
-- níveis da bolha agora mudam a quantidade/profundidade:
-  - nível 1: poucas palavras e reconhecimento/uso simples;
-  - nível 2: mais palavras, completar e listening;
-  - nível 3: consolidação com montar frase;
-- a `Aula atual` continua com flashcards simples;
-- a `Trilha de vocabulário` usa o novo método de exercícios;
-- acertos/erros da bolha continuam salvos via `recordFlashcardSession()`;
-- progresso 3/3 da bolha continua salvo em `vocabularyPath.js`;
-- CSS novo em `flashcards-polish.css` para tela de exercícios das bolhas, com visual parecido com prática fullscreen/Duolingo.
-
-Commits:
-- `21018d7b555ccf791812ca5a787e45cc02d46192` — adiciona motor de prática de vocabulário;
-- `adf97d4396d367407ea4bff5d9377fef9ffaa7dc` — usa exercícios variados nas bolhas de vocabulário;
-- `a5142f571c3a6089a527b729c7d4a32382a1b85b` — estiliza exercícios variados das bolhas.
-
-Teste recomendado no iPhone:
-1. aguardar deploy da branch lab;
-2. abrir Cartas > Trilha de vocabulário;
-3. abrir Essenciais A1;
-4. tocar na primeira bolha;
-5. confirmar que aparecem exercícios variados, não apenas carta virando;
-6. verificar áudio, múltipla escolha, completar frase, ouvir frase e montar frase;
-7. concluir a rodada e confirmar que a bolha avança para 1/3;
-8. repetir até 3/3 e confirmar desbloqueio da próxima bolha.
+- bolhas geram exercícios variados: introdução, significado, frase, completar, ouvir e montar frase;
+- níveis 1, 2 e 3 aumentam profundidade;
+- `Aula atual` continua com flashcards simples;
+- `Trilha de vocabulário` usa o novo método.
 
 ### `BLOCO-CARTAS-TRILHA-1-LAB` — Cartas em trilha estilo Duolingo IMPLEMENTADO
 
@@ -168,13 +174,13 @@ Pendente técnica:
 
 ## NOVA ORDEM DE BLOCOS — QUALIDADE REAL DAS AULAS
 
-1. `BLOCO-CARTAS-METODO-2-LAB` — Bolhas com método de aquisição. STATUS: implementado, aguardando teste.
+1. `BLOCO-CARTAS-METODO-2B-LAB` — Bolha abre em tela dedicada. STATUS: implementado, aguardando teste.
 2. `BLOCO-CARTAS-SRS-3-LAB` — revisão espaçada real por palavra/frase.
 3. `BLOCO-CARTAS-USO-4-LAB` — usos, chunks e variações por palavra.
 4. `BLOCO-CARTAS-MIX-5-LAB` — misturar palavras novas com antigas.
 5. `BLOCO-CARTAS-LISTENING-SPEAKING-6-LAB` — áudio, shadowing e pronúncia.
 6. `BLOCO-CARTAS-MASTERY-7-LAB` — bolha só passa com domínio mínimo.
-7. `BLOCO-CARTAS-BANCO-8-LAB` — expandir banco até 2.000 itens.
+7. `BLOCO-CARTAS-CURRICULO-FIXO-8-LAB` — currículo fixo sem IA, meta 2.000 palavras + 1.000 frases/chunks.
 8. `BLOCO-AUDITORIA-POLIMENTO-GERAL-LAB` — após concluir os blocos principais, analisar cada página com precisão, listar melhorias possíveis e montar blocos de polimento.
 
 ## FASE EXTRA — GARANTIA PEDAGÓGICA MÁXIMA
@@ -198,13 +204,13 @@ Ordem recomendada após os blocos principais:
 
 ## Pendência técnica importante
 
-- testar deploy do `BLOCO-CARTAS-METODO-2-LAB` no iPhone;
-- confirmar que a sessão de bolha renderiza;
-- confirmar que exercícios registram acerto/erro;
-- confirmar que a bolha avança 1/3 ao concluir;
+- testar deploy do `BLOCO-CARTAS-METODO-2B-LAB` no iPhone;
+- confirmar que bolha abre como tela dedicada;
+- confirmar que o mapa não fica visível embaixo durante estudo;
+- confirmar que botão `Voltar para trilha` funciona;
 - seguir depois para `BLOCO-CARTAS-SRS-3-LAB`;
 - remover definitivamente `ListeningLesson.jsx` antigo quando o conector permitir SHA correto.
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O bloco atual implementado foi `BLOCO-CARTAS-METODO-2-LAB`: criado `vocabularyPractice.js`, bolhas da trilha agora usam exercícios variados como introdução, significado, frase, completar, ouvir e montar frase. Testar no iPhone; se ok, seguir para `BLOCO-CARTAS-SRS-3-LAB`."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O bloco atual implementado foi `BLOCO-CARTAS-METODO-2B-LAB`: ao tocar numa bolha, Cartas entra em modo de estudo dedicado com botão Voltar para trilha; mapa/tópicos ficam ocultos durante a sessão. Testar no iPhone; se ok, seguir para `BLOCO-CARTAS-SRS-3-LAB`."
