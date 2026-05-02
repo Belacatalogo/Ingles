@@ -69,46 +69,79 @@ Distribuição planejada:
 Bloco responsável:
 - `BLOCO-CARTAS-CURRICULO-FIXO-8-LAB`.
 
-Esse bloco deve criar arquivos reais em `fluency-clean/src/data/vocabulary/`, organizados por nível, tópico, bolha, palavra, frase, chunk, collocation e mini-diálogo. Como é grande, pode ser dividido em:
-- `BLOCO-CARTAS-CURRICULO-FIXO-8A-LAB` — estrutura e A1/A2;
-- `BLOCO-CARTAS-CURRICULO-FIXO-8B-LAB` — B1/B2;
-- `BLOCO-CARTAS-CURRICULO-FIXO-8C-LAB` — C1/C2 + auditoria tripla.
+Esse bloco deve criar arquivos reais em `fluency-clean/src/data/vocabulary/`, organizados por nível, tópico, bolha, palavra, frase, chunk, collocation e mini-diálogo. Como é grande, foi dividido em:
+- `BLOCO-CARTAS-CURRICULO-FIXO-8A-LAB` — estrutura e primeiro lote A1/A2;
+- `BLOCO-CARTAS-CURRICULO-FIXO-8B-LAB` — expansão B1/B2;
+- `BLOCO-CARTAS-CURRICULO-FIXO-8C-LAB` — C1/C2 + auditoria tripla profunda.
 
 ## BLOCO ATUAL
 
-### `BLOCO-CARTAS-HOTFIX-TAMANHO-ORDEM-1-LAB` — Bolhas maiores e ordem misturada IMPLEMENTADO, aguardando deploy/teste
+### `BLOCO-CARTAS-CURRICULO-FIXO-8A-LAB` — Estrutura e expansão A1/A2 IMPLEMENTADO, aguardando deploy/teste
 
 Contexto:
-- usuário pediu que cada nível da bolha tenha mais questões;
-- quantidade desejada: 15 a 20 questões por nível de bolha;
-- usuário também pediu que a ordem dos tipos de questão não fique fixa, por exemplo primeiro só escuta, depois só escrita;
-- a experiência deve variar como Duolingo, mas sem quebrar estabilidade das respostas.
+- usuário pediu para priorizar a expansão de conteúdo antes dos blocos de preview/dicas;
+- usuário quer uma trilha fixa, sem IA gerando bolhas;
+- usuário quer banco extremamente confiável, com múltiplas revisões antes de considerar pronto;
+- como a meta final é 7.500 itens, o bloco foi iniciado em partes, sem fingir que tudo ficou pronto de uma vez.
 
-Arquivo alterado:
-- `fluency-clean/src/services/vocabularyPractice.js`
+Arquivos criados:
+- `fluency-clean/src/data/vocabulary/fixedExpansionA1A2.js`
+
+Arquivos alterados:
+- `fluency-clean/src/services/vocabularyDecks.js`
 - `REWRITE_HANDOFF.md`
 
 O que foi implementado:
-- adicionado `targetQuestionCount()`;
-- nível 1 agora mira 15–16 questões;
-- nível 2 agora mira 16–18 questões;
-- nível 3 agora mira 18–20 questões;
-- adicionado `interleaveActivities()`;
-- tipos de exercício são embaralhados/intercalados em ordem misturada;
-- o embaralhamento continua determinístico por seed da bolha/nível;
-- isso evita mudar alternativas ao clicar, mas deixa a sessão menos previsível;
-- revisão rápida confirmou que a ordem é estável e que os limites de quantidade estão no intervalo pedido.
+- criado primeiro arquivo modular de expansão fixa A1/A2;
+- adicionados 8 novos tópicos/decks:
+  1. `Sala de aula e aprendizado`;
+  2. `Comunicação básica`;
+  3. `Compras e dinheiro`;
+  4. `Clima e natureza`;
+  5. `Hobbies e mídia`;
+  6. `Tecnologia do dia a dia`;
+  7. `Opiniões e emoções`;
+  8. `Viagem e serviços`;
+- adicionados 192 novos cards fixos A1/A2;
+- o banco passou de 288 para 480 cards reais;
+- cada novo item tem:
+  - palavra/expressão;
+  - tradução em português;
+  - frase exemplo;
+  - chunk/collocation base;
+- `vocabularyDecks.js` agora importa `fixedExpansionA1A2Decks`;
+- `VOCABULARY_BANK_TARGET` atualizado para 7.500;
+- `normalizeCard()` agora repassa `chunk` e `chunks` para o motor de prática;
+- criada função `getVocabularyBankAudit()` com 3 checagens locais iniciais:
+  1. estrutura obrigatória: palavra, tradução e frase;
+  2. frase com letra inicial maiúscula e pontuação final;
+  3. chunk com pelo menos 2 palavras;
+- a auditoria também lista duplicatas por palavra para revisão humana.
 
-Commit:
-- `9a0baccbb1342227c414c49ee14ab9d407fb8b98` — aumenta e mistura exercícios das bolhas.
+Revisões feitas neste bloco:
+1. Revisão estrutural: todos os novos itens foram criados no formato `[word, translation, example, chunk]`.
+2. Revisão de uso: exemplos foram mantidos simples, naturais e compatíveis com A1/A2.
+3. Revisão de integração: banco antigo continua preservado e expansão entra via import modular, sem mexer em `bundle.js`.
+
+Observação honesta:
+- este bloco ainda não conclui os 7.500 itens;
+- ele cria a fundação e o primeiro lote real;
+- os próximos blocos devem continuar a expansão e a auditoria em camadas.
+
+Commits:
+- `18b2c2e686b937efb00367c4dd3dda26669fa321` — adiciona expansão fixa A1 A2 de vocabulário;
+- `dd6c399f3de5cabafe40d3411488104a20e279cf` — conecta expansão fixa ao banco de vocabulário.
 
 Teste recomendado no iPhone:
 1. abrir Cartas > Trilha de vocabulário;
-2. iniciar uma bolha nível 1;
-3. confirmar que a sessão não tem mais só 12 questões;
-4. conferir que há mistura de tipos de exercício;
-5. tocar em alternativas e confirmar que elas não mudam de posição;
-6. concluir nível 1 e, se possível, testar nível 2/3 para ver 16–20 questões.
+2. confirmar que aparecem novos tópicos depois dos antigos;
+3. confirmar que o contador do banco mostra alvo 7.500;
+4. abrir um tópico novo, como `Sala de aula e aprendizado` ou `Tecnologia do dia a dia`;
+5. confirmar bolhas geradas normalmente;
+6. iniciar uma bolha e verificar se exemplos/chunks aparecem na prática;
+7. confirmar que progresso e SRS continuam funcionando.
+
+### `BLOCO-CARTAS-HOTFIX-TAMANHO-ORDEM-1-LAB` — Bolhas maiores e ordem misturada IMPLEMENTADO
 
 ### `BLOCO-CARTAS-USO-4-LAB` — Chunks, variações e mini-diálogos IMPLEMENTADO
 
@@ -179,16 +212,18 @@ Pendente técnica:
 - a tela ativa já usa `ListeningLessonClean.jsx` via `LessonScreen.jsx`, então o app não depende do arquivo antigo;
 - tentar limpar novamente depois ou via PR separado.
 
-## NOVA ORDEM DE BLOCOS — QUALIDADE REAL DAS AULAS
+## NOVA ORDEM DE BLOCOS — CARTAS COMO SUBSTITUTO DO DUOLINGO
 
-1. `BLOCO-CARTAS-HOTFIX-TAMANHO-ORDEM-1-LAB` — bolhas maiores e ordem misturada. STATUS: implementado, aguardando teste.
-2. `BLOCO-CARTAS-MIX-5-LAB` — misturar palavras novas com antigas.
-3. `BLOCO-CARTAS-LISTENING-SPEAKING-6-LAB` — áudio, shadowing e pronúncia.
-4. `BLOCO-CARTAS-MASTERY-7-LAB` — bolha só passa com domínio mínimo.
-5. `BLOCO-CARTAS-CURRICULO-FIXO-8A-LAB` — currículo fixo sem IA, estrutura + A1/A2.
-6. `BLOCO-CARTAS-CURRICULO-FIXO-8B-LAB` — currículo fixo B1/B2.
-7. `BLOCO-CARTAS-CURRICULO-FIXO-8C-LAB` — currículo fixo C1/C2 + auditoria tripla.
-8. `BLOCO-AUDITORIA-POLIMENTO-GERAL-LAB` — após concluir os blocos principais, analisar cada página com precisão, listar melhorias possíveis e montar blocos de polimento.
+1. `BLOCO-CARTAS-CURRICULO-FIXO-8A-LAB` — estrutura e primeiro lote A1/A2. STATUS: implementado, aguardando teste.
+2. `BLOCO-CARTAS-CURRICULO-FIXO-8B-LAB` — expansão B1/B2.
+3. `BLOCO-CARTAS-CURRICULO-FIXO-8C-LAB` — C1/C2 + auditoria tripla profunda.
+4. `BLOCO-CARTAS-PREVIEW-9A-LAB` — prévia da bolha com palavras, tradução e referência visual.
+5. `BLOCO-CARTAS-GLOSS-INLINE-9B-LAB` — clicar na palavra e abrir mini-caixa com tradução.
+6. `BLOCO-CARTAS-TRADUCAO-GUIADA-9C-LAB` — traduzir com bolhas de palavras + escrita opcional.
+7. `BLOCO-CARTAS-MIX-5-LAB` — misturar palavras novas com antigas.
+8. `BLOCO-CARTAS-LISTENING-SPEAKING-6-LAB` — áudio, shadowing e pronúncia.
+9. `BLOCO-CARTAS-MASTERY-7-LAB` — bolha só passa com domínio mínimo.
+10. `BLOCO-AUDITORIA-POLIMENTO-GERAL-LAB` — após concluir os blocos principais, analisar cada página com precisão, listar melhorias possíveis e montar blocos de polimento.
 
 ## FASE EXTRA — GARANTIA PEDAGÓGICA MÁXIMA
 
@@ -211,12 +246,12 @@ Ordem recomendada após os blocos principais:
 
 ## Pendência técnica importante
 
-- testar deploy do `BLOCO-CARTAS-HOTFIX-TAMANHO-ORDEM-1-LAB` no iPhone;
-- confirmar 15–20 questões por nível de bolha;
-- confirmar mistura de tipos de exercício;
-- seguir depois para `BLOCO-CARTAS-MIX-5-LAB` ou, se usuário priorizar, `BLOCO-CARTAS-CURRICULO-FIXO-8A-LAB`;
+- testar deploy do `BLOCO-CARTAS-CURRICULO-FIXO-8A-LAB` no iPhone;
+- confirmar que os novos tópicos aparecem;
+- confirmar que bolhas novas funcionam;
+- seguir para `BLOCO-CARTAS-CURRICULO-FIXO-8B-LAB` se a expansão estiver ok;
 - remover definitivamente `ListeningLesson.jsx` antigo quando o conector permitir SHA correto.
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O bloco atual implementado foi `BLOCO-CARTAS-HOTFIX-TAMANHO-ORDEM-1-LAB`: `vocabularyPractice.js` agora mira 15–20 questões por nível de bolha e mistura os tipos de exercício com embaralhamento determinístico. Testar no iPhone; depois seguir para `BLOCO-CARTAS-MIX-5-LAB` ou iniciar `BLOCO-CARTAS-CURRICULO-FIXO-8A-LAB`."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O bloco atual implementado foi `BLOCO-CARTAS-CURRICULO-FIXO-8A-LAB`: criado `fixedExpansionA1A2.js`, banco passou de 288 para 480 cards reais, alvo atualizado para 7.500 e `getVocabularyBankAudit()` foi criado com checagens estruturais. Testar no iPhone; se ok, seguir para `BLOCO-CARTAS-CURRICULO-FIXO-8B-LAB`."
