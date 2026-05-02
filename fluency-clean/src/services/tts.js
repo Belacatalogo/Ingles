@@ -36,7 +36,7 @@ async function pickEnglishVoice() {
   );
 }
 
-export async function speakText(text, { rate = 0.9, pitch = 1, lang = 'en-US' } = {}) {
+export async function speakText(text, { rate = 0.9, pitch = 1, lang = 'en-US', waitUntilEnded = false } = {}) {
   const content = String(text ?? '').trim();
 
   if (!content) {
@@ -68,7 +68,10 @@ export async function speakText(text, { rate = 0.9, pitch = 1, lang = 'en-US' } 
     utterance.pitch = pitch;
     utterance.voice = voice;
 
-    utterance.onstart = () => diagnostics.log('TTS iniciado.', 'info', { lang: utterance.lang, rate });
+    utterance.onstart = () => {
+      diagnostics.log('TTS iniciado.', 'info', { lang: utterance.lang, rate });
+      if (!waitUntilEnded) finish({ ok: true, started: true });
+    };
     utterance.onend = () => {
       diagnostics.log('TTS finalizado.', 'info');
       finish({ ok: true });
