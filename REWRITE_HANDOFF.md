@@ -28,60 +28,78 @@ Princípio máximo:
 
 ## BLOCO ATUAL IMPLEMENTADO EM BRANCH DE TESTE
 
-### `BLOCO-MODEL-TEST-GRAMMAR-PRO-LAB` — IMPLEMENTADO, aguardando deploy/teste no iPhone
+### `BLOCO-MODEL-TEST-GRAMMAR-PRO-LAB` — IMPLEMENTADO, hotfix aplicado, aguardando novo deploy/teste no iPhone
 
 Branch usada:
 - `rewrite-fluency-clean-lab-model-test`, criada a partir de `rewrite-fluency-clean-lab` no commit `c1b23e21b74303043d0372a61adc8a7b52ddec33`.
 
-Arquivo alterado:
+Arquivos alterados nesta branch de teste:
 - `fluency-clean/src/components/lesson/LessonGeneratorPanel.jsx`
+- `fluency-clean/src/services/plannedGeminiLessons.js`
 - `REWRITE_HANDOFF.md`
 
-O que foi implementado:
+O que foi implementado inicialmente:
 - criado contrato `grammar-model-test-gemini-2.5-pro`;
 - criado contrato de fallback `grammar-model-test-fallback-current`;
-- criado helper `generateGrammarModelTestDraft()`;
+- criado helper `generateGrammarModelTestDraft()` no painel;
 - somente quando a próxima aula é Grammar profunda e não é revisão de sábado:
   1. tenta gerar primeiro com `gemini-2.5-pro` usando apenas a key Pro de aulas;
   2. se o Pro gerar e a aula passar pelo fluxo, registra no diagnóstico que o modelo usado foi `gemini-2.5-pro`;
   3. se o Pro falhar por erro, quota, modelo indisponível ou resposta inválida, registra o motivo no diagnóstico;
   4. faz fallback para o modelo atual usando as Flash/free keys;
   5. salva no `contractVersion` `grammar-model-test-gemini-2.5-pro` ou `grammar-model-test-fallback-current`.
+
+Problema visto no iPhone:
+- O diagnóstico do teste mostrou `Tentativa 1/7: gemini-2.5-flash...`.
+- Isso provou que o preview testado entrou pelo fluxo padrão antes de aparecer o marcador do teste Pro.
+- A aula voltou a reprovar pelo professor revisor com 95/100 por itens de Grammar profunda.
+
+Hotfix aplicado depois do print:
+- `plannedGeminiLessons.js` agora também força o teste Pro no nível do planejador, não apenas no painel.
+- Para `lessonType === 'grammar'` com key Pro configurada:
+  1. registra fase `MODEL-TEST-GRAMMAR-PRO ativo`;
+  2. registra no diagnóstico: `MODEL-TEST-GRAMMAR-PRO ATIVO: planejador travou Grammar para tentar gemini-2.5-pro antes de qualquer Flash.`;
+  3. chama `generateLessonDraft()` com `keys: []` e `proKey`, forçando Pro primeiro;
+  4. se Pro funcionar, salva `planContract` com `grammar-model-test-gemini-2.5-pro`;
+  5. se Pro falhar, registra o motivo e faz fallback para o modelo atual com `grammar-model-test-fallback-current`.
+
+Importante:
+- Se no próximo teste do iPhone NÃO aparecer `MODEL-TEST-GRAMMAR-PRO ATIVO`, o preview aberto não está usando o commit novo ou está cacheado.
+- Se aparecer `MODEL-TEST-GRAMMAR-PRO ATIVO` e depois aparecer Flash, então o Pro falhou e o fallback foi acionado corretamente.
 - Reading, Listening, Writing, Cartas e revisão de sábado continuam no fluxo atual.
 - O backend Azure privado não foi alterado.
 - `bundle.js` não foi alterado.
 - Não foi usado DOM injection, bundle patch nem HTML remendado.
 
-Mensagens esperadas no diagnóstico:
-- ao detectar Grammar:
-  - `Contrato de Grammar profunda ativado: aula longa, guiada e não enciclopédica.`
-- ao testar Pro:
-  - `BLOCO-MODEL-TEST-GRAMMAR-PRO-LAB: tentando gerar Grammar profunda com gemini-2.5-pro primeiro.`
+Mensagens esperadas no diagnóstico depois do hotfix:
+- `MODEL-TEST-GRAMMAR-PRO ATIVO: planejador travou Grammar para tentar gemini-2.5-pro antes de qualquer Flash.`
 - se Pro funcionar:
-  - `Grammar profunda gerada com gemini-2.5-pro. Fallback não foi necessário.`
-  - `Modelo usado na Grammar: gemini-2.5-pro. Contrato: grammar-model-test-gemini-2.5-pro.`
+  - `MODEL-TEST-GRAMMAR-PRO: Grammar gerada com gemini-2.5-pro pelo planejador.`
 - se Pro falhar:
-  - `gemini-2.5-pro falhou somente para Grammar. Voltando ao modelo atual. Motivo: ...`
-  - `Modelo usado na Grammar: current-fallback. Contrato: grammar-model-test-fallback-current.`
-- se não houver key Pro:
-  - `Grammar profunda detectada, mas nenhuma key Pro foi configurada. Mantendo modelo atual.`
+  - `MODEL-TEST-GRAMMAR-PRO: Pro falhou. Fazendo fallback para modelo atual. Motivo: ...`
+- se o painel também estiver rodando o caminho novo:
+  - `BLOCO-MODEL-TEST-GRAMMAR-PRO-LAB: tentando gerar Grammar profunda com gemini-2.5-pro primeiro.`
+  - `Modelo usado na Grammar: gemini-2.5-pro...` ou `Modelo usado na Grammar: current-fallback...`
 
 Commits desta branch de teste:
-- `4a139e4e025e4bb8918a7309db3d3f338b7463c2` — testa modelo Pro somente em Grammar profunda.
+- `4a139e4e025e4bb8918a7309db3d3f338b7463c2` — testa modelo Pro somente em Grammar profunda no painel.
+- `6423068052ec16412507680b89a5661f279193e6` — atualiza handoff do teste de modelo.
+- `a7dcb886c5ca9af0e3eb7023529a50514c369a49` — força Pro primeiro no planejador Grammar e adiciona marcador claro no diagnóstico.
 
 Teste recomendado no iPhone:
-1. aguardar o preview/deploy da branch `rewrite-fluency-clean-lab-model-test`;
-2. abrir exatamente o preview dessa branch, não o da lab principal;
-3. confirmar que existe key Pro configurada em Ajustes > Chaves de aulas;
-4. gerar/substituir uma aula Grammar;
-5. acompanhar o Diagnóstico e procurar qual modelo foi usado;
-6. se salvar, abrir a aula e conferir se a Grammar ficou mais profunda, organizada e estudável;
-7. conferir em “Último status” se o contrato inclui `grammar-model-test-gemini-2.5-pro` ou `grammar-model-test-fallback-current`;
-8. se houver erro grave, abandonar esta branch de teste e voltar para `rewrite-fluency-clean-lab`.
+1. aguardar o preview/deploy do commit `a7dcb88` ou posterior;
+2. abrir exatamente o preview da branch `rewrite-fluency-clean-lab-model-test`, não o da lab principal;
+3. se estiver em PWA instalado, fechar e reabrir; se continuar estranho, abrir no Safari em aba nova para evitar cache;
+4. confirmar que existe key Pro configurada em Ajustes > Chaves de aulas;
+5. gerar/substituir uma aula Grammar;
+6. acompanhar o Diagnóstico e procurar obrigatoriamente `MODEL-TEST-GRAMMAR-PRO ATIVO`;
+7. se salvar, abrir a aula e conferir se a Grammar ficou mais profunda, organizada e estudável;
+8. conferir em “Último status” se o contrato inclui `grammar-model-test-gemini-2.5-pro` ou `grammar-model-test-fallback-current`;
+9. se houver erro grave, abandonar esta branch de teste e voltar para `rewrite-fluency-clean-lab`.
 
 Critério de sucesso:
 - gerar uma nova aula Grammar sem quebrar o sistema;
-- diagnóstico mostrar o modelo usado;
+- diagnóstico mostrar o marcador do teste e o modelo usado;
 - aula salvar normalmente;
 - `contractVersion` registrar o contrato do teste;
 - qualidade didática ser comparável ou melhor que a geração anterior;
@@ -151,10 +169,10 @@ Meta planejada:
 
 ## NOVA ORDEM DE BLOCOS
 
-1. Testar `BLOCO-MODEL-TEST-GRAMMAR-PRO-LAB` no preview da branch `rewrite-fluency-clean-lab-model-test`.
+1. Testar novamente `BLOCO-MODEL-TEST-GRAMMAR-PRO-LAB` no preview da branch `rewrite-fluency-clean-lab-model-test`, commit `a7dcb88` ou posterior.
 2. Se o teste de modelo for aprovado, portar cuidadosamente para `rewrite-fluency-clean-lab` em bloco único.
 3. Se o teste de modelo falhar grave, abandonar `rewrite-fluency-clean-lab-model-test` e voltar para `rewrite-fluency-clean-lab`.
-4. Se Grammar ainda bloquear por conteúdo vago, endurecer `plannedGeminiLessons.js`/`geminiLessons.js` no blueprint de JSON e/ou ajustar temperatura se disponível.
+4. Se Grammar ainda bloquear por conteúdo vago mesmo com Pro ativo, endurecer `teacherReviewer.js`/`deepGrammarPipeline.js` ou relaxar bloqueio de alta nota com ressalvas reparáveis.
 5. Se ok, voltar para `BLOCO-CARTAS-PAREAMENTO-10-LAB`.
 6. `BLOCO-CARTAS-PAREAMENTO-IMAGEM-10B-LAB`.
 7. `BLOCO-CARTAS-SIGNIFICADO-10C-LAB`.
@@ -166,4 +184,4 @@ Meta planejada:
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal continua sendo `rewrite-fluency-clean-lab`, mas o teste atual está isolado na branch `rewrite-fluency-clean-lab-model-test`. Não mexa em `main`, não mexa em `rewrite-fluency-clean`, não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O bloco `BLOCO-MODEL-TEST-GRAMMAR-PRO-LAB` foi implementado na branch de teste: Grammar profunda tenta `gemini-2.5-pro` primeiro, mantém fallback para o modelo atual, registra no diagnóstico qual modelo foi usado e salva no contrato `grammar-model-test-gemini-2.5-pro` ou `grammar-model-test-fallback-current`. Testar no iPhone usando o preview da branch de teste. Se der erro grave, abandonar a branch de teste e voltar para `rewrite-fluency-clean-lab`."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal continua sendo `rewrite-fluency-clean-lab`, mas o teste atual está isolado na branch `rewrite-fluency-clean-lab-model-test`. Não mexa em `main`, não mexa em `rewrite-fluency-clean`, não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O bloco `BLOCO-MODEL-TEST-GRAMMAR-PRO-LAB` foi implementado e recebeu hotfix no planejador: Grammar profunda com key Pro agora deve mostrar `MODEL-TEST-GRAMMAR-PRO ATIVO` no diagnóstico e tentar `gemini-2.5-pro` antes de qualquer Flash; se Pro falhar, faz fallback para o modelo atual e salva contrato `grammar-model-test-fallback-current`. Testar no iPhone usando o preview da branch de teste no commit `a7dcb88` ou posterior. Se der erro grave, abandonar a branch de teste e voltar para `rewrite-fluency-clean-lab`."
