@@ -18,6 +18,20 @@ function readLocalText(name) {
   }
 }
 
+function saveLocalText(name, value) {
+  const normalized = text(value);
+  if (!normalized) {
+    storage.remove(name);
+    return '';
+  }
+  storage.setText(name, normalized);
+  return normalized;
+}
+
+function clearLocalText(name) {
+  storage.remove(name);
+}
+
 function jsonFromText(value) {
   const raw = text(value).replace(/^```(?:json)?\s*/i, '').replace(/```$/i, '').trim();
   const start = raw.indexOf('{');
@@ -123,11 +137,56 @@ function withMeta(rawLesson, provider) {
 }
 
 export function getExternalLessonProviderStatus() {
+  const policy = getExternalProviderPolicy();
+  const groqKey = readLocalText(policy.groq.keyStorage);
+  const cerebrasKey = readLocalText(policy.cerebras.keyStorage);
+  const groqModel = readLocalText(policy.groq.modelStorage) || policy.groq.defaultModel;
+  const cerebrasModel = readLocalText(policy.cerebras.modelStorage) || policy.cerebras.defaultModel;
   const providers = providersFromLocalStorage();
   return {
     enabled: providers.length > 0,
+    groq: {
+      configured: Boolean(groqKey),
+      masked: maskApiKey(groqKey),
+      model: groqModel,
+      defaultModel: policy.groq.defaultModel,
+    },
+    cerebras: {
+      configured: Boolean(cerebrasKey),
+      masked: maskApiKey(cerebrasKey),
+      model: cerebrasModel,
+      defaultModel: policy.cerebras.defaultModel,
+    },
     providers: providers.map((provider) => ({ id: provider.id, label: provider.label, model: provider.model, masked: provider.masked })),
   };
+}
+
+export function saveExternalLessonProviderKey(provider, keyValue, modelValue = '') {
+  const policy = getExternalProviderPolicy();
+  const current = policy[String(provider || '').toLowerCase()];
+  if (!current) return getExternalLessonProviderStatus();
+  const savedKey = saveLocalText(current.keyStorage, keyValue);
+  if (modelValue) saveLocalText(current.modelStorage, modelValue);
+  diagnostics.log(`${provider} fallback de aulas ${savedKey ? `salvo: ${maskApiKey(savedKey)}` : 'removido ou vazio'}.`, savedKey ? 'info' : 'warn');
+  return getExternalLessonProviderStatus();
+}
+
+export function saveExternalLessonProviderModel(provider, modelValue) {
+  const policy = getExternalProviderPolicy();
+  const current = policy[String(provider || '').toLowerCase()];
+  if (!current) return getExternalLessonProviderStatus();
+  const savedModel = saveLocalText(current.modelStorage, modelValue || current.defaultModel);
+  diagnostics.log(`${provider} fallback de aulas usando modelo ${savedModel || current.defaultModel}.`, 'info');
+  return getExternalLessonProviderStatus();
+}
+
+export function clearExternalLessonProvider(provider) {
+  const policy = getExternalProviderPolicy();
+  const current = policy[String(provider || '').toLowerCase()];
+  if (!current) return getExternalLessonProviderStatus();
+  clearLocalText(current.keyStorage);
+  diagnostics.log(`${provider} fallback de aulas removido.`, 'info');
+  return getExternalLessonProviderStatus();
 }
 
 export async function generateExternalLessonDraft({ prompt = '', forcedType = '', level = 'A1', fetcher = fetch, forceVariation = false, reason = '' } = {}) {
