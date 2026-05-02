@@ -20,6 +20,7 @@ import './styles/level-certification.css';
 import './styles/progress-polish.css';
 import './styles/settings-polish.css';
 import './styles/listening-ux-hotfix.css';
+import './styles/lesson-preview-lab.css';
 import './styles/practice-fullscreen.css';
 import './styles/grammar-examples-hotfix.css';
 
