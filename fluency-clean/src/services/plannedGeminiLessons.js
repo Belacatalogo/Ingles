@@ -140,7 +140,14 @@ export async function generatePlannedLessonDraft(options = {}) {
         externalGrammarProvider: forceExternalTarget === 'external' ? forcedExternalResult.provider : forceExternalTarget,
       });
     }
-    diagnostics.log('Fallback externo forçado falhou. Voltando ao Gemini para não travar a geração.', 'warn', forcedExternalResult);
+    diagnostics.setPhase('fallback externo forçado falhou', 'error');
+    diagnostics.log('Fallback externo forçado falhou. Geração encerrada para não contaminar a comparação com Gemini.', 'error', forcedExternalResult);
+    return {
+      status: 'error',
+      lesson: null,
+      error: forcedExternalResult?.error || `Falha no teste forçado com ${targetLabel}.`,
+      forcedExternalProvider: forceExternalTarget,
+    };
   }
 
   const result = await generateLessonDraft({
