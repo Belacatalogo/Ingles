@@ -15,25 +15,41 @@ Branch estável protegida: `rewrite-fluency-clean`
 - Não mexer no backend Azure privado.
 - Manter tudo modular em `fluency-clean/src/`, `fluency-clean/public/` ou arquivos reais de configuração.
 
-## OBJETIVO PEDAGÓGICO FINAL
+## ESTADO ATUAL — HOTFIX DIAGNÓSTICO
 
-`diagnosticar → ensinar → praticar → corrigir → revisar → testar → só então avançar`
-
-Princípio máximo:
-
-`o aluno só avança quando prova domínio, não apenas quando conclui uma aula.`
-
-## ESTADO ATUAL — CIRURGIA 1 COMPLETA COM UI
-
-### `CIRURGIA-1-FALLBACK-EXTERNO-LAB` — IMPLEMENTADA, aguardando deploy/teste
+### `HOTFIX-DIAGNOSTICO-LOGS-TOPO-LAB` — IMPLEMENTADO, aguardando deploy/teste
 
 Contexto:
-- O plano anexado de correções cirúrgicas foi lido.
-- A parte que colocava `gemini-2.5-pro` nas keys free foi descartada por regra do usuário.
-- A Cirurgia 1 foi completada com fallback externo real para testar quando Gemini falhar, sem mexer no motor profundo de Grammar.
-- Depois foi adicionada UI em Ajustes para o usuário cadastrar Groq/Cerebras sem DevTools.
+- O teste mostrou que a aula caiu no Flash e o diagnóstico empurrava as informações importantes para baixo.
+- Sem ver os logs recentes, não dava para saber se o fallback Groq/Cerebras falhou, se nem foi chamado, ou se o Gemini simplesmente teve sucesso antes do fallback.
 
-Política de modelos mantida:
+O que foi corrigido:
+- `DiagnosticPanel.jsx` agora mostra **Eventos recentes** no topo, logo abaixo de Status/Fase/Último erro.
+- A quantidade de logs visíveis subiu de 6 para 14.
+- Os logs agora mostram segundos no horário.
+- `Aula no storage` e `Checklist` foram empurrados para baixo, porque são menos importantes durante geração.
+- `index.css` agora mantém o diagnóstico fixo no mobile, com altura controlada e rolagem própria.
+- A lista de eventos recentes tem rolagem própria para não sumir no iPhone.
+
+Arquivos alterados neste hotfix:
+- `fluency-clean/src/components/system/DiagnosticPanel.jsx`
+- `fluency-clean/src/styles/index.css`
+- `REWRITE_HANDOFF.md`
+
+Commits do hotfix:
+- `66ff0fc057e77a399c27372b36d8ece6d87d266b` — mostra logs recentes no topo.
+- `f2a597d5d2f0fd166b125dc91e583ff61202b2f4` — melhora rolagem e logs no mobile.
+
+Importante sobre fallback externo:
+- Se Gemini Flash gerar a aula com sucesso, Groq/Cerebras **não entram**. Isso é esperado.
+- O fallback externo só entra quando `generateLessonDraft()` falha e `plannedGeminiLessons.js` recebe erro/status sem aula.
+- Para testar Groq/Cerebras de forma controlada, próximo ajuste recomendado é adicionar um toggle em Ajustes > Chaves de aulas: `Forçar fallback externo no próximo teste`.
+
+## ESTADO ANTERIOR — CIRURGIA 1 COMPLETA COM UI
+
+### `CIRURGIA-1-FALLBACK-EXTERNO-LAB` — IMPLEMENTADA
+
+Política de modelos:
 - keys free/de aula → `gemini-2.5-flash` e `gemini-2.5-flash-lite`;
 - key Pro paga → `gemini-2.5-pro` somente como fallback opcional já existente;
 - Groq/Cerebras → fallback externo depois de falha do Gemini;
@@ -48,83 +64,35 @@ Arquivos alterados:
 
 O que foi implementado:
 - `modelPolicy.js` registra Groq e Cerebras como fallback externo opcional.
-- `externalLessonProviders.js`:
-  - lê chaves pelo storage do app;
-  - ainda aceita localStorage cru para teste manual;
-  - chama endpoints OpenAI-compatible de Groq/Cerebras;
-  - pede JSON completo de aula;
-  - normaliza a aula antes de voltar para o pipeline local;
-  - anexa metadados `providerFallback` e `external-provider-*-fallback-v1`;
-  - exporta funções para salvar/remover chaves e modelos externos.
-- `plannedGeminiLessons.js` foi cablado:
-  - Gemini continua tentando primeiro;
-  - se Gemini não concluir, o planejador registra a falha;
-  - antes de devolver erro, tenta Groq/Cerebras;
-  - se fallback externo gerar aula, a aula ainda passa pelo mesmo pipeline local de validação, reparo, professor revisor, study readiness e salvamento.
-- `LessonKeysPanel.jsx` agora mostra, dentro de Ajustes > Chaves de aulas:
-  - status de Groq fallback;
-  - status de Cerebras fallback;
-  - campo para salvar key Groq;
-  - campo opcional para modelo Groq;
-  - campo para salvar key Cerebras;
-  - campo opcional para modelo Cerebras;
-  - botões para remover Groq/Cerebras.
+- `externalLessonProviders.js` lê/salva chaves pelo storage do app e ainda aceita localStorage cru para teste manual.
+- `plannedGeminiLessons.js` mantém Gemini primeiro; se Gemini não concluir, tenta Groq/Cerebras antes de devolver erro.
+- `LessonKeysPanel.jsx` adiciona UI em Ajustes > Chaves de aulas para salvar/remover Groq/Cerebras e modelos.
 
-Commits:
-- `718d9bf0aa83b8d097dde359cf6f4e569f6fe8e7` — adiciona política estável de modelos.
-- `afe6be5f0595c4a496aaafb7f520124bd18129c1` — atualiza handoff da cirurgia 1 mínima.
+Commits principais da Cirurgia 1:
 - `3ee8996851c4990488c22d18e9b93d4944af38cb` — adiciona provedores externos de aula.
 - `86caae7ece769fadd3975903d3f4173b4e3fc44b` — registra política Groq e Cerebras.
 - `0f6d01244a36c5707e6479af0e02c7387f6f76fc` — cabla fallback externo no planejador.
-- `537a56bd7e5e52a509becd6a0cd0b68bdfc650f2` — atualiza handoff do fallback externo.
 - `5f37d76ca866b877a1de906d6fb8ed41aa84104d` — adiciona gerenciamento de keys externas.
 - `ed99a6709d2445c44917dac4d3c9feb1fd2981c7` — adiciona UI para keys Groq e Cerebras.
 
-Como testar agora:
-1. aguardar deploy da branch `rewrite-fluency-clean-lab` com commit `ed99a67` ou posterior;
-2. abrir o preview da lab;
-3. ir em Ajustes > Chaves de aulas;
-4. preencher Groq fallback externo e/ou Cerebras fallback externo;
-5. salvar;
-6. gerar/substituir aula;
-7. para testar fallback, simular falha/503 do Gemini ou aguardar falha real;
-8. observar diagnóstico:
-   - `Gemini não concluiu a aula. Tentando fallback externo Groq/Cerebras...`
-   - `Fallback externo ativado...`
-   - `Tentando Groq...` ou `Tentando Cerebras...`
-   - `gerou aula para validação local`.
-
-Observações:
-- Não foi adicionada UI fora de Ajustes.
-- Não foi mexido no motor profundo.
-- Não foi mexido em `bundle.js`.
-- Não foi mexido no backend Azure privado.
-- Não foi mexido em `main` nem `rewrite-fluency-clean`.
-
 ## NÃO FAZER AGORA
 
-- Não implementar Cirurgia 2 antes do teste de geração com fallback externo.
+- Não implementar Cirurgia 2 antes de testar diagnóstico novo e fallback externo.
 - Não dividir o bloco de Grammar ainda.
 - Não mexer no auditor por section ainda.
 - Não reescrever `deepGrammarPipeline.js` ainda.
 - Não usar `gemini-2.5-pro` nas 3 keys free.
 - Não salvar aula fraca só para evitar bloqueio.
 
-## Próximo bloco se o teste da Cirurgia 1 passar
+## Próximo bloco recomendado
 
-### `CIRURGIA-2-GRAMMAR-BLOCO-1-PROFUNDO-LAB` — PENDENTE
+### `HOTFIX-FORCAR-FALLBACK-EXTERNO-LAB` — PENDENTE
 
 Objetivo:
-- refatorar o Bloco 1 de Grammar para aumentar profundidade por section.
-- Deve ser feito somente depois de uma aula gerada/testada com a Cirurgia 1 completa.
-
-Direção provável:
-- ajustar `fluency-clean/src/services/geminiLessons.js`;
-- manter geração por blocos;
-- aumentar a profundidade do blueprint Grammar;
-- evitar mudança ampla no motor;
-- testar no iPhone antes de continuar.
+- adicionar em Ajustes > Chaves de aulas um toggle de teste: `Forçar fallback externo na próxima geração`.
+- Quando ativo, `plannedGeminiLessons.js` deve pular Gemini e chamar Groq/Cerebras diretamente.
+- Isso é apenas para teste controlado, não para uso normal.
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal de trabalho é `rewrite-fluency-clean-lab`. A Cirurgia 1 completa foi implementada: Gemini continua primeiro; se falhar, `plannedGeminiLessons.js` tenta fallback externo Groq/Cerebras. Também foi adicionada UI em Ajustes > Chaves de aulas para salvar/remover Groq e Cerebras. Não mexer em motor profundo, não portar Pro para keys free, não seguir para Cirurgia 2 antes de testar geração real. Não mexer em `main`, `rewrite-fluency-clean`, `bundle.js` ou backend Azure privado."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. O último hotfix moveu os logs do diagnóstico para o topo e melhorou a rolagem no mobile. Não seguir para Cirurgia 2 ainda. Próximo ajuste provável: toggle para forçar fallback externo na próxima geração, porque se Flash funcionar Groq/Cerebras não entram. Não mexer em `main`, `rewrite-fluency-clean`, `bundle.js` ou backend Azure privado."
