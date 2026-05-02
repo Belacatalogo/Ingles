@@ -25,59 +25,54 @@ Princípio máximo:
 
 ## BLOCO ATUAL
 
-### `BLOCO-HOTFIX-CLOUD-SYNC-AULA-SEGURA-LAB` — IMPLEMENTADO, aguardando deploy/teste
+### `BLOCO-HOTFIX-PERSISTENCIA-VERIFICADA-AULA-LAB` — IMPLEMENTADO, aguardando deploy/teste
 
 Contexto:
-- Diagnóstico mostrou o bug com precisão:
-  - `Atual`: aula antiga da biblioteca;
-  - `Histórico 0`: aula antiga `Alfabeto...`;
-  - `Status título`: aula nova `Present Simple: Verbs 'To Be' and 'To Have'`;
-  - `Histórico total`: 1.
-- Isso indica que `lesson.lastGenerationStatus` estava localmente novo, mas `lesson.current` e `lesson.history` estavam antigos.
-- Ao inspecionar `cloudSync.js`, foi identificado que o Cloud Sync sincronizava `lesson.current` e `lesson.history`, mas não sincronizava `lesson.lastGenerationStatus`, e aplicava dados da nuvem de forma perigosa para aulas.
+- Diagnóstico mostrou que `Status título` mudava para a aula nova, mas `Atual` e `Histórico 0` continuavam antigos.
+- Isso significa que o fluxo chegava ao ponto de status/log, mas a aula completa não estava sendo persistida como `lesson.current`.
+- Possível causa no iPhone: limite/quota de `localStorage`, histórico grande ou falha silenciosa ao gravar objeto grande.
+- O log “Aula salva” estava enganoso porque o status pequeno podia gravar mesmo se a aula grande não tivesse sido confirmada.
 
-Arquivos alterados:
-- `fluency-clean/src/services/cloudSync.js`
+Arquivo alterado:
+- `fluency-clean/src/services/lessonStore.js`
 - `REWRITE_HANDOFF.md`
 
 O que foi corrigido:
-- `lesson.lastGenerationStatus` foi adicionado a `CLOUD_SYNC_KEYS`;
-- Cloud Sync agora faz merge seguro de aulas:
-  - `lesson.current`: escolhe o mais recente entre local e nuvem;
-  - `lesson.history`: mescla local + nuvem por ID de geração/aula/título e ordena por data;
-  - `lesson.lastGenerationStatus`: escolhe o status mais recente;
-- adicionadas funções auxiliares:
-  - `readTime()`;
-  - `readStatusTime()`;
-  - `lessonKey()`;
-  - `mergeLessonHistory()`;
-  - `chooseNewest()`;
-- corrigido erro de sintaxe introduzido durante o patch no `catch` do `pushToCloud()`.
+- `saveCurrentLesson()` agora usa persistência verificada:
+  - grava `lesson.current`;
+  - relê `lesson.current`;
+  - confirma que `generationMeta.id` salvo é o mesmo da aula nova;
+- se falhar, limpa `lesson.history` e tenta gravar `lesson.current` de novo;
+- se ainda falhar, cria uma versão compacta da aula:
+  - limita intro/listeningText/sections/vocabulary/exercises/prompts;
+  - marca `generationMeta.compactedForStorage = true`;
+- só depois da confirmação real grava `lesson.lastGenerationStatus` com evento `saved`;
+- se a aula não for persistida, grava status `storage-failed` e NÃO registra status falso de aula salva;
+- histórico agora guarda até 6 aulas, não 30, para reduzir risco no iPhone;
+- se histórico não couber, tenta salvar só a aula atual no histórico.
 
-Commits:
-- `0a4221693b4d10d949bc80e9d21cc4a1b467bdb5` — corrige sintaxe do Cloud Sync seguro.
+Commit principal:
+- `7f7cbedc8e27491b453172d1d8ca77a1c5734eb3` — garante status saved somente após aula persistida.
 
 Teste recomendado no iPhone:
-1. aguardar deploy do commit `0a42216`;
-2. fechar e reabrir o app/PWA ou recarregar a página;
-3. gerar uma nova revisão/aula;
-4. abrir Diagnóstico > `Aula no storage`;
-5. confirmar que `Atual`, `Histórico 0` e `Status título` mostram a mesma aula nova;
-6. abrir aba Aula e confirmar que mostra a aula nova.
+1. aguardar deploy do commit `7f7cbed`;
+2. recarregar o PWA;
+3. gerar nova aula/revisão;
+4. aguardar terminar completamente;
+5. abrir Diagnóstico > Aula no storage;
+6. confirmar que `Atual`, `Histórico 0` e `Status título` agora mostram o mesmo título da aula nova;
+7. abrir aba Aula e confirmar que a aula nova aparece.
 
-Observação:
-- a aula nova antiga que estava só no status provavelmente não pode ser recuperada, porque ela não estava no `lesson.current` nem no `lesson.history`.
-- Após este hotfix, a próxima geração deve gravar e permanecer corretamente.
-
-## META OFICIAL — CARTAS / VOCABULÁRIO
-
-A aba Cartas deve substituir o uso do Duolingo para vocabulário, frases, chunks, tradução, listening, speaking, stories, revisão e domínio.
-
-Meta planejada:
-
-`5.000 palavras/expressões + 2.500 frases/chunks = 7.500 itens treináveis`
+Se aparecer `storage-failed`:
+- o iPhone não conseguiu gravar nem a versão compacta;
+- próximo passo será migrar `lesson.current` para IndexedDB ou reduzir ainda mais o payload salvo.
 
 ## Blocos recentes implementados
+
+### `BLOCO-HOTFIX-CLOUD-SYNC-AULA-SEGURA-LAB` — IMPLEMENTADO
+- Cloud Sync sincroniza `lesson.lastGenerationStatus`.
+- Preserva aula local mais recente.
+- Mescla histórico local + nuvem.
 
 ### `BLOCO-HOTFIX-DIAGNOSTICO-STORAGE-AULA-LAB` — IMPLEMENTADO
 - Criado `lessonStorageDebug.js`.
@@ -90,19 +85,28 @@ Meta planejada:
 - Criado `vocabularyVisualReferences.js`.
 - Conectado em Cartas para mostrar ícones/categorias visuais na etapa Palavras novas e no gloss flutuante.
 
+## META OFICIAL — CARTAS / VOCABULÁRIO
+
+A aba Cartas deve substituir o uso do Duolingo para vocabulário, frases, chunks, tradução, listening, speaking, stories, revisão e domínio.
+
+Meta planejada:
+
+`5.000 palavras/expressões + 2.500 frases/chunks = 7.500 itens treináveis`
+
 ## NOVA ORDEM DE BLOCOS
 
-1. `BLOCO-HOTFIX-CLOUD-SYNC-AULA-SEGURA-LAB` — STATUS: implementado, aguardando teste.
+1. `BLOCO-HOTFIX-PERSISTENCIA-VERIFICADA-AULA-LAB` — STATUS: implementado, aguardando teste.
 2. confirmar nova geração persistindo em `Atual`, `Histórico 0` e `Status título`.
-3. `BLOCO-CARTAS-PAREAMENTO-10-LAB` — pareamento palavra ↔ tradução.
-4. `BLOCO-CARTAS-PAREAMENTO-IMAGEM-10B-LAB` — pareamento palavra ↔ imagem.
-5. `BLOCO-CARTAS-SIGNIFICADO-10C-LAB` — escolha de significado refinada.
-6. `BLOCO-CARTAS-TRADUCAO-GUIADA-11-LAB` — tradução com banco de palavras.
-7. `BLOCO-CARTAS-GLOSS-INLINE-12-LAB` — clicar na palavra e ver tradução dentro das frases.
-8. `BLOCO-CARTAS-LISTENING-ATIVO-13-LAB` — digite o que ouve.
-9. `BLOCO-CARTAS-SPEAKING-14-LAB` — repetir frase.
-10. `BLOCO-CARTAS-STORIES-15-LAB` — mini-histórias.
+3. se persistência falhar com `storage-failed`, migrar aula atual para IndexedDB ou reduzir payload.
+4. se ok, seguir para `BLOCO-CARTAS-PAREAMENTO-10-LAB` — pareamento palavra ↔ tradução.
+5. `BLOCO-CARTAS-PAREAMENTO-IMAGEM-10B-LAB` — pareamento palavra ↔ imagem.
+6. `BLOCO-CARTAS-SIGNIFICADO-10C-LAB` — escolha de significado refinada.
+7. `BLOCO-CARTAS-TRADUCAO-GUIADA-11-LAB` — tradução com banco de palavras.
+8. `BLOCO-CARTAS-GLOSS-INLINE-12-LAB` — clicar na palavra e ver tradução dentro das frases.
+9. `BLOCO-CARTAS-LISTENING-ATIVO-13-LAB` — digite o que ouve.
+10. `BLOCO-CARTAS-SPEAKING-14-LAB` — repetir frase.
+11. `BLOCO-CARTAS-STORIES-15-LAB` — mini-histórias.
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O bloco atual implementado foi `BLOCO-HOTFIX-CLOUD-SYNC-AULA-SEGURA-LAB`: Cloud Sync agora sincroniza `lesson.lastGenerationStatus`, preserva a aula local mais recente e mescla histórico. Testar nova geração no iPhone; se ok, seguir para `BLOCO-CARTAS-PAREAMENTO-10-LAB`."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O bloco atual implementado foi `BLOCO-HOTFIX-PERSISTENCIA-VERIFICADA-AULA-LAB`: `saveCurrentLesson()` agora só grava status `saved` depois de confirmar que `lesson.current` realmente foi persistido; se falhar, limpa histórico e tenta versão compacta. Testar no iPhone. Se ok, seguir para `BLOCO-CARTAS-PAREAMENTO-10-LAB`."
