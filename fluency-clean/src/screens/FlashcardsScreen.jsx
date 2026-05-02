@@ -2,10 +2,11 @@ import { ArrowLeft, Award, Brain, CheckCircle2, Clock3, Layers3, Lock, Map, Rota
 import { useEffect, useMemo, useState } from 'react';
 import { playLearningAudio } from '../services/audioPlayback.js';
 import { getCurrentLesson } from '../services/lessonStore.js';
-import { getFlashcardSessions, recordFlashcardSession } from '../services/progressStore.js';
+import { getFlashcardSessions, localDateKey, recordFlashcardSession } from '../services/progressStore.js';
 import { getTotalVocabularyBankCount, getVocabularyDecks, VOCABULARY_BANK_TARGET } from '../services/vocabularyDecks.js';
 import { completeVocabularyBubbleLevel, getBubbleCardsForLevel, getNextVocabularyTarget, getVocabularyPathState, getVocabularyPathStats, getVocabularyTopicPath } from '../services/vocabularyPath.js';
 import { buildVocabularyPracticeActivities, scoreVocabularyPractice } from '../services/vocabularyPractice.js';
+import { getVocabularySrsSummary, updateVocabularySrsFromReviewLog } from '../services/vocabularySrs.js';
 
 function normalizeVocabularyItem(item, index) {
   if (typeof item === 'string') {
@@ -26,12 +27,12 @@ function normalizeVocabularyItem(item, index) {
 
 function initialStats() { return { correct: 0, missed: 0, reviewed: 0 }; }
 function getLessonId(lesson) { return lesson?.id || `${lesson?.type || 'lesson'}-${lesson?.title || 'untitled'}`; }
-function todayKey(date = new Date()) { return date.toISOString().slice(0, 10); }
+function todayKey(date = new Date()) { return localDateKey(date); }
 function makePathLesson(deck, bubble, level) { return { id: `path-${deck.id}-${bubble.index}-level-${level}`, title: `${deck.title} · ${bubble.title} · Nível ${level}`, type: 'flashcards', level: deck.level || 'A1' }; }
 function findTodaySession(lesson) {
   const lessonId = getLessonId(lesson);
   const today = todayKey();
-  return getFlashcardSessions().find((session) => session?.lessonId === lessonId && String(session?.completedAt || '').slice(0, 10) === today) || null;
+  return getFlashcardSessions().find((session) => session?.lessonId === lessonId && localDateKey(session?.completedAt) === today) || null;
 }
 function statsFromSession(session) {
   if (!session) return initialStats();
@@ -103,8 +104,10 @@ export function FlashcardsScreen({ onNavigate }) {
   const bankCount = getTotalVocabularyBankCount();
   const [mode, setMode] = useState(() => currentLessonCards.length ? 'lesson' : 'path');
   const [pathVersion, setPathVersion] = useState(0);
+  const [srsVersion, setSrsVersion] = useState(0);
   const pathState = useMemo(() => getVocabularyPathState(), [pathVersion]);
   const pathStats = useMemo(() => getVocabularyPathStats(), [pathVersion]);
+  const srsSummary = useMemo(() => getVocabularySrsSummary(), [srsVersion]);
   const firstUnlocked = pathState.decks.find((deck) => deck.unlocked)?.id || 'core-a1';
   const [activeDeckId, setActiveDeckId] = useState(firstUnlocked);
   const topicPath = useMemo(() => getVocabularyTopicPath(activeDeckId), [activeDeckId, pathVersion]);
@@ -148,16 +151,18 @@ export function FlashcardsScreen({ onNavigate }) {
   }, [mode, activeDeckId, selectedBubble?.id, activeLevel, persistedSession?.id]);
 
   function finishSession(nextStats, nextLog) {
+    updateVocabularySrsFromReviewLog(nextLog, { deck: topicPath.deck?.title || 'Aula atual', level: sessionTarget?.level || 'A1' });
+    setSrsVersion((value) => value + 1);
     const record = recordFlashcardSession({ lesson: sessionTarget, totalCards: totalSteps, reviewedCards: nextStats.reviewed, correctCount: nextStats.correct, needsReviewCount: nextStats.missed, cards: nextLog });
     if (mode === 'path' && selectedBubble && nextStats.reviewed >= totalSteps) {
       completeVocabularyBubbleLevel({ deckId: activeDeckId, bubbleIndex: selectedBubble.index, level: activeLevel });
       setPathVersion((value) => value + 1);
     }
-    setSessionRecord(record); setSessionDone(true); setFlipped(false); setAudioMessage('Sessão concluída e registrada.');
+    setSessionRecord(record); setSessionDone(true); setFlipped(false); setAudioMessage('Sessão concluída, SRS atualizado e progresso registrado.');
   }
 
   function recordStep({ correct, item, expected = '', received = '', rating = '' }) {
-    const reviewItem = { id: item?.id || item?.cardId || `step-${Date.now()}`, word: item?.word || '', deck: mode === 'path' ? topicPath.deck.title : item?.deck, rating: rating || (correct ? 'good' : 'again'), needsReview: !correct, expected, answer: received, type: item?.type || 'card', reviewedAt: new Date().toISOString() };
+    const reviewItem = { id: item?.id || item?.cardId || `step-${Date.now()}`, cardId: item?.cardId || item?.id || '', word: item?.word || '', deck: mode === 'path' ? topicPath.deck.title : item?.deck, rating: rating || (correct ? 'good' : 'again'), needsReview: !correct, expected, answer: received, type: item?.type || 'card', reviewedAt: new Date().toISOString() };
     const nextLog = [...reviewLog, reviewItem];
     const nextStats = { correct: sessionStats.correct + (correct ? 1 : 0), missed: sessionStats.missed + (correct ? 0 : 1), reviewed: sessionStats.reviewed + 1 };
     setReviewLog(nextLog); setSessionStats(nextStats);
@@ -219,7 +224,7 @@ export function FlashcardsScreen({ onNavigate }) {
             {currentLessonCards.length ? <button className={`cards-chip ${mode === 'lesson' ? 'active' : ''}`} type="button" onClick={() => { setMode('lesson'); setStudyMode(false); }}>Aula atual <span>{currentLessonCards.length}</span></button> : null}
             <button className={`cards-chip ${mode === 'path' ? 'active' : ''}`} type="button" onClick={() => { setMode('path'); setStudyMode(false); }}>Trilha de vocabulário <span>{pathStats.progressPercent}%</span></button>
           </div>
-
+          <section className="cards-review-footer srs-status-card"><div><Brain size={18} /><span>Revisão espaçada</span></div><strong>{srsSummary.dueToday} revisão(ões) para hoje</strong><p>{srsSummary.total ? `${srsSummary.total} item(ns) rastreados · ${srsSummary.weak} fraco(s) · domínio médio ${srsSummary.averageMastery}%` : 'As palavras começarão a ser rastreadas depois da primeira bolha ou revisão.'}</p></section>
           {mode === 'path' ? <TopicSelector pathState={pathState} activeDeckId={activeDeckId} onSelect={(deckId) => { setActiveDeckId(deckId); setMode('path'); setStudyMode(false); }} /> : null}
           {mode === 'path' && selectedBubble ? <VocabularyPathMap path={topicPath} selectedBubble={selectedBubble} onSelectBubble={openBubbleStudy} /> : null}
         </>
@@ -240,7 +245,7 @@ export function FlashcardsScreen({ onNavigate }) {
         <section className="cards-review-footer"><div><Layers3 size={18} /><span>Sem cards reais</span></div><strong>selecione um tópico desbloqueado</strong><p>As cartas usam vocabulário real da aula atual e uma trilha progressiva por tema.</p></section>
       ) : sessionDone ? (
         <section className="cards-complete-card" aria-label="Sessão de cartas concluída">
-          <div className="cards-complete-icon"><Award size={24} /></div><span>{mode === 'path' ? `Bolha nível ${activeLevel} concluído` : 'Sessão concluída'}</span><h2>{sessionStats.reviewed || sessionRecord?.reviewedCards || totalSteps} etapa(s) revisada(s)</h2><p>{mode === 'path' ? 'Progresso salvo na trilha. Complete os 3 níveis para liberar a próxima bolha.' : 'Registro real salvo para Hoje, Progresso e revisão futura.'}</p>
+          <div className="cards-complete-icon"><Award size={24} /></div><span>{mode === 'path' ? `Bolha nível ${activeLevel} concluído` : 'Sessão concluída'}</span><h2>{sessionStats.reviewed || sessionRecord?.reviewedCards || totalSteps} etapa(s) revisada(s)</h2><p>{mode === 'path' ? 'SRS atualizado. Complete os 3 níveis para liberar a próxima bolha.' : 'Registro real salvo para Hoje, Progresso e revisão futura.'}</p>
           <div className="cards-stat-grid cards-complete-grid"><div className="cards-stat-card green"><strong>{sessionStats.correct}</strong><span>Acertos</span></div><div className="cards-stat-card rose"><strong>{sessionStats.missed}</strong><span>Erros</span></div><div className="cards-stat-card blue"><strong>{precision}%</strong><span>Precisão</span></div></div>
           <div className="cards-complete-actions"><button type="button" onClick={restartSession}><RotateCcw size={16} /> Revisar novamente</button><button type="button" onClick={() => setStudyMode(false)}><Map size={16} /> Voltar para trilha</button><button type="button" onClick={() => onNavigate?.('today')}><CheckCircle2 size={16} /> Voltar para Hoje</button></div>
         </section>
