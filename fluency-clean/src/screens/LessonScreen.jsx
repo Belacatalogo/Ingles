@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { BookOpen, CheckCircle2, Clock, Headphones, RefreshCw, ShieldCheck, Sparkles, Target, Zap } from 'lucide-react';
 import { Card } from '../components/ui/Card.jsx';
 import { LessonQualityPanel } from '../components/lesson/LessonQualityPanel.jsx';
@@ -80,7 +80,27 @@ function LessonRenderer({ lesson }) {
 
 export function LessonScreen({ lessonRevision = 0 }) {
   const [activeSection, setActiveSection] = useState(0);
-  const savedLesson = useMemo(() => getCurrentLesson(), [lessonRevision]);
+  const [localRevision, setLocalRevision] = useState(0);
+
+  useEffect(() => {
+    function refreshLesson() {
+      setLocalRevision((value) => value + 1);
+    }
+
+    window.addEventListener('fluency:lesson-updated', refreshLesson);
+    window.addEventListener('focus', refreshLesson);
+    document.addEventListener('visibilitychange', refreshLesson);
+    const timer = window.setInterval(refreshLesson, 1500);
+
+    return () => {
+      window.removeEventListener('fluency:lesson-updated', refreshLesson);
+      window.removeEventListener('focus', refreshLesson);
+      document.removeEventListener('visibilitychange', refreshLesson);
+      window.clearInterval(timer);
+    };
+  }, []);
+
+  const savedLesson = useMemo(() => getCurrentLesson(), [lessonRevision, localRevision]);
   const lesson = savedLesson || fallbackLesson;
   const lessonStats = useMemo(() => getLessonStats(lesson), [lesson]);
   const usingGenerated = Boolean(savedLesson);
@@ -91,6 +111,10 @@ export function LessonScreen({ lessonRevision = 0 }) {
   function jumpToSection(section, index) {
     setActiveSection(index);
     window.dispatchEvent(new CustomEvent('fluency:lesson-jump', { detail: { section: section.id } }));
+  }
+
+  function forceRefreshLesson() {
+    setLocalRevision((value) => value + 1);
   }
 
   return (
@@ -117,7 +141,7 @@ export function LessonScreen({ lessonRevision = 0 }) {
             <span><Clock size={13} /> {lessonStats.minutes} min</span>
             <span><Target size={13} /> {lessonStats.exercises} ex.</span>
           </div>
-          <button type="button" aria-label="Regenerar com IA"><RefreshCw size={14} /></button>
+          <button type="button" aria-label="Atualizar aula salva" onClick={forceRefreshLesson}><RefreshCw size={14} /></button>
         </footer>
       </section>
 
