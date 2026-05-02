@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { playLearningAudio } from '../services/audioPlayback.js';
 import { buildPracticeItems, evaluatePracticeAnswer, normalizeForPractice } from './PracticePlanAdapter.js';
 import { AudioPrompt } from './components/AudioPrompt.jsx';
@@ -46,8 +46,15 @@ function canSubmitQuestion(current, value, wordBankValue) {
   return Boolean(clean(value));
 }
 
+function buildStablePracticeItems(lesson) {
+  return buildPracticeItems(lesson, { min: 14, max: 36 }).map((item, index) => ({
+    ...item,
+    sessionOrder: index + 1,
+  }));
+}
+
 export function PracticeFullscreen({ lesson, open, onClose, onComplete }) {
-  const items = useMemo(() => buildPracticeItems(lesson, { min: 14, max: 36 }), [lesson]);
+  const [sessionItems, setSessionItems] = useState([]);
   const [started, setStarted] = useState(false);
   const [index, setIndex] = useState(0);
   const [value, setValue] = useState('');
@@ -58,12 +65,29 @@ export function PracticeFullscreen({ lesson, open, onClose, onComplete }) {
   const [listening, setListening] = useState(false);
   const [lives, setLives] = useState(STARTING_LIVES);
   const [reviewMode, setReviewMode] = useState(false);
+  const lessonKey = `${lesson?.id || lesson?.title || 'lesson'}-${lesson?.generationMeta?.id || ''}`;
+
+  useEffect(() => {
+    if (!open) return;
+    setSessionItems(buildStablePracticeItems(lesson));
+    setStarted(false);
+    setIndex(0);
+    setValue('');
+    setWordBankValue([]);
+    setFeedback(null);
+    setResults([]);
+    setHintVisible(false);
+    setLives(STARTING_LIVES);
+    setReviewMode(false);
+  }, [open, lessonKey]);
+
+  const items = sessionItems;
   const current = items[index];
   const done = open && items.length > 0 && index >= items.length;
   const correctCount = results.filter((result) => result.correct).length;
   const mistakeCount = results.filter((result) => !result.correct).length;
   const progress = items.length ? Math.round((Math.min(index, items.length) / items.length) * 100) : 0;
-  const skillLabel = getPracticeSkillLabel(lesson);
+  const skillLabel = useMemo(() => getPracticeSkillLabel(lesson), [lessonKey]);
 
   if (!open) return null;
 
@@ -155,6 +179,7 @@ export function PracticeFullscreen({ lesson, open, onClose, onComplete }) {
   }
 
   function restart() {
+    setSessionItems(buildStablePracticeItems(lesson));
     setStarted(false);
     setIndex(0);
     setValue('');
