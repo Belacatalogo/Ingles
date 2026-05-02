@@ -33,51 +33,57 @@ Meta planejada:
 
 ## BLOCO ATUAL
 
-### `BLOCO-CARTAS-PREVIEW-9A-LAB` — Prévia antes da bolha IMPLEMENTADO, aguardando deploy/teste
+### `BLOCO-CARTAS-INTRO-PALAVRAS-NOVAS-INLINE-LAB` — Introdução interna da bolha IMPLEMENTADO, aguardando deploy/teste
 
 Contexto:
-- usuário pediu que antes de iniciar cada bolha o sistema mostre as palavras que vão aparecer;
-- a prévia deve mostrar tradução e frase exemplo para o aluno não entrar cego na prática;
-- este bloco prepara a base para referência visual, gloss inline e tradução guiada.
+- o usuário esclareceu que não queria uma prévia externa abaixo da trilha;
+- o comportamento desejado é como no Duolingo: ao iniciar a bolha, a primeira etapa da própria aula apresenta as palavras novas;
+- a palavra nova deve aparecer destacada, com referência visual simples, e ao tocar nela deve abrir a tradução;
+- depois de tocada, a palavra deixa de parecer totalmente nova e a bolha segue para exercícios.
 
 Arquivo alterado:
 - `fluency-clean/src/screens/FlashcardsScreen.jsx`
 - `REWRITE_HANDOFF.md`
 
 O que foi implementado:
-- adicionado componente `BubblePreviewCard`;
-- tocar em uma bolha agora abre a prévia, não entra direto na sessão;
-- a prévia mostra:
-  - tópico/deck;
-  - número da bolha;
-  - nível atual da bolha;
-  - quantidade de exercícios;
-  - quantidade de palavras/frases;
-  - lista de cards da rodada;
-  - palavra/expressão;
-  - tradução/definição;
-  - frase exemplo;
-  - botão de áudio por item;
-  - status SRS: `Nova`, `Revisão`, `Fraca`, `Dominada`;
-  - botão `Começar bolha`;
-- estudo em tela cheia agora só começa ao tocar em `Começar bolha`;
-- botão superior dentro da prática passou a voltar para a prévia;
-- importado `getVocabularySrsState()` para calcular status por palavra.
+- removida a lógica de preview externo como etapa separada abaixo da trilha;
+- tocar em uma bolha desbloqueada agora abre uma tela dedicada da própria bolha;
+- primeira etapa interna: `Palavras novas`;
+- a etapa mostra palavras novas/fracas/revisão da rodada;
+- cada palavra mostra:
+  - referência textual simples por categoria (`WORD`, `STUDY`, `WORK`, `TRAVEL`, etc.);
+  - palavra em inglês destacada;
+  - etiqueta `nova` ou `vista`;
+  - ao tocar, exibe tradução/definição e frase exemplo;
+- botão `Continuar para exercícios` inicia a prática normal;
+- dentro da prática, botão superior `Palavras novas` permite voltar para a etapa inicial;
+- a conclusão de sessão continua salvando SRS e progresso.
 
 Commits:
-- `439edbcfe7ccc09302052a8824c3cb9a090c5989` — adiciona preview antes da bolha de cartas.
+- `826081e7a00a0f5e527227e6e94f9fd681cdae75` — transforma preview em introdução interna da bolha.
+
+Observação técnica:
+- houve tentativa de adicionar CSS extra para melhorar o visual da introdução, mas o conector bloqueou a atualização grande de CSS;
+- a primeira versão usa classes existentes e alguns estilos inline mínimos;
+- se a UI ficar visualmente pobre, fazer um bloco pequeno posterior só de CSS incremental, sem substituir o arquivo inteiro.
 
 Teste recomendado no iPhone:
 1. abrir Cartas > Trilha de vocabulário;
 2. tocar em uma bolha desbloqueada;
-3. confirmar que não entra direto nos exercícios;
-4. confirmar que aparece a prévia com palavra, tradução e frase exemplo;
-5. tocar no botão de áudio de uma palavra/frase;
-6. tocar em `Começar bolha`;
-7. confirmar que a prática abre normalmente;
-8. usar `Voltar para prévia` e confirmar que retorna para o resumo da bolha.
+3. confirmar que abre uma tela dedicada, não uma caixa abaixo da trilha;
+4. confirmar que aparece `Palavras novas` antes dos exercícios;
+5. tocar em uma palavra destacada;
+6. confirmar que aparece tradução/definição e exemplo;
+7. confirmar que a etiqueta muda de `nova` para `vista`;
+8. tocar em `Continuar para exercícios`;
+9. confirmar que os exercícios iniciam normalmente;
+10. tocar em `Palavras novas` dentro da prática e confirmar que volta para a introdução.
 
 ## Blocos recentes implementados
+
+### `BLOCO-CARTAS-PREVIEW-9A-LAB` — SUBSTITUÍDO
+- O conceito de preview externo foi abandonado por estar errado para o fluxo desejado.
+- Substituído pelo bloco `BLOCO-CARTAS-INTRO-PALAVRAS-NOVAS-INLINE-LAB`.
 
 ### `BLOCO-CARTAS-AUDITORIA-CURRICULO-8D-LAB` — IMPLEMENTADO
 - Criado `vocabularyCurriculumAudit.js`.
@@ -95,16 +101,9 @@ Teste recomendado no iPhone:
 ### `BLOCO-CARTAS-AUDITORIA-ATIVIDADES-1-LAB` — IMPLEMENTADO
 - `vocabularyPractice.js` filtra atividades inseguras com `activityLooksSafe()` antes de mostrar ao aluno.
 
-### `BLOCO-CARTAS-HOTFIX-TIPOS-OBVIOS-1-LAB` — IMPLEMENTADO
-- Removidos `Frase com a palavra` e `Chunk natural` porque entregavam a resposta.
-
-### `BLOCO-CARTAS-CURRICULO-FIXO-8A-LAB` — IMPLEMENTADO
-- Criado `fixedExpansionA1A2.js`.
-- Adicionados 192 cards A1/A2.
-
 ## NOVA ORDEM DE BLOCOS — CARTAS COMO SUBSTITUTO DO DUOLINGO
 
-1. `BLOCO-CARTAS-PREVIEW-9A-LAB` — prévia da bolha com palavras, tradução e referência visual. STATUS: implementado, aguardando teste.
+1. `BLOCO-CARTAS-INTRO-PALAVRAS-NOVAS-INLINE-LAB` — introdução interna das palavras novas. STATUS: implementado, aguardando teste.
 2. `BLOCO-CARTAS-REFERENCIA-VISUAL-9A2-LAB` — imagens/ícones locais por palavra.
 3. `BLOCO-CARTAS-PAREAMENTO-10-LAB` — pareamento palavra ↔ tradução.
 4. `BLOCO-CARTAS-PAREAMENTO-IMAGEM-10B-LAB` — pareamento palavra ↔ imagem.
@@ -134,11 +133,13 @@ Teste recomendado no iPhone:
 
 ## Pendência técnica importante
 
-- testar deploy do `BLOCO-CARTAS-PREVIEW-9A-LAB` no iPhone;
-- confirmar que a bolha abre a prévia antes da prática;
-- confirmar que áudio, botão começar e voltar para prévia funcionam;
-- se ok, seguir para `BLOCO-CARTAS-REFERENCIA-VISUAL-9A2-LAB`.
+- testar deploy do `BLOCO-CARTAS-INTRO-PALAVRAS-NOVAS-INLINE-LAB` no iPhone;
+- confirmar que Cartas não dá tela branca;
+- confirmar que clicar na bolha abre tela dedicada com `Palavras novas`;
+- confirmar que tocar na palavra mostra tradução;
+- confirmar que `Continuar para exercícios` funciona;
+- se ok, seguir para `BLOCO-CARTAS-REFERENCIA-VISUAL-9A2-LAB` ou fazer polimento CSS pequeno da introdução se visual estiver fraco.
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O bloco atual implementado foi `BLOCO-CARTAS-PREVIEW-9A-LAB`: tocar na bolha agora abre uma prévia com palavras, tradução, frase exemplo, status SRS e botão Começar bolha. Testar no iPhone; se ok, seguir para `BLOCO-CARTAS-REFERENCIA-VISUAL-9A2-LAB`."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O bloco atual implementado foi `BLOCO-CARTAS-INTRO-PALAVRAS-NOVAS-INLINE-LAB`: tocar na bolha abre uma etapa interna `Palavras novas`, tocar na palavra mostra tradução e depois segue para exercícios. Testar no iPhone; se ok, seguir para `BLOCO-CARTAS-REFERENCIA-VISUAL-9A2-LAB` ou polir CSS se necessário."
