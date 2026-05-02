@@ -33,52 +33,44 @@ Meta planejada:
 
 ## BLOCO ATUAL
 
-### `BLOCO-CARTAS-REFERENCIA-VISUAL-9A2-LAB` — IMPLEMENTADO, aguardando deploy/teste
+### `BLOCO-HOTFIX-AULA-ATUAL-REFRESH-LAB` — IMPLEMENTADO, aguardando deploy/teste
 
 Contexto:
-- depois da introdução interna de palavras novas e do gloss flutuante, a referência visual ainda era fraca/textual;
-- usuário quer que a bolha funcione como o Duolingo: palavra nova + referência visual + dica/tradução ao tocar;
-- este bloco adiciona referências visuais locais, sem IA e sem depender de internet.
-
-Arquivos criados:
-- `fluency-clean/src/services/vocabularyVisualReferences.js`
+- usuário gerou uma revisão adaptativa;
+- diagnóstico mostrou `Aula salva: Present Simple: Verbos Essenciais para o Dia a Dia`;
+- mas a aba Aula continuou mostrando a aula antiga `Conhecendo Pessoas na Biblioteca: Soletrando Nomes`;
+- causa provável: `saveCurrentLesson()` salvava em storage, mas a UI só relia `getCurrentLesson()` quando `lessonRevision` mudava via callback direto;
+- se a geração/revisão salva a aula sem propagar callback no caminho certo, a aba Aula fica presa em memo antigo.
 
 Arquivos alterados:
-- `fluency-clean/src/screens/FlashcardsScreen.jsx`
+- `fluency-clean/src/services/lessonStore.js`
+- `fluency-clean/src/App.jsx`
 - `REWRITE_HANDOFF.md`
 
 O que foi implementado:
-- criado serviço modular `getVocabularyVisualReference(card)`;
-- o serviço classifica palavras em categorias visuais locais:
-  - pessoas;
-  - estudo;
-  - comida;
-  - casa;
-  - cidade;
-  - viagem;
-  - trabalho;
-  - saúde;
-  - tempo;
-  - ação;
-  - qualidade;
-  - fallback `palavra`;
-- cada categoria retorna `icon`, `label` e `id`;
-- a etapa `Palavras novas` agora mostra ícone + categoria visual antes da palavra;
-- a caixa flutuante também mostra ícone + categoria;
-- a lógica saiu do componente e ficou preparada para trocar emojis por ilustrações locais reais depois.
+- `saveCurrentLesson()` agora dispara evento global `fluency:lesson-updated` após salvar a aula atual;
+- `clearCurrentLesson()` também dispara o evento;
+- `App.jsx` agora escuta `fluency:lesson-updated` e incrementa `lessonRevision`;
+- `LessonScreen` já depende de `lessonRevision`, então passa a reler `getCurrentLesson()` automaticamente;
+- isso deixa a aba Aula atualizada mesmo quando a aula é salva por revisão adaptativa, reparo, fallback resiliente ou qualquer outro fluxo que chame `saveCurrentLesson()`.
 
 Commits:
-- `9a75696602b7bef3febbb5c409e5eeacdf9236a6` — adiciona referências visuais locais para vocabulário.
+- `729ec554e46643c8022559c38d69e1187af82a95` — dispara evento global ao salvar aula atual;
+- `51366389ae77efd99af9071fd7a4672188be26b3` — atualiza aba Aula ao receber nova aula salva.
 
 Teste recomendado no iPhone:
-1. abrir Cartas > Trilha de vocabulário;
-2. tocar numa bolha desbloqueada;
-3. confirmar que `Palavras novas` mostra ícone/categoria, não só texto `WORD`;
-4. tocar numa palavra;
-5. confirmar que o gloss flutuante também mostra ícone/categoria;
-6. iniciar exercícios e confirmar que nada quebrou.
+1. abrir Hoje;
+2. gerar uma nova revisão/aula;
+3. aguardar diagnóstico mostrar `Aula salva: ...`;
+4. tocar na aba Aula;
+5. confirmar que o título da aba Aula é o mesmo título salvo no diagnóstico;
+6. se o diagnóstico disser `Present Simple: Verbos Essenciais para o Dia a Dia`, a aba Aula deve mostrar exatamente essa nova aula.
 
 ## Blocos recentes implementados
+
+### `BLOCO-CARTAS-REFERENCIA-VISUAL-9A2-LAB` — IMPLEMENTADO
+- Criado `vocabularyVisualReferences.js`.
+- Conectado em Cartas para mostrar ícones/categorias visuais na etapa Palavras novas e no gloss flutuante.
 
 ### `BLOCO-CARTAS-GLOSS-FLUTUANTE-E-ORDEM-PEDAGOGICA-LAB` — IMPLEMENTADO
 - Tradução da palavra nova abre caixa flutuante sobreposta.
@@ -92,14 +84,9 @@ Teste recomendado no iPhone:
 - Criado `vocabularyCurriculumAudit.js`.
 - `getVocabularyBankAudit()` usa auditoria pedagógica central.
 
-### `BLOCO-CARTAS-CURRICULO-FIXO-8C-LAB` — IMPLEMENTADO
-- Criado `fixedExpansionC1C2.js`.
-- Adicionados 168 cards C1/C2.
-- Banco deve ficar perto de 864/7500.
-
 ## NOVA ORDEM DE BLOCOS — CARTAS COMO SUBSTITUTO DO DUOLINGO
 
-1. `BLOCO-CARTAS-REFERENCIA-VISUAL-9A2-LAB` — STATUS: implementado, aguardando teste.
+1. `BLOCO-HOTFIX-AULA-ATUAL-REFRESH-LAB` — STATUS: implementado, aguardando teste.
 2. `BLOCO-CARTAS-PAREAMENTO-10-LAB` — pareamento palavra ↔ tradução.
 3. `BLOCO-CARTAS-PAREAMENTO-IMAGEM-10B-LAB` — pareamento palavra ↔ imagem.
 4. `BLOCO-CARTAS-SIGNIFICADO-10C-LAB` — escolha de significado refinada.
@@ -128,10 +115,10 @@ Teste recomendado no iPhone:
 
 ## Pendência técnica importante
 
-- testar deploy das referências visuais no iPhone;
-- confirmar que Cartas não dá tela branca;
+- testar deploy do hotfix no iPhone;
+- confirmar que aula salva no diagnóstico aparece na aba Aula;
 - se ok, seguir para `BLOCO-CARTAS-PAREAMENTO-10-LAB`.
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O bloco atual implementado foi `BLOCO-CARTAS-REFERENCIA-VISUAL-9A2-LAB`: criado `vocabularyVisualReferences.js` e conectado em Cartas para mostrar ícones/categorias visuais na etapa Palavras novas e no gloss flutuante. Testar no iPhone; se ok, seguir para `BLOCO-CARTAS-PAREAMENTO-10-LAB`."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O bloco atual implementado foi `BLOCO-HOTFIX-AULA-ATUAL-REFRESH-LAB`: `saveCurrentLesson()` dispara `fluency:lesson-updated` e `App.jsx` incrementa `lessonRevision`, para a aba Aula reler a aula salva. Testar no iPhone; se ok, seguir para `BLOCO-CARTAS-PAREAMENTO-10-LAB`."
