@@ -67,19 +67,25 @@ function providersFromLocalStorage(targetProvider = '') {
   return forced ? providers.filter((provider) => provider.id === forced) : providers;
 }
 
-function buildPrompt({ prompt = '', forcedType = '', level = 'A1', forceVariation = false } = {}) {
+function buildPrompt({ prompt = '', forcedType = '', level = 'A1', forceVariation = false, targetProvider = '' } = {}) {
   const grammar = /grammar|gram[aá]tica|to be|to have|present simple|verb/i.test(`${prompt} ${forcedType}`);
+  const isGroq = normalizeForcedProvider(targetProvider) === 'groq';
   if (grammar) {
+    const sectionCount = isGroq ? 5 : 7;
+    const sectionTitleHint = isGroq
+      ? 'Use estes títulos ou equivalentes: visão geral, to be, to have, negativa/perguntas, erros comuns e produção.'
+      : 'Use estes títulos ou equivalentes: visão geral, quando usar, forma afirmativa to be, forma afirmativa to have, forma negativa, perguntas, erros comuns e produção.';
     return [
       'Responda somente com JSON valido, sem markdown e sem texto fora do JSON.',
       'Gere SOMENTE O ESQUELETO de uma aula Grammar do Fluency. A profundidade será gerada depois por sections 1B.',
       'Não escreva conteúdo longo agora. Não tente completar a aula inteira agora.',
+      isGroq ? 'Modo Groq econômico: o esqueleto deve ter 5 sections para reduzir chamadas totais e evitar limite diário.' : '',
       `Nivel esperado: ${level || 'A1'}.`,
       'Campos obrigatórios: type, level, title, intro, objective, focus, sections, tips, listeningText, vocabulary, exercises, prompts.',
       'type deve ser "grammar".',
-      'sections deve ter EXATAMENTE 7 objetos, cada um com title e content.',
+      `sections deve ter EXATAMENTE ${sectionCount} objetos, cada um com title e content.`,
       'Cada section.content deve ser uma frase curta descrevendo o objetivo daquela seção, não uma explicação completa.',
-      'Use estes títulos ou equivalentes: visão geral, quando usar, forma afirmativa to be, forma afirmativa to have, forma negativa, perguntas, erros comuns e produção.',
+      sectionTitleHint,
       'vocabulary pode ter 8 itens curtos. exercises pode ter 8 itens simples. prompts pode ter 4 itens.',
       forceVariation ? 'Modo substituicao ativo: criar versão diferente sem copiar aula anterior.' : '',
       'Pedido original:',
@@ -165,7 +171,14 @@ function ensureGrammarSkeleton(rawLesson, provider) {
   const lesson = normalizeLesson(rawLesson);
   const isGrammar = String(lesson.type || '').toLowerCase() === 'grammar' || /grammar|to be|to have|present simple|verb/i.test(lesson.title || '');
   if (!isGrammar) return lesson;
-  const fallbackSections = [
+  const groqSections = [
+    'Visão geral e contraste com português',
+    'To be: identidade, estado e localização',
+    'To have: posse, relação e rotina',
+    'Negativas e perguntas essenciais',
+    'Erros comuns brasileiros e produção própria',
+  ].map((title) => ({ title, content: `Objetivo desta seção: ${title}.` }));
+  const defaultSections = [
     'Visão geral: to be e to have',
     'Quando usar to be e quando usar to have',
     'Forma afirmativa com to be',
@@ -174,15 +187,18 @@ function ensureGrammarSkeleton(rawLesson, provider) {
     'Perguntas com to be e to have',
     'Erros comuns e produção própria',
   ].map((title) => ({ title, content: `Objetivo desta seção: ${title}.` }));
+  const targetCount = provider.id === 'groq' ? 5 : 7;
+  const fallbackSections = provider.id === 'groq' ? groqSections : defaultSections;
   const sections = Array.isArray(lesson.sections) && lesson.sections.length >= 3 ? lesson.sections : fallbackSections;
   if (!Array.isArray(lesson.sections) || lesson.sections.length < 3) {
     diagnostics.log(`${provider.label} gerou esqueleto sem sections suficientes. Aplicando esqueleto Grammar local para permitir 1B puro.`, 'warn');
   }
-  return { ...lesson, type: 'grammar', sections: sections.slice(0, 7) };
+  if (provider.id === 'groq') diagnostics.log('Modo Groq econômico ativo: usando 5 sections longas em vez de 7 chamadas.', 'warn');
+  return { ...lesson, type: 'grammar', sections: sections.slice(0, targetCount) };
 }
 function withMeta(rawLesson, provider) {
   const lesson = ensureGrammarSkeleton(rawLesson, provider);
-  return { ...lesson, providerFallback: { enabled: true, provider: provider.id, model: provider.model, policy: MODEL_POLICY_VERSION, generatedAt: new Date().toISOString() }, planContract: `external-provider-${provider.id}-fallback-v1` };
+  return { ...lesson, providerFallback: { enabled: true, provider: provider.id, model: provider.model, policy: MODEL_POLICY_VERSION, generatedAt: new Date().toISOString() }, planContract: `external-provider-${provider.id}-fallback-v1${provider.id === 'groq' ? '+groq-5-section-economy-v1' : ''}` };
 }
 
 export function getExternalLessonProviderStatus() {
@@ -206,14 +222,14 @@ export async function generateExternalLessonDraft({ prompt = '', forcedType = ''
   const providers = providersFromLocalStorage(targetProvider);
   const forced = normalizeForcedProvider(targetProvider);
   if (!providers.length) { const msg = forced ? `Nenhuma chave configurada para ${forced}.` : 'Nenhuma chave externa configurada.'; diagnostics.log(`Fallback externo indisponivel: ${msg}`, 'info'); return { status: 'missing-keys', lesson: null, error: msg }; }
-  const externalPrompt = buildPrompt({ prompt, forcedType, level, forceVariation });
+  const externalPrompt = buildPrompt({ prompt, forcedType, level, forceVariation, targetProvider });
   diagnostics.setPhase('fallback externo de aula', 'generating');
   diagnostics.log(`Fallback externo ativado${reason ? `: ${reason}` : ''}. Provedores: ${providers.map((provider) => `${provider.label}/${provider.model}`).join(' -> ')}.`, 'warn');
   let lastError = null;
   for (const provider of providers) {
     try {
       diagnostics.log(`Tentando ${provider.label} com modelo ${provider.model} e chave ${provider.masked}.`, 'info');
-      const lesson = await callProviderWithFallback(provider, externalPrompt, fetcher, /grammar|gram[aá]tica|to be|to have|present simple|verb/i.test(`${prompt} ${forcedType}`) ? 2600 : 5200);
+      const lesson = await callProviderWithFallback(provider, externalPrompt, fetcher, /grammar|gram[aá]tica|to be|to have|present simple|verb/i.test(`${prompt} ${forcedType}`) ? (provider.id === 'groq' ? 1900 : 2600) : 5200);
       diagnostics.log(`${provider.label} gerou aula para validacao local.`, 'success');
       return { status: 'success', lesson: withMeta(lesson, provider), provider: provider.id, model: provider.model };
     } catch (error) { lastError = error; diagnostics.log(`${provider.label} falhou: ${error?.message || error}`, 'warn'); }
@@ -231,7 +247,7 @@ export async function generateExternalGrammarSection({ prompt = '', targetProvid
     try {
       diagnostics.log(`Grammar 1B externo: tentando ${provider.label}/${provider.model} com chave ${provider.masked}.`, 'info');
       const sectionPrompt = [prompt, '', 'LEMBRETE FINAL: retorne um único objeto JSON simples: {"title":"...","content":"..."}. Não use arrays. Não use markdown. Feche o JSON.'].join('\n');
-      const section = await callProviderWithFallback(provider, sectionPrompt, fetcher, provider.id === 'cerebras' ? 2200 : 3000);
+      const section = await callProviderWithFallback(provider, sectionPrompt, fetcher, provider.id === 'cerebras' ? 2200 : 3200);
       return { status: 'success', section, provider: provider.id, model: provider.model };
     } catch (error) { lastError = error; diagnostics.log(`Grammar 1B externo falhou em ${provider.label}: ${error?.message || error}`, 'warn'); }
   }
