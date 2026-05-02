@@ -15,48 +15,49 @@ Branch estável protegida: `rewrite-fluency-clean`
 - Não mexer no backend Azure privado.
 - Manter tudo modular em `fluency-clean/src/`, `fluency-clean/public/` ou arquivos reais de configuração.
 
-## ESTADO ATUAL — HOTFIX GROQ DIÁRIO FORTE 7 SECTIONS
+## ESTADO ATUAL — HOTFIX GROQ DIÁRIO FORTE 7 SECTIONS REAL
 
-### `HOTFIX-GROQ-DAILY-7-SECTIONS-LAB` — IMPLEMENTADO, aguardando deploy/teste
+### `HOTFIX-GROQ-DAILY-7-SECTIONS-REAL-LAB` — IMPLEMENTADO, aguardando deploy/teste
 
 Contexto:
-- O modo Groq econômico com 5 sections ajudou a concluir a geração, mas o usuário decidiu simular a aula diária real.
-- Como será apenas 1 geração por dia, prioridade agora é qualidade máxima, não economia de chamadas.
-- Pedido do usuário: voltar Groq para 7 sections fortes usando uma nova key no teste final.
+- O teste anterior mostrou inconsistência: o skeleton Groq já estava em modo diário forte 7 sections, mas o `grammarSectionGenerator.js` ainda limitava o 1B para 5 sections.
+- Diagnóstico observado: `Modo Groq diário forte ativo: usando 7 sections...` seguido de `Cirurgia 2 Grammar ativa: reescrevendo 5 section(s)... modo Groq econômico 5 sections fortes`.
+- A aula aprovou e salvou, mas só com 5 sections no 1B. Isso não atendia ao pedido do usuário.
 
-Correção aplicada:
-- `externalLessonProviders.js`
-  - Groq deixou de usar skeleton econômico de 5 sections.
-  - Skeleton Grammar do Groq agora exige 7 sections.
-  - Fallback local de skeleton Grammar também cria 7 sections.
-  - Diagnóstico registra: `Modo Groq diário forte ativo: usando 7 sections profundas para simular aula diária.`
-  - `planContract` recebe `groq-7-section-daily-v1`.
-  - Max tokens do skeleton Groq subiu para 2400.
+Correção definitiva aplicada:
 - `grammarSectionGenerator.js`
-  - Groq usa até 7 sections no 1B.
-  - Cada section Groq mantém mínimo forte de 240 palavras.
-  - Prompt Groq mira 280–340 palavras.
-  - Sections abaixo de 240 pedem expansão ao mesmo provedor.
-  - Diagnóstico registra: `modo Groq diário forte 7 sections`.
-  - `grammarSectionContract` recebe sufixo `groq-7-daily-sections`.
+  - Removido limite antigo `GROQ_SECTION_COUNT = 5`.
+  - Criado `GROQ_DAILY_SECTION_COUNT = 7`.
+  - `rawSections.slice(0, GROQ_DAILY_SECTION_COUNT)` agora mantém 7 sections para Groq.
+  - Mensagem antiga `modo Groq econômico 5 sections fortes` removida.
+  - Diagnóstico correto agora: `modo Groq diário forte 7 sections`.
+  - `grammarSectionContract` agora usa `groq-7-daily-sections`.
+  - `reason` agora usa `sections-enriched-groq-7-daily-sections`.
+- `externalLessonProviders.js`
+  - Já estava correto para skeleton Groq com 7 sections.
 
-Commits:
+Commits relevantes:
 - `03fef31cfbabbe1fa84b209243de53ae468dc88e` — skeleton Groq forte com 7 sections.
-- commit seguinte em `grammarSectionGenerator.js` — 1B Groq forte com 7 sections.
+- `b1fbfba461a20a3d6911f18799c32bf34e77d4a6` — correção real do 1B Groq para 7 sections.
 
 Teste obrigatório agora:
-1. aguardar deploy da branch `rewrite-fluency-clean-lab` com os commits acima;
-2. colocar uma nova key Groq;
+1. aguardar deploy da branch `rewrite-fluency-clean-lab` com commit `b1fbfba` ou posterior;
+2. colocar nova key Groq, se necessário;
 3. ativar `Forçar Groq na próxima geração`;
 4. gerar a aula Grammar diária;
 5. confirmar no diagnóstico:
    - `Modo Groq diário forte ativo: usando 7 sections profundas para simular aula diária.`
-   - `Cirurgia 2 Grammar ativa... modo Groq diário forte 7 sections`;
-   - 7 sections aprovadas;
+   - `Cirurgia 2 Grammar ativa: reescrevendo 7 section(s)... modo Groq diário forte 7 sections`;
+   - sections 1 a 7 aprovadas;
    - cada section com 240+ palavras;
    - professor revisor ≥ 90;
    - avaliação pedagógica ≥ 90;
-   - trava de confiança não bloquear por objetivo curto reparável.
+   - aula salva sem compactar conteúdo.
+
+## ESTADO ANTERIOR — HOTFIX GROQ DIÁRIO FORTE PARCIAL
+
+- O skeleton do Groq foi alterado para 7 sections, mas o 1B ainda estava preso em 5 sections por causa de constante antiga.
+- Esse estado gerou aula aprovada, mas incompleta em relação ao pedido de 7 sections.
 
 ## ESTADO ANTERIOR — HOTFIX GROQ QUALIDADE + TRAVA DE OBJETIVO GRAMMAR
 
@@ -82,9 +83,8 @@ Commits:
 ### Groq
 - Não está idêntico ao Flash.
 - O conteúdo observado tem frases e organização diferentes.
-- Com 5 sections fortes, chegou a revisor 96/100 e avaliação pedagógica 95/100.
-- Agora será testado em modo diário forte com 7 sections.
-- Groq parece promissor, mas precisa validar com uma key limpa para não bater limite.
+- Com 5 sections fortes, chegou a revisor 95–96/100 e avaliação pedagógica 95/100, mas o teste ainda não vale como comparação final porque 1B tinha só 5 sections.
+- Agora precisa testar Groq em 7 sections reais para comparação final.
 
 ### Cerebras `llama3.1-8b`
 - Entrou no 1B, mas veio curto demais.
@@ -135,12 +135,12 @@ Commit:
 
 ## Próximo teste recomendado
 
-1. Esperar deploy com o hotfix Groq diário forte.
-2. Colocar nova key Groq.
-3. Testar Groq puro com 7 sections.
+1. Esperar deploy com `b1fbfba` ou posterior.
+2. Colocar nova key Groq, se necessário.
+3. Testar Groq puro com 7 sections reais.
 4. Se Groq salvar, comparar aula completa com Flash.
 5. Só depois decidir motor prioritário e corrigir visual dos exemplos.
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. O último hotfix foi Groq diário forte: Groq voltou para 7 sections, cada section exige 240+ palavras e mira 280–340, simulando uma única geração diária. Próximo passo é testar Groq puro com nova key e comparar com Flash se salvar. Não mexer em Cirurgia 3/deepGrammarPipeline ainda. Não corrigir visual dos exemplos antes da comparação. Não mexer em `main`, `rewrite-fluency-clean`, `bundle.js` ou backend Azure privado."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. O último hotfix foi `b1fbfba`: corrigiu de verdade o 1B do Groq para 7 sections. O skeleton já estava em 7, mas o 1B ainda estava limitado a 5. Próximo passo é testar Groq puro com 7 sections reais e comparar com Flash se salvar. Não mexer em Cirurgia 3/deepGrammarPipeline ainda. Não corrigir visual dos exemplos antes da comparação. Não mexer em `main`, `rewrite-fluency-clean`, `bundle.js` ou backend Azure privado."
