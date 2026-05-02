@@ -85,40 +85,52 @@ function LessonRenderer({ lesson }) {
 export function LessonScreen({ lessonRevision = 0 }) {
   const [activeSection, setActiveSection] = useState(0);
   const [localRevision, setLocalRevision] = useState(0);
+  const [pointerRevision, setPointerRevision] = useState(0);
   const [fullLesson, setFullLesson] = useState(null);
+  const [loadedGenerationId, setLoadedGenerationId] = useState('');
   const [loadingFullLesson, setLoadingFullLesson] = useState(false);
 
   useEffect(() => {
     function refreshLesson() {
-      setLocalRevision((value) => value + 1);
+      setPointerRevision((value) => value + 1);
     }
 
     window.addEventListener('fluency:lesson-updated', refreshLesson);
     window.addEventListener('focus', refreshLesson);
     document.addEventListener('visibilitychange', refreshLesson);
-    const timer = window.setInterval(refreshLesson, 1500);
 
     return () => {
       window.removeEventListener('fluency:lesson-updated', refreshLesson);
       window.removeEventListener('focus', refreshLesson);
       document.removeEventListener('visibilitychange', refreshLesson);
-      window.clearInterval(timer);
     };
   }, []);
 
-  const savedLessonPointer = useMemo(() => getCurrentLesson(), [lessonRevision, localRevision]);
+  const savedLessonPointer = useMemo(() => getCurrentLesson(), [lessonRevision, pointerRevision, localRevision]);
+  const pointerGenerationId = savedLessonPointer?.generationMeta?.id || '';
 
   useEffect(() => {
+    if (!savedLessonPointer) {
+      setFullLesson(null);
+      setLoadedGenerationId('');
+      setLoadingFullLesson(false);
+      return;
+    }
+
+    if (pointerGenerationId && pointerGenerationId === loadedGenerationId && fullLesson) return;
+
     let active = true;
-    setLoadingFullLesson(Boolean(savedLessonPointer));
+    setLoadingFullLesson(Boolean(savedLessonPointer?.storageMode === 'lesson-full-indexeddb-v1'));
     getCurrentLessonFull().then((lesson) => {
       if (!active) return;
-      setFullLesson(lesson || savedLessonPointer || null);
+      const nextLesson = lesson || savedLessonPointer || null;
+      setFullLesson(nextLesson);
+      setLoadedGenerationId(nextLesson?.generationMeta?.id || pointerGenerationId || '');
     }).finally(() => {
       if (active) setLoadingFullLesson(false);
     });
     return () => { active = false; };
-  }, [lessonRevision, localRevision, savedLessonPointer?.generationMeta?.id]);
+  }, [pointerGenerationId, lessonRevision, localRevision]);
 
   const savedLesson = fullLesson || savedLessonPointer;
   const lesson = savedLesson || fallbackLesson;
@@ -134,6 +146,7 @@ export function LessonScreen({ lessonRevision = 0 }) {
   }
 
   function forceRefreshLesson() {
+    setLoadedGenerationId('');
     setLocalRevision((value) => value + 1);
   }
 
@@ -147,7 +160,7 @@ export function LessonScreen({ lessonRevision = 0 }) {
           {savedLessonPointer?.storageMode === 'lesson-full-indexeddb-v1' ? <span className="lesson-chip">IndexedDB completo</span> : null}
         </div>
         <h1>{getLessonTitle(lesson)}</h1>
-        <p>{loadingFullLesson && savedLessonPointer ? 'Carregando aula completa...' : getLessonDescription(lesson)}</p>
+        <p>{loadingFullLesson && savedLessonPointer && !fullLesson ? 'Carregando aula completa...' : getLessonDescription(lesson)}</p>
         {usingGenerated ? (
           <div className="lesson-generation-proof">
             <ShieldCheck size={15} />
