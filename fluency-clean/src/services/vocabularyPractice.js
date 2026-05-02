@@ -59,21 +59,12 @@ function asSentence(value) {
   return /[.!?]$/.test(text) ? text : `${text}.`;
 }
 
-function looksLikeSentence(value) {
-  const words = sentenceWords(value);
-  return words.length >= 3 && /^[A-ZI]/.test(clean(value));
-}
-
 function getExample(card) {
   return clean(card?.example || card?.sentence || `I use ${card?.word || 'English'}.`);
 }
 
-function normalizeArray(value) {
-  return Array.isArray(value) ? value.map(clean).filter(Boolean) : [];
-}
-
 function normalizeCard(card, index) {
-  const normalized = {
+  return {
     id: card?.id || `${card?.word || 'card'}-${index}`,
     word: clean(card?.word || card?.term || card?.expression),
     translation: clean(card?.translation || card?.meaning || card?.definition),
@@ -82,21 +73,13 @@ function normalizeCard(card, index) {
     deck: clean(card?.deck || card?.category),
     level: clean(card?.level || card?.due || 'A1'),
   };
-  normalized.chunk = clean(card?.chunk || card?.collocation || normalized.example.replace(/[.!?]$/, ''));
-  normalized.chunks = uniqueBy([...normalizeArray(card?.chunks), normalized.chunk].filter((item) => sentenceWords(item).length >= 2), normalizeOption);
-  normalized.variations = uniqueBy(normalizeArray(card?.variations).map(asSentence).filter(looksLikeSentence), normalizeOption).slice(0, 6);
-  normalized.miniDialogues = [];
-  return normalized;
 }
 
 function distractorsFor(cards, target, field = 'translation', limit = 6) {
   return stableShuffle(
     cards
       .filter((card) => card.id !== target.id)
-      .map((card) => {
-        if (field === 'chunk') return card.chunk || card.example.replace(/[.!?]$/, '');
-        return clean(card[field] || card.translation || card.word);
-      })
+      .map((card) => clean(card[field] || card.translation || card.word))
       .filter(Boolean),
     `${target.id}-${field}-distractors`,
   ).slice(0, limit);
@@ -147,38 +130,6 @@ function activityMeaning(card, cards, index) {
   };
 }
 
-function activityFindExample(card, cards, index) {
-  const correct = card.example;
-  return {
-    id: `find-example-${card.id}-${index}`,
-    type: 'choice',
-    cardId: card.id,
-    word: card.word,
-    title: 'Frase com a palavra',
-    prompt: `Escolha a frase que usa “${card.word}” corretamente.`,
-    hint: card.translation || card.definition || card.word,
-    answer: correct,
-    options: makeOptions(correct, distractorsFor(cards, card, 'example'), `find-example-${card.id}-${index}`),
-    instruction: 'Agora existe apenas uma frase correta para esta palavra.',
-  };
-}
-
-function activityChunk(card, cards, index) {
-  const correct = card.chunk || card.example.replace(/[.!?]$/, '');
-  return {
-    id: `chunk-${card.id}-${index}`,
-    type: 'choice',
-    cardId: card.id,
-    word: card.word,
-    title: 'Chunk natural',
-    prompt: `Qual bloco pertence à frase “${card.example}”?`,
-    hint: `Palavra base: ${card.word}`,
-    answer: correct,
-    options: makeOptions(correct, distractorsFor(cards, card, 'chunk'), `chunk-${card.id}-${index}`),
-    instruction: 'Escolha o bloco natural da própria frase estudada.',
-  };
-}
-
 function activityComplete(card, cards, index) {
   return {
     id: `complete-${card.id}-${index}`,
@@ -190,21 +141,6 @@ function activityComplete(card, cards, index) {
     answer: card.word,
     options: makeOptions(card.word, distractorsFor(cards, card, 'word'), `complete-${card.id}-${index}`),
     instruction: 'Use o significado pedido para escolher a única resposta correta.',
-  };
-}
-
-function activityBuild(card, index) {
-  const words = wordsFromExample(card);
-  return {
-    id: `build-${card.id}-${index}`,
-    type: 'build',
-    cardId: card.id,
-    word: card.word,
-    title: 'Monte a frase',
-    prompt: 'Monte a frase em inglês.',
-    answer: words.join(' '),
-    options: stableShuffle(words, `build-${card.id}-${index}`),
-    instruction: 'Toque nas palavras na ordem correta.',
   };
 }
 
@@ -220,6 +156,21 @@ function activityListen(card, cards, index) {
     answer: correct,
     options: makeOptions(correct, distractorsFor(cards, card, 'example'), `listen-${card.id}-${index}`),
     instruction: 'Ouça a frase e escolha o que foi dito.',
+  };
+}
+
+function activityBuild(card, index) {
+  const words = wordsFromExample(card);
+  return {
+    id: `build-${card.id}-${index}`,
+    type: 'build',
+    cardId: card.id,
+    word: card.word,
+    title: 'Monte a frase',
+    prompt: 'Monte a frase em inglês.',
+    answer: words.join(' '),
+    options: stableShuffle(words, `build-${card.id}-${index}`),
+    instruction: 'Toque nas palavras na ordem correta.',
   };
 }
 
@@ -243,6 +194,19 @@ function interleaveActivities(groups, seedText, maxCount) {
   return stableShuffle(result, `${seedText}-final-order`).slice(0, maxCount);
 }
 
+function repeatToTarget(groups, seed, targetCount) {
+  const base = interleaveActivities(groups, seed, targetCount);
+  if (base.length >= targetCount) return base;
+  const flattened = groups.flat();
+  const repeated = [...base];
+  let index = 0;
+  while (repeated.length < targetCount && flattened.length) {
+    repeated.push({ ...flattened[index % flattened.length], id: `${flattened[index % flattened.length].id}-review-${index}` });
+    index += 1;
+  }
+  return stableShuffle(repeated, `${seed}-review-fill`).slice(0, targetCount);
+}
+
 export function buildVocabularyPracticeActivities(rawCards = [], { level = 1 } = {}) {
   const cards = uniqueBy(rawCards.map(normalizeCard).filter((card) => card.word), (card) => card.word.toLowerCase());
   const selected = cards.slice(0, Math.min(cards.length, level <= 1 ? 4 : level === 2 ? 6 : 8));
@@ -251,15 +215,13 @@ export function buildVocabularyPracticeActivities(rawCards = [], { level = 1 } =
 
   const intro = selected.map((card, index) => activityIntro(card, index));
   const meaning = selected.map((card, index) => activityMeaning(card, cards, index));
-  const example = selected.map((card, index) => activityFindExample(card, cards, index));
-  const chunk = selected.map((card, index) => activityChunk(card, cards, index));
   const complete = selected.map((card, index) => activityComplete(card, cards, index));
   const listen = selected.map((card, index) => activityListen(card, cards, index));
   const build = selected.filter((card) => card.example).map((card, index) => activityBuild(card, index));
 
-  if (level <= 1) return interleaveActivities([intro, meaning, example, chunk], seed, targetCount);
-  if (level === 2) return interleaveActivities([meaning, example, chunk, complete, listen], seed, targetCount);
-  return interleaveActivities([meaning, example, chunk, complete, listen, build], seed, targetCount);
+  if (level <= 1) return repeatToTarget([intro, meaning, complete], seed, targetCount);
+  if (level === 2) return repeatToTarget([meaning, complete, listen], seed, targetCount);
+  return repeatToTarget([meaning, complete, listen, build], seed, targetCount);
 }
 
 export function scoreVocabularyPractice(activity, userAnswer) {
