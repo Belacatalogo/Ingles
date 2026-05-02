@@ -1,5 +1,6 @@
 import { diagnostics } from './diagnostics.js';
 import { maskApiKey, normalizeLessonKeys } from './geminiLessons.js';
+import { generateExternalGrammarSection } from './externalLessonProviders.js';
 
 export const GRAMMAR_SECTION_CONTRACT = 'grammar-section-sequential-v1';
 
@@ -17,6 +18,11 @@ function text(value) {
 
 function countWords(value) {
   return text(value).split(/\s+/).filter(Boolean).length;
+}
+
+function normalizeExternalProvider(value) {
+  const provider = text(value).toLowerCase();
+  return provider === 'groq' || provider === 'cerebras' ? provider : '';
 }
 
 function extractTextFromGemini(data) {
@@ -44,6 +50,16 @@ function parseSectionJson(value) {
       throw new Error(`Section JSON inválido: ${secondError?.message || secondError}. Preview: ${jsonText.slice(0, 160)}`);
     }
   }
+}
+
+function normalizeGeneratedSection(parsed) {
+  const title = text(parsed?.title);
+  const content = text(parsed?.content);
+  if (!title || !content) throw new Error('Section veio sem title/content.');
+  if (countWords(content) < MIN_SECTION_WORDS) throw new Error(`Section curta demais: ${countWords(content)}/${MIN_SECTION_WORDS} palavras.`);
+  if (!/portugu[eê]s|no Brasil|brasileir|traduz|contraste/i.test(content)) throw new Error('Section sem contraste explícito com português brasileiro.');
+  if (!/erro|errado|confus|típico|tipico/i.test(content)) throw new Error('Section sem erro típico A1 brasileiro.');
+  return { title, content, sectionContract: GRAMMAR_SECTION_CONTRACT, wordCount: countWords(content) };
 }
 
 function isGrammarLesson(lesson) {
@@ -109,17 +125,25 @@ async function callGeminiSection({ attempt, prompt, fetcher }) {
     throw new Error(`HTTP ${response?.status || 0} ${errorText.slice(0, 160)}`);
   }
   const data = await response.json();
-  const parsed = parseSectionJson(extractTextFromGemini(data));
-  const title = text(parsed.title);
-  const content = text(parsed.content);
-  if (!title || !content) throw new Error('Section veio sem title/content.');
-  if (countWords(content) < MIN_SECTION_WORDS) throw new Error(`Section curta demais: ${countWords(content)}/${MIN_SECTION_WORDS} palavras.`);
-  if (!/portugu[eê]s|no Brasil|brasileir|traduz|contraste/i.test(content)) throw new Error('Section sem contraste explícito com português brasileiro.');
-  if (!/erro|errado|confus|típico|tipico/i.test(content)) throw new Error('Section sem erro típico A1 brasileiro.');
-  return { title, content, sectionContract: GRAMMAR_SECTION_CONTRACT, wordCount: countWords(content) };
+  return normalizeGeneratedSection(parseSectionJson(extractTextFromGemini(data)));
 }
 
-async function generateOneSection({ lesson, section, index, previousSections, attempts, fetcher }) {
+async function generateOneExternalSection({ lesson, section, index, previousSections, fetcher, externalProvider }) {
+  const prompt = buildSectionPrompt({ lesson, section, index, previousSections });
+  diagnostics.log(`Grammar 1B section ${index + 1}: usando provedor externo puro ${externalProvider}.`, 'warn');
+  const result = await generateExternalGrammarSection({ prompt, targetProvider: externalProvider, fetcher });
+  if (result?.status !== 'success' || !result.section) {
+    throw new Error(result?.error || `Falha ao gerar section ${index + 1} com ${externalProvider}.`);
+  }
+  const normalized = normalizeGeneratedSection(result.section);
+  return {
+    ...normalized,
+    sectionProvider: result.provider,
+    sectionModel: result.model,
+  };
+}
+
+async function generateOneGeminiSection({ lesson, section, index, previousSections, attempts, fetcher }) {
   const prompt = buildSectionPrompt({ lesson, section, index, previousSections });
   let lastError = null;
   for (const attempt of attempts) {
@@ -134,33 +158,36 @@ async function generateOneSection({ lesson, section, index, previousSections, at
   throw lastError || new Error(`Falha ao gerar section ${index + 1}.`);
 }
 
-export async function enrichGrammarSectionsSequentially({ lesson, keys = [], proKey = '', fetcher = fetch } = {}) {
+export async function enrichGrammarSectionsSequentially({ lesson, keys = [], proKey = '', fetcher = fetch, externalProvider = '' } = {}) {
   if (!isGrammarLesson(lesson)) return { lesson, applied: false, reason: 'not-grammar' };
   if (hasDeepEnoughSections(lesson)) return { lesson, applied: false, reason: 'already-deep' };
-  const attempts = buildAttempts({ keys, proKey });
-  if (!attempts.length) return { lesson, applied: false, reason: 'missing-keys' };
+  const forcedExternalProvider = normalizeExternalProvider(externalProvider);
+  const attempts = forcedExternalProvider ? [] : buildAttempts({ keys, proKey });
+  if (!forcedExternalProvider && !attempts.length) return { lesson, applied: false, reason: 'missing-keys' };
 
   const sections = Array.isArray(lesson.sections) ? lesson.sections : [];
   if (!sections.length) return { lesson, applied: false, reason: 'missing-sections' };
 
   diagnostics.setPhase('grammar bloco 1B por seção', 'generating');
-  diagnostics.log(`Cirurgia 2 Grammar ativa: reescrevendo ${sections.length} section(s) uma por uma com mínimo de ${MIN_SECTION_WORDS} palavras.`, 'warn');
+  diagnostics.log(`Cirurgia 2 Grammar ativa: reescrevendo ${sections.length} section(s) uma por uma com mínimo de ${MIN_SECTION_WORDS} palavras${forcedExternalProvider ? ` usando ${forcedExternalProvider} em todo o 1B` : ''}.`, 'warn');
 
   const enriched = [];
   for (let index = 0; index < sections.length; index += 1) {
-    const newSection = await generateOneSection({ lesson, section: sections[index], index, previousSections: enriched, attempts, fetcher });
+    const newSection = forcedExternalProvider
+      ? await generateOneExternalSection({ lesson, section: sections[index], index, previousSections: enriched, fetcher, externalProvider: forcedExternalProvider })
+      : await generateOneGeminiSection({ lesson, section: sections[index], index, previousSections: enriched, attempts, fetcher });
     enriched.push(newSection);
-    diagnostics.log(`Grammar section ${index + 1} aprovada: ${newSection.wordCount} palavras.`, 'success');
+    diagnostics.log(`Grammar section ${index + 1} aprovada: ${newSection.wordCount} palavras${newSection.sectionProvider ? ` · ${newSection.sectionProvider}/${newSection.sectionModel}` : ''}.`, 'success');
   }
 
   return {
     lesson: {
       ...lesson,
       sections: enriched,
-      grammarSectionContract: GRAMMAR_SECTION_CONTRACT,
-      planContract: lesson.planContract ? `${lesson.planContract}+${GRAMMAR_SECTION_CONTRACT}` : GRAMMAR_SECTION_CONTRACT,
+      grammarSectionContract: forcedExternalProvider ? `${GRAMMAR_SECTION_CONTRACT}-${forcedExternalProvider}` : GRAMMAR_SECTION_CONTRACT,
+      planContract: lesson.planContract ? `${lesson.planContract}+${GRAMMAR_SECTION_CONTRACT}${forcedExternalProvider ? `-${forcedExternalProvider}` : ''}` : `${GRAMMAR_SECTION_CONTRACT}${forcedExternalProvider ? `-${forcedExternalProvider}` : ''}`,
     },
     applied: true,
-    reason: 'sections-enriched',
+    reason: forcedExternalProvider ? `sections-enriched-${forcedExternalProvider}` : 'sections-enriched',
   };
 }
