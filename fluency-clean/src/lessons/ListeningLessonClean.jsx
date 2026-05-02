@@ -59,6 +59,7 @@ function audioMessage(result, fallback = 'Áudio iniciado.') {
     if (result?.partial) return `Tocou até o trecho ${result.playedSegments || 1}, mas o iPhone bloqueou a continuação automática. Use o controle por trecho.`;
     return result?.error || 'Não foi possível reproduzir áudio.';
   }
+  if (result.source === 'multi-speaker-merged-cache') return `Diálogo multi-voz carregado do cache final: ${result.speakers} personagens, ${result.turns} falas.`;
   if (result.source === 'multi-speaker-merged-gemini') return `Diálogo multi-voz iniciado como áudio único: ${result.speakers} personagens, ${result.turns} falas.`;
   if (result.source === 'multi-speaker-sequential') return `Diálogo multi-voz tocado em sequência: ${result.speakers} personagens.`;
   if (result.source === 'cache') return 'Áudio natural carregado do cache.';
@@ -73,8 +74,7 @@ function CollapsibleSection({ id, title, icon, summary, open, onToggle, children
   const Icon = icon;
   return <section className={`pillar-card lesson-collapsible-card listening-collapsible-card ${open ? 'is-open' : 'is-closed'}`} id={id}>
     <button className="lesson-collapsible-head listening-collapsible-head" type="button" onClick={onToggle} aria-expanded={open}>
-      <span><Icon size={17} /> {title}</span><small>{summary}</small>{open ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-    </button>
+      <span><Icon size={17} /> {title}</span><small>{summary}</small>{open ? <ChevronUp size={18} /> : <ChevronDown size={18} />}</button>
     {open ? <div className="lesson-collapsible-body">{children}</div> : null}
   </section>;
 }
@@ -170,7 +170,7 @@ export function ListeningLessonClean({ lesson }) {
   function handleSave() { saveLessonDraft({ lesson, answer }); const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); setSavedAt(time); setMessage(`Rascunho salvo às ${time}.`); diagnostics.log(`Listening: rascunho salvo para ${lesson?.title || 'aula atual'}.`, 'success'); }
   function handleComplete() { saveLessonDraft({ lesson, answer }); const result = completeLesson({ lesson, answers: { summary: answer, transcriptLines: transcript.length, shadowing: { currentPhrase: currentShadowingLine, totalPhrases: shadowingLines.length }, renderReport, updatedAt: new Date().toISOString() }, writtenAnswer: answer }); const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); setCompletedAt(time); setMessage(result.alreadyCompleted ? 'Listening já estava concluída. Progresso mantido.' : '+25 XP. Listening concluída e progresso salvo.'); }
 
-  return <article className="pillar-lesson listening-lesson-v1 listening-light-layout listening-render-review-v1 listening-audio-stability-v2 listening-multi-speaker-v1 listening-blind-first-v2">
+  return <article className="pillar-lesson listening-lesson-v1 listening-light-layout listening-render-review-v1 listening-audio-stability-v2 listening-multi-speaker-v1 listening-blind-first-v2 listening-merged-cache-v1">
     <div ref={refs.guide}><section className="pillar-card listening-audio-card listening-focus-card listening-hero-card" id="lesson-guide">
       <div className="pillar-card-title"><Headphones size={17} /> Escuta guiada</div>
       <h2>{lesson?.title || 'Listening — A morning routine'}</h2>
