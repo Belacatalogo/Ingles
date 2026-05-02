@@ -1,6 +1,6 @@
 import { diagnostics } from './diagnostics.js';
 import { generateLessonDraft } from './geminiLessons.js';
-import { generateExternalLessonDraft } from './externalLessonProviders.js';
+import { generateExternalLessonDraft, shouldForceExternalLessonProviderOnce } from './externalLessonProviders.js';
 import { summarizeModelPolicyForDiagnostics } from './modelPolicy.js';
 import { buildPedagogicalPlan, buildPlanPromptText, summarizePlanForDiagnostics } from './lessonPlan.js';
 import { inferLessonTypeFromText, normalizeLessonType } from './lessonTypes.js';
@@ -94,6 +94,24 @@ export async function generatePlannedLessonDraft(options = {}) {
     'A geração deve obedecer ao plano pedagógico acima antes de criar estrutura, texto, vocabulário, exercícios e produção.',
     'Antes de responder cada bloco, confira mentalmente se o primeiro caractere da resposta será { e não texto escapado.',
   ].join('\n');
+
+  const forceExternal = shouldForceExternalLessonProviderOnce();
+  if (forceExternal) {
+    diagnostics.log('Modo teste ativo: pulando Gemini e chamando fallback externo Groq/Cerebras.', 'warn');
+    const forcedExternalResult = await generateExternalLessonDraft({
+      ...options,
+      prompt: plannedPrompt,
+      forcedType,
+      level,
+      previousLesson,
+      forceVariation,
+      reason: 'modo teste forçado pelo usuário',
+    });
+    if (forcedExternalResult?.status === 'success' && forcedExternalResult.lesson) {
+      return attachPlanToResult(forcedExternalResult, plan, planSeed);
+    }
+    diagnostics.log('Fallback externo forçado falhou. Voltando ao Gemini para não travar a geração.', 'warn', forcedExternalResult);
+  }
 
   const result = await generateLessonDraft({
     ...options,
