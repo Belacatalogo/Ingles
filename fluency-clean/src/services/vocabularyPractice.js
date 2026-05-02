@@ -186,10 +186,10 @@ function activityComplete(card, cards, index) {
     cardId: card.id,
     word: card.word,
     title: 'Complete a frase',
-    prompt: maskExample(card),
+    prompt: `Complete com a palavra que significa “${card.translation || card.definition || card.word}”:\n${maskExample(card)}`,
     answer: card.word,
     options: makeOptions(card.word, distractorsFor(cards, card, 'word'), `complete-${card.id}-${index}`),
-    instruction: 'Escolha a palavra que completa a frase.',
+    instruction: 'Use o significado pedido para escolher a única resposta correta.',
   };
 }
 
