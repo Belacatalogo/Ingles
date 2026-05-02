@@ -9,95 +9,89 @@ const LESSON_DRAFT_PROMPT_KEY = 'lesson.promptDraft';
 const LAST_GENERATION_STATUS_KEY = 'lesson.lastGenerationStatus';
 
 function makeGenerationId(date = new Date()) {
-  const stamp = date.toISOString().replace(/[-:TZ.]/g, '').slice(0, 14);
-  return `gen-${stamp}-${Math.random().toString(36).slice(2, 6)}`;
+  return `gen-${date.toISOString().replace(/[-:TZ.]/g, '').slice(0, 14)}-${Math.random().toString(36).slice(2, 6)}`;
 }
 
 function lessonTime(lesson) {
-  const candidates = [
-    lesson?.generationMeta?.savedAt,
-    lesson?.savedAt,
-    lesson?.generationMeta?.generatedAt,
-    lesson?.updatedAt,
-    lesson?.createdAt,
-  ];
-  const parsed = candidates.map((value) => Date.parse(value || '')).find((value) => Number.isFinite(value));
-  return parsed || 0;
+  const candidates = [lesson?.generationMeta?.savedAt, lesson?.savedAt, lesson?.generationMeta?.generatedAt, lesson?.updatedAt, lesson?.createdAt];
+  return candidates.map((value) => Date.parse(value || '')).find((value) => Number.isFinite(value)) || 0;
+}
+
+function shortText(value, max) {
+  const text = String(value || '');
+  return text.length > max ? `${text.slice(0, max)}…` : text;
+}
+
+function compactLesson(lesson) {
+  const base = normalizeLesson(lesson);
+  return {
+    ...base,
+    intro: shortText(base.intro, 1800),
+    listeningText: shortText(base.listeningText, 5200),
+    sections: Array.isArray(base.sections) ? base.sections.slice(0, 10).map((section) => ({ ...section, content: shortText(section?.content, 1800), explanation: shortText(section?.explanation, 1200) })) : base.sections,
+    vocabulary: Array.isArray(base.vocabulary) ? base.vocabulary.slice(0, 45) : base.vocabulary,
+    exercises: Array.isArray(base.exercises) ? base.exercises.slice(0, 45) : base.exercises,
+    prompts: Array.isArray(base.prompts) ? base.prompts.slice(0, 24) : base.prompts,
+  };
+}
+
+function verifySavedLesson(expected) {
+  const saved = storage.get(CURRENT_LESSON_KEY, null);
+  const expectedGen = expected?.generationMeta?.id || '';
+  const savedGen = saved?.generationMeta?.id || '';
+  return Boolean(saved && expectedGen && savedGen === expectedGen);
+}
+
+function persistCurrentLesson(payload) {
+  storage.set(CURRENT_LESSON_KEY, payload);
+  if (verifySavedLesson(payload)) return { ok: true, payload, compacted: false };
+
+  diagnostics.log('Storage recusou a aula completa. Limpando histórico e tentando novamente.', 'warn');
+  storage.remove(LESSON_HISTORY_KEY);
+  storage.set(CURRENT_LESSON_KEY, payload);
+  if (verifySavedLesson(payload)) return { ok: true, payload, compacted: false };
+
+  const compact = { ...compactLesson(payload), generationMeta: { ...payload.generationMeta, compactedForStorage: true } };
+  diagnostics.log('Storage ainda recusou. Tentando salvar versão compacta da aula.', 'warn');
+  storage.set(CURRENT_LESSON_KEY, compact);
+  if (verifySavedLesson(compact)) return { ok: true, payload: compact, compacted: true };
+
+  return { ok: false, payload: compact, compacted: true };
 }
 
 function findHistoryLessonByStatus(history = [], status = null) {
   if (!Array.isArray(history) || !status) return null;
-  const statusId = status.id || '';
-  const statusLessonId = status.lessonId || '';
-  const statusTitle = status.lessonTitle || '';
-
-  if (statusId) {
-    const byGeneration = history.find((lesson) => lesson?.generationMeta?.id === statusId);
-    if (byGeneration) return byGeneration;
-  }
-
-  if (statusLessonId) {
-    const byLessonId = history.find((lesson) => lesson?.id === statusLessonId || lesson?.curriculumId === statusLessonId);
-    if (byLessonId) return byLessonId;
-  }
-
-  if (statusTitle) {
-    const byTitle = history.find((lesson) => lesson?.title === statusTitle || lesson?.expectedTitle === statusTitle);
-    if (byTitle) return byTitle;
-  }
-
-  return null;
+  return history.find((lesson) => lesson?.generationMeta?.id === status.id)
+    || history.find((lesson) => lesson?.id === status.lessonId || lesson?.curriculumId === status.lessonId)
+    || history.find((lesson) => lesson?.title === status.lessonTitle || lesson?.expectedTitle === status.lessonTitle)
+    || null;
 }
 
 function getFreshestLessonRaw() {
   const current = storage.get(CURRENT_LESSON_KEY, null);
   const history = storage.get(LESSON_HISTORY_KEY, []);
   const latestHistory = Array.isArray(history) ? history[0] : null;
-  const lastStatus = storage.get(LAST_GENERATION_STATUS_KEY, null);
-  const statusLesson = findHistoryLessonByStatus(history, lastStatus);
+  const statusLesson = findHistoryLessonByStatus(history, storage.get(LAST_GENERATION_STATUS_KEY, null));
 
-  if (statusLesson) {
-    const currentGenerationId = current?.generationMeta?.id || '';
-    const statusGenerationId = statusLesson?.generationMeta?.id || '';
-    const statusIsNewer = lessonTime(statusLesson) >= lessonTime(current);
-    if (!current || statusGenerationId !== currentGenerationId || statusIsNewer) {
-      storage.set(CURRENT_LESSON_KEY, statusLesson);
-      diagnostics.log(`Aula atual sincronizada pelo último status salvo: ${statusLesson.title || 'sem título'}`, 'info');
-      return statusLesson;
-    }
+  if (statusLesson && (!current || lessonTime(statusLesson) >= lessonTime(current) || statusLesson?.generationMeta?.id !== current?.generationMeta?.id)) {
+    storage.set(CURRENT_LESSON_KEY, statusLesson);
+    diagnostics.log(`Aula atual sincronizada pelo último status salvo: ${statusLesson.title || 'sem título'}`, 'info');
+    return statusLesson;
   }
 
   if (!current) return latestHistory || null;
-  if (!latestHistory) return current;
-
-  const currentTime = lessonTime(current);
-  const historyTime = lessonTime(latestHistory);
-  const currentGenerationId = current?.generationMeta?.id || '';
-  const historyGenerationId = latestHistory?.generationMeta?.id || '';
-
-  if (historyTime > currentTime && historyGenerationId !== currentGenerationId) {
+  if (latestHistory && lessonTime(latestHistory) > lessonTime(current) && latestHistory?.generationMeta?.id !== current?.generationMeta?.id) {
     storage.set(CURRENT_LESSON_KEY, latestHistory);
     diagnostics.log(`Aula atual sincronizada com histórico mais recente: ${latestHistory.title || 'sem título'}`, 'info');
     return latestHistory;
   }
-
   return current;
 }
 
 function notifyLessonUpdated(lesson, status) {
   try {
-    window.dispatchEvent(new CustomEvent('fluency:lesson-updated', {
-      detail: {
-        lessonId: lesson?.id || '',
-        lessonTitle: lesson?.title || '',
-        generationId: lesson?.generationMeta?.id || '',
-        status: status?.event || status?.message || 'saved',
-        savedAt: lesson?.generationMeta?.savedAt || new Date().toISOString(),
-      },
-    }));
-  } catch {
-    // Event dispatch is best-effort. Storage remains the source of truth.
-  }
+    window.dispatchEvent(new CustomEvent('fluency:lesson-updated', { detail: { lessonId: lesson?.id || '', lessonTitle: lesson?.title || '', generationId: lesson?.generationMeta?.id || '', status: status?.event || status?.message || 'saved', savedAt: lesson?.generationMeta?.savedAt || new Date().toISOString() } }));
+  } catch {}
 }
 
 export function getCurrentLesson() {
@@ -114,31 +108,17 @@ export function getLastGenerationStatus() {
 }
 
 export function saveGenerationStatus(status = {}) {
-  const payload = {
-    id: status.id || makeGenerationId(),
-    event: status.event || 'unknown',
-    message: status.message || '',
-    lessonId: status.lessonId || '',
-    lessonTitle: status.lessonTitle || '',
-    contractVersion: status.contractVersion || '',
-    pedagogicalScore: Number(status.pedagogicalScore || 0),
-    source: status.source || 'unknown',
-    variationMode: Boolean(status.variationMode),
-    generationSeed: status.generationSeed || '',
-    createdAt: status.createdAt || new Date().toISOString(),
-  };
+  const payload = { id: status.id || makeGenerationId(), event: status.event || 'unknown', message: status.message || '', lessonId: status.lessonId || '', lessonTitle: status.lessonTitle || '', contractVersion: status.contractVersion || '', pedagogicalScore: Number(status.pedagogicalScore || 0), source: status.source || 'unknown', variationMode: Boolean(status.variationMode), generationSeed: status.generationSeed || '', createdAt: status.createdAt || new Date().toISOString() };
   storage.set(LAST_GENERATION_STATUS_KEY, payload);
   return payload;
 }
 
 export function saveCurrentLesson(lesson, meta = {}) {
   const now = new Date();
-  const normalized = normalizeLesson(lesson);
   const previous = storage.get(CURRENT_LESSON_KEY, null);
-  const existingMeta = previous?.generationMeta && typeof previous.generationMeta === 'object' ? previous.generationMeta : {};
-  const variationMode = Boolean(meta.variationMode || lesson?.variationMode || lesson?.generationMeta?.variationMode);
+  const normalized = normalizeLesson(lesson);
   const generationMeta = {
-    ...existingMeta,
+    ...(previous?.generationMeta && typeof previous.generationMeta === 'object' ? previous.generationMeta : {}),
     id: meta.generationId || lesson?.generationMeta?.id || makeGenerationId(now),
     source: meta.source || lesson?.generationMeta?.source || 'generated',
     status: meta.status || lesson?.generationMeta?.status || 'new',
@@ -147,36 +127,29 @@ export function saveCurrentLesson(lesson, meta = {}) {
     contractVersion: meta.contractVersion || lesson?.generationMeta?.contractVersion || lesson?.quality?.contractVersion || 'lesson-contract-v1',
     pedagogicalScore: Number(meta.pedagogicalScore || lesson?.pedagogicalReview?.overallScore || lesson?.quality?.pedagogicalScore || 0),
     autoRepaired: Boolean(meta.autoRepaired || lesson?.pedagogicalReview?.autoRepaired),
-    variationMode,
+    variationMode: Boolean(meta.variationMode || lesson?.variationMode || lesson?.generationMeta?.variationMode),
     generationSeed: meta.generationSeed || lesson?.generationSeed || lesson?.generationMeta?.generationSeed || '',
     replacedPreviousLessonId: previous?.id || '',
     replacedPreviousGenerationId: previous?.generationMeta?.id || '',
   };
-  const payload = { ...normalized, generationMeta };
 
-  storage.set(CURRENT_LESSON_KEY, payload);
+  const persisted = persistCurrentLesson({ ...normalized, generationMeta });
+  if (!persisted.ok) {
+    const status = saveGenerationStatus({ id: generationMeta.id, event: 'storage-failed', message: 'Aula gerada, mas não foi possível gravar a aula atual no armazenamento local.', lessonId: normalized.id, lessonTitle: normalized.title, contractVersion: generationMeta.contractVersion, pedagogicalScore: generationMeta.pedagogicalScore, source: generationMeta.source, createdAt: generationMeta.generatedAt });
+    diagnostics.log('Falha crítica: a aula não foi persistida como lesson.current. Status saved não foi gravado.', 'error');
+    notifyLessonUpdated(null, status);
+    return normalized;
+  }
+
+  const payload = persisted.payload;
+  if (persisted.compacted) diagnostics.log('Aula salva em modo compacto para caber no armazenamento local.', 'warn');
 
   const history = storage.get(LESSON_HISTORY_KEY, []);
-  const nextHistory = [
-    { ...payload, savedAt: now.toISOString() },
-    ...history.filter((item) => item.generationMeta?.id !== payload.generationMeta?.id),
-  ].slice(0, 30);
+  const nextHistory = [{ ...payload, savedAt: now.toISOString() }, ...(Array.isArray(history) ? history : []).filter((item) => item?.generationMeta?.id !== payload.generationMeta.id)].slice(0, 6);
+  if (!storage.set(LESSON_HISTORY_KEY, nextHistory)) storage.set(LESSON_HISTORY_KEY, [{ ...payload, savedAt: now.toISOString() }]);
 
-  storage.set(LESSON_HISTORY_KEY, nextHistory);
-  const status = saveGenerationStatus({
-    id: generationMeta.id,
-    event: 'saved',
-    message: variationMode ? 'Nova versão diferente gerada e salva.' : generationMeta.status === 'new' ? 'Nova aula gerada e salva.' : 'Aula salva.',
-    lessonId: payload.id,
-    lessonTitle: payload.title,
-    contractVersion: generationMeta.contractVersion,
-    pedagogicalScore: generationMeta.pedagogicalScore,
-    source: generationMeta.source,
-    variationMode: generationMeta.variationMode,
-    generationSeed: generationMeta.generationSeed,
-    createdAt: generationMeta.generatedAt,
-  });
-  diagnostics.log(`Aula salva: ${payload.title} · ${generationMeta.id}${variationMode ? ' · variação real' : ''}`, 'info');
+  const status = saveGenerationStatus({ id: payload.generationMeta.id, event: 'saved', message: payload.generationMeta.variationMode ? 'Nova versão diferente gerada e salva.' : payload.generationMeta.status === 'new' ? 'Nova aula gerada e salva.' : 'Aula salva.', lessonId: payload.id, lessonTitle: payload.title, contractVersion: payload.generationMeta.contractVersion, pedagogicalScore: payload.generationMeta.pedagogicalScore, source: payload.generationMeta.source, variationMode: payload.generationMeta.variationMode, generationSeed: payload.generationMeta.generationSeed, createdAt: payload.generationMeta.generatedAt });
+  diagnostics.log(`Aula salva: ${payload.title} · ${payload.generationMeta.id}${payload.generationMeta.variationMode ? ' · variação real' : ''}`, 'info');
   notifyLessonUpdated(payload, status);
   return payload;
 }
@@ -197,10 +170,7 @@ export function getLessonHistory() {
 }
 
 export function getLessonPromptDraft() {
-  return storage.getText(
-    LESSON_DRAFT_PROMPT_KEY,
-    'Gerar a próxima aula do cronograma Fluency automaticamente, respeitando pré-requisitos, nível atual e ordem pedagógica.'
-  );
+  return storage.getText(LESSON_DRAFT_PROMPT_KEY, 'Gerar a próxima aula do cronograma Fluency automaticamente, respeitando pré-requisitos, nível atual e ordem pedagógica.');
 }
 
 export function saveLessonPromptDraft(prompt) {
