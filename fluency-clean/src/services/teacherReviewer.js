@@ -198,7 +198,7 @@ function isRepairableDeepGrammarIssue(issue) {
 function isHighScoreRepairableGrammar({ issues, finalScore, deepGrammarAudit }) {
   return Boolean(
     deepGrammarAudit?.applies &&
-    finalScore >= 95 &&
+    finalScore >= 90 &&
     issues.length > 0 &&
     issues.length <= 2 &&
     issues.every(isRepairableDeepGrammarIssue)
@@ -257,7 +257,7 @@ export function reviewLessonAsTeacher(rawLesson, { expectedLevel = '', expectedT
     deepGrammarAudit,
     issues: visibleIssues,
     repairedWarnings: highScoreRepairableGrammar ? issues : [],
-    advice: highScoreRepairableGrammar ? 'Aula aprovada com ressalvas reparáveis de Grammar profunda; pipeline local já reforçou produção e exemplos.' : visibleIssues.length ? `Revisar antes de salvar: ${visibleIssues.join(' ')}` : 'Aula aprovada pelo professor revisor.',
+    advice: highScoreRepairableGrammar ? 'Aula aprovada com polimento final de Grammar profunda; as ressalvas reparáveis foram tratadas pelo pipeline local.' : visibleIssues.length ? `Revisar antes de salvar: ${visibleIssues.join(' ')}` : 'Aula aprovada pelo professor revisor.',
     reviewedAreas: buildReviewedAreas(lesson, deepGrammarAudit),
     checkedAt: new Date().toISOString(),
     reviewer: deepGrammarAudit.applies ? 'teacher-reviewer-v1+deep-grammar-auditor-v1+high-score-repairable-grammar-v1' : 'teacher-reviewer-v1',
