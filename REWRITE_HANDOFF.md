@@ -15,52 +15,54 @@ Branch estável protegida: `rewrite-fluency-clean`
 - Não mexer no backend Azure privado.
 - Manter tudo modular em `fluency-clean/src/`, `fluency-clean/public/` ou arquivos reais de configuração.
 
-## ESTADO ATUAL — HOTFIX EXTERNAL PROVIDERS: ESQUELETO LEVE + 1B PURO
+## ESTADO ATUAL — HOTFIX EXTERNAL 1B: TOKENS MENORES + SECTION CURTA
 
-### `HOTFIX-EXTERNAL-PROVIDERS-SKELETON-1B-LAB` — IMPLEMENTADO, aguardando deploy/teste
+### `HOTFIX-EXTERNAL-1B-TOKEN-CONTROL-LAB` — IMPLEMENTADO, aguardando deploy/teste
 
 Contexto:
-- Groq puro continuou falhando por limite/timeout: depois de retry em 429, terminou com `Load failed`.
-- Cerebras com `llama3.1-8b` conseguiu gerar algo, mas veio sem `sections`, então apareceu `Cirurgia 2 Grammar não precisou rodar: missing-sections`.
-- A aula Cerebras foi reprovada pelo professor revisor com 87/100 por profundidade rasa, justamente porque o 1B não teve base para rodar.
+- Cerebras puro já entrou no 1B, mas a primeira section veio curta: `106/180 palavras`.
+- Groq puro já chegou até section 2 aprovada (`229 palavras`), mas quebrou na section 3 por HTTP 429/TPM: `Limit 12000, Used 9995, Requested 2079`.
+- Isso confirma que Groq tem qualidade/fluxo funcionando, mas ainda precisa reduzir consumo de tokens por minuto.
 
-Correção aplicada:
-- Para Grammar em provedor externo forçado, o provider agora gera apenas um ESQUELETO LEVE da aula.
-- Esse esqueleto deve ter `sections` obrigatórias, mas cada section vem curta.
+Correção aplicada em `grammarSectionGenerator.js`:
+- Contexto de sections anteriores para provedores externos foi reduzido:
+  - antes: até 900 caracteres por section anterior;
+  - agora: até 220 caracteres por section anterior em modo externo.
+- Exemplo 1-shot enviado aos externos foi encurtado.
+- Prompt externo passou a mirar 200–240 palavras por section, mantendo mínimo de 180.
+- Adicionada pausa entre sections externas:
+  - Groq: 5,5s entre sections;
+  - Cerebras: 1,8s entre sections.
+- Se uma section externa vier curta, o app não aborta imediatamente:
+  - registra `Section X veio curta... Pedindo expansão ao mesmo provedor`;
+  - espera um pouco;
+  - chama o mesmo provedor de novo pedindo expansão da section curta;
+  - só reprova se a expansão também falhar.
+
+Commit:
+- `d80a8cdb409b3d060dba4920a8feea29bb3ef499` — reduz tokens e repara section curta.
+
+Teste obrigatório agora:
+1. aguardar deploy da branch `rewrite-fluency-clean-lab` com commit `d80a8cd` ou posterior;
+2. testar primeiro Cerebras puro com `llama3.1-8b`;
+3. confirmar se aparece, caso venha curto:
+   - `Section 1 veio curta em cerebras... Pedindo expansão ao mesmo provedor`;
+   - depois `Grammar section 1 aprovada... cerebras/llama3.1-8b`;
+4. testar Groq puro;
+5. confirmar se a pausa diminui os erros 429/TPM;
+6. comparar nota/qualidade/hash somente se salvar.
+
+## ESTADO ANTERIOR — HOTFIX EXTERNAL PROVIDERS: ESQUELETO LEVE + 1B PURO
+
+### `HOTFIX-EXTERNAL-PROVIDERS-SKELETON-1B-LAB` — IMPLEMENTADO
+
+- Para Grammar em provedor externo forçado, o provider gera apenas um esqueleto leve.
 - A profundidade real fica toda na Cirurgia 2 / Grammar 1B.
-- Se Groq/Cerebras gerar esqueleto sem sections suficientes, o app aplica um esqueleto local de 7 sections para permitir o 1B puro do mesmo provedor.
-- Reduzido o tamanho do esqueleto externo para reduzir rate limit do Groq e JSON quebrado do Cerebras.
-- Reduzido também o max tokens do 1B externo:
-  - Cerebras: 2200
-  - Groq: 3000
+- Se Groq/Cerebras gerar esqueleto sem sections suficientes, o app aplica esqueleto local de 7 sections para permitir 1B puro do mesmo provedor.
 - Mantido: se for teste forçado, NÃO volta para Gemini, para não contaminar comparação.
-
-Diagnóstico esperado agora no Cerebras:
-- `Cerebras gerou aula para validacao local.`
-- Se vier sem sections: `Cerebras gerou esqueleto sem sections suficientes. Aplicando esqueleto Grammar local para permitir 1B puro.`
-- `Cirurgia 2 Grammar ativa... usando cerebras em todo o 1B.`
-- `Grammar 1B externo: tentando Cerebras/llama3.1-8b...`
-- `Grammar section 1 aprovada: ... palavras · cerebras/llama3.1-8b.`
-
-Diagnóstico esperado agora no Groq:
-- `Groq gerou aula para validacao local.`
-- `Cirurgia 2 Grammar ativa... usando groq em todo o 1B.`
-- Se houver 429: retry/backoff continua aparecendo.
-- Se ainda der `Load failed`, provavelmente é limite/rede do iPhone/API depois de muitas chamadas sequenciais.
-
-Arquivo alterado:
-- `fluency-clean/src/services/externalLessonProviders.js`
-- `REWRITE_HANDOFF.md`
 
 Commit:
 - `782ff028b1f956c8ab0814d97581f30f47fd109d` — esqueleto leve obrigatório.
-
-Teste obrigatório agora:
-1. aguardar deploy da branch `rewrite-fluency-clean-lab` com commit `782ff02` ou posterior;
-2. testar primeiro `Forçar Cerebras na próxima geração` com modelo `llama3.1-8b`;
-3. confirmar que a Cirurgia 2 roda com Cerebras em todo o 1B;
-4. depois testar Groq puro;
-5. comparar nota/qualidade/hash somente se salvar.
 
 ## ESTADO ANTERIOR — HOTFIX PROVEDORES EXTERNOS ROBUSTOS
 
@@ -121,12 +123,12 @@ Correção futura, somente depois da comparação de motores:
 
 ## Próximo teste recomendado
 
-1. Esperar deploy com `782ff02` ou posterior.
+1. Esperar deploy com `d80a8cd` ou posterior.
 2. Testar Cerebras puro com `llama3.1-8b`.
-3. Confirmar que Grammar 1B roda com Cerebras.
+3. Confirmar que section curta é expandida automaticamente.
 4. Testar Groq puro.
 5. Comparar nota/qualidade/hash se salvar.
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. O último hotfix foi `782ff02`: provedores externos em Grammar geram esqueleto leve obrigatório e deixam profundidade para o 1B puro do mesmo provedor; se vier sem sections, aplica esqueleto local para permitir 1B. Próximo passo é testar Cerebras puro com `llama3.1-8b`, depois Groq puro. Não mexer em Cirurgia 3/deepGrammarPipeline ainda. Não corrigir visual dos exemplos antes da comparação. Não mexer em `main`, `rewrite-fluency-clean`, `bundle.js` ou backend Azure privado."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. O último hotfix foi `d80a8cd`: 1B externo agora envia menos contexto, pausa entre sections e tenta expandir section curta no mesmo provedor. Próximo passo é testar Cerebras puro com `llama3.1-8b`, depois Groq puro. Não mexer em Cirurgia 3/deepGrammarPipeline ainda. Não corrigir visual dos exemplos antes da comparação. Não mexer em `main`, `rewrite-fluency-clean`, `bundle.js` ou backend Azure privado."
