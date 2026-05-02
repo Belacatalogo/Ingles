@@ -12,6 +12,7 @@ const SECTION_EXAMPLE = {
 const SECTION_MODELS = ['gemini-2.5-flash', 'gemini-2.5-flash-lite'];
 const MIN_SECTION_WORDS = 180;
 const DEFAULT_EXTERNAL_TARGET_MIN = 220;
+const GROQ_SECTION_TARGET_MIN = 240;
 const GROQ_SECTION_COUNT = 5;
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -29,7 +30,7 @@ function normalizeExternalProvider(value) {
 }
 
 function getExternalTargetMin(provider) {
-  return provider === 'groq' ? MIN_SECTION_WORDS : DEFAULT_EXTERNAL_TARGET_MIN;
+  return provider === 'groq' ? GROQ_SECTION_TARGET_MIN : DEFAULT_EXTERNAL_TARGET_MIN;
 }
 
 function extractTextFromGemini(data) {
@@ -111,12 +112,12 @@ function buildSectionPrompt({ lesson, section, index, previousSections, compactE
     '',
     'CONTRATO DA SECTION:',
     isGroq
-      ? `- content deve ter no mínimo ${MIN_SECTION_WORDS} palavras reais. Mire entre 260 e 320 palavras.`
+      ? `- content deve ter no mínimo ${GROQ_SECTION_TARGET_MIN} palavras reais para ser aceito no modo Groq. Mire entre 280 e 340 palavras.`
       : `- content deve ter no mínimo ${MIN_SECTION_WORDS} palavras reais. Para provedor externo, mire entre 240 e 280 palavras e nunca pare perto do mínimo.`,
     '- content deve ensinar com progressão didática real: ideia central, explicação, exemplos, motivo dos exemplos, erro típico e mini-checagem.',
     '- incluir pelo menos 1 contraste explícito com português brasileiro.',
     '- incluir pelo menos 1 erro típico de aluno brasileiro A1 e explicar por que está errado.',
-    isGroq ? '- use poucos exemplos, mas bem explicados. Evite repetir exemplos já usados.' : '- incluir exemplos inéditos, contextualizados e explicar por que estão corretos.',
+    isGroq ? '- use exemplos suficientes para substituir duas sections antigas, mas evite repetir exemplos já usados.' : '- incluir exemplos inéditos, contextualizados e explicar por que estão corretos.',
     '- manter inglês A1 nos exemplos e explicação principal em português claro.',
     '- não revele respostas dos exercícios.',
     '',
@@ -183,18 +184,8 @@ async function generateOneExternalSection({ lesson, section, index, previousSect
     candidate = await expandExternalSection({ lesson, section, index, previousSections, fetcher, externalProvider, originalSection: candidate.section });
   }
 
-  try {
-    const normalized = normalizeGeneratedSection(candidate.section);
-    return { ...normalized, sectionProvider: candidate.provider, sectionModel: candidate.model };
-  } catch (error) {
-    const words = countWords(candidate.section?.content);
-    if (words > 0 && words < MIN_SECTION_WORDS && candidate === result) {
-      const expanded = await expandExternalSection({ lesson, section, index, previousSections, fetcher, externalProvider, originalSection: candidate.section });
-      const normalizedExpanded = normalizeGeneratedSection(expanded.section);
-      return { ...normalizedExpanded, sectionProvider: expanded.provider, sectionModel: expanded.model };
-    }
-    throw error;
-  }
+  const normalized = normalizeGeneratedSection(candidate.section);
+  return { ...normalized, sectionProvider: candidate.provider, sectionModel: candidate.model };
 }
 
 async function generateOneGeminiSection({ lesson, section, index, previousSections, attempts, fetcher }) {
@@ -224,7 +215,7 @@ export async function enrichGrammarSectionsSequentially({ lesson, keys = [], pro
   if (!sections.length) return { lesson, applied: false, reason: 'missing-sections' };
 
   diagnostics.setPhase('grammar bloco 1B por seção', 'generating');
-  diagnostics.log(`Cirurgia 2 Grammar ativa: reescrevendo ${sections.length} section(s) uma por uma com mínimo de ${MIN_SECTION_WORDS} palavras${forcedExternalProvider ? ` usando ${forcedExternalProvider} em todo o 1B` : ''}${forcedExternalProvider === 'groq' ? '; modo Groq econômico 5 sections longas' : ''}.`, 'warn');
+  diagnostics.log(`Cirurgia 2 Grammar ativa: reescrevendo ${sections.length} section(s) uma por uma com mínimo de ${MIN_SECTION_WORDS} palavras${forcedExternalProvider ? ` usando ${forcedExternalProvider} em todo o 1B` : ''}${forcedExternalProvider === 'groq' ? '; modo Groq econômico 5 sections fortes' : ''}.`, 'warn');
 
   const enriched = [];
   for (let index = 0; index < sections.length; index += 1) {
@@ -239,10 +230,10 @@ export async function enrichGrammarSectionsSequentially({ lesson, keys = [], pro
     lesson: {
       ...lesson,
       sections: enriched,
-      grammarSectionContract: forcedExternalProvider ? `${GRAMMAR_SECTION_CONTRACT}-${forcedExternalProvider}${forcedExternalProvider === 'groq' ? '-5-sections' : ''}` : GRAMMAR_SECTION_CONTRACT,
-      planContract: lesson.planContract ? `${lesson.planContract}+${GRAMMAR_SECTION_CONTRACT}${forcedExternalProvider ? `-${forcedExternalProvider}` : ''}${forcedExternalProvider === 'groq' ? '-5-sections' : ''}` : `${GRAMMAR_SECTION_CONTRACT}${forcedExternalProvider ? `-${forcedExternalProvider}` : ''}${forcedExternalProvider === 'groq' ? '-5-sections' : ''}`,
+      grammarSectionContract: forcedExternalProvider ? `${GRAMMAR_SECTION_CONTRACT}-${forcedExternalProvider}${forcedExternalProvider === 'groq' ? '-5-strong-sections' : ''}` : GRAMMAR_SECTION_CONTRACT,
+      planContract: lesson.planContract ? `${lesson.planContract}+${GRAMMAR_SECTION_CONTRACT}${forcedExternalProvider ? `-${forcedExternalProvider}` : ''}${forcedExternalProvider === 'groq' ? '-5-strong-sections' : ''}` : `${GRAMMAR_SECTION_CONTRACT}${forcedExternalProvider ? `-${forcedExternalProvider}` : ''}${forcedExternalProvider === 'groq' ? '-5-strong-sections' : ''}`,
     },
     applied: true,
-    reason: forcedExternalProvider ? `sections-enriched-${forcedExternalProvider}${forcedExternalProvider === 'groq' ? '-5-sections' : ''}` : 'sections-enriched',
+    reason: forcedExternalProvider ? `sections-enriched-${forcedExternalProvider}${forcedExternalProvider === 'groq' ? '-5-strong-sections' : ''}` : 'sections-enriched',
   };
 }
