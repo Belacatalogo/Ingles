@@ -15,19 +15,67 @@ Branch estável protegida: `rewrite-fluency-clean`
 - Não mexer no backend Azure privado.
 - Manter tudo modular em `fluency-clean/src/`, `fluency-clean/public/` ou arquivos reais de configuração.
 
-## DECISÃO ATUAL DE MOTOR DE IA
+## ESTADO ATUAL — PREVIEW TEMPORÁRIO DE TIPOS DE AULA
 
-Após comparação manual:
-- `gemini-2.5-flash` fica como motor principal de aula diária.
-- Groq fica como fallback/teste opcional, não principal.
-- Cerebras fica como fallback emergencial/teste leve, não principal para Grammar profunda.
+### `BLOCO-TEMP-LESSON-PREVIEW-SWITCH-LAB` — IMPLEMENTADO
 
-Motivo:
-- Flash foi o mais estável, mais focado no tema e gerou a aula mais aproveitável.
-- Groq é promissor, mas instável em limite/cota e ainda precisa teste final real com 7 sections.
-- Cerebras passou tecnicamente em alguns testes, mas teve conteúdo mais repetitivo, genérico e com erros pedagógicos.
+Objetivo executado:
+- Criar um seletor temporário na aba Aula para testar Listening, Reading e Speaking antes do dia oficial de cada conteúdo.
+- Permitir validar renderização no iPhone sem depender do cronograma do dia.
+- Manter a aula real preservada e retornar a ela com o botão `Aula real`.
 
-## ESTADO ATUAL — BLOCO LISTENING RENDER REVIEW
+Arquivos criados/alterados:
+- `fluency-clean/src/services/lessonPreviewSamples.js`
+- `fluency-clean/src/screens/LessonScreen.jsx`
+- `fluency-clean/src/styles/lesson-preview-lab.css`
+- `fluency-clean/src/main.jsx`
+- `REWRITE_HANDOFF.md`
+
+O que foi feito:
+- Criado `lessonPreviewSamples.js` com amostras locais temporárias:
+  - `listening`;
+  - `reading`.
+- Adicionado seletor temporário no topo da aba Aula:
+  - `Aula real`;
+  - `Testar Listening`;
+  - `Testar Reading`;
+  - `Abrir Speaking`.
+- `Testar Listening` troca apenas a renderização local da aba Aula para uma aula sample Listening.
+- `Testar Reading` troca apenas a renderização local da aba Aula para uma aula sample Reading.
+- `Abrir Speaking` navega para a aba Speaking real.
+- `Aula real` volta para a aula salva/gerada real.
+- O modo preview mostra chip `Preview temporário` e card `LAB temporário`, deixando claro que não substitui a aula real.
+- Criado CSS próprio `lesson-preview-lab.css` e importado em `main.jsx`.
+
+Escopo preservado:
+- Não mexeu em `main`.
+- Não mexeu em `rewrite-fluency-clean`.
+- Não mexeu em `bundle.js`.
+- Não mexeu no backend Azure privado.
+- Não mexeu em geração, prompts, modelos, chaves ou fallback.
+- Não mexeu na Grammar aprovada.
+- Não substituiu aula real salva.
+
+Commits:
+- `3f2b91b9a8316beefe0cc0e9ff97a88bb95848de` — cria amostras temporárias de aulas para teste.
+- `0e5bd0e2f7aee744aa533ed8006c95880e9e6a6e` — adiciona seletor temporário de preview de aulas.
+- `7e31734b02c2267d2f55dcd8dd8fd650abee4185` — cria estilo do seletor temporário de aulas.
+- `2c9b791fc5c9947b363db5bfa48f131c9b4d7c4b` — importa estilo do preview temporário.
+
+Próximo teste recomendado no iPhone:
+1. Aguardar deploy da branch `rewrite-fluency-clean-lab`.
+2. Abrir aba Aula.
+3. Conferir se aparece o card `Teste temporário de abas`.
+4. Tocar `Testar Listening` e validar a tela Listening recém-reestruturada.
+5. Tocar `Testar Reading` e validar a tela Reading.
+6. Tocar `Abrir Speaking` e validar a aba Speaking real.
+7. Tocar `Aula real` e confirmar que volta para a aula gerada/salva real.
+8. Confirmar que o preview não substitui a aula real.
+
+Próximo bloco provável:
+- Se o preview estiver OK, usar esse seletor para testar Listening e registrar `BLOCO-LISTENING-APPROVAL-LAB` ou aplicar hotfix baseado em print.
+
+## ESTADO ANTERIOR — BLOCO LISTENING RENDER REVIEW
 
 ### `BLOCO-LISTENING-RENDER-REVIEW-LAB` — IMPLEMENTADO
 
@@ -51,63 +99,9 @@ Arquivos alterados:
 - `fluency-clean/src/styles/listening-ux-hotfix.css`
 - `REWRITE_HANDOFF.md`
 
-O que foi feito em `ListeningLessonClean.jsx`:
-- Criado mapa visual de fluxo `listeningFlow`.
-- Transcrição agora começa fechada por padrão para proteger a escuta cega.
-- Card principal ganhou ações rápidas:
-  - `Conferir texto`;
-  - `Começar prática`;
-  - `Finalizar`.
-- Criado relatório `Render seguro Listening` com:
-  - status OK/atenção;
-  - número de trechos;
-  - número de frases de shadowing;
-  - confirmação de respostas ocultas.
-- Adicionado `hasListened` para orientar a mensagem após iniciar o áudio principal.
-- Adicionado `goToPractice()` para rolar direto até o `PracticeLauncher` fullscreen já existente.
-- Shadowing ficou aberto por padrão, porque é etapa essencial de Listening.
-- Finalização ganhou label explícito `Resumo rápido da escuta`.
-- `handleComplete` salva também `renderReport` junto com o progresso.
-- Classe adicionada: `listening-render-review-v1`.
-
-O que foi feito em CSS:
-- Removida regra antiga que escondia todo textarea do `#lesson-answer`, porque agora o resumo final deve aparecer.
-- Mantida ocultação da prática antiga interna para não conflitar com o `PracticeLauncher` fullscreen modular.
-- Criado polimento visual para:
-  - mapa de fluxo Listening;
-  - ações rápidas;
-  - card de relatório;
-  - transcrição;
-  - shadowing;
-  - finalização;
-  - responsividade no iPhone.
-
-Escopo preservado:
-- Não mexeu em `main`.
-- Não mexeu em `rewrite-fluency-clean`.
-- Não mexeu em `bundle.js`.
-- Não mexeu no backend Azure privado.
-- Não mexeu em geração, prompts, modelo, chaves ou fallback.
-- Não mexeu em Grammar aprovada.
-
 Commits:
 - `5ec9981e725f0a4d25e871ef98fbaec2f5e4dcf9` — reestrutura renderização da aula Listening.
 - `2d1052b9427904965cc53f5f6b6127a464d35865` — polimenta visual Listening no iPhone.
-
-Próximo teste recomendado no iPhone:
-1. Aguardar o deploy da branch `rewrite-fluency-clean-lab`.
-2. Abrir uma aula Listening.
-3. Conferir se a transcrição começa fechada.
-4. Tocar o áudio principal e verificar mensagem/status.
-5. Usar `Conferir texto` e confirmar se a transcrição abre corretamente.
-6. Usar `Começar prática` e confirmar se rola para a prática fullscreen.
-7. Testar `Shadowing real`: ouvir frase e próxima frase.
-8. Abrir `Finalizar aula`, escrever resumo, salvar rascunho e concluir.
-9. Conferir se o layout não corta botões no iPhone.
-
-Próximo bloco provável após teste:
-- Se Listening estiver OK: `BLOCO-LISTENING-APPROVAL-LAB`.
-- Se aparecer erro visual/funcional: hotfix cirúrgico baseado no print do iPhone.
 
 ## ESTADO ANTERIOR — GRAMMAR APROVADA NA LAB
 
@@ -122,64 +116,7 @@ Base aprovada:
 - Parser seguro modular em `fluency-clean/src/lessons/grammar/grammarRenderParser.js`.
 - `GrammarLesson.jsx` conectado ao parser seguro.
 - Cards de exemplos com fallback seguro.
-- Render report lateral funcionando:
-  - `Grammar render: OK`;
-  - `Exemplos: N`;
-  - `Cards bloqueados: N`;
-  - `Texto preservado: sim`.
-
-Regras preservadas para próximos trabalhos:
-- Não mexer em Grammar agora, a menos que apareça regressão real em teste.
-- Não mexer no parser seguro sem motivo claro.
-- Se houver dúvida no parser, renderizar como parágrafo, não como card.
-- Não alterar geração, modelo, prompts, fallback, professor revisor, `deepGrammarPipeline.js` ou backend.
-
-Arquivos envolvidos na base aprovada:
-- `fluency-clean/src/lessons/GrammarLesson.jsx`
-- `fluency-clean/src/lessons/grammar/grammarRenderParser.js`
-- `fluency-clean/src/styles/grammar-examples-hotfix.css`
-- `fluency-clean/src/main.jsx`
-
-## ESTADO ANTERIOR — BLOCO GRAMMAR RENDER SAFETY GATE
-
-### `BLOCO-GRAMMAR-RENDER-SAFETY-GATE-LAB` — IMPLEMENTADO
-
-Objetivo executado:
-- Sair de correções soltas dentro de `GrammarLesson.jsx` e criar uma camada dedicada de renderização segura para Grammar.
-- Centralizar normalização, separação de parágrafos, listas numeradas, detecção de exemplos, fallback seguro e relatório de render.
-- Reduzir risco de erros nas próximas aulas Grammar.
-
-Arquivos alterados/criados:
-- `fluency-clean/src/lessons/grammar/grammarRenderParser.js` — novo parser seguro.
-- `fluency-clean/src/lessons/GrammarLesson.jsx` — conectado ao parser seguro.
-- `REWRITE_HANDOFF.md`
-
-## ESTADO ANTERIOR — HOTFIX GRAMMAR CARD SPLIT V6
-
-### `HOTFIX-GRAMMAR-CARD-SPLIT-V6-LAB` — IMPLEMENTADO
-
-Objetivo executado:
-- Corrigir cards que engoliam um segundo exemplo conectado por `e` ou `ou`.
-- Manter o primeiro card limpo e jogar o exemplo secundário/continuação para parágrafo normal abaixo.
-
-Commit:
-- `aa92b93a65adeb08b9192f8f32f750c7855e69aa` — divide exemplos secundários nos cards Grammar.
-
-## COMPARAÇÃO FLASH X GROQ X CEREBRAS
-
-### Flash/Gemini
-- Melhor opção atual.
-- Gerou aula completa, profunda e coerente.
-- Pontos fracos principais agora são visuais, não de motor.
-
-### Groq
-- Não está idêntico ao Flash.
-- Teve conteúdo diferente e potencial, mas limitações de cota e instabilidade.
-- Ainda pode ser testado depois em 7 sections reais.
-
-### Cerebras `llama3.1-8b`
-- Teve reposições/expansões, mas conteúdo real ficou inconsistente.
-- Não usar como principal para Grammar profunda.
+- Render report lateral funcionando.
 
 ## NÃO FAZER AGORA
 
@@ -190,7 +127,8 @@ Commit:
 - Não compactar conteúdo pedagógico.
 - Não alterar política de chaves agora.
 - Não mexer em `main`, `rewrite-fluency-clean`, `bundle.js` ou backend Azure privado.
+- Não remover o preview temporário até o usuário aprovar ou pedir remoção.
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. Grammar foi aprovada visualmente. O bloco `BLOCO-LISTENING-RENDER-REVIEW-LAB` foi implementado: Listening agora tem fluxo 1 ouvir sem ler, 2 conferir transcrição, 3 prática fullscreen, 4 shadowing, 5 concluir; transcrição começa fechada; há relatório `Render seguro Listening`; e o textarea final voltou a aparecer. Não mexer em `main`, `rewrite-fluency-clean`, `bundle.js`, backend Azure privado, Grammar, geração, prompts, modelos ou chaves. Próximo passo: testar Listening no iPhone e, se estiver OK, registrar `BLOCO-LISTENING-APPROVAL-LAB`."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. Foi implementado `BLOCO-TEMP-LESSON-PREVIEW-SWITCH-LAB`: na aba Aula há um seletor temporário com `Aula real`, `Testar Listening`, `Testar Reading` e `Abrir Speaking`. O preview usa samples locais e não substitui a aula real. Não mexer em `main`, `rewrite-fluency-clean`, `bundle.js`, backend Azure privado, Grammar aprovada, geração, prompts, modelos ou chaves. Próximo passo: testar no iPhone o seletor e usar `Testar Listening` para validar o bloco Listening recém-reestruturado."
