@@ -1,4 +1,4 @@
-import { Award, Brain, CheckCircle2, Clock3, Layers3, Lock, Map, RotateCcw, Sparkles, Volume2 } from 'lucide-react';
+import { ArrowLeft, Award, Brain, CheckCircle2, Clock3, Layers3, Lock, Map, RotateCcw, Sparkles, Volume2 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { playLearningAudio } from '../services/audioPlayback.js';
 import { getCurrentLesson } from '../services/lessonStore.js';
@@ -37,7 +37,6 @@ function statsFromSession(session) {
   if (!session) return initialStats();
   return { correct: Number(session.correctCount || 0), missed: Number(session.needsReviewCount || 0), reviewed: Number(session.reviewedCards || 0) };
 }
-function normalizeText(value) { return String(value || '').toLowerCase().replace(/[.,!?;:]/g, '').replace(/\s+/g, ' ').trim(); }
 
 function TopicSelector({ pathState, activeDeckId, onSelect }) {
   return (
@@ -111,6 +110,7 @@ export function FlashcardsScreen({ onNavigate }) {
   const topicPath = useMemo(() => getVocabularyTopicPath(activeDeckId), [activeDeckId, pathVersion]);
   const nextTarget = useMemo(() => getNextVocabularyTarget(activeDeckId), [activeDeckId, pathVersion]);
   const [selectedBubble, setSelectedBubble] = useState(() => nextTarget.bubble);
+  const [studyMode, setStudyMode] = useState(false);
   const activeLevel = Math.min(3, Math.max(1, (selectedBubble?.levelDone || 0) + 1));
   const sessionTarget = mode === 'lesson' ? currentLesson : makePathLesson(topicPath.deck, selectedBubble || nextTarget.bubble, activeLevel);
   const persistedSession = useMemo(() => findTodaySession(sessionTarget), [sessionTarget?.id, sessionTarget?.title]);
@@ -137,9 +137,10 @@ export function FlashcardsScreen({ onNavigate }) {
   const currentStep = mode === 'path' ? Math.min(activityIndex + 1, activities.length) : Math.min(cardIndex + 1, cards.length);
   const sessionProgress = totalSteps ? Math.min(100, (sessionStats.reviewed / totalSteps) * 100) : 0;
   const precision = useMemo(() => sessionStats.reviewed ? Math.round((sessionStats.correct / sessionStats.reviewed) * 100) : 0, [sessionStats]);
+  const isPathStudy = mode === 'path' && studyMode;
 
   useEffect(() => { if (mode === 'lesson' && !currentLessonCards.length) setMode('path'); }, [mode, currentLessonCards.length]);
-  useEffect(() => { setSelectedBubble(nextTarget.bubble); }, [activeDeckId, pathVersion]);
+  useEffect(() => { setSelectedBubble(nextTarget.bubble); setStudyMode(false); }, [activeDeckId, pathVersion]);
   useEffect(() => {
     setFlipped(false); setCardIndex(0); setActivityIndex(0); setSelectedAnswer(''); setBuiltWords([]); setFeedback(null); setReviewLog([]);
     if (persistedSession) { setSessionStats(statsFromSession(persistedSession)); setSessionDone(true); setSessionRecord(persistedSession); setAudioMessage('Sessão de cartas já concluída hoje.'); }
@@ -194,6 +195,12 @@ export function FlashcardsScreen({ onNavigate }) {
     setCardIndex(nextIndex);
   }
 
+  function openBubbleStudy(bubble) {
+    setSelectedBubble(bubble);
+    setStudyMode(true);
+    requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: 'smooth' }));
+  }
+
   function restartSession() { setFlipped(false); setCardIndex(0); setActivityIndex(0); setSelectedAnswer(''); setBuiltWords([]); setFeedback(null); setSessionStats(initialStats()); setSessionDone(false); setSessionRecord(null); setReviewLog([]); setAudioMessage('Nova revisão iniciada.'); }
   async function handleCardAudio(text, event) {
     event?.stopPropagation?.(); if (!text) return; setAudioMessage('Preparando áudio...');
@@ -204,16 +211,30 @@ export function FlashcardsScreen({ onNavigate }) {
   function removeBuildWord(index) { setBuiltWords((current) => current.filter((_, itemIndex) => itemIndex !== index)); }
 
   return (
-    <section className="cards-screen" aria-label="Trilha de vocabulário e cartas">
-      <div className="cards-header-row"><div><p className="cards-eyebrow">Vocabulário</p><h1>Cartas</h1><p>{mode === 'path' ? `${pathStats.completedBubbles}/${pathStats.totalBubbles} bolhas · ${bankCount}/${VOCABULARY_BANK_TARGET} palavras planejadas` : `${cards.length} card(s) da aula atual`}</p></div></div>
-      <div className="cards-deck-scroll compact-tabs" aria-label="Modos de cartas">
-        {currentLessonCards.length ? <button className={`cards-chip ${mode === 'lesson' ? 'active' : ''}`} type="button" onClick={() => setMode('lesson')}>Aula atual <span>{currentLessonCards.length}</span></button> : null}
-        <button className={`cards-chip ${mode === 'path' ? 'active' : ''}`} type="button" onClick={() => setMode('path')}>Trilha de vocabulário <span>{pathStats.progressPercent}%</span></button>
-      </div>
+    <section className={`cards-screen ${isPathStudy ? 'cards-study-mode' : ''}`} aria-label="Trilha de vocabulário e cartas">
+      {!isPathStudy ? (
+        <>
+          <div className="cards-header-row"><div><p className="cards-eyebrow">Vocabulário</p><h1>Cartas</h1><p>{mode === 'path' ? `${pathStats.completedBubbles}/${pathStats.totalBubbles} bolhas · ${bankCount}/${VOCABULARY_BANK_TARGET} palavras planejadas` : `${cards.length} card(s) da aula atual`}</p></div></div>
+          <div className="cards-deck-scroll compact-tabs" aria-label="Modos de cartas">
+            {currentLessonCards.length ? <button className={`cards-chip ${mode === 'lesson' ? 'active' : ''}`} type="button" onClick={() => { setMode('lesson'); setStudyMode(false); }}>Aula atual <span>{currentLessonCards.length}</span></button> : null}
+            <button className={`cards-chip ${mode === 'path' ? 'active' : ''}`} type="button" onClick={() => { setMode('path'); setStudyMode(false); }}>Trilha de vocabulário <span>{pathStats.progressPercent}%</span></button>
+          </div>
 
-      {mode === 'path' ? <TopicSelector pathState={pathState} activeDeckId={activeDeckId} onSelect={(deckId) => { setActiveDeckId(deckId); setMode('path'); }} /> : null}
-      {mode === 'path' && selectedBubble ? <VocabularyPathMap path={topicPath} selectedBubble={selectedBubble} onSelectBubble={(bubble) => setSelectedBubble(bubble)} /> : null}
-      {mode === 'path' && selectedBubble ? <section className="cards-review-footer path-lesson-info"><div><Layers3 size={18} /><span>Bolha {selectedBubble.number} · Nível {activeLevel}/3</span></div><strong>{selectedBubble.title}</strong><p>Agora a bolha treina significado, uso em frase, completar, ouvir e montar frases. Mais vocabulário ajuda, mas o foco é usar as palavras.</p><small><Clock3 size={13} /> {activities.length} exercícios · {cards.length} palavras/frases nesta rodada</small></section> : null}
+          {mode === 'path' ? <TopicSelector pathState={pathState} activeDeckId={activeDeckId} onSelect={(deckId) => { setActiveDeckId(deckId); setMode('path'); setStudyMode(false); }} /> : null}
+          {mode === 'path' && selectedBubble ? <VocabularyPathMap path={topicPath} selectedBubble={selectedBubble} onSelectBubble={openBubbleStudy} /> : null}
+        </>
+      ) : (
+        <header className="cards-study-header">
+          <button type="button" onClick={() => setStudyMode(false)}><ArrowLeft size={18} /> Voltar para trilha</button>
+          <div>
+            <span>{topicPath.deck.title}</span>
+            <strong>Bolha {selectedBubble?.number} · Nível {activeLevel}/3</strong>
+            <small>{currentStep}/{totalSteps} exercícios · {cards.length} palavras/frases</small>
+          </div>
+        </header>
+      )}
+
+      {mode === 'path' && selectedBubble && !isPathStudy ? <section className="cards-review-footer path-lesson-info"><div><Layers3 size={18} /><span>Bolha {selectedBubble.number} · Nível {activeLevel}/3</span></div><strong>{selectedBubble.title}</strong><p>Toque em uma bolha para abrir a sessão de estudo em tela dedicada.</p><small><Clock3 size={13} /> {activities.length} exercícios · {cards.length} palavras/frases nesta rodada</small></section> : null}
 
       {!cards.length || (mode === 'path' && !activities.length) ? (
         <section className="cards-review-footer"><div><Layers3 size={18} /><span>Sem cards reais</span></div><strong>selecione um tópico desbloqueado</strong><p>As cartas usam vocabulário real da aula atual e uma trilha progressiva por tema.</p></section>
@@ -221,9 +242,9 @@ export function FlashcardsScreen({ onNavigate }) {
         <section className="cards-complete-card" aria-label="Sessão de cartas concluída">
           <div className="cards-complete-icon"><Award size={24} /></div><span>{mode === 'path' ? `Bolha nível ${activeLevel} concluído` : 'Sessão concluída'}</span><h2>{sessionStats.reviewed || sessionRecord?.reviewedCards || totalSteps} etapa(s) revisada(s)</h2><p>{mode === 'path' ? 'Progresso salvo na trilha. Complete os 3 níveis para liberar a próxima bolha.' : 'Registro real salvo para Hoje, Progresso e revisão futura.'}</p>
           <div className="cards-stat-grid cards-complete-grid"><div className="cards-stat-card green"><strong>{sessionStats.correct}</strong><span>Acertos</span></div><div className="cards-stat-card rose"><strong>{sessionStats.missed}</strong><span>Erros</span></div><div className="cards-stat-card blue"><strong>{precision}%</strong><span>Precisão</span></div></div>
-          <div className="cards-complete-actions"><button type="button" onClick={restartSession}><RotateCcw size={16} /> Revisar novamente</button><button type="button" onClick={() => onNavigate?.('today')}><CheckCircle2 size={16} /> Voltar para Hoje</button><button type="button" onClick={() => onNavigate?.('lesson')}>Continuar aula</button></div>
+          <div className="cards-complete-actions"><button type="button" onClick={restartSession}><RotateCcw size={16} /> Revisar novamente</button><button type="button" onClick={() => setStudyMode(false)}><Map size={16} /> Voltar para trilha</button><button type="button" onClick={() => onNavigate?.('today')}><CheckCircle2 size={16} /> Voltar para Hoje</button></div>
         </section>
-      ) : (
+      ) : (mode === 'lesson' || isPathStudy) ? (
         <>
           <div className="cards-session-card"><div className="cards-session-topline"><span>{mode === 'path' ? `${topicPath.deck.title} · ${currentStep}/${totalSteps}` : `Sessão · carta ${currentStep} de ${totalSteps}`}</span><strong>{sessionStats.reviewed}/{totalSteps}</strong></div><div className="cards-progress-track"><span style={{ width: `${sessionProgress}%` }} /></div></div>
           {mode === 'path' ? (
@@ -237,7 +258,7 @@ export function FlashcardsScreen({ onNavigate }) {
           {audioMessage ? <p className="generator-message cards-audio-message">{audioMessage}</p> : null}
           <section className="cards-session-stats" aria-label="Estatísticas da sessão atual"><div className="cards-section-title"><span><Brain size={15} /> Esta rodada</span><small>{mode === 'path' ? `${topicPath.deck.title} · nível ${activeLevel}` : 'aula atual'}</small></div><div className="cards-stat-grid"><div className="cards-stat-card green"><strong>{sessionStats.correct}</strong><span>Acertos</span></div><div className="cards-stat-card rose"><strong>{sessionStats.missed}</strong><span>Erros</span></div><div className="cards-stat-card blue"><strong>{precision}%</strong><span>Precisão</span></div></div></section>
         </>
-      )}
+      ) : null}
     </section>
   );
 }
