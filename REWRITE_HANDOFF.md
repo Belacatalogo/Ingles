@@ -47,38 +47,70 @@ Princípio máximo:
 
 ## BLOCO ATUAL
 
-### `BLOCO-HOJE-DATA-LOCAL-1-LAB` — Correção de dia local e tarefa de bolha IMPLEMENTADO, aguardando deploy/teste
+### `BLOCO-CARTAS-SRS-3-LAB` — Revisão espaçada real por palavra/frase IMPLEMENTADO, aguardando deploy/teste
 
-Contexto:
-- usuário concluiu aula hoje, mas o card `Atividade real` marcou em `Qui` em vez do dia atual;
-- causa provável: comparação de datas via `toISOString().slice(0,10)`, que usa UTC e pode deslocar o dia para usuário no Brasil;
-- usuário pediu também uma tarefa diária: `concluir 1 bolha da trilha`.
+Análise profunda do bloco:
+- Para a aba Cartas substituir Duolingo em vocabulário, não basta liberar bolhas;
+- cada palavra/frase precisa ter memória própria;
+- o sistema precisa saber o que está fraco, o que vence hoje e o que já está forte;
+- a trilha ensina conteúdo novo, mas o SRS impede esquecimento;
+- este bloco cria a base para revisão espaçada, domínio por item e tarefas diárias mais inteligentes.
+
+Arquivos criados:
+- `fluency-clean/src/services/vocabularySrs.js`
 
 Arquivos alterados:
-- `fluency-clean/src/services/progressStore.js`
+- `fluency-clean/src/screens/FlashcardsScreen.jsx`
 - `fluency-clean/src/screens/TodayScreen.jsx`
 - `REWRITE_HANDOFF.md`
 
 O que foi implementado:
-- `progressStore.js` agora exporta `localDateKey()`;
-- comparações de hoje em flashcards, speaking e prática usam data local;
-- `weekKey()` foi ajustado para usar calendário local em vez de UTC;
-- `TodayScreen.jsx` passou a usar `localDateKey()` para montar `Atividade real`;
-- `getTodayLessonCompleted()` agora compara pela data local do registro;
-- adicionada tarefa diária `Concluir 1 bolha da trilha`;
-- tarefa é considerada feita quando existe sessão de flashcards com `lessonId` iniciando por `path-` na data local de hoje;
-- total de tarefas do dia agora passa de 3 para 4.
+- novo serviço `vocabularySrs.js`;
+- estado local salvo em `localStorage` com chave `fluency.vocabularySrs.v1`;
+- cada item de vocabulário/frase passa a ter estado individual:
+  - `weak`;
+  - `learning`;
+  - `review`;
+  - `strong`;
+  - `mastered`;
+- cada sessão de Cartas atualiza o SRS com:
+  - tentativas;
+  - acertos;
+  - erros;
+  - streak;
+  - lapses;
+  - domínio estimado;
+  - próxima data de revisão;
+- intervalos iniciais:
+  - weak: 1 dia;
+  - learning: 2 dias;
+  - review: 4 dias;
+  - strong: 8 dias;
+  - mastered: 16 dias;
+- `FlashcardsScreen.jsx` agora atualiza o SRS ao concluir sessão;
+- a tela Cartas mostra um card `Revisão espaçada` com:
+  - revisões para hoje;
+  - itens rastreados;
+  - itens fracos;
+  - domínio médio;
+- `TodayScreen.jsx` mostra revisões vencidas na tarefa `Revisar flashcards` quando houver SRS vencido;
+- a correção usa `localDateKey()` para evitar erro UTC/dia errado.
 
 Commits:
-- `29c7d3197cf294bf35efd62259a24443e7ffb48a` — corrige data local do progresso;
-- `a5debea2c7c4e9f0bd30c930188e39d53e32655a` — adiciona bolha da trilha às tarefas do dia.
+- `54cc78be82a6c51649257dd9f14098a7ea15915f` — adiciona SRS real de vocabulário;
+- `f68341d6bc4fb43e987180e743bbeabf4d005ea3` — conecta SRS às sessões de cartas;
+- `92a05f357f1e5a13f0514257c1557083138c1d8b` — mostra revisões SRS nas tarefas de hoje.
 
 Teste recomendado no iPhone:
-1. abrir Hoje;
-2. confirmar que a aula concluída aparece no dia correto da semana;
-3. confirmar tarefa `Concluir 1 bolha da trilha`;
-4. concluir uma bolha em Cartas;
-5. voltar para Hoje e confirmar que a tarefa fica feita.
+1. abrir Cartas > Trilha de vocabulário;
+2. concluir uma bolha;
+3. voltar para Cartas e confirmar card `Revisão espaçada`;
+4. errar alguns itens e concluir;
+5. confirmar que itens fracos aparecem contabilizados;
+6. voltar para Hoje e verificar se `Revisar flashcards` mostra revisões vencidas quando houver;
+7. confirmar que a tarefa `Concluir 1 bolha da trilha` continua separada.
+
+### `BLOCO-HOJE-DATA-LOCAL-1-LAB` — Correção de dia local e tarefa de bolha IMPLEMENTADO
 
 ### `BLOCO-CARTAS-METODO-2B-LAB` — Bolha abre em tela dedicada IMPLEMENTADO
 
@@ -141,14 +173,13 @@ Pendente técnica:
 
 ## NOVA ORDEM DE BLOCOS — QUALIDADE REAL DAS AULAS
 
-1. `BLOCO-HOJE-DATA-LOCAL-1-LAB` — Correção de dia local e tarefa de bolha. STATUS: implementado, aguardando teste.
-2. `BLOCO-CARTAS-SRS-3-LAB` — revisão espaçada real por palavra/frase.
-3. `BLOCO-CARTAS-USO-4-LAB` — usos, chunks e variações por palavra.
-4. `BLOCO-CARTAS-MIX-5-LAB` — misturar palavras novas com antigas.
-5. `BLOCO-CARTAS-LISTENING-SPEAKING-6-LAB` — áudio, shadowing e pronúncia.
-6. `BLOCO-CARTAS-MASTERY-7-LAB` — bolha só passa com domínio mínimo.
-7. `BLOCO-CARTAS-CURRICULO-FIXO-8-LAB` — currículo fixo sem IA, meta 2.000 palavras + 1.000 frases/chunks.
-8. `BLOCO-AUDITORIA-POLIMENTO-GERAL-LAB` — após concluir os blocos principais, analisar cada página com precisão, listar melhorias possíveis e montar blocos de polimento.
+1. `BLOCO-CARTAS-SRS-3-LAB` — revisão espaçada real por palavra/frase. STATUS: implementado, aguardando teste.
+2. `BLOCO-CARTAS-USO-4-LAB` — usos, chunks e variações por palavra.
+3. `BLOCO-CARTAS-MIX-5-LAB` — misturar palavras novas com antigas.
+4. `BLOCO-CARTAS-LISTENING-SPEAKING-6-LAB` — áudio, shadowing e pronúncia.
+5. `BLOCO-CARTAS-MASTERY-7-LAB` — bolha só passa com domínio mínimo.
+6. `BLOCO-CARTAS-CURRICULO-FIXO-8-LAB` — currículo fixo sem IA, meta 2.000 palavras + 1.000 frases/chunks.
+7. `BLOCO-AUDITORIA-POLIMENTO-GERAL-LAB` — após concluir os blocos principais, analisar cada página com precisão, listar melhorias possíveis e montar blocos de polimento.
 
 ## FASE EXTRA — GARANTIA PEDAGÓGICA MÁXIMA
 
@@ -171,12 +202,13 @@ Ordem recomendada após os blocos principais:
 
 ## Pendência técnica importante
 
-- testar deploy do `BLOCO-HOJE-DATA-LOCAL-1-LAB` no iPhone;
-- confirmar dia correto na Atividade real;
-- confirmar tarefa de bolha;
-- seguir depois para `BLOCO-CARTAS-SRS-3-LAB`;
+- testar deploy do `BLOCO-CARTAS-SRS-3-LAB` no iPhone;
+- confirmar card de revisão espaçada em Cartas;
+- confirmar atualização após concluir bolha;
+- confirmar tarefa de Hoje com revisões vencidas;
+- seguir depois para `BLOCO-CARTAS-USO-4-LAB`;
 - remover definitivamente `ListeningLesson.jsx` antigo quando o conector permitir SHA correto.
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O bloco atual implementado foi `BLOCO-HOJE-DATA-LOCAL-1-LAB`: datas de Hoje/Atividade real usam `localDateKey()` e foi adicionada a tarefa `Concluir 1 bolha da trilha`. Testar no iPhone; se ok, seguir para `BLOCO-CARTAS-SRS-3-LAB`."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O bloco atual implementado foi `BLOCO-CARTAS-SRS-3-LAB`: criado `vocabularySrs.js`, Cartas atualiza SRS por palavra/frase ao concluir sessão e Hoje mostra revisões vencidas. Testar no iPhone; se ok, seguir para `BLOCO-CARTAS-USO-4-LAB`."
