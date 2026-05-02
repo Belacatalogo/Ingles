@@ -3,12 +3,21 @@ import { playGeminiTtsAudio, stopGeminiTtsAudio } from './geminiTts.js';
 import { speakText, stopSpeech } from './tts.js';
 
 const LONG_TEXT_THRESHOLD = 360;
+const IOS_SEGMENT_THRESHOLD = 260;
 const MAX_SEGMENT_CHARS = 260;
 let playbackToken = 0;
 let segmentQueueRunning = false;
 
 function cleanAudioText(value) {
   return String(value ?? '').replace(/\s+/g, ' ').trim();
+}
+
+function isLikelyIOS() {
+  if (typeof navigator === 'undefined') return false;
+  const platform = navigator.platform || '';
+  const userAgent = navigator.userAgent || '';
+  const touchMac = platform === 'MacIntel' && navigator.maxTouchPoints > 1;
+  return /iPhone|iPad|iPod/i.test(userAgent) || touchMac;
 }
 
 function splitIntoSentences(text) {
@@ -58,8 +67,8 @@ export function segmentLearningAudioText(text, maxChars = MAX_SEGMENT_CHARS) {
   return segments.filter(Boolean);
 }
 
-async function playBrowserFallback(cleanText) {
-  const fallback = await speakText(cleanText, { rate: 0.88, pitch: 1, lang: 'en-US' });
+async function playBrowserFallback(cleanText, waitUntilEnded = false) {
+  const fallback = await speakText(cleanText, { rate: 0.88, pitch: 1, lang: 'en-US', waitUntilEnded });
   return {
     ok: Boolean(fallback.ok),
     source: fallback.ok ? 'browser-fallback' : 'browser-fallback-error',
@@ -85,7 +94,7 @@ async function playSingleLearningAudio({ cleanText, label, voiceName, style, pre
   }
 
   diagnostics.log(`Usando TTS do navegador como fallback final: ${label}.`, 'info');
-  return playBrowserFallback(cleanText);
+  return playBrowserFallback(cleanText, waitUntilEnded);
 }
 
 async function playSegmentedLearningAudio({ segments, label, voiceName, style, preferNatural, allowBrowserFallback }) {
@@ -96,6 +105,7 @@ async function playSegmentedLearningAudio({ segments, label, voiceName, style, p
   let lastResult = { ok: false, source: 'none', error: 'Nenhum trecho reproduzido.' };
   let usedFallback = false;
   let usedCache = false;
+  const ios = isLikelyIOS();
 
   for (let index = 0; index < segments.length; index += 1) {
     if (token !== playbackToken) return { ok: false, source: 'stopped', error: 'Áudio interrompido.' };
@@ -118,11 +128,15 @@ async function playSegmentedLearningAudio({ segments, label, voiceName, style, p
 
     if (!lastResult.ok) {
       segmentQueueRunning = false;
+      if (ios && index > 0) {
+        diagnostics.log('iOS bloqueou a continuação da fila de áudio. Use os botões por trecho ou toque novamente em Ouvir.', 'warn');
+        return { ...lastResult, partial: true, playedSegments: index };
+      }
       return lastResult;
     }
 
     if (token !== playbackToken) return { ok: false, source: 'stopped', error: 'Áudio interrompido.' };
-    await new Promise((resolve) => setTimeout(resolve, 220));
+    await new Promise((resolve) => setTimeout(resolve, ios ? 80 : 220));
   }
 
   segmentQueueRunning = false;
@@ -155,9 +169,10 @@ export async function playLearningAudio({
   stopLearningAudio();
   playbackToken += 1;
 
-  const shouldSegment = segmentLongText && cleanText.length > LONG_TEXT_THRESHOLD;
+  const threshold = isLikelyIOS() ? IOS_SEGMENT_THRESHOLD : LONG_TEXT_THRESHOLD;
+  const shouldSegment = segmentLongText && cleanText.length > threshold;
   if (shouldSegment) {
-    const segments = segmentLearningAudioText(cleanText);
+    const segments = segmentLearningAudioText(cleanText, isLikelyIOS() ? 220 : MAX_SEGMENT_CHARS);
     if (segments.length > 1) return playSegmentedLearningAudio({ segments, label, voiceName, style, preferNatural, allowBrowserFallback });
   }
 
