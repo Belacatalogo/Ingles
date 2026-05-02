@@ -15,49 +15,78 @@ Branch estável protegida: `rewrite-fluency-clean`
 - Não mexer no backend Azure privado.
 - Manter tudo modular em `fluency-clean/src/`, `fluency-clean/public/` ou arquivos reais de configuração.
 
-## ESTADO ATUAL — HOTFIX GROQ DIÁRIO FORTE 7 SECTIONS REAL
+## DECISÃO ATUAL DE MOTOR DE IA
 
-### `HOTFIX-GROQ-DAILY-7-SECTIONS-REAL-LAB` — IMPLEMENTADO, aguardando deploy/teste
+Após comparação manual:
+- `gemini-2.5-flash` fica como motor principal de aula diária.
+- Groq fica como fallback/teste opcional, não principal.
+- Cerebras fica como fallback emergencial/teste leve, não principal para Grammar profunda.
 
-Contexto:
-- O teste anterior mostrou inconsistência: o skeleton Groq já estava em modo diário forte 7 sections, mas o `grammarSectionGenerator.js` ainda limitava o 1B para 5 sections.
-- Diagnóstico observado: `Modo Groq diário forte ativo: usando 7 sections...` seguido de `Cirurgia 2 Grammar ativa: reescrevendo 5 section(s)... modo Groq econômico 5 sections fortes`.
-- A aula aprovou e salvou, mas só com 5 sections no 1B. Isso não atendia ao pedido do usuário.
+Motivo:
+- Flash foi o mais estável, mais focado no tema e gerou a aula mais aproveitável.
+- Groq é promissor, mas instável em limite/cota e ainda precisa teste final real com 7 sections.
+- Cerebras passou tecnicamente em alguns testes, mas teve conteúdo mais repetitivo, genérico e com erros pedagógicos.
 
-Correção definitiva aplicada:
-- `grammarSectionGenerator.js`
-  - Removido limite antigo `GROQ_SECTION_COUNT = 5`.
-  - Criado `GROQ_DAILY_SECTION_COUNT = 7`.
-  - `rawSections.slice(0, GROQ_DAILY_SECTION_COUNT)` agora mantém 7 sections para Groq.
-  - Mensagem antiga `modo Groq econômico 5 sections fortes` removida.
-  - Diagnóstico correto agora: `modo Groq diário forte 7 sections`.
-  - `grammarSectionContract` agora usa `groq-7-daily-sections`.
-  - `reason` agora usa `sections-enriched-groq-7-daily-sections`.
-- `externalLessonProviders.js`
-  - Já estava correto para skeleton Groq com 7 sections.
+## ESTADO ATUAL — PRÓXIMO BLOCO VISUAL
+
+### `HOTFIX-GRAMMAR-EXEMPLOS-VISUAIS-LAB` — PRÓXIMO BLOCO A IMPLEMENTAR
+
+Objetivo:
+- Melhorar a leitura da aula Grammar no iPhone sem mexer no motor pedagógico.
+- Não alterar geração, prompts, modelo, chaves, fallback, revisor, `deepGrammarPipeline.js` ou backend.
+- Não reduzir conteúdo.
+- Apenas renderizar melhor o texto já gerado.
+
+Problemas observados na aula Flash:
+- Blocos `Exemplos do professor` aparecem como texto corrido.
+- Pontuação grudada: `.Por exemplo`, `.Já`, `.Outro`, `).Veja`.
+- Frase em inglês, tradução e explicação ficam grudadas no mesmo bloco.
+- Aula fica muito pesada visualmente no celular.
+
+Arquivos prováveis:
+- `fluency-clean/src/lessons/GrammarLesson.jsx`
+- arquivo CSS real onde ficam estilos do app, provavelmente `fluency-clean/src/App.css` ou equivalente. Conferir antes de editar.
+
+Escopo permitido:
+1. Criar limpeza visual local em `GrammarLesson.jsx`:
+   - corrigir espaços depois de ponto/interrogação/exclamação quando vier grudado com letra maiúscula;
+   - normalizar quebras antes de conectores como `Por exemplo`, `Já`, `Outro exemplo`, `Veja`, `Assim`, `Portanto`;
+   - preservar todo o texto.
+2. Melhorar `SectionContent`:
+   - separar explicação principal em parágrafos limpos;
+   - detectar exemplos com aspas/frases em inglês;
+   - renderizar `Exemplos do professor` como cards/lista visual;
+   - cada exemplo deve destacar: frase em inglês, tradução quando existir e explicação quando existir.
+3. Adicionar classes CSS elegantes:
+   - cards de exemplo com borda suave;
+   - título pequeno `Exemplos do professor`;
+   - frase em inglês destacada;
+   - tradução menor;
+   - explicação em texto normal;
+   - bom espaçamento mobile.
+4. Manter botões Salvar/Concluir e textarea funcionando.
+
+Critérios de aceite no iPhone:
+- Não aparecer mais `.Por exemplo` grudado.
+- Os exemplos não podem ficar em um único parágrafo corrido.
+- A aula deve continuar completa, sem cortar sections.
+- Visual deve ficar mais fácil de ler sem parecer jogo.
+- Não pode mexer em `bundle.js`.
+
+## ESTADO ANTERIOR — HOTFIX GROQ DIÁRIO FORTE 7 SECTIONS REAL
+
+### `HOTFIX-GROQ-DAILY-7-SECTIONS-REAL-LAB` — IMPLEMENTADO
+
+- `grammarSectionGenerator.js` teve o limite antigo de 5 sections removido.
+- Criado `GROQ_DAILY_SECTION_COUNT = 7`.
+- `rawSections.slice(0, GROQ_DAILY_SECTION_COUNT)` mantém 7 sections para Groq.
+- Mensagem antiga `modo Groq econômico 5 sections fortes` removida.
+- Diagnóstico correto: `modo Groq diário forte 7 sections`.
+- `externalLessonProviders.js` já estava correto para skeleton Groq com 7 sections.
 
 Commits relevantes:
 - `03fef31cfbabbe1fa84b209243de53ae468dc88e` — skeleton Groq forte com 7 sections.
 - `b1fbfba461a20a3d6911f18799c32bf34e77d4a6` — correção real do 1B Groq para 7 sections.
-
-Teste obrigatório agora:
-1. aguardar deploy da branch `rewrite-fluency-clean-lab` com commit `b1fbfba` ou posterior;
-2. colocar nova key Groq, se necessário;
-3. ativar `Forçar Groq na próxima geração`;
-4. gerar a aula Grammar diária;
-5. confirmar no diagnóstico:
-   - `Modo Groq diário forte ativo: usando 7 sections profundas para simular aula diária.`
-   - `Cirurgia 2 Grammar ativa: reescrevendo 7 section(s)... modo Groq diário forte 7 sections`;
-   - sections 1 a 7 aprovadas;
-   - cada section com 240+ palavras;
-   - professor revisor ≥ 90;
-   - avaliação pedagógica ≥ 90;
-   - aula salva sem compactar conteúdo.
-
-## ESTADO ANTERIOR — HOTFIX GROQ DIÁRIO FORTE PARCIAL
-
-- O skeleton do Groq foi alterado para 7 sections, mas o 1B ainda estava preso em 5 sections por causa de constante antiga.
-- Esse estado gerou aula aprovada, mas incompleta em relação ao pedido de 7 sections.
 
 ## ESTADO ANTERIOR — HOTFIX GROQ QUALIDADE + TRAVA DE OBJETIVO GRAMMAR
 
@@ -72,75 +101,40 @@ Commits:
 - `87ce9aa1c2d48b6fba7d3eb67374e18ba65294f3` — repara objetivo Grammar antes da trava.
 - `840877e4674e2b5c133945e7e468058adf6d10fc` — ignora issue reparável de objetivo Grammar.
 
-## LEITURA PARCIAL DA COMPARAÇÃO FLASH X GROQ X CEREBRAS
+## COMPARAÇÃO FLASH X GROQ X CEREBRAS
 
 ### Flash/Gemini
-- Foi o mais estável até agora.
-- Gerou aula completa, abriu no IndexedDB e recebeu 98/100.
-- Conteúdo profundo e validado.
-- Problema principal observado: visual dos blocos `Exemplos do professor`, com texto corrido e pontuação grudada.
+- Melhor opção atual.
+- Gerou aula completa, profunda e coerente.
+- Pontos fracos principais agora são visuais, não de motor.
 
 ### Groq
 - Não está idêntico ao Flash.
-- O conteúdo observado tem frases e organização diferentes.
-- Com 5 sections fortes, chegou a revisor 95–96/100 e avaliação pedagógica 95/100, mas o teste ainda não vale como comparação final porque 1B tinha só 5 sections.
-- Agora precisa testar Groq em 7 sections reais para comparação final.
+- Teve conteúdo diferente e potencial, mas limitações de cota e instabilidade.
+- Ainda pode ser testado depois em 7 sections reais.
 
 ### Cerebras `llama3.1-8b`
-- Entrou no 1B, mas veio curto demais.
-- Indício de menor obediência ao contrato de profundidade.
-- Pode servir para tarefas leves, mas até agora parece fraco para Grammar profunda.
-
-## PENDENTE VISUAL ANOTADO — NÃO MEXER AINDA
-
-### `HOTFIX-GRAMMAR-EXEMPLOS-VISUAIS-LAB` — PENDENTE
-
-Problema observado na aula Flash e também perceptível no Groq:
-- Blocos `Exemplos do professor` aparecem como texto corrido.
-- Há pontuação grudada, por exemplo `.Por exemplo`, `.Já`, `.Outro`.
-- Exemplos, traduções e explicações ficam cansativos no celular.
-
-Correção futura, somente depois da comparação de motores:
-- transformar exemplos em blocos/listas limpas;
-- separar cada exemplo em linha própria;
-- destacar frase em inglês, tradução e explicação;
-- corrigir pontuação grudada sem reduzir conteúdo.
-
-## ESTADO ANTERIOR — HOTFIX EXTERNAL PROVIDERS: ESQUELETO LEVE + 1B PURO
-
-### `HOTFIX-EXTERNAL-PROVIDERS-SKELETON-1B-LAB` — IMPLEMENTADO
-
-- Para Grammar em provedor externo forçado, o provider gera apenas um esqueleto leve.
-- A profundidade real fica toda na Cirurgia 2 / Grammar 1B.
-- Mantido: se for teste forçado, NÃO volta para Gemini, para não contaminar comparação.
-
-Commit:
-- `782ff028b1f956c8ab0814d97581f30f47fd109d` — esqueleto leve obrigatório.
-
-## ESTADO ANTERIOR — HOTFIX INDEXEDDB AULA COMPLETA
-
-### `HOTFIX-STORAGE-INDEXEDDB-AULA-COMPLETA-LAB` — IMPLEMENTADO
-- Aula completa e profunda é salva inteira no IndexedDB.
-- `localStorage` guarda só ponteiro/metadados leves.
-- Não compacta conteúdo pedagógico como solução principal.
+- Teve reposições/expansões, mas conteúdo real ficou inconsistente.
+- Não usar como principal para Grammar profunda.
 
 ## NÃO FAZER AGORA
 
-- Não implementar Cirurgia 3 antes de testar comparação pura Flash/Groq/Cerebras.
+- Não implementar Cirurgia 3 ainda.
 - Não mexer no `deepGrammarPipeline.js`.
 - Não relaxar o professor revisor.
 - Não portar Pro para keys free.
-- Não compactar conteúdo pedagógico como solução principal.
-- Não corrigir visual dos exemplos antes de terminar a comparação dos motores.
+- Não compactar conteúdo pedagógico.
+- Não alterar política de chaves agora.
+- Não mexer em `main`, `rewrite-fluency-clean`, `bundle.js` ou backend Azure privado.
 
-## Próximo teste recomendado
+## Próximo teste recomendado após o bloco visual
 
-1. Esperar deploy com `b1fbfba` ou posterior.
-2. Colocar nova key Groq, se necessário.
-3. Testar Groq puro com 7 sections reais.
-4. Se Groq salvar, comparar aula completa com Flash.
-5. Só depois decidir motor prioritário e corrigir visual dos exemplos.
+1. Aguardar deploy da branch `rewrite-fluency-clean-lab`.
+2. Abrir a aula Flash já salva, se possível.
+3. Verificar visual dos exemplos no iPhone.
+4. Se necessário, gerar nova aula Flash para validar exemplos com texto novo.
+5. Conferir que conteúdo não foi reduzido.
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. O último hotfix foi `b1fbfba`: corrigiu de verdade o 1B do Groq para 7 sections. O skeleton já estava em 7, mas o 1B ainda estava limitado a 5. Próximo passo é testar Groq puro com 7 sections reais e comparar com Flash se salvar. Não mexer em Cirurgia 3/deepGrammarPipeline ainda. Não corrigir visual dos exemplos antes da comparação. Não mexer em `main`, `rewrite-fluency-clean`, `bundle.js` ou backend Azure privado."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. Decidimos manter `gemini-2.5-flash` como motor principal. Próximo bloco é `HOTFIX-GRAMMAR-EXEMPLOS-VISUAIS-LAB`: melhorar visual da aula Grammar, separar `Exemplos do professor` em cards/lista, corrigir pontuação grudada e melhorar leitura no iPhone sem mexer no motor de geração. Não mexer em `main`, `rewrite-fluency-clean`, `bundle.js`, backend Azure privado, `deepGrammarPipeline.js`, revisor ou política de chaves. Usar somente `fluency-clean/src/` ou CSS/config real."
