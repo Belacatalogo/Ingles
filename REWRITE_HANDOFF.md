@@ -47,77 +47,44 @@ Princípio máximo:
 
 ## BLOCO ATUAL
 
-### `BLOCO-CARTAS-METODO-2B-LAB` — Bolha abre em tela dedicada IMPLEMENTADO, aguardando deploy/teste
+### `BLOCO-HOJE-DATA-LOCAL-1-LAB` — Correção de dia local e tarefa de bolha IMPLEMENTADO, aguardando deploy/teste
 
 Contexto:
-- usuário testou a aba Cartas no iPhone;
-- ao tocar na bolha, a prática da bolha aparecia abaixo do mapa, deixando o estudo pesado e confuso;
-- o comportamento desejado é que a bolha abra uma tela de estudo dedicada, parecida com a prática normal, e não um bloco abaixo da trilha.
+- usuário concluiu aula hoje, mas o card `Atividade real` marcou em `Qui` em vez do dia atual;
+- causa provável: comparação de datas via `toISOString().slice(0,10)`, que usa UTC e pode deslocar o dia para usuário no Brasil;
+- usuário pediu também uma tarefa diária: `concluir 1 bolha da trilha`.
 
 Arquivos alterados:
-- `fluency-clean/src/screens/FlashcardsScreen.jsx`
-- `fluency-clean/src/styles/flashcards-polish.css`
+- `fluency-clean/src/services/progressStore.js`
+- `fluency-clean/src/screens/TodayScreen.jsx`
 - `REWRITE_HANDOFF.md`
 
 O que foi implementado:
-- adicionado `studyMode` em `FlashcardsScreen.jsx`;
-- ao tocar em uma bolha desbloqueada, o sistema entra em modo de estudo da bolha;
-- mapa, tópicos e cabeçalho principal ficam ocultos durante o estudo;
-- aparece um cabeçalho dedicado com:
-  - botão `Voltar para trilha`;
-  - tópico;
-  - bolha;
-  - nível;
-  - progresso da sessão;
-- ao concluir a sessão, o botão `Voltar para trilha` retorna ao mapa;
-- ao trocar de tópico ou avançar versão da trilha, o modo de estudo fecha com segurança;
-- CSS novo para `cards-study-mode` e `cards-study-header`.
+- `progressStore.js` agora exporta `localDateKey()`;
+- comparações de hoje em flashcards, speaking e prática usam data local;
+- `weekKey()` foi ajustado para usar calendário local em vez de UTC;
+- `TodayScreen.jsx` passou a usar `localDateKey()` para montar `Atividade real`;
+- `getTodayLessonCompleted()` agora compara pela data local do registro;
+- adicionada tarefa diária `Concluir 1 bolha da trilha`;
+- tarefa é considerada feita quando existe sessão de flashcards com `lessonId` iniciando por `path-` na data local de hoje;
+- total de tarefas do dia agora passa de 3 para 4.
 
 Commits:
-- `cc35dff9870bb3c260297d90c43e5e35f754d65a` — abre estudo da bolha em tela dedicada;
-- `64779d441ec198cacf2936e69e65cceb7225650e` — estiliza modo dedicado de estudo da bolha.
+- `29c7d3197cf294bf35efd62259a24443e7ffb48a` — corrige data local do progresso;
+- `a5debea2c7c4e9f0bd30c930188e39d53e32655a` — adiciona bolha da trilha às tarefas do dia.
 
 Teste recomendado no iPhone:
-1. abrir Cartas;
-2. entrar em Trilha de vocabulário;
-3. tocar na primeira bolha;
-4. confirmar que o mapa some e a sessão ocupa a tela da aba Cartas;
-5. confirmar botão `Voltar para trilha`;
-6. concluir a sessão e confirmar avanço 1/3;
-7. confirmar que voltar mostra o mapa novamente.
+1. abrir Hoje;
+2. confirmar que a aula concluída aparece no dia correto da semana;
+3. confirmar tarefa `Concluir 1 bolha da trilha`;
+4. concluir uma bolha em Cartas;
+5. voltar para Hoje e confirmar que a tarefa fica feita.
+
+### `BLOCO-CARTAS-METODO-2B-LAB` — Bolha abre em tela dedicada IMPLEMENTADO
 
 ### `BLOCO-CARTAS-METODO-2-LAB` — Bolhas com método de aquisição IMPLEMENTADO
 
-Arquivos criados:
-- `fluency-clean/src/services/vocabularyPractice.js`
-
-Arquivos alterados:
-- `fluency-clean/src/screens/FlashcardsScreen.jsx`
-- `fluency-clean/src/styles/flashcards-polish.css`
-- `REWRITE_HANDOFF.md`
-
-O que foi implementado:
-- novo motor `vocabularyPractice.js`;
-- bolhas geram exercícios variados: introdução, significado, frase, completar, ouvir e montar frase;
-- níveis 1, 2 e 3 aumentam profundidade;
-- `Aula atual` continua com flashcards simples;
-- `Trilha de vocabulário` usa o novo método.
-
 ### `BLOCO-CARTAS-TRILHA-1-LAB` — Cartas em trilha estilo Duolingo IMPLEMENTADO
-
-Arquivos criados:
-- `fluency-clean/src/services/vocabularyPath.js`
-
-Arquivos alterados:
-- `fluency-clean/src/screens/FlashcardsScreen.jsx`
-- `fluency-clean/src/styles/flashcards-polish.css`
-- `REWRITE_HANDOFF.md`
-
-O que foi implementado:
-- Cartas tem `Aula atual` e `Trilha de vocabulário`;
-- tópicos antigos ficam dentro da trilha;
-- bolhas têm 3 níveis e desbloqueio progressivo;
-- progresso local salvo em `fluency.vocabularyPath.v1`.
 
 ### `BLOCO-LISTENING-COERENCIA-1B-LAB` — Fechamento narrativo do Listening IMPLEMENTADO
 
@@ -174,7 +141,7 @@ Pendente técnica:
 
 ## NOVA ORDEM DE BLOCOS — QUALIDADE REAL DAS AULAS
 
-1. `BLOCO-CARTAS-METODO-2B-LAB` — Bolha abre em tela dedicada. STATUS: implementado, aguardando teste.
+1. `BLOCO-HOJE-DATA-LOCAL-1-LAB` — Correção de dia local e tarefa de bolha. STATUS: implementado, aguardando teste.
 2. `BLOCO-CARTAS-SRS-3-LAB` — revisão espaçada real por palavra/frase.
 3. `BLOCO-CARTAS-USO-4-LAB` — usos, chunks e variações por palavra.
 4. `BLOCO-CARTAS-MIX-5-LAB` — misturar palavras novas com antigas.
@@ -204,13 +171,12 @@ Ordem recomendada após os blocos principais:
 
 ## Pendência técnica importante
 
-- testar deploy do `BLOCO-CARTAS-METODO-2B-LAB` no iPhone;
-- confirmar que bolha abre como tela dedicada;
-- confirmar que o mapa não fica visível embaixo durante estudo;
-- confirmar que botão `Voltar para trilha` funciona;
+- testar deploy do `BLOCO-HOJE-DATA-LOCAL-1-LAB` no iPhone;
+- confirmar dia correto na Atividade real;
+- confirmar tarefa de bolha;
 - seguir depois para `BLOCO-CARTAS-SRS-3-LAB`;
 - remover definitivamente `ListeningLesson.jsx` antigo quando o conector permitir SHA correto.
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O bloco atual implementado foi `BLOCO-CARTAS-METODO-2B-LAB`: ao tocar numa bolha, Cartas entra em modo de estudo dedicado com botão Voltar para trilha; mapa/tópicos ficam ocultos durante a sessão. Testar no iPhone; se ok, seguir para `BLOCO-CARTAS-SRS-3-LAB`."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O bloco atual implementado foi `BLOCO-HOJE-DATA-LOCAL-1-LAB`: datas de Hoje/Atividade real usam `localDateKey()` e foi adicionada a tarefa `Concluir 1 bolha da trilha`. Testar no iPhone; se ok, seguir para `BLOCO-CARTAS-SRS-3-LAB`."
