@@ -15,6 +15,9 @@ import { attachStudyReadiness, evaluateStudyReadiness } from '../../services/stu
 import { buildSaturdayReviewLesson, shouldPrioritizeSaturdayReview } from '../../services/masteryStore.js';
 import { auditDeepGrammarLesson, repairDeepGrammarLesson } from '../../services/deepGrammarPipeline.js';
 
+const GRAMMAR_MODEL_TEST_CONTRACT = 'grammar-model-test-gemini-2.5-pro';
+const GRAMMAR_MODEL_TEST_FALLBACK_CONTRACT = 'grammar-model-test-fallback-current';
+
 const DEEP_GRAMMAR_CONTRACT = [
   'CONTRATO ESPECIAL PARA GRAMMAR PROFUNDA — OBRIGATÓRIO:',
   'A aula deve parecer uma aula de professor particular, não artigo, não Wikipedia, não resumo.',
@@ -77,6 +80,79 @@ function buildPromptForLesson(nextLesson, saturdayReview) {
   ].join('\n');
 }
 
+async function generateGrammarModelTestDraft({
+  prompt,
+  flashKeys,
+  proKey,
+  previousLesson,
+  forceVariation,
+  forcedType,
+  level,
+  grammarTarget,
+}) {
+  const baseOptions = {
+    prompt,
+    previousLesson,
+    forceVariation,
+    forcedType,
+    level,
+  };
+
+  if (!grammarTarget) {
+    return {
+      result: await generatePlannedLessonDraft({ ...baseOptions, keys: flashKeys, proKey }),
+      modelTest: null,
+    };
+  }
+
+  if (!proKey) {
+    diagnostics.log('Grammar profunda detectada, mas nenhuma key Pro foi configurada. Mantendo modelo atual.', 'warn');
+    return {
+      result: await generatePlannedLessonDraft({ ...baseOptions, keys: flashKeys, proKey: '' }),
+      modelTest: {
+        active: false,
+        usedModel: 'current',
+        contract: GRAMMAR_MODEL_TEST_FALLBACK_CONTRACT,
+        fallback: true,
+        reason: 'missing-pro-key',
+      },
+    };
+  }
+
+  diagnostics.setPhase('testando Gemini Pro em Grammar', 'generating');
+  diagnostics.log('BLOCO-MODEL-TEST-GRAMMAR-PRO-LAB: tentando gerar Grammar profunda com gemini-2.5-pro primeiro.', 'info');
+  const proResult = await generatePlannedLessonDraft({ ...baseOptions, keys: [], proKey });
+
+  if (proResult.status === 'success' && proResult.lesson) {
+    diagnostics.log('Grammar profunda gerada com gemini-2.5-pro. Fallback não foi necessário.', 'success');
+    return {
+      result: proResult,
+      modelTest: {
+        active: true,
+        usedModel: 'gemini-2.5-pro',
+        contract: GRAMMAR_MODEL_TEST_CONTRACT,
+        fallback: false,
+      },
+    };
+  }
+
+  const reason = proResult.error || 'Falha desconhecida no teste Pro.';
+  diagnostics.setPhase('fallback do modelo grammar', 'generating');
+  diagnostics.log(`gemini-2.5-pro falhou somente para Grammar. Voltando ao modelo atual. Motivo: ${reason}`, 'warn', proResult);
+  const fallbackResult = await generatePlannedLessonDraft({ ...baseOptions, keys: flashKeys, proKey: '' });
+
+  return {
+    result: fallbackResult,
+    modelTest: {
+      active: true,
+      usedModel: fallbackResult.status === 'success' ? 'current-fallback' : 'current-fallback-failed',
+      contract: GRAMMAR_MODEL_TEST_FALLBACK_CONTRACT,
+      fallback: true,
+      reason,
+    },
+  };
+}
+
 export function LessonGeneratorPanel({ onGenerated }) {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
@@ -125,25 +201,44 @@ export function LessonGeneratorPanel({ onGenerated }) {
       const prompt = buildPromptForLesson(nextLesson, saturdayReview);
       const forcedType = nextLesson.type === 'review' ? '' : nextLesson.type;
       const grammarTarget = isGrammarTarget(nextLesson) && !saturdayReview;
+      let grammarModelTest = null;
 
       if (grammarTarget) {
         diagnostics.log('Contrato de Grammar profunda ativado: aula longa, guiada e não enciclopédica.', 'info');
       }
 
-      let result = await generatePlannedLessonDraft({ prompt, keys: flashKeys, proKey, previousLesson: forceNew ? currentLesson : null, forceVariation: forceNew, forcedType, level: nextLesson.level || 'A1' });
+      const generation = await generateGrammarModelTestDraft({
+        prompt,
+        flashKeys,
+        proKey,
+        previousLesson: forceNew ? currentLesson : null,
+        forceVariation: forceNew,
+        forcedType,
+        level: nextLesson.level || 'A1',
+        grammarTarget,
+      });
+      let result = generation.result;
+      grammarModelTest = generation.modelTest;
 
       if (result.status !== 'success' || !result.lesson) {
         if (shouldUseResilientFallback(result)) {
           diagnostics.setPhase('ativando parser resiliente', 'generating');
           diagnostics.log('Erro de JSON escapado detectado. Tentando fallback resiliente antes de falhar a aula.', 'warn', result);
           setMessage('O Gemini devolveu JSON escapado. Ativando parser resiliente para salvar a aula...');
-          result = await generateResilientLessonDraft({ prompt, keys: flashKeys, proKey, forcedType, level: nextLesson.level || 'A1' });
+          result = await generateResilientLessonDraft({ prompt, keys: flashKeys, proKey: grammarTarget ? '' : proKey, forcedType, level: nextLesson.level || 'A1' });
+          if (grammarTarget) {
+            grammarModelTest = grammarModelTest || { active: true, usedModel: 'resilient-current-fallback', contract: GRAMMAR_MODEL_TEST_FALLBACK_CONTRACT, fallback: true, reason: 'resilient-json-fallback' };
+          }
         }
 
         if (result.status !== 'success' || !result.lesson) {
           setMessage(result.error || 'Não foi possível gerar a aula.');
           return;
         }
+      }
+
+      if (grammarTarget && grammarModelTest) {
+        diagnostics.log(`Modelo usado na Grammar: ${grammarModelTest.usedModel}. Contrato: ${grammarModelTest.contract}.`, grammarModelTest.fallback ? 'warn' : 'success', grammarModelTest);
       }
 
       const lessonToValidate = {
@@ -335,11 +430,12 @@ export function LessonGeneratorPanel({ onGenerated }) {
 
       const reviewedLesson = attachStudyReadiness(attachTeacherReview(attachPedagogicalReview(lessonForSave, pedagogicalReview), teacherReview), studyReadiness);
       const grammarContract = lessonForSave.type === 'grammar' ? `+deep-grammar-contract-v1${deepGrammarRepaired ? '+deep-grammar-pipeline-v1' : ''}` : '';
+      const grammarModelContract = lessonForSave.type === 'grammar' && grammarModelTest?.contract ? `+${grammarModelTest.contract}` : '';
 
       const saved = saveCurrentLesson(reviewedLesson, {
         source: forceNew ? 'generated-replacement-variation' : result.lesson.planContract === 'resilient-json-v1' ? 'generated-resilient-json' : 'generated',
         status: 'new',
-        contractVersion: result.lesson.planContract ? `lesson-contract-v1+${result.lesson.planContract}+teacher-reviewer-v1+study-readiness-v1${listeningCoherenceRepaired ? '+listening-coherence-v1' : ''}${antiFalseDomainRepaired ? '+anti-false-domain-v1' : ''}${grammarContract}` : `lesson-contract-v1+teacher-reviewer-v1+study-readiness-v1${listeningCoherenceRepaired ? '+listening-coherence-v1' : ''}${antiFalseDomainRepaired ? '+anti-false-domain-v1' : ''}${grammarContract}`,
+        contractVersion: result.lesson.planContract ? `lesson-contract-v1+${result.lesson.planContract}+teacher-reviewer-v1+study-readiness-v1${listeningCoherenceRepaired ? '+listening-coherence-v1' : ''}${antiFalseDomainRepaired ? '+anti-false-domain-v1' : ''}${grammarContract}${grammarModelContract}` : `lesson-contract-v1+teacher-reviewer-v1+study-readiness-v1${listeningCoherenceRepaired ? '+listening-coherence-v1' : ''}${antiFalseDomainRepaired ? '+anti-false-domain-v1' : ''}${grammarContract}${grammarModelContract}`,
         pedagogicalScore: teacherReview.finalScore,
         autoRepaired,
         antiFalseDomainRepaired,
@@ -353,7 +449,8 @@ export function LessonGeneratorPanel({ onGenerated }) {
       });
       diagnostics.log(`${saturdayReview ? 'Revisão adaptativa planejada' : forceNew ? 'Nova versão planejada da aula do cronograma' : 'Aula planejada do cronograma'} pronta para abrir: ${saved.title}`, 'info');
       const repairLabel = deepGrammarRepaired ? ' com pipeline didático Grammar profundo,' : listeningCoherenceRepaired ? ' com coerência de Listening reparada,' : antiFalseDomainRepaired ? ' com produção ativa anti falso domínio,' : autoRepaired ? ' corrigida automaticamente,' : '';
-      setMessage(saturdayReview ? `Nova revisão planejada${repairLabel} ${studyReadiness.label.toLowerCase()} (${teacherReview.finalScore}/100), salva e aberta na aba Aula.` : forceNew ? `Nova versão planejada${repairLabel} ${studyReadiness.label.toLowerCase()} (${teacherReview.finalScore}/100), salva e aberta na aba Aula.` : `Nova aula planejada${repairLabel} ${studyReadiness.label.toLowerCase()} (${teacherReview.finalScore}/100), salva e aberta na aba Aula.`);
+      const modelLabel = grammarModelTest?.usedModel ? ` Modelo: ${grammarModelTest.usedModel}.` : '';
+      setMessage(saturdayReview ? `Nova revisão planejada${repairLabel} ${studyReadiness.label.toLowerCase()} (${teacherReview.finalScore}/100), salva e aberta na aba Aula.${modelLabel}` : forceNew ? `Nova versão planejada${repairLabel} ${studyReadiness.label.toLowerCase()} (${teacherReview.finalScore}/100), salva e aberta na aba Aula.${modelLabel}` : `Nova aula planejada${repairLabel} ${studyReadiness.label.toLowerCase()} (${teacherReview.finalScore}/100), salva e aberta na aba Aula.${modelLabel}`);
       setForceNew(false);
       onGenerated?.(saved);
     } catch (error) {
