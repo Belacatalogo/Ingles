@@ -68,41 +68,51 @@ Distribuição planejada:
 
 ## BLOCO ATUAL
 
-### `BLOCO-CARTAS-HOTFIX-TIPOS-OBVIOS-1-LAB` — Tipos que entregavam resposta removidos IMPLEMENTADO, aguardando deploy/teste
+### `BLOCO-CARTAS-AUDITORIA-ATIVIDADES-1-LAB` — Auditoria das perguntas geradas IMPLEMENTADO, aguardando deploy/teste
 
 Contexto:
-- usuário encontrou novos problemas pedagógicos:
-  1. `Escolha a frase que usa “we” corretamente` entregava a resposta porque só uma alternativa tinha `we`;
-  2. `Qual bloco pertence à frase “We study English”` entregava a resposta porque a resposta era literalmente parte do enunciado;
-  3. esses tipos não testavam conhecimento real, apenas reconhecimento visual.
+- usuário pediu uma análise completa da estrutura de perguntas e respostas;
+- foram encontrados riscos restantes mesmo após remover tipos ruins;
+- o problema principal não é só um tipo específico, mas a falta de uma trava que valide a atividade pronta antes de mostrar ao aluno.
 
 Arquivo alterado:
 - `fluency-clean/src/services/vocabularyPractice.js`
 - `REWRITE_HANDOFF.md`
 
-O que foi implementado:
-- removido `activityFindExample()` do fluxo;
-- removido `activityChunk()` do fluxo;
-- removidas derivações automáticas de `chunk`, `chunks`, `variations` e `miniDialogues` da normalização da prática;
-- agora o fluxo seguro usa somente:
-  - `Nova palavra`;
-  - `Reconheça o significado`;
-  - `Complete a frase` com significado-alvo;
-  - `Ouça e escolha`;
-  - `Monte a frase`;
-- adicionado `repeatToTarget()` para manter 15–20 questões mesmo com menos tipos seguros;
-- chunks, variações e mini-diálogos devem voltar apenas com currículo fixo auditado e exercícios desenhados para não entregar a resposta.
+Análise feita:
+1. Tipos anteriores `Frase com a palavra` e `Chunk natural` eram ruins porque entregavam resposta e já foram removidos.
+2. `repeatToTarget()` pode gerar repetição, mas é aceitável temporariamente para manter 15–20 questões sem reintroduzir tipos ruins.
+3. `Complete a frase` ficou mais seguro porque mostra o significado-alvo.
+4. `Monte a frase` ainda deve ser melhorado depois para tratar tokens usados por ID e não permitir confusão visual.
+5. O banco tem repetições intencionais entre tópicos, mas isso precisa virar revisão marcada no bloco `BLOCO-CARTAS-MIX-5-LAB`.
 
-Commit:
-- `b69c81c8168ec95d86c120b41fd63f1e5bcd6288` — remove tipos que entregavam resposta nas cartas.
+O que foi implementado:
+- criado `activityLooksSafe()`;
+- criado `includesNormalized()`;
+- `interleaveActivities()` agora filtra atividades inseguras antes de montar a sessão;
+- `repeatToTarget()` também só repete atividades que passam na auditoria;
+- regras atuais da auditoria:
+  - atividade precisa existir;
+  - escolha múltipla precisa ter pelo menos 3 opções;
+  - opções duplicadas são bloqueadas;
+  - a resposta precisa estar entre as opções;
+  - se a resposta aparece literalmente no enunciado principal, a atividade é bloqueada;
+  - em `Complete a frase`, se a resposta aparecer na parte mascarada, a atividade é bloqueada;
+  - em `Listen`, prompt e resposta precisam bater exatamente após normalização;
+- a auditoria impede que tipos futuros voltem a entregar resposta por acidente.
+
+Commits:
+- `b69c81c8168ec95d86c120b41fd63f1e5bcd6288` — remove tipos que entregavam resposta nas cartas;
+- `fe010a0fb36baa775718a6740fa4c104c6ccec8f` — adiciona auditoria das atividades de cartas.
 
 Teste recomendado no iPhone:
 1. abrir Cartas > Essenciais A1 > bolha nível 2;
-2. confirmar que não aparece mais `Frase com a palavra`;
-3. confirmar que não aparece mais `Chunk natural`;
-4. confirmar que aparecem apenas tipos seguros;
-5. confirmar que ainda há cerca de 15–20 questões;
-6. observar se alguma pergunta ainda entrega a resposta no enunciado.
+2. confirmar que `Frase com a palavra` e `Chunk natural` não aparecem;
+3. confirmar que perguntas restantes não entregam resposta no enunciado;
+4. confirmar que ainda há sessão suficiente, perto de 15–20 exercícios;
+5. testar um tópico novo A1-A2 ou A2 para ver se a auditoria não esvaziou as atividades.
+
+### `BLOCO-CARTAS-HOTFIX-TIPOS-OBVIOS-1-LAB` — Tipos que entregavam resposta removidos IMPLEMENTADO
 
 ### `BLOCO-CARTAS-HOTFIX-COMPLETE-SENTIDO-1-LAB` — Completar frase desambiguado IMPLEMENTADO
 
@@ -136,7 +146,7 @@ Observação:
 
 ## NOVA ORDEM DE BLOCOS — CARTAS COMO SUBSTITUTO DO DUOLINGO
 
-1. `BLOCO-CARTAS-HOTFIX-TIPOS-OBVIOS-1-LAB` — tipos que entregavam resposta removidos. STATUS: implementado, aguardando teste.
+1. `BLOCO-CARTAS-AUDITORIA-ATIVIDADES-1-LAB` — auditoria das perguntas geradas. STATUS: implementado, aguardando teste.
 2. `BLOCO-CARTAS-CURRICULO-FIXO-8B-LAB` — expansão B1/B2.
 3. `BLOCO-CARTAS-CURRICULO-FIXO-8C-LAB` — C1/C2 + auditoria tripla profunda.
 4. `BLOCO-CARTAS-PREVIEW-9A-LAB` — prévia da bolha com palavras, tradução e referência visual.
@@ -149,12 +159,11 @@ Observação:
 
 ## Pendência técnica importante
 
-- testar deploy do `BLOCO-CARTAS-HOTFIX-TIPOS-OBVIOS-1-LAB` no iPhone;
-- confirmar que `Frase com a palavra` e `Chunk natural` sumiram;
-- confirmar que ainda há 15–20 questões por nível;
-- confirmar que perguntas restantes não entregam resposta no enunciado;
+- testar deploy do `BLOCO-CARTAS-AUDITORIA-ATIVIDADES-1-LAB` no iPhone;
+- confirmar que a auditoria não esvaziou sessões;
+- confirmar que não aparecem tipos óbvios/ruins;
 - seguir para `BLOCO-CARTAS-CURRICULO-FIXO-8B-LAB` se estiver ok.
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O bloco atual implementado foi `BLOCO-CARTAS-HOTFIX-TIPOS-OBVIOS-1-LAB`: removidos `Frase com a palavra` e `Chunk natural` porque entregavam a resposta; a prática agora usa só tipos seguros até criarmos exercícios melhores nos blocos de preview/gloss/tradução guiada. Testar no iPhone; se ok, seguir para `BLOCO-CARTAS-CURRICULO-FIXO-8B-LAB`."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O bloco atual implementado foi `BLOCO-CARTAS-AUDITORIA-ATIVIDADES-1-LAB`: `vocabularyPractice.js` agora filtra atividades inseguras com `activityLooksSafe()` antes de mostrar ao aluno. Testar no iPhone; se ok, seguir para `BLOCO-CARTAS-CURRICULO-FIXO-8B-LAB`."
