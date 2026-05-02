@@ -39,19 +39,19 @@ const connectorBreaks = [
   'Agora',
 ];
 
-const englishSignals = /\b(I|you|he|she|it|we|they|am|are|is|was|were|have|has|had|do|does|did|can|could|will|would|should|must|go|goes|went|work|works|study|studies|live|lives|like|likes|want|wants|need|needs|make|makes|take|takes|there|this|that|these|those|because|although|if|when|where|what|why|how)\b/i;
+const englishSignals = /\b(I|you|he|she|it|we|they|am|are|is|was|were|have|has|had|do|does|did|can|could|will|would|should|must|go|goes|went|work|works|study|studies|live|lives|like|likes|want|wants|need|needs|make|makes|take|takes|there|this|that|these|those|because|although|if|when|where|what|why|how|student|doctor|brazilian|happy|car|book|home|lunch)\b/i;
+const connectorPatternText = connectorBreaks.join('|');
+const connectorBoundary = new RegExp(`\\b(${connectorPatternText})\\b`, 'i');
 
 function normalizeVisualSpacing(value) {
-  const connectorPattern = connectorBreaks.join('|');
-
   return String(value ?? '')
     .replace(/\*\*(.*?)\*\*/g, '$1')
     .replace(/^\s*[-*]\s+/gm, '')
     .replace(/([.!?])(?=[A-ZÁÉÍÓÚÂÊÔÃÕÇ])/g, '$1 ')
     .replace(/\)(?=(Por exemplo|Já|Outro exemplo|Outro|Veja|Assim|Portanto|Além disso|Na prática|Observe|Agora)\b)/g, ') ')
     .replace(/([,;:])(?=\S)/g, '$1 ')
-    .replace(new RegExp(`\\s*([.!?])\\s*(?=(${connectorPattern})\\b)`, 'gi'), '$1\n\n')
-    .replace(new RegExp(`\\s+(?=(${connectorPattern})\\b)`, 'gi'), '\n\n')
+    .replace(new RegExp(`\\s*([.!?])\\s*(?=(${connectorPatternText})\\b)`, 'gi'), '$1\n\n')
+    .replace(new RegExp(`\\s+(?=(Já|Outro exemplo|Outro|Veja|Assim|Portanto|Além disso|Na prática|Observe|Agora)\\b)`, 'gi'), '\n\n')
     .replace(/\n{3,}/g, '\n\n')
     .replace(/[ \t]{2,}/g, ' ')
     .trim();
@@ -110,58 +110,57 @@ function splitByExampleHeader(text) {
 
 function splitExampleCandidates(text) {
   return cleanText(text)
-    .split(/\n{2,}|\s+(?=\d+[.)]\s+)|\s+(?=[•-]\s+)|\s+(?=(?:Por exemplo|Outro exemplo|Veja|Observe)\b)/gi)
+    .split(/\n{2,}|\s+(?=\d+[.)]\s+)|\s+(?=[•-]\s+)/gi)
     .map((item) => item.replace(/^\s*(\d+[.)]|[•-])\s*/, '').trim())
     .filter(Boolean);
 }
 
+function extractLeadingParenthetical(text) {
+  const match = cleanText(text).match(/^\(?([^()]{2,120})\)?(?=\s|,|\.|$)/);
+  if (!match) return '';
+  const value = cleanText(match[1]);
+  return looksLikeEnglish(value) ? '' : value;
+}
+
+function splitEnglishLead(text) {
+  const clean = cleanText(text).replace(/^[:\s]+/, '').trim();
+  const directParenthetical = clean.match(/^([^().,;:!?]{2,90}?\b(?:am|are|is|was|were|have|has|had|do|does|did|can|will|would|should|must)\b[^().,;:!?]{0,90})\s*,?\s*\(([^)]{2,120})\)\s*(.*)$/i);
+
+  if (directParenthetical && looksLikeEnglish(directParenthetical[1])) {
+    return {
+      english: cleanText(directParenthetical[1]),
+      translation: cleanText(directParenthetical[2]),
+      rest: cleanText(directParenthetical[3]).replace(/^[,.;:\s]+/, '').trim(),
+    };
+  }
+
+  const sentenceParts = splitSentences(clean);
+  const firstEnglish = sentenceParts.find((sentence) => looksLikeEnglish(sentence) && sentence.length <= 120);
+  if (!firstEnglish) return { english: '', translation: '', rest: clean };
+
+  const afterEnglish = cleanText(clean.replace(firstEnglish, '')).replace(/^[,.;:\s]+/, '').trim();
+  const translation = extractLeadingParenthetical(afterEnglish);
+  const rest = translation
+    ? cleanText(afterEnglish.replace(new RegExp(`^\\(?${translation.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\)?`), '')).replace(/^[,.;:\s]+/, '').trim()
+    : afterEnglish;
+
+  return {
+    english: cleanText(firstEnglish.replace(/[“”"']/g, '')),
+    translation,
+    rest,
+  };
+}
+
 function parseExampleCard(rawExample) {
   const text = cleanText(rawExample).replace(/^[:\s]+/, '').trim();
-  const quoted = [...text.matchAll(/[“”"']([^“”"']{2,120})[“”"']/g)]
-    .map((match) => cleanText(match[1]))
-    .filter(Boolean);
-
-  const englishQuote = quoted.find((quote) => looksLikeEnglish(quote));
-  const translationQuote = quoted.find((quote) => quote !== englishQuote && !looksLikeEnglish(quote));
-  const separatorMatch = text.match(/^(.+?)\s*(?:=|—|–|-|→|significa|quer dizer|tradução:|traducao:)\s*(.+)$/i);
-
-  let english = englishQuote || '';
-  let translation = translationQuote || '';
-  let explanation = text;
-
-  if (!english && separatorMatch) {
-    const left = cleanText(separatorMatch[1]);
-    const right = cleanText(separatorMatch[2]);
-    if (looksLikeEnglish(left)) {
-      english = left.replace(/[“”"']/g, '').trim();
-      translation = right.replace(/[“”"']/g, '').trim();
-    }
-  }
-
-  if (!english) {
-    const sentenceParts = splitSentences(text);
-    const englishSentence = sentenceParts.find((sentence) => looksLikeEnglish(sentence));
-    if (englishSentence) english = englishSentence.replace(/[“”"']/g, '').trim();
-  }
-
-  if (english) {
-    explanation = cleanText(text.replace(english, '').replace(/[“”"']/g, ''));
-  }
-
-  if (translation) {
-    explanation = cleanText(explanation.replace(translation, ''));
-  }
-
-  explanation = explanation
-    .replace(/^\s*(=|—|–|-|→|significa|quer dizer|tradução:|traducao:)\s*/i, '')
-    .replace(/\s*(=|—|–|-|→)\s*$/i, '')
-    .trim();
+  const { english, translation, rest } = splitEnglishLead(text);
+  const safeRest = rest || (!english ? text : '');
 
   return {
     original: text,
     english,
-    translation: translation && !looksLikeEnglish(translation) ? translation : '',
-    explanation,
+    translation,
+    explanation: safeRest.replace(/^(,|\.|;|:|significa\s*\.?|quer dizer\s*\.?)\s*/i, '').trim(),
   };
 }
 
@@ -179,7 +178,7 @@ function collectProfessorExamples(content) {
 
   candidates.forEach((candidate) => {
     const parsed = parseExampleCard(candidate);
-    const isExample = Boolean(headerSplit) || Boolean(parsed.english) || /\b(Por exemplo|Outro exemplo|Veja|Observe)\b/i.test(candidate);
+    const isExample = Boolean(headerSplit) || Boolean(parsed.english) || connectorBoundary.test(candidate);
 
     if (isExample) {
       examples.push(parsed);
