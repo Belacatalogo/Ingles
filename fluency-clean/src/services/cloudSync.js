@@ -12,6 +12,7 @@ const CLOUD_SYNC_KEYS = [
   'mastery.skillProfile.v1',
   'lesson.current',
   'lesson.history',
+  'lesson.lastGenerationStatus',
   'lesson.gemini.flashKeys',
   'lesson.gemini.proKey',
   'settings',
@@ -38,6 +39,47 @@ function getUserDocRef(user = currentUser) {
   return doc(db, 'fluencyUsers', cleanUser.uid);
 }
 
+function readTime(value) {
+  const candidates = [
+    value?.generationMeta?.savedAt,
+    value?.savedAt,
+    value?.generationMeta?.generatedAt,
+    value?.createdAt,
+    value?.updatedAt,
+  ];
+  const parsed = candidates.map((item) => Date.parse(item || '')).find((item) => Number.isFinite(item));
+  return parsed || 0;
+}
+
+function readStatusTime(value) {
+  const parsed = Date.parse(value?.createdAt || value?.savedAt || value?.updatedAt || '');
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function lessonKey(lesson = {}) {
+  return lesson?.generationMeta?.id || lesson?.id || lesson?.curriculumId || lesson?.title || '';
+}
+
+function mergeLessonHistory(localHistory = [], cloudHistory = []) {
+  const merged = [...(Array.isArray(localHistory) ? localHistory : []), ...(Array.isArray(cloudHistory) ? cloudHistory : [])];
+  const byKey = new Map();
+
+  merged.forEach((lesson) => {
+    const key = lessonKey(lesson);
+    if (!key) return;
+    const existing = byKey.get(key);
+    if (!existing || readTime(lesson) >= readTime(existing)) byKey.set(key, lesson);
+  });
+
+  return Array.from(byKey.values()).sort((a, b) => readTime(b) - readTime(a)).slice(0, 30);
+}
+
+function chooseNewest(localValue, cloudValue, timeReader = readTime) {
+  if (!localValue) return cloudValue;
+  if (!cloudValue) return localValue;
+  return timeReader(cloudValue) > timeReader(localValue) ? cloudValue : localValue;
+}
+
 function collectLocalData() {
   return CLOUD_SYNC_KEYS.reduce((acc, key) => {
     acc[key] = storage.get(key, null);
@@ -51,8 +93,30 @@ function collectLocalData() {
 
 function applyCloudData(data = {}) {
   const payload = data?.data && typeof data.data === 'object' ? data.data : {};
+  const localCurrent = storage.get('lesson.current', null);
+  const localHistory = storage.get('lesson.history', []);
+  const localStatus = storage.get('lesson.lastGenerationStatus', null);
+
   Object.entries(payload).forEach(([key, value]) => {
     if (!CLOUD_SYNC_KEYS.includes(key)) return;
+
+    if (key === 'lesson.current') {
+      const nextCurrent = chooseNewest(localCurrent, value, readTime);
+      storage.set(key, nextCurrent);
+      if (nextCurrent !== value) diagnostics.log('Cloud Sync preservou aula atual local mais recente.', 'info');
+      return;
+    }
+
+    if (key === 'lesson.history') {
+      storage.set(key, mergeLessonHistory(localHistory, value));
+      return;
+    }
+
+    if (key === 'lesson.lastGenerationStatus') {
+      storage.set(key, chooseNewest(localStatus, value, readStatusTime));
+      return;
+    }
+
     if (typeof value === 'string') storage.setText(key, value);
     else storage.set(key, value);
   });
@@ -98,7 +162,7 @@ export async function hydrateFromCloud(user) {
 
       if (snapshot.exists()) {
         applyCloudData(snapshot.data());
-        diagnostics.log('Progresso carregado da nuvem Firebase.', 'info');
+        diagnostics.log('Progresso carregado da nuvem Firebase com merge seguro.', 'info');
       } else {
         diagnostics.log('Nenhum progresso na nuvem ainda. Enviando dados locais para criar perfil.', 'info');
         await pushToCloud(cleanUser, { reason: 'initial-create' });
@@ -154,7 +218,7 @@ export async function pushToCloud(user = currentUser, { reason = 'manual' } = {}
     const message = error?.message || String(error);
     diagnostics.log(`Falha ao salvar dados na nuvem: ${message}`, 'error');
     setLocalStatus({ enabled: false, mode: 'local-fallback', userEmail: cleanUser.email, lastError: message });
-    return { ok: false, error: message };
+    return { ok: false, error: message });
   }
 }
 
