@@ -218,7 +218,7 @@ export async function pushToCloud(user = currentUser, { reason = 'manual' } = {}
     const message = error?.message || String(error);
     diagnostics.log(`Falha ao salvar dados na nuvem: ${message}`, 'error');
     setLocalStatus({ enabled: false, mode: 'local-fallback', userEmail: cleanUser.email, lastError: message });
-    return { ok: false, error: message });
+    return { ok: false, error: message };
   }
 }
 
