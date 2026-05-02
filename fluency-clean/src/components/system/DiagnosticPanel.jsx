@@ -14,10 +14,24 @@ function DebugRow({ label, value }) {
   return <div className="diagnostic-row"><span>{label}</span><b>{value || '—'}</b></div>;
 }
 
+function LogList({ logs }) {
+  return (
+    <div className="diagnostic-log-list priority">
+      <strong className="diagnostic-subtitle">Eventos recentes</strong>
+      {logs.length ? logs.map((log) => (
+        <div className={`diagnostic-log ${log.type}`} key={log.id}>
+          <span>{new Date(log.at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
+          <p>{log.message}</p>
+        </div>
+      )) : <p className="empty-note">Nenhum log ainda.</p>}
+    </div>
+  );
+}
+
 export function DiagnosticPanel() {
   const diagnostics = useDiagnostics();
   const [refreshKey, setRefreshKey] = useState(0);
-  const latestLogs = diagnostics.logs.slice(-6).reverse();
+  const latestLogs = diagnostics.logs.slice(-14).reverse();
   const health = useMemo(() => getSystemHealthChecklist(), [diagnostics.status, diagnostics.phase, diagnostics.logs.length, refreshKey]);
   const lessonDebug = useMemo(() => getLessonStorageDebugSnapshot(), [refreshKey, diagnostics.logs.length, diagnostics.phase]);
 
@@ -32,7 +46,7 @@ export function DiagnosticPanel() {
         <span className={diagnostics.status === 'error' ? 'pulse-dot error' : health.status === 'warn' ? 'pulse-dot warn' : 'pulse-dot'} />
         <strong>Diagnóstico limpo</strong>
       </div>
-      <div className="diagnostic-list">
+      <div className="diagnostic-list diagnostic-summary-list">
         <div className="diagnostic-row">
           <span>Status</span>
           <b>{diagnostics.status}</b>
@@ -47,7 +61,9 @@ export function DiagnosticPanel() {
         </div>
       </div>
 
-      <section className="health-check-card">
+      <LogList logs={latestLogs} />
+
+      <section className="health-check-card compact-debug-card">
         <header>
           <div>
             <Cloud size={15} />
@@ -68,7 +84,7 @@ export function DiagnosticPanel() {
         </div>
       </section>
 
-      <section className="health-check-card">
+      <section className="health-check-card compact-debug-card">
         <header>
           <div>
             <Cloud size={15} />
@@ -90,15 +106,6 @@ export function DiagnosticPanel() {
           ))}
         </div>
       </section>
-
-      <div className="diagnostic-log-list">
-        {latestLogs.length ? latestLogs.map((log) => (
-          <div className={`diagnostic-log ${log.type}`} key={log.id}>
-            <span>{new Date(log.at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
-            <p>{log.message}</p>
-          </div>
-        )) : <p className="empty-note">Nenhum log ainda.</p>}
-      </div>
     </aside>
   );
 }
