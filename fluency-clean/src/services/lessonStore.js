@@ -13,6 +13,22 @@ function makeGenerationId(date = new Date()) {
   return `gen-${stamp}-${Math.random().toString(36).slice(2, 6)}`;
 }
 
+function notifyLessonUpdated(lesson, status) {
+  try {
+    window.dispatchEvent(new CustomEvent('fluency:lesson-updated', {
+      detail: {
+        lessonId: lesson?.id || '',
+        lessonTitle: lesson?.title || '',
+        generationId: lesson?.generationMeta?.id || '',
+        status: status?.event || status?.message || 'saved',
+        savedAt: lesson?.generationMeta?.savedAt || new Date().toISOString(),
+      },
+    }));
+  } catch {
+    // Event dispatch is best-effort. Storage remains the source of truth.
+  }
+}
+
 export function getCurrentLesson() {
   const lesson = storage.get(CURRENT_LESSON_KEY, null);
   return lesson ? normalizeLesson(lesson) : null;
@@ -76,7 +92,7 @@ export function saveCurrentLesson(lesson, meta = {}) {
   ].slice(0, 30);
 
   storage.set(LESSON_HISTORY_KEY, nextHistory);
-  saveGenerationStatus({
+  const status = saveGenerationStatus({
     id: generationMeta.id,
     event: 'saved',
     message: variationMode ? 'Nova versão diferente gerada e salva.' : generationMeta.status === 'new' ? 'Nova aula gerada e salva.' : 'Aula salva.',
@@ -90,6 +106,7 @@ export function saveCurrentLesson(lesson, meta = {}) {
     createdAt: generationMeta.generatedAt,
   });
   diagnostics.log(`Aula salva: ${payload.title} · ${generationMeta.id}${variationMode ? ' · variação real' : ''}`, 'info');
+  notifyLessonUpdated(payload, status);
   return payload;
 }
 
@@ -99,8 +116,9 @@ export function completeCurrentLessonInCurriculum(lesson) {
 
 export function clearCurrentLesson() {
   storage.remove(CURRENT_LESSON_KEY);
-  saveGenerationStatus({ event: 'cleared', message: 'Aula atual removida para gerar uma nova.', source: 'manual' });
+  const status = saveGenerationStatus({ event: 'cleared', message: 'Aula atual removida para gerar uma nova.', source: 'manual' });
   diagnostics.log('Aula atual removida.', 'info');
+  notifyLessonUpdated(null, status);
 }
 
 export function getLessonHistory() {
