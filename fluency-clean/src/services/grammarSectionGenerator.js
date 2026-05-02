@@ -11,6 +11,7 @@ const SECTION_EXAMPLE = {
 
 const SECTION_MODELS = ['gemini-2.5-flash', 'gemini-2.5-flash-lite'];
 const MIN_SECTION_WORDS = 180;
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 function text(value) {
   return String(value ?? '').trim();
@@ -83,15 +84,25 @@ function buildAttempts({ keys = [], proKey = '' } = {}) {
   return attempts;
 }
 
-function buildSectionPrompt({ lesson, section, index, previousSections }) {
-  const previous = previousSections.map((item, itemIndex) => `${itemIndex + 1}. ${item.title}: ${String(item.content || '').slice(0, 900)}`).join('\n\n');
+function buildPreviousContext(previousSections, compact = false) {
+  if (!Array.isArray(previousSections) || !previousSections.length) return '';
+  const limit = compact ? 220 : 900;
+  return previousSections.map((item, itemIndex) => `${itemIndex + 1}. ${item.title}: ${String(item.content || '').slice(0, limit)}`).join('\n\n');
+}
+
+function buildSectionPrompt({ lesson, section, index, previousSections, compactExternal = false, expansionOf = null }) {
+  const previous = buildPreviousContext(previousSections, compactExternal);
+  const example = compactExternal
+    ? { title: SECTION_EXAMPLE.title, content: SECTION_EXAMPLE.content.slice(0, 720) }
+    : SECTION_EXAMPLE;
   return [
     'Você é um professor particular de inglês do Fluency escrevendo UMA seção de uma aula Grammar profunda.',
     'Retorne SOMENTE JSON válido com as chaves title e content.',
     'Não use markdown, não use listas numeradas longas, não escreva fora do JSON.',
+    expansionOf ? 'A tentativa anterior ficou curta. Reescreva a mesma seção com mais profundidade real, sem enrolação.' : '',
     '',
     'CONTRATO DA SECTION:',
-    `- content deve ter no mínimo ${MIN_SECTION_WORDS} palavras reais.`,
+    `- content deve ter no mínimo ${MIN_SECTION_WORDS} palavras reais. Mire entre 200 e 240 palavras.`,
     '- content deve ensinar com progressão didática real: ideia central, explicação, exemplos, motivo dos exemplos, erro típico e mini-checagem.',
     '- incluir pelo menos 1 contraste explícito com português brasileiro.',
     '- incluir pelo menos 1 erro típico de aluno brasileiro A1 e explicar por que está errado.',
@@ -100,13 +111,16 @@ function buildSectionPrompt({ lesson, section, index, previousSections }) {
     '- não revelar respostas dos exercícios.',
     '',
     'EXEMPLO DE QUALIDADE ESPERADA:',
-    JSON.stringify(SECTION_EXAMPLE, null, 2),
+    JSON.stringify(example, null, 2),
     '',
     'AULA:',
-    JSON.stringify({ title: lesson.title, level: lesson.level, objective: lesson.objective, focus: lesson.focus, intro: lesson.intro }, null, 2),
+    JSON.stringify({ title: lesson.title, level: lesson.level, objective: lesson.objective, focus: lesson.focus, intro: compactExternal ? String(lesson.intro || '').slice(0, 280) : lesson.intro }, null, 2),
     '',
     previous ? 'SEÇÕES ANTERIORES PARA CONTEXTO E PROGRESSÃO:' : '',
     previous,
+    '',
+    expansionOf ? 'VERSÃO CURTA ANTERIOR QUE DEVE SER EXPANDIDA:' : '',
+    expansionOf ? JSON.stringify(expansionOf, null, 2) : '',
     '',
     `SEÇÃO ${index + 1} A REESCREVER:`,
     JSON.stringify({ title: section?.title || `Parte ${index + 1}`, currentContent: section?.content || '' }, null, 2),
@@ -129,18 +143,37 @@ async function callGeminiSection({ attempt, prompt, fetcher }) {
 }
 
 async function generateOneExternalSection({ lesson, section, index, previousSections, fetcher, externalProvider }) {
-  const prompt = buildSectionPrompt({ lesson, section, index, previousSections });
+  const pause = externalProvider === 'groq' ? 5500 : 1800;
+  if (index > 0) {
+    diagnostics.log(`Aguardando ${Math.round(pause / 1000)}s antes da próxima section ${externalProvider} para reduzir limite/JSON quebrado.`, 'info');
+    await sleep(pause);
+  }
+
+  const prompt = buildSectionPrompt({ lesson, section, index, previousSections, compactExternal: true });
   diagnostics.log(`Grammar 1B section ${index + 1}: usando provedor externo puro ${externalProvider}.`, 'warn');
   const result = await generateExternalGrammarSection({ prompt, targetProvider: externalProvider, fetcher });
   if (result?.status !== 'success' || !result.section) {
     throw new Error(result?.error || `Falha ao gerar section ${index + 1} com ${externalProvider}.`);
   }
-  const normalized = normalizeGeneratedSection(result.section);
-  return {
-    ...normalized,
-    sectionProvider: result.provider,
-    sectionModel: result.model,
-  };
+
+  try {
+    const normalized = normalizeGeneratedSection(result.section);
+    return { ...normalized, sectionProvider: result.provider, sectionModel: result.model };
+  } catch (error) {
+    const words = countWords(result.section?.content);
+    if (words > 0 && words < MIN_SECTION_WORDS) {
+      diagnostics.log(`Section ${index + 1} veio curta em ${externalProvider}: ${words}/${MIN_SECTION_WORDS}. Pedindo expansão ao mesmo provedor.`, 'warn');
+      await sleep(externalProvider === 'groq' ? 6500 : 2200);
+      const expansionPrompt = buildSectionPrompt({ lesson, section, index, previousSections, compactExternal: true, expansionOf: result.section });
+      const expanded = await generateExternalGrammarSection({ prompt: expansionPrompt, targetProvider: externalProvider, fetcher });
+      if (expanded?.status === 'success' && expanded.section) {
+        const normalizedExpanded = normalizeGeneratedSection(expanded.section);
+        return { ...normalizedExpanded, sectionProvider: expanded.provider, sectionModel: expanded.model };
+      }
+      throw new Error(expanded?.error || `Section ${index + 1} continuou curta em ${externalProvider}.`);
+    }
+    throw error;
+  }
 }
 
 async function generateOneGeminiSection({ lesson, section, index, previousSections, attempts, fetcher }) {
