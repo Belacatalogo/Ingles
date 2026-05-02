@@ -13,6 +13,35 @@ function countWords(value) {
   return text ? text.split(/\s+/).filter(Boolean).length : 0;
 }
 
+function isGrammar(rawLesson) {
+  return clean(rawLesson?.type).toLowerCase() === 'grammar';
+}
+
+function buildGrammarObjective(lesson) {
+  const title = clean(lesson.title) || 'a estrutura gramatical da aula';
+  const sectionTitles = ensureArray(lesson.sections).map((section) => clean(section?.title)).filter(Boolean).slice(0, 4).join(', ');
+  const focus = clean(lesson.focus);
+  return [
+    `Dominar ${focus || title} em situações reais de comunicação, entendendo quando usar a estrutura, como formar frases afirmativas, negativas e perguntas, quais erros brasileiros evitar e como produzir respostas próprias com segurança.`,
+    sectionTitles ? `A aula desenvolve esses pontos por meio de ${sectionTitles}.` : '',
+  ].filter(Boolean).join(' ');
+}
+
+function normalizeLessonForReadiness(rawLesson) {
+  const lesson = normalizeLesson(rawLesson);
+  if (isGrammar(lesson) && countWords(lesson.objective) < 10) {
+    return {
+      ...lesson,
+      objective: buildGrammarObjective(lesson),
+      readinessAutoRepair: {
+        ...(lesson.readinessAutoRepair && typeof lesson.readinessAutoRepair === 'object' ? lesson.readinessAutoRepair : {}),
+        objective: 'grammar-objective-autofilled-v1',
+      },
+    };
+  }
+  return lesson;
+}
+
 function textOf(lesson) {
   return [
     lesson.title,
@@ -72,7 +101,8 @@ function checkGrammar(lesson, text, counts) {
     ['exemplo', 'example'],
   ];
   const missingConcepts = requirements.filter((group) => !hasAny(text, group)).length;
-  if (counts.sections < 6) missing.push('gramática precisa de seções suficientes para regra, uso, forma e revisão.');
+  const groqFiveSectionMode = /groq-5-section|groq-5-strong|groq-5-sections/i.test(clean(lesson.planContract) + ' ' + clean(lesson.grammarSectionContract));
+  if (counts.sections < (groqFiveSectionMode ? 5 : 6)) missing.push('gramática precisa de seções suficientes para regra, uso, forma e revisão.');
   if (missingConcepts >= 3) missing.push('faltam funções essenciais de gramática: uso, formas, perguntas, erros comuns ou exemplos.');
   else if (missingConcepts > 0) warnings.push('alguma função gramatical essencial está pouco explícita.');
   if (counts.exercises < 12) missing.push('poucos exercícios para fixar a regra gramatical.');
@@ -121,7 +151,7 @@ function checkByType(lesson, text, counts) {
 }
 
 export function evaluateStudyReadiness(rawLesson, { teacherReview = {}, pedagogicalReview = {} } = {}) {
-  const lesson = normalizeLesson(rawLesson);
+  const lesson = normalizeLessonForReadiness(rawLesson);
   const counts = baseCounts(lesson);
   const text = textOf(lesson);
   const { missing, warnings } = checkByType(lesson, text, counts);
@@ -158,16 +188,18 @@ export function evaluateStudyReadiness(rawLesson, { teacherReview = {}, pedagogi
     missing,
     warnings,
     criticalIssues,
+    repairedLesson: lesson.readinessAutoRepair ? lesson : null,
     version: 'study-readiness-v1',
   };
 }
 
 export function attachStudyReadiness(rawLesson, readiness) {
+  const repairedLesson = readiness?.repairedLesson && typeof readiness.repairedLesson === 'object' ? readiness.repairedLesson : rawLesson;
   return {
-    ...rawLesson,
+    ...repairedLesson,
     studyReadiness: readiness,
     quality: {
-      ...(rawLesson?.quality && typeof rawLesson.quality === 'object' ? rawLesson.quality : {}),
+      ...(repairedLesson?.quality && typeof repairedLesson.quality === 'object' ? repairedLesson.quality : {}),
       studyReadiness: readiness,
       studyReady: readiness.status === 'study-ready',
     },
