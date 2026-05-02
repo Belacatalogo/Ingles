@@ -27,7 +27,50 @@ Motivo:
 - Groq é promissor, mas instável em limite/cota e ainda precisa teste final real com 7 sections.
 - Cerebras passou tecnicamente em alguns testes, mas teve conteúdo mais repetitivo, genérico e com erros pedagógicos.
 
-## ESTADO ATUAL — BLOCO RENDER GRAMMAR V3
+## ESTADO ATUAL — HOTFIX GRAMMAR OVERFLOW V4
+
+### `HOTFIX-GRAMMAR-EXAMPLE-OVERFLOW-V4-LAB` — IMPLEMENTADO
+
+Objetivo executado:
+- Corrigir o caso visto no iPhone em que o card `I am happy` engolia explicações posteriores, como `Já 'She is a doctor'...` e `O verbo 'to have'...`.
+- Manter o card somente com o exemplo principal e sua tradução/explicação curta.
+- Empurrar continuação pedagógica posterior para parágrafo normal abaixo dos cards.
+
+Arquivos alterados:
+- `fluency-clean/src/lessons/GrammarLesson.jsx`
+- `REWRITE_HANDOFF.md`
+
+O que foi feito:
+- Adicionado `exampleOverflowPattern` para detectar continuação pedagógica dentro da explicação de um card.
+- Adicionada função `splitExampleOverflow`.
+- `parseExampleCard` agora retorna `overflow` separado quando encontra conectores como `Já`, `Outro lado`, `No entanto` antes de nova explicação/exemplo.
+- `collectProfessorExamples` preserva esse overflow como parágrafo normal em `afterExamples`.
+- `splitByExampleHeader` também remove sobra visual `Por` antes do cabeçalho de exemplos.
+- Adicionada classe `grammar-renderer-overflow-v4` para identificar o hotfix.
+
+Escopo preservado:
+- Não mexeu em `main`.
+- Não mexeu em `rewrite-fluency-clean`.
+- Não mexeu em `bundle.js`.
+- Não mexeu no backend Azure privado.
+- Não mexeu no `deepGrammarPipeline.js`.
+- Não mexeu no professor revisor.
+- Não mexeu na política de chaves/modelos.
+- Não alterou geração, prompts, fallback ou motor.
+
+Commit:
+- `5ed3022a2bca80807948a274145b7785a99c3e15` — ajusta overflow dos exemplos Grammar.
+
+Próximo teste recomendado no iPhone:
+1. Aguardar o deploy da branch `rewrite-fluency-clean-lab`.
+2. Abrir a mesma aula Grammar da imagem.
+3. Conferir se o texto acima dos exemplos não termina com `Por` solto.
+4. Conferir se o card `I am happy` mostra só `I am happy` + `(Eu estou feliz) descreve um estado.`.
+5. Conferir se `Já 'She is a doctor'...` aparece fora do card, como parágrafo normal.
+6. Conferir se `O verbo 'to have'...` também aparece fora do card.
+7. Conferir se nenhum conteúdo sumiu.
+
+## ESTADO ANTERIOR — BLOCO RENDER GRAMMAR V3
 
 ### `BLOCO-GRAMMAR-RENDERER-V3-LAB` — IMPLEMENTADO
 
@@ -54,29 +97,6 @@ O que foi feito:
 - `splitParagraphs` ficou menos agressivo: não quebra toda frase comum; só separa por quebras fortes e conectores pedagógicos.
 - `splitNumberedList` ficou mais seguro para listas numeradas reais.
 - Adicionada classe `grammar-renderer-system-v3` para identificar o novo render no DOM/CSS sem mexer em bundle.
-
-Escopo preservado:
-- Não mexeu em `main`.
-- Não mexeu em `rewrite-fluency-clean`.
-- Não mexeu em `bundle.js`.
-- Não mexeu no backend Azure privado.
-- Não mexeu no `deepGrammarPipeline.js`.
-- Não mexeu no professor revisor.
-- Não mexeu na política de chaves/modelos.
-- Não alterou geração, prompts, fallback ou motor.
-
-Observação operacional:
-- O commit de código foi `0538d2a9f80214961dbfe7303e342a6b4e888c0e`.
-- Por limitação do fluxo via ferramenta, o handoff ficou em commit posterior, mas o escopo prático do bloco é o renderer V3 + handoff atualizado.
-
-Próximo teste recomendado no iPhone:
-1. Aguardar o deploy da branch `rewrite-fluency-clean-lab`.
-2. Abrir a mesma aula Grammar que estava bugada.
-3. Conferir se `I am` sozinho não aparece mais como card grande.
-4. Conferir se explicações como `Por exemplo...` e `Outro lado...` aparecem como parágrafos normais.
-5. Conferir se exemplos completos, como `I am happy`, continuam podendo aparecer como card com tradução.
-6. Conferir se nenhum conteúdo foi cortado.
-7. Conferir se a navbar não impede o uso dos botões de Salvar/Concluir ao final da aula.
 
 ## ESTADO ANTERIOR — HOTFIX GRAMMAR STRICT CLASSIFIER
 
@@ -175,4 +195,4 @@ Commits:
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. O bloco `BLOCO-GRAMMAR-RENDERER-V3-LAB` foi implementado: o sistema de renderização da aula Grammar foi reestruturado para priorizar parágrafos, listas numeradas reais e cards apenas em exemplos explícitos. Fragmentos como `I am` isolado não devem mais virar card. Não mexer em `main`, `rewrite-fluency-clean`, `bundle.js`, backend Azure privado, `deepGrammarPipeline.js`, revisor ou política de chaves. Próximo passo: testar no iPhone se a aula bugada renderiza sem cards quebrados e sem cortar conteúdo."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. O hotfix `HOTFIX-GRAMMAR-EXAMPLE-OVERFLOW-V4-LAB` foi implementado: o card `I am happy` não deve mais engolir explicações posteriores como `Já 'She is a doctor'...` ou `O verbo 'to have'...`; essas partes devem ir para parágrafo normal abaixo. Não mexer em `main`, `rewrite-fluency-clean`, `bundle.js`, backend Azure privado, `deepGrammarPipeline.js`, revisor ou política de chaves. Próximo passo: testar no iPhone a mesma aula e confirmar se o card ficou curto e o conteúdo posterior não sumiu."
