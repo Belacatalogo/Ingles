@@ -44,6 +44,12 @@ function normalizeOption(value) {
   return clean(value).toLowerCase().replace(/[.,!?;:]/g, '').replace(/\s+/g, ' ');
 }
 
+function includesNormalized(text, part) {
+  const normalizedText = normalizeOption(text);
+  const normalizedPart = normalizeOption(part);
+  return Boolean(normalizedText && normalizedPart && normalizedText.includes(normalizedPart));
+}
+
 function makeOptions(correct, distractors, seedText, limit = 4) {
   const options = uniqueBy([correct, ...distractors].filter(Boolean), normalizeOption).slice(0, limit);
   return stableShuffle(options, seedText).slice(0, limit);
@@ -174,6 +180,33 @@ function activityBuild(card, index) {
   };
 }
 
+function activityLooksSafe(activity) {
+  if (!activity) return false;
+  if (activity.type === 'intro' || activity.type === 'build') return true;
+  const options = Array.isArray(activity.options) ? activity.options : [];
+  if (options.length < 3) return false;
+  const uniqueOptions = uniqueBy(options, normalizeOption);
+  if (uniqueOptions.length !== options.length) return false;
+  if (!options.some((option) => normalizeOption(option) === normalizeOption(activity.answer))) return false;
+
+  if (activity.type === 'choice') {
+    const promptWithoutMaskedLine = String(activity.prompt || '').split('\n')[0] || '';
+    const answerIsLeaked = includesNormalized(promptWithoutMaskedLine, activity.answer);
+    if (answerIsLeaked) return false;
+  }
+
+  if (activity.id?.startsWith('complete-')) {
+    const maskedPart = String(activity.prompt || '').split('\n').slice(1).join(' ');
+    if (includesNormalized(maskedPart, activity.answer)) return false;
+  }
+
+  if (activity.id?.startsWith('listen-')) {
+    return Boolean(activity.prompt && activity.answer && normalizeOption(activity.prompt) === normalizeOption(activity.answer));
+  }
+
+  return true;
+}
+
 function targetQuestionCount(level, selectedCount) {
   if (!selectedCount) return 0;
   if (level <= 1) return Math.min(16, Math.max(15, selectedCount * 4));
@@ -182,7 +215,8 @@ function targetQuestionCount(level, selectedCount) {
 }
 
 function interleaveActivities(groups, seedText, maxCount) {
-  const shuffledGroups = groups.map((group, index) => stableShuffle(group, `${seedText}-group-${index}`));
+  const safeGroups = groups.map((group) => group.filter(activityLooksSafe));
+  const shuffledGroups = safeGroups.map((group, index) => stableShuffle(group, `${seedText}-group-${index}`));
   const result = [];
   let cursor = 0;
   while (result.length < maxCount && shuffledGroups.some((group) => group.length)) {
@@ -195,16 +229,18 @@ function interleaveActivities(groups, seedText, maxCount) {
 }
 
 function repeatToTarget(groups, seed, targetCount) {
-  const base = interleaveActivities(groups, seed, targetCount);
+  const safeGroups = groups.map((group) => group.filter(activityLooksSafe));
+  const base = interleaveActivities(safeGroups, seed, targetCount);
   if (base.length >= targetCount) return base;
-  const flattened = groups.flat();
+  const flattened = safeGroups.flat();
   const repeated = [...base];
   let index = 0;
   while (repeated.length < targetCount && flattened.length) {
-    repeated.push({ ...flattened[index % flattened.length], id: `${flattened[index % flattened.length].id}-review-${index}` });
+    const source = flattened[index % flattened.length];
+    repeated.push({ ...source, id: `${source.id}-review-${index}` });
     index += 1;
   }
-  return stableShuffle(repeated, `${seed}-review-fill`).slice(0, targetCount);
+  return stableShuffle(repeated.filter(activityLooksSafe), `${seed}-review-fill`).slice(0, targetCount);
 }
 
 export function buildVocabularyPracticeActivities(rawCards = [], { level = 1 } = {}) {
