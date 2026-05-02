@@ -1,6 +1,7 @@
 import { diagnostics } from './diagnostics.js';
 import { generateLessonDraft } from './geminiLessons.js';
 import { generateExternalLessonDraft, shouldForceExternalLessonProviderOnce } from './externalLessonProviders.js';
+import { enrichGrammarSectionsSequentially } from './grammarSectionGenerator.js';
 import { summarizeModelPolicyForDiagnostics } from './modelPolicy.js';
 import { buildPedagogicalPlan, buildPlanPromptText, summarizePlanForDiagnostics } from './lessonPlan.js';
 import { inferLessonTypeFromText, normalizeLessonType } from './lessonTypes.js';
@@ -15,13 +16,30 @@ function resolvePlanType({ prompt = '', forcedType = '' } = {}) {
   return inferLessonTypeFromText(prompt);
 }
 
-function attachPlanToResult(result, plan, planSeed) {
+async function attachPlanToResult(result, plan, planSeed, options = {}) {
   if (result?.status !== 'success' || !result.lesson) return result;
-  const previousContract = result.lesson.planContract || '';
+  let lesson = result.lesson;
+
+  if (String(lesson.type || '').toLowerCase() === 'grammar') {
+    const sectionResult = await enrichGrammarSectionsSequentially({
+      lesson,
+      keys: options.keys,
+      proKey: options.proKey,
+      fetcher: options.fetcher,
+    });
+    lesson = sectionResult.lesson;
+    if (sectionResult.applied) {
+      diagnostics.log('Cirurgia 2 Grammar concluída: sections profundas geradas sequencialmente antes do revisor.', 'success');
+    } else {
+      diagnostics.log(`Cirurgia 2 Grammar não precisou rodar: ${sectionResult.reason}.`, 'info');
+    }
+  }
+
+  const previousContract = lesson.planContract || '';
   return {
     ...result,
     lesson: {
-      ...result.lesson,
+      ...lesson,
       lessonPlan: plan,
       planSeed,
       planContract: previousContract ? `${plan.contract}+${previousContract}` : plan.contract,
@@ -108,7 +126,7 @@ export async function generatePlannedLessonDraft(options = {}) {
       reason: 'modo teste forçado pelo usuário',
     });
     if (forcedExternalResult?.status === 'success' && forcedExternalResult.lesson) {
-      return attachPlanToResult(forcedExternalResult, plan, planSeed);
+      return attachPlanToResult(forcedExternalResult, plan, planSeed, options);
     }
     diagnostics.log('Fallback externo forçado falhou. Voltando ao Gemini para não travar a geração.', 'warn', forcedExternalResult);
   }
@@ -122,7 +140,7 @@ export async function generatePlannedLessonDraft(options = {}) {
   });
 
   if (result?.status === 'success' && result.lesson) {
-    return attachPlanToResult(result, plan, planSeed);
+    return attachPlanToResult(result, plan, planSeed, options);
   }
 
   diagnostics.log('Gemini não concluiu a aula. Tentando fallback externo Groq/Cerebras antes de devolver erro.', 'warn', result);
@@ -137,7 +155,7 @@ export async function generatePlannedLessonDraft(options = {}) {
   });
 
   if (externalResult?.status === 'success' && externalResult.lesson) {
-    return attachPlanToResult(externalResult, plan, planSeed);
+    return attachPlanToResult(externalResult, plan, planSeed, options);
   }
 
   return result;
