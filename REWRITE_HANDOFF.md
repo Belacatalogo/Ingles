@@ -27,7 +27,52 @@ Motivo:
 - Groq é promissor, mas instável em limite/cota e ainda precisa teste final real com 7 sections.
 - Cerebras passou tecnicamente em alguns testes, mas teve conteúdo mais repetitivo, genérico e com erros pedagógicos.
 
-## ESTADO ATUAL — HOTFIX GRAMMAR OVERFLOW V4
+## ESTADO ATUAL — HOTFIX GRAMMAR CARD SPLIT V6
+
+### `HOTFIX-GRAMMAR-CARD-SPLIT-V6-LAB` — IMPLEMENTADO
+
+Objetivo executado:
+- Corrigir cards que engoliam um segundo exemplo conectado por `e` ou `ou`.
+- Exemplo do problema: `I have a blue backpack (Eu tenho uma mochila azul) e 'She has a small dog'...`.
+- Exemplo do problema: `I have a new pet (Eu tenho um animal de estimação novo) ou 'We have a big house'...`.
+- Manter o primeiro card limpo e jogar o exemplo secundário/continuação para parágrafo normal abaixo.
+- Evitar corte ruim de explicações curtas por palavras genéricas como `A forma`.
+
+Arquivos alterados:
+- `fluency-clean/src/lessons/GrammarLesson.jsx`
+- `REWRITE_HANDOFF.md`
+
+O que foi feito:
+- Adicionado `secondaryExamplePattern`.
+- Adicionada função `splitSecondaryExampleOverflow`.
+- `extractTranslation` agora separa tradução principal de um segundo exemplo quando encontra `e/ou + frase em inglês`.
+- Segundo exemplo sai da tradução do card e vira explicação/overflow normal preservado abaixo.
+- `exampleOverflowPattern` foi refinado para não cortar explicações curtas em `A forma...`.
+- Adicionada classe `grammar-renderer-card-split-v6` para identificar o hotfix.
+
+Escopo preservado:
+- Não mexeu em `main`.
+- Não mexeu em `rewrite-fluency-clean`.
+- Não mexeu em `bundle.js`.
+- Não mexeu no backend Azure privado.
+- Não mexeu no `deepGrammarPipeline.js`.
+- Não mexeu no professor revisor.
+- Não mexeu na política de chaves/modelos.
+- Não alterou geração, prompts, fallback ou motor.
+
+Commit:
+- `aa92b93a65adeb08b9192f8f32f750c7855e69aa` — divide exemplos secundários nos cards Grammar.
+
+Próximo teste recomendado no iPhone:
+1. Aguardar o deploy da branch `rewrite-fluency-clean-lab`.
+2. Abrir a mesma aula Grammar.
+3. Conferir se `I have a blue backpack` não mostra mais `She has a small dog` dentro do card.
+4. Conferir se `I have a new pet` não mostra mais `We have a big house` dentro do card.
+5. Conferir se o card `I am a student` não corta mais `mas em inglês a forma muda com o sujeito` no meio.
+6. Conferir se exemplos como `Is she from Brazil?` continuam bons.
+7. Conferir se nenhum conteúdo sumiu.
+
+## ESTADO ANTERIOR — HOTFIX GRAMMAR OVERFLOW V4
 
 ### `HOTFIX-GRAMMAR-EXAMPLE-OVERFLOW-V4-LAB` — IMPLEMENTADO
 
@@ -48,27 +93,8 @@ O que foi feito:
 - `splitByExampleHeader` também remove sobra visual `Por` antes do cabeçalho de exemplos.
 - Adicionada classe `grammar-renderer-overflow-v4` para identificar o hotfix.
 
-Escopo preservado:
-- Não mexeu em `main`.
-- Não mexeu em `rewrite-fluency-clean`.
-- Não mexeu em `bundle.js`.
-- Não mexeu no backend Azure privado.
-- Não mexeu no `deepGrammarPipeline.js`.
-- Não mexeu no professor revisor.
-- Não mexeu na política de chaves/modelos.
-- Não alterou geração, prompts, fallback ou motor.
-
 Commit:
 - `5ed3022a2bca80807948a274145b7785a99c3e15` — ajusta overflow dos exemplos Grammar.
-
-Próximo teste recomendado no iPhone:
-1. Aguardar o deploy da branch `rewrite-fluency-clean-lab`.
-2. Abrir a mesma aula Grammar da imagem.
-3. Conferir se o texto acima dos exemplos não termina com `Por` solto.
-4. Conferir se o card `I am happy` mostra só `I am happy` + `(Eu estou feliz) descreve um estado.`.
-5. Conferir se `Já 'She is a doctor'...` aparece fora do card, como parágrafo normal.
-6. Conferir se `O verbo 'to have'...` também aparece fora do card.
-7. Conferir se nenhum conteúdo sumiu.
 
 ## ESTADO ANTERIOR — BLOCO RENDER GRAMMAR V3
 
@@ -111,17 +137,6 @@ Objetivo executado:
 Arquivos alterados:
 - `fluency-clean/src/lessons/GrammarLesson.jsx`
 - `REWRITE_HANDOFF.md`
-
-O que foi feito:
-- Parser visual de `Exemplos do professor` deixou de transformar tudo após o cabeçalho em card.
-- Agora um item só vira card se tiver frase em inglês detectada com classificador mais estrito.
-- Frases mistas em português + termos ingleses, como `Correto, pois I combina com am.`, deixam de virar exemplo principal.
-- Parágrafos longos explicativos, como `Cada um desses exemplos demonstra...`, voltam a ser texto normal.
-- Frases reais como `I am a new student here.`, `She is very kind to everyone.`, `The book is on the table.`, `Is she from Brazil?` e `Are they here?` continuam podendo virar cards.
-- Suporte melhor para exemplo após pista curta como `para fixar:`.
-- Suporte melhor para frase em inglês entre aspas dentro de explicação.
-- Tradução em português só é destacada quando parece tradução, não regra explicativa.
-- Conteúdo posterior aos exemplos é preservado como parágrafo normal.
 
 ## ESTADO ANTERIOR — HOTFIX VISUAL GRAMMAR
 
@@ -195,4 +210,4 @@ Commits:
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. O hotfix `HOTFIX-GRAMMAR-EXAMPLE-OVERFLOW-V4-LAB` foi implementado: o card `I am happy` não deve mais engolir explicações posteriores como `Já 'She is a doctor'...` ou `O verbo 'to have'...`; essas partes devem ir para parágrafo normal abaixo. Não mexer em `main`, `rewrite-fluency-clean`, `bundle.js`, backend Azure privado, `deepGrammarPipeline.js`, revisor ou política de chaves. Próximo passo: testar no iPhone a mesma aula e confirmar se o card ficou curto e o conteúdo posterior não sumiu."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. O hotfix `HOTFIX-GRAMMAR-CARD-SPLIT-V6-LAB` foi implementado: cards não devem mais engolir segundos exemplos conectados por `e` ou `ou`, como `She has a small dog` e `We have a big house`; esses trechos devem sair do card e virar texto normal abaixo. Não mexer em `main`, `rewrite-fluency-clean`, `bundle.js`, backend Azure privado, `deepGrammarPipeline.js`, revisor ou política de chaves. Próximo passo: testar no iPhone a mesma aula e confirmar se os cards ficaram limpos sem cortar conteúdo."
