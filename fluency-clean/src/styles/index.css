@@ -173,20 +173,26 @@ textarea:focus { border-color: rgba(91, 156, 246, 0.72); box-shadow: 0 0 0 4px r
 .progress-line span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--blue), var(--violet)); }
 .empty-state.compact { display: flex; align-items: center; gap: 12px; }
 .empty-state p { margin: 0; }
-.diagnostic-panel { position: fixed; right: 12px; top: 12px; z-index: 30; width: min(300px, calc(100vw - 24px)); max-height: calc(100vh - 24px); overflow: auto; padding: 12px; border: 1px solid rgba(52, 211, 153, 0.22); border-radius: 18px; background: rgba(6, 13, 31, 0.82); backdrop-filter: blur(16px); box-shadow: 0 18px 60px rgba(0, 0, 0, 0.32); }
-.diagnostic-header { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+.diagnostic-panel { position: fixed; right: 12px; top: 12px; z-index: 30; width: min(340px, calc(100vw - 24px)); max-height: calc(100vh - 24px); overflow: auto; overscroll-behavior: contain; padding: 12px; border: 1px solid rgba(52, 211, 153, 0.22); border-radius: 18px; background: rgba(6, 13, 31, 0.88); backdrop-filter: blur(16px); box-shadow: 0 18px 60px rgba(0, 0, 0, 0.32); }
+.diagnostic-header { position: sticky; top: -12px; z-index: 2; display: flex; align-items: center; gap: 8px; margin: -12px -12px 0; padding: 12px; font-size: 13px; background: rgba(6, 13, 31, 0.96); border-bottom: 1px solid rgba(148,163,184,.12); }
 .pulse-dot { width: 9px; height: 9px; border-radius: 99px; background: var(--green); box-shadow: 0 0 18px var(--green); }
 .pulse-dot.error { background: var(--danger); box-shadow: 0 0 18px var(--danger); }
+.pulse-dot.warn { background: #fbbf24; box-shadow: 0 0 18px #fbbf24; }
 .diagnostic-list { display: grid; gap: 8px; margin-top: 10px; }
+.diagnostic-summary-list { padding-bottom: 10px; border-bottom: 1px solid rgba(148,163,184,.12); }
 .diagnostic-row { display: flex; justify-content: space-between; gap: 10px; font-size: 11px; }
 .diagnostic-row span { color: var(--muted); }
 .diagnostic-row b { color: #bbf7d0; text-align: right; word-break: break-word; }
+.diagnostic-subtitle { display: block; color: #dbeafe; font-size: 12px; margin-bottom: 8px; }
 .diagnostic-log-list { display: grid; gap: 8px; margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(148,163,184,.12); }
+.diagnostic-log-list.priority { max-height: 48vh; overflow: auto; padding-right: 2px; border-top: 0; }
 .diagnostic-log { padding: 8px; border-radius: 12px; background: rgba(2,6,23,.30); border: 1px solid rgba(148,163,184,.10); }
 .diagnostic-log span { color: #93c5fd; font-size: 10px; font-weight: 800; }
-.diagnostic-log p { margin: 3px 0 0; font-size: 11px; line-height: 1.35; }
+.diagnostic-log p { margin: 3px 0 0; font-size: 11px; line-height: 1.35; color: #dbeafe; }
 .diagnostic-log.error { border-color: rgba(248,113,113,.28); background: rgba(248,113,113,.08); }
+.diagnostic-log.warn { border-color: rgba(251,191,36,.28); background: rgba(251,191,36,.08); }
 .diagnostic-log.info { border-color: rgba(91,156,246,.18); }
+.compact-debug-card { margin-top: 12px; }
 .bottom-nav { position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%); z-index: 40; display: flex; gap: 6px; width: min(720px, calc(100vw - 20px)); padding: 8px; border: 1px solid rgba(148, 163, 184, 0.18); border-radius: 24px; background: rgba(6, 13, 31, 0.82); backdrop-filter: blur(18px); box-shadow: 0 22px 80px rgba(0, 0, 0, 0.38); }
 .nav-item { flex: 1; min-width: 0; display: grid; place-items: center; gap: 4px; padding: 10px 6px; border: 0; border-radius: 17px; color: #94a3b8; background: transparent; }
 .nav-item span { font-size: 10px; font-weight: 750; }
@@ -197,7 +203,8 @@ textarea:focus { border-color: rgba(91, 156, 246, 0.72); box-shadow: 0 0 0 4px r
   .hero-orb { width: 52px; height: 52px; border-radius: 18px; }
   .status-strip, .stats-grid, .lesson-intro-grid, .reading-study-steps, .reading-grid, .vocabulary-grid, .answer-actions, .lesson-key-status, .key-form > div, .audio-actions, .generation-status-box { grid-template-columns: 1fr; }
   .completion-row { align-items: flex-start; }
-  .diagnostic-panel { position: static; width: 100%; margin: 14px 0; max-height: none; }
+  .diagnostic-panel { position: fixed; right: 10px; left: 10px; top: 10px; bottom: 92px; width: auto; max-height: none; margin: 0; overflow: auto; }
+  .diagnostic-log-list.priority { max-height: 45vh; }
   .bottom-nav { overflow-x: auto; justify-content: flex-start; }
   .nav-item { min-width: 72px; }
   .access-status > div { grid-template-columns: 24px 1fr; }
