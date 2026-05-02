@@ -13,6 +13,7 @@ import { needsAntiFalseDomainRepair, repairLessonAgainstFalseDomain } from '../.
 import { repairListeningCoherence, validateListeningCoherence } from '../../services/listeningCoherence.js';
 import { attachStudyReadiness, evaluateStudyReadiness } from '../../services/studyReadiness.js';
 import { buildSaturdayReviewLesson, shouldPrioritizeSaturdayReview } from '../../services/masteryStore.js';
+import { auditDeepGrammarLesson, repairDeepGrammarLesson } from '../../services/deepGrammarPipeline.js';
 
 const DEEP_GRAMMAR_CONTRACT = [
   'CONTRATO ESPECIAL PARA GRAMMAR PROFUNDA — OBRIGATÓRIO:',
@@ -24,7 +25,10 @@ const DEEP_GRAMMAR_CONTRACT = [
   'Não despeje regra sem contexto. Explique primeiro para que serve, depois como formar, depois como usar.',
   'Cada seção de grammar deve conter: explicação em português, exemplos em inglês A1, tradução natural quando ajudar, e um alerta de erro comum quando fizer sentido.',
   'Inclua muitas frases-modelo naturais, mas não revele respostas dos exercícios.',
-  'A estrutura ideal da aula Grammar é: abertura do professor, mapa da aula, conceito central, regra em camadas, forma afirmativa, negativa, interrogativa, exemplos guiados, certo vs errado, uso real, erros comuns, checagem mental, produção própria e resumo final.',
+  'A estrutura ideal da aula Grammar é: abertura do professor, mapa da aula, conceito central, analogia do dia a dia, regra em camadas, forma afirmativa, negativa, interrogativa, exemplos guiados inéditos, certo vs errado, microdiálogo, uso real, erros comuns, checagem mental, produção própria e resumo final.',
+  'Os exemplos do professor devem ser 100% inéditos e não podem repetir o mesmo texto da explicação teórica.',
+  'Inclua ao menos um microdiálogo curto mostrando a regra em contexto real.',
+  'Inclua ao menos uma seção “Certo vs errado” com erro, correção e motivo.',
   'O aluno deve sentir que estudou de verdade. A aula deve ter profundidade suficiente para 30 a 45 minutos quando somada à prática.',
   'Use exemplos conectados à vida real: escola, casa, rotina, família, estudos, trabalho simples e apresentações.',
   'Para A1, mantenha inglês simples, mas a explicação em português pode ser profunda.',
@@ -46,13 +50,15 @@ function shouldUseResilientFallback(result) {
   return /JSON Parse error|Unrecognized token|Expected ']"|Expected ']'|JSON resiliente|\\"type\\"|Preview: \{\\"/i.test(text);
 }
 
-function buildPromptForLesson(nextLesson, saturdayReview) {
-  const basePrompt = nextLesson.promptOverride || buildCurriculumPrompt(nextLesson);
+function isGrammarTarget(nextLesson) {
   const type = String(nextLesson?.type || '').toLowerCase();
   const title = String(nextLesson?.title || '');
-  const isGrammar = type === 'grammar' || /grammar|gram[aá]tica|present simple|verb|verbo|tense|tempo verbal/i.test(title);
+  return type === 'grammar' || /grammar|gram[aá]tica|present simple|verb|verbo|tense|tempo verbal/i.test(title);
+}
 
-  if (!isGrammar || saturdayReview) return basePrompt;
+function buildPromptForLesson(nextLesson, saturdayReview) {
+  const basePrompt = nextLesson.promptOverride || buildCurriculumPrompt(nextLesson);
+  if (!isGrammarTarget(nextLesson) || saturdayReview) return basePrompt;
 
   return [
     basePrompt,
@@ -61,7 +67,7 @@ function buildPromptForLesson(nextLesson, saturdayReview) {
     '',
     'FORMATO OBRIGATÓRIO PARA AS SEÇÕES:',
     'Cada section.content deve ser texto didático profundo. Não use markdown. Não use listas com números coladas em uma única frase.',
-    'Prefira blocos como: explicação, exemplos, contraste certo/errado e uso real, tudo em linguagem natural.',
+    'Prefira blocos com função pedagógica isolada: teoria, analogia, exemplos inéditos, certo vs errado, microdiálogo, prática guiada e resumo.',
     'A aula pode ser longa. Não reduza por ser A1. Simplifique o inglês, mas aprofunde a explicação em português.',
   ].join('\n');
 }
@@ -113,8 +119,9 @@ export function LessonGeneratorPanel({ onGenerated }) {
       if (!saturdayReview) setActiveCurriculumLesson(nextLesson.id);
       const prompt = buildPromptForLesson(nextLesson, saturdayReview);
       const forcedType = nextLesson.type === 'review' ? '' : nextLesson.type;
+      const grammarTarget = isGrammarTarget(nextLesson) && !saturdayReview;
 
-      if (String(nextLesson?.type || '').toLowerCase() === 'grammar') {
+      if (grammarTarget) {
         diagnostics.log('Contrato de Grammar profunda ativado: aula longa, guiada e não enciclopédica.', 'info');
       }
 
@@ -159,14 +166,30 @@ export function LessonGeneratorPanel({ onGenerated }) {
       let autoRepaired = false;
       let antiFalseDomainRepaired = false;
       let listeningCoherenceRepaired = false;
+      let deepGrammarRepaired = false;
+
+      if (grammarTarget) {
+        diagnostics.setPhase('pipeline didático de grammar', 'generating');
+        const grammarAuditBefore = auditDeepGrammarLesson(lessonForSave);
+        diagnostics.log(`Auditoria Grammar profunda inicial: ${grammarAuditBefore.score}/100.`, grammarAuditBefore.approved ? 'success' : 'warn', grammarAuditBefore);
+        if (!grammarAuditBefore.approved) {
+          setMessage('Grammar veio vaga ou repetitiva. Aplicando pipeline didático profundo antes do professor revisor...');
+          lessonForSave = repairDeepGrammarLesson(lessonForSave);
+          deepGrammarRepaired = true;
+          autoRepaired = true;
+          pedagogicalReview = validateLessonForQuality(lessonForSave, { expectedLevel: nextLesson.level, expectedType: lessonForSave.type });
+          const grammarAuditAfter = auditDeepGrammarLesson(lessonForSave);
+          diagnostics.log(`Pipeline Grammar profundo aplicado: ${grammarAuditAfter.score}/100.`, grammarAuditAfter.approved ? 'success' : 'warn', grammarAuditAfter);
+        }
+      }
 
       if (!pedagogicalReview.approved) {
         diagnostics.setPhase('corrigindo aula automaticamente', 'generating');
         diagnostics.log(`Aula reprovada (${pedagogicalReview.overallScore}/100). Tentando correção automática local antes de descartar.`, 'warn', pedagogicalReview);
         setMessage(`Aula ficou fraca (${pedagogicalReview.overallScore}/100). Tentando correção automática antes de salvar...`);
 
-        const repairedLesson = repairLessonForQuality(lessonToValidate, { expectedLevel: nextLesson.level, expectedType: lessonToValidate.type, expectedTitle: nextLesson.title, review: pedagogicalReview });
-        const repairedReview = validateLessonForQuality(repairedLesson, { expectedLevel: nextLesson.level, expectedType: lessonToValidate.type });
+        const repairedLesson = repairLessonForQuality(lessonForSave, { expectedLevel: nextLesson.level, expectedType: lessonForSave.type, expectedTitle: nextLesson.title, review: pedagogicalReview });
+        const repairedReview = validateLessonForQuality(repairedLesson, { expectedLevel: nextLesson.level, expectedType: lessonForSave.type });
 
         if (repairedReview.approved) {
           autoRepaired = true;
@@ -294,15 +317,17 @@ export function LessonGeneratorPanel({ onGenerated }) {
       }
 
       const reviewedLesson = attachStudyReadiness(attachTeacherReview(attachPedagogicalReview(lessonForSave, pedagogicalReview), teacherReview), studyReadiness);
+      const grammarContract = lessonForSave.type === 'grammar' ? `+deep-grammar-contract-v1${deepGrammarRepaired ? '+deep-grammar-pipeline-v1' : ''}` : '';
 
       const saved = saveCurrentLesson(reviewedLesson, {
         source: forceNew ? 'generated-replacement-variation' : result.lesson.planContract === 'resilient-json-v1' ? 'generated-resilient-json' : 'generated',
         status: 'new',
-        contractVersion: result.lesson.planContract ? `lesson-contract-v1+${result.lesson.planContract}+teacher-reviewer-v1+study-readiness-v1${listeningCoherenceRepaired ? '+listening-coherence-v1' : ''}${antiFalseDomainRepaired ? '+anti-false-domain-v1' : ''}${lessonForSave.type === 'grammar' ? '+deep-grammar-contract-v1' : ''}` : `lesson-contract-v1+teacher-reviewer-v1+study-readiness-v1${listeningCoherenceRepaired ? '+listening-coherence-v1' : ''}${antiFalseDomainRepaired ? '+anti-false-domain-v1' : ''}${lessonForSave.type === 'grammar' ? '+deep-grammar-contract-v1' : ''}`,
+        contractVersion: result.lesson.planContract ? `lesson-contract-v1+${result.lesson.planContract}+teacher-reviewer-v1+study-readiness-v1${listeningCoherenceRepaired ? '+listening-coherence-v1' : ''}${antiFalseDomainRepaired ? '+anti-false-domain-v1' : ''}${grammarContract}` : `lesson-contract-v1+teacher-reviewer-v1+study-readiness-v1${listeningCoherenceRepaired ? '+listening-coherence-v1' : ''}${antiFalseDomainRepaired ? '+anti-false-domain-v1' : ''}${grammarContract}`,
         pedagogicalScore: teacherReview.finalScore,
         autoRepaired,
         antiFalseDomainRepaired,
         listeningCoherenceRepaired,
+        deepGrammarRepaired,
         studyReady: studyReadiness.status !== 'do-not-study',
         studyReadiness: studyReadiness.status,
         variationMode: forceNew,
@@ -310,7 +335,7 @@ export function LessonGeneratorPanel({ onGenerated }) {
         planSeed: result.lesson.planSeed,
       });
       diagnostics.log(`${saturdayReview ? 'Revisão adaptativa planejada' : forceNew ? 'Nova versão planejada da aula do cronograma' : 'Aula planejada do cronograma'} pronta para abrir: ${saved.title}`, 'info');
-      const repairLabel = listeningCoherenceRepaired ? ' com coerência de Listening reparada,' : antiFalseDomainRepaired ? ' com produção ativa anti falso domínio,' : autoRepaired ? ' corrigida automaticamente,' : '';
+      const repairLabel = deepGrammarRepaired ? ' com pipeline didático Grammar profundo,' : listeningCoherenceRepaired ? ' com coerência de Listening reparada,' : antiFalseDomainRepaired ? ' com produção ativa anti falso domínio,' : autoRepaired ? ' corrigida automaticamente,' : '';
       setMessage(saturdayReview ? `Nova revisão planejada${repairLabel} ${studyReadiness.label.toLowerCase()} (${teacherReview.finalScore}/100), salva e aberta na aba Aula.` : forceNew ? `Nova versão planejada${repairLabel} ${studyReadiness.label.toLowerCase()} (${teacherReview.finalScore}/100), salva e aberta na aba Aula.` : `Nova aula planejada${repairLabel} ${studyReadiness.label.toLowerCase()} (${teacherReview.finalScore}/100), salva e aberta na aba Aula.`);
       setForceNew(false);
       onGenerated?.(saved);
