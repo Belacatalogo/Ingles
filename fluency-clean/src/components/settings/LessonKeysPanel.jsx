@@ -83,8 +83,9 @@ export function LessonKeysPanel() {
     refresh();
   }
 
-  function handleToggleForceExternal() {
-    setForceExternalLessonProviderNext(!externalStatus.forceExternalNext);
+  function handleToggleForceExternal(provider = '') {
+    const sameProviderActive = externalStatus.forceExternalNext && externalStatus.forceProvider === provider;
+    setForceExternalLessonProviderNext(!sameProviderActive, provider);
     refresh();
   }
 
@@ -167,11 +168,17 @@ export function LessonKeysPanel() {
       </div>
 
       <div className="key-form pro-form">
-        <label>Teste controlado de fallback externo</label>
-        <button type="button" className={externalStatus.forceExternalNext ? 'danger-button' : ''} onClick={handleToggleForceExternal}>
-          <Zap size={16} /> {externalStatus.forceExternalNext ? 'Fallback externo será usado na próxima geração' : 'Forçar fallback externo na próxima geração'}
+        <label>Teste controlado de motor</label>
+        <button type="button" className={externalStatus.forceExternalNext && !externalStatus.forceProvider ? 'danger-button' : ''} onClick={() => handleToggleForceExternal('')}>
+          <Zap size={16} /> {externalStatus.forceExternalNext && !externalStatus.forceProvider ? 'Fallback externo será usado na próxima geração' : 'Forçar fallback externo na próxima geração'}
         </button>
-        <p className="empty-note">Use isso só para teste. Quando ativo, a próxima geração pula Gemini e tenta Groq/Cerebras direto. Depois desliga sozinho.</p>
+        <button type="button" className={externalStatus.forceExternalNext && externalStatus.forceProvider === 'groq' ? 'danger-button' : ''} onClick={() => handleToggleForceExternal('groq')} disabled={!externalStatus.groq.configured}>
+          <Zap size={16} /> {externalStatus.forceExternalNext && externalStatus.forceProvider === 'groq' ? 'Groq será usado na próxima geração' : 'Forçar Groq na próxima geração'}
+        </button>
+        <button type="button" className={externalStatus.forceExternalNext && externalStatus.forceProvider === 'cerebras' ? 'danger-button' : ''} onClick={() => handleToggleForceExternal('cerebras')} disabled={!externalStatus.cerebras.configured}>
+          <Zap size={16} /> {externalStatus.forceExternalNext && externalStatus.forceProvider === 'cerebras' ? 'Cerebras será usado na próxima geração' : 'Forçar Cerebras na próxima geração'}
+        </button>
+        <p className="empty-note">Para comparar: gere uma vez normal com Flash, depois force Groq, depois force Cerebras. O diagnóstico mostra uma assinatura/hash da aula salva.</p>
       </div>
 
       <div className="key-form pro-form">
