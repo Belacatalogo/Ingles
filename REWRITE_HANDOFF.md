@@ -47,73 +47,65 @@ Princípio máximo:
 
 ## BLOCO ATUAL
 
-### `BLOCO-LISTENING-COERENCIA-1B-LAB` — Fechamento narrativo do Listening IMPLEMENTADO, aguardando deploy/teste
+### `BLOCO-CARTAS-TRILHA-1-LAB` — Cartas em trilha estilo Duolingo IMPLEMENTADO, aguardando deploy/teste
 
 Contexto:
-- usuário percebeu que a aula de Listening parecia uma mini-história cortada no meio;
-- mesmo que vocabulário e questões batam com a transcrição, o texto precisa ter começo, meio e fechamento mínimo;
-- exemplo do problema: diálogo em biblioteca que apresenta o caso, mas não resolve a busca/livro/atendimento.
+- usuário pediu que a aba Cartas deixe de ser apenas flashcards lineares;
+- a área ao lado de `Aula atual` deve ter apenas um botão compacto para a trilha;
+- os tópicos como `Essenciais A1`, `Pessoas e família` etc devem ficar dentro desse botão/área, em ordem pelo nível;
+- usuário quer um método inspirado no Duolingo: mapa, trilha, bolhas, níveis e desbloqueio progressivo.
+
+Arquivos criados:
+- `fluency-clean/src/services/vocabularyPath.js`
 
 Arquivos alterados:
-- `fluency-clean/src/services/listeningCoherence.js`
-- `fluency-clean/src/services/plannedGeminiLessons.js`
+- `fluency-clean/src/screens/FlashcardsScreen.jsx`
+- `fluency-clean/src/styles/flashcards-polish.css`
 - `REWRITE_HANDOFF.md`
 
 O que foi implementado:
-- `listeningCoherence.js` agora detecta fechamento narrativo em diálogos/listening;
-- nova checagem `hasNarrativeClosure()` considera sinais como:
-  - agradecimento;
-  - resolução;
-  - livro/informação encontrada;
-  - final educado;
-  - fim que não termina em pergunta aberta;
-- `validateListeningCoherence()` agora adiciona issue quando a mini-história parece terminar sem fechamento;
-- `repairListeningCoherence()` agora pode adicionar fechamento simples quando o diálogo estiver sem resolução;
-- `plannedGeminiLessons.js` reforça no prompt:
-  - Listening precisa ter começo, meio e fechamento claro;
-  - mini-história/diálogo precisa ter abertura da situação, troca principal de informações e fechamento/resolução;
-  - não entregar diálogo cortado no meio.
+- novo serviço `vocabularyPath.js`;
+- progresso local da trilha salvo em `localStorage` com chave `fluency.vocabularyPath.v1`;
+- a tela Cartas agora tem dois modos principais:
+  1. `Aula atual`, quando houver vocabulário da aula;
+  2. `Trilha de vocabulário`;
+- os decks/tópicos antigos foram movidos para dentro da trilha;
+- tópicos aparecem em ordem e com desbloqueio progressivo;
+- o primeiro tópico começa desbloqueado;
+- o próximo tópico só libera quando o anterior for concluído;
+- cada tópico é dividido em bolhas de até 6 cartas;
+- cada bolha tem 3 níveis;
+- nível 1 apresenta poucas palavras;
+- nível 2 adiciona mais palavras/uso;
+- nível 3 consolida antes de liberar a próxima bolha;
+- ao concluir uma rodada da bolha, `completeVocabularyBubbleLevel()` salva o nível concluído;
+- a próxima bolha libera após completar 3/3 na bolha atual;
+- visual da trilha usa bolhas alternadas esquerda/direita com status bloqueado, ativo e concluído;
+- a sessão ainda usa áudio, exemplo, resposta, classificação de dificuldade e registro real em `recordFlashcardSession()`;
+- esta é a primeira versão do método, ainda baseada nas cartas existentes; próximos blocos podem evoluir de flashcard para exercícios variados por palavra.
 
 Commits:
-- `36ae80056f74076db0a4ed207b1907d3867bed22` — exige fechamento narrativo no listening;
-- `8d96d72e3fc374448f95d529950cbe7810042d18` — exige começo meio e fim no listening.
+- `63d95017f70b3564a2281d52eef935bcc2a1b99e` — adiciona trilha progressiva de vocabulário;
+- `aca1de59d2ad617593fa3deb4a751b4675dcf77f` — transforma cartas em trilha de vocabulário;
+- `a83736fa760a7bb6e33714de45e513913e72cd5e` — estiliza trilha de vocabulário das cartas.
 
 Teste recomendado no iPhone:
 1. aguardar deploy da branch lab;
-2. gerar nova aula Listening;
-3. conferir se a transcrição tem começo, desenvolvimento e fechamento;
-4. confirmar que não termina em pergunta solta ou situação sem resolver;
-5. confirmar que vocabulário e questões ainda batem com a transcrição.
+2. abrir Cartas;
+3. confirmar que no topo aparecem apenas `Aula atual` e `Trilha de vocabulário`;
+4. tocar em `Trilha de vocabulário`;
+5. confirmar que tópicos ficam dentro da trilha;
+6. abrir `Essenciais A1`;
+7. confirmar mapa com bolhas;
+8. concluir nível 1 de uma bolha;
+9. confirmar que a bolha mostra 1/3;
+10. concluir níveis 2 e 3;
+11. confirmar que a próxima bolha desbloqueia;
+12. confirmar que próximo tópico só desbloqueia após concluir todas as bolhas do tópico atual.
+
+### `BLOCO-LISTENING-COERENCIA-1B-LAB` — Fechamento narrativo do Listening IMPLEMENTADO
 
 ### `BLOCO-LISTENING-COERENCIA-1-LAB` — Fonte única da aula Listening IMPLEMENTADO
-
-Contexto:
-- usuário identificou uma aula Listening em que o texto falava apenas de biblioteca, nome e sobrenome;
-- vocabulário e questões cobravam detalhes que não apareciam claramente no texto, como autor do livro;
-- isso revelou que texto, vocabulário e questões podiam vir de versões internas diferentes da mesma aula;
-- usuário também pediu que diálogos mostrem quem está falando cada frase.
-
-Arquivos criados:
-- `fluency-clean/src/services/listeningCoherence.js`
-
-Arquivos alterados:
-- `fluency-clean/src/components/lesson/LessonGeneratorPanel.jsx`
-- `fluency-clean/src/services/plannedGeminiLessons.js`
-- `REWRITE_HANDOFF.md`
-
-O que foi implementado:
-- novo verificador `validateListeningCoherence()`;
-- para aulas `listening`, a transcrição/listeningText vira fonte única de verdade;
-- valida se transcrição sustenta vocabulário e questões, se vocabulário aparece na transcrição, se questões não cobram informação ausente e se diálogos têm falantes;
-- novo reparador `repairListeningCoherence()`;
-- fluxo de geração roda a checagem antes do professor revisor e antes de salvar;
-- se houver incoerência, tenta reparo local; se continuar incoerente, bloqueia a aula;
-- quando reparar, contrato pode incluir `listening-coherence-v1`.
-
-Commits:
-- `c8a7740c1caa767009e9ab97e8b667433046e915` — adiciona verificador de coerência listening;
-- `d9177694fbafb0f506c024bd0a3a747408793f59` — integra checagem de coerência listening;
-- `4a8669611483f8bc4d0f68d09c6d1fc57121b4fc` — reforça fonte única em aulas listening.
 
 ### `BLOCO-20-LAB` — Certificação por nível IMPLEMENTADO
 
@@ -166,9 +158,10 @@ Pendente técnica:
 
 ## NOVA ORDEM DE BLOCOS — QUALIDADE REAL DAS AULAS
 
-1. `BLOCO-LISTENING-COERENCIA-1B-LAB` — Fechamento narrativo do Listening. STATUS: implementado, aguardando teste.
-2. `BLOCO-CARTAS-3B-LAB` — Expandir banco de vocabulário em novos lotes até 2.000 palavras reais.
-3. `BLOCO-AUDITORIA-POLIMENTO-GERAL-LAB` — após concluir os blocos principais, analisar cada página com precisão, listar melhorias possíveis e montar blocos de polimento.
+1. `BLOCO-CARTAS-TRILHA-1-LAB` — Cartas em trilha estilo Duolingo. STATUS: implementado, aguardando teste.
+2. `BLOCO-CARTAS-METODO-2-LAB` — evoluir bolhas para exercícios variados, não só flip card.
+3. `BLOCO-CARTAS-3B-LAB` — Expandir banco de vocabulário em novos lotes até 2.000 palavras reais.
+4. `BLOCO-AUDITORIA-POLIMENTO-GERAL-LAB` — após concluir os blocos principais, analisar cada página com precisão, listar melhorias possíveis e montar blocos de polimento.
 
 ## FASE EXTRA — GARANTIA PEDAGÓGICA MÁXIMA
 
@@ -191,13 +184,13 @@ Ordem recomendada após os blocos principais:
 
 ## Pendência técnica importante
 
-- testar deploy do `BLOCO-LISTENING-COERENCIA-1B-LAB` no iPhone;
-- gerar nova aula Listening para validar fonte única e fechamento narrativo;
-- confirmar que questões e vocabulário batem com listeningText;
-- confirmar falantes identificados em diálogos;
-- seguir depois para `BLOCO-CARTAS-3B-LAB`;
+- testar deploy do `BLOCO-CARTAS-TRILHA-1-LAB` no iPhone;
+- confirmar que o PWA não ficou pesado;
+- confirmar que o progresso da trilha salva;
+- confirmar desbloqueio de bolhas e tópicos;
+- seguir depois para `BLOCO-CARTAS-METODO-2-LAB`;
 - remover definitivamente `ListeningLesson.jsx` antigo quando o conector permitir SHA correto.
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O bloco atual implementado foi `BLOCO-LISTENING-COERENCIA-1B-LAB`: `listeningCoherence.js` agora exige fechamento narrativo e `plannedGeminiLessons.js` exige começo, meio e fim no Listening. Testar no iPhone; se ok, seguir para `BLOCO-CARTAS-3B-LAB`."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O bloco atual implementado foi `BLOCO-CARTAS-TRILHA-1-LAB`: criado `vocabularyPath.js`, Cartas agora tem `Aula atual` e `Trilha de vocabulário`, tópicos ficam dentro da trilha, bolhas têm 3 níveis e desbloqueio progressivo. Testar no iPhone; se ok, seguir para `BLOCO-CARTAS-METODO-2-LAB`."
