@@ -25,12 +25,41 @@ const fallbackTips = [
   'Faça a Prática Profunda para testar se você realmente entendeu.',
 ];
 
-function cleanText(value) {
+const connectorBreaks = [
+  'Por exemplo',
+  'Já',
+  'Outro exemplo',
+  'Outro',
+  'Veja',
+  'Assim',
+  'Portanto',
+  'Além disso',
+  'Na prática',
+  'Observe',
+  'Agora',
+];
+
+const englishSignals = /\b(I|you|he|she|it|we|they|am|are|is|was|were|have|has|had|do|does|did|can|could|will|would|should|must|go|goes|went|work|works|study|studies|live|lives|like|likes|want|wants|need|needs|make|makes|take|takes|there|this|that|these|those|because|although|if|when|where|what|why|how)\b/i;
+const portugueseSignals = /\b(eu|você|voce|ele|ela|nós|nos|eles|elas|meu|minha|significa|quer dizer|tradução|traducao|porque|quando|onde|como|exemplo|frase)\b/i;
+
+function normalizeVisualSpacing(value) {
+  const connectorPattern = connectorBreaks.join('|');
+
   return String(value ?? '')
     .replace(/\*\*(.*?)\*\*/g, '$1')
     .replace(/^\s*[-*]\s+/gm, '')
+    .replace(/([.!?])(?=[A-ZÁÉÍÓÚÂÊÔÃÕÇ])/g, '$1 ')
+    .replace(/\)(?=(Por exemplo|Já|Outro exemplo|Outro|Veja|Assim|Portanto|Além disso|Na prática|Observe|Agora)\b)/g, ') ')
+    .replace(/([,;:])(?=\S)/g, '$1 ')
+    .replace(new RegExp(`\\s*([.!?])\\s*(?=(${connectorPattern})\\b)`, 'gi'), '$1\n\n')
+    .replace(new RegExp(`\\s+(?=(${connectorPattern})\\b)`, 'gi'), '\n\n')
     .replace(/\n{3,}/g, '\n\n')
+    .replace(/[ \t]{2,}/g, ' ')
     .trim();
+}
+
+function cleanText(value) {
+  return normalizeVisualSpacing(value);
 }
 
 function splitSentences(text) {
@@ -38,6 +67,19 @@ function splitSentences(text) {
     .split(/(?<=[.!?])\s+/)
     .map((item) => item.trim())
     .filter(Boolean);
+}
+
+function splitParagraphs(text) {
+  const clean = cleanText(text);
+  if (!clean) return [];
+
+  const byBreaks = clean
+    .split(/\n{2,}/g)
+    .map((item) => item.trim())
+    .filter(Boolean);
+
+  if (byBreaks.length > 1) return byBreaks;
+  return splitSentences(clean);
 }
 
 function splitNumberedList(text) {
@@ -49,11 +91,123 @@ function splitNumberedList(text) {
   return { intro, items };
 }
 
-function splitExamples(text) {
-  const sentences = splitSentences(text);
-  const examples = sentences.filter((sentence) => /\b(I am|You are|He is|She is|It is|We are|They are|I have|You have|He has|She has|They have|Do you|Does he|Are you|Is he)\b/i.test(sentence));
-  const explanation = sentences.filter((sentence) => !examples.includes(sentence));
-  return { explanation, examples };
+function looksLikeEnglish(text) {
+  const value = cleanText(text);
+  if (!value) return false;
+  const hasEnglishSignal = englishSignals.test(value);
+  const hasPortugueseAccent = /[áàâãéêíóôõúç]/i.test(value);
+  return hasEnglishSignal && !hasPortugueseAccent;
+}
+
+function splitByExampleHeader(text) {
+  const clean = cleanText(text);
+  const match = clean.match(/\b(Exemplos? do professor|Exemplos? guiados|Exemplos?)\s*:?\s*/i);
+  if (!match || typeof match.index !== 'number') return null;
+
+  const before = clean.slice(0, match.index).trim();
+  const after = clean.slice(match.index + match[0].length).trim();
+  return { before, after };
+}
+
+function splitExampleCandidates(text) {
+  return cleanText(text)
+    .split(/\n{2,}|\s+(?=\d+[.)]\s+)|\s+(?=[•-]\s+)|\s+(?=(?:Por exemplo|Outro exemplo|Veja|Observe)\b)/gi)
+    .map((item) => item.replace(/^\s*(\d+[.)]|[•-])\s*/, '').trim())
+    .filter(Boolean);
+}
+
+function parseExampleCard(rawExample) {
+  const text = cleanText(rawExample).replace(/^[:\s]+/, '').trim();
+  const quoted = [...text.matchAll(/[“”"']([^“”"']{2,120})[“”"']/g)]
+    .map((match) => cleanText(match[1]))
+    .filter(Boolean);
+
+  const englishQuote = quoted.find((quote) => looksLikeEnglish(quote));
+  const translationQuote = quoted.find((quote) => quote !== englishQuote && !looksLikeEnglish(quote));
+  const separatorMatch = text.match(/^(.+?)\s*(?:=|—|–|-|→|significa|quer dizer|tradução:|traducao:)\s*(.+)$/i);
+
+  let english = englishQuote || '';
+  let translation = translationQuote || '';
+  let explanation = text;
+
+  if (!english && separatorMatch) {
+    const left = cleanText(separatorMatch[1]);
+    const right = cleanText(separatorMatch[2]);
+    if (looksLikeEnglish(left)) {
+      english = left.replace(/[“”"']/g, '').trim();
+      translation = right.replace(/[“”"']/g, '').trim();
+    }
+  }
+
+  if (!english) {
+    const sentenceParts = splitSentences(text);
+    const englishSentence = sentenceParts.find((sentence) => looksLikeEnglish(sentence));
+    if (englishSentence) english = englishSentence.replace(/[“”"']/g, '').trim();
+  }
+
+  if (english) {
+    explanation = cleanText(text.replace(english, '').replace(/[“”"']/g, ''));
+  }
+
+  if (translation) {
+    explanation = cleanText(explanation.replace(translation, ''));
+  }
+
+  explanation = explanation
+    .replace(/^\s*(=|—|–|-|→|significa|quer dizer|tradução:|traducao:)\s*/i, '')
+    .replace(/\s*(=|—|–|-|→)\s*$/i, '')
+    .trim();
+
+  return {
+    original: text,
+    english,
+    translation: translation && !looksLikeEnglish(translation) ? translation : '',
+    explanation,
+  };
+}
+
+function collectProfessorExamples(content) {
+  const headerSplit = splitByExampleHeader(content);
+  const explanationSource = headerSplit ? headerSplit.before : content;
+  const exampleSource = headerSplit ? headerSplit.after : content;
+  const candidates = splitExampleCandidates(exampleSource);
+  const examples = [];
+  const explanation = [];
+
+  if (headerSplit?.before) {
+    explanation.push(...splitParagraphs(headerSplit.before));
+  }
+
+  candidates.forEach((candidate) => {
+    const parsed = parseExampleCard(candidate);
+    const isExample = Boolean(parsed.english) || /\b(Por exemplo|Outro exemplo|Veja|Observe)\b/i.test(candidate);
+
+    if (isExample) {
+      examples.push(parsed);
+    } else if (!headerSplit) {
+      explanation.push(...splitParagraphs(candidate));
+    }
+  });
+
+  if (!headerSplit && !examples.length) {
+    const sentences = splitSentences(explanationSource);
+    const detectedExamples = sentences
+      .map(parseExampleCard)
+      .filter((example) => example.english);
+
+    if (detectedExamples.length) {
+      const exampleOriginals = new Set(detectedExamples.map((example) => example.original));
+      return {
+        explanation: sentences.filter((sentence) => !exampleOriginals.has(sentence)),
+        examples: detectedExamples,
+      };
+    }
+  }
+
+  return {
+    explanation: explanation.length ? explanation : splitParagraphs(explanationSource),
+    examples,
+  };
 }
 
 function normalizeSections(lesson) {
@@ -72,6 +226,18 @@ function normalizeTips(lesson) {
   return cleanTips.length ? cleanTips : fallbackTips;
 }
 
+function ExampleCard({ example, index }) {
+  return (
+    <article className="grammar-professor-example-card">
+      <span className="grammar-example-index">Exemplo {index + 1}</span>
+      {example.english ? <strong className="grammar-example-english">{example.english}</strong> : null}
+      {example.translation ? <p className="grammar-example-translation">{example.translation}</p> : null}
+      {example.explanation ? <p className="grammar-example-explanation">{example.explanation}</p> : null}
+      {!example.english && !example.explanation ? <p className="grammar-example-explanation">{example.original}</p> : null}
+    </article>
+  );
+}
+
 function SectionContent({ content }) {
   const numbered = splitNumberedList(content);
   if (numbered) {
@@ -85,14 +251,16 @@ function SectionContent({ content }) {
     );
   }
 
-  const { explanation, examples } = splitExamples(content);
+  const { explanation, examples } = collectProfessorExamples(content);
   return (
-    <div className="grammar-deep-content">
+    <div className="grammar-deep-content grammar-readable-content">
       {explanation.length ? explanation.map((paragraph, index) => <p key={`${paragraph}-${index}`}>{paragraph}</p>) : <p>{cleanText(content)}</p>}
       {examples.length ? (
-        <div className="grammar-example-stack">
-          <span>Exemplos do professor</span>
-          {examples.map((example, index) => <code key={`${example}-${index}`}>{example}</code>)}
+        <div className="grammar-example-stack grammar-professor-examples">
+          <div className="grammar-example-heading">Exemplos do professor</div>
+          <div className="grammar-example-card-list">
+            {examples.map((example, index) => <ExampleCard key={`${example.original}-${index}`} example={example} index={index} />)}
+          </div>
         </div>
       ) : null}
     </div>
