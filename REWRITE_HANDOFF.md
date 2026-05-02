@@ -76,13 +76,37 @@ Esse bloco deve criar arquivos reais em `fluency-clean/src/data/vocabulary/`, or
 
 ## BLOCO ATUAL
 
-### `BLOCO-CARTAS-CURRICULO-FIXO-8A-LAB` — Estrutura e expansão A1/A2 IMPLEMENTADO, aguardando deploy/teste
+### `BLOCO-CARTAS-HOTFIX-DESBLOQUEIO-TESTE-1-LAB` — Marcos liberados para teste IMPLEMENTADO, aguardando deploy/teste
 
 Contexto:
-- usuário pediu para priorizar a expansão de conteúdo antes dos blocos de preview/dicas;
-- usuário quer uma trilha fixa, sem IA gerando bolhas;
-- usuário quer banco extremamente confiável, com múltiplas revisões antes de considerar pronto;
-- como a meta final é 7.500 itens, o bloco foi iniciado em partes, sem fingir que tudo ficou pronto de uma vez.
+- usuário confirmou que a expansão entrou: aparece `504/7500` e `84 bolhas`;
+- porém os novos tópicos continuavam bloqueados atrás da progressão antiga;
+- isso impedia testar rapidamente o conteúdo recém-adicionado na lab.
+
+Arquivo alterado:
+- `fluency-clean/src/services/vocabularyPath.js`
+- `REWRITE_HANDOFF.md`
+
+O que foi implementado:
+- criada regra `LAB_UNLOCK_LEVEL_MARKERS`;
+- o primeiro tópico de cada marcador de nível fica liberado para teste:
+  - primeiro `A1`;
+  - primeiro `A1-A2`;
+  - primeiro `A2`;
+- o restante da trilha continua com desbloqueio progressivo normal;
+- bolhas internas de cada tópico continuam progressivas: só a primeira bolha abre sem concluir a anterior.
+
+Commit:
+- `edb889da4ab0df4473bd77334403169beb97eb72` — libera marcos de teste da trilha de vocabulário.
+
+Teste recomendado no iPhone:
+1. abrir Cartas > Trilha de vocabulário;
+2. confirmar que além de `Essenciais A1`, também há pelo menos um tópico `A1-A2` e um tópico `A2` desbloqueados;
+3. tocar em um tópico novo desbloqueado;
+4. confirmar que a primeira bolha abre;
+5. iniciar uma sessão e verificar se usa conteúdo novo.
+
+### `BLOCO-CARTAS-CURRICULO-FIXO-8A-LAB` — Estrutura e expansão A1/A2 IMPLEMENTADO
 
 Arquivos criados:
 - `fluency-clean/src/data/vocabulary/fixedExpansionA1A2.js`
@@ -93,53 +117,12 @@ Arquivos alterados:
 
 O que foi implementado:
 - criado primeiro arquivo modular de expansão fixa A1/A2;
-- adicionados 8 novos tópicos/decks:
-  1. `Sala de aula e aprendizado`;
-  2. `Comunicação básica`;
-  3. `Compras e dinheiro`;
-  4. `Clima e natureza`;
-  5. `Hobbies e mídia`;
-  6. `Tecnologia do dia a dia`;
-  7. `Opiniões e emoções`;
-  8. `Viagem e serviços`;
+- adicionados 8 novos tópicos/decks;
 - adicionados 192 novos cards fixos A1/A2;
 - o banco passou de 288 para 480 cards reais;
-- cada novo item tem:
-  - palavra/expressão;
-  - tradução em português;
-  - frase exemplo;
-  - chunk/collocation base;
-- `vocabularyDecks.js` agora importa `fixedExpansionA1A2Decks`;
+- cada novo item tem palavra/expressão, tradução, frase exemplo e chunk/collocation base;
 - `VOCABULARY_BANK_TARGET` atualizado para 7.500;
-- `normalizeCard()` agora repassa `chunk` e `chunks` para o motor de prática;
-- criada função `getVocabularyBankAudit()` com 3 checagens locais iniciais:
-  1. estrutura obrigatória: palavra, tradução e frase;
-  2. frase com letra inicial maiúscula e pontuação final;
-  3. chunk com pelo menos 2 palavras;
-- a auditoria também lista duplicatas por palavra para revisão humana.
-
-Revisões feitas neste bloco:
-1. Revisão estrutural: todos os novos itens foram criados no formato `[word, translation, example, chunk]`.
-2. Revisão de uso: exemplos foram mantidos simples, naturais e compatíveis com A1/A2.
-3. Revisão de integração: banco antigo continua preservado e expansão entra via import modular, sem mexer em `bundle.js`.
-
-Observação honesta:
-- este bloco ainda não conclui os 7.500 itens;
-- ele cria a fundação e o primeiro lote real;
-- os próximos blocos devem continuar a expansão e a auditoria em camadas.
-
-Commits:
-- `18b2c2e686b937efb00367c4dd3dda26669fa321` — adiciona expansão fixa A1 A2 de vocabulário;
-- `dd6c399f3de5cabafe40d3411488104a20e279cf` — conecta expansão fixa ao banco de vocabulário.
-
-Teste recomendado no iPhone:
-1. abrir Cartas > Trilha de vocabulário;
-2. confirmar que aparecem novos tópicos depois dos antigos;
-3. confirmar que o contador do banco mostra alvo 7.500;
-4. abrir um tópico novo, como `Sala de aula e aprendizado` ou `Tecnologia do dia a dia`;
-5. confirmar bolhas geradas normalmente;
-6. iniciar uma bolha e verificar se exemplos/chunks aparecem na prática;
-7. confirmar que progresso e SRS continuam funcionando.
+- criada função `getVocabularyBankAudit()` com 3 checagens locais iniciais.
 
 ### `BLOCO-CARTAS-HOTFIX-TAMANHO-ORDEM-1-LAB` — Bolhas maiores e ordem misturada IMPLEMENTADO
 
@@ -214,7 +197,7 @@ Pendente técnica:
 
 ## NOVA ORDEM DE BLOCOS — CARTAS COMO SUBSTITUTO DO DUOLINGO
 
-1. `BLOCO-CARTAS-CURRICULO-FIXO-8A-LAB` — estrutura e primeiro lote A1/A2. STATUS: implementado, aguardando teste.
+1. `BLOCO-CARTAS-HOTFIX-DESBLOQUEIO-TESTE-1-LAB` — marcos liberados para teste. STATUS: implementado, aguardando teste.
 2. `BLOCO-CARTAS-CURRICULO-FIXO-8B-LAB` — expansão B1/B2.
 3. `BLOCO-CARTAS-CURRICULO-FIXO-8C-LAB` — C1/C2 + auditoria tripla profunda.
 4. `BLOCO-CARTAS-PREVIEW-9A-LAB` — prévia da bolha com palavras, tradução e referência visual.
@@ -246,12 +229,11 @@ Ordem recomendada após os blocos principais:
 
 ## Pendência técnica importante
 
-- testar deploy do `BLOCO-CARTAS-CURRICULO-FIXO-8A-LAB` no iPhone;
-- confirmar que os novos tópicos aparecem;
-- confirmar que bolhas novas funcionam;
+- testar deploy do `BLOCO-CARTAS-HOTFIX-DESBLOQUEIO-TESTE-1-LAB` no iPhone;
+- confirmar que há tópico novo desbloqueado para teste;
 - seguir para `BLOCO-CARTAS-CURRICULO-FIXO-8B-LAB` se a expansão estiver ok;
 - remover definitivamente `ListeningLesson.jsx` antigo quando o conector permitir SHA correto.
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O bloco atual implementado foi `BLOCO-CARTAS-CURRICULO-FIXO-8A-LAB`: criado `fixedExpansionA1A2.js`, banco passou de 288 para 480 cards reais, alvo atualizado para 7.500 e `getVocabularyBankAudit()` foi criado com checagens estruturais. Testar no iPhone; se ok, seguir para `BLOCO-CARTAS-CURRICULO-FIXO-8B-LAB`."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O bloco atual implementado foi `BLOCO-CARTAS-HOTFIX-DESBLOQUEIO-TESTE-1-LAB`: `vocabularyPath.js` libera o primeiro tópico de A1, A1-A2 e A2 para facilitar teste da expansão; o restante segue progressivo. Testar no iPhone; se ok, seguir para `BLOCO-CARTAS-CURRICULO-FIXO-8B-LAB`."
