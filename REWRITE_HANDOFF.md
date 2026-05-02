@@ -27,7 +27,89 @@ Motivo:
 - Groq é promissor, mas instável em limite/cota e ainda precisa teste final real com 7 sections.
 - Cerebras passou tecnicamente em alguns testes, mas teve conteúdo mais repetitivo, genérico e com erros pedagógicos.
 
-## ESTADO ATUAL — GRAMMAR APROVADA NA LAB
+## ESTADO ATUAL — BLOCO LISTENING RENDER REVIEW
+
+### `BLOCO-LISTENING-RENDER-REVIEW-LAB` — IMPLEMENTADO
+
+Objetivo executado:
+- Fazer uma análise estrutural da aula Listening e reorganizar a tela para o fluxo correto no iPhone.
+- Manter a escuta cega como primeiro passo.
+- Evitar que a transcrição fique aberta antes da escuta.
+- Destacar prática em tela cheia como etapa própria.
+- Melhorar acesso a áudio, shadowing, salvar e concluir.
+- Não mexer no backend Azure privado, geração, modelo, prompts, chaves ou `bundle.js`.
+
+Estrutura pedagógica definida para Listening:
+1. Ouvir sem ler.
+2. Conferir texto/transcrição depois.
+3. Fazer prática profunda em tela cheia.
+4. Fazer shadowing real.
+5. Salvar/concluir com resumo curto.
+
+Arquivos alterados:
+- `fluency-clean/src/lessons/ListeningLessonClean.jsx`
+- `fluency-clean/src/styles/listening-ux-hotfix.css`
+- `REWRITE_HANDOFF.md`
+
+O que foi feito em `ListeningLessonClean.jsx`:
+- Criado mapa visual de fluxo `listeningFlow`.
+- Transcrição agora começa fechada por padrão para proteger a escuta cega.
+- Card principal ganhou ações rápidas:
+  - `Conferir texto`;
+  - `Começar prática`;
+  - `Finalizar`.
+- Criado relatório `Render seguro Listening` com:
+  - status OK/atenção;
+  - número de trechos;
+  - número de frases de shadowing;
+  - confirmação de respostas ocultas.
+- Adicionado `hasListened` para orientar a mensagem após iniciar o áudio principal.
+- Adicionado `goToPractice()` para rolar direto até o `PracticeLauncher` fullscreen já existente.
+- Shadowing ficou aberto por padrão, porque é etapa essencial de Listening.
+- Finalização ganhou label explícito `Resumo rápido da escuta`.
+- `handleComplete` salva também `renderReport` junto com o progresso.
+- Classe adicionada: `listening-render-review-v1`.
+
+O que foi feito em CSS:
+- Removida regra antiga que escondia todo textarea do `#lesson-answer`, porque agora o resumo final deve aparecer.
+- Mantida ocultação da prática antiga interna para não conflitar com o `PracticeLauncher` fullscreen modular.
+- Criado polimento visual para:
+  - mapa de fluxo Listening;
+  - ações rápidas;
+  - card de relatório;
+  - transcrição;
+  - shadowing;
+  - finalização;
+  - responsividade no iPhone.
+
+Escopo preservado:
+- Não mexeu em `main`.
+- Não mexeu em `rewrite-fluency-clean`.
+- Não mexeu em `bundle.js`.
+- Não mexeu no backend Azure privado.
+- Não mexeu em geração, prompts, modelo, chaves ou fallback.
+- Não mexeu em Grammar aprovada.
+
+Commits:
+- `5ec9981e725f0a4d25e871ef98fbaec2f5e4dcf9` — reestrutura renderização da aula Listening.
+- `2d1052b9427904965cc53f5f6b6127a464d35865` — polimenta visual Listening no iPhone.
+
+Próximo teste recomendado no iPhone:
+1. Aguardar o deploy da branch `rewrite-fluency-clean-lab`.
+2. Abrir uma aula Listening.
+3. Conferir se a transcrição começa fechada.
+4. Tocar o áudio principal e verificar mensagem/status.
+5. Usar `Conferir texto` e confirmar se a transcrição abre corretamente.
+6. Usar `Começar prática` e confirmar se rola para a prática fullscreen.
+7. Testar `Shadowing real`: ouvir frase e próxima frase.
+8. Abrir `Finalizar aula`, escrever resumo, salvar rascunho e concluir.
+9. Conferir se o layout não corta botões no iPhone.
+
+Próximo bloco provável após teste:
+- Se Listening estiver OK: `BLOCO-LISTENING-APPROVAL-LAB`.
+- Se aparecer erro visual/funcional: hotfix cirúrgico baseado no print do iPhone.
+
+## ESTADO ANTERIOR — GRAMMAR APROVADA NA LAB
 
 ### `BLOCO-GRAMMAR-APPROVAL-LAB` — IMPLEMENTADO
 
@@ -58,19 +140,6 @@ Arquivos envolvidos na base aprovada:
 - `fluency-clean/src/styles/grammar-examples-hotfix.css`
 - `fluency-clean/src/main.jsx`
 
-Próximo bloco recomendado:
-- `BLOCO-LISTENING-RENDER-REVIEW-LAB`
-
-Objetivo do próximo bloco:
-- Revisar a renderização da aula Listening no iPhone.
-- Garantir que áudio, botões, salvar/concluir e prática estejam funcionando.
-- Evitar respostas aparecendo antes da hora.
-- Melhorar leitura e fluxo sem mexer no backend Azure privado.
-- Manter tudo modular e sem DOM injection, bundle patch ou HTML remendado.
-
-Commit:
-- Este bloco é documental/controle de estado: registra aprovação visual de Grammar e libera o avanço para Listening.
-
 ## ESTADO ANTERIOR — BLOCO GRAMMAR RENDER SAFETY GATE
 
 ### `BLOCO-GRAMMAR-RENDER-SAFETY-GATE-LAB` — IMPLEMENTADO
@@ -85,96 +154,16 @@ Arquivos alterados/criados:
 - `fluency-clean/src/lessons/GrammarLesson.jsx` — conectado ao parser seguro.
 - `REWRITE_HANDOFF.md`
 
-O que foi feito:
-- Criado parser modular `grammarRenderParser.js`.
-- Movidas para o parser as funções de:
-  - `cleanText`;
-  - `normalizeVisualSpacing`;
-  - `splitParagraphs`;
-  - `splitNumberedList`;
-  - `splitByExampleHeader`;
-  - `collectProfessorExamples`;
-  - `normalizeSections`;
-  - `normalizeTips`.
-- Criado `buildGrammarRenderReport`.
-- `GrammarLesson.jsx` ficou mais limpo e passou a apenas renderizar o resultado seguro.
-- Adicionado relatório visual no card lateral:
-  - `Grammar render: OK`;
-  - `Exemplos: N`;
-  - `Cards bloqueados: N`;
-  - `Texto preservado: sim`.
-- Regra de segurança mantida: na dúvida, renderiza como parágrafo; só vira card quando a frase em inglês é confiável.
-- Adicionada classe `grammar-render-safety-gate-v1` para identificar o novo bloco.
-
-Escopo preservado:
-- Não mexeu em `main`.
-- Não mexeu em `rewrite-fluency-clean`.
-- Não mexeu em `bundle.js`.
-- Não mexeu no backend Azure privado.
-- Não mexeu no `deepGrammarPipeline.js`.
-- Não mexeu no professor revisor.
-- Não mexeu na política de chaves/modelos.
-- Não alterou geração, prompts, fallback ou motor.
-
-Commits:
-- `8387eef477f1cd8801a89ad546e6fe15da71ae15` — cria parser seguro da Grammar.
-- `16e3436937dbc31f39f45bcbd45ad9e8d8d81cf6` — conecta Grammar ao parser seguro.
-
 ## ESTADO ANTERIOR — HOTFIX GRAMMAR CARD SPLIT V6
 
 ### `HOTFIX-GRAMMAR-CARD-SPLIT-V6-LAB` — IMPLEMENTADO
 
 Objetivo executado:
 - Corrigir cards que engoliam um segundo exemplo conectado por `e` ou `ou`.
-- Exemplo do problema: `I have a blue backpack (Eu tenho uma mochila azul) e 'She has a small dog'...`.
-- Exemplo do problema: `I have a new pet (Eu tenho um animal de estimação novo) ou 'We have a big house'...`.
 - Manter o primeiro card limpo e jogar o exemplo secundário/continuação para parágrafo normal abaixo.
-- Evitar corte ruim de explicações curtas por palavras genéricas como `A forma`.
-
-Arquivos alterados:
-- `fluency-clean/src/lessons/GrammarLesson.jsx`
-- `REWRITE_HANDOFF.md`
-
-O que foi feito:
-- Adicionado `secondaryExamplePattern`.
-- Adicionada função `splitSecondaryExampleOverflow`.
-- `extractTranslation` agora separa tradução principal de um segundo exemplo quando encontra `e/ou + frase em inglês`.
-- Segundo exemplo sai da tradução do card e vira explicação/overflow normal preservado abaixo.
-- `exampleOverflowPattern` foi refinado para não cortar explicações curtas em `A forma...`.
-- Adicionada classe `grammar-renderer-card-split-v6` para identificar o hotfix.
 
 Commit:
 - `aa92b93a65adeb08b9192f8f32f750c7855e69aa` — divide exemplos secundários nos cards Grammar.
-
-## ESTADO ANTERIOR — HOTFIX GRAMMAR OVERFLOW V4
-
-### `HOTFIX-GRAMMAR-EXAMPLE-OVERFLOW-V4-LAB` — IMPLEMENTADO
-
-Objetivo executado:
-- Corrigir o caso visto no iPhone em que o card `I am happy` engolia explicações posteriores, como `Já 'She is a doctor'...` e `O verbo 'to have'...`.
-- Manter o card somente com o exemplo principal e sua tradução/explicação curta.
-- Empurrar continuação pedagógica posterior para parágrafo normal abaixo dos cards.
-
-Arquivos alterados:
-- `fluency-clean/src/lessons/GrammarLesson.jsx`
-- `REWRITE_HANDOFF.md`
-
-Commit:
-- `5ed3022a2bca80807948a274145b7785a99c3e15` — ajusta overflow dos exemplos Grammar.
-
-## ESTADO ANTERIOR — BLOCO RENDER GRAMMAR V3
-
-### `BLOCO-GRAMMAR-RENDERER-V3-LAB` — IMPLEMENTADO
-
-Objetivo executado:
-- Reestruturar o sistema de renderização da aula Grammar para reduzir bugs visuais no iPhone.
-- Parar de transformar pedaços incompletos como `I am` em card de exemplo.
-- Evitar que explicações longas em português sejam quebradas indevidamente em vários cards.
-- Preservar conteúdo pedagógico sem mexer em geração, modelo, prompts, professor revisor, `deepGrammarPipeline.js`, fallback ou backend.
-
-Arquivos alterados:
-- `fluency-clean/src/lessons/GrammarLesson.jsx`
-- `REWRITE_HANDOFF.md`
 
 ## COMPARAÇÃO FLASH X GROQ X CEREBRAS
 
@@ -204,4 +193,4 @@ Arquivos alterados:
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. Grammar foi aprovada visualmente na lab após o `BLOCO-GRAMMAR-RENDER-SAFETY-GATE-LAB`. Não mexer em Grammar agora, a menos que apareça regressão real. Não mexer em `main`, `rewrite-fluency-clean`, `bundle.js`, backend Azure privado, `deepGrammarPipeline.js`, revisor ou política de chaves. Próximo bloco recomendado: `BLOCO-LISTENING-RENDER-REVIEW-LAB`, revisar renderização Listening, áudio, botões, salvar/concluir e respostas antecipadas no iPhone."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. Grammar foi aprovada visualmente. O bloco `BLOCO-LISTENING-RENDER-REVIEW-LAB` foi implementado: Listening agora tem fluxo 1 ouvir sem ler, 2 conferir transcrição, 3 prática fullscreen, 4 shadowing, 5 concluir; transcrição começa fechada; há relatório `Render seguro Listening`; e o textarea final voltou a aparecer. Não mexer em `main`, `rewrite-fluency-clean`, `bundle.js`, backend Azure privado, Grammar, geração, prompts, modelos ou chaves. Próximo passo: testar Listening no iPhone e, se estiver OK, registrar `BLOCO-LISTENING-APPROVAL-LAB`."
