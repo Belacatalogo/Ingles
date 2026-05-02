@@ -13,6 +13,40 @@ function makeGenerationId(date = new Date()) {
   return `gen-${stamp}-${Math.random().toString(36).slice(2, 6)}`;
 }
 
+function lessonTime(lesson) {
+  const candidates = [
+    lesson?.generationMeta?.savedAt,
+    lesson?.savedAt,
+    lesson?.generationMeta?.generatedAt,
+    lesson?.updatedAt,
+    lesson?.createdAt,
+  ];
+  const parsed = candidates.map((value) => Date.parse(value || '')).find((value) => Number.isFinite(value));
+  return parsed || 0;
+}
+
+function getFreshestLessonRaw() {
+  const current = storage.get(CURRENT_LESSON_KEY, null);
+  const history = storage.get(LESSON_HISTORY_KEY, []);
+  const latestHistory = Array.isArray(history) ? history[0] : null;
+
+  if (!current) return latestHistory || null;
+  if (!latestHistory) return current;
+
+  const currentTime = lessonTime(current);
+  const historyTime = lessonTime(latestHistory);
+  const currentGenerationId = current?.generationMeta?.id || '';
+  const historyGenerationId = latestHistory?.generationMeta?.id || '';
+
+  if (historyTime > currentTime && historyGenerationId !== currentGenerationId) {
+    storage.set(CURRENT_LESSON_KEY, latestHistory);
+    diagnostics.log(`Aula atual sincronizada com histórico mais recente: ${latestHistory.title || 'sem título'}`, 'info');
+    return latestHistory;
+  }
+
+  return current;
+}
+
 function notifyLessonUpdated(lesson, status) {
   try {
     window.dispatchEvent(new CustomEvent('fluency:lesson-updated', {
@@ -30,12 +64,12 @@ function notifyLessonUpdated(lesson, status) {
 }
 
 export function getCurrentLesson() {
-  const lesson = storage.get(CURRENT_LESSON_KEY, null);
+  const lesson = getFreshestLessonRaw();
   return lesson ? normalizeLesson(lesson) : null;
 }
 
 export function getCurrentLessonRaw() {
-  return storage.get(CURRENT_LESSON_KEY, null);
+  return getFreshestLessonRaw();
 }
 
 export function getLastGenerationStatus() {
