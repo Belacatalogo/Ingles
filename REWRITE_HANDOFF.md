@@ -25,61 +25,55 @@ Princípio máximo:
 
 ## BLOCO ATUAL
 
-### `BLOCO-HOTFIX-GRAMMAR-PRATICA-ESTAVEL-LAB` — IMPLEMENTADO, aguardando deploy/teste
+### `BLOCO-GRAMMAR-AULA-PROFUNDA-UI-LAB` — IMPLEMENTADO, aguardando deploy/teste
 
 Contexto:
-- Persistência da aula nova funcionou.
-- A aula Grammar abriu corretamente.
-- Porém foram detectados 3 problemas:
-  1. exercícios apareciam fora da `Prática Profunda`;
-  2. questões dentro da prática mudavam a cada segundo/render;
-  3. conteúdo de gramática parecia artigo/Wikipedia, com blocos longos.
+- Usuário esclareceu que NÃO quer aula curta.
+- O problema não era “explicação demais”; era a aula parecer artigo/Wikipedia.
+- O bloco anterior tinha compactado demais a explicação, contrariando o objetivo pedagógico.
+- A aula deve ser longa, profunda e completa, mas com cara de professor/aula guiada.
 
 Arquivos alterados:
-- `fluency-clean/src/practice/PracticeFullscreen.jsx`
 - `fluency-clean/src/lessons/GrammarLesson.jsx`
+- `fluency-clean/src/screens/LessonScreen.jsx`
 - `REWRITE_HANDOFF.md`
 
 O que foi corrigido:
-- `PracticeFullscreen.jsx`:
-  - removeu `useMemo(buildPracticeItems(...))` recalculando direto em render;
-  - agora cria `sessionItems` ao abrir a prática;
-  - as questões ficam congeladas durante a sessão;
-  - ao reiniciar, monta uma nova sessão controlada;
-  - evita troca de alternativas/perguntas a cada render.
 - `GrammarLesson.jsx`:
-  - removeu a seção estática de exercícios dentro da aula;
-  - os exercícios interativos ficam apenas no botão/tela cheia `Prática Profunda`;
-  - mantém `Produção própria` como etapa final escrita;
-  - compacta cada seção da explicação para até 3 frases;
-  - limita a explicação a 7 partes;
-  - altera o texto para orientar estudo guiado, não artigo longo.
+  - removeu compactação artificial para 3 frases;
+  - preserva conteúdo profundo completo vindo da IA;
+  - transforma trechos com numeração `1. 2. 3.` em listas visuais bonitas;
+  - separa exemplos em bloco próprio `Exemplos do professor`;
+  - muda rótulos para `Grammar profunda`, `Aula guiada do professor`, `Momento 1/2/3`;
+  - mantém Prática Profunda separada, sem exercícios duplicados dentro da explicação;
+  - Produção própria agora pede 3 a 6 frases reais do aluno.
+- `LessonScreen.jsx`:
+  - ajusta estimativa de tempo para Grammar profunda;
+  - considera sections/exercises/prompts/vocabulary com peso maior;
+  - evita aula Grammar profunda parecer artificialmente curta como 15/17 min.
 
 Commits:
-- `08b4c3c51541b22f44d7dc922a281b298b5eaac5` — congela questões da prática fullscreen por sessão;
-- `fc59ca714cd249824e66d79337e059e968d65095` — remove exercícios estáticos da aula de gramática.
+- `0bc3c54f47fa0b9ca27bdee516e8defa93b516ec` — transforma gramática em aula profunda guiada;
+- `b64bba24b0c1321401d2a2fe72713a34f6d66353` — ajusta tempo estimado para gramática profunda.
 
 Teste recomendado no iPhone:
 1. abrir a aula Grammar atual;
-2. confirmar que não há lista grande de exercícios fora da Prática Profunda;
-3. tocar em `Começar prática`;
-4. confirmar que a questão 1 não muda sozinha;
-5. marcar uma alternativa e aguardar alguns segundos;
-6. confirmar que as opções não mudam de posição;
-7. sair e entrar novamente na prática para confirmar que a sessão reinicia de forma limpa;
-8. observar se a explicação de Grammar ficou mais curta e guiada.
+2. confirmar que o conteúdo continua profundo, não resumido;
+3. confirmar que partes numeradas não aparecem como texto corrido cheio de `1. 2. 3.`;
+4. confirmar que exemplos aparecem destacados;
+5. confirmar que os exercícios não aparecem fora da Prática Profunda;
+6. abrir Prática Profunda e confirmar que questões não mudam sozinhas;
+7. confirmar que tempo estimado da Grammar ficou mais realista.
 
 Pendência pedagógica ainda aberta:
-- a origem da aula gerada ainda pode produzir conteúdo com tom de artigo;
-- este bloco compacta a renderização, mas o próximo bloco de qualidade deve ajustar o prompt/contrato da aula Grammar para exigir:
-  - explicação curta;
-  - exemplos claros;
-  - erro comum;
-  - mini-prática guiada;
-  - produção própria;
-  - nada de texto enciclopédico.
+- ajustar a origem/prompt da IA para Grammar já nascer no formato de aula profunda, com campos melhores, e não depender só da renderização.
+- Próximo bloco sugerido: `BLOCO-GRAMMAR-CONTRATO-AULA-PROFUNDA-LAB`.
 
 ## Blocos recentes implementados
+
+### `BLOCO-HOTFIX-GRAMMAR-PRATICA-ESTAVEL-LAB` — IMPLEMENTADO
+- Removidos exercícios estáticos da Grammar.
+- `PracticeFullscreen` congela as questões por sessão.
 
 ### `BLOCO-HOTFIX-PERSISTENCIA-VERIFICADA-AULA-LAB` — IMPLEMENTADO
 - `saveCurrentLesson()` só grava status `saved` depois de confirmar que `lesson.current` realmente foi persistido.
@@ -89,10 +83,6 @@ Pendência pedagógica ainda aberta:
 - Cloud Sync sincroniza `lesson.lastGenerationStatus`.
 - Preserva aula local mais recente.
 - Mescla histórico local + nuvem.
-
-### `BLOCO-HOTFIX-DIAGNOSTICO-STORAGE-AULA-LAB` — IMPLEMENTADO
-- Criado `lessonStorageDebug.js`.
-- Diagnóstico mostra `lesson.current`, `lesson.history[0]` e `lesson.lastGenerationStatus`.
 
 ## META OFICIAL — CARTAS / VOCABULÁRIO
 
@@ -104,8 +94,8 @@ Meta planejada:
 
 ## NOVA ORDEM DE BLOCOS
 
-1. `BLOCO-HOTFIX-GRAMMAR-PRATICA-ESTAVEL-LAB` — STATUS: implementado, aguardando teste.
-2. `BLOCO-GRAMMAR-CONTRATO-AULA-GUIADA-LAB` — ajustar prompt/contrato para Grammar não gerar texto enciclopédico.
+1. `BLOCO-GRAMMAR-AULA-PROFUNDA-UI-LAB` — STATUS: implementado, aguardando teste.
+2. `BLOCO-GRAMMAR-CONTRATO-AULA-PROFUNDA-LAB` — ajustar prompt/contrato para Grammar já nascer como aula profunda, não artigo.
 3. `BLOCO-CARTAS-PAREAMENTO-10-LAB` — pareamento palavra ↔ tradução.
 4. `BLOCO-CARTAS-PAREAMENTO-IMAGEM-10B-LAB` — pareamento palavra ↔ imagem.
 5. `BLOCO-CARTAS-SIGNIFICADO-10C-LAB` — escolha de significado refinada.
@@ -117,4 +107,4 @@ Meta planejada:
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O bloco atual implementado foi `BLOCO-HOTFIX-GRAMMAR-PRATICA-ESTAVEL-LAB`: exercícios estáticos removidos da Grammar e `PracticeFullscreen` congela as questões por sessão. Testar no iPhone. Se ok, seguir para `BLOCO-GRAMMAR-CONTRATO-AULA-GUIADA-LAB`, depois voltar para Cartas."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O bloco atual implementado foi `BLOCO-GRAMMAR-AULA-PROFUNDA-UI-LAB`: Grammar preserva aula profunda, transforma numeração em listas e exemplos em blocos de professor; tempo estimado de Grammar foi ajustado. Testar no iPhone. Se ok, seguir para `BLOCO-GRAMMAR-CONTRATO-AULA-PROFUNDA-LAB`, depois voltar para Cartas."
