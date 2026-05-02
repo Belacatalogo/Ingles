@@ -1,0 +1,63 @@
+.lesson-preview-lab-card {
+  display: grid;
+  gap: 12px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  padding: 13px;
+  border: 1px solid rgba(147,160,213,.18);
+  border-radius: 20px;
+  background: radial-gradient(circle at 0% 0%, rgba(251,191,36,.16), transparent 38%), rgba(6,13,31,.68);
+  box-shadow: 0 16px 44px rgba(0,0,0,.24), inset 0 1px 0 rgba(255,255,255,.03);
+  overflow: hidden;
+}
+
+.lesson-preview-lab-card strong {
+  display: block;
+  color: #fef3c7;
+  font-size: 13px;
+  font-weight: 950;
+}
+
+.lesson-preview-lab-card small {
+  display: block;
+  margin-top: 3px;
+  color: #9ca8ca;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.lesson-preview-lab-actions {
+  display: flex;
+  gap: 7px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.lesson-preview-lab-actions::-webkit-scrollbar {
+  display: none;
+}
+
+.lesson-preview-lab-actions button {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 8px 11px;
+  border: 1px solid rgba(147,160,213,.15);
+  border-radius: 999px;
+  color: #cbd5e1;
+  background: rgba(255,255,255,.045);
+  font-size: 12px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.lesson-preview-lab-actions button.active {
+  color: #ffffff;
+  border-color: transparent;
+  background: linear-gradient(135deg, #5b9cf6, #a78bfa);
+}
