@@ -400,6 +400,22 @@
   letter-spacing: -.03em;
 }
 
+.vocab-meaning-hint {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  max-width: 100%;
+  padding: 7px 10px;
+  border: 1px solid rgba(167,139,250,.24);
+  border-radius: 999px;
+  color: #c4b5fd;
+  background: rgba(167,139,250,.10);
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 850;
+  line-height: 1.2;
+}
+
 .vocab-choice-options,
 .vocab-build-options {
   display: grid;
