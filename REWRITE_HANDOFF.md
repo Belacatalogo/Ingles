@@ -25,51 +25,63 @@ Princípio máximo:
 
 ## BLOCO ATUAL
 
-### `BLOCO-GRAMMAR-AULA-PROFUNDA-UI-LAB` — IMPLEMENTADO, aguardando deploy/teste
+### `BLOCO-GRAMMAR-CONTRATO-AULA-PROFUNDA-LAB` — IMPLEMENTADO, aguardando deploy/teste
 
 Contexto:
-- Usuário esclareceu que NÃO quer aula curta.
-- O problema não era “explicação demais”; era a aula parecer artigo/Wikipedia.
-- O bloco anterior tinha compactado demais a explicação, contrariando o objetivo pedagógico.
-- A aula deve ser longa, profunda e completa, mas com cara de professor/aula guiada.
+- usuário pediu aula Grammar longa, completa e profunda;
+- não quer aula curta de 15/17 min;
+- não quer artigo/Wikipedia;
+- quer sentir que está estudando uma aula real;
+- o bloco anterior melhorou a UI, mas este bloco corrige a origem da geração.
 
-Arquivos alterados:
-- `fluency-clean/src/lessons/GrammarLesson.jsx`
-- `fluency-clean/src/screens/LessonScreen.jsx`
+Arquivo alterado:
+- `fluency-clean/src/components/lesson/LessonGeneratorPanel.jsx`
 - `REWRITE_HANDOFF.md`
 
-O que foi corrigido:
-- `GrammarLesson.jsx`:
-  - removeu compactação artificial para 3 frases;
-  - preserva conteúdo profundo completo vindo da IA;
-  - transforma trechos com numeração `1. 2. 3.` em listas visuais bonitas;
-  - separa exemplos em bloco próprio `Exemplos do professor`;
-  - muda rótulos para `Grammar profunda`, `Aula guiada do professor`, `Momento 1/2/3`;
-  - mantém Prática Profunda separada, sem exercícios duplicados dentro da explicação;
-  - Produção própria agora pede 3 a 6 frases reais do aluno.
-- `LessonScreen.jsx`:
-  - ajusta estimativa de tempo para Grammar profunda;
-  - considera sections/exercises/prompts/vocabulary com peso maior;
-  - evita aula Grammar profunda parecer artificialmente curta como 15/17 min.
+O que foi implementado:
+- criado `DEEP_GRAMMAR_CONTRACT` dentro do gerador;
+- criado `buildPromptForLesson(nextLesson, saturdayReview)`;
+- toda aula `grammar` agora recebe contrato extra antes de chamar Gemini;
+- contrato exige:
+  - aula de professor particular, não artigo;
+  - explicação profunda, sem encurtar;
+  - linguagem acolhedora, clara, séria e didática;
+  - nada de sequências `1. 2. 3.` coladas no mesmo parágrafo;
+  - cada seção com função pedagógica clara;
+  - explicação em português + exemplos em inglês A1 + tradução quando ajudar + alerta de erro comum;
+  - estrutura ideal com abertura, mapa, conceito central, regra em camadas, formas afirmativa/negativa/interrogativa, exemplos guiados, certo vs errado, uso real, erros comuns, checagem mental, produção própria e resumo final;
+  - profundidade suficiente para 30 a 45 minutos somando prática;
+  - 18 a 24 exercícios com uma única resposta correta;
+  - produção final obrigatória.
+- o fallback resiliente também usa o mesmo prompt reforçado;
+- quando o contrato é usado, o diagnóstico registra:
+  - `Contrato de Grammar profunda ativado: aula longa, guiada e não enciclopédica.`
+- o `contractVersion` salvo para grammar agora inclui:
+  - `deep-grammar-contract-v1`.
 
 Commits:
-- `0bc3c54f47fa0b9ca27bdee516e8defa93b516ec` — transforma gramática em aula profunda guiada;
-- `b64bba24b0c1321401d2a2fe72713a34f6d66353` — ajusta tempo estimado para gramática profunda.
+- `d356966e2d2188cbcaa297feed81239f9bad09d0` — reforça contrato de geração para grammar profunda.
 
 Teste recomendado no iPhone:
-1. abrir a aula Grammar atual;
-2. confirmar que o conteúdo continua profundo, não resumido;
-3. confirmar que partes numeradas não aparecem como texto corrido cheio de `1. 2. 3.`;
-4. confirmar que exemplos aparecem destacados;
-5. confirmar que os exercícios não aparecem fora da Prática Profunda;
-6. abrir Prática Profunda e confirmar que questões não mudam sozinhas;
-7. confirmar que tempo estimado da Grammar ficou mais realista.
+1. aguardar deploy do commit `d356966` ou posterior;
+2. gerar uma nova aula Grammar, ou substituir a atual se o sistema bloquear por aula pendente;
+3. no Diagnóstico, confirmar log `Contrato de Grammar profunda ativado...`;
+4. abrir aba Aula;
+5. confirmar que a aula nasce mais parecida com professor/aula guiada;
+6. confirmar que não parece recorte enciclopédico;
+7. confirmar que continua profunda e não curta;
+8. confirmar que `contractVersion` da aula mostra `deep-grammar-contract-v1`.
 
-Pendência pedagógica ainda aberta:
-- ajustar a origem/prompt da IA para Grammar já nascer no formato de aula profunda, com campos melhores, e não depender só da renderização.
-- Próximo bloco sugerido: `BLOCO-GRAMMAR-CONTRATO-AULA-PROFUNDA-LAB`.
+Observação importante:
+- a aula já gerada anteriormente não muda automaticamente na origem; é preciso gerar/substituir uma nova Grammar para testar o novo contrato.
 
 ## Blocos recentes implementados
+
+### `BLOCO-GRAMMAR-AULA-PROFUNDA-UI-LAB` — IMPLEMENTADO
+- Grammar preserva conteúdo profundo.
+- Transforma numeração em listas visuais.
+- Destaca exemplos do professor.
+- Ajusta tempo estimado para Grammar profunda.
 
 ### `BLOCO-HOTFIX-GRAMMAR-PRATICA-ESTAVEL-LAB` — IMPLEMENTADO
 - Removidos exercícios estáticos da Grammar.
@@ -78,11 +90,6 @@ Pendência pedagógica ainda aberta:
 ### `BLOCO-HOTFIX-PERSISTENCIA-VERIFICADA-AULA-LAB` — IMPLEMENTADO
 - `saveCurrentLesson()` só grava status `saved` depois de confirmar que `lesson.current` realmente foi persistido.
 - Se falhar, limpa histórico e tenta versão compacta.
-
-### `BLOCO-HOTFIX-CLOUD-SYNC-AULA-SEGURA-LAB` — IMPLEMENTADO
-- Cloud Sync sincroniza `lesson.lastGenerationStatus`.
-- Preserva aula local mais recente.
-- Mescla histórico local + nuvem.
 
 ## META OFICIAL — CARTAS / VOCABULÁRIO
 
@@ -94,17 +101,17 @@ Meta planejada:
 
 ## NOVA ORDEM DE BLOCOS
 
-1. `BLOCO-GRAMMAR-AULA-PROFUNDA-UI-LAB` — STATUS: implementado, aguardando teste.
-2. `BLOCO-GRAMMAR-CONTRATO-AULA-PROFUNDA-LAB` — ajustar prompt/contrato para Grammar já nascer como aula profunda, não artigo.
-3. `BLOCO-CARTAS-PAREAMENTO-10-LAB` — pareamento palavra ↔ tradução.
-4. `BLOCO-CARTAS-PAREAMENTO-IMAGEM-10B-LAB` — pareamento palavra ↔ imagem.
-5. `BLOCO-CARTAS-SIGNIFICADO-10C-LAB` — escolha de significado refinada.
-6. `BLOCO-CARTAS-TRADUCAO-GUIADA-11-LAB` — tradução com banco de palavras.
-7. `BLOCO-CARTAS-GLOSS-INLINE-12-LAB` — clicar na palavra e ver tradução dentro das frases.
-8. `BLOCO-CARTAS-LISTENING-ATIVO-13-LAB` — digite o que ouve.
-9. `BLOCO-CARTAS-SPEAKING-14-LAB` — repetir frase.
-10. `BLOCO-CARTAS-STORIES-15-LAB` — mini-histórias.
+1. `BLOCO-GRAMMAR-CONTRATO-AULA-PROFUNDA-LAB` — STATUS: implementado, aguardando teste.
+2. se Grammar nova ainda vier com cara de artigo, endurecer `geminiLessons.js` no blueprint de grammar.
+3. se ok, voltar para `BLOCO-CARTAS-PAREAMENTO-10-LAB`.
+4. `BLOCO-CARTAS-PAREAMENTO-IMAGEM-10B-LAB`.
+5. `BLOCO-CARTAS-SIGNIFICADO-10C-LAB`.
+6. `BLOCO-CARTAS-TRADUCAO-GUIADA-11-LAB`.
+7. `BLOCO-CARTAS-GLOSS-INLINE-12-LAB`.
+8. `BLOCO-CARTAS-LISTENING-ATIVO-13-LAB`.
+9. `BLOCO-CARTAS-SPEAKING-14-LAB`.
+10. `BLOCO-CARTAS-STORIES-15-LAB`.
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O bloco atual implementado foi `BLOCO-GRAMMAR-AULA-PROFUNDA-UI-LAB`: Grammar preserva aula profunda, transforma numeração em listas e exemplos em blocos de professor; tempo estimado de Grammar foi ajustado. Testar no iPhone. Se ok, seguir para `BLOCO-GRAMMAR-CONTRATO-AULA-PROFUNDA-LAB`, depois voltar para Cartas."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O bloco atual implementado foi `BLOCO-GRAMMAR-CONTRATO-AULA-PROFUNDA-LAB`: `LessonGeneratorPanel` adiciona `DEEP_GRAMMAR_CONTRACT` ao prompt de Grammar, exige aula longa, guiada, não enciclopédica e salva `deep-grammar-contract-v1` no contrato. Testar gerando nova Grammar. Se ok, seguir para `BLOCO-CARTAS-PAREAMENTO-10-LAB`."
