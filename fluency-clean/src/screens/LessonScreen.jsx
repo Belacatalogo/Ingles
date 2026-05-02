@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { BookOpen, CheckCircle2, Clock, Headphones, RefreshCw, ShieldCheck, Sparkles, Target, Zap } from 'lucide-react';
+import { BookOpen, CheckCircle2, Clock, Headphones, Mic, RefreshCw, ShieldCheck, Sparkles, Target, Zap } from 'lucide-react';
 import { Card } from '../components/ui/Card.jsx';
 import { LessonQualityPanel } from '../components/lesson/LessonQualityPanel.jsx';
 import { ReadingLesson } from '../lessons/ReadingLesson.jsx';
@@ -8,6 +8,7 @@ import { ListeningLessonClean } from '../lessons/ListeningLessonClean.jsx';
 import { WritingLesson } from '../lessons/WritingLesson.jsx';
 import { PracticeLauncher } from '../practice/PracticeLauncher.jsx';
 import { getCurrentLesson, getCurrentLessonFull } from '../services/lessonStore.js';
+import { getPreviewLesson } from '../services/lessonPreviewSamples.js';
 
 const fallbackLesson = {
   id: 'fallback-reading',
@@ -23,6 +24,13 @@ const lessonSections = [
   { id: 'practice', title: 'Prática', icon: Target },
   { id: 'speak', title: 'Fala', icon: Headphones },
   { id: 'review', title: 'Revisão', icon: CheckCircle2 },
+];
+
+const previewOptions = [
+  { id: 'real', label: 'Aula real', icon: Sparkles },
+  { id: 'listening', label: 'Testar Listening', icon: Headphones },
+  { id: 'reading', label: 'Testar Reading', icon: BookOpen },
+  { id: 'speaking', label: 'Abrir Speaking', icon: Mic },
 ];
 
 function getLessonTitle(lesson) {
@@ -56,7 +64,7 @@ function getLessonStats(lesson) {
   const vocabularyCount = Array.isArray(lesson?.vocabulary) ? lesson.vocabulary.length : 0;
   const sectionCount = Array.isArray(lesson?.sections) ? lesson.sections.length : 0;
   const promptCount = Array.isArray(lesson?.prompts) ? lesson.prompts.length : 0;
-  const mainWords = countWords(lesson?.listeningText);
+  const mainWords = countWords(`${lesson?.listeningText || ''} ${lesson?.readingText || ''} ${lesson?.text || ''}`);
   const sectionWords = Array.isArray(lesson?.sections)
     ? lesson.sections.reduce((total, section) => total + countWords(`${section?.title || ''} ${section?.content || ''}`), 0)
     : 0;
@@ -82,13 +90,14 @@ function LessonRenderer({ lesson }) {
   );
 }
 
-export function LessonScreen({ lessonRevision = 0 }) {
+export function LessonScreen({ lessonRevision = 0, onNavigate }) {
   const [activeSection, setActiveSection] = useState(0);
   const [localRevision, setLocalRevision] = useState(0);
   const [pointerRevision, setPointerRevision] = useState(0);
   const [fullLesson, setFullLesson] = useState(null);
   const [loadedGenerationId, setLoadedGenerationId] = useState('');
   const [loadingFullLesson, setLoadingFullLesson] = useState(false);
+  const [previewType, setPreviewType] = useState('real');
 
   useEffect(() => {
     function refreshLesson() {
@@ -133,9 +142,11 @@ export function LessonScreen({ lessonRevision = 0 }) {
   }, [pointerGenerationId, lessonRevision, localRevision]);
 
   const savedLesson = fullLesson || savedLessonPointer;
-  const lesson = savedLesson || fallbackLesson;
+  const previewLesson = previewType === 'real' ? null : getPreviewLesson(previewType);
+  const lesson = previewLesson || savedLesson || fallbackLesson;
   const lessonStats = useMemo(() => getLessonStats(lesson), [lesson]);
-  const usingGenerated = Boolean(savedLesson);
+  const usingGenerated = Boolean(savedLesson) && !previewLesson;
+  const usingPreview = Boolean(previewLesson);
   const currentProgress = Math.round(((activeSection + 1) / lessonSections.length) * 100);
   const meta = lesson?.generationMeta || null;
   const score = meta?.pedagogicalScore || lesson?.quality?.teacherScore || lesson?.quality?.pedagogicalScore || 0;
@@ -146,22 +157,51 @@ export function LessonScreen({ lessonRevision = 0 }) {
   }
 
   function forceRefreshLesson() {
+    setPreviewType('real');
     setLoadedGenerationId('');
     setLocalRevision((value) => value + 1);
   }
 
+  function handlePreviewChange(type) {
+    if (type === 'speaking') {
+      onNavigate?.('speaking');
+      return;
+    }
+    setPreviewType(type);
+    setActiveSection(0);
+    requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: 'smooth' }));
+  }
+
   return (
-    <section className="lesson-reference-screen">
+    <section className="lesson-reference-screen lesson-preview-lab-enabled">
+      <section className="lesson-preview-lab-card" aria-label="Prévia temporária de tipos de aula">
+        <div>
+          <strong>Teste temporário de abas</strong>
+          <small>Use só na lab para validar Listening, Reading e Speaking antes do dia oficial.</small>
+        </div>
+        <div className="lesson-preview-lab-actions">
+          {previewOptions.map((option) => {
+            const Icon = option.icon;
+            const active = previewType === option.id || (option.id === 'real' && !usingPreview);
+            return (
+              <button type="button" key={option.id} className={active ? 'active' : ''} onClick={() => handlePreviewChange(option.id)}>
+                <Icon size={14} /> {option.label}
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
       <section className="lesson-reference-hero">
         <div className="lesson-chip-row">
-          <span className="lesson-chip blue"><Sparkles size={11} /> {usingGenerated ? 'Gerada por IA' : 'Aula inicial'}</span>
+          <span className="lesson-chip blue"><Sparkles size={11} /> {usingPreview ? 'Preview temporário' : usingGenerated ? 'Gerada por IA' : 'Aula inicial'}</span>
           <span className="lesson-chip">{getLessonTypeLabel(lesson)}</span>
           <span className="lesson-chip violet">{lesson?.level || 'A1'}</span>
-          {savedLessonPointer?.storageMode === 'lesson-full-indexeddb-v1' ? <span className="lesson-chip">IndexedDB completo</span> : null}
+          {savedLessonPointer?.storageMode === 'lesson-full-indexeddb-v1' && !usingPreview ? <span className="lesson-chip">IndexedDB completo</span> : null}
         </div>
         <h1>{getLessonTitle(lesson)}</h1>
-        <p>{loadingFullLesson && savedLessonPointer && !fullLesson ? 'Carregando aula completa...' : getLessonDescription(lesson)}</p>
-        {usingGenerated ? (
+        <p>{loadingFullLesson && savedLessonPointer && !fullLesson && !usingPreview ? 'Carregando aula completa...' : getLessonDescription(lesson)}</p>
+        {usingGenerated || usingPreview ? (
           <div className="lesson-generation-proof">
             <ShieldCheck size={15} />
             <span>
@@ -180,6 +220,7 @@ export function LessonScreen({ lessonRevision = 0 }) {
       </section>
 
       {usingGenerated ? <LessonQualityPanel lesson={lesson} /> : null}
+      {usingPreview ? <Card eyebrow="LAB temporário" title="Modo de teste ativo"><p>Esta aula é uma amostra local para validar a renderização. Ela não substitui sua aula real gerada por IA.</p></Card> : null}
 
       <section className="lesson-stepper-card"><div className="lesson-stepper-row">{lessonSections.map((section, index) => { const Icon = index < activeSection ? CheckCircle2 : section.icon; const active = index === activeSection; const done = index < activeSection; return (<button type="button" key={section.id} className={active ? 'active' : done ? 'done' : ''} onClick={() => jumpToSection(section, index)}><Icon size={12} />{section.title}</button>); })}</div></section>
 
