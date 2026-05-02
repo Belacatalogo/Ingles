@@ -1,6 +1,7 @@
 import { fixedExpansionA1A2Decks } from '../data/vocabulary/fixedExpansionA1A2.js';
 import { fixedExpansionB1B2Decks } from '../data/vocabulary/fixedExpansionB1B2.js';
 import { fixedExpansionC1C2Decks } from '../data/vocabulary/fixedExpansionC1C2.js';
+import { auditVocabularyCurriculum } from './vocabularyCurriculumAudit.js';
 
 const baseDeckDefinitions = [
   {
@@ -152,31 +153,23 @@ export function getTotalVocabularyBankCount() {
 }
 
 export function getVocabularyBankAudit() {
-  const decks = getVocabularyDecks();
-  const cards = deckDefinitions.flatMap((deck) => deck.cards.map((item, index) => ({ deck: deck.id, level: deck.level, index, word: item[0], translation: item[1], example: item[2], chunk: item[3] || '' })));
-  const wordCounts = cards.reduce((acc, card) => {
-    const key = String(card.word || '').toLowerCase();
-    acc[key] = (acc[key] || 0) + 1;
-    return acc;
-  }, {});
-  const duplicates = Object.entries(wordCounts).filter(([, count]) => count > 1).map(([word, count]) => ({ word, count }));
-  const structuralIssues = cards.filter((card) => !card.word || !card.translation || !card.example || !/^[A-Z]/.test(card.example) || !/[.!?]$/.test(card.example));
-  const chunkIssues = cards.filter((card) => !card.chunk || String(card.chunk).split(/\s+/).length < 2);
-  const countsByLevel = cards.reduce((acc, card) => {
-    acc[card.level] = (acc[card.level] || 0) + 1;
-    return acc;
-  }, {});
+  const pedagogicalAudit = auditVocabularyCurriculum(deckDefinitions, { target: VOCABULARY_BANK_TARGET });
   return {
-    decks: decks.length,
-    cards: cards.length,
-    countsByLevel,
-    target: VOCABULARY_BANK_TARGET,
-    duplicates,
-    structuralIssues,
-    chunkIssues,
-    passedStructure: structuralIssues.length === 0,
-    passedChunks: chunkIssues.length === 0,
-    passedDuplicates: duplicates.length <= 32,
+    decks: pedagogicalAudit.totalDecks,
+    cards: pedagogicalAudit.totalCards,
+    countsByLevel: pedagogicalAudit.countsByLevel,
+    target: pedagogicalAudit.target,
+    completionPercent: pedagogicalAudit.completionPercent,
+    duplicates: pedagogicalAudit.duplicates,
+    repeatedTranslations: pedagogicalAudit.repeatedTranslations,
+    structuralIssues: pedagogicalAudit.issues.filter((item) => item.type.startsWith('missing-') || item.type.startsWith('example-')),
+    chunkIssues: pedagogicalAudit.issues.filter((item) => item.type.startsWith('chunk-') || item.type === 'missing-chunk'),
+    pedagogicalIssues: pedagogicalAudit.issues,
+    bySeverity: pedagogicalAudit.bySeverity,
+    passedStructure: pedagogicalAudit.passedCritical,
+    passedChunks: !pedagogicalAudit.issues.some((item) => item.type.startsWith('chunk-') || item.type === 'missing-chunk'),
+    passedDuplicates: !pedagogicalAudit.issues.some((item) => item.type === 'excessive-duplicate-word'),
+    passedPedagogicalAudit: pedagogicalAudit.passedPedagogicalAudit,
   };
 }
 
