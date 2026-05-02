@@ -1,4 +1,5 @@
 import { normalizeLesson } from './lessonTypes.js';
+import { auditDeepGrammarLesson } from './deepGrammarPipeline.js';
 
 function clean(value) {
   return String(value ?? '').trim();
@@ -85,9 +86,9 @@ function scoreSkillAlignment(lesson, expectedType = '') {
     return normalizeScore(Math.min(100, transcriptWords / 1.6) * 0.55 + Math.min(100, hits * 18) * 0.45);
   }
   if (type === 'grammar') {
-    const signals = ['quando usar', 'estrutura', 'afirmativa', 'negativa', 'pergunta', 'erro', 'exemplo'];
+    const signals = ['quando usar', 'estrutura', 'afirmativa', 'negativa', 'pergunta', 'erro', 'exemplo', 'analogia', 'certo', 'errado', 'uso real'];
     const hits = signals.filter((signal) => text.includes(signal)).length;
-    return normalizeScore(Math.min(100, hits * 18));
+    return normalizeScore(Math.min(100, hits * 11));
   }
   if (type === 'reading') {
     const signals = ['texto', 'leitura', 'read', 'main idea', 'ideia principal', 'detalhe', 'contexto'];
@@ -133,13 +134,13 @@ function scoreLevelSafety(lesson, expectedLevel = '') {
   return normalizeScore(score);
 }
 
-function buildReviewedAreas(lesson) {
+function buildReviewedAreas(lesson, deepGrammarAudit = null) {
   const sections = ensureArray(lesson.sections);
   const vocabulary = ensureArray(lesson.vocabulary);
   const exercises = ensureArray(lesson.exercises);
   const prompts = ensureArray(lesson.prompts);
   const hasText = Boolean(clean(lesson.listeningText) || clean(lesson.intro) || clean(lesson.objective));
-  return {
+  const areas = {
     text: {
       label: 'Texto da aula',
       reviewed: hasText,
@@ -177,6 +178,17 @@ function buildReviewedAreas(lesson) {
       detail: 'produção própria e respostas abertas foram consideradas para reduzir falso domínio.',
     },
   };
+
+  if (deepGrammarAudit?.applies) {
+    areas.deepGrammar = {
+      label: 'Grammar profunda',
+      reviewed: true,
+      status: `${deepGrammarAudit.score}/100`,
+      detail: deepGrammarAudit.approved ? 'progressão didática, repetição, exemplos guiados e prática foram auditados.' : deepGrammarAudit.issues.join(' '),
+    };
+  }
+
+  return areas;
 }
 
 export function reviewLessonAsTeacher(rawLesson, { expectedLevel = '', expectedType = '', baseReview = null } = {}) {
@@ -188,18 +200,20 @@ export function reviewLessonAsTeacher(rawLesson, { expectedLevel = '', expectedT
   const antiIllusion = scoreAntiIllusion(lesson);
   const levelSafety = scoreLevelSafety(lesson, expectedLevel || lesson.level);
   const baseScore = Number(baseReview?.overallScore || 0);
+  const deepGrammarAudit = auditDeepGrammarLesson(lesson);
 
   const teacherScore = normalizeScore(
-    coherence * 0.18 +
-    depth * 0.17 +
-    exerciseUsefulness * 0.2 +
-    skillAlignment * 0.18 +
-    antiIllusion * 0.17 +
-    levelSafety * 0.1
+    coherence * 0.16 +
+    depth * 0.15 +
+    exerciseUsefulness * 0.18 +
+    skillAlignment * 0.16 +
+    antiIllusion * 0.15 +
+    levelSafety * 0.08 +
+    (deepGrammarAudit.applies ? deepGrammarAudit.score * 0.12 : 88 * 0.12)
   );
 
   const finalScore = baseScore
-    ? normalizeScore(baseScore * 0.55 + teacherScore * 0.45)
+    ? normalizeScore(baseScore * 0.48 + teacherScore * 0.52)
     : teacherScore;
 
   const issues = [];
@@ -209,8 +223,9 @@ export function reviewLessonAsTeacher(rawLesson, { expectedLevel = '', expectedT
   if (skillAlignment < 75) issues.push('Professor revisor: a aula não está alinhada o bastante ao tipo esperado.');
   if (antiIllusion < 78) issues.push('Professor revisor: há risco de falso domínio por excesso de reconhecimento e pouca produção.');
   if (levelSafety < 82) issues.push('Professor revisor: dificuldade ou formato inadequado para o nível atual.');
+  if (deepGrammarAudit.applies && !deepGrammarAudit.approved) issues.push(...deepGrammarAudit.issues.map((issue) => `Professor revisor: ${issue}`));
 
-  const approved = finalScore >= 82 && issues.length <= 2;
+  const approved = finalScore >= 82 && issues.length <= 2 && (!deepGrammarAudit.applies || deepGrammarAudit.score >= 78);
 
   return {
     approved,
@@ -223,11 +238,12 @@ export function reviewLessonAsTeacher(rawLesson, { expectedLevel = '', expectedT
     skillAlignment,
     antiIllusion,
     levelSafety,
+    deepGrammarAudit,
     issues,
     advice: issues.length ? `Revisar antes de salvar: ${issues.join(' ')}` : 'Aula aprovada pelo professor revisor.',
-    reviewedAreas: buildReviewedAreas(lesson),
+    reviewedAreas: buildReviewedAreas(lesson, deepGrammarAudit),
     checkedAt: new Date().toISOString(),
-    reviewer: 'teacher-reviewer-v1',
+    reviewer: deepGrammarAudit.applies ? 'teacher-reviewer-v1+deep-grammar-auditor-v1' : 'teacher-reviewer-v1',
   };
 }
 
@@ -242,6 +258,7 @@ export function attachTeacherReview(rawLesson, teacherReview) {
       teacherIssues: teacherReview.issues,
       reviewer: teacherReview.reviewer,
       reviewedAreas: teacherReview.reviewedAreas,
+      deepGrammarAudit: teacherReview.deepGrammarAudit,
     },
   };
 }
