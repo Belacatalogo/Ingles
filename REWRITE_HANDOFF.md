@@ -15,42 +15,70 @@ Branch estável protegida: `rewrite-fluency-clean`
 - Não mexer no backend Azure privado.
 - Manter tudo modular em `fluency-clean/src/`, `fluency-clean/public/` ou arquivos reais de configuração.
 
-## ESTADO ATUAL — HOTFIX EXTERNAL 1B: TOKENS MENORES + SECTION CURTA
+## ESTADO ATUAL — HOTFIX EXTERNAL 1B: ALVO MAIOR E EXPANSÃO PREVENTIVA
 
-### `HOTFIX-EXTERNAL-1B-TOKEN-CONTROL-LAB` — IMPLEMENTADO, aguardando deploy/teste
+### `HOTFIX-EXTERNAL-1B-TARGET-MIN-LAB` — IMPLEMENTADO, aguardando deploy/teste
 
 Contexto:
-- Cerebras puro já entrou no 1B, mas a primeira section veio curta: `106/180 palavras`.
-- Groq puro já chegou até section 2 aprovada (`229 palavras`), mas quebrou na section 3 por HTTP 429/TPM: `Limit 12000, Used 9995, Requested 2079`.
-- Isso confirma que Groq tem qualidade/fluxo funcionando, mas ainda precisa reduzir consumo de tokens por minuto.
+- Cerebras continuou gerando section curta no 1B.
+- Groq melhorou muito e já gerou sections aprovadas, por exemplo:
+  - section 1: 241 palavras;
+  - section 2: 229 palavras;
+  - section 4 veio com 179/180 e pediu expansão.
+- Groq ainda pode bater limite TPM, mas a qualidade parcial parece superior ao Cerebras e não está idêntica ao Flash.
 
 Correção aplicada em `grammarSectionGenerator.js`:
-- Contexto de sections anteriores para provedores externos foi reduzido:
-  - antes: até 900 caracteres por section anterior;
-  - agora: até 220 caracteres por section anterior em modo externo.
-- Exemplo 1-shot enviado aos externos foi encurtado.
-- Prompt externo passou a mirar 200–240 palavras por section, mantendo mínimo de 180.
-- Adicionada pausa entre sections externas:
-  - Groq: 5,5s entre sections;
-  - Cerebras: 1,8s entre sections.
-- Se uma section externa vier curta, o app não aborta imediatamente:
-  - registra `Section X veio curta... Pedindo expansão ao mesmo provedor`;
-  - espera um pouco;
-  - chama o mesmo provedor de novo pedindo expansão da section curta;
-  - só reprova se a expansão também falhar.
+- Criado alvo preventivo externo `EXTERNAL_SECTION_TARGET_MIN = 220`.
+- Agora, em Groq/Cerebras, uma section abaixo de 220 palavras pede expansão preventiva, mesmo se já passou do mínimo técnico de 180.
+- Prompt externo agora mira 240–280 palavras e instrui a não parar perto do mínimo.
+- Contexto anterior externo ficou ainda mais enxuto:
+  - 160 caracteres por section anterior.
+- Exemplo 1-shot externo encurtado para reduzir tokens.
+- Pausa Groq aumentada para 9s entre sections.
+- Pausa antes de expansão Groq aumentada para 9,5s.
+- Cerebras mantém pausa menor, mas também usa expansão preventiva.
+
+Commit:
+- `d520b09543d70d2016f2eb1b900fb01e7512742d` — alvo maior para sections externas.
+
+Teste obrigatório agora:
+1. aguardar deploy da branch `rewrite-fluency-clean-lab` com commit `d520b09` ou posterior;
+2. testar Groq puro de novo;
+3. confirmar se sections abaixo de 220 são expandidas preventivamente;
+4. confirmar se o erro 429 diminui com pausa de 9s;
+5. testar Cerebras puro só se ainda fizer sentido; pelos testes parciais, Cerebras parece menos obediente para Grammar profunda.
+
+## LEITURA PARCIAL DA COMPARAÇÃO FLASH X GROQ X CEREBRAS
+
+### Flash/Gemini
+- Foi o mais estável até agora.
+- Gerou aula completa, abriu no IndexedDB e recebeu 98/100.
+- Conteúdo profundo e validado.
+- Problema principal observado: visual dos blocos `Exemplos do professor`, com texto corrido e pontuação grudada.
+
+### Groq
+- Não está idêntico ao Flash.
+- O conteúdo observado tem frases e organização diferentes.
+- Já gerou sections aprovadas de 241 e 229 palavras.
+- O problema principal é operacional: limite TPM/rate limit, não falta de qualidade.
+- Pode ser bom candidato para fallback ou teste futuro se o controle de tokens/pausas resolver.
+
+### Cerebras `llama3.1-8b`
+- Entrou no 1B, mas veio curto demais.
+- Indício de menor obediência ao contrato de profundidade.
+- Pode servir para tarefas leves, mas até agora parece fraco para Grammar profunda.
+
+## ESTADO ANTERIOR — HOTFIX EXTERNAL 1B: TOKENS MENORES + SECTION CURTA
+
+### `HOTFIX-EXTERNAL-1B-TOKEN-CONTROL-LAB` — IMPLEMENTADO
+
+- Contexto de sections anteriores para provedores externos foi reduzido.
+- Prompt externo mirava 200–240 palavras.
+- Adicionada pausa entre sections externas.
+- Se uma section externa viesse curta, pedia expansão ao mesmo provedor.
 
 Commit:
 - `d80a8cdb409b3d060dba4920a8feea29bb3ef499` — reduz tokens e repara section curta.
-
-Teste obrigatório agora:
-1. aguardar deploy da branch `rewrite-fluency-clean-lab` com commit `d80a8cd` ou posterior;
-2. testar primeiro Cerebras puro com `llama3.1-8b`;
-3. confirmar se aparece, caso venha curto:
-   - `Section 1 veio curta em cerebras... Pedindo expansão ao mesmo provedor`;
-   - depois `Grammar section 1 aprovada... cerebras/llama3.1-8b`;
-4. testar Groq puro;
-5. confirmar se a pausa diminui os erros 429/TPM;
-6. comparar nota/qualidade/hash somente se salvar.
 
 ## ESTADO ANTERIOR — HOTFIX EXTERNAL PROVIDERS: ESQUELETO LEVE + 1B PURO
 
@@ -64,32 +92,13 @@ Teste obrigatório agora:
 Commit:
 - `782ff028b1f956c8ab0814d97581f30f47fd109d` — esqueleto leve obrigatório.
 
-## ESTADO ANTERIOR — HOTFIX PROVEDORES EXTERNOS ROBUSTOS
-
-### `HOTFIX-EXTERNAL-PROVIDERS-ROBUST-LAB` — IMPLEMENTADO
-- Groq tem retry/backoff em HTTP 429.
-- Parser JSON externo ficou mais tolerante.
-- Cerebras 1B recebe prompt mais restrito.
-- Teste forçado não volta para Gemini.
-
-Commits:
-- `dfe4ed42f7b0ae424f68d8b8a6b7d33fec310e58` — retry e parser tolerante.
-- `e01094350fc4b9ef3d5dd62f6538030e76805855` — não contamina teste forçado.
-
-## ESTADO ANTERIOR — HOTFIX MOTOR PURO PARA COMPARAÇÃO
-
-### `HOTFIX-MOTOR-PURO-GROQ-CEREBRAS-LAB` — IMPLEMENTADO
-- Quando força Groq, esqueleto e Grammar 1B usam Groq.
-- Quando força Cerebras, esqueleto e Grammar 1B usam Cerebras.
-- Validação local/revisor permanece igual.
-
 ## PENDENTE VISUAL ANOTADO — NÃO MEXER AINDA
 
 ### `HOTFIX-GRAMMAR-EXEMPLOS-VISUAIS-LAB` — PENDENTE
 
-Problema observado na aula Flash:
+Problema observado na aula Flash e também perceptível no Groq:
 - Blocos `Exemplos do professor` aparecem como texto corrido.
-- Há pontuação grudada, por exemplo `.Por exemplo` e `.Ele também`.
+- Há pontuação grudada, por exemplo `.Por exemplo`, `.Já`, `.Outro`.
 - Exemplos, traduções e explicações ficam cansativos no celular.
 
 Correção futura, somente depois da comparação de motores:
@@ -123,12 +132,12 @@ Correção futura, somente depois da comparação de motores:
 
 ## Próximo teste recomendado
 
-1. Esperar deploy com `d80a8cd` ou posterior.
-2. Testar Cerebras puro com `llama3.1-8b`.
-3. Confirmar que section curta é expandida automaticamente.
-4. Testar Groq puro.
-5. Comparar nota/qualidade/hash se salvar.
+1. Esperar deploy com `d520b09` ou posterior.
+2. Testar Groq puro.
+3. Se Groq salvar, comparar aula completa com Flash.
+4. Testar Cerebras puro apenas para confirmar se ainda vem curto.
+5. Depois decidir motor prioritário.
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. O último hotfix foi `d80a8cd`: 1B externo agora envia menos contexto, pausa entre sections e tenta expandir section curta no mesmo provedor. Próximo passo é testar Cerebras puro com `llama3.1-8b`, depois Groq puro. Não mexer em Cirurgia 3/deepGrammarPipeline ainda. Não corrigir visual dos exemplos antes da comparação. Não mexer em `main`, `rewrite-fluency-clean`, `bundle.js` ou backend Azure privado."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. O último hotfix foi `d520b09`: 1B externo agora mira 240–280 palavras, expande preventivamente abaixo de 220 palavras e aumenta pausa do Groq para 9s. Próximo passo é testar Groq puro e comparar com Flash. Não mexer em Cirurgia 3/deepGrammarPipeline ainda. Não corrigir visual dos exemplos antes da comparação. Não mexer em `main`, `rewrite-fluency-clean`, `bundle.js` ou backend Azure privado."
