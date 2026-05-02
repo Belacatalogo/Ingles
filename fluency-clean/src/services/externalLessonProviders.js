@@ -6,6 +6,7 @@ import { MODEL_POLICY_VERSION, getExternalProviderPolicy } from './modelPolicy.j
 
 const FORCE_EXTERNAL_NEXT_STORAGE = 'lesson.external.forceNext';
 const FORCE_EXTERNAL_PROVIDER_STORAGE = 'lesson.external.forceProvider';
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 function text(value) {
   return String(value ?? '').trim();
@@ -56,12 +57,73 @@ function normalizeForcedProvider(value) {
   return provider === 'groq' || provider === 'cerebras' ? provider : '';
 }
 
-function jsonFromText(value) {
-  const raw = text(value).replace(/^```(?:json)?\s*/i, '').replace(/```$/i, '').trim();
+function stripCodeFence(value) {
+  return text(value).replace(/^```(?:json)?\s*/i, '').replace(/```$/i, '').trim();
+}
+
+function sliceBalancedJsonObject(value) {
+  const raw = stripCodeFence(value);
   const start = raw.indexOf('{');
-  const end = raw.lastIndexOf('}');
-  const sliced = start >= 0 && end > start ? raw.slice(start, end + 1) : raw;
-  return JSON.parse(sliced.replace(/,\s*([}\]])/g, '$1'));
+  if (start < 0) return raw;
+  let depth = 0;
+  let inString = false;
+  let escaped = false;
+  for (let index = start; index < raw.length; index += 1) {
+    const char = raw[index];
+    if (escaped) {
+      escaped = false;
+      continue;
+    }
+    if (char === '\\') {
+      escaped = true;
+      continue;
+    }
+    if (char === '"') {
+      inString = !inString;
+      continue;
+    }
+    if (inString) continue;
+    if (char === '{') depth += 1;
+    if (char === '}') {
+      depth -= 1;
+      if (depth === 0) return raw.slice(start, index + 1);
+    }
+  }
+  return raw.slice(start);
+}
+
+function repairJsonText(value) {
+  let raw = sliceBalancedJsonObject(value);
+  raw = raw
+    .replace(/[\u201C\u201D]/g, '"')
+    .replace(/[\u2018\u2019]/g, "'")
+    .replace(/,\s*([}\]])/g, '$1')
+    .replace(/\n\s*\n/g, '\n');
+
+  const openBraces = (raw.match(/{/g) || []).length;
+  const closeBraces = (raw.match(/}/g) || []).length;
+  const openBrackets = (raw.match(/\[/g) || []).length;
+  const closeBrackets = (raw.match(/\]/g) || []).length;
+  if (closeBrackets < openBrackets) raw += ']'.repeat(openBrackets - closeBrackets);
+  if (closeBraces < openBraces) raw += '}'.repeat(openBraces - closeBraces);
+  return raw;
+}
+
+function jsonFromText(value) {
+  const raw = repairJsonText(value);
+  try {
+    return JSON.parse(raw);
+  } catch (firstError) {
+    const repaired = raw
+      .replace(/\}\s*\{/g, '},{')
+      .replace(/"\s*\n\s*"/g, '" "')
+      .replace(/([\[{,])\s*([A-Za-z0-9_]+)\s*:/g, '$1"$2":');
+    try {
+      return JSON.parse(repaired);
+    } catch (secondError) {
+      throw new Error(`JSON Parse error: ${secondError?.message || secondError}. Preview: ${raw.slice(0, 220)}`);
+    }
+  }
 }
 
 function providersFromLocalStorage(targetProvider = '') {
@@ -93,6 +155,7 @@ function providersFromLocalStorage(targetProvider = '') {
 function buildPrompt({ prompt = '', forcedType = '', level = 'A1', forceVariation = false } = {}) {
   return [
     'Responda somente com JSON valido, sem markdown e sem texto fora do JSON.',
+    'IMPORTANTE: não use arrays quebrados, não deixe vírgula sobrando e feche todas as chaves e colchetes.',
     'Gere uma aula completa do Fluency para estudante brasileiro de ingles.',
     forcedType ? `Tipo travado: ${forcedType}.` : 'Inferir tipo sem mudar o objetivo.',
     `Nivel esperado: ${level || 'A1'}.`,
@@ -109,24 +172,32 @@ function buildPrompt({ prompt = '', forcedType = '', level = 'A1', forceVariatio
   ].filter(Boolean).join('\n');
 }
 
-async function callProvider(provider, prompt, fetcher, strictJson = true, maxTokens = 8192) {
+function retryAfterFromResponse(response, fallbackSeconds = 8) {
+  const raw = response?.headers?.get?.('retry-after') || '';
+  const parsed = Number(raw);
+  if (Number.isFinite(parsed) && parsed > 0) return Math.min(Math.max(parsed, 2), 30);
+  return fallbackSeconds;
+}
+
+async function callProviderOnce(provider, prompt, fetcher, strictJson = true, maxTokens = 8192) {
   const headers = { 'content-type': 'application/json' };
   headers.Authorization = ['Bearer', provider.secret].join(' ');
   const body = {
     model: provider.model,
     messages: [
-      { role: 'system', content: 'Voce gera apenas JSON valido.' },
+      { role: 'system', content: 'Voce gera apenas JSON valido. O primeiro caractere deve ser { e o ultimo deve ser }.' },
       { role: 'user', content: prompt },
     ],
-    temperature: 0.25,
+    temperature: 0.18,
     max_completion_tokens: maxTokens,
   };
   if (strictJson) body.response_format = { type: 'json_object' };
   const response = await fetcher(provider.url, { method: 'POST', headers, body: JSON.stringify(body) });
   if (!response?.ok) {
     const errorText = await response?.text?.().catch(() => '') || '';
-    const error = new Error(`HTTP ${response?.status || 0} ${errorText.slice(0, 180)}`);
+    const error = new Error(`HTTP ${response?.status || 0} ${errorText.slice(0, 260)}`);
     error.status = response?.status || 0;
+    error.retryAfterSeconds = retryAfterFromResponse(response);
     throw error;
   }
   const data = await response.json();
@@ -135,13 +206,33 @@ async function callProvider(provider, prompt, fetcher, strictJson = true, maxTok
   return jsonFromText(content);
 }
 
+async function callProvider(provider, prompt, fetcher, strictJson = true, maxTokens = 8192) {
+  const maxAttempts = provider.id === 'groq' ? 3 : 2;
+  let lastError = null;
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
+      return await callProviderOnce(provider, prompt, fetcher, strictJson, maxTokens);
+    } catch (error) {
+      lastError = error;
+      if (Number(error?.status || 0) === 429 && attempt < maxAttempts) {
+        const waitSeconds = Number(error.retryAfterSeconds || 8) + attempt;
+        diagnostics.log(`${provider.label} atingiu rate limit. Aguardando ${waitSeconds}s e retomando a mesma chamada (${attempt + 1}/${maxAttempts}).`, 'warn');
+        await sleep(waitSeconds * 1000);
+        continue;
+      }
+      throw error;
+    }
+  }
+  throw lastError || new Error(`${provider.label} falhou.`);
+}
+
 async function callProviderWithFallback(provider, prompt, fetcher, maxTokens = 8192) {
   try {
     return await callProvider(provider, prompt, fetcher, true, maxTokens);
   } catch (error) {
-    if (Number(error?.status || 0) === 400 || /response_format|json_object|max_completion_tokens/i.test(String(error?.message || error))) {
-      diagnostics.log(`${provider.label} rejeitou JSON mode. Tentando chamada simples.`, 'warn');
-      return callProvider(provider, prompt, fetcher, false, maxTokens);
+    if (Number(error?.status || 0) === 400 || /response_format|json_object|max_completion_tokens|JSON Parse error/i.test(String(error?.message || error))) {
+      diagnostics.log(`${provider.label} rejeitou JSON mode ou devolveu JSON quebrado. Tentando chamada simples mais curta.`, 'warn');
+      return callProvider(provider, prompt, fetcher, false, Math.min(maxTokens, 5200));
     }
     throw error;
   }
@@ -274,7 +365,12 @@ export async function generateExternalGrammarSection({ prompt = '', targetProvid
   for (const provider of providers) {
     try {
       diagnostics.log(`Grammar 1B externo: tentando ${provider.label}/${provider.model} com chave ${provider.masked}.`, 'info');
-      const section = await callProviderWithFallback(provider, prompt, fetcher, 4200);
+      const sectionPrompt = [
+        prompt,
+        '',
+        'LEMBRETE FINAL: retorne um único objeto JSON simples: {"title":"...","content":"..."}. Não use arrays. Não use markdown.',
+      ].join('\n');
+      const section = await callProviderWithFallback(provider, sectionPrompt, fetcher, provider.id === 'cerebras' ? 2600 : 4200);
       return { status: 'success', section, provider: provider.id, model: provider.model };
     } catch (error) {
       lastError = error;
