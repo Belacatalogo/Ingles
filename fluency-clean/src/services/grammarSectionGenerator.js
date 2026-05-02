@@ -6,12 +6,13 @@ export const GRAMMAR_SECTION_CONTRACT = 'grammar-section-sequential-v1';
 
 const SECTION_EXAMPLE = {
   title: 'Forma afirmativa com to be',
-  content: 'Agora vamos olhar para a forma afirmativa como um professor olharia com você, passo por passo. Em português, dizemos eu sou, ela é e nós somos, mas em inglês não basta traduzir palavra por palavra. O inglês usa uma forma fixa do verbo to be para cada pessoa: I am, you are, he is, she is, it is, we are e they are. Esse contraste com o português é importante porque muitos alunos brasileiros tentam dizer I is ou she are quando pensam apenas no significado. O erro típico A1 brasileiro é escolher o verbo pelo som da frase em português, não pelo sujeito em inglês. Veja: I am a student está correto porque I combina com am. She is my friend está correto porque she combina com is. They are at home está correto porque they combina com are. A frase I is happy está errada porque I nunca combina com is. Pense assim: primeiro identifique o sujeito, depois escolha a forma do verbo, e só depois complete a ideia. Essa ordem evita chute e cria domínio real.',
+  content: 'Em inglês, a forma afirmativa do to be depende do sujeito. Em português, dizemos eu sou, ela é e nós somos, mas o aluno brasileiro costuma tentar traduzir pelo significado e esquece a combinação fixa. I combina com am, he/she/it combinam com is, e you/we/they combinam com are. Por isso, I am a student está correto, mas I is a student está errado. O erro acontece porque o aluno pensa em português primeiro e escolhe o verbo pelo sentido, não pelo sujeito em inglês. Antes de montar a frase, pergunte: quem é o sujeito? Depois escolha am, is ou are. Essa ordem evita chute e cria domínio real.',
 };
 
 const SECTION_MODELS = ['gemini-2.5-flash', 'gemini-2.5-flash-lite'];
 const MIN_SECTION_WORDS = 180;
-const EXTERNAL_SECTION_TARGET_MIN = 220;
+const DEFAULT_EXTERNAL_TARGET_MIN = 220;
+const GROQ_SECTION_COUNT = 5;
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 function text(value) {
@@ -25,6 +26,10 @@ function countWords(value) {
 function normalizeExternalProvider(value) {
   const provider = text(value).toLowerCase();
   return provider === 'groq' || provider === 'cerebras' ? provider : '';
+}
+
+function getExternalTargetMin(provider) {
+  return provider === 'groq' ? MIN_SECTION_WORDS : DEFAULT_EXTERNAL_TARGET_MIN;
 }
 
 function extractTextFromGemini(data) {
@@ -85,39 +90,43 @@ function buildAttempts({ keys = [], proKey = '' } = {}) {
   return attempts;
 }
 
-function buildPreviousContext(previousSections, compact = false) {
+function buildPreviousContext(previousSections, compact = false, externalProvider = '') {
   if (!Array.isArray(previousSections) || !previousSections.length) return '';
-  const limit = compact ? 160 : 900;
+  const limit = compact ? (externalProvider === 'groq' ? 90 : 160) : 900;
   return previousSections.map((item, itemIndex) => `${itemIndex + 1}. ${item.title}: ${String(item.content || '').slice(0, limit)}`).join('\n\n');
 }
 
-function buildSectionPrompt({ lesson, section, index, previousSections, compactExternal = false, expansionOf = null }) {
-  const previous = buildPreviousContext(previousSections, compactExternal);
+function buildSectionPrompt({ lesson, section, index, previousSections, compactExternal = false, externalProvider = '', expansionOf = null }) {
+  const isGroq = externalProvider === 'groq';
+  const previous = buildPreviousContext(previousSections, compactExternal, externalProvider);
   const example = compactExternal
-    ? { title: SECTION_EXAMPLE.title, content: SECTION_EXAMPLE.content.slice(0, 620) }
+    ? { title: SECTION_EXAMPLE.title, content: SECTION_EXAMPLE.content.slice(0, isGroq ? 360 : 620) }
     : SECTION_EXAMPLE;
   return [
     'Você é um professor particular de inglês do Fluency escrevendo UMA seção de uma aula Grammar profunda.',
     'Retorne SOMENTE JSON válido com as chaves title e content.',
     'Não use markdown, não use listas numeradas longas, não escreva fora do JSON.',
-    expansionOf ? 'A tentativa anterior ficou curta. Reescreva a mesma seção com mais profundidade real, sem enrolação, aumentando exemplos e explicações.' : '',
+    isGroq ? 'Modo Groq econômico: esta aula terá 5 sections, então esta section precisa ser mais completa e cobrir mais conteúdo.' : '',
+    expansionOf ? 'A tentativa anterior ficou curta. Reescreva a mesma seção com mais profundidade real, aumentando exemplos e explicações.' : '',
     '',
     'CONTRATO DA SECTION:',
-    `- content deve ter no mínimo ${MIN_SECTION_WORDS} palavras reais. Para provedor externo, mire entre 240 e 280 palavras e nunca pare perto do mínimo.`,
+    isGroq
+      ? `- content deve ter no mínimo ${MIN_SECTION_WORDS} palavras reais. Mire entre 260 e 320 palavras.`
+      : `- content deve ter no mínimo ${MIN_SECTION_WORDS} palavras reais. Para provedor externo, mire entre 240 e 280 palavras e nunca pare perto do mínimo.`,
     '- content deve ensinar com progressão didática real: ideia central, explicação, exemplos, motivo dos exemplos, erro típico e mini-checagem.',
     '- incluir pelo menos 1 contraste explícito com português brasileiro.',
     '- incluir pelo menos 1 erro típico de aluno brasileiro A1 e explicar por que está errado.',
-    '- incluir exemplos inéditos, contextualizados e explicar por que estão corretos.',
+    isGroq ? '- use poucos exemplos, mas bem explicados. Evite repetir exemplos já usados.' : '- incluir exemplos inéditos, contextualizados e explicar por que estão corretos.',
     '- manter inglês A1 nos exemplos e explicação principal em português claro.',
     '- não revele respostas dos exercícios.',
     '',
-    'EXEMPLO DE QUALIDADE ESPERADA:',
+    compactExternal ? 'MICROEXEMPLO DE ESTILO, NÃO COPIE:' : 'EXEMPLO DE QUALIDADE ESPERADA:',
     JSON.stringify(example, null, 2),
     '',
     'AULA:',
-    JSON.stringify({ title: lesson.title, level: lesson.level, objective: lesson.objective, focus: lesson.focus, intro: compactExternal ? String(lesson.intro || '').slice(0, 220) : lesson.intro }, null, 2),
+    JSON.stringify({ title: lesson.title, level: lesson.level, objective: lesson.objective, focus: lesson.focus, intro: compactExternal ? String(lesson.intro || '').slice(0, isGroq ? 120 : 220) : lesson.intro }, null, 2),
     '',
-    previous ? 'SEÇÕES ANTERIORES PARA CONTEXTO E PROGRESSÃO:' : '',
+    previous ? 'SEÇÕES ANTERIORES, APENAS PARA NÃO REPETIR:' : '',
     previous,
     '',
     expansionOf ? 'VERSÃO CURTA ANTERIOR QUE DEVE SER EXPANDIDA:' : '',
@@ -144,22 +153,23 @@ async function callGeminiSection({ attempt, prompt, fetcher }) {
 }
 
 async function expandExternalSection({ lesson, section, index, previousSections, fetcher, externalProvider, originalSection }) {
-  diagnostics.log(`Section ${index + 1} veio curta em ${externalProvider}: ${countWords(originalSection?.content)}/${EXTERNAL_SECTION_TARGET_MIN}. Pedindo expansão preventiva ao mesmo provedor.`, 'warn');
-  await sleep(externalProvider === 'groq' ? 9500 : 2600);
-  const expansionPrompt = buildSectionPrompt({ lesson, section, index, previousSections, compactExternal: true, expansionOf: originalSection });
+  const targetMin = getExternalTargetMin(externalProvider);
+  diagnostics.log(`Section ${index + 1} veio curta em ${externalProvider}: ${countWords(originalSection?.content)}/${targetMin}. Pedindo expansão ao mesmo provedor.`, 'warn');
+  await sleep(externalProvider === 'groq' ? 9000 : 2600);
+  const expansionPrompt = buildSectionPrompt({ lesson, section, index, previousSections, compactExternal: true, externalProvider, expansionOf: originalSection });
   const expanded = await generateExternalGrammarSection({ prompt: expansionPrompt, targetProvider: externalProvider, fetcher });
   if (expanded?.status === 'success' && expanded.section) return expanded;
   throw new Error(expanded?.error || `Section ${index + 1} continuou curta em ${externalProvider}.`);
 }
 
 async function generateOneExternalSection({ lesson, section, index, previousSections, fetcher, externalProvider }) {
-  const pause = externalProvider === 'groq' ? 9000 : 2200;
+  const pause = externalProvider === 'groq' ? 6500 : 2200;
   if (index > 0) {
     diagnostics.log(`Aguardando ${Math.round(pause / 1000)}s antes da próxima section ${externalProvider} para reduzir limite/JSON quebrado.`, 'info');
     await sleep(pause);
   }
 
-  const prompt = buildSectionPrompt({ lesson, section, index, previousSections, compactExternal: true });
+  const prompt = buildSectionPrompt({ lesson, section, index, previousSections, compactExternal: true, externalProvider });
   diagnostics.log(`Grammar 1B section ${index + 1}: usando provedor externo puro ${externalProvider}.`, 'warn');
   const result = await generateExternalGrammarSection({ prompt, targetProvider: externalProvider, fetcher });
   if (result?.status !== 'success' || !result.section) {
@@ -168,7 +178,8 @@ async function generateOneExternalSection({ lesson, section, index, previousSect
 
   let candidate = result;
   const firstWords = countWords(candidate.section?.content);
-  if (firstWords > 0 && firstWords < EXTERNAL_SECTION_TARGET_MIN) {
+  const targetMin = getExternalTargetMin(externalProvider);
+  if (firstWords > 0 && firstWords < targetMin) {
     candidate = await expandExternalSection({ lesson, section, index, previousSections, fetcher, externalProvider, originalSection: candidate.section });
   }
 
@@ -208,11 +219,12 @@ export async function enrichGrammarSectionsSequentially({ lesson, keys = [], pro
   const attempts = forcedExternalProvider ? [] : buildAttempts({ keys, proKey });
   if (!forcedExternalProvider && !attempts.length) return { lesson, applied: false, reason: 'missing-keys' };
 
-  const sections = Array.isArray(lesson.sections) ? lesson.sections : [];
+  const rawSections = Array.isArray(lesson.sections) ? lesson.sections : [];
+  const sections = forcedExternalProvider === 'groq' ? rawSections.slice(0, GROQ_SECTION_COUNT) : rawSections;
   if (!sections.length) return { lesson, applied: false, reason: 'missing-sections' };
 
   diagnostics.setPhase('grammar bloco 1B por seção', 'generating');
-  diagnostics.log(`Cirurgia 2 Grammar ativa: reescrevendo ${sections.length} section(s) uma por uma com mínimo de ${MIN_SECTION_WORDS} palavras${forcedExternalProvider ? ` usando ${forcedExternalProvider} em todo o 1B` : ''}.`, 'warn');
+  diagnostics.log(`Cirurgia 2 Grammar ativa: reescrevendo ${sections.length} section(s) uma por uma com mínimo de ${MIN_SECTION_WORDS} palavras${forcedExternalProvider ? ` usando ${forcedExternalProvider} em todo o 1B` : ''}${forcedExternalProvider === 'groq' ? '; modo Groq econômico 5 sections longas' : ''}.`, 'warn');
 
   const enriched = [];
   for (let index = 0; index < sections.length; index += 1) {
@@ -227,10 +239,10 @@ export async function enrichGrammarSectionsSequentially({ lesson, keys = [], pro
     lesson: {
       ...lesson,
       sections: enriched,
-      grammarSectionContract: forcedExternalProvider ? `${GRAMMAR_SECTION_CONTRACT}-${forcedExternalProvider}` : GRAMMAR_SECTION_CONTRACT,
-      planContract: lesson.planContract ? `${lesson.planContract}+${GRAMMAR_SECTION_CONTRACT}${forcedExternalProvider ? `-${forcedExternalProvider}` : ''}` : `${GRAMMAR_SECTION_CONTRACT}${forcedExternalProvider ? `-${forcedExternalProvider}` : ''}`,
+      grammarSectionContract: forcedExternalProvider ? `${GRAMMAR_SECTION_CONTRACT}-${forcedExternalProvider}${forcedExternalProvider === 'groq' ? '-5-sections' : ''}` : GRAMMAR_SECTION_CONTRACT,
+      planContract: lesson.planContract ? `${lesson.planContract}+${GRAMMAR_SECTION_CONTRACT}${forcedExternalProvider ? `-${forcedExternalProvider}` : ''}${forcedExternalProvider === 'groq' ? '-5-sections' : ''}` : `${GRAMMAR_SECTION_CONTRACT}${forcedExternalProvider ? `-${forcedExternalProvider}` : ''}${forcedExternalProvider === 'groq' ? '-5-sections' : ''}`,
     },
     applied: true,
-    reason: forcedExternalProvider ? `sections-enriched-${forcedExternalProvider}` : 'sections-enriched',
+    reason: forcedExternalProvider ? `sections-enriched-${forcedExternalProvider}${forcedExternalProvider === 'groq' ? '-5-sections' : ''}` : 'sections-enriched',
   };
 }
