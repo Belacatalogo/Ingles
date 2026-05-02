@@ -4,13 +4,13 @@ import { storage } from './storage.js';
 import { maskApiKey } from './geminiLessons.js';
 import { MODEL_POLICY_VERSION, getExternalProviderPolicy } from './modelPolicy.js';
 
+const FORCE_EXTERNAL_NEXT_STORAGE = 'lesson.external.forceNext';
+
 function text(value) {
   return String(value ?? '').trim();
 }
 
-function readLocalText(name) {
-  const appValue = text(storage.getText(name, ''));
-  if (appValue) return appValue;
+function readRawLocalStorage(name) {
   try {
     return text(window.localStorage.getItem(name) || '');
   } catch {
@@ -18,18 +18,36 @@ function readLocalText(name) {
   }
 }
 
+function writeRawLocalStorage(name, value) {
+  try {
+    if (!value) window.localStorage.removeItem(name);
+    else window.localStorage.setItem(name, value);
+  } catch {
+    // localStorage raw is only a compatibility mirror. App storage remains primary.
+  }
+}
+
+function readLocalText(name) {
+  const appValue = text(storage.getText(name, ''));
+  if (appValue) return appValue;
+  return readRawLocalStorage(name);
+}
+
 function saveLocalText(name, value) {
   const normalized = text(value);
   if (!normalized) {
     storage.remove(name);
+    writeRawLocalStorage(name, '');
     return '';
   }
   storage.setText(name, normalized);
+  writeRawLocalStorage(name, normalized);
   return normalized;
 }
 
 function clearLocalText(name) {
   storage.remove(name);
+  writeRawLocalStorage(name, '');
 }
 
 function jsonFromText(value) {
@@ -143,8 +161,10 @@ export function getExternalLessonProviderStatus() {
   const groqModel = readLocalText(policy.groq.modelStorage) || policy.groq.defaultModel;
   const cerebrasModel = readLocalText(policy.cerebras.modelStorage) || policy.cerebras.defaultModel;
   const providers = providersFromLocalStorage();
+  const forceExternalNext = Boolean(storage.get(FORCE_EXTERNAL_NEXT_STORAGE, false)) || readRawLocalStorage(FORCE_EXTERNAL_NEXT_STORAGE) === 'true';
   return {
     enabled: providers.length > 0,
+    forceExternalNext,
     groq: {
       configured: Boolean(groqKey),
       masked: maskApiKey(groqKey),
@@ -161,31 +181,48 @@ export function getExternalLessonProviderStatus() {
   };
 }
 
+export function setForceExternalLessonProviderNext(value) {
+  const enabled = Boolean(value);
+  storage.set(FORCE_EXTERNAL_NEXT_STORAGE, enabled);
+  writeRawLocalStorage(FORCE_EXTERNAL_NEXT_STORAGE, enabled ? 'true' : '');
+  diagnostics.log(`Modo teste fallback externo ${enabled ? 'ativado para a próxima geração' : 'desativado'}.`, enabled ? 'warn' : 'info');
+  return getExternalLessonProviderStatus();
+}
+
+export function shouldForceExternalLessonProviderOnce() {
+  const enabled = getExternalLessonProviderStatus().forceExternalNext;
+  if (enabled) setForceExternalLessonProviderNext(false);
+  return enabled;
+}
+
 export function saveExternalLessonProviderKey(provider, keyValue, modelValue = '') {
   const policy = getExternalProviderPolicy();
-  const current = policy[String(provider || '').toLowerCase()];
+  const providerId = String(provider || '').toLowerCase();
+  const current = policy[providerId];
   if (!current) return getExternalLessonProviderStatus();
   const savedKey = saveLocalText(current.keyStorage, keyValue);
   if (modelValue) saveLocalText(current.modelStorage, modelValue);
-  diagnostics.log(`${provider} fallback de aulas ${savedKey ? `salvo: ${maskApiKey(savedKey)}` : 'removido ou vazio'}.`, savedKey ? 'info' : 'warn');
+  diagnostics.log(`${providerId} fallback de aulas ${savedKey ? `salvo: ${maskApiKey(savedKey)}` : 'removido ou vazio'}.`, savedKey ? 'info' : 'warn');
   return getExternalLessonProviderStatus();
 }
 
 export function saveExternalLessonProviderModel(provider, modelValue) {
   const policy = getExternalProviderPolicy();
-  const current = policy[String(provider || '').toLowerCase()];
+  const providerId = String(provider || '').toLowerCase();
+  const current = policy[providerId];
   if (!current) return getExternalLessonProviderStatus();
   const savedModel = saveLocalText(current.modelStorage, modelValue || current.defaultModel);
-  diagnostics.log(`${provider} fallback de aulas usando modelo ${savedModel || current.defaultModel}.`, 'info');
+  diagnostics.log(`${providerId} fallback de aulas usando modelo ${savedModel || current.defaultModel}.`, 'info');
   return getExternalLessonProviderStatus();
 }
 
 export function clearExternalLessonProvider(provider) {
   const policy = getExternalProviderPolicy();
-  const current = policy[String(provider || '').toLowerCase()];
+  const providerId = String(provider || '').toLowerCase();
+  const current = policy[providerId];
   if (!current) return getExternalLessonProviderStatus();
   clearLocalText(current.keyStorage);
-  diagnostics.log(`${provider} fallback de aulas removido.`, 'info');
+  diagnostics.log(`${providerId} fallback de aulas removido.`, 'info');
   return getExternalLessonProviderStatus();
 }
 
@@ -202,7 +239,7 @@ export async function generateExternalLessonDraft({ prompt = '', forcedType = ''
   for (const provider of providers) {
     try {
       diagnostics.log(`Tentando ${provider.label} com modelo ${provider.model} e chave ${provider.masked}.`, 'info');
-      const lesson = await callProviderWithFallback(provider, externalPrompt, fetcher);
+      const lesson = await callProviderWithFallback(provider, externalPrompt, fetch);
       diagnostics.log(`${provider.label} gerou aula para validacao local.`, 'success');
       return { status: 'success', lesson: withMeta(lesson, provider), provider: provider.id, model: provider.model };
     } catch (error) {
