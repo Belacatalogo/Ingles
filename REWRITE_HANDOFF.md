@@ -15,70 +15,63 @@ Branch estável protegida: `rewrite-fluency-clean`
 - Não mexer no backend Azure privado.
 - Manter tudo modular em `fluency-clean/src/`, `fluency-clean/public/` ou arquivos reais de configuração.
 
-## ESTADO ATUAL — HOTFIX STORAGE GRAMMAR PROFUNDA
+## ESTADO ATUAL — HOTFIX REGENERAR AULA ATUAL
 
-### `HOTFIX-STORAGE-GRAMMAR-PROFUNDA-LAB` — IMPLEMENTADO, aguardando deploy/teste
+### `HOTFIX-GERACAO-REGENERAR-AULA-ATUAL-LAB` — IMPLEMENTADO, aguardando deploy/teste
+
+Contexto:
+- Após o hotfix de storage, o diagnóstico mostrou que `lesson.current` e `lastGenerationStatus` já apontavam para a aula nova `Present Simple: Verbs 'To Be' and 'To Have'`.
+- Portanto, a aula passou a persistir.
+- O problema restante era de UX/fluxo: como a aula atual é da mesma etapa do cronograma, o painel obrigava marcar `Substituir aula atual e gerar uma versão diferente` para gerar de novo.
+- Para teste/lab, isso impedia regenerar a mesma aula com o mesmo objetivo sem variar contexto.
+
+O que foi corrigido:
+- Removido o bloqueio que interrompia a geração quando `pendingSameLesson && !forceNew`.
+- O botão agora mostra `Regenerar aula atual` quando a aula atual pertence à mesma etapa.
+- O checkbox mudou para `Gerar versão diferente com outro contexto`.
+- Se o checkbox estiver desligado, o sistema regenera a mesma aula/mesmo objetivo sem variação obrigatória.
+- A origem salva passa a registrar `generated-regeneration-same-lesson` quando for regeneração da aula atual.
+
+Arquivo alterado:
+- `fluency-clean/src/components/lesson/LessonGeneratorPanel.jsx`
+- `REWRITE_HANDOFF.md`
+
+Commit:
+- `0c247ed22af5b61f3a8745f0ac042c3a0981094a` — permite regenerar aula atual.
+
+Teste obrigatório agora:
+1. aguardar deploy da branch `rewrite-fluency-clean-lab` com commit `0c247ed` ou posterior;
+2. abrir a aba Hoje/Aula;
+3. confirmar que o botão aparece como `Regenerar aula atual` quando a aula atual já é a mesma etapa;
+4. clicar sem marcar `Gerar versão diferente com outro contexto`;
+5. confirmar que a geração roda novamente com a mesma aula `Present Simple: To Be e To Have`;
+6. confirmar que salva e abre na aba Aula.
+
+## ESTADO ANTERIOR — HOTFIX STORAGE GRAMMAR PROFUNDA
+
+### `HOTFIX-STORAGE-GRAMMAR-PROFUNDA-LAB` — IMPLEMENTADO
 
 Contexto do teste:
 - A Cirurgia 2 iniciou corretamente.
 - Diagnóstico mostrou `grammar bloco 1B por seção`.
 - Sections foram geradas e aprovadas com contagem alta, por exemplo section 6 com 249 palavras.
 - Houve falha parcial de JSON em uma tentativa do Flash, mas o fallback para `gemini-2.5-flash-lite` recuperou a section.
-- Depois a aula passou até o ponto de abrir/salvar, mas o storage local recusou persistência:
-  - `Storage recusou a aula completa...`
-  - `Storage ainda recusou...`
-  - `Falha crítica: a aula não foi persistida como lesson.current. Status saved não foi gravado.`
-
-Diagnóstico aceito:
-- A falha não foi do revisor nem da Cirurgia 2.
-- A falha foi tamanho/peso do payload salvo em `lesson.current` + histórico.
-- A aula Grammar profunda ficou maior, e o objeto ainda carregava metadados/revisões/planos duplicados.
+- Depois a aula passou até o ponto de abrir/salvar, mas o storage local recusou persistência.
 
 O que foi corrigido:
-- `lessonStore.js` agora usa uma camada `storage-safe` antes de persistir.
-- O conteúdo visível da aula é preservado, mas campos internos pesados são compactados/removidos:
-  - revisões longas;
-  - readiness detalhado;
-  - lessonPlan grande;
-  - campos debug/raw/diagnostics;
-  - listas excessivas de vocabulário/exercícios/prompts;
-  - histórico antigo.
-- `lesson.current` tenta salvar nesta ordem:
-  1. versão storage-safe normal;
-  2. versão storage-safe com histórico limpo;
-  3. versão compacta;
-  4. versão emergencial, limpando histórico/cache antigo.
-- O histórico agora guarda no máximo 2 itens e em formato emergencial compacto.
+- `lessonStore.js` usa camada `storage-safe` antes de persistir.
+- Conteúdo visível é preservado; metadados internos pesados são compactados/removidos.
+- Histórico limitado a 2 itens compactos.
 
-Arquivo alterado:
-- `fluency-clean/src/services/lessonStore.js`
-- `REWRITE_HANDOFF.md`
-
-Commit do hotfix:
+Commit:
 - `40f5839a5ece1a27983ba2a81a0c091da6d83e92` — salva aula grammar profunda em formato persistível.
-
-Teste obrigatório agora:
-1. aguardar deploy da branch `rewrite-fluency-clean-lab` com commit `40f5839` ou posterior;
-2. gerar novamente a aula Grammar `Present Simple: To Be e To Have` com Gemini normal;
-3. NÃO ativar `Forçar fallback externo`;
-4. observar se aparece:
-   - `Cirurgia 2 Grammar ativa...`;
-   - `Grammar section X aprovada...`;
-   - `Aula salva: ...`;
-5. conferir se a aba Aula muda para a aula nova.
 
 ## ESTADO ANTERIOR — CIRURGIA 2 GRAMMAR
 
 ### `CIRURGIA-2-GRAMMAR-BLOCO-1-SECTIONS-LAB` — IMPLEMENTADA
 
-Contexto:
-- Teste forçado com Groq provou que trocar o motor não resolveu a profundidade.
-- O professor revisor marcou corretamente a aula com 87/88 por falta de exemplos inéditos, contextualizados e explicados.
-- A hipótese aceita é que o problema está no Bloco 1 do blueprint Grammar: 7 sections em uma única chamada curta.
-- O critério do professor revisor NÃO foi relaxado.
-
 O que foi implementado:
-- Criado `fluency-clean/src/prompts/grammar_section_example.json` com 1-shot example de section profunda.
+- Criado `fluency-clean/src/prompts/grammar_section_example.json`.
 - Criado `fluency-clean/src/services/grammarSectionGenerator.js`.
 - `plannedGeminiLessons.js` agora, somente para Grammar:
   1. deixa o fluxo gerar o esqueleto/aula normalmente;
@@ -90,7 +83,7 @@ O que foi implementado:
   7. exige exemplos contextualizados e explicação de por que estão corretos;
   8. anexa contrato `grammar-section-sequential-v1`.
 
-Commits da Cirurgia 2:
+Commits:
 - `b7cd66dd37f6e7adfa291943e6634a43671a1389` — adiciona exemplo de section grammar.
 - `e7f5ad2a4f0608e9b4f058a0b2d840b7da3cbfec` — gera sections grammar sequenciais.
 - `5fee14d00f1366fa5cdb7871b6c007aa7d1a3525` — cabla sections sequenciais no planejador.
@@ -111,7 +104,7 @@ Commits da Cirurgia 2:
 
 ## NÃO FAZER AGORA
 
-- Não implementar Cirurgia 3 antes do teste da Cirurgia 2 + hotfix storage.
+- Não implementar Cirurgia 3 antes do teste da regeneração + aula aberta.
 - Não mexer no `deepGrammarPipeline.js`.
 - Não relaxar o professor revisor.
 - Não salvar aula fraca só para evitar bloqueio.
@@ -119,4 +112,4 @@ Commits da Cirurgia 2:
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. A Cirurgia 2 foi implementada e funcionou até gerar sections profundas, mas o storage recusou a aula grande. O último hotfix foi `40f5839`, que compacta campos internos antes de persistir `lesson.current`. Próximo passo é testar novamente a aula `Present Simple: To Be e To Have` com Gemini normal, sem forçar fallback externo, e confirmar se a aula salva/abre. Não mexer em Cirurgia 3/deepGrammarPipeline ainda. Não mexer em `main`, `rewrite-fluency-clean`, `bundle.js` ou backend Azure privado."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. A Cirurgia 2 foi implementada, o storage foi corrigido e a aula nova já apareceu como `lesson.current`. O último hotfix foi `0c247ed`, que permite `Regenerar aula atual` sem exigir versão diferente. Próximo passo é testar regeneração/abertura da aula `Present Simple: To Be e To Have` com Gemini normal, sem forçar fallback externo. Não mexer em Cirurgia 3/deepGrammarPipeline ainda. Não mexer em `main`, `rewrite-fluency-clean`, `bundle.js` ou backend Azure privado."
