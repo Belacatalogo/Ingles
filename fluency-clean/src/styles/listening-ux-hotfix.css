@@ -133,9 +133,21 @@
   line-height: 1.5;
 }
 
+.listening-hidden-line {
+  min-height: 54px;
+  display: grid;
+  place-items: center start;
+  padding: 12px;
+  border: 1px dashed rgba(147, 197, 253, .22);
+  border-radius: 15px;
+  color: #93a4c7 !important;
+  background: rgba(15, 23, 42, .34);
+  font-style: italic;
+}
+
 .listening-segment-card div {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
 }
 
