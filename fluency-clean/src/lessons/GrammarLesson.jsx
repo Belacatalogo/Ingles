@@ -1,16 +1,16 @@
 import { useEffect, useMemo, useState } from 'react';
-import { BookOpenCheck, CheckCircle2, Lightbulb, ListChecks, MessageSquareText, PencilLine, Sparkles, Target } from 'lucide-react';
+import { BookOpenCheck, CheckCircle2, Lightbulb, MessageSquareText, PencilLine, Sparkles, Target } from 'lucide-react';
 import { Card } from '../components/ui/Card.jsx';
 import { ProgressPill } from '../components/ui/ProgressPill.jsx';
 import { completeLesson, getLessonDraft, isLessonCompleted, saveLessonDraft } from '../services/progressStore.js';
 
 const fallbackSections = [
   {
-    title: 'Explicação principal',
-    content: 'Use simple present para falar sobre rotina, fatos e hábitos. Em frases afirmativas com he, she e it, normalmente adicionamos -s ao verbo.',
+    title: 'Regra principal',
+    content: 'Use simple present para falar sobre rotina, fatos e hábitos. Com he, she e it, o verbo normalmente muda: She studies. He works.',
   },
   {
-    title: 'Forma básica',
+    title: 'Exemplos seguros',
     content: 'I work. You work. He works. She studies. We play. They live.',
   },
   {
@@ -19,28 +19,10 @@ const fallbackSections = [
   },
 ];
 
-const fallbackExercises = [
-  {
-    question: 'Choose the correct sentence.',
-    options: ['She study English.', 'She studies English.', 'She studying English.'],
-    answer: 'She studies English.',
-  },
-  {
-    question: 'Complete: He ___ coffee every morning.',
-    options: ['drink', 'drinks', 'drinking'],
-    answer: 'drinks',
-  },
-  {
-    question: 'Choose the negative form: I like tea.',
-    options: ['I not like tea.', 'I do not like tea.', 'I does not like tea.'],
-    answer: 'I do not like tea.',
-  },
-];
-
 const fallbackTips = [
-  'Leia a regra primeiro, depois veja os exemplos.',
-  'Compare português e inglês para evitar tradução palavra por palavra.',
-  'Faça os exercícios antes de olhar a correção.',
+  'Leia a regra principal primeiro.',
+  'Observe os exemplos em inglês antes de praticar.',
+  'Faça a Prática Profunda para testar se você realmente entendeu.',
 ];
 
 function cleanText(value) {
@@ -51,55 +33,47 @@ function cleanText(value) {
     .trim();
 }
 
+function splitSentences(text) {
+  return cleanText(text)
+    .split(/(?<=[.!?])\s+/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function compactContent(text) {
+  const sentences = splitSentences(text);
+  if (sentences.length <= 3) return cleanText(text);
+  return sentences.slice(0, 3).join(' ');
+}
+
 function normalizeSections(lesson) {
   const sections = Array.isArray(lesson?.sections) ? lesson.sections : [];
-  if (sections.length) {
-    return sections.map((section, index) => ({
-      title: cleanText(section?.title || section?.heading || `Parte ${index + 1}`),
-      content: cleanText(section?.content || section?.text || section?.body || section?.explanation || ''),
-    })).filter((section) => section.title || section.content);
-  }
-  return fallbackSections;
+  const normalized = sections.map((section, index) => ({
+    title: cleanText(section?.title || section?.heading || `Parte ${index + 1}`),
+    content: compactContent(section?.content || section?.text || section?.body || section?.explanation || ''),
+  })).filter((section) => section.title || section.content);
+
+  return normalized.length ? normalized.slice(0, 7) : fallbackSections;
 }
 
 function normalizeTips(lesson) {
   const tips = Array.isArray(lesson?.tips) ? lesson.tips : [];
   const cleanTips = tips.map((tip) => cleanText(typeof tip === 'string' ? tip : tip?.text || tip?.tip || '')).filter(Boolean);
-  return cleanTips.length ? cleanTips : fallbackTips;
-}
-
-function normalizeExercises(lesson) {
-  const exercises = Array.isArray(lesson?.exercises) ? lesson.exercises : [];
-  return exercises.length ? exercises : fallbackExercises;
-}
-
-function normalizeAnswer(value) {
-  return cleanText(value).toLowerCase().replace(/\s+/g, ' ').trim();
-}
-
-function isCorrectOption(option, answer) {
-  return normalizeAnswer(option) === normalizeAnswer(answer);
+  return cleanTips.length ? cleanTips.slice(0, 4) : fallbackTips;
 }
 
 export function GrammarLesson({ lesson }) {
-  const [selectedAnswers, setSelectedAnswers] = useState({});
   const [writtenAnswer, setWrittenAnswer] = useState('');
   const [completed, setCompleted] = useState(false);
   const [completionMessage, setCompletionMessage] = useState('');
   const sections = useMemo(() => normalizeSections(lesson), [lesson]);
-  const exercises = useMemo(() => normalizeExercises(lesson), [lesson]);
   const tips = useMemo(() => normalizeTips(lesson), [lesson]);
 
   useEffect(() => {
-    setSelectedAnswers({});
     setWrittenAnswer(getLessonDraft(lesson?.id || lesson?.title || 'grammar'));
     setCompleted(isLessonCompleted(lesson));
     setCompletionMessage(isLessonCompleted(lesson) ? 'Esta aula já foi concluída.' : '');
   }, [lesson?.id, lesson?.title]);
-
-  function handleSelectAnswer(questionIndex, option) {
-    setSelectedAnswers((current) => ({ ...current, [questionIndex]: option }));
-  }
 
   function handleSaveDraft() {
     saveLessonDraft({ lesson, answer: writtenAnswer });
@@ -107,7 +81,7 @@ export function GrammarLesson({ lesson }) {
   }
 
   function handleCompleteLesson() {
-    const result = completeLesson({ lesson, answers: selectedAnswers, writtenAnswer });
+    const result = completeLesson({ lesson, answers: {}, writtenAnswer });
     setCompleted(true);
     setCompletionMessage(result.alreadyCompleted ? 'Aula já estava concluída. Progresso mantido.' : '+25 XP. Grammar concluída e progresso salvo.');
   }
@@ -120,7 +94,7 @@ export function GrammarLesson({ lesson }) {
         action={<ProgressPill current={completed ? 5 : 2} total={5} label={completed ? 'Concluída' : 'Estudo'} />}
       >
         <div className="lesson-intro-grid">
-          <p>{cleanText(lesson?.intro || lesson?.subtitle || 'Estude a regra com calma, veja exemplos e pratique antes de conferir o feedback.')}</p>
+          <p>{cleanText(lesson?.intro || lesson?.subtitle || 'Estude a regra com calma, veja exemplos e depois pratique em tela cheia.')}</p>
           <div className="lesson-objective-card">
             <Target size={18} />
             <span>Objetivo</span>
@@ -151,60 +125,16 @@ export function GrammarLesson({ lesson }) {
             </ul>
           </div>
           <div className="mini-card grammar-warning-card">
-            <div className="panel-title"><Sparkles size={18} /> Importante</div>
-            <p>As respostas dos exercícios não aparecem antes da sua tentativa. Escolha uma opção para receber feedback.</p>
+            <div className="panel-title"><Sparkles size={18} /> Prática profunda</div>
+            <p>Os exercícios interativos ficam apenas no botão “Começar prática”, para evitar duplicação e perguntas fora da tela de treino.</p>
           </div>
         </aside>
-      </section>
-
-      <section className="reading-section-card grammar-practice-card">
-        <div className="panel-title"><ListChecks size={18} /> Prática</div>
-        <div className="comprehension-list">
-          {exercises.map((item, index) => {
-            const selected = selectedAnswers[index];
-            const hasAnswered = typeof selected === 'string';
-            const selectedIsCorrect = hasAnswered && isCorrectOption(selected, item.answer);
-            const options = item.options || item.choices || [];
-
-            return (
-              <article className="question-card" key={item.question || index}>
-                <span>Exercício {index + 1}</span>
-                <strong>{cleanText(item.question || item.prompt || 'Escolha a resposta correta.')}</strong>
-                <div className="option-list">
-                  {options.map((option) => {
-                    const optionIsSelected = selected === option;
-                    const optionIsCorrect = isCorrectOption(option, item.answer);
-                    const revealClass = hasAnswered && optionIsCorrect ? ' correct' : '';
-                    const wrongClass = optionIsSelected && hasAnswered && !optionIsCorrect ? ' incorrect' : '';
-                    const selectedClass = optionIsSelected ? ' selected' : '';
-                    return (
-                      <button
-                        className={`option-button${selectedClass}${revealClass}${wrongClass}`}
-                        type="button"
-                        key={option}
-                        onClick={() => handleSelectAnswer(index, option)}
-                        aria-pressed={optionIsSelected}
-                      >
-                        {cleanText(option)}
-                      </button>
-                    );
-                  })}
-                </div>
-                {hasAnswered ? (
-                  <p className={selectedIsCorrect ? 'question-feedback correct' : 'question-feedback incorrect'}>
-                    {selectedIsCorrect ? 'Correto. A regra foi aplicada bem.' : `Revise a regra. A resposta correta é: ${cleanText(item.answer)}.`}
-                  </p>
-                ) : null}
-              </article>
-            );
-          })}
-        </div>
       </section>
 
       <section className="answer-card guided-answer-card">
         <div className="panel-title"><MessageSquareText size={18} /> Produção própria</div>
         <label className="answer-label" htmlFor="grammar-answer">
-          Escreva 3 frases em inglês usando a regra da aula.
+          Depois da Prática Profunda, escreva 3 frases suas usando a regra da aula.
         </label>
         <textarea
           id="grammar-answer"
