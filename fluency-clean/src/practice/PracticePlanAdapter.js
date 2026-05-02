@@ -14,6 +14,7 @@ const TYPE_TO_UI = Object.freeze({
 
 const BAD_OPTION = /(resposta\/|^resposta\b|^answer\b|resposta pessoal|personal answer|exemplo:|example:|undefined|null)/i;
 const GENERIC_OPTIONS = new Set(['resposta', 'pergunta', 'frase', 'palavra', 'coisa', 'exemplo', 'texto', 'aula', 'answer', 'question', 'sentence', 'word', 'thing', 'example', 'text', 'lesson']);
+const LISTENING_PRIORITY = ['listenChoice', 'dictation', 'speak', 'wordBank', 'fillBlank', 'choice', 'write', 'correction'];
 
 function clean(value) {
   return String(value ?? '').replace(/\s+/g, ' ').trim();
@@ -21,6 +22,37 @@ function clean(value) {
 
 function wordCount(value) {
   return clean(value).split(/\s+/).filter(Boolean).length;
+}
+
+function isListeningLesson(lesson) {
+  return String(lesson?.type || '').toLowerCase() === 'listening';
+}
+
+function getLevelNumber(lesson) {
+  const level = String(lesson?.level || 'A1').toUpperCase();
+  if (level.includes('A1')) return 1;
+  if (level.includes('A2')) return 2;
+  if (level.includes('B1')) return 3;
+  if (level.includes('B2')) return 4;
+  if (level.includes('C1')) return 5;
+  if (level.includes('C2')) return 6;
+  return 1;
+}
+
+function seededValue(seed) {
+  let value = 2166136261;
+  const input = String(seed || 'practice');
+  for (let index = 0; index < input.length; index += 1) {
+    value ^= input.charCodeAt(index);
+    value = Math.imul(value, 16777619);
+  }
+  return Math.abs(value);
+}
+
+function shuffleStable(items, seed) {
+  return [...items].map((item, index) => ({ item, score: seededValue(`${seed}:${item.id}:${item.type}:${index}`) }))
+    .sort((left, right) => left.score - right.score)
+    .map(({ item }) => item);
 }
 
 function isSafeOption(value, answer = '') {
@@ -80,22 +112,59 @@ function hasRenderableShape(item) {
   return true;
 }
 
+function isLevelSafeListeningItem(item, levelNumber) {
+  const answerWords = wordCount(item.answer);
+  const promptWords = wordCount(item.prompt);
+  if (levelNumber <= 1) {
+    if (['correction', 'write'].includes(item.type)) return false;
+    if (item.type === 'dictation') return answerWords <= 6;
+    if (item.type === 'wordBank') return answerWords <= 8;
+    return promptWords <= 18 || ['listenChoice', 'speak'].includes(item.type);
+  }
+  if (levelNumber === 2) {
+    if (item.type === 'dictation') return answerWords <= 8;
+    if (item.type === 'correction') return false;
+  }
+  return true;
+}
+
+function orderListeningItems(items, lesson, options) {
+  const levelNumber = getLevelNumber(lesson);
+  const safeItems = items.filter((item) => isLevelSafeListeningItem(item, levelNumber));
+  const source = safeItems.length >= Math.min(8, items.length) ? safeItems : items;
+  const grouped = LISTENING_PRIORITY.flatMap((type) => {
+    const group = source.filter((item) => item.type === type);
+    return options.randomize ? shuffleStable(group, `${lesson?.id || lesson?.title || 'listening'}:${type}:${new Date().toISOString().slice(0, 10)}`) : group;
+  });
+  const leftovers = source.filter((item) => !LISTENING_PRIORITY.includes(item.type));
+  return [...grouped, ...leftovers];
+}
+
 export function normalizeForPractice(value) {
   return normalizePracticeText(value);
 }
 
 export function buildPracticeItems(lesson, options = {}) {
+  const listening = isListeningLesson(lesson);
+  const levelNumber = getLevelNumber(lesson);
+  const maxByLevel = listening ? (levelNumber <= 1 ? 16 : levelNumber === 2 ? 20 : 24) : (options.max || 36);
   const plan = buildPracticePlan(lesson, {
-    minQuestions: options.min || 14,
-    maxQuestions: options.max || 36,
-    idealQuestions: Math.min(options.max || 36, 26),
+    minQuestions: options.min || (listening ? 10 : 14),
+    maxQuestions: Math.min(options.max || maxByLevel, maxByLevel),
+    idealQuestions: Math.min(options.max || maxByLevel, listening ? (levelNumber <= 1 ? 14 : 18) : 26),
   });
 
-  const items = plan.questions.map(adaptQuestion).filter(hasRenderableShape);
+  const rawItems = plan.questions.map(adaptQuestion).filter(hasRenderableShape);
+  const items = listening ? orderListeningItems(rawItems, lesson, { randomize: options.randomize !== false }) : rawItems;
   return items.map((item) => ({
     ...item,
     practicePlanQuality: plan.quality,
-    practicePlanSummary: plan.contextSummary,
+    practicePlanSummary: {
+      ...plan.contextSummary,
+      listeningFocused: listening,
+      levelSafe: listening,
+      randomSeed: listening ? new Date().toISOString().slice(0, 10) : '',
+    },
   }));
 }
 
