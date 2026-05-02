@@ -47,7 +47,8 @@ const englishFunctionWords = /\b(?:am|are|is|was|were|have|has|had|do|does|did|c
 const portugueseSignals = /\b(?:eu|ele|ela|n[oó]s|voc[eê]|voc[eê]s|eles|elas|estou|est[aá]|estamos|feliz|m[eé]dica|m[eé]dico|profiss[aã]o|estado|descreve|indicar|posse|pertence|algu[eé]m|carro|livro|mesa|exemplo|correto|pois|porque|verbo|frase|regra|aluno|brasileiro|portugu[eê]s|ingl[eê]s|pessoa|pessoas|outro|lado|no entanto|diferente|amigo|amigos|novo|nova|gentil|todos|todas|aqui)\b/i;
 const translationStarterPattern = /^(?:Eu|Ele|Ela|Nós|Nos|Eles|Elas|Você|Vocês|O|A|Os|As|Meu|Minha|Seu|Sua|Isso|Este|Esta|Esse|Essa)\b/;
 const bareBePattern = /^(?:I am|You are|He is|She is|It is|We are|They are|I'm|You're|He's|She's|It's|We're|They're)$/i;
-const exampleOverflowPattern = /(?:^|\s)(?=(?:Já|Outro exemplo|Outro lado|Outro|No entanto|Diferente disso|O verbo|A forma|Esse uso|Essa forma)\b)/i;
+const exampleOverflowPattern = /(?:^|\s)(?=(?:Já|Outro exemplo|Outro lado|Outro|No entanto|Diferente disso|O verbo|Esse uso)\b)/i;
+const secondaryExamplePattern = /\s+(?=(?:e|ou)\s+["'“”]?(?:I|You|He|She|It|We|They|This|That|The|A|An|My|Your|His|Her|Our|Their)\b)/i;
 
 function normalizeVisualSpacing(value) {
   const connectorPatternText = connectorBreaks.join('|');
@@ -211,23 +212,40 @@ function splitExampleOverflow(explanation) {
   };
 }
 
+function splitSecondaryExampleOverflow(translationCandidate) {
+  const clean = cleanText(translationCandidate);
+  if (!clean) return { translation: '', overflow: '' };
+
+  const match = clean.match(secondaryExamplePattern);
+  if (!match || typeof match.index !== 'number') {
+    return { translation: clean, overflow: '' };
+  }
+
+  return {
+    translation: clean.slice(0, match.index).trim(),
+    overflow: clean.slice(match.index).replace(/^(e|ou)\s+/i, '').trim(),
+  };
+}
+
 function extractTranslation(rest) {
   const clean = cleanText(rest).replace(/^[,.;:\s]+/, '').trim();
   if (!clean) return { translation: '', explanation: '' };
 
   const explicit = clean.match(/^(?:significa|quer dizer|traduzindo|em portugu[eê]s)\s*["'“”]?(.+?)["'“”]?\s*(?:\.|$)(.*)$/i);
   if (explicit && looksLikePortugueseTranslation(explicit[1])) {
+    const safeTranslation = splitSecondaryExampleOverflow(explicit[1]);
     return {
-      translation: cleanText(explicit[1]),
-      explanation: cleanText(explicit[2]),
+      translation: cleanText(safeTranslation.translation),
+      explanation: cleanText([safeTranslation.overflow, explicit[2]].filter(Boolean).join(' ')),
     };
   }
 
   const sentenceParts = clean.split(/(?<=[.!?])\s+/).map((part) => part.trim()).filter(Boolean);
   if (sentenceParts.length && looksLikePortugueseTranslation(sentenceParts[0])) {
+    const safeTranslation = splitSecondaryExampleOverflow(sentenceParts[0]);
     return {
-      translation: stripQuotes(sentenceParts[0]),
-      explanation: cleanText(sentenceParts.slice(1).join(' ')),
+      translation: stripQuotes(safeTranslation.translation),
+      explanation: cleanText([safeTranslation.overflow, ...sentenceParts.slice(1)].filter(Boolean).join(' ')),
     };
   }
 
@@ -380,7 +398,7 @@ export function GrammarLesson({ lesson }) {
   }
 
   return (
-    <article className="grammar-layout grammar-lesson-v1 grammar-deep-lesson-v2 grammar-renderer-system-v3 grammar-renderer-overflow-v4 grammar-renderer-card-trim-v5">
+    <article className="grammar-layout grammar-lesson-v1 grammar-deep-lesson-v2 grammar-renderer-system-v3 grammar-renderer-overflow-v4 grammar-renderer-card-trim-v5 grammar-renderer-card-split-v6">
       <Card
         eyebrow={`Grammar profunda · ${lesson.level}`}
         title={lesson.title}
