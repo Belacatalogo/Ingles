@@ -7,7 +7,7 @@ import { GrammarLesson } from '../lessons/GrammarLesson.jsx';
 import { ListeningLessonClean } from '../lessons/ListeningLessonClean.jsx';
 import { WritingLesson } from '../lessons/WritingLesson.jsx';
 import { PracticeLauncher } from '../practice/PracticeLauncher.jsx';
-import { getCurrentLesson } from '../services/lessonStore.js';
+import { getCurrentLesson, getCurrentLessonFull } from '../services/lessonStore.js';
 
 const fallbackLesson = {
   id: 'fallback-reading',
@@ -85,6 +85,8 @@ function LessonRenderer({ lesson }) {
 export function LessonScreen({ lessonRevision = 0 }) {
   const [activeSection, setActiveSection] = useState(0);
   const [localRevision, setLocalRevision] = useState(0);
+  const [fullLesson, setFullLesson] = useState(null);
+  const [loadingFullLesson, setLoadingFullLesson] = useState(false);
 
   useEffect(() => {
     function refreshLesson() {
@@ -104,7 +106,21 @@ export function LessonScreen({ lessonRevision = 0 }) {
     };
   }, []);
 
-  const savedLesson = useMemo(() => getCurrentLesson(), [lessonRevision, localRevision]);
+  const savedLessonPointer = useMemo(() => getCurrentLesson(), [lessonRevision, localRevision]);
+
+  useEffect(() => {
+    let active = true;
+    setLoadingFullLesson(Boolean(savedLessonPointer));
+    getCurrentLessonFull().then((lesson) => {
+      if (!active) return;
+      setFullLesson(lesson || savedLessonPointer || null);
+    }).finally(() => {
+      if (active) setLoadingFullLesson(false);
+    });
+    return () => { active = false; };
+  }, [lessonRevision, localRevision, savedLessonPointer?.generationMeta?.id]);
+
+  const savedLesson = fullLesson || savedLessonPointer;
   const lesson = savedLesson || fallbackLesson;
   const lessonStats = useMemo(() => getLessonStats(lesson), [lesson]);
   const usingGenerated = Boolean(savedLesson);
@@ -128,9 +144,10 @@ export function LessonScreen({ lessonRevision = 0 }) {
           <span className="lesson-chip blue"><Sparkles size={11} /> {usingGenerated ? 'Gerada por IA' : 'Aula inicial'}</span>
           <span className="lesson-chip">{getLessonTypeLabel(lesson)}</span>
           <span className="lesson-chip violet">{lesson?.level || 'A1'}</span>
+          {savedLessonPointer?.storageMode === 'lesson-full-indexeddb-v1' ? <span className="lesson-chip">IndexedDB completo</span> : null}
         </div>
         <h1>{getLessonTitle(lesson)}</h1>
-        <p>{getLessonDescription(lesson)}</p>
+        <p>{loadingFullLesson && savedLessonPointer ? 'Carregando aula completa...' : getLessonDescription(lesson)}</p>
         {usingGenerated ? (
           <div className="lesson-generation-proof">
             <ShieldCheck size={15} />
