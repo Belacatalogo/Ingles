@@ -68,34 +68,43 @@ Distribuição planejada:
 
 ## BLOCO ATUAL
 
-### `BLOCO-CARTAS-HOTFIX-COMPLETE-SENTIDO-1-LAB` — Completar frase desambiguado IMPLEMENTADO, aguardando deploy/teste
+### `BLOCO-CARTAS-HOTFIX-TIPOS-OBVIOS-1-LAB` — Tipos que entregavam resposta removidos IMPLEMENTADO, aguardando deploy/teste
 
 Contexto:
-- usuário encontrou outro caso ambíguo no exercício `Complete a frase`;
-- exemplo: `____ are my friend.` com opções `she`, `I`, `we`, `you`;
-- mesmo quando uma resposta era a esperada pelo card, o enunciado não deixava claro o significado-alvo;
-- para estudo sério, o exercício precisa testar frase + significado, não só uma lacuna gramatical solta.
+- usuário encontrou novos problemas pedagógicos:
+  1. `Escolha a frase que usa “we” corretamente` entregava a resposta porque só uma alternativa tinha `we`;
+  2. `Qual bloco pertence à frase “We study English”` entregava a resposta porque a resposta era literalmente parte do enunciado;
+  3. esses tipos não testavam conhecimento real, apenas reconhecimento visual.
 
 Arquivo alterado:
 - `fluency-clean/src/services/vocabularyPractice.js`
 - `REWRITE_HANDOFF.md`
 
 O que foi implementado:
-- `activityComplete()` agora inclui o significado/tradução-alvo no prompt;
-- exemplo novo esperado:
-  - `Complete com a palavra que significa “você”: ____ are my friend.`;
-- instrução alterada para: `Use o significado pedido para escolher a única resposta correta.`;
-- isso reduz ambiguidade quando mais de uma palavra poderia encaixar gramaticalmente.
+- removido `activityFindExample()` do fluxo;
+- removido `activityChunk()` do fluxo;
+- removidas derivações automáticas de `chunk`, `chunks`, `variations` e `miniDialogues` da normalização da prática;
+- agora o fluxo seguro usa somente:
+  - `Nova palavra`;
+  - `Reconheça o significado`;
+  - `Complete a frase` com significado-alvo;
+  - `Ouça e escolha`;
+  - `Monte a frase`;
+- adicionado `repeatToTarget()` para manter 15–20 questões mesmo com menos tipos seguros;
+- chunks, variações e mini-diálogos devem voltar apenas com currículo fixo auditado e exercícios desenhados para não entregar a resposta.
 
 Commit:
-- `0641a3f6d425489e7131513d9ae0d4154322f883` — desambigua completar frase nas cartas.
+- `b69c81c8168ec95d86c120b41fd63f1e5bcd6288` — remove tipos que entregavam resposta nas cartas.
 
 Teste recomendado no iPhone:
 1. abrir Cartas > Essenciais A1 > bolha nível 2;
-2. procurar exercícios `Complete a frase`;
-3. confirmar que o prompt mostra o significado-alvo, como `Complete com a palavra que significa “você”`;
-4. confirmar que a resposta fica clara por sentido;
-5. observar se ainda aparece algum caso onde mais de uma opção possa estar correta.
+2. confirmar que não aparece mais `Frase com a palavra`;
+3. confirmar que não aparece mais `Chunk natural`;
+4. confirmar que aparecem apenas tipos seguros;
+5. confirmar que ainda há cerca de 15–20 questões;
+6. observar se alguma pergunta ainda entrega a resposta no enunciado.
+
+### `BLOCO-CARTAS-HOTFIX-COMPLETE-SENTIDO-1-LAB` — Completar frase desambiguado IMPLEMENTADO
 
 ### `BLOCO-CARTAS-HOTFIX-AMBIGUIDADE-CONTADOR-1-LAB` — Ambiguidade e contador corrigidos IMPLEMENTADO
 
@@ -108,8 +117,8 @@ Teste recomendado no iPhone:
 ### `BLOCO-CARTAS-USO-4-LAB` — Chunks, variações e mini-diálogos IMPLEMENTADO PARCIAL / RESTRITO
 
 Observação:
-- após teste real, a parte automática de variações foi restringida por causar ambiguidade;
-- variações e mini-diálogos devem voltar apenas quando forem escritos manualmente no currículo fixo auditado, não derivados automaticamente.
+- após teste real, a parte automática de variações/chunks foi restringida por causar ambiguidade ou entregar resposta;
+- variações, chunks e mini-diálogos devem voltar apenas quando forem escritos manualmente no currículo fixo auditado e treinados por exercícios próprios.
 
 ### `BLOCO-CARTAS-HOTFIX-QUALIDADE-2-LAB` — Opções estáveis e uso menos óbvio IMPLEMENTADO
 
@@ -127,7 +136,7 @@ Observação:
 
 ## NOVA ORDEM DE BLOCOS — CARTAS COMO SUBSTITUTO DO DUOLINGO
 
-1. `BLOCO-CARTAS-HOTFIX-COMPLETE-SENTIDO-1-LAB` — completar frase desambiguado. STATUS: implementado, aguardando teste.
+1. `BLOCO-CARTAS-HOTFIX-TIPOS-OBVIOS-1-LAB` — tipos que entregavam resposta removidos. STATUS: implementado, aguardando teste.
 2. `BLOCO-CARTAS-CURRICULO-FIXO-8B-LAB` — expansão B1/B2.
 3. `BLOCO-CARTAS-CURRICULO-FIXO-8C-LAB` — C1/C2 + auditoria tripla profunda.
 4. `BLOCO-CARTAS-PREVIEW-9A-LAB` — prévia da bolha com palavras, tradução e referência visual.
@@ -140,11 +149,12 @@ Observação:
 
 ## Pendência técnica importante
 
-- testar deploy do `BLOCO-CARTAS-HOTFIX-COMPLETE-SENTIDO-1-LAB` no iPhone;
-- confirmar que `Complete a frase` mostra significado-alvo;
-- confirmar que não há mais perguntas ambíguas na bolha;
+- testar deploy do `BLOCO-CARTAS-HOTFIX-TIPOS-OBVIOS-1-LAB` no iPhone;
+- confirmar que `Frase com a palavra` e `Chunk natural` sumiram;
+- confirmar que ainda há 15–20 questões por nível;
+- confirmar que perguntas restantes não entregam resposta no enunciado;
 - seguir para `BLOCO-CARTAS-CURRICULO-FIXO-8B-LAB` se estiver ok.
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O bloco atual implementado foi `BLOCO-CARTAS-HOTFIX-COMPLETE-SENTIDO-1-LAB`: `activityComplete()` agora mostra o significado-alvo no prompt para evitar ambiguidade, por exemplo `Complete com a palavra que significa “você”`. Testar no iPhone; se ok, seguir para `BLOCO-CARTAS-CURRICULO-FIXO-8B-LAB`."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O bloco atual implementado foi `BLOCO-CARTAS-HOTFIX-TIPOS-OBVIOS-1-LAB`: removidos `Frase com a palavra` e `Chunk natural` porque entregavam a resposta; a prática agora usa só tipos seguros até criarmos exercícios melhores nos blocos de preview/gloss/tradução guiada. Testar no iPhone; se ok, seguir para `BLOCO-CARTAS-CURRICULO-FIXO-8B-LAB`."
