@@ -47,7 +47,7 @@ const englishFunctionWords = /\b(?:am|are|is|was|were|have|has|had|do|does|did|c
 const portugueseSignals = /\b(?:eu|ele|ela|n[oó]s|voc[eê]|voc[eê]s|eles|elas|estou|est[aá]|estamos|feliz|m[eé]dica|m[eé]dico|profiss[aã]o|estado|descreve|indicar|posse|pertence|algu[eé]m|carro|livro|mesa|exemplo|correto|pois|porque|verbo|frase|regra|aluno|brasileiro|portugu[eê]s|ingl[eê]s|pessoa|pessoas|outro|lado|no entanto|diferente|amigo|amigos|novo|nova|gentil|todos|todas|aqui)\b/i;
 const translationStarterPattern = /^(?:Eu|Ele|Ela|Nós|Nos|Eles|Elas|Você|Vocês|O|A|Os|As|Meu|Minha|Seu|Sua|Isso|Este|Esta|Esse|Essa)\b/;
 const bareBePattern = /^(?:I am|You are|He is|She is|It is|We are|They are|I'm|You're|He's|She's|It's|We're|They're)$/i;
-const exampleOverflowPattern = /(?:^|\s)(?=(?:Já|Outro exemplo|Outro lado|Outro|No entanto|Diferente disso)\b\s*["'“”]?(?:I|You|He|She|It|We|They|This|That|The|A|An|My|Your|His|Her|Our|Their)\b)/i;
+const exampleOverflowPattern = /(?:^|\s)(?=(?:Já|Outro exemplo|Outro lado|Outro|No entanto|Diferente disso|O verbo|A forma|Esse uso|Essa forma)\b)/i;
 
 function normalizeVisualSpacing(value) {
   const connectorPatternText = connectorBreaks.join('|');
@@ -150,7 +150,7 @@ function looksLikeCompleteEnglish(text) {
 }
 
 function looksLikePortugueseTranslation(text) {
-  const value = stripQuotes(text);
+  const value = stripQuotes(text).replace(/^\((.*)\)$/g, '$1').trim();
   if (!value || looksLikeCompleteEnglish(value)) return false;
   if (/^(correto|pois|porque|aqui|cada|o erro|lembre-se|para perguntar|descreve|mostra|indica)\b/i.test(value)) return false;
   return /[áàâãéêíóôõúç]/i.test(value) || translationStarterPattern.test(value);
@@ -380,7 +380,7 @@ export function GrammarLesson({ lesson }) {
   }
 
   return (
-    <article className="grammar-layout grammar-lesson-v1 grammar-deep-lesson-v2 grammar-renderer-system-v3 grammar-renderer-overflow-v4">
+    <article className="grammar-layout grammar-lesson-v1 grammar-deep-lesson-v2 grammar-renderer-system-v3 grammar-renderer-overflow-v4 grammar-renderer-card-trim-v5">
       <Card
         eyebrow={`Grammar profunda · ${lesson.level}`}
         title={lesson.title}
