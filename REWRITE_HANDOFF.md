@@ -15,101 +15,101 @@ Branch estável protegida: `rewrite-fluency-clean`
 - Não mexer no backend Azure privado.
 - Manter tudo modular em `fluency-clean/src/`, `fluency-clean/public/` ou arquivos reais de configuração.
 
-## ESTADO ATUAL — HOTFIX REGENERAR AULA ATUAL
+## ESTADO ATUAL — HOTFIX STORAGE FORTE + TESTE COMPARATIVO
 
-### `HOTFIX-GERACAO-REGENERAR-AULA-ATUAL-LAB` — IMPLEMENTADO, aguardando deploy/teste
+### `HOTFIX-STORAGE-COMPARATIVO-MOTORES-LAB` — IMPLEMENTADO, aguardando deploy/teste
 
 Contexto:
-- Após o hotfix de storage, o diagnóstico mostrou que `lesson.current` e `lastGenerationStatus` já apontavam para a aula nova `Present Simple: Verbs 'To Be' and 'To Have'`.
-- Portanto, a aula passou a persistir.
-- O problema restante era de UX/fluxo: como a aula atual é da mesma etapa do cronograma, o painel obrigava marcar `Substituir aula atual e gerar uma versão diferente` para gerar de novo.
-- Para teste/lab, isso impedia regenerar a mesma aula com o mesmo objetivo sem variar contexto.
+- Mesmo após compactação anterior, o iPhone/Safari continuou recusando `lesson.current`.
+- O diagnóstico mostrou tentativa de versão compacta e emergencial ainda falhando.
+- Usuário também pediu um jeito de testar, depois de cada conclusão, a mesma aula com Flash, Groq e Cerebras, e saber se houve diferença mínima entre elas.
 
-O que foi corrigido:
-- Removido o bloqueio que interrompia a geração quando `pendingSameLesson && !forceNew`.
-- O botão agora mostra `Regenerar aula atual` quando a aula atual pertence à mesma etapa.
-- O checkbox mudou para `Gerar versão diferente com outro contexto`.
-- Se o checkbox estiver desligado, o sistema regenera a mesma aula/mesmo objetivo sem variação obrigatória.
-- A origem salva passa a registrar `generated-regeneration-same-lesson` quando for regeneração da aula atual.
+O que foi corrigido no storage:
+- `lessonStore.js` agora tem purge forte do cache local Fluency quando a gravação falha.
+- Preserva chaves/configurações essenciais:
+  - `user.profile`
+  - `settings`
+  - `lesson.keys`
+  - `lesson.groq.key`
+  - `lesson.groq.model`
+  - `lesson.cerebras.key`
+  - `lesson.cerebras.model`
+  - `lesson.external.forceNext`
+  - `lesson.promptDraft`
+- Remove o restante das chaves `fluency.clean.*` para liberar quota antes da versão ultra compacta.
+- Histórico de aulas agora fica vazio para reduzir risco de quota.
+- `lesson.current` salva uma versão ultra compacta em último caso.
+- `contractVersion` e revisões são encurtados para não estourar localStorage.
 
-Arquivo alterado:
-- `fluency-clean/src/components/lesson/LessonGeneratorPanel.jsx`
+O que foi adicionado para comparação Flash/Groq/Cerebras:
+- `lessonStore.js` agora calcula `lessonSignature` com:
+  - hash geral da aula;
+  - hash por section;
+  - contagem de palavras por section;
+  - total de palavras nas sections;
+  - quantidade de vocabulário, exercícios e prompts.
+- Após salvar, o diagnóstico registra algo como:
+  - `Assinatura da aula: ab12cd34 · gemini · sections 190/210/205/...`
+- Também salva histórico curto em `lesson.comparisonRuns`.
+- `externalLessonProviders.js` agora permite forçar um provedor específico na próxima geração.
+- `plannedGeminiLessons.js` recebe esse alvo e chama somente Groq ou somente Cerebras quando solicitado.
+- `LessonKeysPanel.jsx` agora mostra botões:
+  - `Forçar fallback externo na próxima geração`
+  - `Forçar Groq na próxima geração`
+  - `Forçar Cerebras na próxima geração`
+
+Arquivos alterados:
+- `fluency-clean/src/services/lessonStore.js`
+- `fluency-clean/src/services/externalLessonProviders.js`
+- `fluency-clean/src/services/plannedGeminiLessons.js`
+- `fluency-clean/src/components/settings/LessonKeysPanel.jsx`
 - `REWRITE_HANDOFF.md`
 
-Commit:
-- `0c247ed22af5b61f3a8745f0ac042c3a0981094a` — permite regenerar aula atual.
+Commits deste hotfix:
+- `5c43b2c56f3474c6cb9b98cb4b547b826d94f88e` — purge e assinatura de aula.
+- `150f8908f8c314f4b559b53bfe4c2de63d9571c7` — permite forçar Groq ou Cerebras.
+- `e73b22cc4161984b442e5276e5d6d4d1763c3ede` — cabla provedor externo alvo.
+- `63c9f37b6a1ed9cf2f527c370b3621eb7b7be986` — adiciona botões Groq e Cerebras.
 
-Teste obrigatório agora:
-1. aguardar deploy da branch `rewrite-fluency-clean-lab` com commit `0c247ed` ou posterior;
-2. abrir a aba Hoje/Aula;
-3. confirmar que o botão aparece como `Regenerar aula atual` quando a aula atual já é a mesma etapa;
-4. clicar sem marcar `Gerar versão diferente com outro contexto`;
-5. confirmar que a geração roda novamente com a mesma aula `Present Simple: To Be e To Have`;
-6. confirmar que salva e abre na aba Aula.
+Como testar agora:
+1. aguardar deploy da branch `rewrite-fluency-clean-lab` com commit `63c9f37` ou posterior;
+2. testar primeiro com Gemini/Flash normal, sem forçar fallback;
+3. confirmar se aparece `Aula salva...` e `Assinatura da aula...`;
+4. anotar hash e contagem de sections;
+5. ir em Ajustes > Chaves de aulas e ativar `Forçar Groq na próxima geração`;
+6. gerar a mesma aula e comparar hash/sections;
+7. ir em Ajustes > Chaves de aulas e ativar `Forçar Cerebras na próxima geração`;
+8. gerar a mesma aula e comparar hash/sections.
 
-## ESTADO ANTERIOR — HOTFIX STORAGE GRAMMAR PROFUNDA
+Interpretação:
+- Se o hash geral for diferente, houve alteração real no conteúdo.
+- Se hashes das sections forem diferentes, as sections mudaram.
+- Se só a contagem de palavras mudar, houve alteração estrutural mínima.
+- Se hash e contagens forem iguais, o conteúdo salvo ficou essencialmente igual.
 
-### `HOTFIX-STORAGE-GRAMMAR-PROFUNDA-LAB` — IMPLEMENTADO
+## ESTADO ANTERIOR — HOTFIX REGENERAR AULA ATUAL
 
-Contexto do teste:
-- A Cirurgia 2 iniciou corretamente.
-- Diagnóstico mostrou `grammar bloco 1B por seção`.
-- Sections foram geradas e aprovadas com contagem alta, por exemplo section 6 com 249 palavras.
-- Houve falha parcial de JSON em uma tentativa do Flash, mas o fallback para `gemini-2.5-flash-lite` recuperou a section.
-- Depois a aula passou até o ponto de abrir/salvar, mas o storage local recusou persistência.
-
-O que foi corrigido:
-- `lessonStore.js` usa camada `storage-safe` antes de persistir.
-- Conteúdo visível é preservado; metadados internos pesados são compactados/removidos.
-- Histórico limitado a 2 itens compactos.
-
-Commit:
-- `40f5839a5ece1a27983ba2a81a0c091da6d83e92` — salva aula grammar profunda em formato persistível.
+### `HOTFIX-GERACAO-REGENERAR-AULA-ATUAL-LAB` — IMPLEMENTADO
+- Permite `Regenerar aula atual` sem exigir versão diferente.
+- Checkbox agora só serve para `Gerar versão diferente com outro contexto`.
+- Commit: `0c247ed22af5b61f3a8745f0ac042c3a0981094a`.
 
 ## ESTADO ANTERIOR — CIRURGIA 2 GRAMMAR
 
 ### `CIRURGIA-2-GRAMMAR-BLOCO-1-SECTIONS-LAB` — IMPLEMENTADA
-
-O que foi implementado:
-- Criado `fluency-clean/src/prompts/grammar_section_example.json`.
-- Criado `fluency-clean/src/services/grammarSectionGenerator.js`.
-- `plannedGeminiLessons.js` agora, somente para Grammar:
-  1. deixa o fluxo gerar o esqueleto/aula normalmente;
-  2. antes da validação/revisor final, roda `enrichGrammarSectionsSequentially()`;
-  3. reescreve cada section separadamente, em sequência, com contexto das sections anteriores;
-  4. exige content com no mínimo 180 palavras;
-  5. exige contraste com português brasileiro em cada section;
-  6. exige erro típico A1 brasileiro em cada section;
-  7. exige exemplos contextualizados e explicação de por que estão corretos;
-  8. anexa contrato `grammar-section-sequential-v1`.
-
-Commits:
-- `b7cd66dd37f6e7adfa291943e6634a43671a1389` — adiciona exemplo de section grammar.
-- `e7f5ad2a4f0608e9b4f058a0b2d840b7da3cbfec` — gera sections grammar sequenciais.
-- `5fee14d00f1366fa5cdb7871b6c007aa7d1a3525` — cabla sections sequenciais no planejador.
-- `4c1b41edc9c329ab9ba5cdda6fc29a76363d4a8b` — atualiza handoff.
-
-## ESTADO ANTERIOR — FALLBACK E DIAGNÓSTICO
-
-### `HOTFIX-DIAGNOSTICO-LOGS-TOPO-LAB` — IMPLEMENTADO
-- Logs recentes aparecem no topo.
-- Mostra 14 logs.
-- Painel fica fixo e rolável no mobile.
-
-### `CIRURGIA-1-FALLBACK-EXTERNO-LAB` — IMPLEMENTADA
-- Gemini continua primeiro.
-- Se Gemini falhar como geração/API, tenta Groq/Cerebras.
-- UI em Ajustes > Chaves de aulas para Groq/Cerebras.
-- Botão de teste: `Forçar fallback externo na próxima geração`.
+- Cada Grammar section é reescrita sequencialmente.
+- Mínimo 180 palavras por section.
+- Exige contraste com português e erro típico A1 brasileiro.
+- Não mexeu no professor revisor.
+- Não mexeu no `deepGrammarPipeline.js`.
 
 ## NÃO FAZER AGORA
 
-- Não implementar Cirurgia 3 antes do teste da regeneração + aula aberta.
+- Não implementar Cirurgia 3 antes de testar storage forte + comparação de motores.
 - Não mexer no `deepGrammarPipeline.js`.
 - Não relaxar o professor revisor.
-- Não salvar aula fraca só para evitar bloqueio.
 - Não portar Pro para keys free.
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. A Cirurgia 2 foi implementada, o storage foi corrigido e a aula nova já apareceu como `lesson.current`. O último hotfix foi `0c247ed`, que permite `Regenerar aula atual` sem exigir versão diferente. Próximo passo é testar regeneração/abertura da aula `Present Simple: To Be e To Have` com Gemini normal, sem forçar fallback externo. Não mexer em Cirurgia 3/deepGrammarPipeline ainda. Não mexer em `main`, `rewrite-fluency-clean`, `bundle.js` ou backend Azure privado."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. O último hotfix foi `63c9f37` com purge forte do storage, versão ultra compacta e assinatura/hash para comparar Flash/Groq/Cerebras. Próximo passo é testar geração normal com Flash; depois forçar Groq; depois forçar Cerebras. Comparar pelo diagnóstico `Assinatura da aula`. Não mexer em Cirurgia 3/deepGrammarPipeline ainda. Não mexer em `main`, `rewrite-fluency-clean`, `bundle.js` ou backend Azure privado."
