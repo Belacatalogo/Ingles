@@ -3,6 +3,9 @@ import { generateLessonDraft } from './geminiLessons.js';
 import { buildPedagogicalPlan, buildPlanPromptText, summarizePlanForDiagnostics } from './lessonPlan.js';
 import { inferLessonTypeFromText, normalizeLessonType } from './lessonTypes.js';
 
+const GRAMMAR_MODEL_TEST_CONTRACT = 'grammar-model-test-gemini-2.5-pro';
+const GRAMMAR_MODEL_TEST_FALLBACK_CONTRACT = 'grammar-model-test-fallback-current';
+
 function makePlanSeed() {
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 }
@@ -11,6 +14,28 @@ function resolvePlanType({ prompt = '', forcedType = '' } = {}) {
   const normalized = normalizeLessonType(forcedType);
   if (normalized && normalized !== 'default') return normalized;
   return inferLessonTypeFromText(prompt);
+}
+
+function appendPlanContract(baseContract = '', extraContract = '') {
+  const base = String(baseContract || 'planned-lesson-v1');
+  const extra = String(extraContract || '').trim();
+  if (!extra) return base;
+  return base.includes(extra) ? base : `${base}+${extra}`;
+}
+
+function attachPlan(result, { plan, planSeed, planContract }) {
+  if (result?.status === 'success' && result.lesson) {
+    return {
+      ...result,
+      lesson: {
+        ...result.lesson,
+        lessonPlan: plan,
+        planSeed,
+        planContract,
+      },
+    };
+  }
+  return result;
 }
 
 const JSON_OUTPUT_GUARD = [
@@ -78,6 +103,55 @@ export async function generatePlannedLessonDraft(options = {}) {
     'Antes de responder cada bloco, confira mentalmente se o primeiro caractere da resposta será { e não texto escapado.',
   ].join('\n');
 
+  const hasProKey = Boolean(String(options.proKey || '').trim());
+  const isGrammar = lessonType === 'grammar';
+
+  if (isGrammar && hasProKey) {
+    diagnostics.setPhase('MODEL-TEST-GRAMMAR-PRO ativo', 'generating');
+    diagnostics.log('MODEL-TEST-GRAMMAR-PRO ATIVO: planejador travou Grammar para tentar gemini-2.5-pro antes de qualquer Flash.', 'info');
+
+    const proResult = await generateLessonDraft({
+      ...options,
+      prompt: plannedPrompt,
+      previousLesson,
+      forceVariation,
+      forcedType,
+      keys: [],
+      proKey: options.proKey,
+    });
+
+    if (proResult?.status === 'success' && proResult.lesson) {
+      diagnostics.log('MODEL-TEST-GRAMMAR-PRO: Grammar gerada com gemini-2.5-pro pelo planejador.', 'success');
+      return attachPlan(proResult, {
+        plan,
+        planSeed,
+        planContract: appendPlanContract(plan.contract, GRAMMAR_MODEL_TEST_CONTRACT),
+      });
+    }
+
+    diagnostics.setPhase('MODEL-TEST-GRAMMAR-PRO fallback', 'generating');
+    diagnostics.log(`MODEL-TEST-GRAMMAR-PRO: Pro falhou. Fazendo fallback para modelo atual. Motivo: ${proResult?.error || 'sem detalhe'}`, 'warn', proResult);
+
+    const fallbackResult = await generateLessonDraft({
+      ...options,
+      prompt: plannedPrompt,
+      previousLesson,
+      forceVariation,
+      forcedType,
+      proKey: '',
+    });
+
+    return attachPlan(fallbackResult, {
+      plan,
+      planSeed,
+      planContract: appendPlanContract(plan.contract, GRAMMAR_MODEL_TEST_FALLBACK_CONTRACT),
+    });
+  }
+
+  if (isGrammar && !hasProKey) {
+    diagnostics.log('MODEL-TEST-GRAMMAR-PRO ATIVO, mas sem key Pro de aulas. Mantendo modelo atual para Grammar.', 'warn');
+  }
+
   const result = await generateLessonDraft({
     ...options,
     prompt: plannedPrompt,
@@ -86,17 +160,9 @@ export async function generatePlannedLessonDraft(options = {}) {
     forcedType,
   });
 
-  if (result?.status === 'success' && result.lesson) {
-    return {
-      ...result,
-      lesson: {
-        ...result.lesson,
-        lessonPlan: plan,
-        planSeed,
-        planContract: plan.contract,
-      },
-    };
-  }
-
-  return result;
+  return attachPlan(result, {
+    plan,
+    planSeed,
+    planContract: plan.contract,
+  });
 }
