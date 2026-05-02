@@ -1,9 +1,9 @@
 import { diagnostics } from './diagnostics.js';
-import { generateLessonDraft } from './geminiLessons.js';
+import { generateLessonDraft, maskApiKey } from './geminiLessons.js';
 import { buildPedagogicalPlan, buildPlanPromptText, summarizePlanForDiagnostics } from './lessonPlan.js';
 import { inferLessonTypeFromText, normalizeLessonType } from './lessonTypes.js';
 
-const GRAMMAR_MODEL_TEST_CONTRACT = 'grammar-model-test-gemini-2.5-pro';
+const GRAMMAR_MODEL_TEST_CONTRACT = 'grammar-model-test-gemini-2.5-pro-free-key';
 const GRAMMAR_MODEL_TEST_FALLBACK_CONTRACT = 'grammar-model-test-fallback-current';
 
 function makePlanSeed() {
@@ -66,6 +66,34 @@ const LISTENING_SOURCE_OF_TRUTH_GUARD = [
   'Se não aparece no listeningText, não pode aparecer no vocabulário nem nas questões.',
 ].join('\n');
 
+async function tryGrammarProWithFreeKeys({ options, plannedPrompt, previousLesson, forceVariation, forcedType, freeKeys = [] }) {
+  for (let index = 0; index < freeKeys.length; index += 1) {
+    const key = freeKeys[index];
+    const attemptLabel = `${index + 1}/${freeKeys.length}`;
+    diagnostics.setPhase('MODEL-TEST-GRAMMAR-PRO-FREE ativo', 'generating');
+    diagnostics.log(`MODEL-TEST-GRAMMAR-PRO-FREE ATIVO: tentativa ${attemptLabel} usando gemini-2.5-pro com key free/de aula ${maskApiKey(key)}.`, 'info');
+
+    const result = await generateLessonDraft({
+      ...options,
+      prompt: plannedPrompt,
+      previousLesson,
+      forceVariation,
+      forcedType,
+      keys: [],
+      proKey: key,
+    });
+
+    if (result?.status === 'success' && result.lesson) {
+      diagnostics.log(`MODEL-TEST-GRAMMAR-PRO-FREE: Grammar gerada com gemini-2.5-pro usando key free/de aula ${maskApiKey(key)}.`, 'success');
+      return result;
+    }
+
+    diagnostics.log(`MODEL-TEST-GRAMMAR-PRO-FREE: gemini-2.5-pro falhou nesta key free/de aula ${maskApiKey(key)}. Motivo: ${result?.error || 'sem detalhe'}`, 'warn', result);
+  }
+
+  return null;
+}
+
 export async function generatePlannedLessonDraft(options = {}) {
   const {
     prompt = '',
@@ -103,34 +131,32 @@ export async function generatePlannedLessonDraft(options = {}) {
     'Antes de responder cada bloco, confira mentalmente se o primeiro caractere da resposta será { e não texto escapado.',
   ].join('\n');
 
-  const hasProKey = Boolean(String(options.proKey || '').trim());
+  const freeKeys = Array.isArray(options.keys) ? options.keys.filter(Boolean) : [];
   const isGrammar = lessonType === 'grammar';
 
-  if (isGrammar && hasProKey) {
-    diagnostics.setPhase('MODEL-TEST-GRAMMAR-PRO ativo', 'generating');
-    diagnostics.log('MODEL-TEST-GRAMMAR-PRO ATIVO: planejador travou Grammar para tentar gemini-2.5-pro antes de qualquer Flash.', 'info');
+  if (isGrammar && freeKeys.length) {
+    diagnostics.setPhase('MODEL-TEST-GRAMMAR-PRO-FREE ativo', 'generating');
+    diagnostics.log('MODEL-TEST-GRAMMAR-PRO-FREE ATIVO: Grammar vai tentar gemini-2.5-pro nas keys free/de aula antes do Flash.', 'info');
 
-    const proResult = await generateLessonDraft({
-      ...options,
-      prompt: plannedPrompt,
+    const proFreeResult = await tryGrammarProWithFreeKeys({
+      options,
+      plannedPrompt,
       previousLesson,
       forceVariation,
       forcedType,
-      keys: [],
-      proKey: options.proKey,
+      freeKeys,
     });
 
-    if (proResult?.status === 'success' && proResult.lesson) {
-      diagnostics.log('MODEL-TEST-GRAMMAR-PRO: Grammar gerada com gemini-2.5-pro pelo planejador.', 'success');
-      return attachPlan(proResult, {
+    if (proFreeResult?.status === 'success' && proFreeResult.lesson) {
+      return attachPlan(proFreeResult, {
         plan,
         planSeed,
         planContract: appendPlanContract(plan.contract, GRAMMAR_MODEL_TEST_CONTRACT),
       });
     }
 
-    diagnostics.setPhase('MODEL-TEST-GRAMMAR-PRO fallback', 'generating');
-    diagnostics.log(`MODEL-TEST-GRAMMAR-PRO: Pro falhou. Fazendo fallback para modelo atual. Motivo: ${proResult?.error || 'sem detalhe'}`, 'warn', proResult);
+    diagnostics.setPhase('MODEL-TEST-GRAMMAR-PRO-FREE fallback', 'generating');
+    diagnostics.log('MODEL-TEST-GRAMMAR-PRO-FREE: nenhuma key free/de aula conseguiu gerar com gemini-2.5-pro. Voltando ao modelo atual Flash/free.', 'warn');
 
     const fallbackResult = await generateLessonDraft({
       ...options,
@@ -148,8 +174,8 @@ export async function generatePlannedLessonDraft(options = {}) {
     });
   }
 
-  if (isGrammar && !hasProKey) {
-    diagnostics.log('MODEL-TEST-GRAMMAR-PRO ATIVO, mas sem key Pro de aulas. Mantendo modelo atual para Grammar.', 'warn');
+  if (isGrammar && !freeKeys.length) {
+    diagnostics.log('MODEL-TEST-GRAMMAR-PRO-FREE ATIVO, mas nenhuma key free/de aula foi encontrada. Mantendo modelo atual.', 'warn');
   }
 
   const result = await generateLessonDraft({
