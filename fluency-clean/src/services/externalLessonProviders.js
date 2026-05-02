@@ -109,7 +109,7 @@ function buildPrompt({ prompt = '', forcedType = '', level = 'A1', forceVariatio
   ].filter(Boolean).join('\n');
 }
 
-async function callProvider(provider, prompt, fetcher, strictJson = true) {
+async function callProvider(provider, prompt, fetcher, strictJson = true, maxTokens = 8192) {
   const headers = { 'content-type': 'application/json' };
   headers.Authorization = ['Bearer', provider.secret].join(' ');
   const body = {
@@ -119,7 +119,7 @@ async function callProvider(provider, prompt, fetcher, strictJson = true) {
       { role: 'user', content: prompt },
     ],
     temperature: 0.25,
-    max_completion_tokens: 8192,
+    max_completion_tokens: maxTokens,
   };
   if (strictJson) body.response_format = { type: 'json_object' };
   const response = await fetcher(provider.url, { method: 'POST', headers, body: JSON.stringify(body) });
@@ -135,13 +135,13 @@ async function callProvider(provider, prompt, fetcher, strictJson = true) {
   return jsonFromText(content);
 }
 
-async function callProviderWithFallback(provider, prompt, fetcher) {
+async function callProviderWithFallback(provider, prompt, fetcher, maxTokens = 8192) {
   try {
-    return await callProvider(provider, prompt, fetcher, true);
+    return await callProvider(provider, prompt, fetcher, true, maxTokens);
   } catch (error) {
     if (Number(error?.status || 0) === 400 || /response_format|json_object|max_completion_tokens/i.test(String(error?.message || error))) {
       diagnostics.log(`${provider.label} rejeitou JSON mode. Tentando chamada simples.`, 'warn');
-      return callProvider(provider, prompt, fetcher, false);
+      return callProvider(provider, prompt, fetcher, false, maxTokens);
     }
     throw error;
   }
@@ -262,4 +262,25 @@ export async function generateExternalLessonDraft({ prompt = '', forcedType = ''
     }
   }
   return { status: 'error', lesson: null, error: lastError?.message || 'Falha nos provedores externos.' };
+}
+
+export async function generateExternalGrammarSection({ prompt = '', targetProvider = '', fetcher = fetch } = {}) {
+  const providers = providersFromLocalStorage(targetProvider);
+  const forced = normalizeForcedProvider(targetProvider);
+  if (!forced) return { status: 'not-forced', section: null, error: 'Nenhum provedor externo específico solicitado.' };
+  if (!providers.length) return { status: 'missing-keys', section: null, error: `Nenhuma chave configurada para ${forced}.` };
+
+  let lastError = null;
+  for (const provider of providers) {
+    try {
+      diagnostics.log(`Grammar 1B externo: tentando ${provider.label}/${provider.model} com chave ${provider.masked}.`, 'info');
+      const section = await callProviderWithFallback(provider, prompt, fetcher, 4200);
+      return { status: 'success', section, provider: provider.id, model: provider.model };
+    } catch (error) {
+      lastError = error;
+      diagnostics.log(`Grammar 1B externo falhou em ${provider.label}: ${error?.message || error}`, 'warn');
+    }
+  }
+
+  return { status: 'error', section: null, error: lastError?.message || `Falha ao gerar section com ${forced}.` };
 }
