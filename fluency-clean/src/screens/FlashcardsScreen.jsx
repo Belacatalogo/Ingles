@@ -6,7 +6,7 @@ import { getFlashcardSessions, localDateKey, recordFlashcardSession } from '../s
 import { getTotalVocabularyBankCount, getVocabularyDecks, VOCABULARY_BANK_TARGET } from '../services/vocabularyDecks.js';
 import { completeVocabularyBubbleLevel, getBubbleCardsForLevel, getNextVocabularyTarget, getVocabularyPathState, getVocabularyPathStats, getVocabularyTopicPath } from '../services/vocabularyPath.js';
 import { buildVocabularyPracticeActivities, scoreVocabularyPractice } from '../services/vocabularyPractice.js';
-import { getVocabularySrsSummary, updateVocabularySrsFromReviewLog } from '../services/vocabularySrs.js';
+import { getVocabularySrsState, getVocabularySrsSummary, updateVocabularySrsFromReviewLog } from '../services/vocabularySrs.js';
 
 function normalizeVocabularyItem(item, index) {
   if (typeof item === 'string') {
@@ -37,6 +37,20 @@ function findTodaySession(lesson) {
 function statsFromSession(session) {
   if (!session) return initialStats();
   return { correct: Number(session.correctCount || 0), missed: Number(session.needsReviewCount || 0), reviewed: Number(session.reviewedCards || 0) };
+}
+function srsKeyFor(item = {}) {
+  const base = String(item.cardId || item.id || item.word || item.expected || item.answer || item.prompt || '').trim();
+  return base.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9À-ÿ'-]/gi, '').slice(0, 90);
+}
+function statusForCard(card, srsState) {
+  const items = srsState?.items || {};
+  const direct = items[srsKeyFor(card)];
+  const byWord = Object.values(items).find((item) => String(item.word || '').toLowerCase() === String(card.word || '').toLowerCase());
+  const item = direct || byWord;
+  if (!item) return { label: 'Nova', className: 'new' };
+  if (item.status === 'weak') return { label: 'Fraca', className: 'weak' };
+  if (item.status === 'mastered') return { label: 'Dominada', className: 'mastered' };
+  return { label: 'Revisão', className: 'review' };
 }
 
 function TopicSelector({ pathState, activeDeckId, onSelect }) {
@@ -70,6 +84,35 @@ function VocabularyPathMap({ path, selectedBubble, onSelectBubble }) {
           </button>
         ))}
       </div>
+    </section>
+  );
+}
+
+function BubblePreviewCard({ deck, bubble, level, cards, activities, srsState, onStart, onAudio }) {
+  if (!bubble) return null;
+  return (
+    <section className="cards-review-footer path-lesson-info bubble-preview-card">
+      <div><Layers3 size={18} /><span>Prévia da bolha</span></div>
+      <strong>{deck.title} · Bolha {bubble.number} · Nível {level}/3</strong>
+      <p>Veja as palavras que aparecerão nesta bolha antes de começar. Primeiro reconheça o sentido; depois pratique nos exercícios.</p>
+      <small><Clock3 size={13} /> {activities.length} exercícios · {cards.length} palavras/frases nesta rodada</small>
+      <div className="bubble-preview-list" aria-label="Palavras desta bolha">
+        {cards.map((card) => {
+          const status = statusForCard(card, srsState);
+          return (
+            <article className="bubble-preview-item" key={card.id || card.word}>
+              <div>
+                <strong>{card.word}</strong>
+                <span className={`bubble-preview-status ${status.className}`}>{status.label}</span>
+              </div>
+              <p>{card.translation || card.definition}</p>
+              {card.example ? <blockquote>{card.example}</blockquote> : null}
+              <button type="button" onClick={() => onAudio(card.example || card.word)}><Volume2 size={13} /> Ouvir</button>
+            </article>
+          );
+        })}
+      </div>
+      <button className="cards-primary-action" type="button" onClick={onStart}>Começar bolha</button>
     </section>
   );
 }
@@ -110,6 +153,7 @@ export function FlashcardsScreen({ onNavigate }) {
   const pathState = useMemo(() => getVocabularyPathState(), [pathVersion]);
   const pathStats = useMemo(() => getVocabularyPathStats(), [pathVersion]);
   const srsSummary = useMemo(() => getVocabularySrsSummary(), [srsVersion]);
+  const srsState = useMemo(() => getVocabularySrsState(), [srsVersion, pathVersion]);
   const firstUnlocked = pathState.decks.find((deck) => deck.unlocked)?.id || 'core-a1';
   const [activeDeckId, setActiveDeckId] = useState(firstUnlocked);
   const topicPath = useMemo(() => getVocabularyTopicPath(activeDeckId), [activeDeckId, pathVersion]);
@@ -203,8 +247,13 @@ export function FlashcardsScreen({ onNavigate }) {
     setCardIndex(nextIndex);
   }
 
-  function openBubbleStudy(bubble) {
+  function openBubblePreview(bubble) {
     setSelectedBubble(bubble);
+    setStudyMode(false);
+    requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: 'smooth' }));
+  }
+
+  function startBubbleStudy() {
     setStudyMode(true);
     requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: 'smooth' }));
   }
@@ -229,11 +278,11 @@ export function FlashcardsScreen({ onNavigate }) {
           </div>
           <section className="cards-review-footer srs-status-card"><div><Brain size={18} /><span>Revisão espaçada</span></div><strong>{srsSummary.dueToday} revisão(ões) para hoje</strong><p>{srsSummary.total ? `${srsSummary.total} item(ns) rastreados · ${srsSummary.weak} fraco(s) · domínio médio ${srsSummary.averageMastery}%` : 'As palavras começarão a ser rastreadas depois da primeira bolha ou revisão.'}</p></section>
           {mode === 'path' ? <TopicSelector pathState={pathState} activeDeckId={activeDeckId} onSelect={(deckId) => { setActiveDeckId(deckId); setMode('path'); setStudyMode(false); }} /> : null}
-          {mode === 'path' && selectedBubble ? <VocabularyPathMap path={topicPath} selectedBubble={selectedBubble} onSelectBubble={openBubbleStudy} /> : null}
+          {mode === 'path' && selectedBubble ? <VocabularyPathMap path={topicPath} selectedBubble={selectedBubble} onSelectBubble={openBubblePreview} /> : null}
         </>
       ) : (
         <header className="cards-study-header">
-          <button type="button" onClick={() => setStudyMode(false)}><ArrowLeft size={18} /> Voltar para trilha</button>
+          <button type="button" onClick={() => setStudyMode(false)}><ArrowLeft size={18} /> Voltar para prévia</button>
           <div>
             <span>{topicPath.deck.title}</span>
             <strong>Bolha {selectedBubble?.number} · Nível {activeLevel}/3</strong>
@@ -242,7 +291,7 @@ export function FlashcardsScreen({ onNavigate }) {
         </header>
       )}
 
-      {mode === 'path' && selectedBubble && !isPathStudy ? <section className="cards-review-footer path-lesson-info"><div><Layers3 size={18} /><span>Bolha {selectedBubble.number} · Nível {activeLevel}/3</span></div><strong>{selectedBubble.title}</strong><p>Toque em uma bolha para abrir a sessão de estudo em tela dedicada.</p><small><Clock3 size={13} /> {activities.length} exercícios · {cards.length} palavras/frases nesta rodada</small></section> : null}
+      {mode === 'path' && selectedBubble && !isPathStudy && !sessionDone ? <BubblePreviewCard deck={topicPath.deck} bubble={selectedBubble} level={activeLevel} cards={cards} activities={activities} srsState={srsState} onStart={startBubbleStudy} onAudio={(text) => handleCardAudio(text)} /> : null}
 
       {!cards.length || (mode === 'path' && !activities.length) ? (
         <section className="cards-review-footer"><div><Layers3 size={18} /><span>Sem cards reais</span></div><strong>selecione um tópico desbloqueado</strong><p>As cartas usam vocabulário real da aula atual e uma trilha progressiva por tema.</p></section>
