@@ -73,14 +73,39 @@ Esse bloco deve criar arquivos reais em `fluency-clean/src/data/vocabulary/`, or
 
 ## BLOCO ATUAL
 
-### `BLOCO-CARTAS-SRS-3-LAB` — Revisão espaçada real por palavra/frase IMPLEMENTADO, aguardando deploy/teste
+### `BLOCO-CARTAS-HOTFIX-AVANCO-1-LAB` — Botão de resposta das Cartas corrigido IMPLEMENTADO, aguardando deploy/teste
 
-Análise profunda do bloco:
-- Para a aba Cartas substituir Duolingo em vocabulário, não basta liberar bolhas;
-- cada palavra/frase precisa ter memória própria;
-- o sistema precisa saber o que está fraco, o que vence hoje e o que já está forte;
-- a trilha ensina conteúdo novo, mas o SRS impede esquecimento;
-- este bloco cria a base para revisão espaçada, domínio por item e tarefas diárias mais inteligentes.
+Contexto:
+- usuário testou a bolha de Cartas no iPhone;
+- ao selecionar uma opção em múltipla escolha, a opção ficava marcada;
+- porém o botão inferior continuava desativado com o texto `Escolha uma resposta`;
+- isso impedia avançar no exercício.
+
+Arquivos alterados:
+- `fluency-clean/src/screens/FlashcardsScreen.jsx`
+- `REWRITE_HANDOFF.md`
+
+O que foi implementado:
+- `VocabularyActivityCard` agora calcula `canCheck`;
+- para exercícios de escolha/listening, o botão libera quando existe `selected`;
+- texto do botão muda para `Verificar resposta` após seleção;
+- intro continua com `Continuar`;
+- build continua com `Verificar` quando houver palavras montadas;
+- feedback continua usando `Continuar`.
+
+Commit:
+- `b49334189b12ec9e139d4f3521547c9c2ecb0740` — libera avanço após escolha nas cartas.
+
+Teste recomendado no iPhone:
+1. abrir Cartas > Trilha de vocabulário;
+2. abrir a primeira bolha;
+3. chegar em exercício de múltipla escolha;
+4. selecionar uma resposta;
+5. confirmar que o botão muda para `Verificar resposta` e fica clicável;
+6. tocar e confirmar que mostra feedback;
+7. tocar em `Continuar` e confirmar avanço.
+
+### `BLOCO-CARTAS-SRS-3-LAB` — Revisão espaçada real por palavra/frase IMPLEMENTADO
 
 Arquivos criados:
 - `fluency-clean/src/services/vocabularySrs.js`
@@ -91,50 +116,11 @@ Arquivos alterados:
 - `REWRITE_HANDOFF.md`
 
 O que foi implementado:
-- novo serviço `vocabularySrs.js`;
-- estado local salvo em `localStorage` com chave `fluency.vocabularySrs.v1`;
-- cada item de vocabulário/frase passa a ter estado individual:
-  - `weak`;
-  - `learning`;
-  - `review`;
-  - `strong`;
-  - `mastered`;
-- cada sessão de Cartas atualiza o SRS com:
-  - tentativas;
-  - acertos;
-  - erros;
-  - streak;
-  - lapses;
-  - domínio estimado;
-  - próxima data de revisão;
-- intervalos iniciais:
-  - weak: 1 dia;
-  - learning: 2 dias;
-  - review: 4 dias;
-  - strong: 8 dias;
-  - mastered: 16 dias;
-- `FlashcardsScreen.jsx` agora atualiza o SRS ao concluir sessão;
-- a tela Cartas mostra um card `Revisão espaçada` com:
-  - revisões para hoje;
-  - itens rastreados;
-  - itens fracos;
-  - domínio médio;
-- `TodayScreen.jsx` mostra revisões vencidas na tarefa `Revisar flashcards` quando houver SRS vencido;
-- a correção usa `localDateKey()` para evitar erro UTC/dia errado.
-
-Commits:
-- `54cc78be82a6c51649257dd9f14098a7ea15915f` — adiciona SRS real de vocabulário;
-- `f68341d6bc4fb43e987180e743bbeabf4d005ea3` — conecta SRS às sessões de cartas;
-- `92a05f357f1e5a13f0514257c1557083138c1d8b` — mostra revisões SRS nas tarefas de hoje.
-
-Teste recomendado no iPhone:
-1. abrir Cartas > Trilha de vocabulário;
-2. concluir uma bolha;
-3. voltar para Cartas e confirmar card `Revisão espaçada`;
-4. errar alguns itens e concluir;
-5. confirmar que itens fracos aparecem contabilizados;
-6. voltar para Hoje e verificar se `Revisar flashcards` mostra revisões vencidas quando houver;
-7. confirmar que a tarefa `Concluir 1 bolha da trilha` continua separada.
+- SRS local por item de vocabulário/frase;
+- estados `weak`, `learning`, `review`, `strong`, `mastered`;
+- domínio estimado, próxima data de revisão e revisões vencidas;
+- Cartas mostra card `Revisão espaçada`;
+- Hoje mostra revisões vencidas na tarefa `Revisar flashcards`.
 
 ### `BLOCO-HOJE-DATA-LOCAL-1-LAB` — Correção de dia local e tarefa de bolha IMPLEMENTADO
 
@@ -199,7 +185,7 @@ Pendente técnica:
 
 ## NOVA ORDEM DE BLOCOS — QUALIDADE REAL DAS AULAS
 
-1. `BLOCO-CARTAS-SRS-3-LAB` — revisão espaçada real por palavra/frase. STATUS: implementado, aguardando teste.
+1. `BLOCO-CARTAS-HOTFIX-AVANCO-1-LAB` — botão de resposta das Cartas corrigido. STATUS: implementado, aguardando teste.
 2. `BLOCO-CARTAS-USO-4-LAB` — usos, chunks e variações por palavra.
 3. `BLOCO-CARTAS-MIX-5-LAB` — misturar palavras novas com antigas.
 4. `BLOCO-CARTAS-LISTENING-SPEAKING-6-LAB` — áudio, shadowing e pronúncia.
@@ -228,13 +214,12 @@ Ordem recomendada após os blocos principais:
 
 ## Pendência técnica importante
 
-- testar deploy do `BLOCO-CARTAS-SRS-3-LAB` no iPhone;
-- confirmar card de revisão espaçada em Cartas;
-- confirmar atualização após concluir bolha;
-- confirmar tarefa de Hoje com revisões vencidas;
+- testar deploy do `BLOCO-CARTAS-HOTFIX-AVANCO-1-LAB` no iPhone;
+- confirmar que selecionar resposta libera botão;
+- confirmar feedback e avanço;
 - seguir depois para `BLOCO-CARTAS-USO-4-LAB`;
 - remover definitivamente `ListeningLesson.jsx` antigo quando o conector permitir SHA correto.
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O bloco atual implementado foi `BLOCO-CARTAS-SRS-3-LAB`: criado `vocabularySrs.js`, Cartas atualiza SRS por palavra/frase ao concluir sessão e Hoje mostra revisões vencidas. A meta oficial da trilha fixa de Cartas foi atualizada para 5.000 palavras/expressões + 2.500 frases/chunks, sem IA gerando bolhas. Testar no iPhone; se ok, seguir para `BLOCO-CARTAS-USO-4-LAB`."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O bloco atual implementado foi `BLOCO-CARTAS-HOTFIX-AVANCO-1-LAB`: em `FlashcardsScreen.jsx`, exercícios de escolha agora liberam o botão quando existe resposta selecionada. Testar no iPhone; se ok, seguir para `BLOCO-CARTAS-USO-4-LAB`."
