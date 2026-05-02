@@ -33,53 +33,54 @@ Meta planejada:
 
 ## BLOCO ATUAL
 
-### `BLOCO-CARTAS-INTRO-PALAVRAS-NOVAS-INLINE-LAB` — Introdução interna da bolha IMPLEMENTADO, aguardando deploy/teste
+### `BLOCO-CARTAS-GLOSS-FLUTUANTE-E-ORDEM-PEDAGOGICA-LAB` — IMPLEMENTADO, aguardando deploy/teste
 
 Contexto:
-- o usuário esclareceu que não queria uma prévia externa abaixo da trilha;
-- o comportamento desejado é como no Duolingo: ao iniciar a bolha, a primeira etapa da própria aula apresenta as palavras novas;
-- a palavra nova deve aparecer destacada, com referência visual simples, e ao tocar nela deve abrir a tradução;
-- depois de tocada, a palavra deixa de parecer totalmente nova e a bolha segue para exercícios.
+- na etapa `Palavras novas`, a tradução estava aparecendo dentro do próprio cartão, empurrando o conteúdo;
+- o usuário explicou que precisa ser uma mini-caixa sobreposta, porque depois o mesmo padrão será usado em frases longas;
+- também foi observado que `Monte a frase` apareceu cedo demais para iniciante, antes de a frase ser apresentada em exercícios anteriores.
 
-Arquivo alterado:
+Arquivos alterados:
 - `fluency-clean/src/screens/FlashcardsScreen.jsx`
+- `fluency-clean/src/services/vocabularyPractice.js`
 - `REWRITE_HANDOFF.md`
 
 O que foi implementado:
-- removida a lógica de preview externo como etapa separada abaixo da trilha;
-- tocar em uma bolha desbloqueada agora abre uma tela dedicada da própria bolha;
-- primeira etapa interna: `Palavras novas`;
-- a etapa mostra palavras novas/fracas/revisão da rodada;
-- cada palavra mostra:
-  - referência textual simples por categoria (`WORD`, `STUDY`, `WORK`, `TRAVEL`, etc.);
-  - palavra em inglês destacada;
-  - etiqueta `nova` ou `vista`;
-  - ao tocar, exibe tradução/definição e frase exemplo;
-- botão `Continuar para exercícios` inicia a prática normal;
-- dentro da prática, botão superior `Palavras novas` permite voltar para a etapa inicial;
-- a conclusão de sessão continua salvando SRS e progresso.
+- criado componente inline `FloatingGloss` em `FlashcardsScreen.jsx`;
+- ao tocar numa palavra nova, abre uma caixa flutuante sobreposta com:
+  - palavra;
+  - tradução/definição;
+  - frase exemplo;
+  - botão `Entendi`;
+- a tradução não empurra mais o cartão da palavra;
+- clicar fora da caixa fecha a dica;
+- a palavra continua mudando de `nova` para `vista`;
+- `vocabularyPractice.js` foi reordenado pedagogicamente:
+  - começo: exposição/reconhecimento (`intro`, `meaning`);
+  - meio: completar, ouvir e reconhecer;
+  - final: produção (`build` / Monte a frase);
+- `Monte a frase` agora não deve aparecer como primeira atividade;
+- enunciado de `Monte a frase` agora informa que é uma frase já estudada.
 
 Commits:
-- `826081e7a00a0f5e527227e6e94f9fd681cdae75` — transforma preview em introdução interna da bolha.
-
-Observação técnica:
-- houve tentativa de adicionar CSS extra para melhorar o visual da introdução, mas o conector bloqueou a atualização grande de CSS;
-- a primeira versão usa classes existentes e alguns estilos inline mínimos;
-- se a UI ficar visualmente pobre, fazer um bloco pequeno posterior só de CSS incremental, sem substituir o arquivo inteiro.
+- `bf343c425c2249743011d01a26821bc4fb74fb42` — reordena exercícios de cartas antes de montar frase;
+- `88402cc8361eb9bf3b407bdf799a94622eae98ae` — mostra tradução como caixa flutuante nas palavras novas.
 
 Teste recomendado no iPhone:
 1. abrir Cartas > Trilha de vocabulário;
-2. tocar em uma bolha desbloqueada;
-3. confirmar que abre uma tela dedicada, não uma caixa abaixo da trilha;
-4. confirmar que aparece `Palavras novas` antes dos exercícios;
-5. tocar em uma palavra destacada;
-6. confirmar que aparece tradução/definição e exemplo;
-7. confirmar que a etiqueta muda de `nova` para `vista`;
-8. tocar em `Continuar para exercícios`;
-9. confirmar que os exercícios iniciam normalmente;
-10. tocar em `Palavras novas` dentro da prática e confirmar que volta para a introdução.
+2. tocar numa bolha desbloqueada;
+3. tocar numa palavra nova;
+4. confirmar que abre caixa flutuante sobreposta, não texto dentro do cartão;
+5. tocar fora ou em `Entendi` e confirmar que fecha;
+6. iniciar exercícios;
+7. confirmar que a primeira questão não é `Monte a frase`;
+8. verificar se `Monte a frase` aparece só depois de exposição/reconhecimento da frase.
 
 ## Blocos recentes implementados
+
+### `BLOCO-CARTAS-INTRO-PALAVRAS-NOVAS-INLINE-LAB` — IMPLEMENTADO
+- Tocar na bolha abre etapa interna `Palavras novas`.
+- Tocar na palavra mostra tradução e muda etiqueta de `nova` para `vista`.
 
 ### `BLOCO-CARTAS-PREVIEW-9A-LAB` — SUBSTITUÍDO
 - O conceito de preview externo foi abandonado por estar errado para o fluxo desejado.
@@ -94,16 +95,9 @@ Teste recomendado no iPhone:
 - Adicionados 168 cards C1/C2.
 - Banco deve ficar perto de 864/7500.
 
-### `BLOCO-CARTAS-CURRICULO-FIXO-8B-LAB` — IMPLEMENTADO
-- Criado `fixedExpansionB1B2.js`.
-- Adicionados 192 cards B1/B2.
-
-### `BLOCO-CARTAS-AUDITORIA-ATIVIDADES-1-LAB` — IMPLEMENTADO
-- `vocabularyPractice.js` filtra atividades inseguras com `activityLooksSafe()` antes de mostrar ao aluno.
-
 ## NOVA ORDEM DE BLOCOS — CARTAS COMO SUBSTITUTO DO DUOLINGO
 
-1. `BLOCO-CARTAS-INTRO-PALAVRAS-NOVAS-INLINE-LAB` — introdução interna das palavras novas. STATUS: implementado, aguardando teste.
+1. `BLOCO-CARTAS-GLOSS-FLUTUANTE-E-ORDEM-PEDAGOGICA-LAB` — STATUS: implementado, aguardando teste.
 2. `BLOCO-CARTAS-REFERENCIA-VISUAL-9A2-LAB` — imagens/ícones locais por palavra.
 3. `BLOCO-CARTAS-PAREAMENTO-10-LAB` — pareamento palavra ↔ tradução.
 4. `BLOCO-CARTAS-PAREAMENTO-IMAGEM-10B-LAB` — pareamento palavra ↔ imagem.
@@ -111,7 +105,7 @@ Teste recomendado no iPhone:
 6. `BLOCO-CARTAS-TRADUCAO-GUIADA-11-LAB` — tradução com banco de palavras.
 7. `BLOCO-CARTAS-TRADUCAO-DIGITADA-11B-LAB` — digitação livre opcional.
 8. `BLOCO-CARTAS-COMPLETAR-TRADUCAO-11C-LAB` — lacunas melhores.
-9. `BLOCO-CARTAS-GLOSS-INLINE-12-LAB` — clicar na palavra e ver tradução.
+9. `BLOCO-CARTAS-GLOSS-INLINE-12-LAB` — clicar na palavra e ver tradução dentro das frases.
 10. `BLOCO-CARTAS-CLIQUE-SIGNIFICADO-12B-LAB` — clique na palavra que significa.
 11. `BLOCO-CARTAS-LISTENING-ATIVO-13-LAB` — digite o que ouve.
 12. `BLOCO-CARTAS-LISTENING-WORDBANK-13B-LAB` — ouça e monte frase.
@@ -133,13 +127,10 @@ Teste recomendado no iPhone:
 
 ## Pendência técnica importante
 
-- testar deploy do `BLOCO-CARTAS-INTRO-PALAVRAS-NOVAS-INLINE-LAB` no iPhone;
+- testar deploy do gloss flutuante e nova ordem pedagógica no iPhone;
 - confirmar que Cartas não dá tela branca;
-- confirmar que clicar na bolha abre tela dedicada com `Palavras novas`;
-- confirmar que tocar na palavra mostra tradução;
-- confirmar que `Continuar para exercícios` funciona;
-- se ok, seguir para `BLOCO-CARTAS-REFERENCIA-VISUAL-9A2-LAB` ou fazer polimento CSS pequeno da introdução se visual estiver fraco.
+- se ok, seguir para `BLOCO-CARTAS-REFERENCIA-VISUAL-9A2-LAB`.
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O bloco atual implementado foi `BLOCO-CARTAS-INTRO-PALAVRAS-NOVAS-INLINE-LAB`: tocar na bolha abre uma etapa interna `Palavras novas`, tocar na palavra mostra tradução e depois segue para exercícios. Testar no iPhone; se ok, seguir para `BLOCO-CARTAS-REFERENCIA-VISUAL-9A2-LAB` ou polir CSS se necessário."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O bloco atual implementado foi `BLOCO-CARTAS-GLOSS-FLUTUANTE-E-ORDEM-PEDAGOGICA-LAB`: tradução de palavra nova agora abre caixa flutuante sobreposta, e `Monte a frase` foi empurrado para depois de exposição/reconhecimento. Testar no iPhone; se ok, seguir para `BLOCO-CARTAS-REFERENCIA-VISUAL-9A2-LAB`."
