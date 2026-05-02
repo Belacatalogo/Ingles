@@ -76,56 +76,41 @@ Esse bloco deve criar arquivos reais em `fluency-clean/src/data/vocabulary/`, or
 
 ## BLOCO ATUAL
 
-### `BLOCO-CARTAS-USO-4-LAB` — Chunks, variações e mini-diálogos IMPLEMENTADO, aguardando deploy/teste
+### `BLOCO-CARTAS-HOTFIX-TAMANHO-ORDEM-1-LAB` — Bolhas maiores e ordem misturada IMPLEMENTADO, aguardando deploy/teste
 
 Contexto:
-- usuário quer que a aba Cartas substitua o Duolingo para vocabulário e frases;
-- não basta palavra → tradução;
-- a trilha precisa treinar como a palavra aparece em blocos, variações e contexto curto;
-- próximo bloco pedido pelo usuário será expansão fixa de vocabulário, com mais bolhas por tópico se necessário.
-
-Análise profunda do bloco:
-- vocabulário isolado não garante compreensão real;
-- o sistema precisa ensinar `word`, `chunk`, `variation`, `sentence` e `mini-dialogue`;
-- antes de expandir para milhares de itens, o motor precisa aceitar esses campos;
-- também era importante reanalisar para evitar que variações virassem fragmentos artificiais.
+- usuário pediu que cada nível da bolha tenha mais questões;
+- quantidade desejada: 15 a 20 questões por nível de bolha;
+- usuário também pediu que a ordem dos tipos de questão não fique fixa, por exemplo primeiro só escuta, depois só escrita;
+- a experiência deve variar como Duolingo, mas sem quebrar estabilidade das respostas.
 
 Arquivo alterado:
 - `fluency-clean/src/services/vocabularyPractice.js`
 - `REWRITE_HANDOFF.md`
 
 O que foi implementado:
-- `normalizeCard()` agora aceita e deriva:
-  - `chunk`;
-  - `chunks`;
-  - `variations`;
-  - `miniDialogues`;
-- quando o card antigo só tem palavra/tradução/exemplo, o motor deriva um chunk básico do exemplo;
-- adicionados exercícios novos:
-  - `Chunk natural`;
-  - `Variação de uso`;
-  - `Mini-diálogo`;
-- nível 1 agora inclui introdução, significado, uso em frase e chunk;
-- nível 2 adiciona completar, listening e variação;
-- nível 3 adiciona montar frase e mini-diálogo;
-- `distractorsFor()` agora suporta campos `chunk`, `variation` e `dialogue`;
-- primeira revisão encontrou risco de variações virarem fragmentos;
-- segunda revisão refinou as variações para priorizar frases completas com `looksLikeSentence()` e `asSentence()`;
-- variações seguras foram limitadas a padrões simples como `I am → You are`, `I need → You need`, `I like → Do you like...?`, etc.;
-- mini-diálogos são derivados de forma conservadora quando o currículo ainda não fornece diálogos reais.
+- adicionado `targetQuestionCount()`;
+- nível 1 agora mira 15–16 questões;
+- nível 2 agora mira 16–18 questões;
+- nível 3 agora mira 18–20 questões;
+- adicionado `interleaveActivities()`;
+- tipos de exercício são embaralhados/intercalados em ordem misturada;
+- o embaralhamento continua determinístico por seed da bolha/nível;
+- isso evita mudar alternativas ao clicar, mas deixa a sessão menos previsível;
+- revisão rápida confirmou que a ordem é estável e que os limites de quantidade estão no intervalo pedido.
 
-Commits:
-- `33a15ff07bd22da1da17b9246ac4d8f3ae19f523` — adiciona treino de chunks e variações nas cartas;
-- `b7b37185d86fc5f90f7fe31740b1c3cc8b2bc794` — refina variações naturais das cartas.
+Commit:
+- `9a0baccbb1342227c414c49ee14ab9d407fb8b98` — aumenta e mistura exercícios das bolhas.
 
 Teste recomendado no iPhone:
 1. abrir Cartas > Trilha de vocabulário;
-2. iniciar uma bolha;
-3. confirmar que nível 1 mostra exercícios de `Chunk natural`;
-4. avançar para nível 2 depois de concluir 1/3 e confirmar `Variação de uso`;
-5. avançar até nível 3 e confirmar `Mini-diálogo`;
-6. conferir se as alternativas continuam estáveis;
-7. conferir se as variações parecem frases completas, não fragmentos soltos.
+2. iniciar uma bolha nível 1;
+3. confirmar que a sessão não tem mais só 12 questões;
+4. conferir que há mistura de tipos de exercício;
+5. tocar em alternativas e confirmar que elas não mudam de posição;
+6. concluir nível 1 e, se possível, testar nível 2/3 para ver 16–20 questões.
+
+### `BLOCO-CARTAS-USO-4-LAB` — Chunks, variações e mini-diálogos IMPLEMENTADO
 
 ### `BLOCO-CARTAS-HOTFIX-QUALIDADE-2-LAB` — Opções estáveis e uso menos óbvio IMPLEMENTADO
 
@@ -196,7 +181,7 @@ Pendente técnica:
 
 ## NOVA ORDEM DE BLOCOS — QUALIDADE REAL DAS AULAS
 
-1. `BLOCO-CARTAS-USO-4-LAB` — chunks, variações e mini-diálogos. STATUS: implementado, aguardando teste.
+1. `BLOCO-CARTAS-HOTFIX-TAMANHO-ORDEM-1-LAB` — bolhas maiores e ordem misturada. STATUS: implementado, aguardando teste.
 2. `BLOCO-CARTAS-MIX-5-LAB` — misturar palavras novas com antigas.
 3. `BLOCO-CARTAS-LISTENING-SPEAKING-6-LAB` — áudio, shadowing e pronúncia.
 4. `BLOCO-CARTAS-MASTERY-7-LAB` — bolha só passa com domínio mínimo.
@@ -226,12 +211,12 @@ Ordem recomendada após os blocos principais:
 
 ## Pendência técnica importante
 
-- testar deploy do `BLOCO-CARTAS-USO-4-LAB` no iPhone;
-- confirmar exercícios de chunk, variação e mini-diálogo;
-- confirmar que variações não parecem fragmentos artificiais;
+- testar deploy do `BLOCO-CARTAS-HOTFIX-TAMANHO-ORDEM-1-LAB` no iPhone;
+- confirmar 15–20 questões por nível de bolha;
+- confirmar mistura de tipos de exercício;
 - seguir depois para `BLOCO-CARTAS-MIX-5-LAB` ou, se usuário priorizar, `BLOCO-CARTAS-CURRICULO-FIXO-8A-LAB`;
 - remover definitivamente `ListeningLesson.jsx` antigo quando o conector permitir SHA correto.
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O bloco atual implementado foi `BLOCO-CARTAS-USO-4-LAB`: `vocabularyPractice.js` agora suporta/deriva chunks, variações e mini-diálogos; nível 1 treina chunk, nível 2 variação, nível 3 mini-diálogo. Testar no iPhone; depois seguir para `BLOCO-CARTAS-MIX-5-LAB` ou iniciar `BLOCO-CARTAS-CURRICULO-FIXO-8A-LAB`."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O bloco atual implementado foi `BLOCO-CARTAS-HOTFIX-TAMANHO-ORDEM-1-LAB`: `vocabularyPractice.js` agora mira 15–20 questões por nível de bolha e mistura os tipos de exercício com embaralhamento determinístico. Testar no iPhone; depois seguir para `BLOCO-CARTAS-MIX-5-LAB` ou iniciar `BLOCO-CARTAS-CURRICULO-FIXO-8A-LAB`."
