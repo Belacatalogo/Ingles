@@ -1,20 +1,45 @@
 import { diagnostics } from './diagnostics.js';
 import { generateGeminiTtsAudio } from './geminiTts.js';
 import { playLearningAudio, stopLearningAudio } from './audioPlayback.js';
+import { getCachedAudio, makeAudioCacheId, setCachedAudio } from './audioCache.js';
 
 const SPEAKER_VOICES = ['Kore', 'Puck', 'Charon', 'Fenrir', 'Aoede', 'Leda'];
+const MERGED_DIALOGUE_CACHE_MODEL = 'multi-speaker-merged-dialogue-v1';
+const DEFAULT_SAMPLE_RATE = 24000;
 let dialogueAudio = null;
+const mergedAudioUrlMemory = new Map();
 
 function clean(value) {
   return String(value ?? '').replace(/\s+/g, ' ').trim();
 }
 
 function speakerKey(value) {
-  return clean(value).toLowerCase().replace(/[^a-z0-9áàâãéêíóôõúçñ]+/gi, '-');
+  return clean(value).toLowerCase().replace(/[^a-z0-9áàâãéêíóôúçñ]+/gi, '-');
 }
 
 function splitSentences(text) {
   return clean(text).split(/(?<=[.!?])\s+/).map((item) => item.trim()).filter(Boolean);
+}
+
+function uint8ArrayToBase64(bytes) {
+  let binary = '';
+  const chunkSize = 0x8000;
+  for (let index = 0; index < bytes.length; index += chunkSize) {
+    binary += String.fromCharCode(...bytes.subarray(index, index + chunkSize));
+  }
+  return btoa(binary);
+}
+
+function base64ToUint8Array(base64) {
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let index = 0; index < binary.length; index += 1) bytes[index] = binary.charCodeAt(index);
+  return bytes;
+}
+
+function makeDialogueCacheId({ parsed, style }) {
+  const voiceMap = parsed.turns.map((turn) => `${turn.speaker}:${turn.voiceName}:${turn.text}`).join('|');
+  return makeAudioCacheId({ text: voiceMap, voiceName: 'multi-speaker', style, model: MERGED_DIALOGUE_CACHE_MODEL });
 }
 
 export function parseDialogueTurns(text) {
@@ -58,7 +83,7 @@ export function getSpeakerVoice(speaker, speakers = []) {
   return SPEAKER_VOICES[index % SPEAKER_VOICES.length];
 }
 
-function wavBlobFromPcm(pcmBytes, sampleRate = 24000) {
+function wavBlobFromPcm(pcmBytes, sampleRate = DEFAULT_SAMPLE_RATE) {
   const pcm = pcmBytes instanceof Uint8Array ? pcmBytes : new Uint8Array(pcmBytes);
   const buffer = new ArrayBuffer(44 + pcm.length);
   const view = new DataView(buffer);
@@ -82,6 +107,10 @@ function wavBlobFromPcm(pcmBytes, sampleRate = 24000) {
   return new Blob([buffer], { type: 'audio/wav' });
 }
 
+function makeAudioUrlFromPcm(pcmBytes, sampleRate = DEFAULT_SAMPLE_RATE) {
+  return URL.createObjectURL(wavBlobFromPcm(pcmBytes, sampleRate));
+}
+
 async function audioUrlToPcmBytes(audioUrl) {
   const response = await fetch(audioUrl);
   const arrayBuffer = await response.arrayBuffer();
@@ -90,14 +119,14 @@ async function audioUrlToPcmBytes(audioUrl) {
   return bytes.slice(44);
 }
 
-async function buildSingleDialogueAudioUrl(generated) {
+async function buildMergedPcmBytes(generated) {
   const chunks = [];
   for (const item of generated) {
-    if (!item?.audioUrl) return '';
+    if (!item?.audioUrl) return new Uint8Array();
     const pcm = await audioUrlToPcmBytes(item.audioUrl);
     if (pcm.length) chunks.push(pcm);
   }
-  if (!chunks.length) return '';
+  if (!chunks.length) return new Uint8Array();
   const total = chunks.reduce((sum, chunk) => sum + chunk.length, 0);
   const merged = new Uint8Array(total);
   let offset = 0;
@@ -105,7 +134,34 @@ async function buildSingleDialogueAudioUrl(generated) {
     merged.set(chunk, offset);
     offset += chunk.length;
   });
-  return URL.createObjectURL(wavBlobFromPcm(merged));
+  return merged;
+}
+
+function getMergedDialogueUrlFromCache(cacheId) {
+  if (mergedAudioUrlMemory.has(cacheId)) {
+    diagnostics.log('Áudio final multi-voz carregado do cache em memória.', 'info');
+    return mergedAudioUrlMemory.get(cacheId);
+  }
+
+  const cached = getCachedAudio(cacheId);
+  if (!cached?.base64) return '';
+  const pcm = base64ToUint8Array(cached.base64);
+  const audioUrl = makeAudioUrlFromPcm(pcm, cached.sampleRate || DEFAULT_SAMPLE_RATE);
+  mergedAudioUrlMemory.set(cacheId, audioUrl);
+  diagnostics.log('Áudio final multi-voz carregado do cache local.', 'success');
+  return audioUrl;
+}
+
+function saveMergedDialogueCache(cacheId, pcmBytes, textPreview) {
+  if (!cacheId || !pcmBytes?.length) return false;
+  const saved = setCachedAudio(cacheId, {
+    base64: uint8ArrayToBase64(pcmBytes),
+    mimeType: 'audio/pcm',
+    sampleRate: DEFAULT_SAMPLE_RATE,
+    textPreview,
+  });
+  if (saved) diagnostics.log('Áudio final multi-voz salvo no cache local.', 'success');
+  return saved;
 }
 
 function playAudioUrl(audioUrl) {
@@ -145,6 +201,14 @@ export async function playMultiSpeakerDialogue({ text, label = 'Listening diálo
   diagnostics.setPhase('preparando diálogo multi-voz', 'tts');
   diagnostics.log(`Diálogo detectado: ${parsed.speakers.length} personagem(ns), ${parsed.turns.length} fala(s).`, 'info');
 
+  const cacheId = makeDialogueCacheId({ parsed, style });
+  const cachedAudioUrl = getMergedDialogueUrlFromCache(cacheId);
+  if (cachedAudioUrl) {
+    const playResult = await playAudioUrl(cachedAudioUrl);
+    if (!playResult.ok) return { ok: false, source: 'multi-speaker-merged-cache-playback-error', error: playResult.error };
+    return { ok: true, source: 'multi-speaker-merged-cache', speakers: parsed.speakers.length, turns: parsed.turns.length, cacheId };
+  }
+
   const generated = [];
   for (const turn of parsed.turns) {
     const voiceName = turn.voiceName || getSpeakerVoice(turn.speaker, parsed.speakers);
@@ -163,11 +227,15 @@ export async function playMultiSpeakerDialogue({ text, label = 'Listening diálo
     generated.push({ ...result, speaker: turn.speaker, voiceName });
   }
 
-  const audioUrl = await buildSingleDialogueAudioUrl(generated);
-  if (!audioUrl) return playSequentialDialogueFallback(parsed, label, style);
+  const mergedPcm = await buildMergedPcmBytes(generated);
+  if (!mergedPcm.length) return playSequentialDialogueFallback(parsed, label, style);
+
+  saveMergedDialogueCache(cacheId, mergedPcm, parsed.plainText);
+  const audioUrl = makeAudioUrlFromPcm(mergedPcm);
+  mergedAudioUrlMemory.set(cacheId, audioUrl);
   const playResult = await playAudioUrl(audioUrl);
   if (!playResult.ok) return { ok: false, source: 'dialogue-playback-error', error: playResult.error };
-  return { ok: true, source: 'multi-speaker-merged-gemini', speakers: parsed.speakers.length, turns: parsed.turns.length };
+  return { ok: true, source: 'multi-speaker-merged-gemini', speakers: parsed.speakers.length, turns: parsed.turns.length, cacheId };
 }
 
 async function playSequentialDialogueFallback(parsed, label, style) {
