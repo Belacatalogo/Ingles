@@ -341,22 +341,45 @@ function activityListen(card, cards, index) {
   };
 }
 
+function targetQuestionCount(level, selectedCount) {
+  if (!selectedCount) return 0;
+  if (level <= 1) return Math.min(16, Math.max(15, selectedCount * 4));
+  if (level === 2) return Math.min(18, Math.max(16, selectedCount * 3));
+  return Math.min(20, Math.max(18, selectedCount * 3));
+}
+
+function interleaveActivities(groups, seedText, maxCount) {
+  const shuffledGroups = groups.map((group, index) => stableShuffle(group, `${seedText}-group-${index}`));
+  const result = [];
+  let cursor = 0;
+  while (result.length < maxCount && shuffledGroups.some((group) => group.length)) {
+    const groupIndex = cursor % shuffledGroups.length;
+    const next = shuffledGroups[groupIndex].shift();
+    if (next) result.push(next);
+    cursor += 1;
+  }
+  return stableShuffle(result, `${seedText}-final-order`).slice(0, maxCount);
+}
+
 export function buildVocabularyPracticeActivities(rawCards = [], { level = 1 } = {}) {
   const cards = uniqueBy(rawCards.map(normalizeCard).filter((card) => card.word), (card) => card.word.toLowerCase());
-  const activities = [];
   const selected = cards.slice(0, Math.min(cards.length, level <= 1 ? 4 : level === 2 ? 6 : 8));
+  const seed = `vocab-level-${level}-${selected.map((card) => card.id).join('|')}`;
+  const targetCount = targetQuestionCount(level, selected.length);
 
-  selected.forEach((card, index) => activities.push(activityIntro(card, index)));
-  selected.forEach((card, index) => activities.push(activityMeaning(card, cards, index)));
-  selected.slice(0, Math.min(4, selected.length)).forEach((card, index) => activities.push(activityExample(card, cards, index)));
-  selected.slice(0, Math.min(4, selected.length)).forEach((card, index) => activities.push(activityChunk(card, cards, index)));
-  if (level >= 2) selected.forEach((card, index) => activities.push(activityComplete(card, cards, index)));
-  if (level >= 2) selected.slice(0, 4).forEach((card, index) => activities.push(activityListen(card, cards, index)));
-  if (level >= 2) selected.slice(0, 4).forEach((card, index) => activities.push(activityVariation(card, cards, index)));
-  if (level >= 3) selected.filter((card) => card.example).slice(0, 5).forEach((card, index) => activities.push(activityBuild(card, index)));
-  if (level >= 3) selected.slice(0, 4).forEach((card, index) => activities.push(activityMiniDialogue(card, cards, index)));
+  const intro = selected.map((card, index) => activityIntro(card, index));
+  const meaning = selected.map((card, index) => activityMeaning(card, cards, index));
+  const example = selected.map((card, index) => activityExample(card, cards, index));
+  const chunk = selected.map((card, index) => activityChunk(card, cards, index));
+  const complete = selected.map((card, index) => activityComplete(card, cards, index));
+  const listen = selected.map((card, index) => activityListen(card, cards, index));
+  const variation = selected.map((card, index) => activityVariation(card, cards, index));
+  const build = selected.filter((card) => card.example).map((card, index) => activityBuild(card, index));
+  const dialogue = selected.map((card, index) => activityMiniDialogue(card, cards, index));
 
-  return activities;
+  if (level <= 1) return interleaveActivities([intro, meaning, example, chunk], seed, targetCount);
+  if (level === 2) return interleaveActivities([meaning, example, chunk, complete, listen, variation], seed, targetCount);
+  return interleaveActivities([meaning, example, chunk, complete, listen, variation, build, dialogue], seed, targetCount);
 }
 
 export function scoreVocabularyPractice(activity, userAnswer) {
