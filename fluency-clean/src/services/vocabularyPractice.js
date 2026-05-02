@@ -2,8 +2,32 @@ function clean(value) {
   return String(value ?? '').trim();
 }
 
-function shuffle(items) {
-  return [...items].sort(() => Math.random() - 0.5);
+function hashSeed(value = '') {
+  const text = String(value);
+  let hash = 2166136261;
+  for (let index = 0; index < text.length; index += 1) {
+    hash ^= text.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
+}
+
+function seededRandom(seed) {
+  let value = seed || 1;
+  return () => {
+    value = Math.imul(1664525, value) + 1013904223;
+    return ((value >>> 0) / 4294967296);
+  };
+}
+
+function stableShuffle(items, seedText = '') {
+  const random = seededRandom(hashSeed(seedText || items.join('|')));
+  const copy = [...items];
+  for (let index = copy.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(random() * (index + 1));
+    [copy[index], copy[swapIndex]] = [copy[swapIndex], copy[index]];
+  }
+  return copy;
 }
 
 function uniqueBy(items, keyFn) {
@@ -28,8 +52,23 @@ function normalizeCard(card, index) {
   };
 }
 
-function distractorsFor(cards, target, field = 'translation', limit = 3) {
-  return shuffle(cards.filter((card) => card.id !== target.id).map((card) => clean(card[field] || card.translation || card.word)).filter(Boolean)).slice(0, limit);
+function normalizeOption(value) {
+  return clean(value).toLowerCase().replace(/[.,!?;:]/g, '').replace(/\s+/g, ' ');
+}
+
+function makeOptions(correct, distractors, seedText, limit = 4) {
+  const options = uniqueBy([correct, ...distractors].filter(Boolean), normalizeOption).slice(0, limit);
+  return stableShuffle(options, seedText).slice(0, limit);
+}
+
+function distractorsFor(cards, target, field = 'translation', limit = 6) {
+  return stableShuffle(
+    cards
+      .filter((card) => card.id !== target.id)
+      .map((card) => clean(card[field] || card.translation || card.word))
+      .filter(Boolean),
+    `${target.id}-${field}-distractors`,
+  ).slice(0, limit);
 }
 
 function wordsFromExample(card) {
@@ -47,6 +86,18 @@ function maskExample(card) {
   const index = Math.min(words.length - 1, Math.max(0, Math.floor(words.length / 2)));
   words[index] = '____';
   return words.join(' ');
+}
+
+function hasWord(sentence, word) {
+  if (!sentence || !word) return false;
+  const escaped = clean(word).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return new RegExp(`\\b${escaped}\\b`, 'i').test(sentence);
+}
+
+function sameSurfaceCue(card, option) {
+  const word = clean(card.word);
+  if (!word) return false;
+  return hasWord(option, word);
 }
 
 function activityIntro(card, index) {
@@ -73,24 +124,28 @@ function activityMeaning(card, cards, index) {
     title: 'Reconheça o significado',
     prompt: `O que significa “${card.word}”?`,
     answer: correct,
-    options: shuffle([correct, ...distractorsFor(cards, card, 'translation')]).slice(0, 4),
+    options: makeOptions(correct, distractorsFor(cards, card, 'translation'), `meaning-${card.id}-${index}`),
     instruction: 'Escolha o significado correto.',
   };
 }
 
 function activityExample(card, cards, index) {
   const correct = card.example || `I use ${card.word}.`;
-  const options = shuffle([correct, ...distractorsFor(cards, card, 'example')]).slice(0, 4);
+  const rawDistractors = distractorsFor(cards, card, 'example', 8);
+  const sameCueDistractors = rawDistractors.filter((option) => sameSurfaceCue(card, option));
+  const regularDistractors = rawDistractors.filter((option) => !sameSurfaceCue(card, option));
+  const distractors = sameCueDistractors.length >= 2 ? sameCueDistractors : rawDistractors;
   return {
     id: `example-${card.id}-${index}`,
     type: 'choice',
     cardId: card.id,
     word: card.word,
     title: 'Uso em frase',
-    prompt: `Qual frase usa “${card.word}” corretamente?`,
+    prompt: 'Qual frase combina melhor com o significado estudado?',
+    hint: card.translation || card.definition || card.word,
     answer: correct,
-    options,
-    instruction: 'Aprenda a palavra dentro de uma frase.',
+    options: makeOptions(correct, [...distractors, ...regularDistractors], `example-${card.id}-${index}`),
+    instruction: 'Escolha pelo sentido da frase, não apenas por uma palavra solta.',
   };
 }
 
@@ -103,7 +158,7 @@ function activityComplete(card, cards, index) {
     title: 'Complete a frase',
     prompt: maskExample(card),
     answer: card.word,
-    options: shuffle([card.word, ...distractorsFor(cards, card, 'word')]).slice(0, 4),
+    options: makeOptions(card.word, distractorsFor(cards, card, 'word'), `complete-${card.id}-${index}`),
     instruction: 'Escolha a palavra que completa a frase.',
   };
 }
@@ -118,7 +173,7 @@ function activityBuild(card, index) {
     title: 'Monte a frase',
     prompt: 'Monte a frase em inglês.',
     answer: words.join(' '),
-    options: shuffle(words),
+    options: stableShuffle(words, `build-${card.id}-${index}`),
     instruction: 'Toque nas palavras na ordem correta.',
   };
 }
@@ -133,7 +188,7 @@ function activityListen(card, cards, index) {
     title: 'Ouça e escolha',
     prompt: correct,
     answer: correct,
-    options: shuffle([correct, ...distractorsFor(cards, card, 'example')]).slice(0, 4),
+    options: makeOptions(correct, distractorsFor(cards, card, 'example'), `listen-${card.id}-${index}`),
     instruction: 'Ouça a frase e escolha o que foi dito.',
   };
 }
@@ -157,9 +212,8 @@ export function scoreVocabularyPractice(activity, userAnswer) {
   if (!activity) return { correct: false, expected: '' };
   const expected = clean(activity.answer);
   const received = Array.isArray(userAnswer) ? userAnswer.join(' ') : clean(userAnswer);
-  const normalize = (value) => clean(value).toLowerCase().replace(/[.,!?;:]/g, '').replace(/\s+/g, ' ');
   return {
-    correct: normalize(received) === normalize(expected),
+    correct: normalizeOption(received) === normalizeOption(expected),
     expected,
     received,
   };
