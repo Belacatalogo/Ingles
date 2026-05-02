@@ -23,54 +23,90 @@ Princípio máximo:
 
 `o aluno só avança quando prova domínio, não apenas quando conclui uma aula.`
 
-## ESTADO ATUAL — CIRURGIA 1 ISOLADA
+## ESTADO ATUAL — CIRURGIA 1 COMPLETA
 
-### `BLOCO-GRAMMAR-MOTOR-ESTAVEL-FLASH-LAB` — CIRURGIA 1 IMPLEMENTADA, aguardando deploy/teste
+### `CIRURGIA-1-FALLBACK-EXTERNO-LAB` — IMPLEMENTADA, aguardando deploy/teste
 
 Contexto:
 - O plano anexado de correções cirúrgicas foi lido.
-- A Cirurgia 1 original do plano sugeria testar `gemini-2.5-pro` usando `flashKeys`, mas isso foi explicitamente descartado por regra do usuário.
-- O diagnóstico aceito é: o problema principal não deve ser tratado como problema de modelo; o foco continua em motor pedagógico, pipeline de Grammar, revisor final e reparo/salvamento.
+- A parte que colocava `gemini-2.5-pro` nas keys free foi descartada por regra do usuário.
+- A Cirurgia 1 foi completada com fallback externo real para testar quando Gemini falhar, sem mexer no motor profundo de Grammar.
 
-O que foi feito nesta Cirurgia 1:
-- criado `fluency-clean/src/services/modelPolicy.js`;
-- registrada uma política estável e explícita de modelos:
-  - keys free/de aula → `gemini-2.5-flash` e `gemini-2.5-flash-lite`;
-  - key Pro paga → `gemini-2.5-pro` somente como fallback opcional;
-  - Pro em keys free desativado (`allowProOnFreeKeys: false`);
-  - indisponibilidade de Pro não bloqueia aula (`blockOnProUnavailable: false`).
+Política de modelos mantida:
+- keys free/de aula → `gemini-2.5-flash` e `gemini-2.5-flash-lite`;
+- key Pro paga → `gemini-2.5-pro` somente como fallback opcional já existente;
+- Groq/Cerebras → fallback externo depois de falha do Gemini;
+- Pro nas keys free continua proibido.
 
 Arquivos alterados:
 - `fluency-clean/src/services/modelPolicy.js`
+- `fluency-clean/src/services/externalLessonProviders.js`
+- `fluency-clean/src/services/plannedGeminiLessons.js`
 - `REWRITE_HANDOFF.md`
 
-Commit:
-- `718d9bf0aa83b8d097dde359cf6f4e569f6fe8e7` — adiciona política estável de modelos.
+O que foi implementado:
+- `modelPolicy.js` agora registra Groq e Cerebras como fallback externo opcional.
+- Novo `externalLessonProviders.js`:
+  - lê chaves manualmente do localStorage;
+  - aceita o padrão do app via `storage`, que usa prefixo interno `fluency.clean.`;
+  - também tenta ler a chave crua sem prefixo para facilitar teste manual;
+  - chama endpoints OpenAI-compatible de Groq/Cerebras;
+  - pede JSON completo de aula;
+  - normaliza a aula antes de voltar para o pipeline local;
+  - anexa metadados `providerFallback` e `external-provider-*-fallback-v1`.
+- `plannedGeminiLessons.js` foi cablado:
+  - Gemini continua tentando primeiro;
+  - se Gemini não concluir, o planejador registra a falha;
+  - antes de devolver erro, tenta Groq/Cerebras;
+  - se fallback externo gerar aula, a aula ainda passa pelo mesmo pipeline local de validação, reparo, professor revisor, study readiness e salvamento.
 
-Importante:
-- A Cirurgia 1 foi mantida propositalmente mínima.
-- O fluxo real de geração ainda não foi refatorado para provedores externos.
-- Nenhuma alteração foi feita em `main`, `rewrite-fluency-clean`, `bundle.js` ou backend Azure privado.
-- Nenhuma mudança da branch `rewrite-fluency-clean-lab-model-test` relacionada a `gemini-2.5-pro` em keys free deve ser portada.
+Commits:
+- `718d9bf0aa83b8d097dde359cf6f4e569f6fe8e7` — adiciona política estável de modelos.
+- `afe6be5f0595c4a496aaafb7f520124bd18129c1` — atualiza handoff da cirurgia 1 mínima.
+- `3ee8996851c4990488c22d18e9b93d4944af38cb` — adiciona provedores externos de aula.
+- `86caae7ece769fadd3975903d3f4173b4e3fc44b` — registra política Groq e Cerebras.
+- `0f6d01244a36c5707e6479af0e02c7387f6f76fc` — cabla fallback externo no planejador.
+
+Como configurar manualmente no DevTools para teste:
+
+```js
+localStorage.setItem('lesson.groq.key', 'SUA_KEY_GROQ_AQUI')
+localStorage.setItem('lesson.cerebras.key', 'SUA_KEY_CEREBRAS_AQUI')
+```
+
+Opcionalmente, para trocar modelo:
+
+```js
+localStorage.setItem('lesson.groq.model', 'llama-3.3-70b-versatile')
+localStorage.setItem('lesson.cerebras.model', 'llama-3.3-70b')
+```
+
+Também funciona com prefixo interno do app:
+
+```js
+localStorage.setItem('fluency.clean.lesson.groq.key', 'SUA_KEY_GROQ_AQUI')
+localStorage.setItem('fluency.clean.lesson.cerebras.key', 'SUA_KEY_CEREBRAS_AQUI')
+```
 
 Teste obrigatório antes da Cirurgia 2:
-1. aguardar deploy da branch `rewrite-fluency-clean-lab` com commit `718d9bf` ou posterior;
-2. abrir o preview da lab no iPhone;
+1. aguardar deploy da branch `rewrite-fluency-clean-lab` com commit `0f6d012` ou posterior;
+2. configurar pelo menos uma key externa no localStorage;
 3. gerar/substituir uma aula;
-4. confirmar que:
-   - a tela não quebrou;
-   - o botão de geração funciona;
-   - diagnóstico continua aparecendo;
-   - aula salva/abre normalmente ou bloqueia com justificativa real;
-5. só depois seguir para Cirurgia 2.
+4. para testar fallback, simular falha/503 do Gemini ou aguardar falha real;
+5. observar no diagnóstico mensagens como:
+   - `Gemini não concluiu a aula. Tentando fallback externo Groq/Cerebras...`
+   - `Fallback externo ativado...`
+   - `Tentando Groq...` ou `Tentando Cerebras...`
+   - `gerou aula para validação local`;
+6. confirmar que a aula ainda passa por avaliação local e não salva aula fraca sem validação.
 
 ## NÃO FAZER AGORA
 
-- Não implementar Cirurgia 2 antes do teste de geração.
+- Não implementar Cirurgia 2 antes do teste de geração com fallback externo.
 - Não dividir o bloco de Grammar ainda.
 - Não mexer no auditor por section ainda.
 - Não reescrever `deepGrammarPipeline.js` ainda.
-- Não adicionar provedores externos sem UI/keys reais.
+- Não adicionar UI nova para Groq/Cerebras ainda.
 - Não usar `gemini-2.5-pro` nas 3 keys free.
 - Não salvar aula fraca só para evitar bloqueio.
 
@@ -80,7 +116,7 @@ Teste obrigatório antes da Cirurgia 2:
 
 Objetivo:
 - refatorar o Bloco 1 de Grammar para aumentar profundidade por section.
-- Deve ser feito somente depois de uma aula gerada/testada com a Cirurgia 1.
+- Deve ser feito somente depois de uma aula gerada/testada com a Cirurgia 1 completa.
 
 Direção provável:
 - ajustar `fluency-clean/src/services/geminiLessons.js`;
@@ -125,4 +161,4 @@ Meta planejada:
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal de trabalho é `rewrite-fluency-clean-lab`. A Cirurgia 1 do plano de correções cirúrgicas foi implementada de forma mínima: criado `fluency-clean/src/services/modelPolicy.js` com política estável de modelos. Não portar `gemini-2.5-pro` para keys free; keys free continuam em `gemini-2.5-flash` / `gemini-2.5-flash-lite`; key Pro paga é fallback opcional. Antes de qualquer Cirurgia 2, gerar uma aula no preview da lab para confirmar que nada quebrou. Não mexer em `main`, `rewrite-fluency-clean`, `bundle.js` ou backend Azure privado."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal de trabalho é `rewrite-fluency-clean-lab`. A Cirurgia 1 completa foi implementada: Gemini continua primeiro; se falhar, `plannedGeminiLessons.js` tenta fallback externo Groq/Cerebras via localStorage (`lesson.groq.key`, `lesson.cerebras.key`, com suporte também ao prefixo `fluency.clean.`). Não mexer em motor profundo, não portar Pro para keys free, não seguir para Cirurgia 2 antes de testar geração real. Não mexer em `main`, `rewrite-fluency-clean`, `bundle.js` ou backend Azure privado."
