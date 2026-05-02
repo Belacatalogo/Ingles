@@ -1,4 +1,4 @@
-import { KeyRound, Plus, ShieldCheck, Trash2 } from 'lucide-react';
+import { KeyRound, Plus, ShieldCheck, Trash2, Zap } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import {
   addLessonFlashKey,
@@ -12,6 +12,7 @@ import {
   getExternalLessonProviderStatus,
   saveExternalLessonProviderKey,
   saveExternalLessonProviderModel,
+  setForceExternalLessonProviderNext,
 } from '../../services/externalLessonProviders.js';
 
 export function LessonKeysPanel() {
@@ -79,6 +80,11 @@ export function LessonKeysPanel() {
 
   function handleClearCerebras() {
     clearExternalLessonProvider('cerebras');
+    refresh();
+  }
+
+  function handleToggleForceExternal() {
+    setForceExternalLessonProviderNext(!externalStatus.forceExternalNext);
     refresh();
   }
 
@@ -158,6 +164,14 @@ export function LessonKeysPanel() {
           <span>Cerebras fallback</span>
           <strong>{externalStatus.cerebras.configured ? externalStatus.cerebras.masked : 'não configurada'}</strong>
         </div>
+      </div>
+
+      <div className="key-form pro-form">
+        <label>Teste controlado de fallback externo</label>
+        <button type="button" className={externalStatus.forceExternalNext ? 'danger-button' : ''} onClick={handleToggleForceExternal}>
+          <Zap size={16} /> {externalStatus.forceExternalNext ? 'Fallback externo será usado na próxima geração' : 'Forçar fallback externo na próxima geração'}
+        </button>
+        <p className="empty-note">Use isso só para teste. Quando ativo, a próxima geração pula Gemini e tenta Groq/Cerebras direto. Depois desliga sozinho.</p>
       </div>
 
       <div className="key-form pro-form">
