@@ -69,56 +69,65 @@ Distribuição planejada:
 Bloco responsável:
 - `BLOCO-CARTAS-CURRICULO-FIXO-8-LAB`.
 
-Esse bloco deve criar arquivos reais em `fluency-clean/src/data/vocabulary/`, organizados por nível, tópico, bolha, palavra, frase, chunk, collocation e mini-diálogo.
+Esse bloco deve criar arquivos reais em `fluency-clean/src/data/vocabulary/`, organizados por nível, tópico, bolha, palavra, frase, chunk, collocation e mini-diálogo. Como é grande, pode ser dividido em:
+- `BLOCO-CARTAS-CURRICULO-FIXO-8A-LAB` — estrutura e A1/A2;
+- `BLOCO-CARTAS-CURRICULO-FIXO-8B-LAB` — B1/B2;
+- `BLOCO-CARTAS-CURRICULO-FIXO-8C-LAB` — C1/C2 + auditoria tripla.
 
 ## BLOCO ATUAL
 
-### `BLOCO-CARTAS-HOTFIX-QUALIDADE-2-LAB` — Opções estáveis e uso menos óbvio IMPLEMENTADO, aguardando deploy/teste
+### `BLOCO-CARTAS-USO-4-LAB` — Chunks, variações e mini-diálogos IMPLEMENTADO, aguardando deploy/teste
 
 Contexto:
-- usuário concluiu uma bolha e encontrou dois problemas importantes;
-- ao tocar em uma opção, as respostas mudavam de posição;
-- alguns exercícios de uso eram óbvios demais, por exemplo: `Qual frase usa “I” corretamente?`, e só uma opção continha `I`.
+- usuário quer que a aba Cartas substitua o Duolingo para vocabulário e frases;
+- não basta palavra → tradução;
+- a trilha precisa treinar como a palavra aparece em blocos, variações e contexto curto;
+- próximo bloco pedido pelo usuário será expansão fixa de vocabulário, com mais bolhas por tópico se necessário.
 
-Análise aplicada:
-- o embaralhamento usava `Math.random()` dentro da construção de atividades;
-- como a tela renderiza novamente após seleção, as opções eram reembaralhadas;
-- isso cria sensação de bug e pode invalidar resposta do aluno;
-- perguntas que citam a palavra-alvo no enunciado podem entregar a resposta por reconhecimento superficial;
-- para substituir Duolingo de forma séria, a prática deve testar sentido/uso, não caça-palavra.
+Análise profunda do bloco:
+- vocabulário isolado não garante compreensão real;
+- o sistema precisa ensinar `word`, `chunk`, `variation`, `sentence` e `mini-dialogue`;
+- antes de expandir para milhares de itens, o motor precisa aceitar esses campos;
+- também era importante reanalisar para evitar que variações virassem fragmentos artificiais.
 
-Arquivos alterados:
+Arquivo alterado:
 - `fluency-clean/src/services/vocabularyPractice.js`
-- `fluency-clean/src/screens/FlashcardsScreen.jsx`
-- `fluency-clean/src/styles/flashcards-polish.css`
 - `REWRITE_HANDOFF.md`
 
 O que foi implementado:
-- removido embaralhamento instável com `Math.random()`;
-- criado embaralhamento determinístico por seed/ID do exercício;
-- opções ficam na mesma posição mesmo após clicar, re-renderizar ou marcar resposta;
-- criado `makeOptions()` com deduplicação por texto normalizado;
-- exercícios de `Uso em frase` agora perguntam: `Qual frase combina melhor com o significado estudado?`;
-- enunciado deixa de entregar a palavra-alvo;
-- exercício mostra pista de sentido, por exemplo `Sentido: eu`;
-- CSS adicionado para `.vocab-meaning-hint`;
-- scoring continua por resposta exata normalizada.
+- `normalizeCard()` agora aceita e deriva:
+  - `chunk`;
+  - `chunks`;
+  - `variations`;
+  - `miniDialogues`;
+- quando o card antigo só tem palavra/tradução/exemplo, o motor deriva um chunk básico do exemplo;
+- adicionados exercícios novos:
+  - `Chunk natural`;
+  - `Variação de uso`;
+  - `Mini-diálogo`;
+- nível 1 agora inclui introdução, significado, uso em frase e chunk;
+- nível 2 adiciona completar, listening e variação;
+- nível 3 adiciona montar frase e mini-diálogo;
+- `distractorsFor()` agora suporta campos `chunk`, `variation` e `dialogue`;
+- primeira revisão encontrou risco de variações virarem fragmentos;
+- segunda revisão refinou as variações para priorizar frases completas com `looksLikeSentence()` e `asSentence()`;
+- variações seguras foram limitadas a padrões simples como `I am → You are`, `I need → You need`, `I like → Do you like...?`, etc.;
+- mini-diálogos são derivados de forma conservadora quando o currículo ainda não fornece diálogos reais.
 
 Commits:
-- `5cf1ba0375eb6c11e6a72f3fc8fed5e6fe3ebd68` — corrige estabilidade e qualidade dos exercícios de cartas;
-- `8b4a2aaa915dfea77935393f0ecd0e6772a5af13` — mostra pista de sentido nos exercícios de uso;
-- `304f7f9386dd29627137b2a8dbe7aec02e9ac818` — estiliza pista de sentido nas cartas.
+- `33a15ff07bd22da1da17b9246ac4d8f3ae19f523` — adiciona treino de chunks e variações nas cartas;
+- `b7b37185d86fc5f90f7fe31740b1c3cc8b2bc794` — refina variações naturais das cartas.
 
 Teste recomendado no iPhone:
 1. abrir Cartas > Trilha de vocabulário;
 2. iniciar uma bolha;
-3. chegar em exercício de múltipla escolha;
-4. tocar numa opção;
-5. confirmar que as opções não mudam de posição;
-6. chegar em exercício `Uso em frase`;
-7. confirmar que ele não pergunta mais `qual frase usa I/you/etc`;
-8. confirmar que aparece pista de sentido;
-9. confirmar que o botão libera, mostra feedback e avança.
+3. confirmar que nível 1 mostra exercícios de `Chunk natural`;
+4. avançar para nível 2 depois de concluir 1/3 e confirmar `Variação de uso`;
+5. avançar até nível 3 e confirmar `Mini-diálogo`;
+6. conferir se as alternativas continuam estáveis;
+7. conferir se as variações parecem frases completas, não fragmentos soltos.
+
+### `BLOCO-CARTAS-HOTFIX-QUALIDADE-2-LAB` — Opções estáveis e uso menos óbvio IMPLEMENTADO
 
 ### `BLOCO-CARTAS-HOTFIX-AVANCO-1-LAB` — Botão de resposta das Cartas corrigido IMPLEMENTADO
 
@@ -187,13 +196,14 @@ Pendente técnica:
 
 ## NOVA ORDEM DE BLOCOS — QUALIDADE REAL DAS AULAS
 
-1. `BLOCO-CARTAS-HOTFIX-QUALIDADE-2-LAB` — opções estáveis e uso menos óbvio. STATUS: implementado, aguardando teste.
-2. `BLOCO-CARTAS-USO-4-LAB` — usos, chunks e variações por palavra.
-3. `BLOCO-CARTAS-MIX-5-LAB` — misturar palavras novas com antigas.
-4. `BLOCO-CARTAS-LISTENING-SPEAKING-6-LAB` — áudio, shadowing e pronúncia.
-5. `BLOCO-CARTAS-MASTERY-7-LAB` — bolha só passa com domínio mínimo.
-6. `BLOCO-CARTAS-CURRICULO-FIXO-8-LAB` — currículo fixo sem IA, meta 5.000 palavras/expressões + 2.500 frases/chunks.
-7. `BLOCO-AUDITORIA-POLIMENTO-GERAL-LAB` — após concluir os blocos principais, analisar cada página com precisão, listar melhorias possíveis e montar blocos de polimento.
+1. `BLOCO-CARTAS-USO-4-LAB` — chunks, variações e mini-diálogos. STATUS: implementado, aguardando teste.
+2. `BLOCO-CARTAS-MIX-5-LAB` — misturar palavras novas com antigas.
+3. `BLOCO-CARTAS-LISTENING-SPEAKING-6-LAB` — áudio, shadowing e pronúncia.
+4. `BLOCO-CARTAS-MASTERY-7-LAB` — bolha só passa com domínio mínimo.
+5. `BLOCO-CARTAS-CURRICULO-FIXO-8A-LAB` — currículo fixo sem IA, estrutura + A1/A2.
+6. `BLOCO-CARTAS-CURRICULO-FIXO-8B-LAB` — currículo fixo B1/B2.
+7. `BLOCO-CARTAS-CURRICULO-FIXO-8C-LAB` — currículo fixo C1/C2 + auditoria tripla.
+8. `BLOCO-AUDITORIA-POLIMENTO-GERAL-LAB` — após concluir os blocos principais, analisar cada página com precisão, listar melhorias possíveis e montar blocos de polimento.
 
 ## FASE EXTRA — GARANTIA PEDAGÓGICA MÁXIMA
 
@@ -216,12 +226,12 @@ Ordem recomendada após os blocos principais:
 
 ## Pendência técnica importante
 
-- testar deploy do `BLOCO-CARTAS-HOTFIX-QUALIDADE-2-LAB` no iPhone;
-- confirmar que opções não mudam de posição após seleção;
-- confirmar que exercício de uso não entrega resposta por palavra no enunciado;
-- seguir depois para `BLOCO-CARTAS-USO-4-LAB`;
+- testar deploy do `BLOCO-CARTAS-USO-4-LAB` no iPhone;
+- confirmar exercícios de chunk, variação e mini-diálogo;
+- confirmar que variações não parecem fragmentos artificiais;
+- seguir depois para `BLOCO-CARTAS-MIX-5-LAB` ou, se usuário priorizar, `BLOCO-CARTAS-CURRICULO-FIXO-8A-LAB`;
 - remover definitivamente `ListeningLesson.jsx` antigo quando o conector permitir SHA correto.
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O bloco atual implementado foi `BLOCO-CARTAS-HOTFIX-QUALIDADE-2-LAB`: `vocabularyPractice.js` usa embaralhamento determinístico, opções não mudam ao clicar e exercícios de uso agora perguntam por sentido/contexto. Testar no iPhone; se ok, seguir para `BLOCO-CARTAS-USO-4-LAB`."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O bloco atual implementado foi `BLOCO-CARTAS-USO-4-LAB`: `vocabularyPractice.js` agora suporta/deriva chunks, variações e mini-diálogos; nível 1 treina chunk, nível 2 variação, nível 3 mini-diálogo. Testar no iPhone; depois seguir para `BLOCO-CARTAS-MIX-5-LAB` ou iniciar `BLOCO-CARTAS-CURRICULO-FIXO-8A-LAB`."
