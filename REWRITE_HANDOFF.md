@@ -25,57 +25,124 @@ Princípio máximo:
 
 ## BLOCO ATUAL
 
-### `BLOCO-GRAMMAR-CONTRATO-AULA-PROFUNDA-LAB` — IMPLEMENTADO, aguardando deploy/teste
+### `BLOCO-GRAMMAR-PIPELINE-DIDATICO-PROFUNDO-LAB` — IMPLEMENTADO, aguardando deploy/teste
 
 Contexto:
-- usuário pediu aula Grammar longa, completa e profunda;
-- não quer aula curta de 15/17 min;
-- não quer artigo/Wikipedia;
-- quer sentir que está estudando uma aula real;
-- o bloco anterior melhorou a UI, mas este bloco corrige a origem da geração.
+- o contrato profundo melhorou a intenção, mas a aula ainda podia passar na rubrica com conteúdo vago/repetitivo;
+- a análise mostrou que o sistema estava avaliando muito por contagem: partes, vocabulário, questões e prompts;
+- era necessário atacar dois pontos:
+  1. criar uma camada didática específica para Grammar;
+  2. endurecer o professor revisor para penalizar superficialidade, repetição e exemplos reciclados.
 
-Arquivo alterado:
+Arquivos criados:
+- `fluency-clean/src/services/deepGrammarPipeline.js`
+
+Arquivos alterados:
+- `fluency-clean/src/services/teacherReviewer.js`
 - `fluency-clean/src/components/lesson/LessonGeneratorPanel.jsx`
 - `REWRITE_HANDOFF.md`
 
 O que foi implementado:
-- criado `DEEP_GRAMMAR_CONTRACT` dentro do gerador;
-- criado `buildPromptForLesson(nextLesson, saturdayReview)`;
-- toda aula `grammar` agora recebe contrato extra antes de chamar Gemini;
-- contrato exige:
-  - aula de professor particular, não artigo;
-  - explicação profunda, sem encurtar;
-  - linguagem acolhedora, clara, séria e didática;
-  - nada de sequências `1. 2. 3.` coladas no mesmo parágrafo;
-  - cada seção com função pedagógica clara;
-  - explicação em português + exemplos em inglês A1 + tradução quando ajudar + alerta de erro comum;
-  - estrutura ideal com abertura, mapa, conceito central, regra em camadas, formas afirmativa/negativa/interrogativa, exemplos guiados, certo vs errado, uso real, erros comuns, checagem mental, produção própria e resumo final;
-  - profundidade suficiente para 30 a 45 minutos somando prática;
-  - 18 a 24 exercícios com uma única resposta correta;
-  - produção final obrigatória.
-- o fallback resiliente também usa o mesmo prompt reforçado;
-- quando o contrato é usado, o diagnóstico registra:
-  - `Contrato de Grammar profunda ativado: aula longa, guiada e não enciclopédica.`
-- o `contractVersion` salvo para grammar agora inclui:
-  - `deep-grammar-contract-v1`.
+
+### 1. Novo serviço `deepGrammarPipeline.js`
+
+Exporta:
+- `auditDeepGrammarLesson(rawLesson)`;
+- `repairDeepGrammarLesson(rawLesson)`.
+
+A auditoria mede Grammar por critérios qualitativos:
+- progressão didática real;
+- presença de abertura do professor;
+- analogia/conceito central;
+- regra em camadas;
+- exemplos guiados inéditos;
+- certo vs errado;
+- microdiálogo/uso real;
+- checagem mental;
+- produção final;
+- repetição entre seções;
+- exemplos que copiam a explicação;
+- profundidade da prática.
+
+O reparo local adiciona seções didáticas obrigatórias quando a IA vem vaga:
+- Abertura do professor;
+- Conceito central com analogia;
+- Regra em camadas;
+- Exemplos guiados inéditos;
+- Certo vs errado;
+- Uso real em microdiálogo;
+- Checagem mental antes da prática;
+- Resumo final do que dominar.
+
+Também adiciona prompts finais de produção própria:
+- explicar diferença com as próprias palavras;
+- criar frases afirmativas;
+- criar frases negativas e perguntas;
+- escrever uma frase errada, corrigir e explicar.
+
+### 2. Professor revisor endurecido para Grammar
+
+`teacherReviewer.js` agora importa `auditDeepGrammarLesson` e incorpora `deepGrammarAudit` no score.
+
+Mudanças:
+- Grammar ganhou sinais extras: analogia, certo/errado e uso real;
+- `teacherScore` agora inclui peso do auditor profundo;
+- aprovação de Grammar exige `deepGrammarAudit.score >= 78`;
+- issues do auditor são adicionadas no professor revisor;
+- painel de qualidade ganha área `Grammar profunda` dentro de `reviewedAreas`;
+- `quality.deepGrammarAudit` é anexado à aula.
+
+### 3. Gerador conectado ao pipeline
+
+`LessonGeneratorPanel.jsx` agora:
+- reforça ainda mais `DEEP_GRAMMAR_CONTRACT` com:
+  - exemplos 100% inéditos;
+  - microdiálogo obrigatório;
+  - certo vs errado obrigatório;
+  - exemplos que não repetem a teoria;
+- identifica `grammarTarget`;
+- executa `auditDeepGrammarLesson()` após a geração inicial;
+- se a auditoria reprovar, aplica `repairDeepGrammarLesson()` antes do professor revisor;
+- registra no diagnóstico:
+  - `Auditoria Grammar profunda inicial: X/100.`
+  - `Pipeline Grammar profundo aplicado: X/100.`
+- se o reparo foi usado, o contrato salvo ganha:
+  - `deep-grammar-pipeline-v1`;
+- a mensagem final informa `com pipeline didático Grammar profundo` quando aplicado.
 
 Commits:
-- `d356966e2d2188cbcaa297feed81239f9bad09d0` — reforça contrato de geração para grammar profunda.
+- `3f562d63247013a982f4f19b01077a268e032c00` — cria pipeline didático profundo para grammar;
+- `def01175b8be5b602036b571b6bcbc2a113c9bab` — endurece professor revisor para grammar profunda;
+- `7952837cf51c59d6d9cddcfe8fd614b7de65ffd5` — conecta pipeline profundo de grammar na geração.
 
 Teste recomendado no iPhone:
-1. aguardar deploy do commit `d356966` ou posterior;
-2. gerar uma nova aula Grammar, ou substituir a atual se o sistema bloquear por aula pendente;
-3. no Diagnóstico, confirmar log `Contrato de Grammar profunda ativado...`;
-4. abrir aba Aula;
-5. confirmar que a aula nasce mais parecida com professor/aula guiada;
-6. confirmar que não parece recorte enciclopédico;
-7. confirmar que continua profunda e não curta;
-8. confirmar que `contractVersion` da aula mostra `deep-grammar-contract-v1`.
+1. aguardar deploy do commit final deste bloco;
+2. gerar/substituir uma aula Grammar;
+3. no Diagnóstico, confirmar logs:
+   - `Contrato de Grammar profunda ativado...`;
+   - `Auditoria Grammar profunda inicial: X/100.`;
+   - se necessário: `Pipeline Grammar profundo aplicado: X/100.`;
+4. abrir a aula;
+5. confirmar que aparecem seções como:
+   - analogia;
+   - regra em camadas;
+   - exemplos guiados;
+   - certo vs errado;
+   - microdiálogo;
+   - checagem mental;
+   - resumo final;
+6. abrir Detalhes de qualidade e verificar área `Grammar profunda`;
+7. confirmar que a aula não depende apenas de contagem de partes/vocabulário/questões.
 
-Observação importante:
-- a aula já gerada anteriormente não muda automaticamente na origem; é preciso gerar/substituir uma nova Grammar para testar o novo contrato.
+Observação:
+- este bloco ainda não muda temperatura da API, porque isso provavelmente fica dentro do serviço real de chamada ao Gemini/backend. A melhoria aplicada agora é estrutural, local e segura.
 
 ## Blocos recentes implementados
+
+### `BLOCO-GRAMMAR-CONTRATO-AULA-PROFUNDA-LAB` — IMPLEMENTADO
+- `LessonGeneratorPanel` adiciona `DEEP_GRAMMAR_CONTRACT` ao prompt de Grammar.
+- Exige aula longa, guiada, não enciclopédica.
+- Salva `deep-grammar-contract-v1` no contrato.
 
 ### `BLOCO-GRAMMAR-AULA-PROFUNDA-UI-LAB` — IMPLEMENTADO
 - Grammar preserva conteúdo profundo.
@@ -89,7 +156,6 @@ Observação importante:
 
 ### `BLOCO-HOTFIX-PERSISTENCIA-VERIFICADA-AULA-LAB` — IMPLEMENTADO
 - `saveCurrentLesson()` só grava status `saved` depois de confirmar que `lesson.current` realmente foi persistido.
-- Se falhar, limpa histórico e tenta versão compacta.
 
 ## META OFICIAL — CARTAS / VOCABULÁRIO
 
@@ -101,8 +167,8 @@ Meta planejada:
 
 ## NOVA ORDEM DE BLOCOS
 
-1. `BLOCO-GRAMMAR-CONTRATO-AULA-PROFUNDA-LAB` — STATUS: implementado, aguardando teste.
-2. se Grammar nova ainda vier com cara de artigo, endurecer `geminiLessons.js` no blueprint de grammar.
+1. `BLOCO-GRAMMAR-PIPELINE-DIDATICO-PROFUNDO-LAB` — STATUS: implementado, aguardando teste.
+2. se Grammar ainda vier vaga, endurecer `plannedGeminiLessons.js`/`geminiLessons.js` no blueprint de JSON e/ou ajustar temperatura se disponível.
 3. se ok, voltar para `BLOCO-CARTAS-PAREAMENTO-10-LAB`.
 4. `BLOCO-CARTAS-PAREAMENTO-IMAGEM-10B-LAB`.
 5. `BLOCO-CARTAS-SIGNIFICADO-10C-LAB`.
@@ -114,4 +180,4 @@ Meta planejada:
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O bloco atual implementado foi `BLOCO-GRAMMAR-CONTRATO-AULA-PROFUNDA-LAB`: `LessonGeneratorPanel` adiciona `DEEP_GRAMMAR_CONTRACT` ao prompt de Grammar, exige aula longa, guiada, não enciclopédica e salva `deep-grammar-contract-v1` no contrato. Testar gerando nova Grammar. Se ok, seguir para `BLOCO-CARTAS-PAREAMENTO-10-LAB`."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O bloco atual implementado foi `BLOCO-GRAMMAR-PIPELINE-DIDATICO-PROFUNDO-LAB`: foi criado `deepGrammarPipeline.js`, o professor revisor agora usa `deepGrammarAudit`, e `LessonGeneratorPanel` aplica auditoria/reparo profundo em Grammar antes de salvar. Testar gerando nova Grammar. Se ok, seguir para `BLOCO-CARTAS-PAREAMENTO-10-LAB`."
