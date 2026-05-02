@@ -1,5 +1,7 @@
 import { diagnostics } from './diagnostics.js';
 import { generateLessonDraft } from './geminiLessons.js';
+import { generateExternalLessonDraft } from './externalLessonProviders.js';
+import { summarizeModelPolicyForDiagnostics } from './modelPolicy.js';
 import { buildPedagogicalPlan, buildPlanPromptText, summarizePlanForDiagnostics } from './lessonPlan.js';
 import { inferLessonTypeFromText, normalizeLessonType } from './lessonTypes.js';
 
@@ -11,6 +13,20 @@ function resolvePlanType({ prompt = '', forcedType = '' } = {}) {
   const normalized = normalizeLessonType(forcedType);
   if (normalized && normalized !== 'default') return normalized;
   return inferLessonTypeFromText(prompt);
+}
+
+function attachPlanToResult(result, plan, planSeed) {
+  if (result?.status !== 'success' || !result.lesson) return result;
+  const previousContract = result.lesson.planContract || '';
+  return {
+    ...result,
+    lesson: {
+      ...result.lesson,
+      lessonPlan: plan,
+      planSeed,
+      planContract: previousContract ? `${plan.contract}+${previousContract}` : plan.contract,
+    },
+  };
 }
 
 const JSON_OUTPUT_GUARD = [
@@ -63,6 +79,7 @@ export async function generatePlannedLessonDraft(options = {}) {
 
   diagnostics.setPhase('planejando aula antes da geração', 'generating');
   diagnostics.log(`Plano pedagógico criado: ${summarizePlanForDiagnostics(plan)}.`, 'info', plan);
+  diagnostics.log(summarizeModelPolicyForDiagnostics(lessonType), 'info');
 
   const plannedPrompt = [
     JSON_OUTPUT_GUARD,
@@ -87,15 +104,22 @@ export async function generatePlannedLessonDraft(options = {}) {
   });
 
   if (result?.status === 'success' && result.lesson) {
-    return {
-      ...result,
-      lesson: {
-        ...result.lesson,
-        lessonPlan: plan,
-        planSeed,
-        planContract: plan.contract,
-      },
-    };
+    return attachPlanToResult(result, plan, planSeed);
+  }
+
+  diagnostics.log('Gemini não concluiu a aula. Tentando fallback externo Groq/Cerebras antes de devolver erro.', 'warn', result);
+  const externalResult = await generateExternalLessonDraft({
+    ...options,
+    prompt: plannedPrompt,
+    forcedType,
+    level,
+    previousLesson,
+    forceVariation,
+    reason: result?.error || result?.status || 'falha no Gemini',
+  });
+
+  if (externalResult?.status === 'success' && externalResult.lesson) {
+    return attachPlanToResult(externalResult, plan, planSeed);
   }
 
   return result;
