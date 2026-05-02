@@ -33,38 +33,52 @@ Meta planejada:
 
 ## BLOCO ATUAL
 
-### `BLOCO-HOTFIX-AULA-ATUAL-REFRESH-LAB` — IMPLEMENTADO, aguardando deploy/teste
+### `BLOCO-HOTFIX-AULA-ATUAL-SYNC-STATUS-LAB` — IMPLEMENTADO, aguardando deploy/teste
 
 Contexto:
-- usuário gerou uma revisão adaptativa;
-- diagnóstico mostrou `Aula salva: Present Simple: Verbos Essenciais para o Dia a Dia`;
-- mas a aba Aula continuou mostrando a aula antiga `Conhecendo Pessoas na Biblioteca: Soletrando Nomes`;
-- causa provável: `saveCurrentLesson()` salvava em storage, mas a UI só relia `getCurrentLesson()` quando `lessonRevision` mudava via callback direto;
-- se a geração/revisão salva a aula sem propagar callback no caminho certo, a aba Aula fica presa em memo antigo.
+- o usuário gerou revisão/aula nova;
+- diagnóstico mostrava `Aula salva: Present Simple...`, mas a aba Aula continuava mostrando a aula antiga;
+- o botão de atualizar do card também não resolveu;
+- o gerador principal já chama `saveCurrentLesson(reviewedLesson...)`, então o problema parece estar no consumo/sincronização entre `lesson.current`, `lesson.history` e `lesson.lastGenerationStatus`.
 
-Arquivos alterados:
+Arquivos alterados neste hotfix:
 - `fluency-clean/src/services/lessonStore.js`
-- `fluency-clean/src/App.jsx`
 - `REWRITE_HANDOFF.md`
 
-O que foi implementado:
-- `saveCurrentLesson()` agora dispara evento global `fluency:lesson-updated` após salvar a aula atual;
-- `clearCurrentLesson()` também dispara o evento;
-- `App.jsx` agora escuta `fluency:lesson-updated` e incrementa `lessonRevision`;
-- `LessonScreen` já depende de `lessonRevision`, então passa a reler `getCurrentLesson()` automaticamente;
-- isso deixa a aba Aula atualizada mesmo quando a aula é salva por revisão adaptativa, reparo, fallback resiliente ou qualquer outro fluxo que chame `saveCurrentLesson()`.
+O que foi implementado agora:
+- `getFreshestLessonRaw()` agora lê também `lesson.lastGenerationStatus`;
+- criado `findHistoryLessonByStatus(history, status)`;
+- a sincronização tenta encontrar no histórico a aula que corresponde ao último status salvo por:
+  - `generationMeta.id === status.id`;
+  - `lesson.id === status.lessonId` ou `curriculumId === status.lessonId`;
+  - `lesson.title === status.lessonTitle` ou `expectedTitle === status.lessonTitle`;
+- se encontrar, força essa aula como `lesson.current`;
+- registra diagnóstico: `Aula atual sincronizada pelo último status salvo: ...`;
+- mantém o fallback anterior: se não achar por status, usa a aula mais recente do histórico.
 
-Commits:
+Commits relacionados:
 - `729ec554e46643c8022559c38d69e1187af82a95` — dispara evento global ao salvar aula atual;
-- `51366389ae77efd99af9071fd7a4672188be26b3` — atualiza aba Aula ao receber nova aula salva.
+- `51366389ae77efd99af9071fd7a4672188be26b3` — atualiza aba Aula ao receber nova aula salva;
+- `13acf20053a298ecab33f3e927f767db3bb0aaee` — usa aula mais recente entre atual e histórico;
+- `905c51d953820782688c32de671f04e9af75125b` — força aba Aula a reler aula salva;
+- `10a77e0f0fb1baebd3c949759b05696b7b7967b3` — sincroniza aula atual pelo último status salvo.
 
 Teste recomendado no iPhone:
-1. abrir Hoje;
-2. gerar uma nova revisão/aula;
-3. aguardar diagnóstico mostrar `Aula salva: ...`;
-4. tocar na aba Aula;
-5. confirmar que o título da aba Aula é o mesmo título salvo no diagnóstico;
-6. se o diagnóstico disser `Present Simple: Verbos Essenciais para o Dia a Dia`, a aba Aula deve mostrar exatamente essa nova aula.
+1. aguardar deploy do commit `10a77e0`;
+2. abrir aba Aula;
+3. tocar no botão de atualizar do card se ainda estiver antigo;
+4. se o diagnóstico tiver `Aula salva: Present Simple...`, a aba Aula deve trocar para essa aula;
+5. se ainda não trocar, gerar uma nova aula/revisão após o deploy e conferir se o título salvo no diagnóstico vira o título da aba Aula.
+
+Se ainda falhar depois disso:
+- o problema provavelmente não é mais leitura da aba Aula;
+- será preciso instrumentar o painel Diagnóstico para mostrar explicitamente:
+  - `lesson.current.title`;
+  - `lesson.current.generationMeta.id`;
+  - `lesson.history[0].title`;
+  - `lesson.history[0].generationMeta.id`;
+  - `lesson.lastGenerationStatus.lessonTitle`;
+  - `lesson.lastGenerationStatus.id`.
 
 ## Blocos recentes implementados
 
@@ -86,7 +100,7 @@ Teste recomendado no iPhone:
 
 ## NOVA ORDEM DE BLOCOS — CARTAS COMO SUBSTITUTO DO DUOLINGO
 
-1. `BLOCO-HOTFIX-AULA-ATUAL-REFRESH-LAB` — STATUS: implementado, aguardando teste.
+1. `BLOCO-HOTFIX-AULA-ATUAL-SYNC-STATUS-LAB` — STATUS: implementado, aguardando teste.
 2. `BLOCO-CARTAS-PAREAMENTO-10-LAB` — pareamento palavra ↔ tradução.
 3. `BLOCO-CARTAS-PAREAMENTO-IMAGEM-10B-LAB` — pareamento palavra ↔ imagem.
 4. `BLOCO-CARTAS-SIGNIFICADO-10C-LAB` — escolha de significado refinada.
@@ -113,12 +127,6 @@ Teste recomendado no iPhone:
 25. `BLOCO-CARTAS-AUDITORIA-GERAL-20-LAB` — auditoria final dos tipos.
 26. `BLOCO-CARTAS-POLIMENTO-UI-20B-LAB` — acabamento visual.
 
-## Pendência técnica importante
-
-- testar deploy do hotfix no iPhone;
-- confirmar que aula salva no diagnóstico aparece na aba Aula;
-- se ok, seguir para `BLOCO-CARTAS-PAREAMENTO-10-LAB`.
-
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O bloco atual implementado foi `BLOCO-HOTFIX-AULA-ATUAL-REFRESH-LAB`: `saveCurrentLesson()` dispara `fluency:lesson-updated` e `App.jsx` incrementa `lessonRevision`, para a aba Aula reler a aula salva. Testar no iPhone; se ok, seguir para `BLOCO-CARTAS-PAREAMENTO-10-LAB`."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O bloco atual implementado foi `BLOCO-HOTFIX-AULA-ATUAL-SYNC-STATUS-LAB`: `lessonStore` agora sincroniza `lesson.current` usando `lesson.lastGenerationStatus` e o histórico. Testar no iPhone; se ainda não trocar, instrumentar Diagnóstico mostrando current/history/status. Se ok, seguir para `BLOCO-CARTAS-PAREAMENTO-10-LAB`."
