@@ -27,7 +27,65 @@ Motivo:
 - Groq é promissor, mas instável em limite/cota e ainda precisa teste final real com 7 sections.
 - Cerebras passou tecnicamente em alguns testes, mas teve conteúdo mais repetitivo, genérico e com erros pedagógicos.
 
-## ESTADO ATUAL — HOTFIX GRAMMAR CARD SPLIT V6
+## ESTADO ATUAL — BLOCO GRAMMAR RENDER SAFETY GATE
+
+### `BLOCO-GRAMMAR-RENDER-SAFETY-GATE-LAB` — IMPLEMENTADO
+
+Objetivo executado:
+- Sair de correções soltas dentro de `GrammarLesson.jsx` e criar uma camada dedicada de renderização segura para Grammar.
+- Centralizar normalização, separação de parágrafos, listas numeradas, detecção de exemplos, fallback seguro e relatório de render.
+- Reduzir risco de erros nas próximas aulas Grammar.
+
+Arquivos alterados/criados:
+- `fluency-clean/src/lessons/grammar/grammarRenderParser.js` — novo parser seguro.
+- `fluency-clean/src/lessons/GrammarLesson.jsx` — conectado ao parser seguro.
+- `REWRITE_HANDOFF.md`
+
+O que foi feito:
+- Criado parser modular `grammarRenderParser.js`.
+- Movidas para o parser as funções de:
+  - `cleanText`;
+  - `normalizeVisualSpacing`;
+  - `splitParagraphs`;
+  - `splitNumberedList`;
+  - `splitByExampleHeader`;
+  - `collectProfessorExamples`;
+  - `normalizeSections`;
+  - `normalizeTips`.
+- Criado `buildGrammarRenderReport`.
+- `GrammarLesson.jsx` ficou mais limpo e passou a apenas renderizar o resultado seguro.
+- Adicionado relatório visual no card lateral:
+  - `Grammar render: OK`;
+  - `Exemplos: N`;
+  - `Cards bloqueados: N`;
+  - `Texto preservado: sim`.
+- Regra de segurança mantida: na dúvida, renderiza como parágrafo; só vira card quando a frase em inglês é confiável.
+- Adicionada classe `grammar-render-safety-gate-v1` para identificar o novo bloco.
+
+Escopo preservado:
+- Não mexeu em `main`.
+- Não mexeu em `rewrite-fluency-clean`.
+- Não mexeu em `bundle.js`.
+- Não mexeu no backend Azure privado.
+- Não mexeu no `deepGrammarPipeline.js`.
+- Não mexeu no professor revisor.
+- Não mexeu na política de chaves/modelos.
+- Não alterou geração, prompts, fallback ou motor.
+
+Commits:
+- `8387eef477f1cd8801a89ad546e6fe15da71ae15` — cria parser seguro da Grammar.
+- `16e3436937dbc31f39f45bcbd45ad9e8d8d81cf6` — conecta Grammar ao parser seguro.
+
+Próximo teste recomendado no iPhone:
+1. Aguardar o deploy da branch `rewrite-fluency-clean-lab`.
+2. Abrir a mesma aula Grammar já aprovada visualmente.
+3. Confirmar que o visual não regrediu.
+4. Confirmar que aparece o card lateral `Render seguro`.
+5. Confirmar se o relatório mostra `Grammar render: OK` e `Texto preservado: sim`.
+6. Confirmar que os cards continuam limpos.
+7. Confirmar que Salvar rascunho e Concluir Grammar continuam funcionando.
+
+## ESTADO ANTERIOR — HOTFIX GRAMMAR CARD SPLIT V6
 
 ### `HOTFIX-GRAMMAR-CARD-SPLIT-V6-LAB` — IMPLEMENTADO
 
@@ -50,27 +108,8 @@ O que foi feito:
 - `exampleOverflowPattern` foi refinado para não cortar explicações curtas em `A forma...`.
 - Adicionada classe `grammar-renderer-card-split-v6` para identificar o hotfix.
 
-Escopo preservado:
-- Não mexeu em `main`.
-- Não mexeu em `rewrite-fluency-clean`.
-- Não mexeu em `bundle.js`.
-- Não mexeu no backend Azure privado.
-- Não mexeu no `deepGrammarPipeline.js`.
-- Não mexeu no professor revisor.
-- Não mexeu na política de chaves/modelos.
-- Não alterou geração, prompts, fallback ou motor.
-
 Commit:
 - `aa92b93a65adeb08b9192f8f32f750c7855e69aa` — divide exemplos secundários nos cards Grammar.
-
-Próximo teste recomendado no iPhone:
-1. Aguardar o deploy da branch `rewrite-fluency-clean-lab`.
-2. Abrir a mesma aula Grammar.
-3. Conferir se `I have a blue backpack` não mostra mais `She has a small dog` dentro do card.
-4. Conferir se `I have a new pet` não mostra mais `We have a big house` dentro do card.
-5. Conferir se o card `I am a student` não corta mais `mas em inglês a forma muda com o sujeito` no meio.
-6. Conferir se exemplos como `Is she from Brazil?` continuam bons.
-7. Conferir se nenhum conteúdo sumiu.
 
 ## ESTADO ANTERIOR — HOTFIX GRAMMAR OVERFLOW V4
 
@@ -84,14 +123,6 @@ Objetivo executado:
 Arquivos alterados:
 - `fluency-clean/src/lessons/GrammarLesson.jsx`
 - `REWRITE_HANDOFF.md`
-
-O que foi feito:
-- Adicionado `exampleOverflowPattern` para detectar continuação pedagógica dentro da explicação de um card.
-- Adicionada função `splitExampleOverflow`.
-- `parseExampleCard` agora retorna `overflow` separado quando encontra conectores como `Já`, `Outro lado`, `No entanto` antes de nova explicação/exemplo.
-- `collectProfessorExamples` preserva esse overflow como parágrafo normal em `afterExamples`.
-- `splitByExampleHeader` também remove sobra visual `Por` antes do cabeçalho de exemplos.
-- Adicionada classe `grammar-renderer-overflow-v4` para identificar o hotfix.
 
 Commit:
 - `5ed3022a2bca80807948a274145b7785a99c3e15` — ajusta overflow dos exemplos Grammar.
@@ -109,78 +140,6 @@ Objetivo executado:
 Arquivos alterados:
 - `fluency-clean/src/lessons/GrammarLesson.jsx`
 - `REWRITE_HANDOFF.md`
-
-O que foi feito:
-- Reescrito o parser visual local da aula Grammar em `GrammarLesson.jsx`.
-- A renderização agora prioriza blocos estáveis:
-  - parágrafos explicativos;
-  - listas numeradas reais;
-  - cards apenas dentro de seções com cabeçalho explícito de exemplos.
-- `Exemplos do professor` deixou de varrer a seção inteira tentando transformar qualquer frase em card.
-- Cards de exemplo agora exigem frase em inglês mais completa, com sujeito + estrutura mínima; fragmentos como `I am`, `You are`, `She is` isolados não viram mais card.
-- Tradução em português só é destacada quando parece tradução real; regra/explicação continua como texto normal.
-- Citações e parênteses continuam suportados quando a frase em inglês é confiável.
-- `splitParagraphs` ficou menos agressivo: não quebra toda frase comum; só separa por quebras fortes e conectores pedagógicos.
-- `splitNumberedList` ficou mais seguro para listas numeradas reais.
-- Adicionada classe `grammar-renderer-system-v3` para identificar o novo render no DOM/CSS sem mexer em bundle.
-
-## ESTADO ANTERIOR — HOTFIX GRAMMAR STRICT CLASSIFIER
-
-### `HOTFIX-GRAMMAR-EXAMPLES-STRICT-CLASSIFIER-LAB` — IMPLEMENTADO
-
-Objetivo executado:
-- Corrigir erro visual em que explicações em português estavam virando cards de `Exemplo`.
-- Manter visual em cards apenas para frases de exemplo realmente confiáveis em inglês.
-- Preservar conteúdo pedagógico sem cortar explicações longas.
-- Não mexer em geração, modelo, prompts, fallback, professor revisor, `deepGrammarPipeline.js` ou backend.
-
-Arquivos alterados:
-- `fluency-clean/src/lessons/GrammarLesson.jsx`
-- `REWRITE_HANDOFF.md`
-
-## ESTADO ANTERIOR — HOTFIX VISUAL GRAMMAR
-
-### `HOTFIX-GRAMMAR-EXEMPLOS-VISUAIS-LAB` — IMPLEMENTADO
-
-Objetivo executado:
-- Melhorar a leitura da aula Grammar no iPhone sem mexer no motor pedagógico.
-- Não alterar geração, prompts, modelo, chaves, fallback, revisor, `deepGrammarPipeline.js` ou backend.
-- Não reduzir conteúdo.
-- Apenas renderizar melhor o texto já gerado.
-
-Arquivos alterados:
-- `fluency-clean/src/lessons/GrammarLesson.jsx`
-- `fluency-clean/src/styles/grammar-examples-hotfix.css`
-- `fluency-clean/src/main.jsx`
-- `REWRITE_HANDOFF.md`
-
-## ESTADO ANTERIOR — HOTFIX GROQ DIÁRIO FORTE 7 SECTIONS REAL
-
-### `HOTFIX-GROQ-DAILY-7-SECTIONS-REAL-LAB` — IMPLEMENTADO
-
-- `grammarSectionGenerator.js` teve o limite antigo de 5 sections removido.
-- Criado `GROQ_DAILY_SECTION_COUNT = 7`.
-- `rawSections.slice(0, GROQ_DAILY_SECTION_COUNT)` mantém 7 sections para Groq.
-- Mensagem antiga `modo Groq econômico 5 sections fortes` removida.
-- Diagnóstico correto: `modo Groq diário forte 7 sections`.
-- `externalLessonProviders.js` já estava correto para skeleton Groq com 7 sections.
-
-Commits relevantes:
-- `03fef31cfbabbe1fa84b209243de53ae468dc88e` — skeleton Groq forte com 7 sections.
-- `b1fbfba461a20a3d6911f18799c32bf34e77d4a6` — correção real do 1B Groq para 7 sections.
-
-## ESTADO ANTERIOR — HOTFIX GROQ QUALIDADE + TRAVA DE OBJETIVO GRAMMAR
-
-### `HOTFIX-GROQ-QUALITY-STUDY-READINESS-LAB` — IMPLEMENTADO
-
-- Groq 5 sections foi reforçado para 240+ palavras por section.
-- Study Readiness passou a reparar objetivo Grammar ausente/curto antes de bloquear.
-- Issues antigas de objetivo curto não bloqueiam se o objetivo foi reparado localmente.
-
-Commits:
-- `32ccc827fadd4a27fa460154a744f770996cc9c8` — reforça mínimo real das sections Groq.
-- `87ce9aa1c2d48b6fba7d3eb67374e18ba65294f3` — repara objetivo Grammar antes da trava.
-- `840877e4674e2b5c133945e7e468058adf6d10fc` — ignora issue reparável de objetivo Grammar.
 
 ## COMPARAÇÃO FLASH X GROQ X CEREBRAS
 
@@ -210,4 +169,4 @@ Commits:
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. O hotfix `HOTFIX-GRAMMAR-CARD-SPLIT-V6-LAB` foi implementado: cards não devem mais engolir segundos exemplos conectados por `e` ou `ou`, como `She has a small dog` e `We have a big house`; esses trechos devem sair do card e virar texto normal abaixo. Não mexer em `main`, `rewrite-fluency-clean`, `bundle.js`, backend Azure privado, `deepGrammarPipeline.js`, revisor ou política de chaves. Próximo passo: testar no iPhone a mesma aula e confirmar se os cards ficaram limpos sem cortar conteúdo."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. O bloco `BLOCO-GRAMMAR-RENDER-SAFETY-GATE-LAB` foi implementado: foi criado `fluency-clean/src/lessons/grammar/grammarRenderParser.js`, a Grammar foi conectada a esse parser seguro e agora mostra relatório `Render seguro` com exemplos, cards bloqueados e texto preservado. Não mexer em `main`, `rewrite-fluency-clean`, `bundle.js`, backend Azure privado, `deepGrammarPipeline.js`, revisor ou política de chaves. Próximo passo: testar no iPhone se a aula Grammar não regrediu e se o relatório aparece corretamente."
