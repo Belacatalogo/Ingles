@@ -53,6 +53,17 @@ function sentenceWords(value) {
   return clean(value).replace(/[.,!?;:]/g, '').split(/\s+/).filter(Boolean);
 }
 
+function asSentence(value) {
+  const text = clean(value).replace(/\s+/g, ' ');
+  if (!text) return '';
+  return /[.!?]$/.test(text) ? text : `${text}.`;
+}
+
+function looksLikeSentence(value) {
+  const words = sentenceWords(value);
+  return words.length >= 3 && /^[A-ZI]/.test(clean(value));
+}
+
 function hasWord(sentence, word) {
   if (!sentence || !word) return false;
   const escaped = clean(word).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -84,27 +95,35 @@ function deriveChunk(card) {
   return word.length <= 3 ? `${word} am` : `use ${word}`;
 }
 
+function applySafeSentenceVariations(example) {
+  const base = clean(example).replace(/[.!?]$/, '');
+  const variations = [];
+  if (/^I am\b/i.test(base)) variations.push(base.replace(/^I am\b/i, 'You are'), base.replace(/^I am\b/i, 'We are'));
+  if (/^You are\b/i.test(base)) variations.push(base.replace(/^You are\b/i, 'I am'), base.replace(/^You are\b/i, 'We are'));
+  if (/^He is\b/i.test(base)) variations.push(base.replace(/^He is\b/i, 'She is'), base.replace(/^He is\b/i, 'They are'));
+  if (/^She is\b/i.test(base)) variations.push(base.replace(/^She is\b/i, 'He is'), base.replace(/^She is\b/i, 'They are'));
+  if (/^I have\b/i.test(base)) variations.push(base.replace(/^I have\b/i, 'You have'), base.replace(/^I have\b/i, 'We have'));
+  if (/^I need\b/i.test(base)) variations.push(base.replace(/^I need\b/i, 'You need'), `Do you ${base.replace(/^I\s+/i, '')}?`);
+  if (/^I want\b/i.test(base)) variations.push(base.replace(/^I want\b/i, 'You want'), `Do you ${base.replace(/^I\s+/i, '')}?`);
+  if (/^I like\b/i.test(base)) variations.push(base.replace(/^I like\b/i, 'You like'), `Do you ${base.replace(/^I\s+/i, '')}?`);
+  if (/^I go\b/i.test(base)) variations.push(base.replace(/^I go\b/i, 'We go'));
+  if (/^I study\b/i.test(base)) variations.push(base.replace(/^I study\b/i, 'We study'));
+  if (/^My\b/i.test(base)) variations.push(base.replace(/^My\b/i, 'Your'));
+  return variations.map(asSentence).filter(looksLikeSentence);
+}
+
 function deriveVariations(card) {
   const word = clean(card.word);
-  const example = getExample(card).replace(/[.!?]$/, '');
-  const translation = clean(card.translation || card.definition || word);
-  const chunk = deriveChunk(card);
-  const variations = [example];
-
-  if (hasWord(example, 'I')) variations.push(example.replace(/\bI\b/g, 'you').replace(/\bam\b/g, 'are'));
-  if (hasWord(example, 'you')) variations.push(example.replace(/\byou\b/gi, 'I').replace(/\bare\b/g, 'am'));
-  if (hasWord(example, 'my')) variations.push(example.replace(/\bmy\b/gi, 'your'));
-  if (hasWord(example, 'your')) variations.push(example.replace(/\byour\b/gi, 'my'));
-  if (word && !variations.some((item) => hasWord(item, word))) variations.push(`I need ${word}`);
-  if (chunk && !variations.includes(chunk)) variations.push(chunk);
-  if (translation) variations.push(`Meaning: ${translation}`);
-
-  return uniqueBy(variations.filter(Boolean).slice(0, 5), normalizeOption);
+  const example = asSentence(getExample(card));
+  const variations = [example, ...applySafeSentenceVariations(example)];
+  if (word && variations.length < 3 && looksLikeSentence(`I use ${word}.`)) variations.push(`I use ${word}.`);
+  if (word && variations.length < 3 && looksLikeSentence(`I need ${word}.`)) variations.push(`I need ${word}.`);
+  return uniqueBy(variations.filter(looksLikeSentence).slice(0, 5), normalizeOption);
 }
 
 function deriveMiniDialogue(card) {
   const word = clean(card.word);
-  const example = getExample(card).replace(/[.!?]$/, '.');
+  const example = asSentence(getExample(card));
   const translation = clean(card.translation || card.definition || word);
   return {
     prompt: `A: Do you understand “${word}”?`,
@@ -132,13 +151,13 @@ function normalizeCard(card, index) {
     word: clean(card?.word || card?.term || card?.expression),
     translation: clean(card?.translation || card?.meaning || card?.definition),
     definition: clean(card?.definition || card?.meaning || card?.translation),
-    example: clean(card?.example || card?.sentence),
+    example: asSentence(card?.example || card?.sentence),
     deck: clean(card?.deck || card?.category),
     level: clean(card?.level || card?.due || 'A1'),
   };
   normalized.chunk = clean(card?.chunk || card?.collocation || deriveChunk(normalized));
   normalized.chunks = uniqueBy([...normalizeArray(card?.chunks), normalized.chunk], normalizeOption);
-  normalized.variations = uniqueBy([...normalizeArray(card?.variations), ...deriveVariations(normalized)], normalizeOption).slice(0, 6);
+  normalized.variations = uniqueBy([...normalizeArray(card?.variations).map(asSentence).filter(looksLikeSentence), ...deriveVariations(normalized)], normalizeOption).slice(0, 6);
   normalized.miniDialogues = normalizeMiniDialogues(card?.miniDialogues || card?.dialogues, normalized).slice(0, 3);
   return normalized;
 }
@@ -149,7 +168,7 @@ function distractorsFor(cards, target, field = 'translation', limit = 6) {
       .filter((card) => card.id !== target.id)
       .map((card) => {
         if (field === 'chunk') return card.chunk || card.chunks?.[0];
-        if (field === 'variation') return card.variations?.[0] || card.example;
+        if (field === 'variation') return card.variations?.find((item) => normalizeOption(item) !== normalizeOption(card.example)) || card.variations?.[0] || card.example;
         if (field === 'dialogue') return card.miniDialogues?.[0]?.answer || card.example;
         return clean(card[field] || card.translation || card.word);
       })
