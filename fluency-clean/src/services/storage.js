@@ -3,7 +3,8 @@ const PREFIX = 'fluency.clean.';
 function safeJsonParse(value, fallback) {
   if (!value) return fallback;
   try {
-    return JSON.parse(value);
+    const parsed = JSON.parse(value);
+    return parsed === null || typeof parsed === 'undefined' ? fallback : parsed;
   } catch {
     return fallback;
   }
@@ -59,7 +60,8 @@ export const storage = {
 
   getText(name, fallback = '') {
     try {
-      return window.localStorage.getItem(key(name)) ?? fallback;
+      const value = window.localStorage.getItem(key(name));
+      return value === null || typeof value === 'undefined' ? fallback : value;
     } catch {
       return fallback;
     }
