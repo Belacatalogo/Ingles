@@ -3,6 +3,7 @@ import { LessonGeneratorPanel } from '../components/lesson/LessonGeneratorPanel.
 import { getCurrentLesson } from '../services/lessonStore.js';
 import { getLessonStats } from '../services/lessonStats.js';
 import { getFlashcardSessions, getLessonCompletions, getProgressSummary, hasFlashcardSessionToday, hasSpeakingSessionToday, localDateKey } from '../services/progressStore.js';
+import { getVocabularySrsSummary } from '../services/vocabularySrs.js';
 
 const baseTasks = [
   { id: 'lesson', label: 'Aula de hoje', status: 'Aula guiada pela IA', icon: BookOpen, target: 'lesson', color: 'blue' },
@@ -38,6 +39,7 @@ export function TodayScreen({ onLessonGenerated, onNavigate }) {
   const currentLesson = getCurrentLesson();
   const lessonStats = getLessonStats(currentLesson);
   const completions = getLessonCompletions();
+  const vocabularySrs = getVocabularySrsSummary();
   const weekDays = getWeekDaysFromCompletions(completions);
   const lessonDoneToday = getTodayLessonCompleted(completions);
   const cardsDoneToday = hasFlashcardSessionToday();
@@ -51,7 +53,7 @@ export function TodayScreen({ onLessonGenerated, onNavigate }) {
   const cardsAvailable = Array.isArray(currentLesson?.vocabulary) ? currentLesson.vocabulary.length : 0;
   const tasks = baseTasks.map((task) => {
     if (task.id === 'lesson') return { ...task, status: lessonDoneToday ? 'Aula concluída hoje' : currentLesson ? getLessonTypeStatus(currentLesson) : 'Nenhuma aula gerada ainda', time: currentLesson ? `~${lessonStats.minutes} min` : '' };
-    if (task.id === 'cards') return { ...task, status: cardsDoneToday ? 'Sessão real concluída hoje' : cardsAvailable ? `${cardsAvailable} cards da aula atual` : 'Nenhum card real disponível ainda', time: cardsDoneToday ? 'feito' : cardsAvailable ? '~5 min' : '' };
+    if (task.id === 'cards') return { ...task, status: cardsDoneToday ? 'Sessão real concluída hoje' : vocabularySrs.dueToday ? `${vocabularySrs.dueToday} revisão(ões) vencida(s)` : cardsAvailable ? `${cardsAvailable} cards da aula atual` : 'Nenhum card real disponível ainda', time: cardsDoneToday ? 'feito' : vocabularySrs.dueToday ? '~5 min' : cardsAvailable ? '~5 min' : '' };
     if (task.id === 'vocab-bubble') return { ...task, status: vocabBubbleDoneToday ? 'Bolha da trilha concluída hoje' : 'Complete uma bolha para fixar vocabulário', time: vocabBubbleDoneToday ? 'feito' : '~8 min' };
     if (task.id === 'speaking') return { ...task, status: speakingDoneToday ? 'Conversação real concluída hoje' : 'Speaking A1 com Azure', time: speakingDoneToday ? 'feito' : '~5 falas' };
     return task;
