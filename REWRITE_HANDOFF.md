@@ -27,7 +27,52 @@ Motivo:
 - Groq é promissor, mas instável em limite/cota e ainda precisa teste final real com 7 sections.
 - Cerebras passou tecnicamente em alguns testes, mas teve conteúdo mais repetitivo, genérico e com erros pedagógicos.
 
-## ESTADO ATUAL — HOTFIX VISUAL GRAMMAR
+## ESTADO ATUAL — HOTFIX GRAMMAR STRICT CLASSIFIER
+
+### `HOTFIX-GRAMMAR-EXAMPLES-STRICT-CLASSIFIER-LAB` — IMPLEMENTADO
+
+Objetivo executado:
+- Corrigir erro visual em que explicações em português estavam virando cards de `Exemplo`.
+- Manter visual em cards apenas para frases de exemplo realmente confiáveis em inglês.
+- Preservar conteúdo pedagógico sem cortar explicações longas.
+- Não mexer em geração, modelo, prompts, fallback, professor revisor, `deepGrammarPipeline.js` ou backend.
+
+Arquivos alterados:
+- `fluency-clean/src/lessons/GrammarLesson.jsx`
+- `REWRITE_HANDOFF.md`
+
+O que foi feito:
+- Parser visual de `Exemplos do professor` deixou de transformar tudo após o cabeçalho em card.
+- Agora um item só vira card se tiver frase em inglês detectada com classificador mais estrito.
+- Frases mistas em português + termos ingleses, como `Correto, pois I combina com am.`, deixam de virar exemplo principal.
+- Parágrafos longos explicativos, como `Cada um desses exemplos demonstra...`, voltam a ser texto normal.
+- Frases reais como `I am a new student here.`, `She is very kind to everyone.`, `The book is on the table.`, `Is she from Brazil?` e `Are they here?` continuam podendo virar cards.
+- Suporte melhor para exemplo após pista curta como `para fixar:`.
+- Suporte melhor para frase em inglês entre aspas dentro de explicação.
+- Tradução em português só é destacada quando parece tradução, não regra explicativa.
+- Conteúdo posterior aos exemplos é preservado como parágrafo normal.
+
+Escopo preservado:
+- Não mexeu em `main`.
+- Não mexeu em `rewrite-fluency-clean`.
+- Não mexeu em `bundle.js`.
+- Não mexeu no backend Azure privado.
+- Não mexeu no `deepGrammarPipeline.js`.
+- Não mexeu no professor revisor.
+- Não mexeu na política de chaves/modelos.
+- Não alterou geração, prompts, fallback ou motor.
+
+Próximo teste recomendado no iPhone:
+1. Aguardar o deploy da branch `rewrite-fluency-clean-lab`.
+2. Abrir a aula Grammar Flash já salva.
+3. Conferir se `Correto, pois I combina com am` NÃO aparece mais como frase principal em negrito de card.
+4. Conferir se `Correto, pois She combina com is` fica como explicação/nota, não como exemplo principal.
+5. Conferir se parágrafos longos tipo `Cada um desses exemplos demonstra...` não viram `Exemplo 7` indevido.
+6. Conferir se exemplos reais em inglês continuam em cards.
+7. Conferir se conteúdo não foi cortado.
+8. Conferir se textarea, Salvar rascunho e Concluir Grammar continuam funcionando.
+
+## ESTADO ANTERIOR — HOTFIX VISUAL GRAMMAR
 
 ### `HOTFIX-GRAMMAR-EXEMPLOS-VISUAIS-LAB` — IMPLEMENTADO
 
@@ -57,28 +102,6 @@ O que foi feito:
 - Cada card pode destacar frase em inglês, tradução quando existir e explicação quando existir.
 - Criado CSS isolado `grammar-examples-hotfix.css`, importado em `main.jsx`, sem mexer no CSS gigante principal.
 - Visual mantido sério/elegante, sem gamificação.
-
-Escopo preservado:
-- Não mexeu em `main`.
-- Não mexeu em `rewrite-fluency-clean`.
-- Não mexeu em `bundle.js`.
-- Não mexeu no backend Azure privado.
-- Não mexeu no `deepGrammarPipeline.js`.
-- Não mexeu no professor revisor.
-- Não mexeu na política de chaves/modelos.
-- Não alterou geração, prompts, fallback ou motor.
-
-Próximo teste recomendado no iPhone:
-1. Aguardar o deploy da branch `rewrite-fluency-clean-lab`.
-2. Abrir a aula Grammar Flash já salva, se possível.
-3. Conferir Exemplo 1 e Exemplo 2, especialmente se não aparecem mais começo com vírgula solta nem tradução errada como `ser`.
-4. Conferir se não aparece mais `.Por exemplo`, `.Já`, `.Outro`, `).Veja` grudado.
-5. Conferir se `Exemplos do professor` aparece em cards/lista, e não como texto corrido.
-6. Conferir se conteúdo não foi cortado.
-7. Conferir se textarea, Salvar rascunho e Concluir Grammar continuam funcionando.
-
-Observação:
-- Este bloco é visual/renderização. Se algum exemplo gerado vier em formato muito imprevisível, a renderização preserva o texto e evita cortar conteúdo.
 
 ## ESTADO ANTERIOR — HOTFIX GROQ DIÁRIO FORTE 7 SECTIONS REAL
 
@@ -136,4 +159,4 @@ Commits:
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. O bloco `HOTFIX-GRAMMAR-EXEMPLOS-VISUAIS-LAB` foi implementado e depois ajustado pelo `HOTFIX-GRAMMAR-EXAMPLES-SAFE-PARSE-LAB`: parser visual dos exemplos ficou mais conservador, preservando conteúdo e corrigindo vírgula solta/tradução quebrada nos exemplos. Não mexer em `main`, `rewrite-fluency-clean`, `bundle.js`, backend Azure privado, `deepGrammarPipeline.js`, revisor ou política de chaves. Próximo passo: testar no iPhone Exemplo 1 e Exemplo 2 da aula Grammar Flash já salva."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. O bloco `HOTFIX-GRAMMAR-EXAMPLES-STRICT-CLASSIFIER-LAB` foi implementado: parser visual dos exemplos ficou mais estrito, só cria cards para frases em inglês confiáveis e deixa explicações em português como parágrafo normal. Não mexer em `main`, `rewrite-fluency-clean`, `bundle.js`, backend Azure privado, `deepGrammarPipeline.js`, revisor ou política de chaves. Próximo passo: testar no iPhone se `Correto, pois...` e parágrafos longos não viram cards de exemplo indevidos, sem cortar conteúdo."
