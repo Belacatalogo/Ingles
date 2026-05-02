@@ -73,54 +73,56 @@ Esse bloco deve criar arquivos reais em `fluency-clean/src/data/vocabulary/`, or
 
 ## BLOCO ATUAL
 
-### `BLOCO-CARTAS-HOTFIX-AVANCO-1-LAB` — Botão de resposta das Cartas corrigido IMPLEMENTADO, aguardando deploy/teste
+### `BLOCO-CARTAS-HOTFIX-QUALIDADE-2-LAB` — Opções estáveis e uso menos óbvio IMPLEMENTADO, aguardando deploy/teste
 
 Contexto:
-- usuário testou a bolha de Cartas no iPhone;
-- ao selecionar uma opção em múltipla escolha, a opção ficava marcada;
-- porém o botão inferior continuava desativado com o texto `Escolha uma resposta`;
-- isso impedia avançar no exercício.
+- usuário concluiu uma bolha e encontrou dois problemas importantes;
+- ao tocar em uma opção, as respostas mudavam de posição;
+- alguns exercícios de uso eram óbvios demais, por exemplo: `Qual frase usa “I” corretamente?`, e só uma opção continha `I`.
+
+Análise aplicada:
+- o embaralhamento usava `Math.random()` dentro da construção de atividades;
+- como a tela renderiza novamente após seleção, as opções eram reembaralhadas;
+- isso cria sensação de bug e pode invalidar resposta do aluno;
+- perguntas que citam a palavra-alvo no enunciado podem entregar a resposta por reconhecimento superficial;
+- para substituir Duolingo de forma séria, a prática deve testar sentido/uso, não caça-palavra.
 
 Arquivos alterados:
+- `fluency-clean/src/services/vocabularyPractice.js`
 - `fluency-clean/src/screens/FlashcardsScreen.jsx`
+- `fluency-clean/src/styles/flashcards-polish.css`
 - `REWRITE_HANDOFF.md`
 
 O que foi implementado:
-- `VocabularyActivityCard` agora calcula `canCheck`;
-- para exercícios de escolha/listening, o botão libera quando existe `selected`;
-- texto do botão muda para `Verificar resposta` após seleção;
-- intro continua com `Continuar`;
-- build continua com `Verificar` quando houver palavras montadas;
-- feedback continua usando `Continuar`.
+- removido embaralhamento instável com `Math.random()`;
+- criado embaralhamento determinístico por seed/ID do exercício;
+- opções ficam na mesma posição mesmo após clicar, re-renderizar ou marcar resposta;
+- criado `makeOptions()` com deduplicação por texto normalizado;
+- exercícios de `Uso em frase` agora perguntam: `Qual frase combina melhor com o significado estudado?`;
+- enunciado deixa de entregar a palavra-alvo;
+- exercício mostra pista de sentido, por exemplo `Sentido: eu`;
+- CSS adicionado para `.vocab-meaning-hint`;
+- scoring continua por resposta exata normalizada.
 
-Commit:
-- `b49334189b12ec9e139d4f3521547c9c2ecb0740` — libera avanço após escolha nas cartas.
+Commits:
+- `5cf1ba0375eb6c11e6a72f3fc8fed5e6fe3ebd68` — corrige estabilidade e qualidade dos exercícios de cartas;
+- `8b4a2aaa915dfea77935393f0ecd0e6772a5af13` — mostra pista de sentido nos exercícios de uso;
+- `304f7f9386dd29627137b2a8dbe7aec02e9ac818` — estiliza pista de sentido nas cartas.
 
 Teste recomendado no iPhone:
 1. abrir Cartas > Trilha de vocabulário;
-2. abrir a primeira bolha;
+2. iniciar uma bolha;
 3. chegar em exercício de múltipla escolha;
-4. selecionar uma resposta;
-5. confirmar que o botão muda para `Verificar resposta` e fica clicável;
-6. tocar e confirmar que mostra feedback;
-7. tocar em `Continuar` e confirmar avanço.
+4. tocar numa opção;
+5. confirmar que as opções não mudam de posição;
+6. chegar em exercício `Uso em frase`;
+7. confirmar que ele não pergunta mais `qual frase usa I/you/etc`;
+8. confirmar que aparece pista de sentido;
+9. confirmar que o botão libera, mostra feedback e avança.
+
+### `BLOCO-CARTAS-HOTFIX-AVANCO-1-LAB` — Botão de resposta das Cartas corrigido IMPLEMENTADO
 
 ### `BLOCO-CARTAS-SRS-3-LAB` — Revisão espaçada real por palavra/frase IMPLEMENTADO
-
-Arquivos criados:
-- `fluency-clean/src/services/vocabularySrs.js`
-
-Arquivos alterados:
-- `fluency-clean/src/screens/FlashcardsScreen.jsx`
-- `fluency-clean/src/screens/TodayScreen.jsx`
-- `REWRITE_HANDOFF.md`
-
-O que foi implementado:
-- SRS local por item de vocabulário/frase;
-- estados `weak`, `learning`, `review`, `strong`, `mastered`;
-- domínio estimado, próxima data de revisão e revisões vencidas;
-- Cartas mostra card `Revisão espaçada`;
-- Hoje mostra revisões vencidas na tarefa `Revisar flashcards`.
 
 ### `BLOCO-HOJE-DATA-LOCAL-1-LAB` — Correção de dia local e tarefa de bolha IMPLEMENTADO
 
@@ -185,7 +187,7 @@ Pendente técnica:
 
 ## NOVA ORDEM DE BLOCOS — QUALIDADE REAL DAS AULAS
 
-1. `BLOCO-CARTAS-HOTFIX-AVANCO-1-LAB` — botão de resposta das Cartas corrigido. STATUS: implementado, aguardando teste.
+1. `BLOCO-CARTAS-HOTFIX-QUALIDADE-2-LAB` — opções estáveis e uso menos óbvio. STATUS: implementado, aguardando teste.
 2. `BLOCO-CARTAS-USO-4-LAB` — usos, chunks e variações por palavra.
 3. `BLOCO-CARTAS-MIX-5-LAB` — misturar palavras novas com antigas.
 4. `BLOCO-CARTAS-LISTENING-SPEAKING-6-LAB` — áudio, shadowing e pronúncia.
@@ -214,12 +216,12 @@ Ordem recomendada após os blocos principais:
 
 ## Pendência técnica importante
 
-- testar deploy do `BLOCO-CARTAS-HOTFIX-AVANCO-1-LAB` no iPhone;
-- confirmar que selecionar resposta libera botão;
-- confirmar feedback e avanço;
+- testar deploy do `BLOCO-CARTAS-HOTFIX-QUALIDADE-2-LAB` no iPhone;
+- confirmar que opções não mudam de posição após seleção;
+- confirmar que exercício de uso não entrega resposta por palavra no enunciado;
 - seguir depois para `BLOCO-CARTAS-USO-4-LAB`;
 - remover definitivamente `ListeningLesson.jsx` antigo quando o conector permitir SHA correto.
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O bloco atual implementado foi `BLOCO-CARTAS-HOTFIX-AVANCO-1-LAB`: em `FlashcardsScreen.jsx`, exercícios de escolha agora liberam o botão quando existe resposta selecionada. Testar no iPhone; se ok, seguir para `BLOCO-CARTAS-USO-4-LAB`."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch de trabalho é `rewrite-fluency-clean-lab`. Não mexa em `bundle.js`, não use DOM injection ou bundle patch, não mexa no backend Azure privado. O bloco atual implementado foi `BLOCO-CARTAS-HOTFIX-QUALIDADE-2-LAB`: `vocabularyPractice.js` usa embaralhamento determinístico, opções não mudam ao clicar e exercícios de uso agora perguntam por sentido/contexto. Testar no iPhone; se ok, seguir para `BLOCO-CARTAS-USO-4-LAB`."
