@@ -16,9 +16,15 @@ function resolvePlanType({ prompt = '', forcedType = '' } = {}) {
   return inferLessonTypeFromText(prompt);
 }
 
+function normalizeExternalTarget(value) {
+  const target = String(value || '').toLowerCase().trim();
+  return target === 'groq' || target === 'cerebras' ? target : '';
+}
+
 async function attachPlanToResult(result, plan, planSeed, options = {}) {
   if (result?.status !== 'success' || !result.lesson) return result;
   let lesson = result.lesson;
+  const externalProvider = normalizeExternalTarget(options.externalGrammarProvider || result.provider || result.lesson?.providerFallback?.provider || '');
 
   if (String(lesson.type || '').toLowerCase() === 'grammar') {
     const sectionResult = await enrichGrammarSectionsSequentially({
@@ -26,10 +32,11 @@ async function attachPlanToResult(result, plan, planSeed, options = {}) {
       keys: options.keys,
       proKey: options.proKey,
       fetcher: options.fetcher,
+      externalProvider,
     });
     lesson = sectionResult.lesson;
     if (sectionResult.applied) {
-      diagnostics.log('Cirurgia 2 Grammar concluída: sections profundas geradas sequencialmente antes do revisor.', 'success');
+      diagnostics.log(`Cirurgia 2 Grammar concluída: sections profundas geradas sequencialmente antes do revisor${externalProvider ? ` usando ${externalProvider}` : ''}.`, 'success');
     } else {
       diagnostics.log(`Cirurgia 2 Grammar não precisou rodar: ${sectionResult.reason}.`, 'info');
     }
@@ -128,7 +135,10 @@ export async function generatePlannedLessonDraft(options = {}) {
       targetProvider: forceExternalTarget === 'external' ? '' : forceExternalTarget,
     });
     if (forcedExternalResult?.status === 'success' && forcedExternalResult.lesson) {
-      return attachPlanToResult(forcedExternalResult, plan, planSeed, options);
+      return attachPlanToResult(forcedExternalResult, plan, planSeed, {
+        ...options,
+        externalGrammarProvider: forceExternalTarget === 'external' ? forcedExternalResult.provider : forceExternalTarget,
+      });
     }
     diagnostics.log('Fallback externo forçado falhou. Voltando ao Gemini para não travar a geração.', 'warn', forcedExternalResult);
   }
@@ -157,7 +167,10 @@ export async function generatePlannedLessonDraft(options = {}) {
   });
 
   if (externalResult?.status === 'success' && externalResult.lesson) {
-    return attachPlanToResult(externalResult, plan, planSeed, options);
+    return attachPlanToResult(externalResult, plan, planSeed, {
+      ...options,
+      externalGrammarProvider: externalResult.provider,
+    });
   }
 
   return result;
