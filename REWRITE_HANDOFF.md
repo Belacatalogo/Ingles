@@ -27,51 +27,52 @@ Motivo:
 - Groq é promissor, mas instável em limite/cota e ainda precisa teste final real com 7 sections.
 - Cerebras passou tecnicamente em alguns testes, mas teve conteúdo mais repetitivo, genérico e com erros pedagógicos.
 
-## ESTADO ATUAL — PRÓXIMO BLOCO VISUAL
+## ESTADO ATUAL — HOTFIX VISUAL GRAMMAR
 
-### `HOTFIX-GRAMMAR-EXEMPLOS-VISUAIS-LAB` — PRÓXIMO BLOCO A IMPLEMENTAR
+### `HOTFIX-GRAMMAR-EXEMPLOS-VISUAIS-LAB` — IMPLEMENTADO
 
-Objetivo:
+Objetivo executado:
 - Melhorar a leitura da aula Grammar no iPhone sem mexer no motor pedagógico.
 - Não alterar geração, prompts, modelo, chaves, fallback, revisor, `deepGrammarPipeline.js` ou backend.
 - Não reduzir conteúdo.
 - Apenas renderizar melhor o texto já gerado.
 
-Problemas observados na aula Flash:
-- Blocos `Exemplos do professor` aparecem como texto corrido.
-- Pontuação grudada: `.Por exemplo`, `.Já`, `.Outro`, `).Veja`.
-- Frase em inglês, tradução e explicação ficam grudadas no mesmo bloco.
-- Aula fica muito pesada visualmente no celular.
-
-Arquivos prováveis:
+Arquivos alterados:
 - `fluency-clean/src/lessons/GrammarLesson.jsx`
-- arquivo CSS real onde ficam estilos do app, provavelmente `fluency-clean/src/App.css` ou equivalente. Conferir antes de editar.
+- `fluency-clean/src/styles/grammar-examples-hotfix.css`
+- `fluency-clean/src/main.jsx`
+- `REWRITE_HANDOFF.md`
 
-Escopo permitido:
-1. Criar limpeza visual local em `GrammarLesson.jsx`:
-   - corrigir espaços depois de ponto/interrogação/exclamação quando vier grudado com letra maiúscula;
-   - normalizar quebras antes de conectores como `Por exemplo`, `Já`, `Outro exemplo`, `Veja`, `Assim`, `Portanto`;
-   - preservar todo o texto.
-2. Melhorar `SectionContent`:
-   - separar explicação principal em parágrafos limpos;
-   - detectar exemplos com aspas/frases em inglês;
-   - renderizar `Exemplos do professor` como cards/lista visual;
-   - cada exemplo deve destacar: frase em inglês, tradução quando existir e explicação quando existir.
-3. Adicionar classes CSS elegantes:
-   - cards de exemplo com borda suave;
-   - título pequeno `Exemplos do professor`;
-   - frase em inglês destacada;
-   - tradução menor;
-   - explicação em texto normal;
-   - bom espaçamento mobile.
-4. Manter botões Salvar/Concluir e textarea funcionando.
+O que foi feito:
+- Criada limpeza visual local em `GrammarLesson.jsx` para corrigir pontuação grudada como `.Por exemplo`, `.Já`, `.Outro`, `).Veja`.
+- Normalizadas quebras antes de conectores como `Por exemplo`, `Já`, `Outro exemplo`, `Veja`, `Assim`, `Portanto`, `Além disso`, `Na prática`, `Observe` e `Agora`.
+- `SectionContent` passou a separar explicação em parágrafos mais legíveis.
+- Blocos de `Exemplos do professor` agora tentam virar cards visuais.
+- Cada card pode destacar frase em inglês, tradução quando existir e explicação quando existir.
+- Criado CSS isolado `grammar-examples-hotfix.css`, importado em `main.jsx`, sem mexer no CSS gigante principal.
+- Visual mantido sério/elegante, sem gamificação.
 
-Critérios de aceite no iPhone:
-- Não aparecer mais `.Por exemplo` grudado.
-- Os exemplos não podem ficar em um único parágrafo corrido.
-- A aula deve continuar completa, sem cortar sections.
-- Visual deve ficar mais fácil de ler sem parecer jogo.
-- Não pode mexer em `bundle.js`.
+Escopo preservado:
+- Não mexeu em `main`.
+- Não mexeu em `rewrite-fluency-clean`.
+- Não mexeu em `bundle.js`.
+- Não mexeu no backend Azure privado.
+- Não mexeu no `deepGrammarPipeline.js`.
+- Não mexeu no professor revisor.
+- Não mexeu na política de chaves/modelos.
+- Não alterou geração, prompts, fallback ou motor.
+
+Próximo teste recomendado no iPhone:
+1. Aguardar o deploy da branch `rewrite-fluency-clean-lab`.
+2. Abrir a aula Grammar Flash já salva, se possível.
+3. Conferir se não aparece mais `.Por exemplo`, `.Já`, `.Outro`, `).Veja` grudado.
+4. Conferir se `Exemplos do professor` aparece em cards/lista, e não como texto corrido.
+5. Conferir se frase em inglês, tradução e explicação ficaram visualmente separadas quando o texto gerado permitir essa detecção.
+6. Conferir se conteúdo não foi cortado.
+7. Conferir se textarea, Salvar rascunho e Concluir Grammar continuam funcionando.
+
+Observação:
+- Este bloco é visual/renderização. Se algum exemplo gerado vier em formato muito imprevisível, a renderização ainda preserva o texto e evita cortar conteúdo.
 
 ## ESTADO ANTERIOR — HOTFIX GROQ DIÁRIO FORTE 7 SECTIONS REAL
 
@@ -127,14 +128,6 @@ Commits:
 - Não alterar política de chaves agora.
 - Não mexer em `main`, `rewrite-fluency-clean`, `bundle.js` ou backend Azure privado.
 
-## Próximo teste recomendado após o bloco visual
-
-1. Aguardar deploy da branch `rewrite-fluency-clean-lab`.
-2. Abrir a aula Flash já salva, se possível.
-3. Verificar visual dos exemplos no iPhone.
-4. Se necessário, gerar nova aula Flash para validar exemplos com texto novo.
-5. Conferir que conteúdo não foi reduzido.
-
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. Decidimos manter `gemini-2.5-flash` como motor principal. Próximo bloco é `HOTFIX-GRAMMAR-EXEMPLOS-VISUAIS-LAB`: melhorar visual da aula Grammar, separar `Exemplos do professor` em cards/lista, corrigir pontuação grudada e melhorar leitura no iPhone sem mexer no motor de geração. Não mexer em `main`, `rewrite-fluency-clean`, `bundle.js`, backend Azure privado, `deepGrammarPipeline.js`, revisor ou política de chaves. Usar somente `fluency-clean/src/` ou CSS/config real."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. O bloco `HOTFIX-GRAMMAR-EXEMPLOS-VISUAIS-LAB` foi implementado: visual da aula Grammar melhorado, exemplos do professor em cards/lista, pontuação grudada corrigida localmente e CSS isolado em `grammar-examples-hotfix.css`. Não mexer em `main`, `rewrite-fluency-clean`, `bundle.js`, backend Azure privado, `deepGrammarPipeline.js`, revisor ou política de chaves. Próximo passo: testar no iPhone a aula Grammar Flash já salva e validar se exemplos, textarea, Salvar e Concluir continuam funcionando."
