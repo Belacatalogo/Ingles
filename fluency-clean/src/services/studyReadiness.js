@@ -150,6 +150,10 @@ function checkByType(lesson, text, counts) {
   return checkReading(lesson, text, counts);
 }
 
+function isObjectiveIssue(issue) {
+  return /objetivo.*(ausente|curto demais|insuficiente)|objective.*(missing|short|insufficient)/i.test(clean(issue));
+}
+
 export function evaluateStudyReadiness(rawLesson, { teacherReview = {}, pedagogicalReview = {} } = {}) {
   const lesson = normalizeLessonForReadiness(rawLesson);
   const counts = baseCounts(lesson);
@@ -157,7 +161,10 @@ export function evaluateStudyReadiness(rawLesson, { teacherReview = {}, pedagogi
   const { missing, warnings } = checkByType(lesson, text, counts);
   const teacherIssues = ensureArray(teacherReview?.issues);
   const pedagogicalIssues = ensureArray(pedagogicalReview?.issues);
-  const criticalIssues = [...teacherIssues, ...pedagogicalIssues].filter((issue) => /estrutura não cobre|aula sem|curto demais|insuficiente|não está alinhada|reprovada|faltam funções/i.test(clean(issue)));
+  const objectiveWasRepaired = Boolean(lesson?.readinessAutoRepair?.objective);
+  const criticalIssues = [...teacherIssues, ...pedagogicalIssues]
+    .filter((issue) => !(objectiveWasRepaired && isObjectiveIssue(issue)))
+    .filter((issue) => /estrutura não cobre|aula sem|curto demais|insuficiente|não está alinhada|reprovada|faltam funções/i.test(clean(issue)));
   const finalScore = Number(teacherReview?.finalScore || pedagogicalReview?.overallScore || 0);
 
   let status = 'study-ready';
@@ -189,7 +196,8 @@ export function evaluateStudyReadiness(rawLesson, { teacherReview = {}, pedagogi
     warnings,
     criticalIssues,
     repairedLesson: lesson.readinessAutoRepair ? lesson : null,
-    version: 'study-readiness-v1',
+    autoRepair: lesson.readinessAutoRepair || null,
+    version: 'study-readiness-v1+grammar-objective-repair',
   };
 }
 
