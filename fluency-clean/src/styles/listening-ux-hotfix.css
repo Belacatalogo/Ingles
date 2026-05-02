@@ -1,9 +1,8 @@
 .listening-lesson-v1 .fluency-quiz-instruction { display: none; }
-.listening-lesson-v1 #lesson-answer textarea { display: none; }
 .listening-lesson-v1 #lesson-answer .writing-actions button:first-child { display: none; }
 .listening-lesson-v1 #lesson-answer .writing-actions button:last-child { width: 100%; min-height: 62px; border-radius: 20px; font-size: 19px; }
 
-/* BLOCO-QUIZ-FULLSCREEN-LAB: enquanto a limpeza estrutural do JSX não é concluída,
+/* BLOCO-QUIZ-FULLSCREEN-LAB: enquanto a limpeza estrutural do JSX antigo não é concluída,
    a prática antiga fica oculta para não sobrepor a experiência fullscreen modular. */
 .listening-lesson-v1 #lesson-practice .fluency-quiz-card {
   display: none !important;
@@ -16,4 +15,199 @@
   font-size: 16px;
   line-height: 1.45;
   margin-bottom: 14px;
+}
+
+.listening-render-review-v1 {
+  display: grid;
+  gap: 18px;
+}
+
+.listening-render-review-v1 .pillar-card,
+.listening-render-review-v1 .lesson-collapsible-card {
+  overflow: hidden;
+}
+
+.listening-hero-card {
+  position: relative;
+  display: grid;
+  gap: 14px;
+}
+
+.listening-hero-card h2 {
+  margin-bottom: 0;
+  line-height: 1.05;
+}
+
+.listening-flow-map {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+  margin: 4px 0 2px;
+}
+
+.listening-flow-map span {
+  min-width: 0;
+  padding: 10px 9px;
+  border: 1px solid rgba(147, 197, 253, 0.16);
+  border-radius: 16px;
+  background: rgba(15, 23, 42, 0.38);
+}
+
+.listening-flow-map b,
+.listening-flow-map small {
+  display: block;
+}
+
+.listening-flow-map b {
+  color: #f8fbff;
+  font-size: 12px;
+  line-height: 1.25;
+}
+
+.listening-flow-map small {
+  margin-top: 3px;
+  color: #9fb0ca;
+  font-size: 11px;
+  line-height: 1.25;
+}
+
+.listening-primary-player {
+  margin-top: 2px;
+}
+
+.listening-quick-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.listening-quick-actions button {
+  min-width: 0;
+  min-height: 46px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 16px;
+  background: rgba(15, 23, 42, 0.54);
+  color: #eaf2ff;
+  font-weight: 850;
+  font-size: 13px;
+}
+
+.listening-render-report-card {
+  display: grid;
+  gap: 12px;
+}
+
+.listening-report-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.listening-report-grid span {
+  padding: 11px 10px;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 16px;
+  background: rgba(2, 6, 23, 0.24);
+}
+
+.listening-report-grid b,
+.listening-report-grid small {
+  display: block;
+}
+
+.listening-report-grid b {
+  color: #ffffff;
+  font-size: 16px;
+}
+
+.listening-report-grid small {
+  color: #9fb0ca;
+  font-size: 11px;
+  margin-top: 2px;
+}
+
+.listening-render-report-card p {
+  margin: 0;
+  color: #c8d6ee;
+  line-height: 1.55;
+}
+
+.listening-transcript-box p {
+  align-items: flex-start;
+  line-height: 1.62;
+}
+
+.listening-transcript-box p b {
+  flex: 0 0 auto;
+}
+
+.listening-shadowing-card {
+  display: grid;
+  gap: 11px;
+}
+
+.listening-shadowing-card > span {
+  color: #93c5fd;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.listening-shadowing-card p {
+  margin: 0;
+  color: #f8fbff;
+  font-size: 18px;
+  line-height: 1.45;
+}
+
+.listening-final-card {
+  display: grid;
+  gap: 12px;
+}
+
+.listening-final-card label {
+  color: #d8e6fb;
+  font-size: 14px;
+  font-weight: 850;
+}
+
+.listening-final-card textarea {
+  display: block !important;
+  min-height: 112px;
+  width: 100%;
+  resize: vertical;
+  border-radius: 18px;
+}
+
+.listening-final-card button {
+  min-height: 50px;
+  border-radius: 17px;
+}
+
+@media (max-width: 720px) {
+  .listening-render-review-v1 {
+    gap: 15px;
+  }
+
+  .listening-flow-map,
+  .listening-report-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .listening-quick-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .listening-quick-actions button {
+    min-height: 48px;
+  }
+
+  .listening-shadowing-card p {
+    font-size: 16px;
+  }
 }
