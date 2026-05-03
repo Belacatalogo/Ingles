@@ -67,6 +67,16 @@ function isPracticeActive(state) {
   ].includes(state);
 }
 
+function mergeTouchedMasteryTags(previousTags, nextTags) {
+  const byTag = new Map();
+  [...previousTags, ...(Array.isArray(nextTags) ? nextTags : [])].forEach((tag) => {
+    if (tag?.tag) byTag.set(tag.tag, tag);
+  });
+  return Array.from(byTag.values())
+    .sort((left, right) => Number(left.mastery || 0) - Number(right.mastery || 0))
+    .slice(0, 6);
+}
+
 export function PracticeFullscreen({ lesson, open, onClose, onComplete }) {
   const { state, dispatch, can, reset } = usePracticeStateMachine();
   const [sessionItems, setSessionItems] = useState([]);
@@ -79,6 +89,7 @@ export function PracticeFullscreen({ lesson, open, onClose, onComplete }) {
   const [listening, setListening] = useState(false);
   const [lives, setLives] = useState(STARTING_LIVES);
   const [reviewMode, setReviewMode] = useState(false);
+  const [touchedMasteryTags, setTouchedMasteryTags] = useState([]);
   const lessonKey = `${lesson?.id || lesson?.title || 'lesson'}-${lesson?.generationMeta?.id || ''}`;
 
   useEffect(() => {
@@ -94,6 +105,7 @@ export function PracticeFullscreen({ lesson, open, onClose, onComplete }) {
     setHintVisible(false);
     setLives(STARTING_LIVES);
     setReviewMode(false);
+    setTouchedMasteryTags([]);
     reset({ lessonKey, lessonId: lesson?.id || null, total: nextItems.length });
     dispatch(PRACTICE_EVENTS.PLAN_LOADED, { lessonKey, lessonId: lesson?.id || null, total: nextItems.length });
   }, [open, lessonKey, lesson, reset, dispatch]);
@@ -111,9 +123,9 @@ export function PracticeFullscreen({ lesson, open, onClose, onComplete }) {
 
   useEffect(() => {
     if (!open || state !== PRACTICE_STATES.SAVING) return;
-    onComplete?.({ total: items.length, correct: correctCount, mistakes: mistakeCount, lives, reviewMode, results });
+    onComplete?.({ total: items.length, correct: correctCount, mistakes: mistakeCount, lives, reviewMode, results, touchedMasteryTags });
     dispatch(PRACTICE_EVENTS.SAVE_DONE, { savedAt: Date.now() });
-  }, [open, state, items.length, correctCount, mistakeCount, lives, reviewMode, results, onComplete, dispatch]);
+  }, [open, state, items.length, correctCount, mistakeCount, lives, reviewMode, results, touchedMasteryTags, onComplete, dispatch]);
 
   if (!open) return null;
 
@@ -146,6 +158,7 @@ export function PracticeFullscreen({ lesson, open, onClose, onComplete }) {
       if (nextLives <= 0) setReviewMode(true);
     }
 
+    setTouchedMasteryTags((previous) => mergeTouchedMasteryTags(previous, evaluation.touchedMasteryTags));
     setFeedback({
       ...evaluation,
       lifeLost,
@@ -281,6 +294,7 @@ export function PracticeFullscreen({ lesson, open, onClose, onComplete }) {
     setHintVisible(false);
     setLives(STARTING_LIVES);
     setReviewMode(false);
+    setTouchedMasteryTags([]);
     reset({ lessonKey, lessonId: lesson?.id || null, total: nextItems.length });
     dispatch(PRACTICE_EVENTS.PLAN_LOADED, { lessonKey, lessonId: lesson?.id || null, total: nextItems.length });
   }
@@ -329,6 +343,7 @@ export function PracticeFullscreen({ lesson, open, onClose, onComplete }) {
           correctCount={correctCount}
           total={items.length}
           lives={lives}
+          touchedMasteryTags={touchedMasteryTags}
           onRestart={restart}
           onFinish={finish}
         />
