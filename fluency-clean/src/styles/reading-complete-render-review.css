@@ -237,6 +237,30 @@
   line-height: 1.78;
 }
 
+.reading-paper-body-v3 p:target,
+.reading-paper-body-v3 p.reading-evidence-target {
+  border-color: rgba(52, 211, 153, .42);
+  background:
+    radial-gradient(circle at 94% 0%, rgba(52, 211, 153, .16), transparent 34%),
+    rgba(2, 6, 23, .28);
+  box-shadow: 0 18px 55px rgba(52, 211, 153, .12);
+}
+
+.reading-paper-body-v3 p:target::after,
+.reading-paper-body-v3 p.reading-evidence-target::after {
+  content: 'Trecho de prova';
+  display: inline-flex;
+  margin-left: 8px;
+  padding: 3px 8px;
+  border: 1px solid rgba(52, 211, 153, .28);
+  border-radius: 999px;
+  color: #bbf7d0;
+  background: rgba(52, 211, 153, .10);
+  font-size: 11px;
+  font-weight: 900;
+  vertical-align: middle;
+}
+
 .reading-paragraph-index {
   position: absolute;
   left: 12px;
@@ -307,10 +331,40 @@
 }
 
 .reading-question-card-v3 .question-feedback p {
-  margin: 0;
-  color: inherit;
+  position: relative;
+  display: grid;
+  gap: 5px;
+  margin: 8px 0 0;
+  padding: 10px 12px 10px 34px;
+  border: 1px solid rgba(52, 211, 153, .24);
+  border-radius: 14px;
+  color: #d1fae5;
+  background: rgba(52, 211, 153, .08);
   font-size: 13px;
   line-height: 1.5;
+}
+
+.reading-question-card-v3 .question-feedback p::before {
+  content: '✓';
+  position: absolute;
+  left: 11px;
+  top: 10px;
+  width: 16px;
+  height: 16px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  color: #052e16;
+  background: #86efac;
+  font-size: 11px;
+  font-weight: 950;
+}
+
+.reading-question-card-v3 .question-feedback p::after {
+  content: 'Use este trecho para voltar ao texto e conferir a resposta.';
+  color: #93c5fd;
+  font-size: 12px;
+  line-height: 1.35;
 }
 
 .reading-internal-exercises-card {
@@ -493,6 +547,10 @@
   .reading-paragraph-index {
     left: 10px;
     top: 13px;
+  }
+
+  .reading-question-card-v3 .question-feedback p {
+    padding: 10px 11px 10px 32px;
   }
 
   .reading-vocab-card-v3 {
