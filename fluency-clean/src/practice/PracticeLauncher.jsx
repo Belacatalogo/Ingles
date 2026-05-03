@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { CheckCircle2, Dumbbell, Heart, PlayCircle, RotateCcw, ShieldCheck, Target, Zap } from 'lucide-react';
+import { CheckCircle2, Dumbbell, Heart, PlayCircle, RotateCcw, ShieldCheck, Target } from 'lucide-react';
 import { buildPracticeItems } from './PracticePlanAdapter.js';
 import { PracticeFullscreen } from './PracticeFullscreen.jsx';
 import { getPracticeSessionsForLesson, recordPracticeSession } from '../services/progressStore.js';
@@ -54,7 +54,6 @@ export function PracticeLauncher({ lesson, onComplete }) {
       <button type="button" className="primary-action practice-deep-cta" onClick={() => setOpen(true)}>
         <span>{hasPractice ? <RotateCcw size={20} /> : <PlayCircle size={20} />}</span>
         <b>{hasPractice ? 'Revisar novamente' : 'Começar prática'}</b>
-        <small><Zap size={13} /> tela cheia</small>
       </button>
       <PracticeFullscreen lesson={lesson} open={open} onClose={() => setOpen(false)} onComplete={handleComplete} />
     </section>
