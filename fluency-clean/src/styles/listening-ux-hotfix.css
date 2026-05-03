@@ -109,49 +109,27 @@
 
 .listening-primary-player { margin-top: 2px; }
 
-.listening-segment-card {
-  display: grid;
-  gap: 10px;
-  padding: 13px;
-  border: 1px solid rgba(147, 197, 253, 0.16);
-  border-radius: 18px;
-  background: rgba(2, 6, 23, 0.28);
-}
-
-.listening-segment-card > span {
-  color: #93c5fd;
-  font-size: 11px;
-  font-weight: 950;
-  letter-spacing: .12em;
-  text-transform: uppercase;
-}
-
-.listening-segment-card p {
+.listening-blind-note {
   margin: 0;
-  color: #dbeafe;
-  font-size: 14px;
-  line-height: 1.5;
+  padding: 12px 13px;
+  border: 1px dashed rgba(147, 197, 253, .18);
+  border-radius: 16px;
+  color: #9fb0ca;
+  background: rgba(15, 23, 42, .28);
+  font-size: 13px;
+  line-height: 1.45;
 }
 
-.listening-hidden-line {
-  min-height: 54px;
-  display: grid;
-  place-items: center start;
-  padding: 12px;
-  border: 1px dashed rgba(147, 197, 253, .22);
-  border-radius: 15px;
-  color: #93a4c7 !important;
-  background: rgba(15, 23, 42, .34);
-  font-style: italic;
+.listening-clean-player-v3 .listening-segment-card {
+  display: none !important;
 }
 
-.listening-segment-card div {
+.listening-quick-actions {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
+  gap: 9px;
 }
 
-.listening-segment-card button,
 .listening-quick-actions button {
   min-width: 0;
   min-height: 46px;
@@ -165,12 +143,6 @@
   color: #eaf2ff;
   font-weight: 850;
   font-size: 13px;
-}
-
-.listening-quick-actions {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 9px;
 }
 
 .listening-render-report-card { display: grid; gap: 12px; }
@@ -244,10 +216,8 @@
   .listening-render-review-v1 { gap: 15px; }
   .listening-flow-map,
   .listening-report-grid { grid-template-columns: 1fr 1fr; }
-  .listening-quick-actions,
-  .listening-segment-card div { grid-template-columns: 1fr; }
-  .listening-quick-actions button,
-  .listening-segment-card button { min-height: 48px; }
+  .listening-quick-actions { grid-template-columns: 1fr; }
+  .listening-quick-actions button { min-height: 48px; }
   .listening-shadowing-card p { font-size: 16px; }
   .listening-dialogue-box p { grid-template-columns: 1fr; }
   .listening-dialogue-box small { grid-column: 1; }
