@@ -1,6 +1,7 @@
+import { useEffect, useState } from 'react';
 import { BookOpen, Brain, ChevronRight, Flame, LineChart, Map, Mic, Quote, Sparkles, Target, Volume2, Zap } from 'lucide-react';
 import { LessonGeneratorPanel } from '../components/lesson/LessonGeneratorPanel.jsx';
-import { getCurrentLesson } from '../services/lessonStore.js';
+import { getCurrentLesson, getCurrentLessonFull } from '../services/lessonStore.js';
 import { getLessonStats } from '../services/lessonStats.js';
 import { getFlashcardSessions, getLessonCompletions, getProgressSummary, hasFlashcardSessionToday, hasSpeakingSessionToday, localDateKey } from '../services/progressStore.js';
 import { getVocabularySrsSummary } from '../services/vocabularySrs.js';
@@ -35,8 +36,11 @@ function getTodayVocabularyBubbleCompleted() {
 }
 
 export function TodayScreen({ onLessonGenerated, onNavigate }) {
+  const [lessonRevision, setLessonRevision] = useState(0);
+  const [fullLesson, setFullLesson] = useState(null);
   const progress = getProgressSummary();
-  const currentLesson = getCurrentLesson();
+  const lessonPointer = getCurrentLesson();
+  const currentLesson = fullLesson || lessonPointer;
   const lessonStats = getLessonStats(currentLesson);
   const completions = getLessonCompletions();
   const vocabularySrs = getVocabularySrsSummary();
@@ -51,6 +55,29 @@ export function TodayScreen({ onLessonGenerated, onNavigate }) {
   const streak = progress.streakDays || 0;
   const levelPercent = Math.min(Math.max(progress.xp || 0, 0), 100);
   const cardsAvailable = Array.isArray(currentLesson?.vocabulary) ? currentLesson.vocabulary.length : 0;
+
+  useEffect(() => {
+    let active = true;
+    getCurrentLessonFull().then((lesson) => {
+      if (active) setFullLesson(lesson || null);
+    });
+    function refreshLesson() {
+      getCurrentLessonFull().then((lesson) => {
+        if (active) {
+          setFullLesson(lesson || null);
+          setLessonRevision((value) => value + 1);
+        }
+      });
+    }
+    window.addEventListener('fluency:lesson-updated', refreshLesson);
+    window.addEventListener('focus', refreshLesson);
+    return () => {
+      active = false;
+      window.removeEventListener('fluency:lesson-updated', refreshLesson);
+      window.removeEventListener('focus', refreshLesson);
+    };
+  }, []);
+
   const tasks = baseTasks.map((task) => {
     if (task.id === 'lesson') return { ...task, status: lessonDoneToday ? 'Aula concluída hoje' : currentLesson ? getLessonTypeStatus(currentLesson) : 'Nenhuma aula gerada ainda', time: currentLesson ? `~${lessonStats.minutes} min` : '' };
     if (task.id === 'cards') return { ...task, status: cardsDoneToday ? 'Sessão real concluída hoje' : vocabularySrs.dueToday ? `${vocabularySrs.dueToday} revisão(ões) vencida(s)` : cardsAvailable ? `${cardsAvailable} cards da aula atual` : 'Nenhum card real disponível ainda', time: cardsDoneToday ? 'feito' : vocabularySrs.dueToday ? '~5 min' : cardsAvailable ? '~5 min' : '' };
@@ -60,7 +87,7 @@ export function TodayScreen({ onLessonGenerated, onNavigate }) {
   });
 
   return (
-    <section className="today-reference-screen">
+    <section className="today-reference-screen" data-lesson-revision={lessonRevision}>
       <section className="today-hero-card">
         <div className="today-hero-copy"><span>{getGreeting()}, Luis</span><h1><b>{completed || 0} de {totalTasks}</b> tarefas</h1><p>{completed >= totalTasks ? 'Dia completo. Excelente consistência.' : 'Continue para fechar sua rotina de inglês.'}</p></div>
         <div className="today-ring" style={{ '--today-progress': `${percent}%` }}><strong>{percent}%</strong></div>
