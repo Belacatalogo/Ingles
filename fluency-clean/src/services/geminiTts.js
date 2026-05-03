@@ -4,6 +4,7 @@ import { maskApiKey, normalizeLessonKeys } from './geminiLessons.js';
 import { speakText } from './tts.js';
 import { unlockAudioForIOS } from './audioUnlock.js';
 import { getCachedAudio, makeAudioCacheId, setCachedAudio } from './audioCache.js';
+import { buildPronunciationStyle, normalizeTtsTextForPronunciation } from './pronunciationGuard.js';
 
 const TTS_MODELS = [
   'gemini-2.5-flash-preview-tts',
@@ -59,8 +60,9 @@ function extractInlineAudio(data) {
 
 function buildTtsPrompt(text, style) {
   const cleanText = String(text ?? '').trim();
-  const cleanStyle = String(style ?? 'Natural, clear, friendly American English teacher voice. Moderate pace, excellent pronunciation, easy for Brazilian students to understand.').trim();
-  return `Read the following English learning text aloud. Style: ${cleanStyle}\n\nText:\n${cleanText}`;
+  const protectedText = normalizeTtsTextForPronunciation(cleanText);
+  const cleanStyle = buildPronunciationStyle(style, cleanText);
+  return `Read the following English learning text aloud exactly and naturally. Do not translate. Do not improvise. Keep English pronunciation clear and teacher-like. Style: ${cleanStyle}\n\nText:\n${protectedText}`;
 }
 
 function buildAttempts({ flashKeys, proKey }) {
@@ -134,13 +136,15 @@ export function stopGeminiTtsAudio() {
 
 export async function generateGeminiTtsAudio({ text, voiceName = DEFAULT_VOICE, style = '', fetcher = fetch, useCache = true, allowBrowserFallback = true } = {}) {
   const cleanText = String(text ?? '').trim();
+  const protectedText = normalizeTtsTextForPronunciation(cleanText);
+  const protectedStyle = buildPronunciationStyle(style, cleanText);
   diagnostics.log('Botão de áudio acionado: preparando Gemini TTS natural.', 'info');
 
   if (!cleanText) return { ok: false, audioUrl: '', source: 'none', error: 'Texto vazio.' };
 
   await unlockAudioForIOS();
 
-  const cacheId = makeAudioCacheId({ text: cleanText, voiceName, style });
+  const cacheId = makeAudioCacheId({ text: protectedText, voiceName, style: protectedStyle });
   if (useCache) {
     const cached = getCachedAudio(cacheId);
     if (cached?.base64) {
@@ -157,7 +161,7 @@ export async function generateGeminiTtsAudio({ text, voiceName = DEFAULT_VOICE, 
     const error = 'Nenhuma key de aulas disponível para Gemini TTS natural.';
     diagnostics.log(error, 'error');
     if (!allowBrowserFallback) return { ok: false, audioUrl: '', source: 'missing-keys', error };
-    const fallback = await playBrowserFallback(cleanText);
+    const fallback = await playBrowserFallback(protectedText);
     return fallback.ok ? fallback : { ...fallback, error: `${error} ${fallback.error || ''}`.trim() };
   }
 
@@ -170,7 +174,7 @@ export async function generateGeminiTtsAudio({ text, voiceName = DEFAULT_VOICE, 
 
     try {
       const inline = await callGeminiTts({ text: cleanText, key: attempt.key, model: attempt.model, voiceName, style, fetcher });
-      setCachedAudio(cacheId, { base64: inline.base64, mimeType: inline.mimeType, sampleRate: DEFAULT_SAMPLE_RATE, textPreview: cleanText });
+      setCachedAudio(cacheId, { base64: inline.base64, mimeType: inline.mimeType, sampleRate: DEFAULT_SAMPLE_RATE, textPreview: protectedText });
       const blob = pcmToWavBlob(base64ToUint8Array(inline.base64));
       diagnostics.log(`Áudio natural Gemini gerado com ${attempt.model}.`, 'info');
       return { ok: true, audioUrl: URL.createObjectURL(blob), source: 'gemini', error: null, cacheId };
@@ -185,7 +189,7 @@ export async function generateGeminiTtsAudio({ text, voiceName = DEFAULT_VOICE, 
   if (!allowBrowserFallback) return { ok: false, audioUrl: '', source: 'gemini-error', error };
 
   diagnostics.log('Usando TTS do navegador apenas como último recurso.', 'warn');
-  const fallback = await playBrowserFallback(cleanText);
+  const fallback = await playBrowserFallback(protectedText);
   return fallback.ok ? fallback : { ...fallback, error: `${error} ${fallback.error || ''}`.trim() };
 }
 
@@ -206,7 +210,7 @@ export async function playGeminiTtsAudio(options = {}) {
       diagnostics.log(`Plataforma/navegador bloqueou ou falhou ao tocar áudio natural Gemini: ${error?.message || error}.`, 'error');
       if (options.allowBrowserFallback === false) return { ...result, ok: false, source: 'gemini-playback-error', error: error?.message || String(error) };
       diagnostics.log('Usando TTS do navegador apenas como último recurso.', 'warn');
-      const fallback = await playBrowserFallback(options.text);
+      const fallback = await playBrowserFallback(normalizeTtsTextForPronunciation(options.text));
       if (!fallback.ok) return { ...fallback, error: `${error?.message || error}. ${fallback.error || ''}`.trim() };
       return fallback;
     }
