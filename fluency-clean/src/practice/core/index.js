@@ -4,4 +4,5 @@ export * from './PracticeQualityGate.js';
 export * from './PracticeAnswerChecker.js';
 export * from './PracticeSessionState.js';
 export * from './PracticeStateMachine.js';
+export * from './PracticeLeakDetector.js';
 export * from './PracticeBuilder.js';
