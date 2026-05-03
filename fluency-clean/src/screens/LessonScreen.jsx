@@ -71,6 +71,19 @@ function LessonRenderer({ lesson }) {
   );
 }
 
+function PracticeMount({ lesson, complementary = false }) {
+  if (!complementary) return <section className="lesson-practice-mount"><PracticeLauncher lesson={lesson} /></section>;
+
+  return (
+    <section className="lesson-practice-mount lesson-practice-complement-mount">
+      <Card eyebrow="Complemento" title="Prática Profunda complementar">
+        <p>Faça esta parte depois de terminar a aula Reading. Ela serve para reforçar vocabulário, detalhes e interpretação, não para substituir os exercícios da leitura.</p>
+      </Card>
+      <PracticeLauncher lesson={lesson} />
+    </section>
+  );
+}
+
 export function LessonScreen({ lessonRevision = 0, onNavigate }) {
   const [activeSection, setActiveSection] = useState(0);
   const [localRevision, setLocalRevision] = useState(0);
@@ -128,6 +141,7 @@ export function LessonScreen({ lessonRevision = 0, onNavigate }) {
   const lessonStats = useMemo(() => getLessonStats(lesson), [lesson]);
   const usingGenerated = Boolean(savedLesson) && !previewLesson;
   const usingPreview = Boolean(previewLesson);
+  const isReading = lesson?.type === 'reading';
   const currentProgress = Math.round(((activeSection + 1) / lessonSections.length) * 100);
   const meta = lesson?.generationMeta || null;
   const score = meta?.pedagogicalScore || lesson?.quality?.teacherScore || lesson?.quality?.pedagogicalScore || 0;
@@ -207,9 +221,11 @@ export function LessonScreen({ lessonRevision = 0, onNavigate }) {
 
       <section className="lesson-progress-strip"><div><span>Progresso da aula</span><strong>{activeSection + 1}/{lessonSections.length}</strong></div><i><b style={{ width: `${currentProgress}%` }} /></i></section>
 
-      <section className="lesson-practice-mount"><PracticeLauncher lesson={lesson} /></section>
+      {!isReading ? <PracticeMount lesson={lesson} /> : null}
 
       <LessonRenderer lesson={lesson} />
+
+      {isReading ? <PracticeMount lesson={lesson} complementary /> : null}
     </section>
   );
 }
