@@ -72,7 +72,6 @@ function resolveStatus(correct, previous = {}) {
   if (!correct) return SRS_STATUS.WEAK;
   if (nextStreak <= 1) return SRS_STATUS.LEARNING;
   if (nextStreak === 2) return SRS_STATUS.REVIEW;
-  if (nextStreak === 3) return SRS_STATUS.STRONG;
   return SRS_STATUS.MASTERED;
 }
 
