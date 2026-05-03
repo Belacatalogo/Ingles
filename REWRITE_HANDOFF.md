@@ -15,6 +15,65 @@ Branch estável protegida: `rewrite-fluency-clean`
 - Não mexer no backend Azure privado.
 - Manter tudo modular em `fluency-clean/src/`, `fluency-clean/public/` ou arquivos reais de configuração.
 
+## ESTADO ATUAL — READING
+
+### `BLOCO-READING-COMPLETE-RENDER-REVIEW-LAB` — IMPLEMENTADO
+
+- Reestruturou o render de Reading em `ReadingLesson.jsx`.
+- Adicionou texto principal dividido, vocabulário em contexto, perguntas com evidência textual, produção curta e render seguro.
+- Criou estilos modulares em `fluency-clean/src/styles/reading-complete-render-review.css`.
+- Importou o estilo em `main.jsx`.
+- Criou documentação em `fluency-clean/docs/BLOCO-READING-COMPLETE-RENDER-REVIEW-LAB.md`.
+
+### `BLOCO-READING-1 — Estrutura pedagógica fixa da aba Reading` — IMPLEMENTADO
+
+Decisão pedagógica:
+- Reading agora deve ser uma aula completa dentro da própria aba.
+- A Prática Profunda é complemento posterior, não substitui os exercícios internos da Reading.
+
+O que foi feito:
+- Adicionada ordem oficial da aula Reading:
+  1. Objetivo
+  2. Pré-leitura
+  3. Texto principal
+  4. Ideia geral
+  5. Vocabulário em contexto
+  6. Compreensão e evidência
+  7. Produção curta
+  8. Conclusão
+- Adicionada seção `Pré-leitura` antes do texto.
+- Separada a primeira pergunta como `Ideia geral`.
+- Mantidas as demais perguntas em `Compreensão com evidência textual`.
+- Criado componente interno `QuestionCard` para padronizar perguntas.
+- Adicionados rótulos de habilidade: ideia geral, detalhe, vocabulário, sequência, evidência e inferência.
+- Em `LessonScreen.jsx`, a Prática Profunda agora aparece depois da aula quando `lesson.type === 'reading'`, com card de complemento.
+- Para Grammar, Listening e Writing, a posição da Prática Profunda foi mantida como antes.
+- Criada documentação em `fluency-clean/docs/BLOCO-READING-1-ESTRUTURA-PEDAGOGICA-FIXA-LAB.md`.
+
+Arquivos alterados neste bloco:
+- `fluency-clean/src/lessons/ReadingLesson.jsx`
+- `fluency-clean/src/screens/LessonScreen.jsx`
+- `fluency-clean/src/styles/reading-complete-render-review.css`
+- `fluency-clean/docs/BLOCO-READING-1-ESTRUTURA-PEDAGOGICA-FIXA-LAB.md`
+
+Pendente validar no iPhone:
+- Botão `Testar Reading` abre a aula.
+- Fluxo oficial aparece no topo.
+- Pré-leitura aparece antes do texto.
+- Ideia geral aparece separada.
+- Compreensão/evidência aparece depois do vocabulário.
+- Produção curta e conclusão continuam funcionando.
+- Prática Profunda aparece abaixo da aula Reading como complemento.
+
+### Próximo bloco recomendado
+
+`BLOCO-READING-2 — Política por nível A1→C1`
+
+Objetivo:
+- Criar uma política formal de Reading por nível do aluno.
+- Definir tamanho do texto, idioma das perguntas, tipos de texto, habilidades permitidas e suporte em português para A1, A2, B1, B2 e C1.
+- Não alterar ainda a geração IA profunda antes da política estar pronta.
+
 ## ALERTA IMPORTANTE — BLOCO QUE FOI ESQUECIDO NA LISTA ANTERIOR
 
 O bloco de continuação do sistema de trilha/vocabulário estava faltando na lista anterior. Ele deve ficar entre Reading/Speaking e a correção final da prática profunda.
@@ -61,10 +120,19 @@ Critérios:
 
 ## ORDEM DEFINIDA PELO USUÁRIO PARA OS PRÓXIMOS CHATS/BLOCOS
 
-1. `BLOCO-READING-COMPLETE-RENDER-REVIEW-LAB`
-2. `BLOCO-SPEAKING-COMPLETE-RENDER-REVIEW-LAB`
-3. `BLOCO-VOCAB-TRAIL-CONTINUATION-LAB`
-4. `BLOCO-PRACTICE-DEEP-SYSTEM-CORRECTION-LAB` — aguardar o usuário mandar o modelo antes de iniciar
+Plano atual de Reading em andamento:
+1. `BLOCO-READING-2 — Política por nível A1→C1`
+2. `BLOCO-READING-3 — Contrato JSON próprio de Reading`
+3. `BLOCO-READING-4 — Geração da aula Reading por habilidade`
+4. `BLOCO-READING-5 — Render por etapas`
+5. `BLOCO-READING-6 — Exercícios internos da aba Reading`
+6. `BLOCO-READING-7 — Evidência textual inteligente`
+7. `BLOCO-READING-8 — Quality gate Reading`
+
+Depois retomar a ordem macro:
+- `BLOCO-SPEAKING-COMPLETE-RENDER-REVIEW-LAB`
+- `BLOCO-VOCAB-TRAIL-CONTINUATION-LAB`
+- `BLOCO-PRACTICE-DEEP-SYSTEM-CORRECTION-LAB` — aguardar o usuário mandar o modelo antes de iniciar
 
 ## BLOCOS PENDENTES POR ORDEM DE IMPORTÂNCIA
 
@@ -82,25 +150,9 @@ Checklist:
 - Número de exercícios da aula deve bater com a prática profunda.
 - Minutos da tela Hoje e tela Aula devem bater ou ficar coerentes.
 
-### 2. `BLOCO-READING-COMPLETE-RENDER-REVIEW-LAB`
+### 2. `BLOCO-SPEAKING-COMPLETE-RENDER-REVIEW-LAB`
 
-Status: próximo bloco de desenvolvimento real.
-
-Objetivo:
-- Reestruturar Reading completamente, com padrão semelhante ao cuidado aplicado em Grammar e Listening.
-
-Escopo:
-- Revisar `ReadingLesson.jsx` e estilos relacionados.
-- Criar estrutura mobile-first, limpa e premium.
-- Separar texto principal, vocabulário em contexto, perguntas e evidência textual.
-- Melhorar renderização de textos longos.
-- Criar proteção contra perguntas genéricas.
-- Garantir que Reading treine leitura real.
-- Integrar corretamente com prática profunda sem vazar respostas.
-
-### 3. `BLOCO-SPEAKING-COMPLETE-RENDER-REVIEW-LAB`
-
-Status: deve vir imediatamente depois do Reading.
+Status: deve vir depois da sequência atual de Reading, ou quando o usuário mandar avançar.
 
 Objetivo:
 - Revisar Speaking de ponta a ponta, mantendo backend Azure privado intocado.
@@ -113,7 +165,7 @@ Escopo:
 - Manter integração com Azure sem alterar backend.
 - Evitar tela poluída e botões redundantes.
 
-### 4. `BLOCO-VOCAB-TRAIL-CONTINUATION-LAB`
+### 3. `BLOCO-VOCAB-TRAIL-CONTINUATION-LAB`
 
 Status: pendente e agora recolocado na ordem correta.
 
@@ -122,7 +174,7 @@ Objetivo:
 - Finalizar a separação entre trilha e flashcards da aula.
 - Desenvolver progressão por bolhas, revisão espaçada e tarefas do dia.
 
-### 5. `BLOCO-PRACTICE-DEEP-SYSTEM-CORRECTION-LAB`
+### 4. `BLOCO-PRACTICE-DEEP-SYSTEM-CORRECTION-LAB`
 
 Status: aguardar modelo do usuário.
 
@@ -137,14 +189,14 @@ Escopo provável:
 - Garantir que cada tipo de aula tenha exercícios próprios:
   - Grammar: estrutura, correção, transformação, produção curta.
   - Listening: escuta, ditado, quem falou, compreensão auditiva, shadowing.
-  - Reading: ideia principal, detalhes, evidência textual, vocabulário em contexto.
+  - Reading: complemento posterior à aula Reading, reforçando ideia principal, detalhes, evidência textual, vocabulário em contexto e interpretação.
   - Speaking: repetição, resposta oral curta, mini diálogo, fluidez.
   - Writing: frase guiada, ordem de palavras, correção, reescrita.
 - Remover exercícios genéricos demais.
 - Impedir respostas vazadas.
 - Adaptar dificuldade ao nível A1.
 
-### 6. `BLOCO-PRACTICE-RENDER-SAFETY-GATE-LAB`
+### 5. `BLOCO-PRACTICE-RENDER-SAFETY-GATE-LAB`
 
 Status: depois da correção da prática profunda.
 
@@ -158,7 +210,7 @@ Escopo:
 - Converter exercício quebrado em fallback simples.
 - Nunca deixar exercício quebrado travar a aula.
 
-### 7. `BLOCO-LISTENING-FINAL-APPROVAL-LAB`
+### 6. `BLOCO-LISTENING-FINAL-APPROVAL-LAB`
 
 Status: Listening parece funcional, mas ainda precisa aprovação final do usuário.
 
@@ -170,7 +222,7 @@ Checklist:
 - Pronúncia está aceitável com `pronunciationGuard.js`.
 - UI não está poluída.
 
-### 8. `BLOCO-TEMP-PREVIEW-CLEANUP-LAB`
+### 7. `BLOCO-TEMP-PREVIEW-CLEANUP-LAB`
 
 Status: futuro, somente depois que Reading, Listening e Speaking estiverem aprovados.
 
@@ -182,7 +234,7 @@ Objetivo:
   - `Testar Reading`
   - `Abrir Speaking`
 
-### 9. `BLOCO-LAB-PROMOTION-PREP-LAB`
+### 8. `BLOCO-LAB-PROMOTION-PREP-LAB`
 
 Status: futuro.
 
@@ -252,4 +304,4 @@ Status:
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. Não mexa em `main`, `rewrite-fluency-clean`, `bundle.js` ou backend Azure privado. O plano definido pelo usuário é: primeiro fazer `BLOCO-READING-COMPLETE-RENDER-REVIEW-LAB`, depois `BLOCO-SPEAKING-COMPLETE-RENDER-REVIEW-LAB`, depois `BLOCO-VOCAB-TRAIL-CONTINUATION-LAB`, e depois aguardar o usuário mandar um modelo para `BLOCO-PRACTICE-DEEP-SYSTEM-CORRECTION-LAB`. Antes de começar, validar se o hotfix de Cards removeu o botão duplicado de Flashcards da aula dentro de Tópicos por nível."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. Não mexa em `main`, `rewrite-fluency-clean`, `bundle.js` ou backend Azure privado. Reading agora está sendo reconstruída como aula completa dentro da própria aba. A Prática Profunda em Reading é complemento posterior, não substitui a aula. O último bloco implementado foi `BLOCO-READING-1 — Estrutura pedagógica fixa da aba Reading`. O próximo bloco recomendado é `BLOCO-READING-2 — Política por nível A1→C1`."
