@@ -15,6 +15,13 @@ Branch estável protegida: `rewrite-fluency-clean`
 - Não mexer no backend Azure privado.
 - Manter tudo modular em `fluency-clean/src/`, `fluency-clean/public/` ou arquivos reais de configuração.
 
+## DIRETRIZ DE UI — NÃO POLUIR A AULA
+
+- Regras internas, contrato JSON, política pedagógica, diagnóstico técnico e detalhes de implementação não devem aparecer como cards grandes dentro da aula.
+- A aula deve mostrar apenas o que ajuda o aluno a estudar.
+- Informações técnicas devem ficar no código, handoff, docs ou diagnóstico apropriado.
+- Quando for necessário mostrar segurança/estado, usar texto curto e discreto.
+
 ## ESTADO ATUAL — READING
 
 ### `BLOCO-READING-COMPLETE-RENDER-REVIEW-LAB` — IMPLEMENTADO
@@ -82,25 +89,27 @@ O que foi feito:
   - produção final esperada;
   - tom da UI/aula.
 - `ReadingLesson.jsx` passou a importar `getReadingLevelPolicy`.
-- Adicionado card visual `Plano do nível` dentro da aula Reading.
-- A produção curta agora usa a instrução definida pela política do nível.
-- O `Render seguro` passou a mostrar o nível normalizado.
+- A produção curta usa internamente a instrução definida pela política do nível.
+- O `Render seguro` foi compactado para não poluir a aula.
 - Criada documentação em `fluency-clean/docs/BLOCO-READING-2-POLITICA-POR-NIVEL-A1-C1-LAB.md`.
 
-Arquivos alterados neste bloco:
-- `fluency-clean/src/reading/readingLevelPolicy.js`
-- `fluency-clean/src/lessons/ReadingLesson.jsx`
-- `fluency-clean/src/styles/reading-complete-render-review.css`
-- `fluency-clean/docs/BLOCO-READING-2-POLITICA-POR-NIVEL-A1-C1-LAB.md`
+### `HOTFIX-READING-2 — Remover poluição técnica da aula` — IMPLEMENTADO
+
+Motivo:
+- O card visual `Plano do nível` deixava a aula poluída e mostrava informação interna que não precisa aparecer para o aluno.
+
+O que foi feito:
+- Removido o card `Plano do nível` de `ReadingLesson.jsx`.
+- Mantida a política por nível funcionando internamente.
+- Mantida a produção final baseada no nível.
+- Compactado o card lateral de segurança para `Aula segura`.
+- Removidos estilos não usados de `reading-complete-render-review.css`.
 
 Pendente validar no iPhone:
 - Botão `Testar Reading` abre a aula.
-- Card `Plano do nível` aparece.
-- Preview A1 mostra `A1 · Leitura guiada inicial`.
-- Texto ideal aparece como 60–150 palavras.
-- Idioma das perguntas aparece como majoritariamente português para A1.
-- Produção curta usa a instrução do nível.
-- Fluxo oficial da Reading continua funcionando.
+- Não aparece mais o card `Plano do nível`.
+- A aula continua mostrando apenas conteúdo útil: objetivo, fluxo, pré-leitura, texto, ideia geral, vocabulário, compreensão, produção e complemento.
+- O card técnico lateral está discreto e não domina a tela.
 
 ### Próximo bloco recomendado
 
@@ -110,6 +119,7 @@ Objetivo:
 - Criar contrato próprio de Reading com campos como `readingText`, `textGenre`, `preReading`, `readingQuestions`, `evidenceTasks` e `postReadingPrompts`.
 - Manter compatibilidade com aulas antigas que ainda usam `listeningText`.
 - Preparar o gerador para parar de tratar Reading como Listening.
+- Importante: o contrato deve ser interno. Não renderizar cards técnicos do contrato dentro da aula.
 
 ## ALERTA IMPORTANTE — BLOCO QUE FOI ESQUECIDO NA LISTA ANTERIOR
 
@@ -340,4 +350,4 @@ Status:
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. Não mexa em `main`, `rewrite-fluency-clean`, `bundle.js` ou backend Azure privado. Reading agora está sendo reconstruída como aula completa dentro da própria aba. A Prática Profunda em Reading é complemento posterior, não substitui a aula. O último bloco implementado foi `BLOCO-READING-2 — Política por nível A1→C1`. O próximo bloco recomendado é `BLOCO-READING-3 — Contrato JSON próprio de Reading`."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. Não mexa em `main`, `rewrite-fluency-clean`, `bundle.js` ou backend Azure privado. Reading agora está sendo reconstruída como aula completa dentro da própria aba. A Prática Profunda em Reading é complemento posterior, não substitui a aula. O último ajuste foi `HOTFIX-READING-2 — Remover poluição técnica da aula`, que removeu o card visual Plano do nível e manteve a política por nível internamente. O próximo bloco recomendado é `BLOCO-READING-3 — Contrato JSON próprio de Reading`."
