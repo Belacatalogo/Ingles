@@ -1,3 +1,4 @@
+import { applyReadingQualityGate } from './readingQualityGate.js';
 import { buildReadingPolicyPrompt, getReadingLevelPolicy } from './readingLevelPolicy.js';
 
 export const READING_JSON_CONTRACT_VERSION = 'reading-contract-v1';
@@ -180,7 +181,7 @@ function getLegacyQuestions(rawLesson) {
           : [];
 }
 
-export function normalizeReadingLessonContract(rawLesson = {}) {
+function buildNormalizedReadingLesson(rawLesson = {}) {
   const policy = getReadingLevelPolicy(rawLesson?.level || rawLesson?.cefr || 'A1');
   const readingText = inferReadingText(rawLesson);
   const readingQuestions = getLegacyQuestions(rawLesson).map(normalizeQuestion).filter((item) => item.question && item.answer);
@@ -215,6 +216,10 @@ export function normalizeReadingLessonContract(rawLesson = {}) {
       usedListeningTextFallback: !clean(rawLesson?.readingText || rawLesson?.reading_text || rawLesson?.mainText || rawLesson?.main_text) && Boolean(clean(rawLesson?.listeningText || rawLesson?.transcript)),
     },
   };
+}
+
+export function normalizeReadingLessonContract(rawLesson = {}) {
+  return applyReadingQualityGate(buildNormalizedReadingLesson(rawLesson));
 }
 
 export function getReadingRequiredKeys() {
