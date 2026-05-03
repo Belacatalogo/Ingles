@@ -25,6 +25,7 @@ import './styles/practice-fullscreen.css';
 import './styles/grammar-examples-hotfix.css';
 import './styles/hotfix-ui-consistency.css';
 import './styles/reading-complete-render-review.css';
+import './styles/lesson-type-stepper-real.css';
 
 const rootElement = document.getElementById('root');
 const root = createRoot(rootElement);
