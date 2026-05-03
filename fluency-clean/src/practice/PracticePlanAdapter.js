@@ -178,6 +178,7 @@ export function evaluatePracticeAnswer(item, value) {
       hintWord: result.hintWord || '',
       loseLife: result.loseLife,
       expected: result.expected || item.answer,
+      touchedMasteryTags: Array.isArray(result.touchedMasteryTags) ? result.touchedMasteryTags : [],
     };
   }
 
@@ -190,6 +191,7 @@ export function evaluatePracticeAnswer(item, value) {
     hintWord: '',
     loseLife: true,
     expected: item?.answer || '',
+    touchedMasteryTags: [],
   };
 }
 
