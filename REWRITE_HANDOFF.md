@@ -25,9 +25,7 @@ Branch estável protegida: `rewrite-fluency-clean`
 ## DIRETRIZ DE UI APROVADA — STEPPER REAL
 
 - O stepper real da Reading foi aprovado visualmente pelo usuário.
-- Esse padrão deve ser portado depois para:
-  1. `BLOCO-GRAMMAR-STEPPER-REAL-LAB`
-  2. `BLOCO-LISTENING-STEPPER-REAL-LAB`
+- O padrão foi portado para Grammar e Listening.
 - A adaptação deve respeitar a natureza de cada aula.
 - Grammar não deve virar jogo; deve ser sério, claro e guiado.
 - Listening deve manter primeira escuta sem leitura e controles de áudio limpos.
@@ -113,25 +111,12 @@ Branch estável protegida: `rewrite-fluency-clean`
 
 ### `HOTFIX-READING-6 — Não revelar gabarito dos exercícios internos` — IMPLEMENTADO
 
-Motivo:
-- Usuário validou visualmente o bloco, mas apontou que verdadeiro/falso, evidência e resposta curta estavam entregando resposta antes da tentativa.
-
-O que foi feito:
 - Em `reading-complete-render-review.css`, o gabarito dos exercícios internos deixou de aparecer imediatamente.
 - Em verdadeiro/falso, resposta/evidência ficam ocultas por padrão e aparece uma orientação curta para pensar primeiro.
 - Em exercícios digitados, apoio/modelo/evidência ficam ocultos por padrão e aparecem após interação/foco/digitação.
 - Não foi adicionado card técnico.
-- Não foi mexido em `bundle.js`, `main`, `rewrite-fluency-clean` ou backend Azure privado.
 
-Pendente validar no iPhone:
-- Usar `Testar Reading`.
-- Confirmar que verdadeiro/falso não mostra mais “Resposta esperada” imediatamente.
-- Confirmar que copiar evidência não mostra o trecho de apoio antes da interação.
-- Confirmar que resposta curta não mostra modelo/evidência antes da interação.
-- Confirmar que o teclado continua abrindo nos campos.
-- Confirmar que o stepper continua funcionando.
-
-### Próximo bloco recomendado
+### Próximo bloco Reading recomendado
 
 `BLOCO-READING-7 — Evidência textual inteligente`
 
@@ -141,15 +126,82 @@ Objetivo:
 - Fazer botão para ir ao trecho do texto que prova a resposta.
 - Manter tudo limpo e sem poluir a aula.
 
-## PRÓXIMOS BLOCOS DE UI APROVADA
+## ESTADO ATUAL — GRAMMAR
 
-1. `BLOCO-GRAMMAR-STEPPER-REAL-LAB`
-   - Portar o padrão de stepper real aprovado na Reading para a aba Grammar.
-   - Adaptar etapas para gramática: objetivo, explicação, exemplos, prática guiada, transformação/correção, produção curta e conclusão.
+### `BLOCO-GRAMMAR-STEPPER-REAL-LAB` — IMPLEMENTADO
 
-2. `BLOCO-LISTENING-STEPPER-REAL-LAB`
-   - Portar o padrão de stepper real para Listening.
-   - Adaptar etapas para escuta: preparação, primeira escuta sem leitura, compreensão auditiva, abrir texto/transcrição, vocabulário, shadowing, produção/resposta e conclusão.
+- Portado o padrão de stepper real aprovado na Reading para `GrammarLesson.jsx`.
+- Adaptação feita para aula séria de gramática, sem gamificar.
+- Criado `grammarFlowSteps` com 7 etapas:
+  1. Começar
+  2. Regra
+  3. Exemplos
+  4. Prática
+  5. Correção
+  6. Produção
+  7. Concluir
+- Criado estado `activeStep`.
+- Criado componente `GrammarStepper`.
+- Cada etapa tem `id` e scroll suave.
+- Mantido render seguro atual de Grammar:
+  - `normalizeSections`;
+  - `collectProfessorExamples`;
+  - `SectionContent`;
+  - `ExampleCard`.
+- Adicionadas seções próprias:
+  - exemplos com padrão;
+  - prática guiada;
+  - correção e transformação;
+  - conclusão.
+- Criado CSS compartilhado em `fluency-clean/src/styles/lesson-type-stepper-real.css`.
+- Importado CSS em `main.jsx`.
+- Criada documentação em `fluency-clean/docs/BLOCO-GRAMMAR-STEPPER-REAL-LAB.md`.
+
+Pendente validar no iPhone:
+- Abrir aula Grammar real.
+- Confirmar stepper com 7 etapas.
+- Confirmar scroll horizontal no iPhone.
+- Confirmar que a aula continua séria.
+- Confirmar que exemplos continuam em cards.
+- Confirmar prática guiada/correção/produção.
+- Confirmar salvar e concluir.
+
+## ESTADO ATUAL — LISTENING
+
+### `BLOCO-LISTENING-STEPPER-REAL-LAB` — IMPLEMENTADO
+
+- Portado o padrão de stepper real para `ListeningLessonClean.jsx`.
+- Adaptação feita para aula de escuta, preservando primeira escuta sem leitura.
+- Criado `listeningFlowSteps` com 8 etapas:
+  1. Preparar
+  2. 1ª escuta
+  3. Compreensão
+  4. Texto
+  5. Vocabulário
+  6. Shadowing
+  7. Produção
+  8. Concluir
+- Criado estado `activeStep`.
+- Criado componente `ListeningStepper`.
+- Cada etapa aponta para parte real da aula.
+- Clicar na etapa abre a seção correspondente quando necessário.
+- Ao iniciar áudio, etapa ativa vira `1ª escuta`.
+- Ao concluir, etapa ativa vira `Concluir`.
+- Mantido sistema existente:
+  - áudio natural;
+  - fallback;
+  - diálogo multi-voz;
+  - transcrição controlada;
+  - shadowing real.
+- Criada documentação em `fluency-clean/docs/BLOCO-LISTENING-STEPPER-REAL-LAB.md`.
+
+Pendente validar no iPhone:
+- Usar `Testar Listening`.
+- Confirmar stepper com 8 etapas.
+- Confirmar scroll horizontal no iPhone.
+- Confirmar que primeira escuta continua sem leitura.
+- Confirmar que transcrição continua fechada no início.
+- Confirmar áudio, diálogo, vocabulário, shadowing e conclusão.
 
 ## ALERTA IMPORTANTE — BLOCO QUE FOI ESQUECIDO NA LISTA ANTERIOR
 
@@ -163,24 +215,14 @@ Objetivo:
   1. `Trilha de vocabulário`: percurso longo por bolhas/tópicos/níveis;
   2. `Flashcards da aula`: revisão adaptativa da aula atual, acessada pelo botão superior.
 
-Escopo recomendado:
-- Validar visual da aba Cartas no iPhone.
-- Remover qualquer duplicação de `Flashcards da aula` dentro da lista da trilha.
-- Manter apenas o botão superior `Flashcards da aula` ao lado de `Trilha de vocabulário`.
-- Continuar construção da trilha com bolhas por tópico, desbloqueio progressivo, níveis por bolha, revisão espaçada, progresso real e integração com tarefas do dia.
-- Melhorar a tela de estudo da bolha com palavras novas, tradução visual, áudio, exercícios de fixação, conclusão da bolha e registro no progresso.
-- Garantir que a trilha não dependa da aula do dia.
-- Garantir que os flashcards da aula não se misturem com a trilha.
-
 ## ORDEM DEFINIDA PELO USUÁRIO PARA OS PRÓXIMOS CHATS/BLOCOS
 
-Plano atual de Reading em andamento:
-1. `BLOCO-READING-7 — Evidência textual inteligente`
-2. `BLOCO-READING-8 — Quality gate Reading`
-
-Depois:
-- `BLOCO-GRAMMAR-STEPPER-REAL-LAB`
-- `BLOCO-LISTENING-STEPPER-REAL-LAB`
+Próximos blocos:
+1. Validar `BLOCO-GRAMMAR-STEPPER-REAL-LAB` no iPhone.
+2. Validar `BLOCO-LISTENING-STEPPER-REAL-LAB` no iPhone.
+3. Retomar Reading:
+   - `BLOCO-READING-7 — Evidência textual inteligente`
+   - `BLOCO-READING-8 — Quality gate Reading`
 
 Depois retomar a ordem macro:
 - `BLOCO-SPEAKING-COMPLETE-RENDER-REVIEW-LAB`
@@ -201,4 +243,4 @@ Depois retomar a ordem macro:
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. Não mexa em `main`, `rewrite-fluency-clean`, `bundle.js` ou backend Azure privado. O último ajuste foi `HOTFIX-READING-6 — Não revelar gabarito dos exercícios internos`. O usuário aprovou o stepper real da Reading e pediu para portar depois para Grammar e Listening. Próximo bloco recomendado: `BLOCO-READING-7 — Evidência textual inteligente`."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. Não mexa em `main`, `rewrite-fluency-clean`, `bundle.js` ou backend Azure privado. Os últimos blocos implementados foram `BLOCO-GRAMMAR-STEPPER-REAL-LAB` e `BLOCO-LISTENING-STEPPER-REAL-LAB`. Validar no iPhone e depois retomar `BLOCO-READING-7 — Evidência textual inteligente`."
