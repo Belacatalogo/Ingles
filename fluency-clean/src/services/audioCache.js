@@ -3,7 +3,8 @@ import { storage } from './storage.js';
 
 const AUDIO_CACHE_INDEX_KEY = 'audio.cache.index';
 const AUDIO_CACHE_ITEM_PREFIX = 'audio.cache.item.';
-const MAX_AUDIO_CACHE_ITEMS = 40;
+const MAX_AUDIO_CACHE_ITEMS = 160;
+const QUOTA_RECOVERY_KEEP_ITEMS = 48;
 
 export function hashAudioText(value) {
   const text = String(value ?? '');
@@ -27,6 +28,10 @@ function normalizeIndex(value) {
   return Array.isArray(value) ? value.filter((item) => item?.id) : [];
 }
 
+function sortByRecent(index) {
+  return normalizeIndex(index).sort((a, b) => Number(b.lastUsedAt || b.savedAt || 0) - Number(a.lastUsedAt || a.savedAt || 0));
+}
+
 export function getAudioCacheIndex() {
   return normalizeIndex(storage.get(AUDIO_CACHE_INDEX_KEY, []));
 }
@@ -38,12 +43,22 @@ export function getAudioCacheStats() {
 }
 
 function pruneAudioCache(nextIndex) {
-  const ordered = normalizeIndex(nextIndex).sort((a, b) => Number(b.lastUsedAt || b.savedAt || 0) - Number(a.lastUsedAt || a.savedAt || 0));
+  const ordered = sortByRecent(nextIndex);
   const keep = ordered.slice(0, MAX_AUDIO_CACHE_ITEMS);
   const remove = ordered.slice(MAX_AUDIO_CACHE_ITEMS);
   for (const item of remove) storage.remove(itemKey(item.id));
   storage.set(AUDIO_CACHE_INDEX_KEY, keep);
   if (remove.length) diagnostics.log(`Cache de áudio: ${remove.length} áudio(s) antigo(s) removido(s).`, 'info');
+  return keep;
+}
+
+function forcePruneAudioCache(keepCount = QUOTA_RECOVERY_KEEP_ITEMS) {
+  const ordered = sortByRecent(getAudioCacheIndex());
+  const keep = ordered.slice(0, keepCount);
+  const remove = ordered.slice(keepCount);
+  for (const item of remove) storage.remove(itemKey(item.id));
+  storage.set(AUDIO_CACHE_INDEX_KEY, keep);
+  if (remove.length) diagnostics.log(`Cache de áudio: ${remove.length} áudio(s) removido(s) para liberar espaço.`, 'warn');
   return keep;
 }
 
@@ -73,9 +88,15 @@ export function setCachedAudio(id, payload = {}) {
     bytes: Math.ceil(String(payload.base64).length * 0.75),
   };
 
-  const saved = storage.set(itemKey(id), item);
+  let saved = storage.set(itemKey(id), item);
   if (!saved) {
-    diagnostics.log('Cache de áudio cheio ou indisponível. Reproduzindo sem salvar.', 'warn');
+    diagnostics.log('Cache de áudio cheio. Limpando áudios antigos e tentando salvar novamente.', 'warn');
+    forcePruneAudioCache();
+    saved = storage.set(itemKey(id), item);
+  }
+
+  if (!saved) {
+    diagnostics.log('Cache de áudio indisponível para este arquivo. Reproduzindo sem salvar.', 'warn');
     return false;
   }
 
