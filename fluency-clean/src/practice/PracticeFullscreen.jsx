@@ -10,8 +10,11 @@ import { PracticeIntro } from './components/PracticeIntro.jsx';
 import { SpeakExercise } from './components/SpeakExercise.jsx';
 import { TextExercise } from './components/TextExercise.jsx';
 import { WordBankExercise } from './components/WordBankExercise.jsx';
+import { PRACTICE_EVENTS, PRACTICE_STATES, usePracticeStateMachine } from './core/PracticeStateMachine.js';
 
 const STARTING_LIVES = 5;
+const CHECKING_DELAY_MS = 80;
+const TRANSITION_DELAY_MS = 140;
 
 function getSpeechRecognition() {
   return window.SpeechRecognition || window.webkitSpeechRecognition || null;
@@ -53,9 +56,20 @@ function buildStablePracticeItems(lesson) {
   }));
 }
 
+function isPracticeActive(state) {
+  return [
+    PRACTICE_STATES.PRESENTING,
+    PRACTICE_STATES.ANSWERING,
+    PRACTICE_STATES.CHECKING,
+    PRACTICE_STATES.FEEDBACK,
+    PRACTICE_STATES.TRANSITIONING,
+    PRACTICE_STATES.SAVING,
+  ].includes(state);
+}
+
 export function PracticeFullscreen({ lesson, open, onClose, onComplete }) {
+  const { state, dispatch, can, reset } = usePracticeStateMachine();
   const [sessionItems, setSessionItems] = useState([]);
-  const [started, setStarted] = useState(false);
   const [index, setIndex] = useState(0);
   const [value, setValue] = useState('');
   const [wordBankValue, setWordBankValue] = useState([]);
@@ -69,8 +83,9 @@ export function PracticeFullscreen({ lesson, open, onClose, onComplete }) {
 
   useEffect(() => {
     if (!open) return;
-    setSessionItems(buildStablePracticeItems(lesson));
-    setStarted(false);
+
+    const nextItems = buildStablePracticeItems(lesson);
+    setSessionItems(nextItems);
     setIndex(0);
     setValue('');
     setWordBankValue([]);
@@ -79,15 +94,26 @@ export function PracticeFullscreen({ lesson, open, onClose, onComplete }) {
     setHintVisible(false);
     setLives(STARTING_LIVES);
     setReviewMode(false);
-  }, [open, lessonKey]);
+    reset({ lessonKey, lessonId: lesson?.id || null, total: nextItems.length });
+    dispatch(PRACTICE_EVENTS.PLAN_LOADED, { lessonKey, lessonId: lesson?.id || null, total: nextItems.length });
+  }, [open, lessonKey, lesson, reset, dispatch]);
 
   const items = sessionItems;
   const current = items[index];
-  const done = open && items.length > 0 && index >= items.length;
+  const started = isPracticeActive(state) || state === PRACTICE_STATES.DONE;
+  const done = state === PRACTICE_STATES.DONE;
+  const checking = state === PRACTICE_STATES.CHECKING;
+  const visibleFeedback = state === PRACTICE_STATES.FEEDBACK ? feedback : null;
   const correctCount = results.filter((result) => result.correct).length;
   const mistakeCount = results.filter((result) => !result.correct).length;
   const progress = items.length ? Math.round((Math.min(index, items.length) / items.length) * 100) : 0;
-  const skillLabel = useMemo(() => getPracticeSkillLabel(lesson), [lessonKey]);
+  const skillLabel = useMemo(() => getPracticeSkillLabel(lesson), [lessonKey, lesson]);
+
+  useEffect(() => {
+    if (!open || state !== PRACTICE_STATES.SAVING) return;
+    onComplete?.({ total: items.length, correct: correctCount, mistakes: mistakeCount, lives, reviewMode, results });
+    dispatch(PRACTICE_EVENTS.SAVE_DONE, { savedAt: Date.now() });
+  }, [open, state, items.length, correctCount, mistakeCount, lives, reviewMode, results, onComplete, dispatch]);
 
   if (!open) return null;
 
@@ -105,15 +131,13 @@ export function PracticeFullscreen({ lesson, open, onClose, onComplete }) {
     setListening(false);
   }
 
-  function submit(nextValue = value) {
-    if (!current || feedback) return;
-    const finalValue = current.type === 'wordBank' ? wordBankValue.join(' ') : nextValue;
-    const evaluation = evaluatePracticeAnswer(current, finalValue);
-    if (evaluation.empty) return;
+  function commitEvaluation(evaluation, finalValue) {
     if (evaluation.retryable) {
       setFeedback({ ...evaluation, near: true, message: 'Quase certo. Ajuste só um detalhe.', lifeLost: false });
+      dispatch(PRACTICE_EVENTS.CHECK_DONE, { answer: finalValue, retryable: true });
       return;
     }
+
     const lifeLost = evaluation.loseLife ?? !evaluation.correct;
     let nextLives = lives;
     if (lifeLost) {
@@ -121,6 +145,7 @@ export function PracticeFullscreen({ lesson, open, onClose, onComplete }) {
       setLives(nextLives);
       if (nextLives <= 0) setReviewMode(true);
     }
+
     setFeedback({
       ...evaluation,
       lifeLost,
@@ -135,30 +160,83 @@ export function PracticeFullscreen({ lesson, open, onClose, onComplete }) {
       lifeLost,
       sourceEngine: current.sourceEngine,
     }]);
+    dispatch(PRACTICE_EVENTS.CHECK_DONE, { answer: finalValue, correct: evaluation.correct, lifeLost });
+  }
+
+  function submit(nextValue = value) {
+    if (!current || !can(PRACTICE_EVENTS.USER_SUBMITTED)) return;
+    const finalValue = current.type === 'wordBank' ? wordBankValue.join(' ') : nextValue;
+    const evaluation = evaluatePracticeAnswer(current, finalValue);
+    if (evaluation.empty) return;
+
+    const submitted = dispatch(PRACTICE_EVENTS.USER_SUBMITTED, { answer: finalValue, questionId: current.id });
+    if (!submitted.ok) return;
+
+    window.setTimeout(() => {
+      commitEvaluation(evaluation, finalValue);
+    }, CHECKING_DELAY_MS);
   }
 
   function continueNext() {
-    setIndex((currentIndex) => currentIndex + 1);
-    setValue('');
-    setWordBankValue([]);
-    setFeedback(null);
-    setHintVisible(false);
+    if (state !== PRACTICE_STATES.FEEDBACK) return;
+
+    if (index + 1 >= items.length) {
+      dispatch(PRACTICE_EVENTS.ALL_DONE, { completedAt: Date.now() });
+      return;
+    }
+
+    const moved = dispatch(PRACTICE_EVENTS.NEXT, { fromIndex: index, toIndex: index + 1 });
+    if (!moved.ok) return;
+
+    window.setTimeout(() => {
+      setIndex((currentIndex) => currentIndex + 1);
+      setValue('');
+      setWordBankValue([]);
+      setFeedback(null);
+      setHintVisible(false);
+      dispatch(PRACTICE_EVENTS.PLAN_LOADED, { currentIndex: index + 1 });
+    }, TRANSITION_DELAY_MS);
   }
 
   function retry() {
+    if (state !== PRACTICE_STATES.FEEDBACK || !feedback?.near) return;
     setFeedback(null);
     setHintVisible(false);
+    dispatch(PRACTICE_EVENTS.NEXT, { retry: true, currentIndex: index });
+    window.setTimeout(() => {
+      dispatch(PRACTICE_EVENTS.PLAN_LOADED, { currentIndex: index });
+    }, TRANSITION_DELAY_MS);
+  }
+
+  function markInteracted(payload = {}) {
+    if (state === PRACTICE_STATES.PRESENTING && can(PRACTICE_EVENTS.USER_INTERACTED)) {
+      dispatch(PRACTICE_EVENTS.USER_INTERACTED, payload);
+    }
   }
 
   function selectOption(option) {
     setValue(option);
-    submit(option);
+    markInteracted({ interaction: 'choice', questionId: current?.id });
+    window.setTimeout(() => submit(option), 0);
+  }
+
+  function changeText(nextValue) {
+    setValue(nextValue);
+    markInteracted({ interaction: 'text', questionId: current?.id });
+  }
+
+  function changeWordBank(nextValue) {
+    setWordBankValue(nextValue);
+    markInteracted({ interaction: 'word_bank', questionId: current?.id });
   }
 
   function speak() {
+    markInteracted({ interaction: 'speech', questionId: current?.id });
     const SpeechRecognition = getSpeechRecognition();
     if (!SpeechRecognition) {
       setFeedback({ correct: false, empty: true, message: 'Digite o que você falou.', lifeLost: false });
+      dispatch(PRACTICE_EVENTS.USER_SUBMITTED, { fallback: 'text_input_required' });
+      dispatch(PRACTICE_EVENTS.CHECK_DONE, { fallback: 'text_input_required' });
       return;
     }
     try {
@@ -171,16 +249,30 @@ export function PracticeFullscreen({ lesson, open, onClose, onComplete }) {
         setValue(transcript);
         submit(transcript);
       };
-      recognition.onerror = () => setFeedback({ correct: false, empty: true, message: 'Digite o que você falou.', lifeLost: false });
+      recognition.onerror = () => {
+        setFeedback({ correct: false, empty: true, message: 'Digite o que você falou.', lifeLost: false });
+        if (state === PRACTICE_STATES.ANSWERING) {
+          dispatch(PRACTICE_EVENTS.USER_SUBMITTED, { fallback: 'speech_error' });
+          dispatch(PRACTICE_EVENTS.CHECK_DONE, { fallback: 'speech_error' });
+        }
+      };
       recognition.start();
     } catch {
       setFeedback({ correct: false, empty: true, message: 'Digite o que você falou.', lifeLost: false });
+      if (state === PRACTICE_STATES.ANSWERING) {
+        dispatch(PRACTICE_EVENTS.USER_SUBMITTED, { fallback: 'speech_unavailable' });
+        dispatch(PRACTICE_EVENTS.CHECK_DONE, { fallback: 'speech_unavailable' });
+      }
     }
   }
 
+  function startPractice() {
+    dispatch(PRACTICE_EVENTS.START, { startedAt: Date.now() });
+  }
+
   function restart() {
-    setSessionItems(buildStablePracticeItems(lesson));
-    setStarted(false);
+    const nextItems = buildStablePracticeItems(lesson);
+    setSessionItems(nextItems);
     setIndex(0);
     setValue('');
     setWordBankValue([]);
@@ -189,12 +281,22 @@ export function PracticeFullscreen({ lesson, open, onClose, onComplete }) {
     setHintVisible(false);
     setLives(STARTING_LIVES);
     setReviewMode(false);
+    reset({ lessonKey, lessonId: lesson?.id || null, total: nextItems.length });
+    dispatch(PRACTICE_EVENTS.PLAN_LOADED, { lessonKey, lessonId: lesson?.id || null, total: nextItems.length });
+  }
+
+  function closePractice() {
+    if (state !== PRACTICE_STATES.DONE && state !== PRACTICE_STATES.ABORTED && can(PRACTICE_EVENTS.ABORT)) {
+      dispatch(PRACTICE_EVENTS.ABORT, { abortedAt: Date.now(), partialResults: results, currentIndex: index });
+    }
+    onClose?.();
   }
 
   function finish() {
-    onComplete?.({ total: items.length, correct: correctCount, mistakes: mistakeCount, lives, reviewMode, results });
     onClose?.();
   }
+
+  const canSubmit = state === PRACTICE_STATES.ANSWERING && canSubmitQuestion(current, value, wordBankValue) && !checking;
 
   return (
     <div className="practice-fullscreen" role="dialog" aria-modal="true">
@@ -208,18 +310,18 @@ export function PracticeFullscreen({ lesson, open, onClose, onComplete }) {
         index={index}
         total={items.length}
         correctCount={correctCount}
-        onClose={onClose}
+        onClose={closePractice}
       />
 
       {started && !done ? <LivesBar lives={lives} reviewMode={reviewMode} /> : null}
 
-      {!started && !done ? (
+      {state === PRACTICE_STATES.READY ? (
         <PracticeIntro
           skillLabel={skillLabel}
           total={items.length}
           level={lesson?.level}
           startingLives={STARTING_LIVES}
-          onStart={() => setStarted(true)}
+          onStart={startPractice}
         />
       ) : done ? (
         <PracticeDone
@@ -230,7 +332,7 @@ export function PracticeFullscreen({ lesson, open, onClose, onComplete }) {
           onRestart={restart}
           onFinish={finish}
         />
-      ) : current ? (
+      ) : current && isPracticeActive(state) ? (
         <main className="practice-question">
           <div className="practice-question-card">
             <p className="practice-kind">{reviewMode ? 'Modo revisão' : current.title}</p>
@@ -242,26 +344,26 @@ export function PracticeFullscreen({ lesson, open, onClose, onComplete }) {
           ) : null}
 
           {(current.type === 'choice' || current.type === 'listenChoice' || current.type === 'fillBlank') ? (
-            <ChoiceGrid item={current} value={value} feedback={feedback} normalize={normalizeForPractice} onSelect={selectOption} />
+            <ChoiceGrid item={current} value={value} feedback={visibleFeedback} normalize={normalizeForPractice} onSelect={selectOption} />
           ) : null}
 
           {current.type === 'dictation' || current.type === 'correction' || current.type === 'write' ? (
-            <TextExercise value={value} feedback={feedback} onChange={setValue} />
+            <TextExercise value={value} feedback={visibleFeedback} onChange={changeText} />
           ) : null}
 
           {current.type === 'wordBank' ? (
-            <WordBankExercise item={current} selectedWords={wordBankValue} feedback={feedback} onChange={setWordBankValue} />
+            <WordBankExercise item={current} selectedWords={wordBankValue} feedback={visibleFeedback} onChange={changeWordBank} />
           ) : null}
 
           {current.type === 'speak' ? (
-            <SpeakExercise value={value} feedback={feedback} onSpeak={speak} onChange={setValue} />
+            <SpeakExercise value={value} feedback={visibleFeedback} onSpeak={speak} onChange={changeText} />
           ) : null}
         </main>
       ) : null}
 
       {started && !done && current ? (
         <PracticeFeedback
-          feedback={feedback}
+          feedback={visibleFeedback}
           current={current}
           lives={lives}
           hintVisible={hintVisible}
@@ -269,8 +371,8 @@ export function PracticeFullscreen({ lesson, open, onClose, onComplete }) {
           onRetry={retry}
           onContinue={continueNext}
           onSubmit={() => submit()}
-          actionLabel={getQuestionActionLabel(current.type)}
-          canSubmit={canSubmitQuestion(current, value, wordBankValue)}
+          actionLabel={checking ? 'Conferindo...' : getQuestionActionLabel(current.type)}
+          canSubmit={canSubmit}
         />
       ) : null}
     </div>
