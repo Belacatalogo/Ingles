@@ -82,7 +82,7 @@ function DialogueTranscript({ dialogue }) {
 }
 
 export function ListeningLessonClean({ lesson }) {
-  const [message, setMessage] = useState('Comece ouvindo sem abrir o texto. Depois confira a transcrição.');
+  const [message, setMessage] = useState('');
   const [audioState, setAudioState] = useState('idle');
   const [answer, setAnswer] = useState(() => getLessonDraft(draftKey(lesson)));
   const [savedAt, setSavedAt] = useState('');
@@ -174,8 +174,8 @@ export function ListeningLessonClean({ lesson }) {
       {dialogue.isDialogue ? <div className="listening-speaker-strip">{dialogue.speakers.map((speaker) => <span key={speaker}><b>{speaker}</b><small>{dialogue.turns.find((turn) => turn.speaker === speaker)?.voiceName}</small></span>)}</div> : null}
       <div className="listening-flow-map" aria-label="Estrutura da aula Listening">{flow.map(([label, detail]) => <span key={label}><b>{label}</b><small>{detail}</small></span>)}</div>
       <div className="listening-player listening-primary-player"><button type="button" onClick={audioState === 'ready' ? handlePlayPrepared : handleListen} disabled={audioState === 'loading' || audioState === 'playing'}><Play size={20} /></button><div><span /><span /><span /><span /><span /><span /></div><button type="button" onClick={handleStop}><Pause size={18} /></button></div>
-      <small>{message}</small>
-      <p className="listening-blind-note">Primeira escuta protegida: nenhum trecho da fala aparece aqui. Use “Conferir texto” só depois de ouvir.</p>
+      {message ? <small>{message}</small> : null}
+      <p className="listening-blind-note">Primeira escuta sem leitura. Abra o texto só depois de ouvir.</p>
       <div className="listening-quick-actions"><button type="button" onClick={() => openSection('transcript')}><Volume2 size={15} /> Conferir texto</button><button type="button" onClick={goToPractice}><Target size={15} /> Começar prática</button><button type="button" onClick={() => openSection('answer')}><CheckCircle2 size={15} /> Finalizar</button></div>
     </section></div>
 
