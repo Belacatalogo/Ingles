@@ -15,6 +15,7 @@ import './styles/flashcards-session.css';
 import './styles/flashcards-new-words-hotfix.css';
 import './styles/speaking-session.css';
 import './styles/speaking-history.css';
+import './styles/speaking-stepper-real.css';
 import './styles/error-bank.css';
 import './styles/level-certification.css';
 import './styles/progress-polish.css';
