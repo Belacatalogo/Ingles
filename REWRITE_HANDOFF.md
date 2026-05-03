@@ -34,117 +34,91 @@ Branch estável protegida: `rewrite-fluency-clean`
 
 ### `BLOCO-READING-1 — Estrutura pedagógica fixa da aba Reading` — IMPLEMENTADO
 
-Decisão pedagógica:
 - Reading agora deve ser uma aula completa dentro da própria aba.
 - A Prática Profunda é complemento posterior, não substitui os exercícios internos da Reading.
-
-O que foi feito:
-- Adicionada ordem oficial da aula Reading:
-  1. Objetivo
-  2. Pré-leitura
-  3. Texto principal
-  4. Ideia geral
-  5. Vocabulário em contexto
-  6. Compreensão e evidência
-  7. Produção curta
-  8. Conclusão
-- Adicionada seção `Pré-leitura` antes do texto.
-- Separada a primeira pergunta como `Ideia geral`.
-- Mantidas as demais perguntas em `Compreensão com evidência textual`.
-- Criado componente interno `QuestionCard` para padronizar perguntas.
-- Adicionados rótulos de habilidade: ideia geral, detalhe, vocabulário, sequência, evidência e inferência.
-- Em `LessonScreen.jsx`, a Prática Profunda agora aparece depois da aula quando `lesson.type === 'reading'`, com card de complemento.
-- Para Grammar, Listening e Writing, a posição da Prática Profunda foi mantida como antes.
+- Adicionada ordem oficial da aula Reading: objetivo, pré-leitura, texto principal, ideia geral, vocabulário em contexto, compreensão/evidência, produção curta e conclusão.
+- Em `LessonScreen.jsx`, a Prática Profunda aparece depois da aula quando `lesson.type === 'reading'`.
 - Criada documentação em `fluency-clean/docs/BLOCO-READING-1-ESTRUTURA-PEDAGOGICA-FIXA-LAB.md`.
 
 ### `BLOCO-READING-2 — Política por nível A1→C1` — IMPLEMENTADO
 
-Objetivo:
-- Criar uma política formal para a aba Reading se adaptar conforme o nível do aluno sobe.
-
-O que foi feito:
 - Criado `fluency-clean/src/reading/readingLevelPolicy.js`.
 - Definidos níveis A1, A2, B1, B2 e C1.
-- Definidas habilidades oficiais de Reading:
-  - `main_idea`
-  - `detail`
-  - `vocabulary_context`
-  - `sequence`
-  - `evidence`
-  - `inference`
-  - `author_purpose`
-  - `fact_opinion`
-  - `tone`
-  - `implication`
-  - `critical_response`
+- Definidas habilidades oficiais de Reading: `main_idea`, `detail`, `vocabulary_context`, `sequence`, `evidence`, `inference`, `author_purpose`, `fact_opinion`, `tone`, `implication`, `critical_response`.
 - Cada nível agora tem objetivo, faixa ideal de palavras, idioma das perguntas, suporte linguístico, tipos de texto, habilidades, mistura mínima de perguntas, produção final e tom da aula.
-- `ReadingLesson.jsx` usa internamente `getReadingLevelPolicy`.
 - A produção curta usa internamente a instrução definida pela política do nível.
-- O `Render seguro` foi compactado para não poluir a aula.
 - Criada documentação em `fluency-clean/docs/BLOCO-READING-2-POLITICA-POR-NIVEL-A1-C1-LAB.md`.
 
 ### `HOTFIX-READING-2 — Remover poluição técnica da aula` — IMPLEMENTADO
 
-Motivo:
-- O card visual `Plano do nível` deixava a aula poluída e mostrava informação interna que não precisa aparecer para o aluno.
-
-O que foi feito:
-- Removido o card `Plano do nível` de `ReadingLesson.jsx`.
+- Removido o card visual `Plano do nível`.
 - Mantida a política por nível funcionando internamente.
-- Mantida a produção final baseada no nível.
 - Compactado o card lateral de segurança para `Aula segura`.
-- Removidos estilos não usados de `reading-complete-render-review.css`.
+- Removidos estilos não usados.
 
 ### `BLOCO-READING-3 — Contrato JSON próprio de Reading` — IMPLEMENTADO
 
-Objetivo:
-- Criar contrato interno próprio para Reading, separando Reading de Listening e preparando a geração IA por habilidade.
-
-O que foi feito:
 - Criado `fluency-clean/src/reading/readingJsonContract.js`.
-- Criados campos próprios de Reading:
-  - `readingText`
-  - `textGenre`
-  - `readingPurpose`
-  - `preReading`
-  - `vocabulary`
-  - `readingQuestions`
-  - `evidenceTasks`
-  - `postReadingPrompts`
-  - `tips`
-- Criada compatibilidade com aulas antigas que usam:
-  - `reading_text`
-  - `mainText`
-  - `main_text`
-  - `text`
-  - `story`
-  - `article`
-  - `passage`
-  - `listeningText`
-  - `transcript`
-- Criada função `normalizeReadingLessonContract(rawLesson)`.
-- Criada função `buildReadingJsonContractInstruction({ level })`.
-- Criada função `assertReadingContract(data)`.
-- `ReadingLesson.jsx` agora normaliza a aula usando `normalizeReadingLessonContract` antes de renderizar.
+- Criados campos próprios de Reading: `readingText`, `textGenre`, `readingPurpose`, `preReading`, `vocabulary`, `readingQuestions`, `evidenceTasks`, `postReadingPrompts`, `tips`.
+- Criada compatibilidade com aulas antigas que usam `listeningText`/`transcript`.
+- Criadas funções `normalizeReadingLessonContract`, `buildReadingJsonContractInstruction` e `assertReadingContract`.
+- `ReadingLesson.jsx` normaliza a aula usando `normalizeReadingLessonContract` antes de renderizar.
 - O contrato permanece interno e não aparece como card na aula.
 - Criada documentação em `fluency-clean/docs/BLOCO-READING-3-CONTRATO-JSON-PROPRIO-LAB.md`.
 
+### `BLOCO-READING-4 — Geração da aula Reading por habilidade` — IMPLEMENTADO
+
+Objetivo:
+- Fazer novas aulas Reading serem pedidas ao Gemini com contrato próprio, habilidades de leitura e evidência textual.
+
+O que foi feito:
+- `lessonJsonContract.js` agora importa `buildReadingJsonContractInstruction`.
+- Quando `lessonType === 'reading'`, o prompt geral usa o contrato próprio de Reading.
+- O prompt de Reading agora pede:
+  - `readingText`;
+  - `textGenre`;
+  - `readingPurpose`;
+  - `preReading`;
+  - `readingQuestions`;
+  - `evidenceTasks`;
+  - `postReadingPrompts`.
+- Mantida compatibilidade com o motor atual:
+  - `readingText` preenche `listeningText` quando necessário;
+  - `readingQuestions` converte para `exercises`;
+  - `postReadingPrompts` converte para `prompts`.
+- Se a IA gerar `readingQuestions`, elas passam a ser a fonte principal dos exercícios internos da Reading, preservando `skill`, `evidence`, `questionLanguage` e `difficulty`.
+- `lessonTypes.js` agora preserva campos novos de Reading:
+  - `readingText`;
+  - `textGenre`;
+  - `readingPurpose`;
+  - `preReading`;
+  - `readingQuestions`;
+  - `evidenceTasks`;
+  - `postReadingPrompts`.
+- Criada documentação em `fluency-clean/docs/BLOCO-READING-4-GERACAO-POR-HABILIDADE-LAB.md`.
+
 Pendente validar no iPhone:
-- Botão `Testar Reading` abre a aula.
-- A aula continua visualmente limpa.
-- Não apareceu nenhum card de contrato JSON.
-- Texto, pré-leitura, perguntas, vocabulário e produção continuam renderizando.
-- Prática Profunda continua abaixo como complemento.
+- Gerar uma nova aula Reading real por IA.
+- Confirmar que a aula não quebrou.
+- Confirmar que aparecem perguntas com rótulos de habilidade.
+- Confirmar que aparece evidência textual quando disponível.
+- Confirmar que não apareceu card técnico de contrato/política.
+- Confirmar que a Prática Profunda continua abaixo como complemento.
 
 ### Próximo bloco recomendado
 
-`BLOCO-READING-4 — Geração da aula Reading por habilidade`
+`BLOCO-READING-5 — Render por etapas`
 
 Objetivo:
-- Conectar `buildReadingJsonContractInstruction` ao fluxo de geração de Reading.
-- Fazer a IA gerar `readingText`, `preReading`, `readingQuestions`, `evidenceTasks` e `postReadingPrompts`.
-- Usar `readingLevelPolicy.js` para respeitar A1→C1.
-- Importante: não adicionar cards técnicos de contrato/política na aula.
+- Transformar a aba Reading em uma experiência guiada por etapas reais:
+  1. Começar leitura;
+  2. Pré-leitura;
+  3. Ler texto;
+  4. Ideia geral;
+  5. Vocabulário;
+  6. Compreensão;
+  7. Produção curta;
+  8. Concluir.
 
 ## ALERTA IMPORTANTE — BLOCO QUE FOI ESQUECIDO NA LISTA ANTERIOR
 
@@ -167,25 +141,13 @@ Escopo recomendado:
 - Garantir que a trilha não dependa da aula do dia.
 - Garantir que os flashcards da aula não se misturem com a trilha.
 
-Critérios:
-- Não quebrar a aba `Aula`.
-- Não quebrar a prática profunda.
-- Não misturar cards da aula com cards da trilha.
-- Não usar dados fictícios como se fossem progresso real.
-
-Últimos ajustes relacionados:
-- Botão superior `Flashcards da aula` passou a aparecer quando há vocabulário da aula.
-- Botão duplicado dentro de `Tópicos por nível` foi removido por CSS.
-- Ainda precisa validação no iPhone depois do deploy.
-
 ## ORDEM DEFINIDA PELO USUÁRIO PARA OS PRÓXIMOS CHATS/BLOCOS
 
 Plano atual de Reading em andamento:
-1. `BLOCO-READING-4 — Geração da aula Reading por habilidade`
-2. `BLOCO-READING-5 — Render por etapas`
-3. `BLOCO-READING-6 — Exercícios internos da aba Reading`
-4. `BLOCO-READING-7 — Evidência textual inteligente`
-5. `BLOCO-READING-8 — Quality gate Reading`
+1. `BLOCO-READING-5 — Render por etapas`
+2. `BLOCO-READING-6 — Exercícios internos da aba Reading`
+3. `BLOCO-READING-7 — Evidência textual inteligente`
+4. `BLOCO-READING-8 — Quality gate Reading`
 
 Depois retomar a ordem macro:
 - `BLOCO-SPEAKING-COMPLETE-RENDER-REVIEW-LAB`
@@ -198,151 +160,33 @@ Depois retomar a ordem macro:
 
 Status: pendente de validação no iPhone.
 
-Objetivo:
-- Confirmar que os últimos hotfixes de UI realmente apareceram no Vercel preview.
-
-Checklist:
-- Botão duplicado `Flashcards da aula` dentro de `Tópicos por nível` deve sumir.
-- Deve ficar apenas o botão superior ao lado de `Trilha de vocabulário`.
-- Botão `Começar prática` deve estar visualmente aceitável e não quebrado.
-- Número de exercícios da aula deve bater com a prática profunda.
-- Minutos da tela Hoje e tela Aula devem bater ou ficar coerentes.
-
 ### 2. `BLOCO-SPEAKING-COMPLETE-RENDER-REVIEW-LAB`
 
 Status: deve vir depois da sequência atual de Reading, ou quando o usuário mandar avançar.
-
-Objetivo:
-- Revisar Speaking de ponta a ponta, mantendo backend Azure privado intocado.
-
-Escopo:
-- Melhorar UI do Speaking.
-- Melhorar fluxo de fala/resposta.
-- Garantir estado visual claro: ouvir, gravar, responder, repetir, concluir.
-- Criar experiência segura para A1.
-- Manter integração com Azure sem alterar backend.
-- Evitar tela poluída e botões redundantes.
 
 ### 3. `BLOCO-VOCAB-TRAIL-CONTINUATION-LAB`
 
 Status: pendente e agora recolocado na ordem correta.
 
-Objetivo:
-- Continuar a trilha de vocabulário/Cartas.
-- Finalizar a separação entre trilha e flashcards da aula.
-- Desenvolver progressão por bolhas, revisão espaçada e tarefas do dia.
-
 ### 4. `BLOCO-PRACTICE-DEEP-SYSTEM-CORRECTION-LAB`
 
 Status: aguardar modelo do usuário.
-
-Objetivo:
-- Corrigir o sistema de prática profunda com base no modelo que o usuário vai enviar.
-
-Base de referência:
-- `PRACTICE_DEEP_STRUCTURE.md`
-
-Escopo provável:
-- Auditar `PracticePlanAdapter.js`.
-- Garantir que cada tipo de aula tenha exercícios próprios:
-  - Grammar: estrutura, correção, transformação, produção curta.
-  - Listening: escuta, ditado, quem falou, compreensão auditiva, shadowing.
-  - Reading: complemento posterior à aula Reading, reforçando ideia principal, detalhes, evidência textual, vocabulário em contexto e interpretação.
-  - Speaking: repetição, resposta oral curta, mini diálogo, fluidez.
-  - Writing: frase guiada, ordem de palavras, correção, reescrita.
-- Remover exercícios genéricos demais.
-- Impedir respostas vazadas.
-- Adaptar dificuldade ao nível A1.
 
 ### 5. `BLOCO-PRACTICE-RENDER-SAFETY-GATE-LAB`
 
 Status: depois da correção da prática profunda.
 
-Objetivo:
-- Criar trava de segurança antes de renderizar exercícios.
-
-Escopo:
-- Detectar resposta vazada no enunciado.
-- Validar opções duplicadas ou inválidas.
-- Rebaixar exercício avançado demais para A1.
-- Converter exercício quebrado em fallback simples.
-- Nunca deixar exercício quebrado travar a aula.
-
 ### 6. `BLOCO-LISTENING-FINAL-APPROVAL-LAB`
 
 Status: Listening parece funcional, mas ainda precisa aprovação final do usuário.
-
-Checklist:
-- Player prepara e toca corretamente no iPhone.
-- Cache IndexedDB funciona.
-- Primeira escuta continua sem leitura.
-- Diálogo multi-voz funciona.
-- Pronúncia está aceitável com `pronunciationGuard.js`.
-- UI não está poluída.
 
 ### 7. `BLOCO-TEMP-PREVIEW-CLEANUP-LAB`
 
 Status: futuro, somente depois que Reading, Listening e Speaking estiverem aprovados.
 
-Objetivo:
-- Remover ou esconder o seletor temporário de teste:
-  - `Aula real`
-  - `Testar Listening`
-  - `Testar Diálogo`
-  - `Testar Reading`
-  - `Abrir Speaking`
-
 ### 8. `BLOCO-LAB-PROMOTION-PREP-LAB`
 
 Status: futuro.
-
-Objetivo:
-- Preparar promoção controlada da lab para branch estável, sem mexer direto na main.
-
-## ESTADO ATUAL — UI CARDS / PRÁTICA / STATS
-
-### `HOTFIX-PRACTICE-CTA-CARDS-SEPARATION-LAB` — PARCIALMENTE IMPLEMENTADO E EM VALIDAÇÃO
-
-Motivação:
-- Usuário apontou que botão `Começar prática` estava feio/bugado; flashcards adaptativos da aula tinham sumido; a aba Cartas não deveria misturar `Flashcards da aula` dentro da trilha; minutos e quantidade de exercícios estavam inconsistentes.
-
-O que foi feito:
-- `lessonStats.js` passou a usar `PracticePlanAdapter` para contagem de exercícios.
-- `LessonScreen.jsx` passou a usar `getLessonStats`.
-- `TodayScreen.jsx` passou a tentar carregar aula completa via IndexedDB antes de calcular tempo/cards.
-- `FlashcardsScreen.jsx` passou a carregar `getCurrentLessonFull()` para achar vocabulário real da aula.
-- Adicionado fallback para gerar cards da aula a partir de termos importantes quando a aula não tiver vocabulário estruturado.
-- Criado botão superior `Flashcards da aula` ao lado de `Trilha de vocabulário`.
-- Removido por CSS o botão duplicado dentro de `Tópicos por nível`.
-
-Pendente:
-- Usuário validar no iPhone após deploy.
-
-## ESTADO ANTERIOR — LISTENING
-
-### `HOTFIX-LISTENING-CLEANER-BLIND-NOTE-LAB` — IMPLEMENTADO
-
-- Estado inicial `message` mudou de texto fixo para string vazia.
-- A mensagem `<small>` agora só aparece quando houver status real do áudio/player.
-- Nota de primeira escuta foi encurtada para:
-  - `Primeira escuta sem leitura. Abra o texto só depois de ouvir.`
-
-### `BLOCO-TTS-PRONUNCIATION-GUARD-EXPANSION-LAB` — IMPLEMENTADO
-
-- `pronunciationGuard.js` expandido com nomes brasileiros, frases A1/A2, palavras sensíveis, sons com `you`, contrações e spelling.
-
-### `HOTFIX-LISTENING-CLEAN-PLAYER-INDEXEDDB-CACHE-LAB` — IMPLEMENTADO
-
-- Separou preparo e reprodução do áudio para evitar bloqueio/autoplay no iPhone.
-- Criou cache IndexedDB para áudios grandes.
-- Removeu card poluído de controle por fala/trecho.
-
-## ESTADO ANTERIOR — GRAMMAR
-
-### `BLOCO-GRAMMAR-APPROVAL-LAB` — IMPLEMENTADO
-
-Status:
-- Grammar aprovada visualmente na branch `rewrite-fluency-clean-lab`.
 
 ## NÃO FAZER AGORA
 
@@ -358,4 +202,4 @@ Status:
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. Não mexa em `main`, `rewrite-fluency-clean`, `bundle.js` ou backend Azure privado. Reading agora está sendo reconstruída como aula completa dentro da própria aba. A Prática Profunda em Reading é complemento posterior, não substitui a aula. O último bloco implementado foi `BLOCO-READING-3 — Contrato JSON próprio de Reading`. O próximo bloco recomendado é `BLOCO-READING-4 — Geração da aula Reading por habilidade`."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. Não mexa em `main`, `rewrite-fluency-clean`, `bundle.js` ou backend Azure privado. Reading agora está sendo reconstruída como aula completa dentro da própria aba. A Prática Profunda em Reading é complemento posterior, não substitui a aula. O último bloco implementado foi `BLOCO-READING-4 — Geração da aula Reading por habilidade`. O próximo bloco recomendado é `BLOCO-READING-5 — Render por etapas`."
