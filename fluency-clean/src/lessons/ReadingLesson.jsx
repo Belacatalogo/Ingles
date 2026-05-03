@@ -26,6 +26,12 @@ const fallbackParagraphs = [
   'At night, Ana reviews the words again. She writes one sentence with each word and says the sentences out loud. This small habit helps her remember vocabulary and feel more confident.',
 ];
 
+const fallbackPreReading = [
+  'Observe o título e pense: quem aparece no texto e qual rotina será descrita?',
+  'Leia primeiro para entender a ideia geral. Não traduza palavra por palavra.',
+  'Durante a segunda leitura, procure frases que provam suas respostas.',
+];
+
 const fallbackVocabulary = [
   { word: 'goal', meaning: 'meta, objetivo', example: 'My goal is to study English every day.' },
   { word: 'focused', meaning: 'concentrado', example: 'I feel focused in the morning.' },
@@ -35,18 +41,28 @@ const fallbackVocabulary = [
 
 const fallbackComprehension = [
   {
+    skill: 'main_idea',
+    question: 'What is the main idea of the text?',
+    options: ['Ana studies with a small daily routine', 'Ana travels to another country', 'Ana buys a new phone'],
+    answer: 'Ana studies with a small daily routine',
+    evidence: 'This small habit helps her remember vocabulary and feel more confident.',
+  },
+  {
+    skill: 'detail',
     question: 'What does Ana write in her notebook?',
     options: ['Three simple goals', 'A shopping list', 'A long story'],
     answer: 'Three simple goals',
     evidence: 'Ana opens her notebook and writes three simple goals for the day.',
   },
   {
+    skill: 'detail',
     question: 'What does Ana do when she does not understand every word?',
     options: ['She marks new words', 'She stops studying', 'She deletes the text'],
     answer: 'She marks new words',
     evidence: 'She marks the new words and tries to guess the meaning from context.',
   },
   {
+    skill: 'inference',
     question: 'Why does Ana say the sentences out loud?',
     options: ['To practice speaking', 'To wake up her family', 'To finish faster'],
     answer: 'To practice speaking',
@@ -55,10 +71,30 @@ const fallbackComprehension = [
 ];
 
 const fallbackSteps = [
-  'Leia uma vez para entender a ideia geral, sem traduzir tudo.',
-  'Volte ao texto e marque palavras que ajudam a provar sua resposta.',
-  'Responda usando evidência do texto e escreva uma frase curta em inglês.',
+  'Pré-leitura: prepare o tema antes de abrir o texto.',
+  'Leitura: entenda a ideia geral primeiro e só depois procure detalhes.',
+  'Pós-leitura: responda, prove com o texto e escreva frases suas.',
 ];
+
+const readingFlowSteps = [
+  'Objetivo',
+  'Pré-leitura',
+  'Texto principal',
+  'Ideia geral',
+  'Vocabulário em contexto',
+  'Compreensão e evidência',
+  'Produção curta',
+  'Conclusão',
+];
+
+const skillLabels = {
+  main_idea: 'Ideia geral',
+  detail: 'Detalhe',
+  vocabulary_context: 'Vocabulário',
+  sequence: 'Sequência',
+  evidence: 'Evidência',
+  inference: 'Inferência',
+};
 
 const genericQuestionPatterns = [
   'what is the text about',
@@ -113,6 +149,29 @@ function splitParagraphs(value) {
 function extractSectionText(section) {
   if (!section) return '';
   return cleanGeneratedText(section.text || section.content || section.body || section.value || '');
+}
+
+function normalizeListItems(value) {
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => cleanGeneratedText(typeof item === 'string' ? item : item?.text || item?.tip || item?.content || item?.question || ''))
+      .filter(Boolean);
+  }
+  return splitParagraphs(value);
+}
+
+function normalizePreReading(lesson) {
+  const direct = normalizeListItems(lesson?.preReading || lesson?.pre_reading || lesson?.beforeReading);
+  if (direct.length) return direct.slice(0, 4);
+
+  const sections = Array.isArray(lesson?.sections) ? lesson.sections : [];
+  const preSections = sections.filter((section) => {
+    const title = String(section?.title || section?.heading || '').toLowerCase();
+    return title.includes('pré') || title.includes('pre') || title.includes('antes') || title.includes('pre-reading');
+  });
+
+  const fromSections = preSections.map(extractSectionText).flatMap(normalizeListItems).filter(Boolean);
+  return fromSections.length ? fromSections.slice(0, 4) : fallbackPreReading;
 }
 
 function normalizeReadingParagraphs(lesson) {
@@ -196,14 +255,16 @@ function normalizeComprehension(lesson, paragraphs) {
       const answer = cleanGeneratedText(item?.answer || item?.correctAnswer || item?.correct || '');
       const options = normalizeOptions(item);
       const evidence = findQuestionEvidence(item, paragraphs);
-      return { question, answer, options, evidence, index };
+      const skill = cleanGeneratedText(item?.skill || item?.type || (index === 0 ? 'main_idea' : 'detail'));
+      return { question, answer, options, evidence, skill, index };
     })
     .filter((item) => item.question && item.answer && item.options.length >= 2)
-    .filter((item) => !isGenericQuestion(item.question))
+    .filter((item) => !isGenericQuestion(item.question) || item.skill === 'main_idea')
     .filter((item) => !normalizeAnswer(item.question).includes(normalizeAnswer(item.answer)))
-    .slice(0, 5);
+    .slice(0, 6);
 
-  return safeQuestions.length >= 2 ? safeQuestions : fallbackComprehension;
+  const source = safeQuestions.length >= 2 ? safeQuestions : fallbackComprehension;
+  return source.map((item, index) => ({ ...item, index: item.index ?? index, skill: item.skill || (index === 0 ? 'main_idea' : 'detail') }));
 }
 
 function getLessonIntro(lesson) {
@@ -236,14 +297,56 @@ function isCorrectOption(option, answer) {
   return normalizeAnswer(option) === normalizeAnswer(answer);
 }
 
-function getReadingRenderReport({ paragraphs, vocabulary, comprehension }) {
+function getReadingRenderReport({ paragraphs, vocabulary, comprehension, preReading }) {
   return {
+    preReading: preReading.length,
     paragraphs: paragraphs.length,
     vocabulary: vocabulary.length,
     questions: comprehension.length,
     hasEvidence: comprehension.filter((item) => item.evidence).length,
     protected: true,
   };
+}
+
+function QuestionCard({ item, index, selectedAnswers, onSelectAnswer }) {
+  const questionKey = item.index ?? index;
+  const selected = selectedAnswers[questionKey];
+  const hasAnswered = typeof selected === 'string';
+  const selectedIsCorrect = hasAnswered && isCorrectOption(selected, item.answer);
+  const skillLabel = skillLabels[item.skill] || 'Leitura';
+
+  return (
+    <article className="question-card reading-question-card-v3" key={`${item.question}-${index}`}>
+      <span>{skillLabel} · Questão {index + 1}</span>
+      <strong>{item.question}</strong>
+      {item.evidence ? <p className="reading-evidence-hint">Dica: a resposta precisa aparecer ou ser provada por uma frase do texto.</p> : null}
+      <div className="option-list reading-option-list-v3">
+        {item.options.map((option) => {
+          const optionIsSelected = selected === option;
+          const selectedClass = optionIsSelected ? ' selected' : '';
+          const correctnessClass = optionIsSelected && hasAnswered ? (selectedIsCorrect ? ' correct' : ' incorrect') : '';
+
+          return (
+            <button
+              className={`option-button reading-option-button-v3${selectedClass}${correctnessClass}`}
+              type="button"
+              key={option}
+              onClick={() => onSelectAnswer(questionKey, option)}
+              aria-pressed={optionIsSelected}
+            >
+              {option}
+            </button>
+          );
+        })}
+      </div>
+      {hasAnswered ? (
+        <div className={selectedIsCorrect ? 'question-feedback correct' : 'question-feedback incorrect'}>
+          <strong>{selectedIsCorrect ? 'Correto.' : 'Revise o trecho antes de tentar novamente.'}</strong>
+          {item.evidence ? <p>Trecho de apoio: “{item.evidence}”</p> : null}
+        </div>
+      ) : null}
+    </article>
+  );
 }
 
 export function ReadingLesson({ lesson }) {
@@ -254,12 +357,15 @@ export function ReadingLesson({ lesson }) {
   const [completionMessage, setCompletionMessage] = useState('');
   const [completed, setCompleted] = useState(false);
   const paragraphs = useMemo(() => normalizeReadingParagraphs(lesson), [lesson]);
+  const preReading = useMemo(() => normalizePreReading(lesson), [lesson]);
   const vocabulary = useMemo(() => normalizeVocabulary(lesson, paragraphs), [lesson, paragraphs]);
   const comprehension = useMemo(() => normalizeComprehension(lesson, paragraphs), [lesson, paragraphs]);
+  const mainIdeaQuestion = comprehension[0];
+  const detailQuestions = comprehension.slice(1);
   const intro = useMemo(() => getLessonIntro(lesson), [lesson]);
   const objective = useMemo(() => getLessonObjective(lesson), [lesson]);
   const steps = useMemo(() => getLessonSteps(lesson), [lesson]);
-  const renderReport = useMemo(() => getReadingRenderReport({ paragraphs, vocabulary, comprehension }), [paragraphs, vocabulary, comprehension]);
+  const renderReport = useMemo(() => getReadingRenderReport({ paragraphs, vocabulary, comprehension, preReading }), [paragraphs, vocabulary, comprehension, preReading]);
   const readingText = paragraphs.join('\n\n');
 
   useEffect(() => {
@@ -317,11 +423,11 @@ export function ReadingLesson({ lesson }) {
   }
 
   return (
-    <article className="reading-layout reading-lesson-v3 reading-complete-render-review-lab">
+    <article className="reading-layout reading-lesson-v3 reading-complete-render-review-lab reading-pedagogical-flow-v1">
       <Card
         eyebrow={`Reading · ${lesson.level}`}
         title={lesson.title}
-        action={<ProgressPill current={completed ? 5 : 2} total={5} label={completed ? 'Concluída' : 'Leitura'} />}
+        action={<ProgressPill current={completed ? 8 : 1} total={8} label={completed ? 'Concluída' : 'Aula completa'} />}
       >
         <div className="lesson-intro-grid reading-hero-grid">
           <div>
@@ -340,6 +446,15 @@ export function ReadingLesson({ lesson }) {
         </div>
       </Card>
 
+      <section className="reading-official-flow-card" aria-label="Ordem oficial da aula Reading">
+        {readingFlowSteps.map((step, index) => (
+          <div key={step} className={completed ? 'done' : index === 0 ? 'active' : ''}>
+            <span>{index + 1}</span>
+            <strong>{step}</strong>
+          </div>
+        ))}
+      </section>
+
       <section className="reading-study-steps reading-method-steps">
         {steps.map((step, index) => (
           <div className="study-step" key={`${step}-${index}`}>
@@ -347,6 +462,19 @@ export function ReadingLesson({ lesson }) {
             <p>{step}</p>
           </div>
         ))}
+      </section>
+
+      <section className="reading-section-card reading-pre-reading-card">
+        <div className="panel-title"><Lightbulb size={18} /> Pré-leitura</div>
+        <p className="reading-section-intro">Antes de responder qualquer exercício, prepare seu cérebro para o tema do texto.</p>
+        <div className="reading-pre-reading-list">
+          {preReading.map((item, index) => (
+            <article key={`${item}-${index}`}>
+              <span>{index + 1}</span>
+              <p>{item}</p>
+            </article>
+          ))}
+        </div>
       </section>
 
       <section className="reading-grid reading-main-grid reading-main-grid-v3">
@@ -376,7 +504,7 @@ export function ReadingLesson({ lesson }) {
           <div className="mini-card reading-render-report-card">
             <div className="panel-title"><Sparkles size={18} /> Render seguro</div>
             <p>
-              Texto: {renderReport.paragraphs} partes · Vocabulário: {renderReport.vocabulary} · Perguntas: {renderReport.questions} · Evidências: {renderReport.hasEvidence}.
+              Pré-leitura: {renderReport.preReading} · Texto: {renderReport.paragraphs} partes · Vocabulário: {renderReport.vocabulary} · Perguntas: {renderReport.questions} · Evidências: {renderReport.hasEvidence}.
             </p>
           </div>
 
@@ -386,6 +514,14 @@ export function ReadingLesson({ lesson }) {
           </div>
         </aside>
       </section>
+
+      {mainIdeaQuestion ? (
+        <section className="reading-section-card reading-main-idea-card">
+          <div className="panel-title"><Eye size={18} /> Ideia geral</div>
+          <p className="reading-section-intro">Responda primeiro pensando no assunto central do texto. Detalhes vêm depois.</p>
+          <QuestionCard item={mainIdeaQuestion} index={0} selectedAnswers={selectedAnswers} onSelectAnswer={handleSelectAnswer} />
+        </section>
+      ) : null}
 
       <section className="reading-section-card reading-vocabulary-context-card">
         <div className="panel-title"><Highlighter size={18} /> Vocabulário em contexto</div>
@@ -402,45 +538,17 @@ export function ReadingLesson({ lesson }) {
 
       <section className="reading-section-card reading-comprehension-card-v3">
         <div className="panel-title"><ListChecks size={18} /> Compreensão com evidência textual</div>
+        <p className="reading-section-intro">Agora responda detalhes, vocabulário e inferências simples. Cada resposta deve ter apoio no texto.</p>
         <div className="comprehension-list reading-question-list-v3">
-          {comprehension.map((item, index) => {
-            const selected = selectedAnswers[index];
-            const hasAnswered = typeof selected === 'string';
-            const selectedIsCorrect = hasAnswered && isCorrectOption(selected, item.answer);
-
-            return (
-              <article className="question-card reading-question-card-v3" key={`${item.question}-${index}`}>
-                <span>Questão {index + 1}</span>
-                <strong>{item.question}</strong>
-                {item.evidence ? <p className="reading-evidence-hint">Dica: a resposta precisa aparecer ou ser provada por uma frase do texto.</p> : null}
-                <div className="option-list reading-option-list-v3">
-                  {item.options.map((option) => {
-                    const optionIsSelected = selected === option;
-                    const selectedClass = optionIsSelected ? ' selected' : '';
-                    const correctnessClass = optionIsSelected && hasAnswered ? (selectedIsCorrect ? ' correct' : ' incorrect') : '';
-
-                    return (
-                      <button
-                        className={`option-button reading-option-button-v3${selectedClass}${correctnessClass}`}
-                        type="button"
-                        key={option}
-                        onClick={() => handleSelectAnswer(index, option)}
-                        aria-pressed={optionIsSelected}
-                      >
-                        {option}
-                      </button>
-                    );
-                  })}
-                </div>
-                {hasAnswered ? (
-                  <div className={selectedIsCorrect ? 'question-feedback correct' : 'question-feedback incorrect'}>
-                    <strong>{selectedIsCorrect ? 'Correto.' : 'Revise o trecho antes de tentar novamente.'}</strong>
-                    {item.evidence ? <p>Trecho de apoio: “{item.evidence}”</p> : null}
-                  </div>
-                ) : null}
-              </article>
-            );
-          })}
+          {detailQuestions.map((item, index) => (
+            <QuestionCard
+              key={`${item.question}-${index}`}
+              item={item}
+              index={index + 1}
+              selectedAnswers={selectedAnswers}
+              onSelectAnswer={handleSelectAnswer}
+            />
+          ))}
         </div>
       </section>
 
@@ -465,6 +573,11 @@ export function ReadingLesson({ lesson }) {
           <button type="button" className="primary-button" onClick={handleCompleteLesson}><CheckCircle2 size={16} /> {completed ? 'Aula concluída' : 'Concluir Reading'}</button>
         </div>
         {completionMessage ? <p className="generator-message completion-message">{completionMessage}</p> : null}
+      </section>
+
+      <section className="reading-section-card reading-after-lesson-card">
+        <div className="panel-title"><Sparkles size={18} /> Depois da aula</div>
+        <p>A Reading agora é uma aula completa dentro desta aba. A Prática Profunda vem depois como complemento para reforçar vocabulário, detalhes e interpretação.</p>
       </section>
     </article>
   );
