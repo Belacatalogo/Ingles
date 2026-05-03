@@ -23,6 +23,7 @@ import './styles/settings-polish.css';
 import './styles/listening-ux-hotfix.css';
 import './styles/lesson-preview-lab.css';
 import './styles/practice-fullscreen.css';
+import './styles/practice-mastery-recap.css';
 import './styles/grammar-examples-hotfix.css';
 import './styles/hotfix-ui-consistency.css';
 import './styles/reading-complete-render-review.css';
@@ -51,6 +52,8 @@ function showBootError(error) {
 async function bootstrap() {
   try {
     registerPwaServiceWorker();
+    const { applyMasteryDecayOncePerDay } = await import('./practice/core/PracticeMasteryTags.js');
+    applyMasteryDecayOncePerDay();
 
     const [{ App }, { ErrorBoundary }] = await Promise.all([
       import('./App.jsx'),
