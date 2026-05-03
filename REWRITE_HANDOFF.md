@@ -15,137 +15,215 @@ Branch estável protegida: `rewrite-fluency-clean`
 - Não mexer no backend Azure privado.
 - Manter tudo modular em `fluency-clean/src/`, `fluency-clean/public/` ou arquivos reais de configuração.
 
-## ESTADO ATUAL — LIMPEZA VISUAL LISTENING
+## ALERTA IMPORTANTE — BLOCO QUE FOI ESQUECIDO NA LISTA ANTERIOR
+
+O bloco de continuação do sistema de trilha/vocabulário estava faltando na lista anterior. Ele deve ficar entre Reading/Speaking e a correção final da prática profunda.
+
+### `BLOCO-VOCAB-TRAIL-CONTINUATION-LAB` — PENDENTE
+
+Objetivo:
+- Continuar o sistema de trilha de vocabulário que estava sendo desenvolvido na aba `Cartas`.
+- Separar definitivamente dois fluxos:
+  1. `Trilha de vocabulário`: percurso longo por bolhas/tópicos/níveis;
+  2. `Flashcards da aula`: revisão adaptativa da aula atual, acessada pelo botão superior.
+
+Escopo recomendado:
+- Validar visual da aba Cartas no iPhone.
+- Remover qualquer duplicação de `Flashcards da aula` dentro da lista da trilha.
+- Manter apenas o botão superior `Flashcards da aula` ao lado de `Trilha de vocabulário`.
+- Continuar construção da trilha:
+  - bolhas por tópico;
+  - desbloqueio progressivo;
+  - níveis por bolha;
+  - revisão espaçada;
+  - progresso real;
+  - integração com tarefas do dia.
+- Melhorar a tela de estudo da bolha:
+  - palavras novas;
+  - tradução visual;
+  - áudio;
+  - exercícios de fixação;
+  - conclusão da bolha;
+  - registro no progresso.
+- Garantir que a trilha não dependa da aula do dia.
+- Garantir que os flashcards da aula não se misturem com a trilha.
+
+Critérios:
+- Não quebrar a aba `Aula`.
+- Não quebrar a prática profunda.
+- Não misturar cards da aula com cards da trilha.
+- Não usar dados fictícios como se fossem progresso real.
+
+Últimos ajustes relacionados:
+- Botão superior `Flashcards da aula` passou a aparecer quando há vocabulário da aula.
+- Botão duplicado dentro de `Tópicos por nível` foi removido por CSS.
+- Ainda precisa validação no iPhone depois do deploy.
+
+## ORDEM DEFINIDA PELO USUÁRIO PARA OS PRÓXIMOS CHATS/BLOCOS
+
+1. `BLOCO-READING-COMPLETE-RENDER-REVIEW-LAB`
+2. `BLOCO-SPEAKING-COMPLETE-RENDER-REVIEW-LAB`
+3. `BLOCO-VOCAB-TRAIL-CONTINUATION-LAB`
+4. `BLOCO-PRACTICE-DEEP-SYSTEM-CORRECTION-LAB` — aguardar o usuário mandar o modelo antes de iniciar
+
+## BLOCOS PENDENTES POR ORDEM DE IMPORTÂNCIA
+
+### 1. `HOTFIX-VALIDATION-UI-CARDS-PRACTICE-LAB`
+
+Status: pendente de validação no iPhone.
+
+Objetivo:
+- Confirmar que os últimos hotfixes de UI realmente apareceram no Vercel preview.
+
+Checklist:
+- Botão duplicado `Flashcards da aula` dentro de `Tópicos por nível` deve sumir.
+- Deve ficar apenas o botão superior ao lado de `Trilha de vocabulário`.
+- Botão `Começar prática` deve estar visualmente aceitável e não quebrado.
+- Número de exercícios da aula deve bater com a prática profunda.
+- Minutos da tela Hoje e tela Aula devem bater ou ficar coerentes.
+
+### 2. `BLOCO-READING-COMPLETE-RENDER-REVIEW-LAB`
+
+Status: próximo bloco de desenvolvimento real.
+
+Objetivo:
+- Reestruturar Reading completamente, com padrão semelhante ao cuidado aplicado em Grammar e Listening.
+
+Escopo:
+- Revisar `ReadingLesson.jsx` e estilos relacionados.
+- Criar estrutura mobile-first, limpa e premium.
+- Separar texto principal, vocabulário em contexto, perguntas e evidência textual.
+- Melhorar renderização de textos longos.
+- Criar proteção contra perguntas genéricas.
+- Garantir que Reading treine leitura real.
+- Integrar corretamente com prática profunda sem vazar respostas.
+
+### 3. `BLOCO-SPEAKING-COMPLETE-RENDER-REVIEW-LAB`
+
+Status: deve vir imediatamente depois do Reading.
+
+Objetivo:
+- Revisar Speaking de ponta a ponta, mantendo backend Azure privado intocado.
+
+Escopo:
+- Melhorar UI do Speaking.
+- Melhorar fluxo de fala/resposta.
+- Garantir estado visual claro: ouvir, gravar, responder, repetir, concluir.
+- Criar experiência segura para A1.
+- Manter integração com Azure sem alterar backend.
+- Evitar tela poluída e botões redundantes.
+
+### 4. `BLOCO-VOCAB-TRAIL-CONTINUATION-LAB`
+
+Status: pendente e agora recolocado na ordem correta.
+
+Objetivo:
+- Continuar a trilha de vocabulário/Cartas.
+- Finalizar a separação entre trilha e flashcards da aula.
+- Desenvolver progressão por bolhas, revisão espaçada e tarefas do dia.
+
+### 5. `BLOCO-PRACTICE-DEEP-SYSTEM-CORRECTION-LAB`
+
+Status: aguardar modelo do usuário.
+
+Objetivo:
+- Corrigir o sistema de prática profunda com base no modelo que o usuário vai enviar.
+
+Base de referência:
+- `PRACTICE_DEEP_STRUCTURE.md`
+
+Escopo provável:
+- Auditar `PracticePlanAdapter.js`.
+- Garantir que cada tipo de aula tenha exercícios próprios:
+  - Grammar: estrutura, correção, transformação, produção curta.
+  - Listening: escuta, ditado, quem falou, compreensão auditiva, shadowing.
+  - Reading: ideia principal, detalhes, evidência textual, vocabulário em contexto.
+  - Speaking: repetição, resposta oral curta, mini diálogo, fluidez.
+  - Writing: frase guiada, ordem de palavras, correção, reescrita.
+- Remover exercícios genéricos demais.
+- Impedir respostas vazadas.
+- Adaptar dificuldade ao nível A1.
+
+### 6. `BLOCO-PRACTICE-RENDER-SAFETY-GATE-LAB`
+
+Status: depois da correção da prática profunda.
+
+Objetivo:
+- Criar trava de segurança antes de renderizar exercícios.
+
+Escopo:
+- Detectar resposta vazada no enunciado.
+- Validar opções duplicadas ou inválidas.
+- Rebaixar exercício avançado demais para A1.
+- Converter exercício quebrado em fallback simples.
+- Nunca deixar exercício quebrado travar a aula.
+
+### 7. `BLOCO-LISTENING-FINAL-APPROVAL-LAB`
+
+Status: Listening parece funcional, mas ainda precisa aprovação final do usuário.
+
+Checklist:
+- Player prepara e toca corretamente no iPhone.
+- Cache IndexedDB funciona.
+- Primeira escuta continua sem leitura.
+- Diálogo multi-voz funciona.
+- Pronúncia está aceitável com `pronunciationGuard.js`.
+- UI não está poluída.
+
+### 8. `BLOCO-TEMP-PREVIEW-CLEANUP-LAB`
+
+Status: futuro, somente depois que Reading, Listening e Speaking estiverem aprovados.
+
+Objetivo:
+- Remover ou esconder o seletor temporário de teste:
+  - `Aula real`
+  - `Testar Listening`
+  - `Testar Diálogo`
+  - `Testar Reading`
+  - `Abrir Speaking`
+
+### 9. `BLOCO-LAB-PROMOTION-PREP-LAB`
+
+Status: futuro.
+
+Objetivo:
+- Preparar promoção controlada da lab para branch estável, sem mexer direto na main.
+
+## ESTADO ATUAL — UI CARDS / PRÁTICA / STATS
+
+### `HOTFIX-PRACTICE-CTA-CARDS-SEPARATION-LAB` — PARCIALMENTE IMPLEMENTADO E EM VALIDAÇÃO
+
+Motivação:
+- Usuário apontou que:
+  - botão `Começar prática` estava feio/bugado;
+  - flashcards adaptativos da aula tinham sumido;
+  - a aba Cartas não deveria misturar `Flashcards da aula` dentro da trilha;
+  - minutos e quantidade de exercícios estavam inconsistentes.
+
+O que foi feito:
+- `lessonStats.js` passou a usar `PracticePlanAdapter` para contagem de exercícios.
+- `LessonScreen.jsx` passou a usar `getLessonStats`.
+- `TodayScreen.jsx` passou a tentar carregar aula completa via IndexedDB antes de calcular tempo/cards.
+- `FlashcardsScreen.jsx` passou a carregar `getCurrentLessonFull()` para achar vocabulário real da aula.
+- Adicionado fallback para gerar cards da aula a partir de termos importantes quando a aula não tiver vocabulário estruturado.
+- Criado botão superior `Flashcards da aula` ao lado de `Trilha de vocabulário`.
+- Removido por CSS o botão duplicado dentro de `Tópicos por nível`.
+
+Pendente:
+- Usuário validar no iPhone após deploy.
+
+## ESTADO ANTERIOR — LISTENING
 
 ### `HOTFIX-LISTENING-CLEANER-BLIND-NOTE-LAB` — IMPLEMENTADO
 
-Motivação:
-- Usuário pediu remover a frase redundante acima de `Conferir texto`.
-- Também foi pedido encurtar a nota protegida para deixar a aba Listening mais limpa.
-
-Arquivos alterados:
-- `fluency-clean/src/lessons/ListeningLessonClean.jsx`
-- `REWRITE_HANDOFF.md`
-
-O que foi feito:
 - Estado inicial `message` mudou de texto fixo para string vazia.
 - A mensagem `<small>` agora só aparece quando houver status real do áudio/player.
-- Removida a frase inicial redundante:
-  - `Comece ouvindo sem abrir o texto. Depois confira a transcrição.`
 - Nota de primeira escuta foi encurtada para:
   - `Primeira escuta sem leitura. Abra o texto só depois de ouvir.`
 
-Commit:
-- `fecc5621511886a7b3b4a1d9fdaa79948489f425` — limpa mensagens iniciais do Listening.
-
-Próximo teste recomendado no iPhone:
-1. Aguardar deploy da branch `rewrite-fluency-clean-lab`.
-2. Abrir `Aula` > `Testar Diálogo`.
-3. Confirmar que a frase redundante acima de `Conferir texto` sumiu.
-4. Confirmar que a nota ficou mais curta.
-5. Tocar play e confirmar que mensagens só aparecem como status real do áudio.
-
-## ESTADO ANTERIOR — GUARDA DE PRONÚNCIA EXPANDIDA
-
 ### `BLOCO-TTS-PRONUNCIATION-GUARD-EXPANSION-LAB` — IMPLEMENTADO
 
-Motivação:
-- Usuário perguntou se precisaria avisar palavra por palavra sempre que o TTS pronunciasse algo errado.
-- Decisão: criar uma camada preventiva maior, expansível, para reduzir erros comuns automaticamente.
-
-Objetivo executado:
-- Expandir `pronunciationGuard.js` com regras preventivas.
-- Cobrir nomes brasileiros comuns, frases A1/A2, palavras sensíveis e contrações básicas.
-- Invalidar cache multi-speaker antigo para regenerar áudio com a guarda expandida.
-
-Arquivos alterados:
-- `fluency-clean/src/services/pronunciationGuard.js`
-- `fluency-clean/src/services/multiSpeakerAudio.js`
-- `REWRITE_HANDOFF.md`
-
-O que foi feito:
-- Expandida lista `PRONUNCIATION_RULES`.
-- Adicionadas regras para nomes brasileiros/comuns:
-  - João;
-  - José;
-  - Ana;
-  - Maria;
-  - Paulo;
-  - Pedro;
-  - Lucas;
-  - Beatriz;
-  - Luiz/Luis/Luís;
-  - Vitor/Victor.
-- Adicionadas frases comuns A1/A2:
-  - how are you;
-  - where are you from;
-  - what do you do;
-  - nice to meet you;
-  - see you tomorrow.
-- Adicionadas palavras sensíveis/frequentes:
-  - today;
-  - tomorrow;
-  - morning;
-  - evening;
-  - breakfast;
-  - comfortable;
-  - vegetable;
-  - chocolate;
-  - favorite/favourite;
-  - pronunciation;
-  - language;
-  - English;
-  - Brazil;
-  - Brazilian.
-- Adicionadas regras para sons com `you`:
-  - you;
-  - your;
-  - yours.
-- Adicionadas contrações básicas:
-  - I'm;
-  - you're;
-  - don't;
-  - doesn't;
-  - can't.
-- Adicionadas regras úteis para spelling:
-  - letter A;
-  - spell my name.
-- Criado `getPronunciationGuardStats(text)` para diagnóstico futuro.
-- Exportado `PRONUNCIATION_RULES` para inspeção futura.
-- `multiSpeakerAudio.js` mudou o modelo de cache final para `multi-speaker-merged-dialogue-v4-pronunciation-expanded`, invalidando áudios antigos e forçando nova geração com a guarda expandida.
-
-Commits:
-- `989073422e7e4e915d9463ef0140052a1bf12d84` — expande guarda automática de pronúncia TTS.
-- `9ae30226b791fb4a22d87631b5e665e77ac90615` — invalida cache multi-speaker após expansão de pronúncia.
-
-## ESTADO ANTERIOR — GUARDA DE PRONÚNCIA TTS
-
-### `HOTFIX-LISTENING-TTS-PRONUNCIATION-GUARD-LAB` — IMPLEMENTADO
-
-Motivação:
-- O player limpo funcionou.
-- O problema novo foi qualidade de pronúncia em uma geração específica do Gemini TTS:
-  - `João` soou como `juau`;
-  - `you` soou como `iu`;
-  - `today` soou como algo próximo de `drei`.
-
-Objetivo executado:
-- Criar uma camada de proteção de pronúncia antes do Gemini TTS.
-- Manter o texto visual da aula igual, mas enviar ao TTS uma versão mais segura quando necessário.
-- Invalidar o cache antigo de diálogo com pronúncia ruim para forçar nova geração.
-
-Arquivos criados/alterados:
-- `fluency-clean/src/services/pronunciationGuard.js`
-- `fluency-clean/src/services/geminiTts.js`
-- `fluency-clean/src/services/multiSpeakerAudio.js`
-- `REWRITE_HANDOFF.md`
-
-Commits:
-- `42eac1160e862d14b90f4688f79b39587061387a` — cria guarda de pronúncia para TTS.
-- `0eb1dffbc62579f982b344b4befb6971d4c7820c` — aplica guarda de pronúncia no Gemini TTS.
-- `e38f8548b565c70cc298d9a22d3b2ac8e2cd49b5` — usa guarda de pronúncia no cache multi-speaker.
-
-## ESTADO ANTERIOR — LISTENING PLAYER LIMPO + CACHE INDEXEDDB
+- `pronunciationGuard.js` expandido com nomes brasileiros, frases A1/A2, palavras sensíveis, sons com `you`, contrações e spelling.
 
 ### `HOTFIX-LISTENING-CLEAN-PLAYER-INDEXEDDB-CACHE-LAB` — IMPLEMENTADO
 
@@ -153,45 +231,7 @@ Commits:
 - Criou cache IndexedDB para áudios grandes.
 - Removeu card poluído de controle por fala/trecho.
 
-Commits:
-- `d11ec132f9fe3c8239d707c617da02f61ae78e6b` — cria cache IndexedDB para áudios grandes.
-- `57f784a33c6398a3ff432e6990709bd6bbc5dbc7` — usa IndexedDB para cache final multi-speaker.
-- `75d5000e09002058074750f3237da876f9e9fe51` — simplifica player Listening e prepara áudio antes de tocar.
-- `1ecbced18f432f2a2dd40eede8da04b1f315a593` — remove poluição visual do controle manual Listening.
-
-## ESTADO ANTERIOR — CACHE DE ÁUDIO AMPLIADO
-
-### `HOTFIX-AUDIO-CACHE-CAPACITY-LAB` — IMPLEMENTADO
-
-- Cache de áudio localStorage aumentou de 40 para 160 itens.
-- Se salvar falhar por espaço, faz prune e tenta novamente.
-- `audio.cache.*` não sincroniza mais com cloud sync.
-
-## ESTADO ANTERIOR — LISTENING MULTI-SPEAKER + PLANO ANTI-PAUSA
-
-### `BLOCO-LISTENING-MULTI-SPEAKER-TTS-LAB` — IMPLEMENTADO
-
-- Detecta diálogos `Nome: fala`.
-- Usa vozes diferentes por personagem.
-- Tenta montar áudio único WAV no frontend.
-- Preview `Testar Diálogo` usa Ana/João.
-
-## ESTADO ANTERIOR — HOTFIX LISTENING AUDIO + PRACTICE DEPTH
-
-### `HOTFIX-LISTENING-AUDIO-PRACTICE-DEPTH-LAB` — IMPLEMENTADO
-
-- Estabilizou áudio segmentado no iPhone.
-- Adicionou controle manual por trecho.
-- Adaptou prática profunda de Listening para ser mais focada em escuta e segura para A1.
-
-## ESTADO ANTERIOR — PREVIEW TEMPORÁRIO DE TIPOS DE AULA
-
-### `BLOCO-TEMP-LESSON-PREVIEW-SWITCH-LAB` — IMPLEMENTADO
-
-- Seletor temporário na aba Aula com `Aula real`, `Testar Listening`, `Testar Diálogo`, `Testar Reading` e `Abrir Speaking`.
-- O preview usa samples locais e não substitui a aula real.
-
-## ESTADO ANTERIOR — GRAMMAR APROVADA NA LAB
+## ESTADO ANTERIOR — GRAMMAR
 
 ### `BLOCO-GRAMMAR-APPROVAL-LAB` — IMPLEMENTADO
 
@@ -208,7 +248,8 @@ Status:
 - Não alterar política de chaves agora.
 - Não mexer em `main`, `rewrite-fluency-clean`, `bundle.js` ou backend Azure privado.
 - Não remover o preview temporário até o usuário aprovar ou pedir remoção.
+- Não iniciar correção profunda da prática antes de o usuário mandar o modelo prometido.
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. Foi implementado `HOTFIX-LISTENING-CLEANER-BLIND-NOTE-LAB`: a mensagem inicial fixa do Listening foi removida, `<small>` só aparece quando há status real do áudio, e a nota foi encurtada para `Primeira escuta sem leitura. Abra o texto só depois de ouvir.` Próximo teste: `Aula > Testar Diálogo` no iPhone e confirmar limpeza visual."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. Não mexa em `main`, `rewrite-fluency-clean`, `bundle.js` ou backend Azure privado. O plano definido pelo usuário é: primeiro fazer `BLOCO-READING-COMPLETE-RENDER-REVIEW-LAB`, depois `BLOCO-SPEAKING-COMPLETE-RENDER-REVIEW-LAB`, depois `BLOCO-VOCAB-TRAIL-CONTINUATION-LAB`, e depois aguardar o usuário mandar um modelo para `BLOCO-PRACTICE-DEEP-SYSTEM-CORRECTION-LAB`. Antes de começar, validar se o hotfix de Cards removeu o botão duplicado de Flashcards da aula dentro de Tópicos por nível."
