@@ -366,6 +366,54 @@
   line-height: 1.45;
 }
 
+.reading-mini-exercise-group:first-of-type .reading-mini-exercise span,
+.reading-mini-exercise-group:first-of-type .reading-mini-exercise small {
+  display: none;
+}
+
+.reading-mini-exercise-group:first-of-type .reading-mini-exercise::after {
+  content: 'Pense primeiro. Toque e segure para conferir a resposta e a evidência.';
+  color: #93c5fd;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.reading-mini-exercise-group:first-of-type .reading-mini-exercise:hover span,
+.reading-mini-exercise-group:first-of-type .reading-mini-exercise:hover small,
+.reading-mini-exercise-group:first-of-type .reading-mini-exercise:active span,
+.reading-mini-exercise-group:first-of-type .reading-mini-exercise:active small,
+.reading-mini-exercise-group:first-of-type .reading-mini-exercise:focus-within span,
+.reading-mini-exercise-group:first-of-type .reading-mini-exercise:focus-within small {
+  display: block;
+}
+
+.reading-mini-exercise-group:first-of-type .reading-mini-exercise:hover::after,
+.reading-mini-exercise-group:first-of-type .reading-mini-exercise:active::after,
+.reading-mini-exercise-group:first-of-type .reading-mini-exercise:focus-within::after {
+  display: none;
+}
+
+.reading-mini-written-exercise small {
+  display: none;
+}
+
+.reading-mini-written-exercise::after {
+  content: 'Escreva sua tentativa primeiro. O apoio aparece depois que você digitar.';
+  color: #93c5fd;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.reading-mini-written-exercise:focus-within small,
+.reading-mini-written-exercise:has(textarea:not(:placeholder-shown)) small {
+  display: block;
+}
+
+.reading-mini-written-exercise:focus-within::after,
+.reading-mini-written-exercise:has(textarea:not(:placeholder-shown))::after {
+  display: none;
+}
+
 .reading-mini-written-exercise textarea {
   width: 100%;
   min-height: 74px;
