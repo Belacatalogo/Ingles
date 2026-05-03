@@ -1,6 +1,7 @@
 import { DEFAULT_PRACTICE_LIMITS, PRACTICE_SKILLS, SKILL_PHASE_PLAN } from './PracticeTypes.js';
 import { normalizeLessonForPractice } from './PracticeNormalizer.js';
 import { filterPracticeQuestions, getPracticePlanIssues } from './PracticeQualityGate.js';
+import { applyLeakDetector } from './PracticeLeakDetector.js';
 import { buildListeningPractice } from './builders/listeningBuilder.js';
 import { buildSpeakingPractice } from './builders/speakingBuilder.js';
 import { buildReadingPractice } from './builders/readingBuilder.js';
@@ -45,8 +46,9 @@ export function buildPracticePlan(lesson, options = {}) {
   const phasePlan = SKILL_PHASE_PLAN[context.skill] || SKILL_PHASE_PLAN[PRACTICE_SKILLS.MIXED] || [];
   const builder = getBuilderForSkill(context.skill);
   const candidates = builder(context);
-  const { accepted, rejected } = filterPracticeQuestions(candidates, limits);
-  const ordered = orderByPhase(accepted, phasePlan);
+  const { accepted: structurallyValid, rejected } = filterPracticeQuestions(candidates, limits);
+  const leakResult = applyLeakDetector(structurallyValid, context);
+  const ordered = orderByPhase(leakResult.accepted, phasePlan);
   const count = chooseQuestionCount(context, limits, ordered.length);
   const questions = ordered.slice(0, count);
   const draftPlan = {
@@ -58,9 +60,15 @@ export function buildPracticePlan(lesson, options = {}) {
     questions,
     quality: {
       candidateCount: candidates.length,
-      acceptedCount: accepted.length,
+      acceptedCount: leakResult.accepted.length,
       rejectedCount: rejected.length,
       rejected,
+      leakSanitized: leakResult.sanitizedList.length,
+      leakDowngraded: leakResult.downgradedList.length,
+      leakDiscarded: leakResult.discarded.length,
+      leakSanitizedItems: leakResult.sanitizedList,
+      leakDowngradedItems: leakResult.downgradedList,
+      leakDiscardedItems: leakResult.discarded,
     },
     contextSummary: {
       sentences: context.sentences.length,
@@ -69,6 +77,14 @@ export function buildPracticePlan(lesson, options = {}) {
       desiredCount: count,
     },
   };
+
+  if (leakResult.sanitizedList.length || leakResult.downgradedList.length || leakResult.discarded.length) {
+    console.info('[PracticeBuilder] Leak detector summary', {
+      leakSanitized: leakResult.sanitizedList.length,
+      leakDowngraded: leakResult.downgradedList.length,
+      leakDiscarded: leakResult.discarded.length,
+    });
+  }
 
   return {
     ...draftPlan,
