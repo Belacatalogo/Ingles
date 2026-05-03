@@ -25,10 +25,11 @@ Branch estável protegida: `rewrite-fluency-clean`
 ## DIRETRIZ DE UI APROVADA — STEPPER REAL
 
 - O stepper real da Reading foi aprovado visualmente pelo usuário.
-- O padrão foi portado para Grammar e Listening.
+- O padrão foi portado para Grammar, Listening e Speaking.
 - A adaptação deve respeitar a natureza de cada aula.
 - Grammar não deve virar jogo; deve ser sério, claro e guiado.
 - Listening deve manter primeira escuta sem leitura e controles de áudio limpos.
+- Speaking deve preservar Azure, gravação, análise, histórico e modos reais.
 
 ## ESTADO ATUAL — READING
 
@@ -119,17 +120,12 @@ Branch estável protegida: `rewrite-fluency-clean`
 - Adicionados estilos preparados para parágrafos-alvo:
   - `p:target`;
   - `.reading-evidence-target`.
-- Quando o próximo hotfix funcional marcar o parágrafo correto, ele poderá exibir selo `Trecho de prova`.
 - Nenhum card técnico foi adicionado.
 - Stepper e exercícios internos permanecem preservados.
 - Criada documentação em `fluency-clean/docs/BLOCO-READING-7-EVIDENCIA-TEXTUAL-INTELIGENTE-LAB.md`.
 
 Pendente para fechar 100% o bloco:
-- `HOTFIX-READING-7-ANCHOR-EVIDENCE-LAB`.
-- Alterar `ReadingLesson.jsx` para marcar cada parágrafo com `id` estável.
-- Descobrir qual parágrafo contém a evidência.
-- Adicionar botão `Ir ao trecho` ou equivalente dentro do feedback/evidência.
-- Destacar temporariamente o parágrafo correto usando estado React, sem DOM injection.
+- `HOTFIX-READING-7-ANCHOR-EVIDENCE-LAB`, apenas quando for possível alterar `ReadingLesson.jsx` completo com segurança.
 
 ### `BLOCO-READING-8 — Quality gate Reading` — IMPLEMENTADO
 
@@ -202,6 +198,60 @@ Pendente validar no iPhone:
 - Usar `Testar Listening`.
 - Confirmar stepper com 8 etapas, scroll horizontal, primeira escuta sem leitura, transcrição fechada no início, áudio, diálogo, vocabulário, shadowing e conclusão.
 
+## ESTADO ATUAL — SPEAKING
+
+### `BLOCO-SPEAKING-COMPLETE-RENDER-REVIEW-LAB` — IMPLEMENTADO
+
+- Revisada a renderização da aba Speaking sem alterar o motor.
+- Criado modelo modular `fluency-clean/src/speaking/speakingFlow.js`.
+- Criado componente `fluency-clean/src/speaking/SpeakingStepper.jsx`.
+- Criado estilo `fluency-clean/src/styles/speaking-stepper-real.css`.
+- Importado CSS em `main.jsx`.
+- `SpeakingScreen.jsx` agora usa stepper real adaptado por modo.
+- Fluxo Conversa:
+  1. Modo
+  2. Histórico
+  3. Cenário
+  4. Conversa
+  5. Gravar
+  6. Concluir
+- Fluxo Pronúncia:
+  1. Modo
+  2. Histórico
+  3. Modelo
+  4. Pontuação
+  5. Repetir
+  6. Avançar
+- Fluxo Imersão:
+  1. Modo
+  2. Histórico
+  3. Cenário
+  4. Frase
+  5. Responder
+  6. Registrar
+- Adicionados IDs reais para navegação por etapa.
+- Troca de modo atualiza o fluxo do stepper.
+- Começar gravação/concluir/trocar frase atualiza a etapa ativa.
+- Preservado sem alteração:
+  - Azure Pronunciation;
+  - reconhecimento de fala;
+  - `startRecording`;
+  - histórico real;
+  - gravação automática por silêncio;
+  - modos Conversa, Pronúncia e Imersão.
+- Criada documentação em `fluency-clean/docs/BLOCO-SPEAKING-COMPLETE-RENDER-REVIEW-LAB.md`.
+
+Pendente validar no iPhone:
+- Abrir aba Speaking.
+- Confirmar stepper no topo.
+- Confirmar que o stepper muda entre Conversa/Pronúncia/Imersão.
+- Confirmar scroll horizontal.
+- Confirmar que tocar nas etapas leva para as áreas corretas.
+- Confirmar que Conversa grava e analisa.
+- Confirmar que Pronúncia ouve, grava, pontua e avança.
+- Confirmar que Imersão escolhe cenário, ouve e grava.
+- Confirmar que histórico continua aparecendo.
+
 ## ALERTA IMPORTANTE — VOCAB/TRILHA
 
 ### `BLOCO-VOCAB-TRAIL-CONTINUATION-LAB` — PENDENTE
@@ -214,15 +264,14 @@ Objetivo:
 
 Próximos blocos:
 1. Validar Reading no iPhone depois do quality gate.
-2. Validar `BLOCO-GRAMMAR-STEPPER-REAL-LAB` no iPhone.
-3. Validar `BLOCO-LISTENING-STEPPER-REAL-LAB` no iPhone.
-4. Fazer `HOTFIX-READING-7-ANCHOR-EVIDENCE-LAB` somente quando for possível alterar `ReadingLesson.jsx` completo com segurança.
-5. Depois seguir para `BLOCO-SPEAKING-COMPLETE-RENDER-REVIEW-LAB`.
+2. Validar Grammar stepper.
+3. Validar Listening stepper.
+4. Validar Speaking stepper.
+5. `BLOCO-VOCAB-TRAIL-CONTINUATION-LAB`.
 
-Depois retomar a ordem macro:
-- `BLOCO-SPEAKING-COMPLETE-RENDER-REVIEW-LAB`
-- `BLOCO-VOCAB-TRAIL-CONTINUATION-LAB`
-- `BLOCO-PRACTICE-DEEP-SYSTEM-CORRECTION-LAB` — aguardar o usuário mandar o modelo antes de iniciar
+Depois:
+- `BLOCO-PRACTICE-DEEP-SYSTEM-CORRECTION-LAB` — aguardar o usuário mandar o modelo antes de iniciar.
+- `HOTFIX-READING-7-ANCHOR-EVIDENCE-LAB` apenas se for possível alterar `ReadingLesson.jsx` completo com segurança.
 
 ## NÃO FAZER AGORA
 
@@ -238,4 +287,4 @@ Depois retomar a ordem macro:
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. Não mexa em `main`, `rewrite-fluency-clean`, `bundle.js` ou backend Azure privado. O último bloco implementado foi `BLOCO-READING-8 — Quality gate Reading`. Validar Reading, Grammar stepper e Listening stepper no iPhone. Depois seguir para `BLOCO-SPEAKING-COMPLETE-RENDER-REVIEW-LAB`, ou voltar ao `HOTFIX-READING-7-ANCHOR-EVIDENCE-LAB` apenas se for possível alterar `ReadingLesson.jsx` completo com segurança."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. Não mexa em `main`, `rewrite-fluency-clean`, `bundle.js` ou backend Azure privado. O último bloco implementado foi `BLOCO-SPEAKING-COMPLETE-RENDER-REVIEW-LAB`. Validar Speaking no iPhone e depois seguir para `BLOCO-VOCAB-TRAIL-CONTINUATION-LAB`."
