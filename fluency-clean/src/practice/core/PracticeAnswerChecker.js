@@ -1,5 +1,12 @@
 import { PRACTICE_RESULT_STATUS, QUESTION_TYPES } from './PracticeTypes.js';
 import { cleanPracticeText, normalizePracticeText } from './PracticeNormalizer.js';
+import {
+  TAG_DOMAIN,
+  readableListeningSkill,
+  readableReadingSkill,
+  readableWritingSkill,
+  updateMasteryTag,
+} from './PracticeMasteryTags.js';
 import { recordPracticeSrsResult, SRS_ITEM_TYPES } from '../../services/practiceSrsExtended.js';
 
 function levenshtein(a, b) {
@@ -93,9 +100,78 @@ function recordTaggedSrsResults(question, result) {
   }
 }
 
+function recordMasteryTagResults(question, result) {
+  if (!question || result?.status === PRACTICE_RESULT_STATUS.EMPTY) return [];
+  const correct = result?.status === PRACTICE_RESULT_STATUS.CORRECT;
+  const touched = [];
+
+  if (question.grammarTag) {
+    const tag = updateMasteryTag({
+      tag: question.grammarTag,
+      domain: TAG_DOMAIN.GRAMMAR,
+      label: question.grammarTagLabel || question.grammarTag,
+      correct,
+    });
+    if (tag) touched.push(tag);
+  }
+
+  if (question.vocabTag) {
+    const tag = updateMasteryTag({
+      tag: question.vocabTag,
+      domain: TAG_DOMAIN.VOCABULARY,
+      label: question.vocabTagLabel || question.vocabTag,
+      correct,
+    });
+    if (tag) touched.push(tag);
+  }
+
+  if (question.pronunciationWord && typeof question.azureScore === 'number') {
+    const tag = updateMasteryTag({
+      tag: `pron::${question.pronunciationWord}`,
+      domain: TAG_DOMAIN.PRONUNCIATION,
+      label: question.pronunciationWord,
+      correct: Number(question.azureScore) >= 80,
+    });
+    if (tag) touched.push(tag);
+  }
+
+  if (question.readingSkillTag) {
+    const tag = updateMasteryTag({
+      tag: question.readingSkillTag,
+      domain: TAG_DOMAIN.READING_SKILL,
+      label: question.readingSkillLabel || readableReadingSkill(question.readingSkillTag),
+      correct,
+    });
+    if (tag) touched.push(tag);
+  }
+
+  if (question.listeningSkillTag) {
+    const tag = updateMasteryTag({
+      tag: question.listeningSkillTag,
+      domain: TAG_DOMAIN.LISTENING_SKILL,
+      label: question.listeningSkillLabel || readableListeningSkill(question.listeningSkillTag),
+      correct,
+    });
+    if (tag) touched.push(tag);
+  }
+
+  if (question.writingSkillTag) {
+    const tag = updateMasteryTag({
+      tag: question.writingSkillTag,
+      domain: TAG_DOMAIN.WRITING_SKILL,
+      label: question.writingSkillLabel || readableWritingSkill(question.writingSkillTag),
+      correct,
+    });
+    if (tag) touched.push(tag);
+  }
+
+  return touched;
+}
+
 function finalizePracticeResult(question, result) {
   recordTaggedSrsResults(question, result);
-  return result;
+  const touchedMasteryTags = recordMasteryTagResults(question, result);
+  return { ...result, touchedMasteryTags };
 }
 
 export function checkPracticeAnswer(question, rawAnswer) {
