@@ -131,6 +131,40 @@ Pendente para fechar 100% o bloco:
 - Adicionar botão `Ir ao trecho` ou equivalente dentro do feedback/evidência.
 - Destacar temporariamente o parágrafo correto usando estado React, sem DOM injection.
 
+### `BLOCO-READING-8 — Quality gate Reading` — IMPLEMENTADO
+
+- Criado `fluency-clean/src/reading/readingQualityGate.js`.
+- Exporta `applyReadingQualityGate(rawLesson)` e `assertReadingQualityGate(gatedLesson)`.
+- Quality gate verifica/normaliza:
+  - `readingText` vazio ou curto demais;
+  - perguntas sem enunciado;
+  - perguntas sem resposta;
+  - resposta vazada no enunciado;
+  - alternativas duplicadas;
+  - resposta correta ausente nas opções;
+  - evidência ausente;
+  - evidência que não aparece no texto;
+  - ausência de pré-leitura;
+  - ausência de produção pós-leitura.
+- Quality gate cria reparos seguros quando possível:
+  - remove perguntas quebradas;
+  - adiciona resposta correta às opções se faltar;
+  - infere evidência pelo texto quando possível;
+  - cria `evidenceTasks` a partir das perguntas;
+  - cria pré-leitura padrão;
+  - cria produção curta padrão.
+- `readingJsonContract.js` agora importa `applyReadingQualityGate`.
+- `normalizeReadingLessonContract(rawLesson)` agora retorna `applyReadingQualityGate(buildNormalizedReadingLesson(rawLesson))`.
+- Não foi mexido no render aprovado de `ReadingLesson.jsx`.
+- Não foi adicionado card técnico de quality gate na aula.
+- Criada documentação em `fluency-clean/docs/BLOCO-READING-8-QUALITY-GATE-LAB.md`.
+
+Pendente validar no iPhone:
+- Usar `Testar Reading`.
+- Confirmar que a aula ainda abre.
+- Confirmar que texto, perguntas, evidências, exercícios internos, stepper e conclusão continuam funcionando.
+- Confirmar que não apareceu card técnico de quality gate.
+
 ## ESTADO ATUAL — GRAMMAR
 
 ### `BLOCO-GRAMMAR-STEPPER-REAL-LAB` — IMPLEMENTADO
@@ -179,11 +213,11 @@ Objetivo:
 ## ORDEM DEFINIDA PELO USUÁRIO PARA OS PRÓXIMOS CHATS/BLOCOS
 
 Próximos blocos:
-1. Validar `BLOCO-GRAMMAR-STEPPER-REAL-LAB` no iPhone.
-2. Validar `BLOCO-LISTENING-STEPPER-REAL-LAB` no iPhone.
-3. Validar parte visual do `BLOCO-READING-7`.
-4. Fazer `HOTFIX-READING-7-ANCHOR-EVIDENCE-LAB` para fechar evidência textual inteligente funcional.
-5. Depois seguir para `BLOCO-READING-8 — Quality gate Reading`.
+1. Validar Reading no iPhone depois do quality gate.
+2. Validar `BLOCO-GRAMMAR-STEPPER-REAL-LAB` no iPhone.
+3. Validar `BLOCO-LISTENING-STEPPER-REAL-LAB` no iPhone.
+4. Fazer `HOTFIX-READING-7-ANCHOR-EVIDENCE-LAB` somente quando for possível alterar `ReadingLesson.jsx` completo com segurança.
+5. Depois seguir para `BLOCO-SPEAKING-COMPLETE-RENDER-REVIEW-LAB`.
 
 Depois retomar a ordem macro:
 - `BLOCO-SPEAKING-COMPLETE-RENDER-REVIEW-LAB`
@@ -204,4 +238,4 @@ Depois retomar a ordem macro:
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. Não mexa em `main`, `rewrite-fluency-clean`, `bundle.js` ou backend Azure privado. O último bloco foi a implementação inicial segura do `BLOCO-READING-7 — Evidência textual inteligente`, com melhoria visual da evidência. Falta o `HOTFIX-READING-7-ANCHOR-EVIDENCE-LAB` para botão/âncora funcional no parágrafo certo."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. Não mexa em `main`, `rewrite-fluency-clean`, `bundle.js` ou backend Azure privado. O último bloco implementado foi `BLOCO-READING-8 — Quality gate Reading`. Validar Reading, Grammar stepper e Listening stepper no iPhone. Depois seguir para `BLOCO-SPEAKING-COMPLETE-RENDER-REVIEW-LAB`, ou voltar ao `HOTFIX-READING-7-ANCHOR-EVIDENCE-LAB` apenas se for possível alterar `ReadingLesson.jsx` completo com segurança."
