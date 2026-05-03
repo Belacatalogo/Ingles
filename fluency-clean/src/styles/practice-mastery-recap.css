@@ -1,0 +1,84 @@
+.practice-mastery-recap {
+  width: min(520px, 100%);
+  margin: 22px auto 18px;
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  background: rgba(15, 23, 42, 0.34);
+  text-align: left;
+}
+
+.practice-mastery-recap-title {
+  margin: 0 0 12px;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.practice-mastery-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.practice-mastery-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 110px auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.practice-mastery-label {
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.86);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.practice-mastery-bar {
+  display: block;
+  width: 100%;
+  height: 7px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.practice-mastery-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  transition: width 200ms ease-out;
+}
+
+.practice-mastery-band {
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+@media (max-width: 480px) {
+  .practice-mastery-recap {
+    padding: 14px;
+  }
+
+  .practice-mastery-item {
+    grid-template-columns: minmax(0, 1fr) 64px auto;
+    gap: 8px;
+  }
+
+  .practice-mastery-label {
+    font-size: 12px;
+  }
+
+  .practice-mastery-band {
+    font-size: 10px;
+  }
+}
