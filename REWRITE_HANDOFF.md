@@ -68,57 +68,68 @@ Branch estável protegida: `rewrite-fluency-clean`
 
 ### `BLOCO-READING-4 — Geração da aula Reading por habilidade` — IMPLEMENTADO
 
-Objetivo:
-- Fazer novas aulas Reading serem pedidas ao Gemini com contrato próprio, habilidades de leitura e evidência textual.
-
-O que foi feito:
 - `lessonJsonContract.js` agora importa `buildReadingJsonContractInstruction`.
 - Quando `lessonType === 'reading'`, o prompt geral usa o contrato próprio de Reading.
-- O prompt de Reading agora pede:
-  - `readingText`;
-  - `textGenre`;
-  - `readingPurpose`;
-  - `preReading`;
-  - `readingQuestions`;
-  - `evidenceTasks`;
-  - `postReadingPrompts`.
-- Mantida compatibilidade com o motor atual:
-  - `readingText` preenche `listeningText` quando necessário;
-  - `readingQuestions` converte para `exercises`;
-  - `postReadingPrompts` converte para `prompts`.
-- Se a IA gerar `readingQuestions`, elas passam a ser a fonte principal dos exercícios internos da Reading, preservando `skill`, `evidence`, `questionLanguage` e `difficulty`.
-- `lessonTypes.js` agora preserva campos novos de Reading:
-  - `readingText`;
-  - `textGenre`;
-  - `readingPurpose`;
-  - `preReading`;
-  - `readingQuestions`;
-  - `evidenceTasks`;
-  - `postReadingPrompts`.
+- O prompt de Reading pede `readingText`, `textGenre`, `readingPurpose`, `preReading`, `readingQuestions`, `evidenceTasks` e `postReadingPrompts`.
+- Mantida compatibilidade com o motor atual: `readingText` preenche `listeningText`, `readingQuestions` converte para `exercises`, `postReadingPrompts` converte para `prompts`.
+- Se a IA gerar `readingQuestions`, elas viram fonte principal dos exercícios internos da Reading, preservando `skill`, `evidence`, `questionLanguage` e `difficulty`.
+- `lessonTypes.js` preserva campos novos de Reading.
 - Criada documentação em `fluency-clean/docs/BLOCO-READING-4-GERACAO-POR-HABILIDADE-LAB.md`.
 
+### `BLOCO-READING-5 — Render por etapas` — IMPLEMENTADO
+
+Objetivo:
+- Transformar a Reading em uma experiência guiada por etapas reais, sem esconder conteúdo importante e sem poluir a tela.
+
+O que foi feito:
+- `ReadingLesson.jsx` recebeu estado `activeStep`.
+- Criado stepper da Reading com 8 etapas:
+  1. Começar
+  2. Pré-leitura
+  3. Texto
+  4. Ideia geral
+  5. Vocabulário
+  6. Compreensão
+  7. Produção
+  8. Concluir
+- Cada etapa tem `id` próprio.
+- Clicar numa etapa faz scroll suave até o bloco correspondente.
+- Botões de avanço foram adicionados:
+  - `Continuar para o texto`
+  - `Responder ideia geral`
+  - `Estudar vocabulário`
+  - `Responder compreensão`
+  - `Ir para produção curta`
+- O conteúdo continua visível; o stepper guia a leitura, mas não trava a aula.
+- Ao concluir a aula, a etapa ativa vira `Concluir`.
+- `reading-complete-render-review.css` recebeu estilos do stepper:
+  - sticky no topo;
+  - scroll horizontal no iPhone;
+  - destaque discreto da etapa ativa;
+  - botões de próxima etapa;
+  - `scroll-margin-top` para os blocos não ficarem escondidos.
+- Criada documentação em `fluency-clean/docs/BLOCO-READING-5-RENDER-POR-ETAPAS-LAB.md`.
+
 Pendente validar no iPhone:
-- Gerar uma nova aula Reading real por IA.
-- Confirmar que a aula não quebrou.
-- Confirmar que aparecem perguntas com rótulos de habilidade.
-- Confirmar que aparece evidência textual quando disponível.
-- Confirmar que não apareceu card técnico de contrato/política.
+- Usar `Testar Reading`.
+- Confirmar que o stepper aparece com 8 etapas.
+- Confirmar que o stepper não ocupa tela demais.
+- Confirmar que no iPhone ele rola horizontalmente.
+- Confirmar que clicar nas etapas leva ao bloco correto.
+- Confirmar que botões de avanço funcionam.
+- Confirmar que texto, vocabulário, perguntas e produção continuam visíveis.
+- Confirmar que `Salvar rascunho` e `Concluir Reading` funcionam.
 - Confirmar que a Prática Profunda continua abaixo como complemento.
+- Confirmar que não apareceu card técnico de contrato/política.
 
 ### Próximo bloco recomendado
 
-`BLOCO-READING-5 — Render por etapas`
+`BLOCO-READING-6 — Exercícios internos da aba Reading`
 
 Objetivo:
-- Transformar a aba Reading em uma experiência guiada por etapas reais:
-  1. Começar leitura;
-  2. Pré-leitura;
-  3. Ler texto;
-  4. Ideia geral;
-  5. Vocabulário;
-  6. Compreensão;
-  7. Produção curta;
-  8. Concluir.
+- Fortalecer os exercícios próprios dentro da aba Reading.
+- Separar tipos de exercício por nível e habilidade.
+- Melhorar verdadeiro/falso com evidência, copiar trecho, completar frase, sequência e resposta curta.
 
 ## ALERTA IMPORTANTE — BLOCO QUE FOI ESQUECIDO NA LISTA ANTERIOR
 
@@ -144,49 +155,14 @@ Escopo recomendado:
 ## ORDEM DEFINIDA PELO USUÁRIO PARA OS PRÓXIMOS CHATS/BLOCOS
 
 Plano atual de Reading em andamento:
-1. `BLOCO-READING-5 — Render por etapas`
-2. `BLOCO-READING-6 — Exercícios internos da aba Reading`
-3. `BLOCO-READING-7 — Evidência textual inteligente`
-4. `BLOCO-READING-8 — Quality gate Reading`
+1. `BLOCO-READING-6 — Exercícios internos da aba Reading`
+2. `BLOCO-READING-7 — Evidência textual inteligente`
+3. `BLOCO-READING-8 — Quality gate Reading`
 
 Depois retomar a ordem macro:
 - `BLOCO-SPEAKING-COMPLETE-RENDER-REVIEW-LAB`
 - `BLOCO-VOCAB-TRAIL-CONTINUATION-LAB`
 - `BLOCO-PRACTICE-DEEP-SYSTEM-CORRECTION-LAB` — aguardar o usuário mandar o modelo antes de iniciar
-
-## BLOCOS PENDENTES POR ORDEM DE IMPORTÂNCIA
-
-### 1. `HOTFIX-VALIDATION-UI-CARDS-PRACTICE-LAB`
-
-Status: pendente de validação no iPhone.
-
-### 2. `BLOCO-SPEAKING-COMPLETE-RENDER-REVIEW-LAB`
-
-Status: deve vir depois da sequência atual de Reading, ou quando o usuário mandar avançar.
-
-### 3. `BLOCO-VOCAB-TRAIL-CONTINUATION-LAB`
-
-Status: pendente e agora recolocado na ordem correta.
-
-### 4. `BLOCO-PRACTICE-DEEP-SYSTEM-CORRECTION-LAB`
-
-Status: aguardar modelo do usuário.
-
-### 5. `BLOCO-PRACTICE-RENDER-SAFETY-GATE-LAB`
-
-Status: depois da correção da prática profunda.
-
-### 6. `BLOCO-LISTENING-FINAL-APPROVAL-LAB`
-
-Status: Listening parece funcional, mas ainda precisa aprovação final do usuário.
-
-### 7. `BLOCO-TEMP-PREVIEW-CLEANUP-LAB`
-
-Status: futuro, somente depois que Reading, Listening e Speaking estiverem aprovados.
-
-### 8. `BLOCO-LAB-PROMOTION-PREP-LAB`
-
-Status: futuro.
 
 ## NÃO FAZER AGORA
 
@@ -202,4 +178,4 @@ Status: futuro.
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. Não mexa em `main`, `rewrite-fluency-clean`, `bundle.js` ou backend Azure privado. Reading agora está sendo reconstruída como aula completa dentro da própria aba. A Prática Profunda em Reading é complemento posterior, não substitui a aula. O último bloco implementado foi `BLOCO-READING-4 — Geração da aula Reading por habilidade`. O próximo bloco recomendado é `BLOCO-READING-5 — Render por etapas`."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. Não mexa em `main`, `rewrite-fluency-clean`, `bundle.js` ou backend Azure privado. Reading agora está sendo reconstruída como aula completa dentro da própria aba. A Prática Profunda em Reading é complemento posterior, não substitui a aula. O último bloco implementado foi `BLOCO-READING-5 — Render por etapas`. O próximo bloco recomendado é `BLOCO-READING-6 — Exercícios internos da aba Reading`."
