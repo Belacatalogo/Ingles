@@ -2,6 +2,7 @@ import { DEFAULT_PRACTICE_LIMITS, PRACTICE_SKILLS, SKILL_PHASE_PLAN } from './Pr
 import { normalizeLessonForPractice } from './PracticeNormalizer.js';
 import { filterPracticeQuestions, getPracticePlanIssues } from './PracticeQualityGate.js';
 import { applyLeakDetector } from './PracticeLeakDetector.js';
+import { composePurePlan, validateSessionPurity } from './PracticePurityMatrix.js';
 import { buildListeningPractice } from './builders/listeningBuilder.js';
 import { buildSpeakingPractice } from './builders/speakingBuilder.js';
 import { buildReadingPractice } from './builders/readingBuilder.js';
@@ -48,9 +49,12 @@ export function buildPracticePlan(lesson, options = {}) {
   const candidates = builder(context);
   const { accepted: structurallyValid, rejected } = filterPracticeQuestions(candidates, limits);
   const leakResult = applyLeakDetector(structurallyValid, context);
-  const ordered = orderByPhase(leakResult.accepted, phasePlan);
-  const count = chooseQuestionCount(context, limits, ordered.length);
-  const questions = ordered.slice(0, count);
+  const targetCount = chooseQuestionCount(context, limits, leakResult.accepted.length);
+  const { questions: pureQuestions, purityReport } = composePurePlan(leakResult.accepted, context.skill, targetCount);
+  const ordered = orderByPhase(pureQuestions, phasePlan);
+  const purityValidation = validateSessionPurity(ordered, context.skill);
+  const count = ordered.length;
+  const questions = ordered;
   const draftPlan = {
     lessonId: context.id,
     title: context.title,
@@ -69,12 +73,15 @@ export function buildPracticePlan(lesson, options = {}) {
       leakSanitizedItems: leakResult.sanitizedList,
       leakDowngradedItems: leakResult.downgradedList,
       leakDiscardedItems: leakResult.discarded,
+      purityReport,
+      purityValidation,
     },
     contextSummary: {
       sentences: context.sentences.length,
       vocabulary: context.vocabulary.length,
       exercises: context.exercises.length,
-      desiredCount: count,
+      desiredCount: targetCount,
+      finalCount: count,
     },
   };
 
@@ -84,6 +91,10 @@ export function buildPracticePlan(lesson, options = {}) {
       leakDowngraded: leakResult.downgradedList.length,
       leakDiscarded: leakResult.discarded.length,
     });
+  }
+
+  if (!purityValidation.ok) {
+    console.warn(`[Purity] Sessão com ${Math.round((purityValidation.corePercentage || 0) * 100)}% de core (mínimo 70%). Razão: ${purityValidation.reason}`);
   }
 
   return {
