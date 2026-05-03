@@ -1,0 +1,214 @@
+.lesson-type-stepper-card {
+  position: sticky;
+  top: 10px;
+  z-index: 8;
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid rgba(147, 197, 253, .16);
+  border-radius: 22px;
+  background: rgba(15, 23, 42, .78);
+  box-shadow: 0 18px 60px rgba(0, 0, 0, .20);
+  backdrop-filter: blur(18px);
+}
+
+.lesson-type-stepper-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  color: #dbeafe;
+  font-size: 12px;
+}
+
+.lesson-type-stepper-header strong {
+  letter-spacing: -.01em;
+}
+
+.lesson-type-stepper-header span {
+  color: #93c5fd;
+  font-weight: 900;
+}
+
+.lesson-type-stepper-flow {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.lesson-type-stepper-flow button {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 10px;
+  border: 1px solid rgba(148, 163, 184, .12);
+  border-radius: 16px;
+  background: rgba(2, 6, 23, .22);
+  text-align: left;
+  cursor: pointer;
+}
+
+.lesson-type-stepper-flow button:focus-visible {
+  outline: 2px solid rgba(147, 197, 253, .72);
+  outline-offset: 2px;
+}
+
+.lesson-type-stepper-flow span {
+  flex: 0 0 26px;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  color: white;
+  background: rgba(91, 156, 246, .22);
+  font-size: 12px;
+  font-weight: 950;
+}
+
+.lesson-type-stepper-flow strong {
+  color: #dbeafe;
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.lesson-type-stepper-flow .active,
+.lesson-type-stepper-flow .done {
+  border-color: rgba(91, 156, 246, .38);
+  background: rgba(91, 156, 246, .12);
+}
+
+.lesson-type-stepper-flow .done span,
+.lesson-type-stepper-flow .active span {
+  background: linear-gradient(135deg, var(--blue), var(--violet));
+}
+
+.lesson-type-next-step-button {
+  width: 100%;
+  min-height: 44px;
+  margin-top: 14px;
+  border: 1px solid rgba(91, 156, 246, .30);
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(91, 156, 246, .20), rgba(167, 139, 250, .15));
+  color: #eff6ff;
+  font-weight: 950;
+  letter-spacing: -.01em;
+}
+
+.lesson-type-next-step-button:active {
+  transform: translateY(1px);
+}
+
+.grammar-step-panel,
+.listening-step-panel {
+  scroll-margin-top: 118px;
+  transition: border-color .18s ease, box-shadow .18s ease;
+}
+
+.grammar-step-panel[data-grammar-step-active="true"],
+.listening-step-panel[data-listening-step-active="true"] {
+  border-color: rgba(91, 156, 246, .42);
+  box-shadow: 0 20px 70px rgba(91, 156, 246, .10);
+}
+
+.grammar-section-card,
+.listening-section-card {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid rgba(147, 197, 253, .15);
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at 92% 0%, rgba(91, 156, 246, .10), transparent 34%),
+    rgba(15, 23, 42, .74);
+  backdrop-filter: blur(18px);
+}
+
+.grammar-guided-practice-list,
+.grammar-correction-list {
+  display: grid;
+  gap: 10px;
+}
+
+.grammar-guided-practice-list article,
+.grammar-correction-list article {
+  display: grid;
+  gap: 7px;
+  padding: 13px;
+  border: 1px solid rgba(148, 163, 184, .12);
+  border-radius: 17px;
+  background: rgba(2, 6, 23, .24);
+}
+
+.grammar-guided-practice-list span,
+.grammar-correction-list span {
+  color: #93c5fd;
+  font-size: 11px;
+  font-weight: 950;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+
+.grammar-guided-practice-list strong,
+.grammar-correction-list strong {
+  color: #eff6ff;
+  line-height: 1.35;
+}
+
+.grammar-guided-practice-list small,
+.grammar-correction-list p {
+  margin: 0;
+  color: #bfdbfe;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.grammar-examples-step-card .grammar-example-card-list {
+  margin-top: 2px;
+}
+
+.grammar-finish-card,
+.listening-finish-card {
+  border-color: rgba(52, 211, 153, .20);
+  background: linear-gradient(135deg, rgba(52, 211, 153, .09), rgba(15, 23, 42, .72));
+}
+
+.listening-stepper-card {
+  margin-bottom: 12px;
+}
+
+.listening-step-panel > .pillar-card,
+.listening-step-panel.pillar-card {
+  scroll-margin-top: 118px;
+}
+
+@media (max-width: 720px) {
+  .lesson-type-stepper-card {
+    top: 6px;
+    padding: 10px;
+  }
+
+  .lesson-type-stepper-flow {
+    display: flex;
+    overflow-x: auto;
+    padding-bottom: 3px;
+    scroll-snap-type: x proximity;
+  }
+
+  .lesson-type-stepper-flow button {
+    flex: 0 0 auto;
+    min-width: 118px;
+    scroll-snap-align: start;
+  }
+
+  .grammar-step-panel,
+  .listening-step-panel {
+    scroll-margin-top: 112px;
+  }
+
+  .grammar-section-card,
+  .listening-section-card {
+    padding: 14px;
+  }
+}
