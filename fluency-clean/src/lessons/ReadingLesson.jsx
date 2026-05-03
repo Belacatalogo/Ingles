@@ -79,14 +79,14 @@ const fallbackSteps = [
 ];
 
 const readingFlowSteps = [
-  'Objetivo',
-  'Pré-leitura',
-  'Texto principal',
-  'Ideia geral',
-  'Vocabulário em contexto',
-  'Compreensão e evidência',
-  'Produção curta',
-  'Conclusão',
+  { id: 'reading-start', label: 'Começar' },
+  { id: 'reading-pre', label: 'Pré-leitura' },
+  { id: 'reading-text', label: 'Texto' },
+  { id: 'reading-main-idea', label: 'Ideia geral' },
+  { id: 'reading-vocab', label: 'Vocabulário' },
+  { id: 'reading-comprehension', label: 'Compreensão' },
+  { id: 'reading-production', label: 'Produção' },
+  { id: 'reading-finish', label: 'Concluir' },
 ];
 
 const skillLabels = {
@@ -365,6 +365,7 @@ export function ReadingLesson({ lesson }) {
   const [writtenAnswer, setWrittenAnswer] = useState('');
   const [completionMessage, setCompletionMessage] = useState('');
   const [completed, setCompleted] = useState(false);
+  const [activeStep, setActiveStep] = useState('reading-start');
   const readingContract = useMemo(() => normalizeReadingLessonContract(lesson), [lesson]);
   const levelPolicy = useMemo(() => getReadingLevelPolicy(readingContract.level || 'A1'), [readingContract.level]);
   const paragraphs = useMemo(() => normalizeReadingParagraphs(readingContract), [readingContract]);
@@ -378,6 +379,7 @@ export function ReadingLesson({ lesson }) {
   const steps = useMemo(() => getLessonSteps(readingContract), [readingContract]);
   const renderReport = useMemo(() => getReadingRenderReport({ paragraphs, vocabulary, comprehension, preReading, levelPolicy, readingContract }), [paragraphs, vocabulary, comprehension, preReading, levelPolicy, readingContract]);
   const readingText = paragraphs.join('\n\n');
+  const activeStepIndex = Math.max(0, readingFlowSteps.findIndex((step) => step.id === activeStep));
 
   useEffect(() => {
     setSelectedAnswers({});
@@ -385,10 +387,23 @@ export function ReadingLesson({ lesson }) {
     setCompleted(isLessonCompleted(lesson));
     setCompletionMessage(isLessonCompleted(lesson) ? 'Esta aula já foi concluída.' : '');
     setAudioMessage('');
+    setActiveStep('reading-start');
   }, [lesson?.id, lesson?.title, lesson?.listeningText, lesson?.readingText]);
 
   function handleSelectAnswer(questionIndex, option) {
     setSelectedAnswers((current) => ({ ...current, [questionIndex]: option }));
+  }
+
+  function jumpToReadingStep(stepId) {
+    setActiveStep(stepId);
+    requestAnimationFrame(() => {
+      document.getElementById(stepId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
+
+  function goToNextStep() {
+    const next = readingFlowSteps[Math.min(activeStepIndex + 1, readingFlowSteps.length - 1)];
+    if (next) jumpToReadingStep(next.id);
   }
 
   function handleSaveDraft() {
@@ -404,6 +419,7 @@ export function ReadingLesson({ lesson }) {
     });
 
     setCompleted(true);
+    setActiveStep('reading-finish');
     setCompletionMessage(result.alreadyCompleted ? 'Aula já estava concluída. Progresso mantido.' : '+25 XP. Reading concluída e progresso salvo.');
   }
 
@@ -434,13 +450,13 @@ export function ReadingLesson({ lesson }) {
   }
 
   return (
-    <article className="reading-layout reading-lesson-v3 reading-complete-render-review-lab reading-pedagogical-flow-v1 reading-level-policy-v1">
+    <article className="reading-layout reading-lesson-v3 reading-complete-render-review-lab reading-pedagogical-flow-v1 reading-level-policy-v1 reading-step-render-v1">
       <Card
         eyebrow={`Reading · ${levelPolicy.level}`}
         title={lesson.title}
-        action={<ProgressPill current={completed ? 8 : 1} total={8} label={completed ? 'Concluída' : 'Aula completa'} />}
+        action={<ProgressPill current={completed ? 8 : activeStepIndex + 1} total={8} label={completed ? 'Concluída' : 'Etapas'} />}
       >
-        <div className="lesson-intro-grid reading-hero-grid">
+        <div className="lesson-intro-grid reading-hero-grid" id="reading-start">
           <div>
             <p>{intro}</p>
             <div className="reading-skill-strip" aria-label="Habilidades treinadas nesta aula">
@@ -457,13 +473,28 @@ export function ReadingLesson({ lesson }) {
         </div>
       </Card>
 
-      <section className="reading-official-flow-card" aria-label="Ordem oficial da aula Reading">
-        {readingFlowSteps.map((step, index) => (
-          <div key={step} className={completed ? 'done' : index === 0 ? 'active' : ''}>
-            <span>{index + 1}</span>
-            <strong>{step}</strong>
-          </div>
-        ))}
+      <section className="reading-stepper-card" aria-label="Etapas da aula Reading">
+        <div className="reading-stepper-header">
+          <strong>Etapas da Reading</strong>
+          <span>{activeStepIndex + 1}/8</span>
+        </div>
+        <div className="reading-official-flow-card reading-stepper-flow">
+          {readingFlowSteps.map((step, index) => {
+            const done = completed || index < activeStepIndex;
+            const active = step.id === activeStep;
+            return (
+              <button
+                type="button"
+                key={step.id}
+                className={done ? 'done' : active ? 'active' : ''}
+                onClick={() => jumpToReadingStep(step.id)}
+              >
+                <span>{done ? '✓' : index + 1}</span>
+                <strong>{step.label}</strong>
+              </button>
+            );
+          })}
+        </div>
       </section>
 
       <section className="reading-study-steps reading-method-steps">
@@ -475,7 +506,7 @@ export function ReadingLesson({ lesson }) {
         ))}
       </section>
 
-      <section className="reading-section-card reading-pre-reading-card">
+      <section className="reading-section-card reading-pre-reading-card reading-step-panel" id="reading-pre" data-reading-step-active={activeStep === 'reading-pre'}>
         <div className="panel-title"><Lightbulb size={18} /> Pré-leitura</div>
         <p className="reading-section-intro">Antes de responder qualquer exercício, prepare seu cérebro para o tema do texto.</p>
         <div className="reading-pre-reading-list">
@@ -486,9 +517,10 @@ export function ReadingLesson({ lesson }) {
             </article>
           ))}
         </div>
+        <button type="button" className="reading-next-step-button" onClick={goToNextStep}>Continuar para o texto</button>
       </section>
 
-      <section className="reading-grid reading-main-grid reading-main-grid-v3">
+      <section className="reading-grid reading-main-grid reading-main-grid-v3 reading-step-panel" id="reading-text" data-reading-step-active={activeStep === 'reading-text'}>
         <div className="reading-text-panel reading-paper reading-paper-v3">
           <div className="panel-title"><BookOpen size={18} /> Texto principal</div>
           <div className="reading-paper-body reading-paper-body-v3">
@@ -499,6 +531,7 @@ export function ReadingLesson({ lesson }) {
               </p>
             ))}
           </div>
+          <button type="button" className="reading-next-step-button" onClick={goToNextStep}>Responder ideia geral</button>
         </div>
 
         <aside className="reading-side-panel reading-side-panel-v3">
@@ -525,14 +558,15 @@ export function ReadingLesson({ lesson }) {
       </section>
 
       {mainIdeaQuestion ? (
-        <section className="reading-section-card reading-main-idea-card">
+        <section className="reading-section-card reading-main-idea-card reading-step-panel" id="reading-main-idea" data-reading-step-active={activeStep === 'reading-main-idea'}>
           <div className="panel-title"><Eye size={18} /> Ideia geral</div>
           <p className="reading-section-intro">Responda primeiro pensando no assunto central do texto. Detalhes vêm depois.</p>
           <QuestionCard item={mainIdeaQuestion} index={0} selectedAnswers={selectedAnswers} onSelectAnswer={handleSelectAnswer} />
+          <button type="button" className="reading-next-step-button" onClick={goToNextStep}>Estudar vocabulário</button>
         </section>
       ) : null}
 
-      <section className="reading-section-card reading-vocabulary-context-card">
+      <section className="reading-section-card reading-vocabulary-context-card reading-step-panel" id="reading-vocab" data-reading-step-active={activeStep === 'reading-vocab'}>
         <div className="panel-title"><Highlighter size={18} /> Vocabulário em contexto</div>
         <div className="vocabulary-grid reading-vocabulary-grid-v3">
           {vocabulary.map((item, index) => (
@@ -543,9 +577,10 @@ export function ReadingLesson({ lesson }) {
             </article>
           ))}
         </div>
+        <button type="button" className="reading-next-step-button" onClick={goToNextStep}>Responder compreensão</button>
       </section>
 
-      <section className="reading-section-card reading-comprehension-card-v3">
+      <section className="reading-section-card reading-comprehension-card-v3 reading-step-panel" id="reading-comprehension" data-reading-step-active={activeStep === 'reading-comprehension'}>
         <div className="panel-title"><ListChecks size={18} /> Compreensão com evidência textual</div>
         <p className="reading-section-intro">Agora responda detalhes, vocabulário e inferências simples. Cada resposta deve ter apoio no texto.</p>
         <div className="comprehension-list reading-question-list-v3">
@@ -559,9 +594,10 @@ export function ReadingLesson({ lesson }) {
             />
           ))}
         </div>
+        <button type="button" className="reading-next-step-button" onClick={goToNextStep}>Ir para produção curta</button>
       </section>
 
-      <section className="answer-card guided-answer-card reading-production-card-v3">
+      <section className="answer-card guided-answer-card reading-production-card-v3 reading-step-panel" id="reading-production" data-reading-step-active={activeStep === 'reading-production'}>
         <div className="panel-title"><MessageSquareText size={18} /> Produção curta</div>
         <label className="answer-label" htmlFor="reading-answer">
           {levelPolicy.production.instruction}
@@ -584,7 +620,7 @@ export function ReadingLesson({ lesson }) {
         {completionMessage ? <p className="generator-message completion-message">{completionMessage}</p> : null}
       </section>
 
-      <section className="reading-section-card reading-after-lesson-card">
+      <section className="reading-section-card reading-after-lesson-card reading-step-panel" id="reading-finish" data-reading-step-active={activeStep === 'reading-finish'}>
         <div className="panel-title"><Sparkles size={18} /> Depois da aula</div>
         <p>A Reading agora é uma aula completa dentro desta aba. A Prática Profunda vem depois como complemento para reforçar vocabulário, detalhes e interpretação.</p>
       </section>
