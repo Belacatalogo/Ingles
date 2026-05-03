@@ -356,38 +356,6 @@ function QuestionCard({ item, index, selectedAnswers, onSelectAnswer }) {
   );
 }
 
-function ReadingLevelPolicyCard({ policy }) {
-  const [minWords, maxWords] = policy.textWordRange;
-  return (
-    <section className="reading-section-card reading-level-policy-card">
-      <div className="panel-title"><Target size={18} /> Plano do nível</div>
-      <p className="reading-section-intro">Esta aula deve respeitar o nível atual do aluno. A geração da IA será ajustada nos próximos blocos usando esta política.</p>
-      <div className="reading-policy-grid">
-        <div>
-          <span>Nível</span>
-          <strong>{policy.label}</strong>
-          <p>{policy.studentGoal}</p>
-        </div>
-        <div>
-          <span>Texto ideal</span>
-          <strong>{minWords}–{maxWords} palavras</strong>
-          <p>{policy.paragraphGuidance}</p>
-        </div>
-        <div>
-          <span>Perguntas</span>
-          <strong>{policy.questionLanguage}</strong>
-          <p>{policy.questionLanguageLabel}</p>
-        </div>
-        <div>
-          <span>Produção</span>
-          <strong>{policy.production.label}</strong>
-          <p>{policy.production.instruction}</p>
-        </div>
-      </div>
-    </section>
-  );
-}
-
 export function ReadingLesson({ lesson }) {
   const [audioState, setAudioState] = useState('idle');
   const [audioMessage, setAudioMessage] = useState('');
@@ -486,8 +454,6 @@ export function ReadingLesson({ lesson }) {
         </div>
       </Card>
 
-      <ReadingLevelPolicyCard policy={levelPolicy} />
-
       <section className="reading-official-flow-card" aria-label="Ordem oficial da aula Reading">
         {readingFlowSteps.map((step, index) => (
           <div key={step} className={completed ? 'done' : index === 0 ? 'active' : ''}>
@@ -543,16 +509,14 @@ export function ReadingLesson({ lesson }) {
             {audioMessage ? <p className="generator-message">{audioMessage}</p> : null}
           </div>
 
-          <div className="mini-card reading-render-report-card">
-            <div className="panel-title"><Sparkles size={18} /> Render seguro</div>
-            <p>
-              Nível: {renderReport.level} · Pré-leitura: {renderReport.preReading} · Texto: {renderReport.paragraphs} partes · Vocabulário: {renderReport.vocabulary} · Perguntas: {renderReport.questions} · Evidências: {renderReport.hasEvidence}.
-            </p>
+          <div className="mini-card reading-render-report-card reading-render-report-compact">
+            <div className="panel-title"><Sparkles size={18} /> Aula segura</div>
+            <p>{renderReport.questions} perguntas · {renderReport.hasEvidence} evidências · nível {renderReport.level}.</p>
           </div>
 
           <div className="mini-card reading-strategy-card">
             <div className="panel-title"><Lightbulb size={18} /> Como ler</div>
-            <p>{levelPolicy.uiTone}. Procure palavras repetidas, nomes, ações e frases que provam sua resposta.</p>
+            <p>Procure palavras repetidas, nomes, ações e frases que provam sua resposta.</p>
           </div>
         </aside>
       </section>
