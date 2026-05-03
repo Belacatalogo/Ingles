@@ -1,0 +1,167 @@
+.speaking-stepper-real-v1 {
+  scroll-behavior: smooth;
+}
+
+.speaking-stepper-card {
+  position: sticky;
+  top: 10px;
+  z-index: 8;
+  display: grid;
+  gap: 10px;
+  margin-bottom: 14px;
+  padding: 12px;
+  border: 1px solid rgba(34, 211, 238, .18);
+  border-radius: 22px;
+  background: rgba(11, 18, 38, .82);
+  box-shadow: 0 18px 60px rgba(0, 0, 0, .22), inset 0 1px 0 rgba(255,255,255,.035);
+  backdrop-filter: blur(18px);
+}
+
+.speaking-stepper-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  color: #dbeafe;
+  font-size: 12px;
+}
+
+.speaking-stepper-header span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #93c5fd;
+  font-weight: 950;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.speaking-stepper-header strong {
+  color: #a5f3fc;
+  font-weight: 950;
+}
+
+.speaking-stepper-flow {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.speaking-stepper-flow button {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid rgba(148, 163, 184, .12);
+  border-radius: 15px;
+  background: rgba(2, 6, 23, .24);
+  color: #dbeafe;
+  text-align: left;
+  cursor: pointer;
+}
+
+.speaking-stepper-flow button:focus-visible {
+  outline: 2px solid rgba(34, 211, 238, .62);
+  outline-offset: 2px;
+}
+
+.speaking-stepper-flow span {
+  flex: 0 0 25px;
+  width: 25px;
+  height: 25px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  color: #ffffff;
+  background: rgba(34, 211, 238, .18);
+  font-size: 12px;
+  font-weight: 950;
+}
+
+.speaking-stepper-flow b {
+  min-width: 0;
+  color: #e0f2fe;
+  font-size: 12px;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.speaking-stepper-flow .active,
+.speaking-stepper-flow .done {
+  border-color: rgba(34, 211, 238, .34);
+  background: rgba(34, 211, 238, .10);
+}
+
+.speaking-stepper-flow .active span,
+.speaking-stepper-flow .done span {
+  background: linear-gradient(135deg, #22d3ee, #5b9cf6);
+}
+
+#speaking-mode-switch,
+#speaking-history-area,
+#speaking-scenario-area,
+#speaking-chat-area,
+#speaking-record-area,
+#speaking-finish-area,
+#speaking-pronunciation-model-area,
+#speaking-score-area,
+#speaking-pronunciation-actions-area,
+#speaking-immersion-scenes-area,
+#speaking-immersion-model-area {
+  scroll-margin-top: 118px;
+}
+
+.speaking-stepper-real-v1 .speaking-reference-header,
+.speaking-stepper-real-v1 .speaking-history-card,
+.speaking-stepper-real-v1 .speaking-scenario-card,
+.speaking-stepper-real-v1 .speaking-chat-list,
+.speaking-stepper-real-v1 .speaking-mic-card,
+.speaking-stepper-real-v1 .speaking-pronunciation-hero,
+.speaking-stepper-real-v1 .speaking-score-panel,
+.speaking-stepper-real-v1 .speaking-immersion-hero,
+.speaking-stepper-real-v1 .speaking-immersion-scenes,
+.speaking-stepper-real-v1 .speaking-immersion-card,
+.speaking-stepper-real-v1 .speaking-pronunciation-actions {
+  transition: border-color .18s ease, box-shadow .18s ease;
+}
+
+.speaking-stepper-real-v1 .speaking-mode-switch button:disabled {
+  opacity: .55;
+}
+
+@media (max-width: 720px) {
+  .speaking-stepper-card {
+    top: 6px;
+    padding: 10px;
+  }
+
+  .speaking-stepper-flow {
+    display: flex;
+    overflow-x: auto;
+    padding-bottom: 3px;
+    scroll-snap-type: x proximity;
+  }
+
+  .speaking-stepper-flow button {
+    flex: 0 0 auto;
+    min-width: 112px;
+    scroll-snap-align: start;
+  }
+
+  #speaking-mode-switch,
+  #speaking-history-area,
+  #speaking-scenario-area,
+  #speaking-chat-area,
+  #speaking-record-area,
+  #speaking-finish-area,
+  #speaking-pronunciation-model-area,
+  #speaking-score-area,
+  #speaking-pronunciation-actions-area,
+  #speaking-immersion-scenes-area,
+  #speaking-immersion-model-area {
+    scroll-margin-top: 112px;
+  }
+}
