@@ -15,7 +15,92 @@ Branch estável protegida: `rewrite-fluency-clean`
 - Não mexer no backend Azure privado.
 - Manter tudo modular em `fluency-clean/src/`, `fluency-clean/public/` ou arquivos reais de configuração.
 
-## ESTADO ATUAL — GUARDA DE PRONÚNCIA TTS
+## ESTADO ATUAL — GUARDA DE PRONÚNCIA EXPANDIDA
+
+### `BLOCO-TTS-PRONUNCIATION-GUARD-EXPANSION-LAB` — IMPLEMENTADO
+
+Motivação:
+- Usuário perguntou se precisaria avisar palavra por palavra sempre que o TTS pronunciasse algo errado.
+- Decisão: criar uma camada preventiva maior, expansível, para reduzir erros comuns automaticamente.
+
+Objetivo executado:
+- Expandir `pronunciationGuard.js` com regras preventivas.
+- Cobrir nomes brasileiros comuns, frases A1/A2, palavras sensíveis e contrações básicas.
+- Invalidar cache multi-speaker antigo para regenerar áudio com a guarda expandida.
+
+Arquivos alterados:
+- `fluency-clean/src/services/pronunciationGuard.js`
+- `fluency-clean/src/services/multiSpeakerAudio.js`
+- `REWRITE_HANDOFF.md`
+
+O que foi feito:
+- Expandida lista `PRONUNCIATION_RULES`.
+- Adicionadas regras para nomes brasileiros/comuns:
+  - João;
+  - José;
+  - Ana;
+  - Maria;
+  - Paulo;
+  - Pedro;
+  - Lucas;
+  - Beatriz;
+  - Luiz/Luis/Luís;
+  - Vitor/Victor.
+- Adicionadas frases comuns A1/A2:
+  - how are you;
+  - where are you from;
+  - what do you do;
+  - nice to meet you;
+  - see you tomorrow.
+- Adicionadas palavras sensíveis/frequentes:
+  - today;
+  - tomorrow;
+  - morning;
+  - evening;
+  - breakfast;
+  - comfortable;
+  - vegetable;
+  - chocolate;
+  - favorite/favourite;
+  - pronunciation;
+  - language;
+  - English;
+  - Brazil;
+  - Brazilian.
+- Adicionadas regras para sons com `you`:
+  - you;
+  - your;
+  - yours.
+- Adicionadas contrações básicas:
+  - I'm;
+  - you're;
+  - don't;
+  - doesn't;
+  - can't.
+- Adicionadas regras úteis para spelling:
+  - letter A;
+  - spell my name.
+- Criado `getPronunciationGuardStats(text)` para diagnóstico futuro.
+- Exportado `PRONUNCIATION_RULES` para inspeção futura.
+- `multiSpeakerAudio.js` mudou o modelo de cache final para `multi-speaker-merged-dialogue-v4-pronunciation-expanded`, invalidando áudios antigos e forçando nova geração com a guarda expandida.
+
+Commits:
+- `989073422e7e4e915d9463ef0140052a1bf12d84` — expande guarda automática de pronúncia TTS.
+- `9ae30226b791fb4a22d87631b5e665e77ac90615` — invalida cache multi-speaker após expansão de pronúncia.
+
+Próximo teste recomendado no iPhone:
+1. Aguardar deploy da branch `rewrite-fluency-clean-lab`.
+2. Abrir `Aula` > `Testar Diálogo`.
+3. Tocar play para preparar áudio novo.
+4. Tocar play novamente para reproduzir.
+5. Conferir se João, how are you, today e you melhoraram.
+6. Se uma palavra específica ainda soar errada, adicionar regra ao `pronunciationGuard.js`.
+
+Observação importante:
+- A guarda agora é preventiva e cobre muito mais casos, mas TTS ainda pode errar alguma palavra específica.
+- A ideia agora é corrigir exceções raras conforme aparecerem, sem refazer o sistema.
+
+## ESTADO ANTERIOR — GUARDA DE PRONÚNCIA TTS
 
 ### `HOTFIX-LISTENING-TTS-PRONUNCIATION-GUARD-LAB` — IMPLEMENTADO
 
@@ -25,7 +110,6 @@ Motivação:
   - `João` soou como `juau`;
   - `you` soou como `iu`;
   - `today` soou como algo próximo de `drei`.
-- Isso não era bug visual nem bug de cache; era inconsistência de pronúncia do TTS em nomes/palavras sensíveis.
 
 Objetivo executado:
 - Criar uma camada de proteção de pronúncia antes do Gemini TTS.
@@ -38,62 +122,18 @@ Arquivos criados/alterados:
 - `fluency-clean/src/services/multiSpeakerAudio.js`
 - `REWRITE_HANDOFF.md`
 
-O que foi feito:
-- Criado `pronunciationGuard.js`.
-- Adicionadas regras iniciais:
-  - `João` → texto TTS `Joao` + instrução para não soar como `juau`;
-  - `today` → guia `tuh-DAY`, com estresse na segunda sílaba;
-  - `you` → guia `yoo`, não `iu`;
-  - `how are you` → guia `HOW ar yoo`.
-- `geminiTts.js` agora:
-  - normaliza o texto enviado ao TTS;
-  - adiciona guia de pronúncia ao estilo;
-  - usa a versão protegida também no cacheId, para evitar reaproveitar áudio antigo ruim.
-- `multiSpeakerAudio.js` agora:
-  - usa o guia de pronúncia no diálogo multi-voz;
-  - usa texto protegido no cacheId das falas;
-  - mudou o modelo de cache final para `multi-speaker-merged-dialogue-v3-pronunciation-guard`, forçando nova geração do áudio final.
-
 Commits:
 - `42eac1160e862d14b90f4688f79b39587061387a` — cria guarda de pronúncia para TTS.
 - `0eb1dffbc62579f982b344b4befb6971d4c7820c` — aplica guarda de pronúncia no Gemini TTS.
 - `e38f8548b565c70cc298d9a22d3b2ac8e2cd49b5` — usa guarda de pronúncia no cache multi-speaker.
 
-Próximo teste recomendado no iPhone:
-1. Aguardar deploy da branch `rewrite-fluency-clean-lab`.
-2. Abrir `Aula` > `Testar Diálogo`.
-3. Tocar play uma vez para preparar.
-4. Tocar play de novo para reproduzir.
-5. Confirmar se `João`, `how are you`, `you` e `today` soam mais naturais.
-6. Se ainda houver erro em uma palavra específica, adicionar a palavra ao `pronunciationGuard.js`.
-
-Observação importante:
-- Essa abordagem não garante 100% contra erro de modelo, mas reduz muito inconsistências em palavras conhecidas.
-- O caminho futuro ideal é permitir uma lista configurável de palavras sensíveis/pronúncia no próprio app.
-
 ## ESTADO ANTERIOR — LISTENING PLAYER LIMPO + CACHE INDEXEDDB
 
 ### `HOTFIX-LISTENING-CLEAN-PLAYER-INDEXEDDB-CACHE-LAB` — IMPLEMENTADO
 
-Motivação:
-- Usuário testou no iPhone e viu:
-  - erro `The request is not allowed by the user agent...` quando o app tentava preparar e tocar o áudio automaticamente após processo assíncrono;
-  - cache local via localStorage indisponível para áudio grande;
-  - muitos botões no card de Listening, deixando a aula poluída.
-- O áudio tocava quando o usuário clicava manualmente depois, indicando que o problema principal era gesto do usuário/autoplay + cache grande.
-
-Objetivo executado:
-- Separar preparo de áudio e reprodução no iPhone.
-- Criar cache IndexedDB para áudios grandes.
-- Remover o card poluído de controle por fala/trecho.
-- Manter primeira escuta sem leitura, com interface limpa.
-
-Arquivos criados/alterados:
-- `fluency-clean/src/services/audioBlobCache.js`
-- `fluency-clean/src/services/multiSpeakerAudio.js`
-- `fluency-clean/src/lessons/ListeningLessonClean.jsx`
-- `fluency-clean/src/styles/listening-ux-hotfix.css`
-- `REWRITE_HANDOFF.md`
+- Separou preparo e reprodução do áudio para evitar bloqueio/autoplay no iPhone.
+- Criou cache IndexedDB para áudios grandes.
+- Removeu card poluído de controle por fala/trecho.
 
 Commits:
 - `d11ec132f9fe3c8239d707c617da02f61ae78e6b` — cria cache IndexedDB para áudios grandes.
@@ -108,20 +148,6 @@ Commits:
 - Cache de áudio localStorage aumentou de 40 para 160 itens.
 - Se salvar falhar por espaço, faz prune e tenta novamente.
 - `audio.cache.*` não sincroniza mais com cloud sync.
-
-## ESTADO ANTERIOR — CACHE FINAL MULTI-SPEAKER
-
-### `HOTFIX-LISTENING-MERGED-AUDIO-CACHE-LAB` — IMPLEMENTADO
-
-- Diálogo multi-voz salva áudio final concatenado.
-- Replay deveria usar cache final, mas localStorage falhou para áudio grande no iPhone.
-
-## ESTADO ANTERIOR — HOTFIX BLIND LISTENING CONTROL
-
-### `HOTFIX-LISTENING-BLIND-FIRST-CONTROL-LAB` — IMPLEMENTADO
-
-- Controle por fala/trecho não mostra texto antes da primeira escuta.
-- Depois removido visualmente pelo player limpo v3 por poluir a tela.
 
 ## ESTADO ANTERIOR — LISTENING MULTI-SPEAKER + PLANO ANTI-PAUSA
 
@@ -167,4 +193,4 @@ Status:
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. Foi implementado `HOTFIX-LISTENING-TTS-PRONUNCIATION-GUARD-LAB`: criada camada `pronunciationGuard.js`, Gemini TTS agora usa texto/estilo protegido para palavras como João, today, you e how are you, e o cache final multi-speaker foi invalidado para regenerar com a guarda de pronúncia. Próximo teste: `Aula > Testar Diálogo`, preparar e reproduzir, confirmando se João, you e today soam corretos."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. Foi implementado `BLOCO-TTS-PRONUNCIATION-GUARD-EXPANSION-LAB`: `pronunciationGuard.js` agora tem regras preventivas para nomes brasileiros, frases A1/A2, palavras sensíveis, contrações e spelling. O cache multi-speaker foi invalidado para `v4-pronunciation-expanded`. Próximo teste: `Aula > Testar Diálogo`, preparar e reproduzir, conferindo pronúncia."
