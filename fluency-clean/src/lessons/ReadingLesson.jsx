@@ -2,7 +2,9 @@ import { useEffect, useMemo, useState } from 'react';
 import {
   BookOpen,
   CheckCircle2,
+  CopyCheck,
   Eye,
+  FileQuestion,
   Headphones,
   Highlighter,
   Lightbulb,
@@ -274,6 +276,54 @@ function normalizeComprehension(lesson, paragraphs) {
   return source.map((item, index) => ({ ...item, index: item.index ?? index, skill: item.skill || (index === 0 ? 'main_idea' : 'detail') }));
 }
 
+function normalizeEvidenceTasks(lesson, comprehension) {
+  const explicitTasks = Array.isArray(lesson?.evidenceTasks) ? lesson.evidenceTasks : [];
+  const tasks = explicitTasks
+    .map((item, index) => ({
+      instruction: cleanGeneratedText(item?.instruction || item?.question || 'Copie do texto a frase que prova uma resposta.'),
+      expectedEvidence: cleanGeneratedText(item?.expectedEvidence || item?.evidence || item?.quote || ''),
+      skill: cleanGeneratedText(item?.skill || 'evidence'),
+      index,
+    }))
+    .filter((item) => item.instruction || item.expectedEvidence);
+
+  if (tasks.length) return tasks.slice(0, 3);
+
+  return comprehension
+    .filter((item) => item.evidence)
+    .slice(0, 2)
+    .map((item, index) => ({
+      instruction: index === 0 ? 'Copie a frase do texto que prova a ideia geral.' : 'Copie uma frase que prova um detalhe importante.',
+      expectedEvidence: item.evidence,
+      skill: 'evidence',
+      index,
+    }));
+}
+
+function buildTrueFalseTasks(comprehension) {
+  return comprehension
+    .filter((item) => item.evidence && item.answer)
+    .slice(0, 2)
+    .map((item, index) => ({
+      statement: item.answer,
+      answer: 'true',
+      evidence: item.evidence,
+      index,
+    }));
+}
+
+function buildShortAnswerTasks(comprehension) {
+  return comprehension
+    .filter((item) => item.skill !== 'main_idea' && item.evidence)
+    .slice(0, 2)
+    .map((item, index) => ({
+      question: item.question,
+      expectedAnswer: item.answer,
+      evidence: item.evidence,
+      index,
+    }));
+}
+
 function getLessonIntro(lesson) {
   return cleanGeneratedText(
     lesson?.intro ||
@@ -304,13 +354,13 @@ function isCorrectOption(option, answer) {
   return normalizeAnswer(option) === normalizeAnswer(answer);
 }
 
-function getReadingRenderReport({ paragraphs, vocabulary, comprehension, preReading, levelPolicy, readingContract }) {
+function getReadingRenderReport({ paragraphs, vocabulary, comprehension, preReading, levelPolicy, readingContract, evidenceTasks }) {
   return {
     preReading: preReading.length,
     paragraphs: paragraphs.length,
     vocabulary: vocabulary.length,
     questions: comprehension.length,
-    hasEvidence: comprehension.filter((item) => item.evidence).length,
+    hasEvidence: comprehension.filter((item) => item.evidence).length + evidenceTasks.length,
     level: levelPolicy.level,
     contractVersion: readingContract.contractVersion,
     protected: true,
@@ -358,10 +408,77 @@ function QuestionCard({ item, index, selectedAnswers, onSelectAnswer }) {
   );
 }
 
+function InternalReadingExercises({ evidenceTasks, trueFalseTasks, shortAnswerTasks, exerciseDrafts, onDraftChange }) {
+  if (!evidenceTasks.length && !trueFalseTasks.length && !shortAnswerTasks.length) return null;
+
+  return (
+    <section className="reading-internal-exercises-card" aria-label="Exercícios internos de Reading">
+      <div className="panel-title"><FileQuestion size={18} /> Exercícios de leitura</div>
+      <p className="reading-section-intro">Estes exercícios fazem parte da aula Reading. A Prática Profunda vem depois apenas para complementar.</p>
+
+      {trueFalseTasks.length ? (
+        <div className="reading-mini-exercise-group">
+          <strong><CheckCircle2 size={16} /> Verdadeiro ou falso</strong>
+          {trueFalseTasks.map((task) => (
+            <article key={`tf-${task.index}`} className="reading-mini-exercise">
+              <p>“{task.statement}”</p>
+              <span>Resposta esperada: verdadeiro.</span>
+              <small>Prova no texto: “{task.evidence}”</small>
+            </article>
+          ))}
+        </div>
+      ) : null}
+
+      {evidenceTasks.length ? (
+        <div className="reading-mini-exercise-group">
+          <strong><CopyCheck size={16} /> Copiar evidência</strong>
+          {evidenceTasks.map((task) => {
+            const key = `evidence-${task.index}`;
+            return (
+              <article key={key} className="reading-mini-exercise reading-mini-written-exercise">
+                <p>{task.instruction}</p>
+                <textarea
+                  value={exerciseDrafts[key] || ''}
+                  onChange={(event) => onDraftChange(key, event.target.value)}
+                  placeholder="Copie aqui a frase do texto..."
+                  rows={2}
+                />
+                {task.expectedEvidence ? <small>Trecho de apoio: “{task.expectedEvidence}”</small> : null}
+              </article>
+            );
+          })}
+        </div>
+      ) : null}
+
+      {shortAnswerTasks.length ? (
+        <div className="reading-mini-exercise-group">
+          <strong><MessageSquareText size={16} /> Resposta curta</strong>
+          {shortAnswerTasks.map((task) => {
+            const key = `short-${task.index}`;
+            return (
+              <article key={key} className="reading-mini-exercise reading-mini-written-exercise">
+                <p>{task.question}</p>
+                <textarea
+                  value={exerciseDrafts[key] || ''}
+                  onChange={(event) => onDraftChange(key, event.target.value)}
+                  placeholder="Responda com uma frase curta..."
+                  rows={2}
+                />
+                <small>Modelo: {task.expectedAnswer}. Evidência: “{task.evidence}”</small>
+              </article>
+            );
+          })}
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
 export function ReadingLesson({ lesson }) {
   const [audioState, setAudioState] = useState('idle');
   const [audioMessage, setAudioMessage] = useState('');
   const [selectedAnswers, setSelectedAnswers] = useState({});
+  const [exerciseDrafts, setExerciseDrafts] = useState({});
   const [writtenAnswer, setWrittenAnswer] = useState('');
   const [completionMessage, setCompletionMessage] = useState('');
   const [completed, setCompleted] = useState(false);
@@ -372,17 +489,21 @@ export function ReadingLesson({ lesson }) {
   const preReading = useMemo(() => normalizePreReading(readingContract), [readingContract]);
   const vocabulary = useMemo(() => normalizeVocabulary(readingContract, paragraphs), [readingContract, paragraphs]);
   const comprehension = useMemo(() => normalizeComprehension(readingContract, paragraphs), [readingContract, paragraphs]);
+  const evidenceTasks = useMemo(() => normalizeEvidenceTasks(readingContract, comprehension), [readingContract, comprehension]);
+  const trueFalseTasks = useMemo(() => buildTrueFalseTasks(comprehension), [comprehension]);
+  const shortAnswerTasks = useMemo(() => buildShortAnswerTasks(comprehension), [comprehension]);
   const mainIdeaQuestion = comprehension[0];
   const detailQuestions = comprehension.slice(1);
   const intro = useMemo(() => getLessonIntro(readingContract), [readingContract]);
   const objective = useMemo(() => getLessonObjective(readingContract), [readingContract]);
   const steps = useMemo(() => getLessonSteps(readingContract), [readingContract]);
-  const renderReport = useMemo(() => getReadingRenderReport({ paragraphs, vocabulary, comprehension, preReading, levelPolicy, readingContract }), [paragraphs, vocabulary, comprehension, preReading, levelPolicy, readingContract]);
+  const renderReport = useMemo(() => getReadingRenderReport({ paragraphs, vocabulary, comprehension, preReading, levelPolicy, readingContract, evidenceTasks }), [paragraphs, vocabulary, comprehension, preReading, levelPolicy, readingContract, evidenceTasks]);
   const readingText = paragraphs.join('\n\n');
   const activeStepIndex = Math.max(0, readingFlowSteps.findIndex((step) => step.id === activeStep));
 
   useEffect(() => {
     setSelectedAnswers({});
+    setExerciseDrafts({});
     setWrittenAnswer(getLessonDraft(lesson?.id || lesson?.title || 'reading'));
     setCompleted(isLessonCompleted(lesson));
     setCompletionMessage(isLessonCompleted(lesson) ? 'Esta aula já foi concluída.' : '');
@@ -392,6 +513,10 @@ export function ReadingLesson({ lesson }) {
 
   function handleSelectAnswer(questionIndex, option) {
     setSelectedAnswers((current) => ({ ...current, [questionIndex]: option }));
+  }
+
+  function handleExerciseDraftChange(key, value) {
+    setExerciseDrafts((current) => ({ ...current, [key]: value }));
   }
 
   function jumpToReadingStep(stepId) {
@@ -414,7 +539,10 @@ export function ReadingLesson({ lesson }) {
   function handleCompleteLesson() {
     const result = completeLesson({
       lesson,
-      answers: selectedAnswers,
+      answers: {
+        multipleChoice: selectedAnswers,
+        internalExercises: exerciseDrafts,
+      },
       writtenAnswer,
     });
 
@@ -450,7 +578,7 @@ export function ReadingLesson({ lesson }) {
   }
 
   return (
-    <article className="reading-layout reading-lesson-v3 reading-complete-render-review-lab reading-pedagogical-flow-v1 reading-level-policy-v1 reading-step-render-v1">
+    <article className="reading-layout reading-lesson-v3 reading-complete-render-review-lab reading-pedagogical-flow-v1 reading-level-policy-v1 reading-step-render-v1 reading-internal-exercises-v1">
       <Card
         eyebrow={`Reading · ${levelPolicy.level}`}
         title={lesson.title}
@@ -594,6 +722,13 @@ export function ReadingLesson({ lesson }) {
             />
           ))}
         </div>
+        <InternalReadingExercises
+          evidenceTasks={evidenceTasks}
+          trueFalseTasks={trueFalseTasks}
+          shortAnswerTasks={shortAnswerTasks}
+          exerciseDrafts={exerciseDrafts}
+          onDraftChange={handleExerciseDraftChange}
+        />
         <button type="button" className="reading-next-step-button" onClick={goToNextStep}>Ir para produção curta</button>
       </section>
 
