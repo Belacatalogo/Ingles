@@ -14,7 +14,10 @@ function key(name) {
 }
 
 function shouldSync(name) {
-  return !String(name || '').startsWith('cloud.sync.') && !String(name || '').startsWith('diagnostics.');
+  const normalized = String(name || '');
+  return !normalized.startsWith('cloud.sync.')
+    && !normalized.startsWith('diagnostics.')
+    && !normalized.startsWith('audio.cache.');
 }
 
 async function notifySync(name) {
