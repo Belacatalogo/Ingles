@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { Card } from '../components/ui/Card.jsx';
 import { ProgressPill } from '../components/ui/ProgressPill.jsx';
+import { getReadingLevelPolicy } from '../reading/readingLevelPolicy.js';
 import { playLearningAudio } from '../services/audioPlayback.js';
 import { diagnostics } from '../services/diagnostics.js';
 import { completeLesson, getLessonDraft, isLessonCompleted, saveLessonDraft } from '../services/progressStore.js';
@@ -94,6 +95,11 @@ const skillLabels = {
   sequence: 'Sequência',
   evidence: 'Evidência',
   inference: 'Inferência',
+  author_purpose: 'Intenção do autor',
+  fact_opinion: 'Fato/opinião',
+  tone: 'Tom',
+  implication: 'Implicação',
+  critical_response: 'Análise crítica',
 };
 
 const genericQuestionPatterns = [
@@ -297,13 +303,14 @@ function isCorrectOption(option, answer) {
   return normalizeAnswer(option) === normalizeAnswer(answer);
 }
 
-function getReadingRenderReport({ paragraphs, vocabulary, comprehension, preReading }) {
+function getReadingRenderReport({ paragraphs, vocabulary, comprehension, preReading, levelPolicy }) {
   return {
     preReading: preReading.length,
     paragraphs: paragraphs.length,
     vocabulary: vocabulary.length,
     questions: comprehension.length,
     hasEvidence: comprehension.filter((item) => item.evidence).length,
+    level: levelPolicy.level,
     protected: true,
   };
 }
@@ -349,6 +356,38 @@ function QuestionCard({ item, index, selectedAnswers, onSelectAnswer }) {
   );
 }
 
+function ReadingLevelPolicyCard({ policy }) {
+  const [minWords, maxWords] = policy.textWordRange;
+  return (
+    <section className="reading-section-card reading-level-policy-card">
+      <div className="panel-title"><Target size={18} /> Plano do nível</div>
+      <p className="reading-section-intro">Esta aula deve respeitar o nível atual do aluno. A geração da IA será ajustada nos próximos blocos usando esta política.</p>
+      <div className="reading-policy-grid">
+        <div>
+          <span>Nível</span>
+          <strong>{policy.label}</strong>
+          <p>{policy.studentGoal}</p>
+        </div>
+        <div>
+          <span>Texto ideal</span>
+          <strong>{minWords}–{maxWords} palavras</strong>
+          <p>{policy.paragraphGuidance}</p>
+        </div>
+        <div>
+          <span>Perguntas</span>
+          <strong>{policy.questionLanguage}</strong>
+          <p>{policy.questionLanguageLabel}</p>
+        </div>
+        <div>
+          <span>Produção</span>
+          <strong>{policy.production.label}</strong>
+          <p>{policy.production.instruction}</p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export function ReadingLesson({ lesson }) {
   const [audioState, setAudioState] = useState('idle');
   const [audioMessage, setAudioMessage] = useState('');
@@ -356,6 +395,7 @@ export function ReadingLesson({ lesson }) {
   const [writtenAnswer, setWrittenAnswer] = useState('');
   const [completionMessage, setCompletionMessage] = useState('');
   const [completed, setCompleted] = useState(false);
+  const levelPolicy = useMemo(() => getReadingLevelPolicy(lesson?.level || 'A1'), [lesson?.level]);
   const paragraphs = useMemo(() => normalizeReadingParagraphs(lesson), [lesson]);
   const preReading = useMemo(() => normalizePreReading(lesson), [lesson]);
   const vocabulary = useMemo(() => normalizeVocabulary(lesson, paragraphs), [lesson, paragraphs]);
@@ -365,7 +405,7 @@ export function ReadingLesson({ lesson }) {
   const intro = useMemo(() => getLessonIntro(lesson), [lesson]);
   const objective = useMemo(() => getLessonObjective(lesson), [lesson]);
   const steps = useMemo(() => getLessonSteps(lesson), [lesson]);
-  const renderReport = useMemo(() => getReadingRenderReport({ paragraphs, vocabulary, comprehension, preReading }), [paragraphs, vocabulary, comprehension, preReading]);
+  const renderReport = useMemo(() => getReadingRenderReport({ paragraphs, vocabulary, comprehension, preReading, levelPolicy }), [paragraphs, vocabulary, comprehension, preReading, levelPolicy]);
   const readingText = paragraphs.join('\n\n');
 
   useEffect(() => {
@@ -423,9 +463,9 @@ export function ReadingLesson({ lesson }) {
   }
 
   return (
-    <article className="reading-layout reading-lesson-v3 reading-complete-render-review-lab reading-pedagogical-flow-v1">
+    <article className="reading-layout reading-lesson-v3 reading-complete-render-review-lab reading-pedagogical-flow-v1 reading-level-policy-v1">
       <Card
-        eyebrow={`Reading · ${lesson.level}`}
+        eyebrow={`Reading · ${levelPolicy.level}`}
         title={lesson.title}
         action={<ProgressPill current={completed ? 8 : 1} total={8} label={completed ? 'Concluída' : 'Aula completa'} />}
       >
@@ -445,6 +485,8 @@ export function ReadingLesson({ lesson }) {
           </div>
         </div>
       </Card>
+
+      <ReadingLevelPolicyCard policy={levelPolicy} />
 
       <section className="reading-official-flow-card" aria-label="Ordem oficial da aula Reading">
         {readingFlowSteps.map((step, index) => (
@@ -504,13 +546,13 @@ export function ReadingLesson({ lesson }) {
           <div className="mini-card reading-render-report-card">
             <div className="panel-title"><Sparkles size={18} /> Render seguro</div>
             <p>
-              Pré-leitura: {renderReport.preReading} · Texto: {renderReport.paragraphs} partes · Vocabulário: {renderReport.vocabulary} · Perguntas: {renderReport.questions} · Evidências: {renderReport.hasEvidence}.
+              Nível: {renderReport.level} · Pré-leitura: {renderReport.preReading} · Texto: {renderReport.paragraphs} partes · Vocabulário: {renderReport.vocabulary} · Perguntas: {renderReport.questions} · Evidências: {renderReport.hasEvidence}.
             </p>
           </div>
 
           <div className="mini-card reading-strategy-card">
             <div className="panel-title"><Lightbulb size={18} /> Como ler</div>
-            <p>Procure palavras repetidas, nomes, ações e frases que provam sua resposta. Não escolha uma opção só porque ela parece familiar.</p>
+            <p>{levelPolicy.uiTone}. Procure palavras repetidas, nomes, ações e frases que provam sua resposta.</p>
           </div>
         </aside>
       </section>
@@ -555,7 +597,7 @@ export function ReadingLesson({ lesson }) {
       <section className="answer-card guided-answer-card reading-production-card-v3">
         <div className="panel-title"><MessageSquareText size={18} /> Produção curta</div>
         <label className="answer-label" htmlFor="reading-answer">
-          Escreva 2 a 4 frases simples em inglês sobre o texto. Use pelo menos uma palavra do vocabulário.
+          {levelPolicy.production.instruction}
         </label>
         <textarea
           id="reading-answer"
@@ -564,7 +606,7 @@ export function ReadingLesson({ lesson }) {
           autoCapitalize="sentences"
           autoCorrect="on"
           spellCheck="true"
-          placeholder="Write 2 to 4 simple sentences about the text..."
+          placeholder={levelPolicy.level === 'A1' ? 'Write 1 to 3 simple sentences about the text...' : 'Write your response based on the text...'}
           value={writtenAnswer}
           onChange={(event) => setWrittenAnswer(event.target.value)}
         />
