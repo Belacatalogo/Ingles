@@ -15,102 +15,99 @@ Branch estável protegida: `rewrite-fluency-clean`
 - Não mexer no backend Azure privado.
 - Manter tudo modular em `fluency-clean/src/`, `fluency-clean/public/` ou arquivos reais de configuração.
 
-## ESTADO ATUAL — CACHE DE ÁUDIO AMPLIADO
+## ESTADO ATUAL — LISTENING PLAYER LIMPO + CACHE INDEXEDDB
+
+### `HOTFIX-LISTENING-CLEAN-PLAYER-INDEXEDDB-CACHE-LAB` — IMPLEMENTADO
+
+Motivação:
+- Usuário testou no iPhone e viu:
+  - erro `The request is not allowed by the user agent...` quando o app tentava preparar e tocar o áudio automaticamente após processo assíncrono;
+  - cache local via localStorage indisponível para áudio grande;
+  - muitos botões no card de Listening, deixando a aula poluída.
+- O áudio tocava quando o usuário clicava manualmente depois, indicando que o problema principal era gesto do usuário/autoplay + cache grande.
+
+Objetivo executado:
+- Separar preparo de áudio e reprodução no iPhone.
+- Criar cache IndexedDB para áudios grandes.
+- Remover o card poluído de controle por fala/trecho.
+- Manter primeira escuta sem leitura, com interface limpa.
+
+Arquivos criados/alterados:
+- `fluency-clean/src/services/audioBlobCache.js`
+- `fluency-clean/src/services/multiSpeakerAudio.js`
+- `fluency-clean/src/lessons/ListeningLessonClean.jsx`
+- `fluency-clean/src/styles/listening-ux-hotfix.css`
+- `REWRITE_HANDOFF.md`
+
+O que foi feito — cache:
+- Criado `audioBlobCache.js` usando IndexedDB.
+- Áudios grandes/finais agora podem ser salvos como Blob no IndexedDB.
+- Mantém até 80 blobs grandes.
+- Remove antigos por `lastUsedAt` quando necessário.
+- `multiSpeakerAudio.js` agora tenta cache nesta ordem:
+  1. memória;
+  2. IndexedDB;
+  3. cache legado localStorage;
+  4. gerar novamente.
+- O cache final multi-speaker mudou para modelo `multi-speaker-merged-dialogue-v2`.
+
+O que foi feito — erro de autoplay/iPhone:
+- Para diálogo multi-voz, `handleListen` agora prepara o áudio primeiro.
+- Quando o áudio fica pronto, o estado vira `ready` e a mensagem pede para tocar novamente em Reproduzir.
+- A reprodução real acontece em `handlePlayPrepared`, diretamente no clique seguinte do usuário.
+- Isso evita tentar tocar automaticamente depois de um processo assíncrono, que é justamente onde o iPhone costuma bloquear.
+
+O que foi feito — visual/UX:
+- Removido visualmente o card `Controle por fala` / `Ouvir trecho atual` / `Próximo trecho` / `Mostrar texto`.
+- No lugar, ficou só uma nota discreta:
+  - `Primeira escuta protegida: nenhum trecho da fala aparece aqui. Use “Conferir texto” só depois de ouvir.`
+- A aba Listening ficou menos poluída.
+- Classe adicionada: `listening-clean-player-v3`.
+
+Commits:
+- `d11ec132f9fe3c8239d707c617da02f61ae78e6b` — cria cache IndexedDB para áudios grandes.
+- `57f784a33c6398a3ff432e6990709bd6bbc5dbc7` — usa IndexedDB para cache final multi-speaker.
+- `75d5000e09002058074750f3237da876f9e9fe51` — simplifica player Listening e prepara áudio antes de tocar.
+- `1ecbced18f432f2a2dd40eede8da04b1f315a593` — remove poluição visual do controle manual Listening.
+
+Próximo teste recomendado no iPhone:
+1. Aguardar deploy da branch `rewrite-fluency-clean-lab`.
+2. Abrir `Aula` > `Testar Diálogo`.
+3. Tocar no play uma vez.
+4. Esperar a mensagem `Áudio preparado. Toque em Reproduzir...` ou `Áudio pronto no cache...`.
+5. Tocar no play de novo para reproduzir.
+6. Confirmar que o erro de permissão/autoplay não aparece.
+7. Confirmar que o card de controle por fala sumiu.
+8. No replay seguinte, confirmar que usa cache IndexedDB/memória e prepara mais rápido.
+
+Observação importante:
+- O primeiro toque em diálogo multi-voz pode preparar o áudio, e o segundo toque inicia a reprodução. Isso é intencional para contornar a trava do iPhone sem quebrar a imersão com erro.
+
+## ESTADO ANTERIOR — CACHE DE ÁUDIO AMPLIADO
 
 ### `HOTFIX-AUDIO-CACHE-CAPACITY-LAB` — IMPLEMENTADO
 
-Motivação:
-- Usuário testou o diálogo multi-voz e percebeu que, mesmo após ouvir uma vez, o app parecia tentar preparar/salvar áudio de novo.
-- Hipótese provável: limite antigo de cache era baixo para o novo uso de TTS, especialmente porque diálogos geram várias falas individuais e agora também um áudio final concatenado.
-
-Objetivo executado:
-- Aumentar a capacidade do cache de áudio.
-- Melhorar recuperação quando o localStorage estiver cheio.
-- Evitar sincronizar cache de áudio para cloud sync, pois áudio base64 é pesado e deve ficar local.
-
-Arquivos alterados:
-- `fluency-clean/src/services/audioCache.js`
-- `fluency-clean/src/services/storage.js`
-- `REWRITE_HANDOFF.md`
-
-O que foi feito:
-- `MAX_AUDIO_CACHE_ITEMS` aumentou de `40` para `160`.
-- Adicionado `QUOTA_RECOVERY_KEEP_ITEMS = 48`.
-- Se salvar um áudio falhar por espaço, o cache agora remove áudios antigos e tenta salvar novamente.
-- O prune continua mantendo os áudios mais recentes/mais usados primeiro.
-- `storage.js` agora não chama cloud sync para chaves iniciadas com `audio.cache.`.
-- Isso evita tentar sincronizar blobs/base64 pesados e reduz risco de travar ou gastar armazenamento cloud com áudio local.
+- Cache de áudio localStorage aumentou de 40 para 160 itens.
+- Se salvar falhar por espaço, faz prune e tenta novamente.
+- `audio.cache.*` não sincroniza mais com cloud sync.
 
 Commits:
 - `abf9eb771764db4e31ca455a5e0153c95ad9cf4d` — aumenta capacidade do cache de áudio.
 - `edacb305ec7c78ca9339cdfa60a7a35a4f6b4715` — impede sync cloud do cache de áudio.
 
-Próximo teste recomendado no iPhone:
-1. Aguardar deploy da branch `rewrite-fluency-clean-lab`.
-2. Abrir `Aula` > `Testar Diálogo`.
-3. Tocar o áudio principal uma vez e deixar preparar/tocar.
-4. Tocar novamente.
-5. Verificar se aparece `Diálogo multi-voz carregado do cache final`.
-6. Conferir diagnóstico: deve aparecer cache local/memória em vez de tentativas Gemini para todas as falas.
-7. Se ainda aparecer tentativa Gemini sempre, investigar se o cache final está falhando por tamanho do áudio no localStorage e migrar áudio para IndexedDB.
-
-Próximo bloco recomendado se o problema persistir:
-- `BLOCO-AUDIO-CACHE-INDEXEDDB-LAB`
-
-Objetivo futuro:
-- Migrar os áudios grandes do localStorage para IndexedDB.
-- Manter localStorage apenas para índice/metadados.
-- Isso permitirá cache de áudios muito maiores, essencial para Listening avançado.
-
 ## ESTADO ANTERIOR — CACHE FINAL MULTI-SPEAKER
 
 ### `HOTFIX-LISTENING-MERGED-AUDIO-CACHE-LAB` — IMPLEMENTADO
 
-Motivação:
-- O cache antigo já salvava cada fala/trecho individual do Gemini TTS.
-- Porém, no diálogo multi-voz, ao tocar novamente, o app ainda precisava reconstruir o áudio único juntando as falas.
-- Isso explicava a demora de alguns segundos ao tentar reouvir/despausar.
-
-Objetivo executado:
-- Salvar também o áudio final multi-speaker já concatenado.
-- Na segunda reprodução, tocar direto o áudio final do cache, sem reconstruir fala por fala.
-- Manter cache em memória enquanto a aula estiver aberta para acelerar ainda mais o replay.
-
-Arquivos alterados:
-- `fluency-clean/src/services/multiSpeakerAudio.js`
-- `fluency-clean/src/lessons/ListeningLessonClean.jsx`
-- `REWRITE_HANDOFF.md`
-
-O que foi feito:
-- `multiSpeakerAudio.js` agora importa `getCachedAudio`, `setCachedAudio` e `makeAudioCacheId`.
-- Criado modelo de cache específico: `multi-speaker-merged-dialogue-v1`.
-- Criado `makeDialogueCacheId`, baseado em personagem + voz + fala + estilo.
-- Criado cache em memória `mergedAudioUrlMemory` para manter URL pronta durante a sessão.
-- Criado salvamento do PCM final concatenado no cache local depois da primeira montagem.
-- Antes de gerar/reconstruir, `playMultiSpeakerDialogue` agora tenta:
-  1. cache em memória;
-  2. cache local do áudio final;
-  3. só depois gerar falas e montar novamente.
-- A mensagem da aula agora diferencia:
-  - `Diálogo multi-voz iniciado como áudio único...` na primeira geração;
-  - `Diálogo multi-voz carregado do cache final...` no replay.
-- Classe adicionada em `ListeningLessonClean.jsx`: `listening-merged-cache-v1`.
-
-Commits:
-- `2c9230369210846599476ed9b650080717205b55` — cacheia áudio final multi-speaker.
-- `6a48607a9068293cec12c23e0d3d4bb471bd0b40` — mostra cache final multi-speaker no Listening.
+- Diálogo multi-voz salva áudio final concatenado.
+- Replay deveria usar cache final, mas localStorage falhou para áudio grande no iPhone.
 
 ## ESTADO ANTERIOR — HOTFIX BLIND LISTENING CONTROL
 
 ### `HOTFIX-LISTENING-BLIND-FIRST-CONTROL-LAB` — IMPLEMENTADO
 
-- Controle por fala/trecho não mostra mais o texto antes da primeira escuta.
-- Há botão `Mostrar texto` / `Ocultar texto`.
-- Ao tocar em `Próximo trecho`, o texto volta a ficar oculto automaticamente.
-
-Commits:
-- `23128bc477a4f8b31f2195ec815e387a4970faad` — oculta fala antes da transcrição Listening.
-- `69b21eeaa4fffdecc985c1eccd429dd35d43a3b8` — ajusta blind listening no controle por fala.
+- Controle por fala/trecho não mostra texto antes da primeira escuta.
+- Depois removido visualmente pelo player limpo v3 por poluir a tela.
 
 ## ESTADO ANTERIOR — LISTENING MULTI-SPEAKER + PLANO ANTI-PAUSA
 
@@ -120,13 +117,6 @@ Commits:
 - Usa vozes diferentes por personagem.
 - Tenta montar áudio único WAV no frontend.
 - Preview `Testar Diálogo` usa Ana/João.
-
-Commits principais:
-- `37432d34c936ec0a2f0c147b9185aa9b28db1bfe` — cria TTS multi-personagem para Listening.
-- `e8075ade3f663b92b2c44f5be03f39c5839b2c` — conecta Listening ao TTS multi-personagem.
-- `c6a7fb27ac45eb64174a8cf60ed6a7563c033b60` — estiliza diálogo multi-voz Listening.
-- `0044926aa00757679495f1986fe0813157a5db26` — adiciona diálogo ao preview Listening.
-- `37679e6f5b275d2ae064ba8e7fb7c9ff3c5da74e` — adiciona botão explícito para testar diálogo Listening.
 
 ## ESTADO ANTERIOR — HOTFIX LISTENING AUDIO + PRACTICE DEPTH
 
@@ -163,4 +153,4 @@ Status:
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. Foi implementado `HOTFIX-AUDIO-CACHE-CAPACITY-LAB`: cache de áudio aumentou de 40 para 160 itens, salva novamente após prune se localStorage estiver cheio, e `audio.cache.*` não sincroniza mais na cloud. Próximo teste: `Aula > Testar Diálogo`, tocar áudio uma vez, tocar novamente e confirmar `carregado do cache final`. Se ainda tentar Gemini sempre, próximo bloco é migrar cache de áudio para IndexedDB."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. Foi implementado `HOTFIX-LISTENING-CLEAN-PLAYER-INDEXEDDB-CACHE-LAB`: áudio final grande agora usa IndexedDB, o player de diálogo prepara no primeiro toque e reproduz no segundo toque para evitar bloqueio do iPhone, e o card de controle por fala foi removido visualmente para limpar a aula. Próximo teste: `Aula > Testar Diálogo`, tocar play para preparar, tocar play novamente para reproduzir, confirmar sem erro de permissão e sem card poluído."
