@@ -37,7 +37,7 @@ Branch estável protegida: `rewrite-fluency-clean`
 - Reading agora deve ser uma aula completa dentro da própria aba.
 - A Prática Profunda é complemento posterior, não substitui os exercícios internos da Reading.
 - Adicionada ordem oficial da aula Reading: objetivo, pré-leitura, texto principal, ideia geral, vocabulário em contexto, compreensão/evidência, produção curta e conclusão.
-- Em `LessonScreen.jsx`, a Prática Profunda aparece depois da aula quando `lesson.type === 'reading'`.
+- Em `LessonScreen.jsx`, a Prática Profunda aparece depois da aula quando `lesson.type === 'reading`.
 - Criada documentação em `fluency-clean/docs/BLOCO-READING-1-ESTRUTURA-PEDAGOGICA-FIXA-LAB.md`.
 
 ### `BLOCO-READING-2 — Política por nível A1→C1` — IMPLEMENTADO
@@ -68,7 +68,7 @@ Branch estável protegida: `rewrite-fluency-clean`
 
 ### `BLOCO-READING-4 — Geração da aula Reading por habilidade` — IMPLEMENTADO
 
-- `lessonJsonContract.js` agora importa `buildReadingJsonContractInstruction`.
+- `lessonJsonContract.js` importa `buildReadingJsonContractInstruction`.
 - Quando `lessonType === 'reading'`, o prompt geral usa o contrato próprio de Reading.
 - O prompt de Reading pede `readingText`, `textGenre`, `readingPurpose`, `preReading`, `readingQuestions`, `evidenceTasks` e `postReadingPrompts`.
 - Mantida compatibilidade com o motor atual: `readingText` preenche `listeningText`, `readingQuestions` converte para `exercises`, `postReadingPrompts` converte para `prompts`.
@@ -78,58 +78,59 @@ Branch estável protegida: `rewrite-fluency-clean`
 
 ### `BLOCO-READING-5 — Render por etapas` — IMPLEMENTADO
 
-Objetivo:
-- Transformar a Reading em uma experiência guiada por etapas reais, sem esconder conteúdo importante e sem poluir a tela.
-
-O que foi feito:
 - `ReadingLesson.jsx` recebeu estado `activeStep`.
-- Criado stepper da Reading com 8 etapas:
-  1. Começar
-  2. Pré-leitura
-  3. Texto
-  4. Ideia geral
-  5. Vocabulário
-  6. Compreensão
-  7. Produção
-  8. Concluir
+- Criado stepper da Reading com 8 etapas: começar, pré-leitura, texto, ideia geral, vocabulário, compreensão, produção e concluir.
 - Cada etapa tem `id` próprio.
 - Clicar numa etapa faz scroll suave até o bloco correspondente.
-- Botões de avanço foram adicionados:
-  - `Continuar para o texto`
-  - `Responder ideia geral`
-  - `Estudar vocabulário`
-  - `Responder compreensão`
-  - `Ir para produção curta`
+- Botões de avanço foram adicionados.
 - O conteúdo continua visível; o stepper guia a leitura, mas não trava a aula.
 - Ao concluir a aula, a etapa ativa vira `Concluir`.
-- `reading-complete-render-review.css` recebeu estilos do stepper:
-  - sticky no topo;
-  - scroll horizontal no iPhone;
-  - destaque discreto da etapa ativa;
-  - botões de próxima etapa;
-  - `scroll-margin-top` para os blocos não ficarem escondidos.
+- `reading-complete-render-review.css` recebeu estilos do stepper sticky, scroll horizontal no iPhone e destaque discreto.
 - Criada documentação em `fluency-clean/docs/BLOCO-READING-5-RENDER-POR-ETAPAS-LAB.md`.
+
+### `BLOCO-READING-6 — Exercícios internos da aba Reading` — IMPLEMENTADO
+
+Objetivo:
+- Fortalecer os exercícios que ficam dentro da própria aba Reading, mantendo a Prática Profunda como complemento posterior.
+
+O que foi feito:
+- Em `ReadingLesson.jsx`, adicionado bloco compacto `Exercícios de leitura` dentro de `Compreensão com evidência textual`.
+- O bloco pode renderizar:
+  - verdadeiro/falso;
+  - copiar evidência;
+  - resposta curta.
+- Criadas funções internas:
+  - `normalizeEvidenceTasks`;
+  - `buildTrueFalseTasks`;
+  - `buildShortAnswerTasks`.
+- Criado componente `InternalReadingExercises`.
+- O bloco usa `evidenceTasks` quando a IA fornecer.
+- Quando não houver `evidenceTasks`, cria tarefas simples a partir das evidências das perguntas.
+- Adicionado estado `exerciseDrafts` para respostas digitadas nos exercícios internos.
+- `completeLesson` agora recebe:
+  - `multipleChoice: selectedAnswers`;
+  - `internalExercises: exerciseDrafts`.
+- Estilos adicionados em `reading-complete-render-review.css` para manter os exercícios compactos e mobile-first.
+- Criada documentação em `fluency-clean/docs/BLOCO-READING-6-EXERCICIOS-INTERNOS-LAB.md`.
 
 Pendente validar no iPhone:
 - Usar `Testar Reading`.
-- Confirmar que o stepper aparece com 8 etapas.
-- Confirmar que o stepper não ocupa tela demais.
-- Confirmar que no iPhone ele rola horizontalmente.
-- Confirmar que clicar nas etapas leva ao bloco correto.
-- Confirmar que botões de avanço funcionam.
-- Confirmar que texto, vocabulário, perguntas e produção continuam visíveis.
-- Confirmar que `Salvar rascunho` e `Concluir Reading` funcionam.
-- Confirmar que a Prática Profunda continua abaixo como complemento.
+- Confirmar que `Exercícios de leitura` aparece dentro de `Compreensão`.
+- Confirmar que verdadeiro/falso, copiar evidência e resposta curta aparecem de forma compacta.
+- Confirmar que textareas chamam teclado normalmente.
+- Confirmar que múltipla escolha, botões de etapa, `Salvar rascunho` e `Concluir Reading` continuam funcionando.
+- Confirmar que Prática Profunda continua abaixo como complemento.
 - Confirmar que não apareceu card técnico de contrato/política.
 
 ### Próximo bloco recomendado
 
-`BLOCO-READING-6 — Exercícios internos da aba Reading`
+`BLOCO-READING-7 — Evidência textual inteligente`
 
 Objetivo:
-- Fortalecer os exercícios próprios dentro da aba Reading.
-- Separar tipos de exercício por nível e habilidade.
-- Melhorar verdadeiro/falso com evidência, copiar trecho, completar frase, sequência e resposta curta.
+- Melhorar o uso da evidência textual.
+- Destacar/ancorar evidências no texto quando possível.
+- Fazer botão para ir ao trecho do texto que prova a resposta.
+- Manter tudo limpo e sem poluir a aula.
 
 ## ALERTA IMPORTANTE — BLOCO QUE FOI ESQUECIDO NA LISTA ANTERIOR
 
@@ -155,9 +156,8 @@ Escopo recomendado:
 ## ORDEM DEFINIDA PELO USUÁRIO PARA OS PRÓXIMOS CHATS/BLOCOS
 
 Plano atual de Reading em andamento:
-1. `BLOCO-READING-6 — Exercícios internos da aba Reading`
-2. `BLOCO-READING-7 — Evidência textual inteligente`
-3. `BLOCO-READING-8 — Quality gate Reading`
+1. `BLOCO-READING-7 — Evidência textual inteligente`
+2. `BLOCO-READING-8 — Quality gate Reading`
 
 Depois retomar a ordem macro:
 - `BLOCO-SPEAKING-COMPLETE-RENDER-REVIEW-LAB`
@@ -178,4 +178,4 @@ Depois retomar a ordem macro:
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. Não mexa em `main`, `rewrite-fluency-clean`, `bundle.js` ou backend Azure privado. Reading agora está sendo reconstruída como aula completa dentro da própria aba. A Prática Profunda em Reading é complemento posterior, não substitui a aula. O último bloco implementado foi `BLOCO-READING-5 — Render por etapas`. O próximo bloco recomendado é `BLOCO-READING-6 — Exercícios internos da aba Reading`."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. Não mexa em `main`, `rewrite-fluency-clean`, `bundle.js` ou backend Azure privado. Reading agora está sendo reconstruída como aula completa dentro da própria aba. A Prática Profunda em Reading é complemento posterior, não substitui a aula. O último bloco implementado foi `BLOCO-READING-6 — Exercícios internos da aba Reading`. O próximo bloco recomendado é `BLOCO-READING-7 — Evidência textual inteligente`."
