@@ -3,6 +3,7 @@ import { normalizeLessonForPractice } from './PracticeNormalizer.js';
 import { filterPracticeQuestions, getPracticePlanIssues } from './PracticeQualityGate.js';
 import { applyLeakDetector } from './PracticeLeakDetector.js';
 import { composePurePlan, validateSessionPurity } from './PracticePurityMatrix.js';
+import { pullSrsReviewItems } from '../../services/practiceSrsExtended.js';
 import { buildListeningPractice } from './builders/listeningBuilder.js';
 import { buildSpeakingPractice } from './builders/speakingBuilder.js';
 import { buildReadingPractice } from './builders/readingBuilder.js';
@@ -43,7 +44,9 @@ function chooseQuestionCount(context, limits, acceptedCount) {
 
 export function buildPracticePlan(lesson, options = {}) {
   const limits = { ...DEFAULT_PRACTICE_LIMITS, ...options };
-  const context = normalizeLessonForPractice(lesson);
+  const baseContext = normalizeLessonForPractice(lesson);
+  const reviewSeeds = pullSrsReviewItems({ skill: baseContext.skill, level: baseContext.level, limit: 2 });
+  const context = { ...baseContext, reviewSeeds };
   const phasePlan = SKILL_PHASE_PLAN[context.skill] || SKILL_PHASE_PLAN[PRACTICE_SKILLS.MIXED] || [];
   const builder = getBuilderForSkill(context.skill);
   const candidates = builder(context);
@@ -75,6 +78,7 @@ export function buildPracticePlan(lesson, options = {}) {
       leakDiscardedItems: leakResult.discarded,
       purityReport,
       purityValidation,
+      srsReviewSeedCount: reviewSeeds.length,
     },
     contextSummary: {
       sentences: context.sentences.length,
@@ -82,6 +86,7 @@ export function buildPracticePlan(lesson, options = {}) {
       exercises: context.exercises.length,
       desiredCount: targetCount,
       finalCount: count,
+      reviewSeeds: reviewSeeds.length,
     },
   };
 
