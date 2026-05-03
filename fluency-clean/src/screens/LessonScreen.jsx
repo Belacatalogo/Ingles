@@ -9,6 +9,7 @@ import { WritingLesson } from '../lessons/WritingLesson.jsx';
 import { PracticeLauncher } from '../practice/PracticeLauncher.jsx';
 import { getCurrentLesson, getCurrentLessonFull } from '../services/lessonStore.js';
 import { getPreviewLesson } from '../services/lessonPreviewSamples.js';
+import { getLessonStats } from '../services/lessonStats.js';
 
 const fallbackLesson = {
   id: 'fallback-reading',
@@ -47,10 +48,6 @@ function getLessonTypeLabel(lesson) {
   return labels[lesson?.type] || 'Aula';
 }
 
-function countWords(value) {
-  return String(value || '').trim().split(/\s+/).filter(Boolean).length;
-}
-
 function formatDateTime(value) {
   if (!value) return '';
   try {
@@ -58,23 +55,6 @@ function formatDateTime(value) {
   } catch {
     return String(value).slice(0, 16);
   }
-}
-
-function getLessonStats(lesson) {
-  const exerciseCount = Array.isArray(lesson?.exercises) ? lesson.exercises.length : 0;
-  const vocabularyCount = Array.isArray(lesson?.vocabulary) ? lesson.vocabulary.length : 0;
-  const sectionCount = Array.isArray(lesson?.sections) ? lesson.sections.length : 0;
-  const promptCount = Array.isArray(lesson?.prompts) ? lesson.prompts.length : 0;
-  const mainWords = countWords(`${lesson?.listeningText || ''} ${lesson?.readingText || ''} ${lesson?.text || ''}`);
-  const sectionWords = Array.isArray(lesson?.sections)
-    ? lesson.sections.reduce((total, section) => total + countWords(`${section?.title || ''} ${section?.content || ''}`), 0)
-    : 0;
-  const baseMinutes = Math.ceil((mainWords + sectionWords + vocabularyCount * 18 + exerciseCount * 32 + promptCount * 24) / 95);
-  const grammarDepthMinutes = String(lesson?.type || '').toLowerCase() === 'grammar'
-    ? Math.ceil((sectionWords * 1.25 + exerciseCount * 45 + promptCount * 35 + vocabularyCount * 20) / 85)
-    : 0;
-  const estimatedMinutes = Math.max(8, baseMinutes, grammarDepthMinutes);
-  return { minutes: estimatedMinutes, exercises: exerciseCount || 0, sections: sectionCount };
 }
 
 function LessonRenderer({ lesson }) {
