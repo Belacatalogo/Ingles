@@ -15,7 +15,54 @@ Branch estável protegida: `rewrite-fluency-clean`
 - Não mexer no backend Azure privado.
 - Manter tudo modular em `fluency-clean/src/`, `fluency-clean/public/` ou arquivos reais de configuração.
 
-## ESTADO ATUAL — CACHE FINAL MULTI-SPEAKER
+## ESTADO ATUAL — CACHE DE ÁUDIO AMPLIADO
+
+### `HOTFIX-AUDIO-CACHE-CAPACITY-LAB` — IMPLEMENTADO
+
+Motivação:
+- Usuário testou o diálogo multi-voz e percebeu que, mesmo após ouvir uma vez, o app parecia tentar preparar/salvar áudio de novo.
+- Hipótese provável: limite antigo de cache era baixo para o novo uso de TTS, especialmente porque diálogos geram várias falas individuais e agora também um áudio final concatenado.
+
+Objetivo executado:
+- Aumentar a capacidade do cache de áudio.
+- Melhorar recuperação quando o localStorage estiver cheio.
+- Evitar sincronizar cache de áudio para cloud sync, pois áudio base64 é pesado e deve ficar local.
+
+Arquivos alterados:
+- `fluency-clean/src/services/audioCache.js`
+- `fluency-clean/src/services/storage.js`
+- `REWRITE_HANDOFF.md`
+
+O que foi feito:
+- `MAX_AUDIO_CACHE_ITEMS` aumentou de `40` para `160`.
+- Adicionado `QUOTA_RECOVERY_KEEP_ITEMS = 48`.
+- Se salvar um áudio falhar por espaço, o cache agora remove áudios antigos e tenta salvar novamente.
+- O prune continua mantendo os áudios mais recentes/mais usados primeiro.
+- `storage.js` agora não chama cloud sync para chaves iniciadas com `audio.cache.`.
+- Isso evita tentar sincronizar blobs/base64 pesados e reduz risco de travar ou gastar armazenamento cloud com áudio local.
+
+Commits:
+- `abf9eb771764db4e31ca455a5e0153c95ad9cf4d` — aumenta capacidade do cache de áudio.
+- `edacb305ec7c78ca9339cdfa60a7a35a4f6b4715` — impede sync cloud do cache de áudio.
+
+Próximo teste recomendado no iPhone:
+1. Aguardar deploy da branch `rewrite-fluency-clean-lab`.
+2. Abrir `Aula` > `Testar Diálogo`.
+3. Tocar o áudio principal uma vez e deixar preparar/tocar.
+4. Tocar novamente.
+5. Verificar se aparece `Diálogo multi-voz carregado do cache final`.
+6. Conferir diagnóstico: deve aparecer cache local/memória em vez de tentativas Gemini para todas as falas.
+7. Se ainda aparecer tentativa Gemini sempre, investigar se o cache final está falhando por tamanho do áudio no localStorage e migrar áudio para IndexedDB.
+
+Próximo bloco recomendado se o problema persistir:
+- `BLOCO-AUDIO-CACHE-INDEXEDDB-LAB`
+
+Objetivo futuro:
+- Migrar os áudios grandes do localStorage para IndexedDB.
+- Manter localStorage apenas para índice/metadados.
+- Isso permitirá cache de áudios muito maiores, essencial para Listening avançado.
+
+## ESTADO ANTERIOR — CACHE FINAL MULTI-SPEAKER
 
 ### `HOTFIX-LISTENING-MERGED-AUDIO-CACHE-LAB` — IMPLEMENTADO
 
@@ -49,60 +96,17 @@ O que foi feito:
   - `Diálogo multi-voz carregado do cache final...` no replay.
 - Classe adicionada em `ListeningLessonClean.jsx`: `listening-merged-cache-v1`.
 
-Escopo preservado:
-- Não mexeu em `main`.
-- Não mexeu em `rewrite-fluency-clean`.
-- Não mexeu em `bundle.js`.
-- Não mexeu no backend Azure privado.
-- Não mexeu em geração de aula, prompts, modelos, chaves ou fallback de aula.
-- Não mexeu na Grammar aprovada.
-
 Commits:
 - `2c9230369210846599476ed9b650080717205b55` — cacheia áudio final multi-speaker.
 - `6a48607a9068293cec12c23e0d3d4bb471bd0b40` — mostra cache final multi-speaker no Listening.
-
-Próximo teste recomendado no iPhone:
-1. Aguardar deploy da branch `rewrite-fluency-clean-lab`.
-2. Abrir `Aula` > `Testar Diálogo`.
-3. Tocar o áudio principal uma primeira vez.
-4. Aguardar ele preparar/tocar.
-5. Tocar novamente o áudio principal.
-6. Confirmar se a mensagem mostra `carregado do cache final`.
-7. Confirmar se o segundo toque inicia bem mais rápido.
-8. Conferir diagnóstico para mensagens de cache final multi-voz.
-
-Próximo bloco recomendado se aprovado:
-- `BLOCO-LISTENING-CONTINUOUS-AUDIO-PIPELINE-LAB`
-
-Objetivo futuro:
-- Aplicar o mesmo cache final concatenado para qualquer Listening longo, não só diálogos.
-- Pré-gerar trechos, montar um único áudio final, salvar no cache e tocar como um arquivo único.
-- Isso vai permitir textos longos avançados sem reduzir conteúdo e sem quebrar imersão.
 
 ## ESTADO ANTERIOR — HOTFIX BLIND LISTENING CONTROL
 
 ### `HOTFIX-LISTENING-BLIND-FIRST-CONTROL-LAB` — IMPLEMENTADO
 
-Motivação:
-- O multi-speaker funcionou: personagens `Ana` e `João` aparecem, vozes `Kore` e `Puck`, e o áudio multi-voz iniciou como áudio único.
-- Problema encontrado no iPhone: o `Controle por fala` mostrava a frase antes da transcrição, quebrando o objetivo da primeira etapa: ouvir sem ler.
-
-Objetivo executado:
-- Manter o objetivo pedagógico de Listening: primeira escuta sem leitura.
-- Ocultar o texto do controle por fala/trecho por padrão.
-- Permitir mostrar o texto manualmente apenas quando o usuário quiser conferir.
-
-Arquivos alterados:
-- `fluency-clean/src/lessons/ListeningLessonClean.jsx`
-- `fluency-clean/src/styles/listening-ux-hotfix.css`
-- `REWRITE_HANDOFF.md`
-
-O que foi feito:
-- Adicionado estado `showSegmentText`.
-- O controle por fala/trecho agora mostra por padrão: `Texto oculto para manter a primeira escuta sem leitura.`
-- Adicionado botão `Mostrar texto` / `Ocultar texto`.
+- Controle por fala/trecho não mostra mais o texto antes da primeira escuta.
+- Há botão `Mostrar texto` / `Ocultar texto`.
 - Ao tocar em `Próximo trecho`, o texto volta a ficar oculto automaticamente.
-- Adicionada classe `listening-blind-first-v2`.
 
 Commits:
 - `23128bc477a4f8b31f2195ec815e387a4970faad` — oculta fala antes da transcrição Listening.
@@ -159,4 +163,4 @@ Status:
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. Foi implementado `HOTFIX-LISTENING-MERGED-AUDIO-CACHE-LAB`: o diálogo multi-voz agora salva também o áudio final concatenado no cache local e em memória. No replay, a mensagem deve mostrar `carregado do cache final` e iniciar mais rápido. Próximo teste: `Aula > Testar Diálogo`, tocar áudio uma vez, depois tocar novamente e confirmar cache final."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. Foi implementado `HOTFIX-AUDIO-CACHE-CAPACITY-LAB`: cache de áudio aumentou de 40 para 160 itens, salva novamente após prune se localStorage estiver cheio, e `audio.cache.*` não sincroniza mais na cloud. Próximo teste: `Aula > Testar Diálogo`, tocar áudio uma vez, tocar novamente e confirmar `carregado do cache final`. Se ainda tentar Gemini sempre, próximo bloco é migrar cache de áudio para IndexedDB."
