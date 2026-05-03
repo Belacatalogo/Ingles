@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { Card } from '../components/ui/Card.jsx';
 import { ProgressPill } from '../components/ui/ProgressPill.jsx';
+import { normalizeReadingLessonContract } from '../reading/readingJsonContract.js';
 import { getReadingLevelPolicy } from '../reading/readingLevelPolicy.js';
 import { playLearningAudio } from '../services/audioPlayback.js';
 import { diagnostics } from '../services/diagnostics.js';
@@ -303,7 +304,7 @@ function isCorrectOption(option, answer) {
   return normalizeAnswer(option) === normalizeAnswer(answer);
 }
 
-function getReadingRenderReport({ paragraphs, vocabulary, comprehension, preReading, levelPolicy }) {
+function getReadingRenderReport({ paragraphs, vocabulary, comprehension, preReading, levelPolicy, readingContract }) {
   return {
     preReading: preReading.length,
     paragraphs: paragraphs.length,
@@ -311,6 +312,7 @@ function getReadingRenderReport({ paragraphs, vocabulary, comprehension, preRead
     questions: comprehension.length,
     hasEvidence: comprehension.filter((item) => item.evidence).length,
     level: levelPolicy.level,
+    contractVersion: readingContract.contractVersion,
     protected: true,
   };
 }
@@ -363,17 +365,18 @@ export function ReadingLesson({ lesson }) {
   const [writtenAnswer, setWrittenAnswer] = useState('');
   const [completionMessage, setCompletionMessage] = useState('');
   const [completed, setCompleted] = useState(false);
-  const levelPolicy = useMemo(() => getReadingLevelPolicy(lesson?.level || 'A1'), [lesson?.level]);
-  const paragraphs = useMemo(() => normalizeReadingParagraphs(lesson), [lesson]);
-  const preReading = useMemo(() => normalizePreReading(lesson), [lesson]);
-  const vocabulary = useMemo(() => normalizeVocabulary(lesson, paragraphs), [lesson, paragraphs]);
-  const comprehension = useMemo(() => normalizeComprehension(lesson, paragraphs), [lesson, paragraphs]);
+  const readingContract = useMemo(() => normalizeReadingLessonContract(lesson), [lesson]);
+  const levelPolicy = useMemo(() => getReadingLevelPolicy(readingContract.level || 'A1'), [readingContract.level]);
+  const paragraphs = useMemo(() => normalizeReadingParagraphs(readingContract), [readingContract]);
+  const preReading = useMemo(() => normalizePreReading(readingContract), [readingContract]);
+  const vocabulary = useMemo(() => normalizeVocabulary(readingContract, paragraphs), [readingContract, paragraphs]);
+  const comprehension = useMemo(() => normalizeComprehension(readingContract, paragraphs), [readingContract, paragraphs]);
   const mainIdeaQuestion = comprehension[0];
   const detailQuestions = comprehension.slice(1);
-  const intro = useMemo(() => getLessonIntro(lesson), [lesson]);
-  const objective = useMemo(() => getLessonObjective(lesson), [lesson]);
-  const steps = useMemo(() => getLessonSteps(lesson), [lesson]);
-  const renderReport = useMemo(() => getReadingRenderReport({ paragraphs, vocabulary, comprehension, preReading, levelPolicy }), [paragraphs, vocabulary, comprehension, preReading, levelPolicy]);
+  const intro = useMemo(() => getLessonIntro(readingContract), [readingContract]);
+  const objective = useMemo(() => getLessonObjective(readingContract), [readingContract]);
+  const steps = useMemo(() => getLessonSteps(readingContract), [readingContract]);
+  const renderReport = useMemo(() => getReadingRenderReport({ paragraphs, vocabulary, comprehension, preReading, levelPolicy, readingContract }), [paragraphs, vocabulary, comprehension, preReading, levelPolicy, readingContract]);
   const readingText = paragraphs.join('\n\n');
 
   useEffect(() => {
