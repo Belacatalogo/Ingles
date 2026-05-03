@@ -24,6 +24,7 @@ import './styles/lesson-preview-lab.css';
 import './styles/practice-fullscreen.css';
 import './styles/grammar-examples-hotfix.css';
 import './styles/hotfix-ui-consistency.css';
+import './styles/reading-complete-render-review.css';
 
 const rootElement = document.getElementById('root');
 const root = createRoot(rootElement);
