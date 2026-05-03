@@ -23,6 +23,7 @@ import './styles/listening-ux-hotfix.css';
 import './styles/lesson-preview-lab.css';
 import './styles/practice-fullscreen.css';
 import './styles/grammar-examples-hotfix.css';
+import './styles/hotfix-ui-consistency.css';
 
 const rootElement = document.getElementById('root');
 const root = createRoot(rootElement);
