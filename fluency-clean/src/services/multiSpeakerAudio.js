@@ -3,9 +3,10 @@ import { generateGeminiTtsAudio } from './geminiTts.js';
 import { playLearningAudio, stopLearningAudio } from './audioPlayback.js';
 import { getCachedAudio, makeAudioCacheId, setCachedAudio } from './audioCache.js';
 import { getCachedAudioBlob, setCachedAudioBlob } from './audioBlobCache.js';
+import { buildPronunciationStyle, normalizeTtsTextForPronunciation } from './pronunciationGuard.js';
 
 const SPEAKER_VOICES = ['Kore', 'Puck', 'Charon', 'Fenrir', 'Aoede', 'Leda'];
-const MERGED_DIALOGUE_CACHE_MODEL = 'multi-speaker-merged-dialogue-v2';
+const MERGED_DIALOGUE_CACHE_MODEL = 'multi-speaker-merged-dialogue-v3-pronunciation-guard';
 const DEFAULT_SAMPLE_RATE = 24000;
 let dialogueAudio = null;
 const mergedAudioUrlMemory = new Map();
@@ -16,7 +17,11 @@ function speakerKey(value) { return clean(value).toLowerCase().replace(/[^a-z0-9
 function splitSentences(text) { return clean(text).split(/(?<=[.!?])\s+/).map((item) => item.trim()).filter(Boolean); }
 function uint8ArrayToBase64(bytes) { let binary = ''; const chunkSize = 0x8000; for (let index = 0; index < bytes.length; index += chunkSize) binary += String.fromCharCode(...bytes.subarray(index, index + chunkSize)); return btoa(binary); }
 function base64ToUint8Array(base64) { const binary = atob(base64); const bytes = new Uint8Array(binary.length); for (let index = 0; index < binary.length; index += 1) bytes[index] = binary.charCodeAt(index); return bytes; }
-function makeDialogueCacheId({ parsed, style }) { const voiceMap = parsed.turns.map((turn) => `${turn.speaker}:${turn.voiceName}:${turn.text}`).join('|'); return makeAudioCacheId({ text: voiceMap, voiceName: 'multi-speaker', style, model: MERGED_DIALOGUE_CACHE_MODEL }); }
+function makeDialogueCacheId({ parsed, style }) {
+  const voiceMap = parsed.turns.map((turn) => `${turn.speaker}:${turn.voiceName}:${normalizeTtsTextForPronunciation(turn.text)}`).join('|');
+  const protectedStyle = buildPronunciationStyle(style, parsed.plainText);
+  return makeAudioCacheId({ text: voiceMap, voiceName: 'multi-speaker', style: protectedStyle, model: MERGED_DIALOGUE_CACHE_MODEL });
+}
 
 export function parseDialogueTurns(text) {
   const raw = String(text ?? '').replace(/\r\n/g, '\n').trim();
@@ -93,11 +98,6 @@ function playPreparedAudio(audio, sourceLabel = 'multi-speaker-prepared') {
   });
 }
 
-function playAudioUrl(audioUrl) {
-  const audio = createPreparedAudio(audioUrl);
-  return playPreparedAudio(audio);
-}
-
 export function stopMultiSpeakerAudio() {
   if (dialogueAudio) { dialogueAudio.pause(); dialogueAudio.currentTime = 0; }
 }
@@ -105,8 +105,9 @@ export function stopMultiSpeakerAudio() {
 export async function prepareMultiSpeakerDialogue({ text, label = 'Listening diálogo', style = '' } = {}) {
   const parsed = parseDialogueTurns(text);
   if (!parsed.isDialogue) return { ok: false, source: 'not-dialogue', error: 'Texto não é diálogo.' };
+  const protectedStyle = buildPronunciationStyle(style, parsed.plainText);
   diagnostics.setPhase('preparando diálogo multi-voz', 'tts');
-  diagnostics.log(`Preparando diálogo: ${parsed.speakers.length} personagem(ns), ${parsed.turns.length} fala(s).`, 'info');
+  diagnostics.log(`Preparando diálogo: ${parsed.speakers.length} personagem(ns), ${parsed.turns.length} fala(s), com guarda de pronúncia.`, 'info');
   const cacheId = makeDialogueCacheId({ parsed, style });
   const cachedAudioUrl = await getMergedDialogueUrlFromCache(cacheId);
   if (cachedAudioUrl) {
@@ -118,8 +119,8 @@ export async function prepareMultiSpeakerDialogue({ text, label = 'Listening di�
   const generated = [];
   for (const turn of parsed.turns) {
     const voiceName = turn.voiceName || getSpeakerVoice(turn.speaker, parsed.speakers);
-    diagnostics.log(`Gerando voz de ${turn.speaker} com ${voiceName}.`, 'info');
-    const result = await generateGeminiTtsAudio({ text: turn.text, voiceName, style: style || `Dialogue voice for ${turn.speaker}. Natural conversational English, clear pronunciation, human rhythm.`, useCache: true, allowBrowserFallback: false });
+    diagnostics.log(`Gerando voz de ${turn.speaker} com ${voiceName} e guarda de pronúncia.`, 'info');
+    const result = await generateGeminiTtsAudio({ text: turn.text, voiceName, style: protectedStyle || `Dialogue voice for ${turn.speaker}. Natural conversational English, clear pronunciation, human rhythm.`, useCache: true, allowBrowserFallback: false });
     if (!result.ok || !result.audioUrl) return { ok: false, source: 'prepare-error', error: result.error || 'sem áudio' };
     generated.push({ ...result, speaker: turn.speaker, voiceName });
   }
@@ -156,9 +157,10 @@ export async function playMultiSpeakerDialogue({ text, label = 'Listening diálo
 }
 
 async function playSequentialDialogueFallback(parsed, label, style) {
+  const protectedStyle = buildPronunciationStyle(style, parsed.plainText);
   for (const turn of parsed.turns) {
     const voiceName = turn.voiceName || getSpeakerVoice(turn.speaker, parsed.speakers);
-    const result = await playLearningAudio({ text: turn.text, label: `${label} · ${turn.speaker}`, voiceName, style: style || `Dialogue voice for ${turn.speaker}. Natural conversational English, clear pronunciation.`, preferNatural: true, allowBrowserFallback: true, segmentLongText: false });
+    const result = await playLearningAudio({ text: turn.text, label: `${label} · ${turn.speaker}`, voiceName, style: protectedStyle || `Dialogue voice for ${turn.speaker}. Natural conversational English, clear pronunciation.`, preferNatural: true, allowBrowserFallback: true, segmentLongText: false });
     if (!result.ok) return result;
   }
   return { ok: true, source: 'multi-speaker-sequential', speakers: parsed.speakers.length, turns: parsed.turns.length };
