@@ -41,49 +41,6 @@
     linear-gradient(135deg, rgba(91, 156, 246, .18), rgba(167, 139, 250, .12));
 }
 
-.reading-level-policy-card {
-  border-color: rgba(125, 211, 252, .22);
-  background:
-    radial-gradient(circle at 0% 0%, rgba(125, 211, 252, .13), transparent 34%),
-    linear-gradient(135deg, rgba(15, 23, 42, .82), rgba(30, 41, 59, .56));
-}
-
-.reading-policy-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-}
-
-.reading-policy-grid div {
-  padding: 13px;
-  border: 1px solid rgba(148, 163, 184, .13);
-  border-radius: 17px;
-  background: rgba(2, 6, 23, .24);
-}
-
-.reading-policy-grid span {
-  display: block;
-  color: #93c5fd;
-  font-size: 11px;
-  font-weight: 900;
-  letter-spacing: .11em;
-  text-transform: uppercase;
-}
-
-.reading-policy-grid strong {
-  display: block;
-  margin-top: 5px;
-  color: white;
-  font-size: 15px;
-  line-height: 1.25;
-}
-
-.reading-policy-grid p {
-  margin: 8px 0 0;
-  font-size: 12px;
-  line-height: 1.5;
-}
-
 .reading-official-flow-card {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -241,6 +198,10 @@
   background: linear-gradient(135deg, rgba(52, 211, 153, .09), rgba(15, 23, 42, .70));
 }
 
+.reading-render-report-compact p {
+  font-size: 13px;
+}
+
 .reading-vocabulary-context-card,
 .reading-comprehension-card-v3,
 .reading-production-card-v3 {
@@ -310,8 +271,7 @@
   }
 
   .reading-skill-strip,
-  .reading-official-flow-card,
-  .reading-policy-grid {
+  .reading-official-flow-card {
     display: grid;
     grid-template-columns: 1fr;
   }
