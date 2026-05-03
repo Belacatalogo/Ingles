@@ -51,6 +51,19 @@ function isReadingContractRequest(lessonType) {
   return String(lessonType || '').trim().toLowerCase() === 'reading';
 }
 
+function mapReadingQuestionsToExercises(readingQuestions = []) {
+  return readingQuestions.map((item) => ({
+    question: item?.question || '',
+    options: item?.options || [],
+    answer: item?.answer || '',
+    explanation: item?.explanation || item?.evidence || '',
+    skill: item?.skill || '',
+    evidence: item?.evidence || '',
+    questionLanguage: item?.questionLanguage || '',
+    difficulty: item?.difficulty || '',
+  }));
+}
+
 export function getRequiredKeysForBlock(blockId) {
   const map = {
     structure: ['type', 'level', 'title', 'intro', 'objective', 'focus', 'sections', 'tips'],
@@ -146,7 +159,8 @@ export function buildJsonContractInstruction({ lessonType = 'reading', blockId =
       '',
       'Regras de compatibilidade temporária do motor atual:',
       '- Para o bloco mainContent, gere readingText e também listeningText com o mesmo texto, até o motor inteiro migrar para readingText.',
-      '- Para o bloco exercises, gere readingQuestions por habilidade e também exercises compatível com o render antigo.',
+      '- Para o bloco exercises, gere readingQuestions por habilidade com skill/evidence e também exercises compatível com o render antigo.',
+      '- Se houver diferença entre exercises e readingQuestions, readingQuestions será a fonte principal dos exercícios internos da aba Reading.',
       '- Para o bloco production, gere postReadingPrompts e também prompts compatível com o render antigo.',
       '- O aluno não deve ver nenhuma explicação sobre contrato JSON, política interna ou compatibilidade.',
     ].join('\n');
@@ -194,15 +208,8 @@ export function assertJsonContractBlock(blockId, data) {
     data.listeningText = data.readingText;
   }
 
-  if (blockId === 'exercises' && !Array.isArray(data.exercises) && Array.isArray(data.readingQuestions)) {
-    data.exercises = data.readingQuestions.map((item) => ({
-      question: item?.question || '',
-      options: item?.options || [],
-      answer: item?.answer || '',
-      explanation: item?.explanation || item?.evidence || '',
-      skill: item?.skill || '',
-      evidence: item?.evidence || '',
-    }));
+  if (blockId === 'exercises' && Array.isArray(data.readingQuestions) && data.readingQuestions.length) {
+    data.exercises = mapReadingQuestionsToExercises(data.readingQuestions);
   }
 
   if (blockId === 'production' && !Array.isArray(data.prompts) && Array.isArray(data.postReadingPrompts)) {
@@ -230,18 +237,12 @@ export function stripUnknownBlockKeys(blockId, data) {
   }
 
   if (blockId === 'exercises') {
-    if (Array.isArray(data?.readingQuestions)) clean.readingQuestions = data.readingQuestions;
-    if (Array.isArray(data?.evidenceTasks)) clean.evidenceTasks = data.evidenceTasks;
-    if (!Array.isArray(clean.exercises) && Array.isArray(data?.readingQuestions)) {
-      clean.exercises = data.readingQuestions.map((item) => ({
-        question: item?.question || '',
-        options: item?.options || [],
-        answer: item?.answer || '',
-        explanation: item?.explanation || item?.evidence || '',
-        skill: item?.skill || '',
-        evidence: item?.evidence || '',
-      }));
+    if (Array.isArray(data?.readingQuestions)) {
+      clean.readingQuestions = data.readingQuestions;
+      clean.exercises = mapReadingQuestionsToExercises(data.readingQuestions);
     }
+    if (Array.isArray(data?.evidenceTasks)) clean.evidenceTasks = data.evidenceTasks;
+    if (!Array.isArray(clean.exercises) && Array.isArray(data?.exercises)) clean.exercises = data.exercises;
   }
 
   if (blockId === 'production') {
