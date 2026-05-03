@@ -189,6 +189,26 @@ export function buildJsonContractInstruction({ lessonType = 'reading', blockId =
 
 export function assertJsonContractBlock(blockId, data) {
   if (!data || typeof data !== 'object' || Array.isArray(data)) throw new Error(`Contrato JSON: bloco ${blockId} não retornou objeto.`);
+
+  if (blockId === 'mainContent' && data.readingText && !data.listeningText) {
+    data.listeningText = data.readingText;
+  }
+
+  if (blockId === 'exercises' && !Array.isArray(data.exercises) && Array.isArray(data.readingQuestions)) {
+    data.exercises = data.readingQuestions.map((item) => ({
+      question: item?.question || '',
+      options: item?.options || [],
+      answer: item?.answer || '',
+      explanation: item?.explanation || item?.evidence || '',
+      skill: item?.skill || '',
+      evidence: item?.evidence || '',
+    }));
+  }
+
+  if (blockId === 'production' && !Array.isArray(data.prompts) && Array.isArray(data.postReadingPrompts)) {
+    data.prompts = data.postReadingPrompts.map((item) => item?.instruction || item?.prompt || '').filter(Boolean);
+  }
+
   const required = getRequiredKeysForBlock(blockId);
   for (const key of required) {
     if (!(key in data)) throw new Error(`Contrato JSON: bloco ${blockId} veio sem a chave obrigatória ${key}.`);
