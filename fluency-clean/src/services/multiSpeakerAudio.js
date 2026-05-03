@@ -6,7 +6,7 @@ import { getCachedAudioBlob, setCachedAudioBlob } from './audioBlobCache.js';
 import { buildPronunciationStyle, normalizeTtsTextForPronunciation } from './pronunciationGuard.js';
 
 const SPEAKER_VOICES = ['Kore', 'Puck', 'Charon', 'Fenrir', 'Aoede', 'Leda'];
-const MERGED_DIALOGUE_CACHE_MODEL = 'multi-speaker-merged-dialogue-v3-pronunciation-guard';
+const MERGED_DIALOGUE_CACHE_MODEL = 'multi-speaker-merged-dialogue-v4-pronunciation-expanded';
 const DEFAULT_SAMPLE_RATE = 24000;
 let dialogueAudio = null;
 const mergedAudioUrlMemory = new Map();
@@ -107,7 +107,7 @@ export async function prepareMultiSpeakerDialogue({ text, label = 'Listening di�
   if (!parsed.isDialogue) return { ok: false, source: 'not-dialogue', error: 'Texto não é diálogo.' };
   const protectedStyle = buildPronunciationStyle(style, parsed.plainText);
   diagnostics.setPhase('preparando diálogo multi-voz', 'tts');
-  diagnostics.log(`Preparando diálogo: ${parsed.speakers.length} personagem(ns), ${parsed.turns.length} fala(s), com guarda de pronúncia.`, 'info');
+  diagnostics.log(`Preparando diálogo: ${parsed.speakers.length} personagem(ns), ${parsed.turns.length} fala(s), com guarda de pronúncia expandida.`, 'info');
   const cacheId = makeDialogueCacheId({ parsed, style });
   const cachedAudioUrl = await getMergedDialogueUrlFromCache(cacheId);
   if (cachedAudioUrl) {
@@ -119,7 +119,7 @@ export async function prepareMultiSpeakerDialogue({ text, label = 'Listening di�
   const generated = [];
   for (const turn of parsed.turns) {
     const voiceName = turn.voiceName || getSpeakerVoice(turn.speaker, parsed.speakers);
-    diagnostics.log(`Gerando voz de ${turn.speaker} com ${voiceName} e guarda de pronúncia.`, 'info');
+    diagnostics.log(`Gerando voz de ${turn.speaker} com ${voiceName} e guarda de pronúncia expandida.`, 'info');
     const result = await generateGeminiTtsAudio({ text: turn.text, voiceName, style: protectedStyle || `Dialogue voice for ${turn.speaker}. Natural conversational English, clear pronunciation, human rhythm.`, useCache: true, allowBrowserFallback: false });
     if (!result.ok || !result.audioUrl) return { ok: false, source: 'prepare-error', error: result.error || 'sem áudio' };
     generated.push({ ...result, speaker: turn.speaker, voiceName });
