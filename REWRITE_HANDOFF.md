@@ -22,6 +22,16 @@ Branch estável protegida: `rewrite-fluency-clean`
 - Informações técnicas devem ficar no código, handoff, docs ou diagnóstico apropriado.
 - Quando for necessário mostrar segurança/estado, usar texto curto e discreto.
 
+## DIRETRIZ DE UI APROVADA — STEPPER REAL
+
+- O stepper real da Reading foi aprovado visualmente pelo usuário.
+- Esse padrão deve ser portado depois para:
+  1. `BLOCO-GRAMMAR-STEPPER-REAL-LAB`
+  2. `BLOCO-LISTENING-STEPPER-REAL-LAB`
+- A adaptação deve respeitar a natureza de cada aula.
+- Grammar não deve virar jogo; deve ser sério, claro e guiado.
+- Listening deve manter primeira escuta sem leitura e controles de áudio limpos.
+
 ## ESTADO ATUAL — READING
 
 ### `BLOCO-READING-COMPLETE-RENDER-REVIEW-LAB` — IMPLEMENTADO
@@ -37,7 +47,7 @@ Branch estável protegida: `rewrite-fluency-clean`
 - Reading agora deve ser uma aula completa dentro da própria aba.
 - A Prática Profunda é complemento posterior, não substitui os exercícios internos da Reading.
 - Adicionada ordem oficial da aula Reading: objetivo, pré-leitura, texto principal, ideia geral, vocabulário em contexto, compreensão/evidência, produção curta e conclusão.
-- Em `LessonScreen.jsx`, a Prática Profunda aparece depois da aula quando `lesson.type === 'reading`.
+- Em `LessonScreen.jsx`, a Prática Profunda aparece depois da aula quando `lesson.type === 'reading'`.
 - Criada documentação em `fluency-clean/docs/BLOCO-READING-1-ESTRUTURA-PEDAGOGICA-FIXA-LAB.md`.
 
 ### `BLOCO-READING-2 — Política por nível A1→C1` — IMPLEMENTADO
@@ -90,37 +100,36 @@ Branch estável protegida: `rewrite-fluency-clean`
 
 ### `BLOCO-READING-6 — Exercícios internos da aba Reading` — IMPLEMENTADO
 
-Objetivo:
-- Fortalecer os exercícios que ficam dentro da própria aba Reading, mantendo a Prática Profunda como complemento posterior.
-
-O que foi feito:
 - Em `ReadingLesson.jsx`, adicionado bloco compacto `Exercícios de leitura` dentro de `Compreensão com evidência textual`.
-- O bloco pode renderizar:
-  - verdadeiro/falso;
-  - copiar evidência;
-  - resposta curta.
-- Criadas funções internas:
-  - `normalizeEvidenceTasks`;
-  - `buildTrueFalseTasks`;
-  - `buildShortAnswerTasks`.
+- O bloco pode renderizar verdadeiro/falso, copiar evidência e resposta curta.
+- Criadas funções internas `normalizeEvidenceTasks`, `buildTrueFalseTasks` e `buildShortAnswerTasks`.
 - Criado componente `InternalReadingExercises`.
 - O bloco usa `evidenceTasks` quando a IA fornecer.
 - Quando não houver `evidenceTasks`, cria tarefas simples a partir das evidências das perguntas.
 - Adicionado estado `exerciseDrafts` para respostas digitadas nos exercícios internos.
-- `completeLesson` agora recebe:
-  - `multipleChoice: selectedAnswers`;
-  - `internalExercises: exerciseDrafts`.
+- `completeLesson` recebe `multipleChoice: selectedAnswers` e `internalExercises: exerciseDrafts`.
 - Estilos adicionados em `reading-complete-render-review.css` para manter os exercícios compactos e mobile-first.
 - Criada documentação em `fluency-clean/docs/BLOCO-READING-6-EXERCICIOS-INTERNOS-LAB.md`.
 
+### `HOTFIX-READING-6 — Não revelar gabarito dos exercícios internos` — IMPLEMENTADO
+
+Motivo:
+- Usuário validou visualmente o bloco, mas apontou que verdadeiro/falso, evidência e resposta curta estavam entregando resposta antes da tentativa.
+
+O que foi feito:
+- Em `reading-complete-render-review.css`, o gabarito dos exercícios internos deixou de aparecer imediatamente.
+- Em verdadeiro/falso, resposta/evidência ficam ocultas por padrão e aparece uma orientação curta para pensar primeiro.
+- Em exercícios digitados, apoio/modelo/evidência ficam ocultos por padrão e aparecem após interação/foco/digitação.
+- Não foi adicionado card técnico.
+- Não foi mexido em `bundle.js`, `main`, `rewrite-fluency-clean` ou backend Azure privado.
+
 Pendente validar no iPhone:
 - Usar `Testar Reading`.
-- Confirmar que `Exercícios de leitura` aparece dentro de `Compreensão`.
-- Confirmar que verdadeiro/falso, copiar evidência e resposta curta aparecem de forma compacta.
-- Confirmar que textareas chamam teclado normalmente.
-- Confirmar que múltipla escolha, botões de etapa, `Salvar rascunho` e `Concluir Reading` continuam funcionando.
-- Confirmar que Prática Profunda continua abaixo como complemento.
-- Confirmar que não apareceu card técnico de contrato/política.
+- Confirmar que verdadeiro/falso não mostra mais “Resposta esperada” imediatamente.
+- Confirmar que copiar evidência não mostra o trecho de apoio antes da interação.
+- Confirmar que resposta curta não mostra modelo/evidência antes da interação.
+- Confirmar que o teclado continua abrindo nos campos.
+- Confirmar que o stepper continua funcionando.
 
 ### Próximo bloco recomendado
 
@@ -131,6 +140,16 @@ Objetivo:
 - Destacar/ancorar evidências no texto quando possível.
 - Fazer botão para ir ao trecho do texto que prova a resposta.
 - Manter tudo limpo e sem poluir a aula.
+
+## PRÓXIMOS BLOCOS DE UI APROVADA
+
+1. `BLOCO-GRAMMAR-STEPPER-REAL-LAB`
+   - Portar o padrão de stepper real aprovado na Reading para a aba Grammar.
+   - Adaptar etapas para gramática: objetivo, explicação, exemplos, prática guiada, transformação/correção, produção curta e conclusão.
+
+2. `BLOCO-LISTENING-STEPPER-REAL-LAB`
+   - Portar o padrão de stepper real para Listening.
+   - Adaptar etapas para escuta: preparação, primeira escuta sem leitura, compreensão auditiva, abrir texto/transcrição, vocabulário, shadowing, produção/resposta e conclusão.
 
 ## ALERTA IMPORTANTE — BLOCO QUE FOI ESQUECIDO NA LISTA ANTERIOR
 
@@ -159,6 +178,10 @@ Plano atual de Reading em andamento:
 1. `BLOCO-READING-7 — Evidência textual inteligente`
 2. `BLOCO-READING-8 — Quality gate Reading`
 
+Depois:
+- `BLOCO-GRAMMAR-STEPPER-REAL-LAB`
+- `BLOCO-LISTENING-STEPPER-REAL-LAB`
+
 Depois retomar a ordem macro:
 - `BLOCO-SPEAKING-COMPLETE-RENDER-REVIEW-LAB`
 - `BLOCO-VOCAB-TRAIL-CONTINUATION-LAB`
@@ -178,4 +201,4 @@ Depois retomar a ordem macro:
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. Não mexa em `main`, `rewrite-fluency-clean`, `bundle.js` ou backend Azure privado. Reading agora está sendo reconstruída como aula completa dentro da própria aba. A Prática Profunda em Reading é complemento posterior, não substitui a aula. O último bloco implementado foi `BLOCO-READING-6 — Exercícios internos da aba Reading`. O próximo bloco recomendado é `BLOCO-READING-7 — Evidência textual inteligente`."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. Não mexa em `main`, `rewrite-fluency-clean`, `bundle.js` ou backend Azure privado. O último ajuste foi `HOTFIX-READING-6 — Não revelar gabarito dos exercícios internos`. O usuário aprovou o stepper real da Reading e pediu para portar depois para Grammar e Listening. Próximo bloco recomendado: `BLOCO-READING-7 — Evidência textual inteligente`."
