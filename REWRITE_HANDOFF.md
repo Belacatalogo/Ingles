@@ -50,29 +50,66 @@ O que foi feito:
 - Para Grammar, Listening e Writing, a posição da Prática Profunda foi mantida como antes.
 - Criada documentação em `fluency-clean/docs/BLOCO-READING-1-ESTRUTURA-PEDAGOGICA-FIXA-LAB.md`.
 
+### `BLOCO-READING-2 — Política por nível A1→C1` — IMPLEMENTADO
+
+Objetivo:
+- Criar uma política formal para a aba Reading se adaptar conforme o nível do aluno sobe.
+
+O que foi feito:
+- Criado `fluency-clean/src/reading/readingLevelPolicy.js`.
+- Definidos níveis A1, A2, B1, B2 e C1.
+- Definidas habilidades oficiais de Reading:
+  - `main_idea`
+  - `detail`
+  - `vocabulary_context`
+  - `sequence`
+  - `evidence`
+  - `inference`
+  - `author_purpose`
+  - `fact_opinion`
+  - `tone`
+  - `implication`
+  - `critical_response`
+- Cada nível agora tem:
+  - objetivo do aluno;
+  - faixa ideal de palavras;
+  - orientação de parágrafos;
+  - idioma das perguntas;
+  - suporte em português/inglês;
+  - tipos de texto permitidos;
+  - habilidades permitidas;
+  - mistura mínima de perguntas;
+  - produção final esperada;
+  - tom da UI/aula.
+- `ReadingLesson.jsx` passou a importar `getReadingLevelPolicy`.
+- Adicionado card visual `Plano do nível` dentro da aula Reading.
+- A produção curta agora usa a instrução definida pela política do nível.
+- O `Render seguro` passou a mostrar o nível normalizado.
+- Criada documentação em `fluency-clean/docs/BLOCO-READING-2-POLITICA-POR-NIVEL-A1-C1-LAB.md`.
+
 Arquivos alterados neste bloco:
+- `fluency-clean/src/reading/readingLevelPolicy.js`
 - `fluency-clean/src/lessons/ReadingLesson.jsx`
-- `fluency-clean/src/screens/LessonScreen.jsx`
 - `fluency-clean/src/styles/reading-complete-render-review.css`
-- `fluency-clean/docs/BLOCO-READING-1-ESTRUTURA-PEDAGOGICA-FIXA-LAB.md`
+- `fluency-clean/docs/BLOCO-READING-2-POLITICA-POR-NIVEL-A1-C1-LAB.md`
 
 Pendente validar no iPhone:
 - Botão `Testar Reading` abre a aula.
-- Fluxo oficial aparece no topo.
-- Pré-leitura aparece antes do texto.
-- Ideia geral aparece separada.
-- Compreensão/evidência aparece depois do vocabulário.
-- Produção curta e conclusão continuam funcionando.
-- Prática Profunda aparece abaixo da aula Reading como complemento.
+- Card `Plano do nível` aparece.
+- Preview A1 mostra `A1 · Leitura guiada inicial`.
+- Texto ideal aparece como 60–150 palavras.
+- Idioma das perguntas aparece como majoritariamente português para A1.
+- Produção curta usa a instrução do nível.
+- Fluxo oficial da Reading continua funcionando.
 
 ### Próximo bloco recomendado
 
-`BLOCO-READING-2 — Política por nível A1→C1`
+`BLOCO-READING-3 — Contrato JSON próprio de Reading`
 
 Objetivo:
-- Criar uma política formal de Reading por nível do aluno.
-- Definir tamanho do texto, idioma das perguntas, tipos de texto, habilidades permitidas e suporte em português para A1, A2, B1, B2 e C1.
-- Não alterar ainda a geração IA profunda antes da política estar pronta.
+- Criar contrato próprio de Reading com campos como `readingText`, `textGenre`, `preReading`, `readingQuestions`, `evidenceTasks` e `postReadingPrompts`.
+- Manter compatibilidade com aulas antigas que ainda usam `listeningText`.
+- Preparar o gerador para parar de tratar Reading como Listening.
 
 ## ALERTA IMPORTANTE — BLOCO QUE FOI ESQUECIDO NA LISTA ANTERIOR
 
@@ -121,13 +158,12 @@ Critérios:
 ## ORDEM DEFINIDA PELO USUÁRIO PARA OS PRÓXIMOS CHATS/BLOCOS
 
 Plano atual de Reading em andamento:
-1. `BLOCO-READING-2 — Política por nível A1→C1`
-2. `BLOCO-READING-3 — Contrato JSON próprio de Reading`
-3. `BLOCO-READING-4 — Geração da aula Reading por habilidade`
-4. `BLOCO-READING-5 — Render por etapas`
-5. `BLOCO-READING-6 — Exercícios internos da aba Reading`
-6. `BLOCO-READING-7 — Evidência textual inteligente`
-7. `BLOCO-READING-8 — Quality gate Reading`
+1. `BLOCO-READING-3 — Contrato JSON próprio de Reading`
+2. `BLOCO-READING-4 — Geração da aula Reading por habilidade`
+3. `BLOCO-READING-5 — Render por etapas`
+4. `BLOCO-READING-6 — Exercícios internos da aba Reading`
+5. `BLOCO-READING-7 — Evidência textual inteligente`
+6. `BLOCO-READING-8 — Quality gate Reading`
 
 Depois retomar a ordem macro:
 - `BLOCO-SPEAKING-COMPLETE-RENDER-REVIEW-LAB`
@@ -304,4 +340,4 @@ Status:
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. Não mexa em `main`, `rewrite-fluency-clean`, `bundle.js` ou backend Azure privado. Reading agora está sendo reconstruída como aula completa dentro da própria aba. A Prática Profunda em Reading é complemento posterior, não substitui a aula. O último bloco implementado foi `BLOCO-READING-1 — Estrutura pedagógica fixa da aba Reading`. O próximo bloco recomendado é `BLOCO-READING-2 — Política por nível A1→C1`."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. Não mexa em `main`, `rewrite-fluency-clean`, `bundle.js` ou backend Azure privado. Reading agora está sendo reconstruída como aula completa dentro da própria aba. A Prática Profunda em Reading é complemento posterior, não substitui a aula. O último bloco implementado foi `BLOCO-READING-2 — Política por nível A1→C1`. O próximo bloco recomendado é `BLOCO-READING-3 — Contrato JSON próprio de Reading`."
