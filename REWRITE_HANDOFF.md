@@ -15,7 +15,37 @@ Branch estável protegida: `rewrite-fluency-clean`
 - Não mexer no backend Azure privado.
 - Manter tudo modular em `fluency-clean/src/`, `fluency-clean/public/` ou arquivos reais de configuração.
 
-## ESTADO ATUAL — GUARDA DE PRONÚNCIA EXPANDIDA
+## ESTADO ATUAL — LIMPEZA VISUAL LISTENING
+
+### `HOTFIX-LISTENING-CLEANER-BLIND-NOTE-LAB` — IMPLEMENTADO
+
+Motivação:
+- Usuário pediu remover a frase redundante acima de `Conferir texto`.
+- Também foi pedido encurtar a nota protegida para deixar a aba Listening mais limpa.
+
+Arquivos alterados:
+- `fluency-clean/src/lessons/ListeningLessonClean.jsx`
+- `REWRITE_HANDOFF.md`
+
+O que foi feito:
+- Estado inicial `message` mudou de texto fixo para string vazia.
+- A mensagem `<small>` agora só aparece quando houver status real do áudio/player.
+- Removida a frase inicial redundante:
+  - `Comece ouvindo sem abrir o texto. Depois confira a transcrição.`
+- Nota de primeira escuta foi encurtada para:
+  - `Primeira escuta sem leitura. Abra o texto só depois de ouvir.`
+
+Commit:
+- `fecc5621511886a7b3b4a1d9fdaa79948489f425` — limpa mensagens iniciais do Listening.
+
+Próximo teste recomendado no iPhone:
+1. Aguardar deploy da branch `rewrite-fluency-clean-lab`.
+2. Abrir `Aula` > `Testar Diálogo`.
+3. Confirmar que a frase redundante acima de `Conferir texto` sumiu.
+4. Confirmar que a nota ficou mais curta.
+5. Tocar play e confirmar que mensagens só aparecem como status real do áudio.
+
+## ESTADO ANTERIOR — GUARDA DE PRONÚNCIA EXPANDIDA
 
 ### `BLOCO-TTS-PRONUNCIATION-GUARD-EXPANSION-LAB` — IMPLEMENTADO
 
@@ -87,18 +117,6 @@ O que foi feito:
 Commits:
 - `989073422e7e4e915d9463ef0140052a1bf12d84` — expande guarda automática de pronúncia TTS.
 - `9ae30226b791fb4a22d87631b5e665e77ac90615` — invalida cache multi-speaker após expansão de pronúncia.
-
-Próximo teste recomendado no iPhone:
-1. Aguardar deploy da branch `rewrite-fluency-clean-lab`.
-2. Abrir `Aula` > `Testar Diálogo`.
-3. Tocar play para preparar áudio novo.
-4. Tocar play novamente para reproduzir.
-5. Conferir se João, how are you, today e you melhoraram.
-6. Se uma palavra específica ainda soar errada, adicionar regra ao `pronunciationGuard.js`.
-
-Observação importante:
-- A guarda agora é preventiva e cobre muito mais casos, mas TTS ainda pode errar alguma palavra específica.
-- A ideia agora é corrigir exceções raras conforme aparecerem, sem refazer o sistema.
 
 ## ESTADO ANTERIOR — GUARDA DE PRONÚNCIA TTS
 
@@ -193,4 +211,4 @@ Status:
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. Foi implementado `BLOCO-TTS-PRONUNCIATION-GUARD-EXPANSION-LAB`: `pronunciationGuard.js` agora tem regras preventivas para nomes brasileiros, frases A1/A2, palavras sensíveis, contrações e spelling. O cache multi-speaker foi invalidado para `v4-pronunciation-expanded`. Próximo teste: `Aula > Testar Diálogo`, preparar e reproduzir, conferindo pronúncia."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. Foi implementado `HOTFIX-LISTENING-CLEANER-BLIND-NOTE-LAB`: a mensagem inicial fixa do Listening foi removida, `<small>` só aparece quando há status real do áudio, e a nota foi encurtada para `Primeira escuta sem leitura. Abra o texto só depois de ouvir.` Próximo teste: `Aula > Testar Diálogo` no iPhone e confirmar limpeza visual."
