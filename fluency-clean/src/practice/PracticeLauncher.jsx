@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { CheckCircle2, Dumbbell, Heart, PlayCircle, RotateCcw, Target } from 'lucide-react';
+import { CheckCircle2, Dumbbell, Heart, PlayCircle, RotateCcw, ShieldCheck, Target, Zap } from 'lucide-react';
 import { buildPracticeItems } from './PracticePlanAdapter.js';
 import { PracticeFullscreen } from './PracticeFullscreen.jsx';
 import { getPracticeSessionsForLesson, recordPracticeSession } from '../services/progressStore.js';
@@ -31,17 +31,17 @@ export function PracticeLauncher({ lesson, onComplete }) {
   }
 
   return (
-    <section className={`pillar-card practice-launcher-card ${hasPractice ? 'practice-launcher-completed' : ''}`} id="lesson-practice">
+    <section className={`pillar-card practice-launcher-card practice-launcher-polished ${hasPractice ? 'practice-launcher-completed' : ''}`} id="lesson-practice">
       <div className="pillar-card-title"><Dumbbell size={17} /> Prática profunda</div>
       <h2>{hasPractice ? 'Prática registrada' : 'Treine o conteúdo da aula'}</h2>
       <p>
         {hasPractice
           ? 'Seu treino foi salvo. Você pode revisar novamente para melhorar precisão, vidas e pontos fracos.'
-          : 'Exercícios em tela cheia, uma pergunta por vez, com escuta, escrita, fala, montagem de frases e correção imediata.'}
+          : 'Uma pergunta por vez, com correção imediata e exercícios adaptados ao tipo da aula.'}
       </p>
       <div className="practice-launcher-meta">
-        <span>{items.length} exercícios</span>
-        {visibleSummary ? <span><CheckCircle2 size={14} /> {visibleSummary.correct}/{visibleSummary.total} acertos</span> : <span>qualidade filtrada</span>}
+        <span><Target size={14} /> {items.length} exercícios</span>
+        {visibleSummary ? <span><CheckCircle2 size={14} /> {visibleSummary.correct}/{visibleSummary.total} acertos</span> : <span><ShieldCheck size={14} /> qualidade filtrada</span>}
         {visibleSummary ? <span><Target size={14} /> {visibleSummary.accuracy}% precisão</span> : null}
         {visibleSummary ? <span><Heart size={14} /> {visibleSummary.lives} vidas</span> : null}
       </div>
@@ -51,9 +51,10 @@ export function PracticeLauncher({ lesson, onComplete }) {
           <span>{bestSession.mistakes ? `${bestSession.mistakes} ponto(s) para revisar` : 'sem erros nessa sessão'}</span>
         </div>
       ) : null}
-      <button type="button" className="primary-action" onClick={() => setOpen(true)}>
-        {hasPractice ? <RotateCcw size={18} /> : <PlayCircle size={18} />}
-        {hasPractice ? 'Revisar novamente' : 'Começar prática'}
+      <button type="button" className="primary-action practice-deep-cta" onClick={() => setOpen(true)}>
+        <span>{hasPractice ? <RotateCcw size={20} /> : <PlayCircle size={20} />}</span>
+        <b>{hasPractice ? 'Revisar novamente' : 'Começar prática'}</b>
+        <small><Zap size={13} /> tela cheia</small>
       </button>
       <PracticeFullscreen lesson={lesson} open={open} onClose={() => setOpen(false)} onComplete={handleComplete} />
     </section>
