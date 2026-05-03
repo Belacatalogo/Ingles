@@ -15,7 +15,63 @@ Branch estável protegida: `rewrite-fluency-clean`
 - Não mexer no backend Azure privado.
 - Manter tudo modular em `fluency-clean/src/`, `fluency-clean/public/` ou arquivos reais de configuração.
 
-## ESTADO ATUAL — LISTENING PLAYER LIMPO + CACHE INDEXEDDB
+## ESTADO ATUAL — GUARDA DE PRONÚNCIA TTS
+
+### `HOTFIX-LISTENING-TTS-PRONUNCIATION-GUARD-LAB` — IMPLEMENTADO
+
+Motivação:
+- O player limpo funcionou.
+- O problema novo foi qualidade de pronúncia em uma geração específica do Gemini TTS:
+  - `João` soou como `juau`;
+  - `you` soou como `iu`;
+  - `today` soou como algo próximo de `drei`.
+- Isso não era bug visual nem bug de cache; era inconsistência de pronúncia do TTS em nomes/palavras sensíveis.
+
+Objetivo executado:
+- Criar uma camada de proteção de pronúncia antes do Gemini TTS.
+- Manter o texto visual da aula igual, mas enviar ao TTS uma versão mais segura quando necessário.
+- Invalidar o cache antigo de diálogo com pronúncia ruim para forçar nova geração.
+
+Arquivos criados/alterados:
+- `fluency-clean/src/services/pronunciationGuard.js`
+- `fluency-clean/src/services/geminiTts.js`
+- `fluency-clean/src/services/multiSpeakerAudio.js`
+- `REWRITE_HANDOFF.md`
+
+O que foi feito:
+- Criado `pronunciationGuard.js`.
+- Adicionadas regras iniciais:
+  - `João` → texto TTS `Joao` + instrução para não soar como `juau`;
+  - `today` → guia `tuh-DAY`, com estresse na segunda sílaba;
+  - `you` → guia `yoo`, não `iu`;
+  - `how are you` → guia `HOW ar yoo`.
+- `geminiTts.js` agora:
+  - normaliza o texto enviado ao TTS;
+  - adiciona guia de pronúncia ao estilo;
+  - usa a versão protegida também no cacheId, para evitar reaproveitar áudio antigo ruim.
+- `multiSpeakerAudio.js` agora:
+  - usa o guia de pronúncia no diálogo multi-voz;
+  - usa texto protegido no cacheId das falas;
+  - mudou o modelo de cache final para `multi-speaker-merged-dialogue-v3-pronunciation-guard`, forçando nova geração do áudio final.
+
+Commits:
+- `42eac1160e862d14b90f4688f79b39587061387a` — cria guarda de pronúncia para TTS.
+- `0eb1dffbc62579f982b344b4befb6971d4c7820c` — aplica guarda de pronúncia no Gemini TTS.
+- `e38f8548b565c70cc298d9a22d3b2ac8e2cd49b5` — usa guarda de pronúncia no cache multi-speaker.
+
+Próximo teste recomendado no iPhone:
+1. Aguardar deploy da branch `rewrite-fluency-clean-lab`.
+2. Abrir `Aula` > `Testar Diálogo`.
+3. Tocar play uma vez para preparar.
+4. Tocar play de novo para reproduzir.
+5. Confirmar se `João`, `how are you`, `you` e `today` soam mais naturais.
+6. Se ainda houver erro em uma palavra específica, adicionar a palavra ao `pronunciationGuard.js`.
+
+Observação importante:
+- Essa abordagem não garante 100% contra erro de modelo, mas reduz muito inconsistências em palavras conhecidas.
+- O caminho futuro ideal é permitir uma lista configurável de palavras sensíveis/pronúncia no próprio app.
+
+## ESTADO ANTERIOR — LISTENING PLAYER LIMPO + CACHE INDEXEDDB
 
 ### `HOTFIX-LISTENING-CLEAN-PLAYER-INDEXEDDB-CACHE-LAB` — IMPLEMENTADO
 
@@ -39,49 +95,11 @@ Arquivos criados/alterados:
 - `fluency-clean/src/styles/listening-ux-hotfix.css`
 - `REWRITE_HANDOFF.md`
 
-O que foi feito — cache:
-- Criado `audioBlobCache.js` usando IndexedDB.
-- Áudios grandes/finais agora podem ser salvos como Blob no IndexedDB.
-- Mantém até 80 blobs grandes.
-- Remove antigos por `lastUsedAt` quando necessário.
-- `multiSpeakerAudio.js` agora tenta cache nesta ordem:
-  1. memória;
-  2. IndexedDB;
-  3. cache legado localStorage;
-  4. gerar novamente.
-- O cache final multi-speaker mudou para modelo `multi-speaker-merged-dialogue-v2`.
-
-O que foi feito — erro de autoplay/iPhone:
-- Para diálogo multi-voz, `handleListen` agora prepara o áudio primeiro.
-- Quando o áudio fica pronto, o estado vira `ready` e a mensagem pede para tocar novamente em Reproduzir.
-- A reprodução real acontece em `handlePlayPrepared`, diretamente no clique seguinte do usuário.
-- Isso evita tentar tocar automaticamente depois de um processo assíncrono, que é justamente onde o iPhone costuma bloquear.
-
-O que foi feito — visual/UX:
-- Removido visualmente o card `Controle por fala` / `Ouvir trecho atual` / `Próximo trecho` / `Mostrar texto`.
-- No lugar, ficou só uma nota discreta:
-  - `Primeira escuta protegida: nenhum trecho da fala aparece aqui. Use “Conferir texto” só depois de ouvir.`
-- A aba Listening ficou menos poluída.
-- Classe adicionada: `listening-clean-player-v3`.
-
 Commits:
 - `d11ec132f9fe3c8239d707c617da02f61ae78e6b` — cria cache IndexedDB para áudios grandes.
 - `57f784a33c6398a3ff432e6990709bd6bbc5dbc7` — usa IndexedDB para cache final multi-speaker.
 - `75d5000e09002058074750f3237da876f9e9fe51` — simplifica player Listening e prepara áudio antes de tocar.
 - `1ecbced18f432f2a2dd40eede8da04b1f315a593` — remove poluição visual do controle manual Listening.
-
-Próximo teste recomendado no iPhone:
-1. Aguardar deploy da branch `rewrite-fluency-clean-lab`.
-2. Abrir `Aula` > `Testar Diálogo`.
-3. Tocar no play uma vez.
-4. Esperar a mensagem `Áudio preparado. Toque em Reproduzir...` ou `Áudio pronto no cache...`.
-5. Tocar no play de novo para reproduzir.
-6. Confirmar que o erro de permissão/autoplay não aparece.
-7. Confirmar que o card de controle por fala sumiu.
-8. No replay seguinte, confirmar que usa cache IndexedDB/memória e prepara mais rápido.
-
-Observação importante:
-- O primeiro toque em diálogo multi-voz pode preparar o áudio, e o segundo toque inicia a reprodução. Isso é intencional para contornar a trava do iPhone sem quebrar a imersão com erro.
 
 ## ESTADO ANTERIOR — CACHE DE ÁUDIO AMPLIADO
 
@@ -90,10 +108,6 @@ Observação importante:
 - Cache de áudio localStorage aumentou de 40 para 160 itens.
 - Se salvar falhar por espaço, faz prune e tenta novamente.
 - `audio.cache.*` não sincroniza mais com cloud sync.
-
-Commits:
-- `abf9eb771764db4e31ca455a5e0153c95ad9cf4d` — aumenta capacidade do cache de áudio.
-- `edacb305ec7c78ca9339cdfa60a7a35a4f6b4715` — impede sync cloud do cache de áudio.
 
 ## ESTADO ANTERIOR — CACHE FINAL MULTI-SPEAKER
 
@@ -153,4 +167,4 @@ Status:
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. Foi implementado `HOTFIX-LISTENING-CLEAN-PLAYER-INDEXEDDB-CACHE-LAB`: áudio final grande agora usa IndexedDB, o player de diálogo prepara no primeiro toque e reproduz no segundo toque para evitar bloqueio do iPhone, e o card de controle por fala foi removido visualmente para limpar a aula. Próximo teste: `Aula > Testar Diálogo`, tocar play para preparar, tocar play novamente para reproduzir, confirmar sem erro de permissão e sem card poluído."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. Foi implementado `HOTFIX-LISTENING-TTS-PRONUNCIATION-GUARD-LAB`: criada camada `pronunciationGuard.js`, Gemini TTS agora usa texto/estilo protegido para palavras como João, today, you e how are you, e o cache final multi-speaker foi invalidado para regenerar com a guarda de pronúncia. Próximo teste: `Aula > Testar Diálogo`, preparar e reproduzir, confirmando se João, you e today soam corretos."
