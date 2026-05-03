@@ -208,6 +208,10 @@ function normalizeExercises(lesson) {
       options,
       answer,
       explanation: item?.explanation ?? item?.feedback ?? originalItem?.explanation ?? originalItem?.feedback ?? '',
+      skill: item?.skill ?? originalItem?.skill ?? '',
+      evidence: item?.evidence ?? originalItem?.evidence ?? '',
+      questionLanguage: item?.questionLanguage ?? originalItem?.questionLanguage ?? '',
+      difficulty: item?.difficulty ?? originalItem?.difficulty ?? '',
     };
   });
 }
@@ -217,6 +221,7 @@ function normalizeVocabulary(lesson) {
     word: item?.word ?? item?.term ?? '',
     meaning: item?.meaning ?? item?.translation ?? item?.definition ?? '',
     example: item?.example ?? item?.sentence ?? '',
+    contextClue: item?.contextClue ?? item?.context_clue ?? '',
   })).filter((item) => item.word || item.meaning || item.example);
 }
 
@@ -228,10 +233,47 @@ function normalizeObject(value) {
   return value && typeof value === 'object' && !Array.isArray(value) ? value : null;
 }
 
+function normalizePreReadingItems(lesson) {
+  return ensureArray(lesson.preReading || lesson.pre_reading || lesson.beforeReading).map((item) => {
+    if (typeof item === 'string') return { type: 'strategy', text: item };
+    return {
+      type: item?.type ?? item?.kind ?? 'strategy',
+      text: item?.text ?? item?.content ?? item?.question ?? item?.instruction ?? '',
+    };
+  }).filter((item) => item.text);
+}
+
+function normalizeEvidenceTasks(lesson) {
+  return ensureArray(lesson.evidenceTasks || lesson.evidence_tasks).map((item) => {
+    if (typeof item === 'string') return { instruction: 'Localize no texto a frase que prova sua resposta.', expectedEvidence: item, skill: 'evidence' };
+    return {
+      instruction: item?.instruction ?? item?.question ?? 'Localize no texto a frase que prova sua resposta.',
+      expectedEvidence: item?.expectedEvidence ?? item?.evidence ?? item?.quote ?? '',
+      skill: item?.skill ?? 'evidence',
+    };
+  }).filter((item) => item.instruction || item.expectedEvidence);
+}
+
+function normalizePostReadingPrompts(lesson) {
+  return ensureArray(lesson.postReadingPrompts || lesson.post_reading_prompts).map((item) => {
+    if (typeof item === 'string') return { instruction: item };
+    return {
+      instruction: item?.instruction ?? item?.prompt ?? item?.text ?? '',
+      minSentences: item?.minSentences ?? item?.min_sentences ?? null,
+      maxSentences: item?.maxSentences ?? item?.max_sentences ?? null,
+    };
+  }).filter((item) => item.instruction);
+}
+
 export function normalizeLesson(rawLesson) {
   const lesson = rawLesson && typeof rawLesson === 'object' ? rawLesson : {};
   const inferredType = normalizeLessonType(lesson.type ?? lesson.category ?? lesson.kind);
   const type = inferredType === LESSON_TYPES.default ? inferLessonTypeFromText(`${lesson.title || ''} ${lesson.intro || ''}`) : inferredType;
+  const readingText = lesson.readingText ?? lesson.reading_text ?? lesson.mainText ?? lesson.main_text ?? '';
+  const listeningText = lesson.listeningText ?? lesson.listening_text ?? lesson.transcript ?? '';
+  const readingQuestions = ensureArray(lesson.readingQuestions).length ? lesson.readingQuestions : ensureArray(lesson.reading_questions);
+  const normalizedReadingQuestions = readingQuestions.length ? normalizeExercises({ ...lesson, exercises: readingQuestions, raw: { ...lesson.raw, exercises: readingQuestions } }) : [];
+  const normalizedExercises = normalizeExercises(lesson);
 
   return {
     id: lesson.id ?? `lesson-${Date.now()}`,
@@ -244,10 +286,17 @@ export function normalizeLesson(rawLesson) {
     focus: lesson.focus ?? lesson.topic ?? '',
     sections: normalizeSections(lesson),
     vocabulary: normalizeVocabulary(lesson),
-    exercises: normalizeExercises(lesson),
+    exercises: normalizedExercises,
     tips: ensureArray(lesson.tips),
     prompts: normalizePrompts(lesson),
-    listeningText: lesson.listeningText ?? lesson.listening_text ?? lesson.transcript ?? '',
+    listeningText: listeningText || readingText,
+    readingText: readingText || listeningText,
+    textGenre: lesson.textGenre ?? lesson.text_genre ?? lesson.genre ?? '',
+    readingPurpose: lesson.readingPurpose ?? lesson.reading_purpose ?? '',
+    preReading: normalizePreReadingItems(lesson),
+    readingQuestions: normalizedReadingQuestions,
+    evidenceTasks: normalizeEvidenceTasks(lesson),
+    postReadingPrompts: normalizePostReadingPrompts(lesson),
     answerKey: lesson.answerKey ?? lesson.answer_key ?? lesson.raw?.answerKey ?? lesson.raw?.answer_key ?? null,
     pedagogicalReview: normalizeObject(lesson.pedagogicalReview),
     quality: normalizeObject(lesson.quality),
