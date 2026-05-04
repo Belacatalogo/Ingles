@@ -9,6 +9,7 @@ export function NewContextExercise({ item, feedback, normalize, onSelect }) {
 
   const subPrompt = item?.subQuestion?.prompt || 'Responda sobre o novo contexto.';
   const contextText = item?.newContext?.text || '';
+  const groupLabel = `Opções para: ${subPrompt}`;
 
   return (
     <div className="practice-new-context">
@@ -18,7 +19,11 @@ export function NewContextExercise({ item, feedback, normalize, onSelect }) {
 
       <div className="practice-new-context-sub">
         <p className="practice-new-context-sub-prompt">{subPrompt}</p>
-        <div className="practice-new-context-options">
+        <div
+          className="practice-new-context-options"
+          role="radiogroup"
+          aria-label={groupLabel}
+        >
           {item.options.map((option, index) => {
             const isSelected = normalize(selected) === normalize(option);
             const right = feedback && normalize(option) === normalize(item.answer);
@@ -30,8 +35,11 @@ export function NewContextExercise({ item, feedback, normalize, onSelect }) {
                 className={right ? 'right' : wrong ? 'wrong' : isSelected ? 'is-selected' : ''}
                 onClick={() => setSelected(option)}
                 disabled={Boolean(feedback)}
+                role="radio"
+                aria-checked={isSelected ? 'true' : 'false'}
+                aria-disabled={Boolean(feedback) ? 'true' : 'false'}
               >
-                <span>{String.fromCharCode(65 + index)}</span>
+                <span aria-hidden="true">{String.fromCharCode(65 + index)}</span>
                 <b>{option}</b>
               </button>
             );
@@ -41,6 +49,7 @@ export function NewContextExercise({ item, feedback, normalize, onSelect }) {
           type="button"
           className="practice-new-context-submit"
           disabled={!selected || Boolean(feedback)}
+          aria-disabled={!selected || Boolean(feedback) ? 'true' : 'false'}
           onClick={() => onSelect(selected)}
         >
           Confirmar
