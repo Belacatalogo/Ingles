@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { CheckCircle2, Lightbulb, MessageSquareText, PencilLine, Sparkles, Target } from 'lucide-react';
+import { normalizeWritingLessonContract } from '../writing/writingJsonContract.js';
 import { completeLesson, getLessonDraft, saveLessonDraft } from '../services/progressStore.js';
 
 const fallbackPrompts = [
@@ -17,8 +18,10 @@ function cleanText(value) {
 }
 
 function normalizePrompts(lesson) {
+  const productionInstruction = cleanText(lesson?.productionPrompt?.instruction || '');
   const prompts = Array.isArray(lesson?.prompts) ? lesson.prompts : [];
   const cleanPrompts = prompts.map((prompt) => cleanText(typeof prompt === 'string' ? prompt : prompt?.text || prompt?.prompt || '')).filter(Boolean);
+  if (productionInstruction) return [productionInstruction, ...cleanPrompts].filter(Boolean);
   return cleanPrompts.length ? cleanPrompts : fallbackPrompts;
 }
 
@@ -31,11 +34,40 @@ function normalizeSections(lesson) {
   })).filter((section) => section.title || section.content || section.examples.length);
 }
 
-export function WritingLesson({ lesson }) {
+function normalizeStructuredTasks(lesson) {
+  return (Array.isArray(lesson?.structuredTasks) ? lesson.structuredTasks : [])
+    .map((task, index) => ({
+      type: cleanText(task?.type || 'guided_sentence'),
+      prompt: cleanText(task?.prompt || task?.question || task?.instruction || ''),
+      answer: cleanText(task?.answer || task?.expected || ''),
+      options: Array.isArray(task?.options) ? task.options.map(cleanText).filter(Boolean) : [],
+      writingTag: cleanText(task?.writingTag || task?.tag || ''),
+      index,
+    }))
+    .filter((task) => task.prompt && task.answer);
+}
+
+function normalizeVocabulary(lesson) {
+  return (Array.isArray(lesson?.vocabulary) ? lesson.vocabulary : [])
+    .map((item) => ({
+      word: cleanText(item?.word || item?.term || ''),
+      meaning: cleanText(item?.meaning || item?.translation || item?.definition || ''),
+      example: cleanText(item?.example || item?.sentence || ''),
+    }))
+    .filter((item) => item.word || item.meaning || item.example);
+}
+
+export function WritingLesson({ lesson: rawLesson }) {
+  const lesson = useMemo(() => normalizeWritingLessonContract(rawLesson), [rawLesson]);
   const [answer, setAnswer] = useState(() => getLessonDraft(lesson?.id || lesson?.title || 'writing'));
   const [message, setMessage] = useState('Escreva com frases simples. Clareza é mais importante que complexidade.');
   const prompts = useMemo(() => normalizePrompts(lesson), [lesson]);
   const sections = useMemo(() => normalizeSections(lesson), [lesson]);
+  const structuredTasks = useMemo(() => normalizeStructuredTasks(lesson), [lesson]);
+  const vocabulary = useMemo(() => normalizeVocabulary(lesson), [lesson]);
+  const usefulPhrases = useMemo(() => (Array.isArray(lesson?.usefulPhrases) ? lesson.usefulPhrases.map(cleanText).filter(Boolean) : []), [lesson]);
+  const checklist = useMemo(() => (Array.isArray(lesson?.writingChecklist) ? lesson.writingChecklist.map(cleanText).filter(Boolean) : []), [lesson]);
+  const writingModel = cleanText(lesson?.writingModel || '');
 
   function handleSave() {
     saveLessonDraft({ lesson, answer });
@@ -79,6 +111,53 @@ export function WritingLesson({ lesson }) {
         </section>
       ) : null}
 
+      {writingModel ? (
+        <section className="pillar-card">
+          <div className="pillar-card-title"><MessageSquareText size={17} /> Modelo para seguir</div>
+          <p>{writingModel}</p>
+        </section>
+      ) : null}
+
+      {usefulPhrases.length ? (
+        <section className="pillar-card">
+          <div className="pillar-card-title"><Sparkles size={17} /> Frases úteis</div>
+          <div className="writing-prompt-list">
+            {usefulPhrases.map((phrase, index) => (
+              <div key={`${phrase}-${index}`}><b>{index + 1}</b><span>{phrase}</span></div>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      {vocabulary.length ? (
+        <section className="pillar-card">
+          <div className="pillar-card-title"><Lightbulb size={17} /> Vocabulário útil</div>
+          <div className="lesson-vocabulary-grid compact">
+            {vocabulary.map((item, index) => (
+              <article className="lesson-vocab-card" key={`${item.word}-${index}`}>
+                <strong>{item.word || item.meaning}</strong>
+                {item.meaning ? <span>{item.meaning}</span> : null}
+                {item.example ? <p>{item.example}</p> : null}
+              </article>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      {structuredTasks.length ? (
+        <section className="pillar-card">
+          <div className="pillar-card-title"><PencilLine size={17} /> Exercícios de escrita</div>
+          <div className="writing-prompt-list">
+            {structuredTasks.map((task, index) => (
+              <div key={`${task.prompt}-${index}`}>
+                <b>{index + 1}</b>
+                <span>{task.prompt}</span>
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
       <section className="pillar-card">
         <div className="pillar-card-title"><Lightbulb size={17} /> Roteiro</div>
         <div className="writing-prompt-list">
@@ -87,6 +166,17 @@ export function WritingLesson({ lesson }) {
           ))}
         </div>
       </section>
+
+      {checklist.length ? (
+        <section className="pillar-card">
+          <div className="pillar-card-title"><CheckCircle2 size={17} /> Checklist antes de enviar</div>
+          <div className="writing-prompt-list">
+            {checklist.map((item, index) => (
+              <div key={`${item}-${index}`}><b>✓</b><span>{item}</span></div>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       <section className="pillar-card writing-editor-card">
         <div className="pillar-card-title"><MessageSquareText size={17} /> Sua resposta</div>
