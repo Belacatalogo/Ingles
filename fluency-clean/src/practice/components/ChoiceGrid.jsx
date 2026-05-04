@@ -5,10 +5,11 @@ export function ChoiceGrid({ item, value, feedback, normalize, onSelect }) {
         const selected = normalize(value) === normalize(option);
         const right = feedback && normalize(option) === normalize(item.answer);
         const wrong = feedback && selected && !right;
+        const label = item.optionLabels?.[option] || option;
         return (
           <button type="button" key={`${option}-${index}`} onClick={() => onSelect(option)} disabled={Boolean(feedback)} className={right ? 'right' : wrong ? 'wrong' : selected ? 'selected' : ''}>
             <span>{String.fromCharCode(65 + index)}</span>
-            <b>{option}</b>
+            <b>{label}</b>
           </button>
         );
       })}
