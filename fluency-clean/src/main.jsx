@@ -27,6 +27,7 @@ import './styles/practice-new-context.css';
 import './styles/practice-summary-cloze.css';
 import './styles/practice-mastery-recap.css';
 import './styles/practice-lives-hotfix.css';
+import './styles/practice-a11y.css';
 import './styles/grammar-examples-hotfix.css';
 import './styles/hotfix-ui-consistency.css';
 import './styles/reading-complete-render-review.css';
