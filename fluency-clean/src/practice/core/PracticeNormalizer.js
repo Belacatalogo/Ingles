@@ -88,6 +88,33 @@ function normalizeEvidenceTasksForPractice(lesson, skill) {
     .slice(0, 6);
 }
 
+function normalizeTransferContextsForPractice(lesson, skill) {
+  if (skill !== PRACTICE_SKILLS.READING) return [];
+  const raw = Array.isArray(lesson?.transferContexts)
+    ? lesson.transferContexts
+    : Array.isArray(lesson?.transfer_contexts)
+      ? lesson.transfer_contexts
+      : [];
+
+  return raw.map((item) => {
+    const sub = item?.subQuestion || item?.question || {};
+    return {
+      text: cleanPracticeText(item?.text || item?.newContext || item?.context || ''),
+      source: cleanPracticeText(item?.source || 'transfer'),
+      tags: Array.isArray(item?.tags) ? item.tags.map(cleanPracticeText).filter(Boolean) : [],
+      readingSkill: cleanPracticeText(item?.readingSkill || item?.skill || 'detail'),
+      subQuestion: {
+        prompt: cleanPracticeText(sub?.prompt || sub?.question || sub?.instruction || ''),
+        type: cleanPracticeText(sub?.type || 'multiple_choice'),
+        answer: cleanPracticeText(sub?.answer || sub?.correctAnswer || sub?.expectedAnswer || ''),
+        options: Array.isArray(sub?.options || sub?.choices || sub?.alternatives)
+          ? (sub.options || sub.choices || sub.alternatives).map(cleanPracticeText).filter(Boolean)
+          : [],
+      },
+    };
+  }).filter((item) => item.text && item.subQuestion.answer).slice(0, 2);
+}
+
 export function normalizeLessonForPractice(lesson = {}) {
   const skill = detectPracticeSkill(lesson);
   const title = cleanPracticeText(lesson.title || 'Aula');
@@ -129,6 +156,7 @@ export function normalizeLessonForPractice(lesson = {}) {
   ].map(cleanPracticeText).filter((word) => word.length >= 3);
   const abaReadingExercises = skill === PRACTICE_SKILLS.READING ? collectAbaReadingExercises(lesson) : [];
   const evidenceTasks = normalizeEvidenceTasksForPractice(lesson, skill);
+  const transferContexts = normalizeTransferContextsForPractice(lesson, skill);
 
   return {
     id: lesson.id || `lesson-${normalizePracticeText(title).slice(0, 32)}`,
@@ -141,6 +169,7 @@ export function normalizeLessonForPractice(lesson = {}) {
     vocabulary,
     exercises,
     evidenceTasks,
+    transferContexts,
     sentences: allSentences,
     keywords: [...new Set(keywords.map((word) => word.toLowerCase()))],
     abaReadingExercises,
