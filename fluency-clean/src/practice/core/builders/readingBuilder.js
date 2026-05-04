@@ -1,4 +1,5 @@
 import { buildEvidenceQuestionsForLevel } from '../../../reading/readingEvidenceLayers.js';
+import { buildNewContextQuestions } from '../../../reading/readingNewContextGenerator.js';
 import { isDuplicateOfAba, VARIANT_POLICY_BY_SKILL } from '../../../reading/readingPracticeVariants.js';
 import { pullSrsReviewItems, SRS_ITEM_TYPES } from '../../../services/practiceSrsExtended.js';
 import { PRACTICE_PHASES, QUESTION_TYPES } from '../PracticeTypes.js';
@@ -58,6 +59,7 @@ export function buildReadingPractice(context) {
   tryAddMany(buildVocabReviewQuestions(context, 2));
   tryAddMany(makeVocabularyQuestions(context, 6));
   tryAddMany(buildEvidenceQuestionsForLevel(context, context.evidenceTasks || []));
+  tryAddMany(buildNewContextQuestions(context, context.transferContexts || []));
 
   if (sentences[0]) {
     tryAdd(createQuestion({
