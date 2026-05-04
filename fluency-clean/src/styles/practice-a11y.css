@@ -1,45 +1,95 @@
-/* BLOCO-G2 — Practice A11y Audit */
+/* BLOCO-G2 — Practice A11y Audit
+   Acessibilidade incremental para Prática Profunda.
+   Não altera fluxo funcional; apenas melhora leitura, foco, alvos de toque e Dynamic Type. */
 
-.practice-fullscreen,
-.practice-fullscreen * {
+.practice-fullscreen {
+  overflow-wrap: break-word;
+  word-break: break-word;
+  -webkit-text-size-adjust: 100%;
+}
+
+.practice-question,
+.practice-intro,
+.practice-done {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.practice-question-card,
+.practice-choice-grid,
+.practice-feedback,
+.practice-wordbank,
+.practice-speak-box,
+.practice-writing-rubric {
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.practice-kind {
+  font-size: 0.75rem;
+}
+
+.practice-question h1,
+.practice-prompt {
+  font-size: clamp(1.55rem, 7.2vw, 2.375rem);
   overflow-wrap: break-word;
 }
 
-.practice-question-card h1,
-.practice-prompt,
 .practice-option-text,
-.practice-feedback,
-.practice-textarea,
-.practice-speak-box input {
-  font-size: 1rem;
+.practice-choice-grid button b {
+  font-size: clamp(1rem, 4.7vw, 1.5625rem);
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
 }
 
-.practice-option-btn,
-.practice-confirm-btn,
-.practice-next-btn,
-.practice-audio-btn,
-.practice-close,
-.practice-word-options button,
-.practice-answer-line button,
-.practice-speak-box button,
-.practice-speak-box input {
-  min-height: 44px;
-  min-width: 44px;
-  height: auto;
+.practice-launcher-card p,
+.practice-intro p,
+.practice-done p,
+.practice-feedback-text span,
+.practice-feedback-placeholder,
+.practice-rubric-criteria,
+.practice-rubric-errors,
+.practice-rubric-rewrite {
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.practice-feedback-text strong {
+  font-size: 1.25rem;
+  line-height: 1.2;
 }
 
 .practice-option-btn,
 .practice-choice-grid button,
+.practice-confirm-btn,
+.practice-next-btn,
+.practice-audio-btn,
+.practice-audio-big,
+.practice-close,
+.practice-start-button,
+.practice-footer-actions button,
+.practice-done button,
+.practice-answer-line button,
 .practice-word-options button,
-.practice-answer-line button {
-  padding: 0.75rem 1rem;
+.practice-speak-box button {
+  min-height: 44px;
+  min-width: 44px;
+  height: auto;
+  touch-action: manipulation;
+}
+
+.practice-option-btn,
+.practice-choice-grid button {
+  padding: 12px 16px;
 }
 
 .practice-textarea,
 .practice-speak-box input {
   min-height: 44px;
-  font-size: 1rem;
+  font-size: max(1rem, 16px);
   line-height: 1.45;
+  overflow-y: auto;
 }
 
 .practice-option-btn:focus-visible,
@@ -47,25 +97,33 @@
 .practice-confirm-btn:focus-visible,
 .practice-next-btn:focus-visible,
 .practice-audio-btn:focus-visible,
+.practice-audio-big:focus-visible,
 .practice-close:focus-visible,
-.practice-word-options button:focus-visible,
+.practice-start-button:focus-visible,
+.practice-footer-actions button:focus-visible,
+.practice-done button:focus-visible,
 .practice-answer-line button:focus-visible,
-.practice-textarea:focus-visible,
+.practice-word-options button:focus-visible,
 .practice-speak-box button:focus-visible,
+.practice-textarea:focus-visible,
 .practice-speak-box input:focus-visible {
-  outline: 2px solid #1f8fff;
+  outline: 2px solid #1F8FFF;
   outline-offset: 3px;
 }
 
-.practice-confirm-btn:disabled,
 .practice-option-btn:disabled,
+.practice-choice-grid button:disabled,
+.practice-confirm-btn:disabled,
+.practice-next-btn:disabled,
 .practice-audio-btn:disabled,
-.practice-word-options button:disabled,
+.practice-audio-big:disabled,
+.practice-footer-actions button:disabled,
 .practice-answer-line button:disabled,
+.practice-word-options button:disabled,
 .practice-speak-box button:disabled,
-.practice-speak-box input:disabled,
-.practice-textarea:disabled {
-  opacity: 0.48;
+.practice-textarea:disabled,
+.practice-speak-box input:disabled {
+  opacity: 0.45;
   cursor: not-allowed;
 }
 
@@ -78,11 +136,12 @@
 }
 
 .practice-progress[role='progressbar'] {
-  min-height: 0.5rem;
+  min-height: 12px;
 }
 
-.practice-fullscreen button {
-  touch-action: manipulation;
+.practice-word-options button.used {
+  opacity: 0.45;
+  color: rgba(248, 250, 252, 0.55);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -93,5 +152,17 @@
     animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+@media (max-width: 420px) {
+  .practice-option-btn,
+  .practice-choice-grid button {
+    padding: 12px 14px;
+  }
+
+  .practice-question h1,
+  .practice-prompt {
+    font-size: clamp(1.5rem, 7vw, 2.25rem);
   }
 }
