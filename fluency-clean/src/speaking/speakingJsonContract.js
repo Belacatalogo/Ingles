@@ -1,4 +1,5 @@
 import { buildSpeakingPolicyPrompt, getSpeakingLevelPolicy } from './speakingLevelPolicy.js';
+import { applyGateSpeaking } from './speakingQualityGate.js';
 
 export const SPEAKING_JSON_CONTRACT_VERSION = 'speaking-contract-v1';
 
@@ -143,8 +144,7 @@ function buildNormalizedSpeakingLesson(rawLesson = {}) {
 }
 
 export function normalizeSpeakingLessonContract(rawLesson = {}) {
-  // applySpeakingQualityGate entra no BLOCO-F3.
-  return buildNormalizedSpeakingLesson(rawLesson);
+  return applyGateSpeaking(buildNormalizedSpeakingLesson(rawLesson));
 }
 
 export function getSpeakingRequiredKeys() {
