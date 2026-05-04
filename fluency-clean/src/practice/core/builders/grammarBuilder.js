@@ -38,6 +38,18 @@ function getMainGrammarTag(context, fallback = '') {
   );
 }
 
+function prioritizeCurriculumSentences(sentences, context) {
+  const curriculum = context?.curriculum || {};
+  if (typeof curriculum.isTopicRelevant !== 'function') return sentences;
+  const topic = [];
+  const rest = [];
+  for (const sentence of sentences) {
+    if (curriculum.isTopicRelevant(sentence)) topic.push(sentence);
+    else rest.push(sentence);
+  }
+  return [...topic, ...rest];
+}
+
 function normalizeErrorPattern(tag, error) {
   const first = error?.examples?.[0] || {};
   return {
@@ -213,7 +225,7 @@ export function buildGrammarPractice(context) {
   const maxSentenceWords = Number(policy.sentenceLengthRange?.[1] || 16);
   const errorPatterns = getBrazilianErrorPatterns(level, context);
   const structureBreakdown = getStructureBreakdown(context);
-  const sentences = unique([
+  const sentences = prioritizeCurriculumSentences(unique([
     structureBreakdown.affirmative,
     structureBreakdown.negative,
     structureBreakdown.question,
@@ -221,7 +233,7 @@ export function buildGrammarPractice(context) {
     ...context.exercises.map((exercise) => exercise.answer),
   ])
     .filter((sentence) => sentence.length >= 6)
-    .filter((sentence) => getSentenceWordCount(sentence) <= maxSentenceWords + 4)
+    .filter((sentence) => getSentenceWordCount(sentence) <= maxSentenceWords + 4), context)
     .slice(0, 10);
 
   const questions = [];
