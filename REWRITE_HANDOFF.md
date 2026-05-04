@@ -175,7 +175,7 @@ Branch estável protegida: `rewrite-fluency-clean`
 - Merge do revisor mecânico com IA: 40% mecânico + 60% IA.
 - `quality.aiReview` anexado na aula final do fallback resiliente.
 
-### `BLOCO-H2-LESSON-HISTORY-CONTEXT-LAB` — PARCIALMENTE IMPLEMENTADO TECNICAMENTE
+### `BLOCO-H2-LESSON-HISTORY-CONTEXT-LAB` — IMPLEMENTADO TECNICAMENTE
 
 Documentação criada:
 - `fluency-clean/docs/BLOCO-H2-LESSON-HISTORY-CONTEXT-LAB.md`
@@ -186,6 +186,7 @@ Arquivos criados:
 Arquivos alterados:
 - `fluency-clean/src/services/lessonJsonContract.js`
 - `fluency-clean/src/services/index.js`
+- `fluency-clean/src/services/resilientGeminiLessonDraft.js`
 - `REWRITE_HANDOFF.md`
 
 O que foi fechado:
@@ -195,11 +196,10 @@ O que foi fechado:
 - Leitura de histórico protegida por `try/catch`.
 - Log `[LessonHistoryContext] suggestedFocus: "..."` quando há foco sugerido.
 - Injeção apenas no bloco `structure` do gerador principal em blocos, via `lessonJsonContract.js`, que é consumido por `geminiLessons.js`.
+- Contexto histórico também aplicado ao fallback resiliente em `resilientGeminiLessonDraft.js`.
+- Fallback resiliente marca `planContract: resilient-json-v1+history-context` e `quality.historyContextApplied = true`.
 - Sem forçar tópico e sem dados pessoais no prompt.
 - Exports públicos adicionados em `services/index.js`.
-
-Pendência técnica:
-- `resilientGeminiLessonDraft.js` ainda não recebeu o contexto histórico. A tentativa de alteração completa foi bloqueada pelo conector antes de aplicar. O fallback resiliente continua funcionando como antes, sem contexto histórico.
 
 Preservado sem alteração:
 - `bundle.js`;
@@ -221,7 +221,7 @@ Preservado sem alteração:
 3. Confirmar que o prompt de estrutura usa o histórico sem mostrar isso na UI da aula.
 4. Confirmar aluno novo sem histórico gera aula normalmente.
 5. Confirmar que a aula não muda de tópico de forma forçada.
-6. Confirmar que o fallback resiliente ainda funciona, mesmo sem contexto histórico.
+6. Forçar fallback resiliente e confirmar `quality.historyContextApplied = true`.
 
 ## BLOCO ANTERIOR — G3 PRACTICE IPHONE FINAL AUDIT
 
@@ -253,10 +253,9 @@ Objetivo:
 
 1. Aguardar deploy do preview da branch `rewrite-fluency-clean-lab`.
 2. Executar smoke test manual do H2 no preview/iPhone.
-3. Finalizar a integração do contexto em `resilientGeminiLessonDraft.js` quando o conector permitir alteração segura desse arquivo.
-4. Se aprovado, seguir para `BLOCO-H3-CURRICULUM-PRACTICE-BRIDGE-LAB` ou bloco explicitamente enviado pelo usuário.
-5. `BLOCO-VOCAB-TRAIL-CONTINUATION-LAB` continua pendente.
-6. `HOTFIX-READING-7-ANCHOR-EVIDENCE-LAB` apenas quando for possível alterar `ReadingLesson.jsx` completo com segurança.
+3. Se aprovado, seguir para `BLOCO-H3-CURRICULUM-PRACTICE-BRIDGE-LAB` ou bloco explicitamente enviado pelo usuário.
+4. `BLOCO-VOCAB-TRAIL-CONTINUATION-LAB` continua pendente.
+5. `HOTFIX-READING-7-ANCHOR-EVIDENCE-LAB` apenas quando for possível alterar `ReadingLesson.jsx` completo com segurança.
 
 ## NÃO FAZER AGORA
 
@@ -272,4 +271,4 @@ Objetivo:
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch obrigatória é `rewrite-fluency-clean-lab`. Não mexa em `main`, `rewrite-fluency-clean`, `bundle.js`, backend Azure privado, Firebase, Azure, sistema de gravação, `speakingFlow.js`, `SpeakingStepper.jsx` ou `SpeakingScreen.jsx`. O último bloco fechado foi `BLOCO-H2-LESSON-HISTORY-CONTEXT-LAB`, parcialmente implementado: o gerador principal em blocos recebe contexto histórico via `lessonJsonContract.js`, mas `resilientGeminiLessonDraft.js` ainda não recebeu o contexto porque a alteração foi bloqueada pelo conector. Próximo ajuste recomendado: finalizar essa pendência do fallback resiliente; depois seguir para `BLOCO-H3-CURRICULUM-PRACTICE-BRIDGE-LAB`, salvo se o usuário enviar outro bloco."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch obrigatória é `rewrite-fluency-clean-lab`. Não mexa em `main`, `rewrite-fluency-clean`, `bundle.js`, backend Azure privado, Firebase, Azure, sistema de gravação, `speakingFlow.js`, `SpeakingStepper.jsx` ou `SpeakingScreen.jsx`. O último bloco fechado tecnicamente foi `BLOCO-H2-LESSON-HISTORY-CONTEXT-LAB`. O gerador principal em blocos recebe contexto histórico via `lessonJsonContract.js` e o fallback resiliente também recebeu contexto em `resilientGeminiLessonDraft.js`. Smoke test manual ainda pendente no preview/iPhone. Próximo recomendado: `BLOCO-H3-CURRICULUM-PRACTICE-BRIDGE-LAB`, salvo se o usuário enviar outro bloco."
