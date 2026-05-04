@@ -1,6 +1,6 @@
 /* BLOCO-H4 — CSS Consolidation
    Arquivo temático: prática profunda e speaking.
-   Mantém a ordem interna dos arquivos de origem via @import seguro para não alterar regras antes do smoke test visual. */
+   Stage seguro: preserva os CSS funcionais em @imports rastreáveis sem alterar regras CSS. */
 
 /* de: choice-polish.css */
 @import './choice-polish.css';
