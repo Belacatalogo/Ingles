@@ -61,6 +61,19 @@ export const READING_POST_PROMPT_CONTRACT = {
   maxSentences: 'number',
 };
 
+export const READING_TRANSFER_CONTEXT_CONTRACT = {
+  text: 'parágrafo curto NOVO em inglês usando vocabulário/estruturas da aula, mas em situação diferente; máximo 80 palavras',
+  source: 'transfer | adapted_example | natural_followup',
+  tags: ['palavras ou estruturas reutilizadas, ex: routine, because, however'],
+  readingSkill: 'detail | inference | vocabulary_context',
+  subQuestion: {
+    prompt: 'pergunta sobre o novo trecho, adequada ao nível',
+    type: 'multiple_choice | short_answer',
+    answer: 'resposta correta',
+    options: ['array de 4 alternativas se multiple_choice'],
+  },
+};
+
 export const READING_JSON_CONTRACT = {
   type: 'reading',
   level: 'A1 | A2 | B1 | B2 | C1',
@@ -82,6 +95,7 @@ export const READING_JSON_CONTRACT = {
   ],
   readingQuestions: [READING_QUESTION_CONTRACT],
   evidenceTasks: [READING_EVIDENCE_TASK_CONTRACT],
+  transferContexts: [READING_TRANSFER_CONTEXT_CONTRACT],
   postReadingPrompts: [READING_POST_PROMPT_CONTRACT],
   tips: ['string curta de estratégia de leitura para o aluno'],
 };
@@ -132,6 +146,26 @@ function normalizeEvidenceTask(item) {
     instruction: clean(item?.instruction || item?.question || 'Localize no texto a frase que prova sua resposta.'),
     expectedEvidence: clean(item?.expectedEvidence || item?.evidence || item?.quote || ''),
     skill: clean(item?.skill || 'evidence'),
+  };
+}
+
+function normalizeTransferContext(item) {
+  if (!item || typeof item !== 'object') return null;
+  const sub = item.subQuestion || item.question || {};
+  const options = ensureArray(sub.options || sub.choices || sub.alternatives)
+    .map((option) => clean(typeof option === 'string' ? option : option?.text || option?.label || option?.value || ''))
+    .filter(Boolean);
+  return {
+    text: clean(item.text || item.newContext || item.context || ''),
+    source: clean(item.source || 'transfer'),
+    tags: ensureArray(item.tags).map(clean).filter(Boolean),
+    readingSkill: clean(item.readingSkill || item.skill || 'detail'),
+    subQuestion: {
+      prompt: clean(sub.prompt || sub.question || sub.instruction || ''),
+      type: clean(sub.type || 'multiple_choice'),
+      answer: clean(sub.answer || sub.correctAnswer || sub.expectedAnswer || ''),
+      options: [...new Set(options)].slice(0, 4),
+    },
   };
 }
 
@@ -191,6 +225,9 @@ function buildNormalizedReadingLesson(rawLesson = {}) {
   const evidenceTasks = ensureArray(rawLesson?.evidenceTasks || rawLesson?.evidence_tasks)
     .map(normalizeEvidenceTask)
     .filter((item) => item.expectedEvidence || item.instruction);
+  const transferContexts = ensureArray(rawLesson?.transferContexts || rawLesson?.transfer_contexts)
+    .map(normalizeTransferContext)
+    .filter((item) => item?.text && item?.subQuestion?.answer);
   const postReadingPrompts = ensureArray(rawLesson?.postReadingPrompts || rawLesson?.post_reading_prompts || rawLesson?.prompts || rawLesson?.writingPrompts)
     .map((item) => normalizePostPrompt(item, policy))
     .filter((item) => item.instruction);
@@ -210,6 +247,7 @@ function buildNormalizedReadingLesson(rawLesson = {}) {
     vocabulary: ensureArray(rawLesson?.vocabulary),
     readingQuestions,
     evidenceTasks,
+    transferContexts,
     postReadingPrompts,
     tips: ensureArray(rawLesson?.tips).map(clean).filter(Boolean),
     legacy: {
@@ -259,6 +297,9 @@ export function buildReadingJsonContractInstruction({ level = 'A1' } = {}) {
     '- readingText deve ser texto de leitura, não transcrição de áudio.',
     '- Cada readingQuestion de compreensão deve depender do readingText.',
     '- Cada readingQuestion deve ter evidence com trecho exato do texto quando for compreensão.',
+    '- Para B1/B2/C1, gere 1 a 2 transferContexts: trechos NOVOS curtos que reutilizam vocabulário/estrutura da aula em situação diferente, com subQuestion própria.',
+    '- Para A1/A2, NÃO gere transferContexts.',
+    '- transferContexts NÃO são parte do readingText. São material extra para a Prática Profunda.',
     '- Não revele a resposta dentro da pergunta.',
     '- Não gere alternativas duplicadas.',
     '- Não use perguntas genéricas que serviriam para qualquer texto.',
