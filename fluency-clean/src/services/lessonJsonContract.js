@@ -1,6 +1,7 @@
 import { buildGrammarJsonContractInstruction } from '../grammar/grammarJsonContract.js';
 import { buildListeningJsonContractInstruction } from '../listening/listeningJsonContract.js';
 import { buildReadingJsonContractInstruction } from '../reading/readingJsonContract.js';
+import { buildWritingJsonContractInstruction } from '../writing/writingJsonContract.js';
 import { buildRubricInstruction, getLessonRubric } from './lessonRubrics.js';
 
 export const LESSON_JSON_CONTRACT_VERSION = 'lesson-contract-v1';
@@ -59,6 +60,10 @@ function isGrammarContractRequest(lessonType) {
 
 function isListeningContractRequest(lessonType) {
   return String(lessonType || '').trim().toLowerCase() === 'listening';
+}
+
+function isWritingContractRequest(lessonType) {
+  return String(lessonType || '').trim().toLowerCase() === 'writing';
 }
 
 function mapReadingQuestionsToExercises(readingQuestions = []) {
@@ -152,6 +157,10 @@ export function buildJsonContractInstruction({ lessonType = 'reading', blockId =
 
   if (isListeningContractRequest(lessonType)) {
     return buildListeningJsonContractInstruction({ level });
+  }
+
+  if (isWritingContractRequest(lessonType)) {
+    return buildWritingJsonContractInstruction({ level });
   }
 
   if (isReadingContractRequest(lessonType)) {
