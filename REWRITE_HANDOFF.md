@@ -24,32 +24,9 @@ Branch estável protegida: `rewrite-fluency-clean`
 - Informações técnicas devem ficar no código, handoff, docs ou diagnóstico apropriado.
 - Quando for necessário mostrar segurança/estado, usar texto curto e discreto.
 
-## DIRETRIZ DE UI APROVADA — STEPPER REAL
+## ESTADO GERAL
 
-- O stepper real da Reading foi aprovado visualmente pelo usuário.
-- O padrão foi portado para Grammar, Listening e Speaking.
-- A adaptação deve respeitar a natureza de cada aula.
-- Grammar não deve virar jogo; deve ser sério, claro e guiado.
-- Listening deve manter primeira escuta sem leitura e controles de áudio limpos.
-- Speaking deve preservar Azure, gravação, análise, histórico e modos reais.
-
-## ESTADO ATUAL — READING
-
-### Blocos Reading implementados
-
-- `BLOCO-READING-COMPLETE-RENDER-REVIEW-LAB`
-- `BLOCO-READING-1-ESTRUTURA-PEDAGOGICA-FIXA-LAB`
-- `BLOCO-READING-2-POLITICA-POR-NIVEL-A1-C1-LAB`
-- `HOTFIX-READING-2 — Remover poluição técnica da aula`
-- `BLOCO-READING-3-CONTRATO-JSON-PROPRIO-LAB`
-- `BLOCO-READING-4-GERACAO-POR-HABILIDADE-LAB`
-- `BLOCO-READING-5-RENDER-POR-ETAPAS-LAB`
-- `BLOCO-READING-6-EXERCICIOS-INTERNOS-LAB`
-- `HOTFIX-READING-6 — Não revelar gabarito dos exercícios internos`
-- `BLOCO-READING-7-EVIDENCIA-TEXTUAL-INTELIGENTE-LAB` — implementação inicial segura.
-- `BLOCO-READING-8-QUALITY-GATE-LAB`
-
-### Estado Reading
+### Reading
 
 - Reading é aula completa dentro da própria aba.
 - A Prática Profunda é complemento posterior, não substitui exercícios internos.
@@ -57,114 +34,35 @@ Branch estável protegida: `rewrite-fluency-clean`
 - `readingLevelPolicy.js`, `readingJsonContract.js` e `readingQualityGate.js` estão implementados.
 - Gabaritos internos ficam ocultos antes da interação.
 - Quality gate de Reading normaliza texto, perguntas, evidências e produção curta.
+- `HOTFIX-READING-7-ANCHOR-EVIDENCE-LAB` fica pendente apenas quando for possível alterar `ReadingLesson.jsx` completo com segurança.
 
-### Pendente Reading
+### Grammar / Listening / Speaking / Writing
 
-- Validar no iPhone depois do quality gate.
-- `HOTFIX-READING-7-ANCHOR-EVIDENCE-LAB` apenas quando for possível alterar `ReadingLesson.jsx` completo com segurança.
+- Stepper real de Reading foi aprovado e portado para Grammar, Listening e Speaking.
+- Grammar deve continuar sério, claro e guiado; não virar jogo.
+- Listening deve manter primeira escuta sem leitura e controles de áudio limpos.
+- Speaking deve preservar Azure, gravação, análise, histórico e modos reais.
+- Refatorações de Practice C/D/E/F já foram implementadas tecnicamente.
 
-## ESTADO ATUAL — GRAMMAR
+### Prática Profunda — Fases A–G
 
-### `BLOCO-GRAMMAR-STEPPER-REAL-LAB` — IMPLEMENTADO
-
-- Stepper real portado para `GrammarLesson.jsx`.
-- Fluxo com 7 etapas: começar, regra, exemplos, prática, correção, produção e concluir.
-- Mantido render seguro atual de Grammar.
-- CSS compartilhado em `fluency-clean/src/styles/lesson-type-stepper-real.css`.
-- Documentação: `fluency-clean/docs/BLOCO-GRAMMAR-STEPPER-REAL-LAB.md`.
-
-### Refatoração Practice Grammar — IMPLEMENTADA nos blocos do plano
-
-- `BLOCO-C1-GRAMMAR-1-LEVEL-POLICY-LAB.md`
-- `BLOCO-C2-GRAMMAR-2-JSON-CONTRACT-LAB.md`
-- `BLOCO-C3-GRAMMAR-3-QUALITY-GATE-LAB.md`
-- `BLOCO-C4-GRAMMAR-4-PRACTICE-BUILDER-V2-LAB.md`
-
-### Pendente Grammar
-
-- Validar stepper e Prática Profunda no iPhone.
-
-## ESTADO ATUAL — LISTENING
-
-### `BLOCO-LISTENING-STEPPER-REAL-LAB` — IMPLEMENTADO
-
-- Stepper real portado para `ListeningLessonClean.jsx`.
-- Fluxo com 8 etapas: preparar, 1ª escuta, compreensão, texto, vocabulário, shadowing, produção e concluir.
-- Preservado áudio natural, fallback, diálogo multi-voz, transcrição controlada e shadowing real.
-- Documentação: `fluency-clean/docs/BLOCO-LISTENING-STEPPER-REAL-LAB.md`.
-
-### Refatoração Practice Listening — IMPLEMENTADA nos blocos do plano
-
-- `BLOCO-D1-LISTENING-1-LEVEL-POLICY-LAB.md`
-- `BLOCO-D2-LISTENING-2-JSON-CONTRACT-LAB.md`
-- `BLOCO-D3-LISTENING-3-QUALITY-GATE-LAB.md`
-- `BLOCO-D4-LISTENING-4-PRACTICE-BUILDER-V2-LAB.md`
-
-### Pendente Listening
-
-- Validar stepper e Prática Profunda no iPhone.
-
-## ESTADO ATUAL — SPEAKING
-
-### `BLOCO-SPEAKING-COMPLETE-RENDER-REVIEW-LAB` — IMPLEMENTADO
-
-- Renderização da aba Speaking revisada sem alterar o motor.
-- Criado modelo modular `fluency-clean/src/speaking/speakingFlow.js`.
-- Criado componente `fluency-clean/src/speaking/SpeakingStepper.jsx`.
-- Criado estilo `fluency-clean/src/styles/speaking-stepper-real.css`.
-- `SpeakingScreen.jsx` usa stepper real adaptado por modo.
-- Preservado sem alteração: Azure Pronunciation, reconhecimento de fala, `startRecording`, histórico real, gravação automática por silêncio, modos Conversa/Pronúncia/Imersão.
-- Documentação: `fluency-clean/docs/BLOCO-SPEAKING-COMPLETE-RENDER-REVIEW-LAB.md`.
-
-### Refatoração Practice Speaking — IMPLEMENTADA nos blocos do plano
-
-- `BLOCO-F1-SPEAKING-1-LEVEL-POLICY-LAB.md`
-- `BLOCO-F2-SPEAKING-2-JSON-CONTRACT-LAB.md`
-- `BLOCO-F3-SPEAKING-3-QUALITY-GATE-LAB.md`
-- `BLOCO-F4-SPEAKING-4-PRACTICE-BUILDER-V2-LAB.md`
-
-### Pendente Speaking
-
-- Validar stepper e Prática Profunda no iPhone.
-
-## ESTADO ATUAL — WRITING
-
-### Refatoração Practice Writing — IMPLEMENTADA nos blocos do plano
-
-- `BLOCO-E1-WRITING-1-LEVEL-POLICY-LAB.md`
-- `BLOCO-E2-WRITING-2-JSON-CONTRACT-LAB.md`
-- `BLOCO-E3-WRITING-3-RUBRIC-MULTI-LAB.md`
-- `BLOCO-E4-WRITING-4-PRACTICE-BUILDER-V2-LAB.md`
-
-### Pendente Writing
-
-- Validar Prática Profunda no iPhone quando houver fluxo de writing no smoke test.
-
-## PLANO DE REFATORAÇÃO DA PRÁTICA PROFUNDA
-
-### Fundação transversal — IMPLEMENTADA
+Implementadas tecnicamente:
 
 - `BLOCO-A1-PRACTICE-CORE-1-STATE-MACHINE-LAB.md`
 - `BLOCO-A2-PRACTICE-CORE-2-LEAK-DETECTOR-LAB.md`
 - `BLOCO-A3-PRACTICE-CORE-3-PURITY-MATRIX-LAB.md`
 - `BLOCO-A4-PRACTICE-CORE-4-SRS-EXTENDED-LAB.md`
 - `BLOCO-A5-PRACTICE-CORE-5-MASTERY-TAGS-LAB.md`
-
-### Reading Practice — IMPLEMENTADA
-
 - `BLOCO-B1-READING-PRACTICE-1-VARIANT-POLICY-LAB.md`
 - `BLOCO-B2-READING-PRACTICE-2-VOCAB-FRAGIL-LAB.md`
 - `BLOCO-B3-READING-PRACTICE-3-EVIDENCE-LAYERED-LAB.md`
 - `BLOCO-B4-READING-PRACTICE-4-NEW-CONTEXT-LAB.md`
 - `BLOCO-B5-READING-PRACTICE-5-SUMMARY-CLOZE-LAB.md`
-
-### Blocos finais — IMPLEMENTADOS TECNICAMENTE
-
 - `BLOCO-G1-PRACTICE-TELEMETRY-LAB.md`
 - `BLOCO-G2-PRACTICE-A11Y-AUDIT-LAB.md`
 - `BLOCO-G3-PRACTICE-IPHONE-FINAL-AUDIT-LAB.md`
 
-## AI TEACHER REVIEWER / CONTEXTO HISTÓRICO
+## AI TEACHER REVIEWER / CONTEXTO / CURRÍCULO
 
 ### `BLOCO-H1-AI-TEACHER-REVIEWER-LAB` — IMPLEMENTADO TECNICAMENTE
 
@@ -177,17 +75,14 @@ Branch estável protegida: `rewrite-fluency-clean`
 
 ### `BLOCO-H2-LESSON-HISTORY-CONTEXT-LAB` — IMPLEMENTADO TECNICAMENTE
 
-Documentação criada:
+Documentação:
 - `fluency-clean/docs/BLOCO-H2-LESSON-HISTORY-CONTEXT-LAB.md`
 
-Arquivos criados:
+Arquivos criados/alterados:
 - `fluency-clean/src/services/lessonHistoryContext.js`
-
-Arquivos alterados:
 - `fluency-clean/src/services/lessonJsonContract.js`
 - `fluency-clean/src/services/index.js`
 - `fluency-clean/src/services/resilientGeminiLessonDraft.js`
-- `REWRITE_HANDOFF.md`
 
 O que foi fechado:
 - Contexto histórico do aluno baseado em SRS, Mastery Tags e Telemetry.
@@ -195,10 +90,35 @@ O que foi fechado:
 - Retorno vazio para aluno novo/sem histórico relevante.
 - Leitura de histórico protegida por `try/catch`.
 - Log `[LessonHistoryContext] suggestedFocus: "..."` quando há foco sugerido.
-- Injeção apenas no bloco `structure` do gerador principal em blocos, via `lessonJsonContract.js`, que é consumido por `geminiLessons.js`.
+- Injeção apenas no bloco `structure` do gerador principal em blocos, via `lessonJsonContract.js`.
 - Contexto histórico também aplicado ao fallback resiliente em `resilientGeminiLessonDraft.js`.
 - Fallback resiliente marca `planContract: resilient-json-v1+history-context` e `quality.historyContextApplied = true`.
 - Sem forçar tópico e sem dados pessoais no prompt.
+
+### `BLOCO-H3-CURRICULUM-PRACTICE-BRIDGE-LAB` — IMPLEMENTADO TECNICAMENTE
+
+Documentação:
+- `fluency-clean/docs/BLOCO-H3-CURRICULUM-PRACTICE-BRIDGE-LAB.md`
+
+Arquivos criados:
+- `fluency-clean/src/services/curriculumPracticeAdapter.js`
+
+Arquivos alterados:
+- `fluency-clean/src/practice/core/PracticeNormalizer.js`
+- `fluency-clean/src/practice/PracticeLauncher.jsx`
+- `fluency-clean/src/practice/core/builders/grammarBuilder.js`
+- `fluency-clean/src/screens/LessonScreen.jsx`
+- `fluency-clean/src/services/index.js`
+- `REWRITE_HANDOFF.md`
+
+O que foi fechado:
+- Adaptador curricular local com storage `curriculum.currentUnit.v1`.
+- Expiração da unidade atual após 12 horas.
+- Extração de keywords do título, foco, grammarFocus/focusArea e vocabulário da aula.
+- Registro da unidade/aula atual ao abrir `LessonScreen.jsx`.
+- Registro novamente ao clicar em `Começar prática` no `PracticeLauncher.jsx`.
+- `normalizeLessonForPractice` agora popula `context.curriculum` com `buildCurriculumContextForBuilder(getCurrentCurriculumUnit())`.
+- Builder de Grammar prioriza frases relevantes ao tópico curricular via `context.curriculum.isTopicRelevant`, sem excluir frases fora do tópico.
 - Exports públicos adicionados em `services/index.js`.
 
 Preservado sem alteração:
@@ -212,34 +132,16 @@ Preservado sem alteração:
 - `SpeakingStepper.jsx`;
 - `SpeakingScreen.jsx`.
 
-## ÚLTIMO BLOCO FECHADO — H2 LESSON HISTORY CONTEXT
+## ÚLTIMO BLOCO FECHADO — H3 CURRICULUM PRACTICE BRIDGE
 
 ### Smoke test manual pendente no iPhone/preview
 
-1. Gerar aula Grammar depois de ter tags fracas como `have_has_confusion`.
-2. Confirmar log `[LessonHistoryContext] suggestedFocus: "..."`.
-3. Confirmar que o prompt de estrutura usa o histórico sem mostrar isso na UI da aula.
-4. Confirmar aluno novo sem histórico gera aula normalmente.
-5. Confirmar que a aula não muda de tópico de forma forçada.
-6. Forçar fallback resiliente e confirmar `quality.historyContextApplied = true`.
-
-## BLOCO ANTERIOR — G3 PRACTICE IPHONE FINAL AUDIT
-
-### `BLOCO-G3-PRACTICE-IPHONE-FINAL-AUDIT-LAB` — IMPLEMENTADO TECNICAMENTE
-
-Documentação criada:
-- `fluency-clean/docs/BLOCO-G3-PRACTICE-IPHONE-FINAL-AUDIT-LAB.md`
-
-Arquivos confirmados/alterados neste fechamento:
-- `fluency-clean/src/styles/practice-a11y.css`
-- `fluency-clean/src/practice/components/TextExercise.jsx`
-- `fluency-clean/src/practice/components/SpeakExercise.jsx`
-- `fluency-clean/src/practice/components/SummaryClozeExercise.jsx`
-- `fluency-clean/src/practice/components/NewContextExercise.jsx`
-
-Status final do G3:
-- Código/documentação: concluídos.
-- Aprovação final: pendente do smoke test manual no iPhone após deploy do preview da branch `rewrite-fluency-clean-lab`.
+1. Abrir uma aula Grammar de rotina/Present Simple.
+2. Iniciar Prática Profunda.
+3. Confirmar que exercícios priorizam frases/vocabulário do tópico da aula.
+4. Confirmar que aluno sem unidade curricular explícita ainda recebe contexto a partir da própria aula.
+5. Confirmar que, após 12h, `getCurrentCurriculumUnit()` retorna `null`.
+6. Confirmar que a prática continua funcionando normalmente sem contexto curricular.
 
 ## ALERTA IMPORTANTE — VOCAB/TRILHA
 
@@ -252,8 +154,8 @@ Objetivo:
 ## ORDEM DEFINIDA PARA PRÓXIMOS PASSOS
 
 1. Aguardar deploy do preview da branch `rewrite-fluency-clean-lab`.
-2. Executar smoke test manual do H2 no preview/iPhone.
-3. Se aprovado, seguir para `BLOCO-H3-CURRICULUM-PRACTICE-BRIDGE-LAB` ou bloco explicitamente enviado pelo usuário.
+2. Executar smoke test manual do H3 no preview/iPhone.
+3. Se aprovado, seguir para `BLOCO-H4-CSS-CONSOLIDATION-LAB` ou bloco explicitamente enviado pelo usuário.
 4. `BLOCO-VOCAB-TRAIL-CONTINUATION-LAB` continua pendente.
 5. `HOTFIX-READING-7-ANCHOR-EVIDENCE-LAB` apenas quando for possível alterar `ReadingLesson.jsx` completo com segurança.
 
@@ -271,4 +173,4 @@ Objetivo:
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch obrigatória é `rewrite-fluency-clean-lab`. Não mexa em `main`, `rewrite-fluency-clean`, `bundle.js`, backend Azure privado, Firebase, Azure, sistema de gravação, `speakingFlow.js`, `SpeakingStepper.jsx` ou `SpeakingScreen.jsx`. O último bloco fechado tecnicamente foi `BLOCO-H2-LESSON-HISTORY-CONTEXT-LAB`. O gerador principal em blocos recebe contexto histórico via `lessonJsonContract.js` e o fallback resiliente também recebeu contexto em `resilientGeminiLessonDraft.js`. Smoke test manual ainda pendente no preview/iPhone. Próximo recomendado: `BLOCO-H3-CURRICULUM-PRACTICE-BRIDGE-LAB`, salvo se o usuário enviar outro bloco."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch obrigatória é `rewrite-fluency-clean-lab`. Não mexa em `main`, `rewrite-fluency-clean`, `bundle.js`, backend Azure privado, Firebase, Azure, sistema de gravação, `speakingFlow.js`, `SpeakingStepper.jsx` ou `SpeakingScreen.jsx`. O último bloco fechado tecnicamente foi `BLOCO-H3-CURRICULUM-PRACTICE-BRIDGE-LAB`. Código e docs foram concluídos, mas o smoke test manual no preview/iPhone está pendente. Próximo recomendado: `BLOCO-H4-CSS-CONSOLIDATION-LAB`, salvo se o usuário enviar outro bloco."
