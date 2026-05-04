@@ -1,3 +1,4 @@
+import { evaluateWritingResponse, formatRubricFeedback } from '../../writing/writingRubric.js';
 import { PRACTICE_RESULT_STATUS, QUESTION_TYPES } from './PracticeTypes.js';
 import { cleanPracticeText, normalizePracticeText } from './PracticeNormalizer.js';
 import {
@@ -221,9 +222,48 @@ function checkSummaryCloze(question, rawAnswer) {
   });
 }
 
+function checkWritingRubric(question, rawAnswer) {
+  const answer = cleanPracticeText(rawAnswer);
+  const evaluation = evaluateWritingResponse({
+    studentText: answer,
+    modelAnswer: question?.writingRubric?.modelAnswer || question?.answer || '',
+    level: question?.writingRubric?.level || question?.level || 'A1',
+  });
+  const rubricFeedback = formatRubricFeedback(evaluation);
+
+  if (!evaluation.attempted) {
+    return finalizePracticeResult(question, {
+      status: PRACTICE_RESULT_STATUS.EMPTY,
+      correct: false,
+      retryable: false,
+      loseLife: false,
+      message: 'Tente escrever algo antes de continuar.',
+      expected: question?.answer || '',
+      hintWord: '',
+      rubricResult: rubricFeedback,
+    });
+  }
+
+  const correct = evaluation.rubricApplied ? Boolean(evaluation.passed) : Boolean(evaluation.score >= 70);
+  return finalizePracticeResult(question, {
+    status: correct ? PRACTICE_RESULT_STATUS.CORRECT : PRACTICE_RESULT_STATUS.INCORRECT,
+    correct,
+    retryable: !correct && evaluation.rubricApplied,
+    loseLife: !correct,
+    message: correct ? 'Boa escrita!' : 'Revise a escrita usando a rubrica.',
+    expected: question?.answer || '',
+    hintWord: '',
+    rubricResult: rubricFeedback,
+  });
+}
+
 export function checkPracticeAnswer(question, rawAnswer) {
   if (question?.type === QUESTION_TYPES.SUMMARY_CLOZE) {
     return checkSummaryCloze(question, rawAnswer);
+  }
+
+  if (question?.type === QUESTION_TYPES.WRITE_SHORT && question?.writingRubric?.enabled) {
+    return checkWritingRubric(question, rawAnswer);
   }
 
   const answer = Array.isArray(rawAnswer) ? rawAnswer.join(' ') : cleanPracticeText(rawAnswer);
