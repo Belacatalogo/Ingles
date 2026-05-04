@@ -1,5 +1,4 @@
 import { QUESTION_TYPES } from '../practice/core/PracticeTypes.js';
-import { localDateKey } from './progressStore.js';
 
 const STORAGE_KEY = 'fluency.practiceSrsExtended.v1';
 
@@ -27,6 +26,15 @@ const INTERVALS_DAYS = Object.freeze({
   [SRS_STATUS.STRONG]: 8,
   [SRS_STATUS.MASTERED]: 16,
 });
+
+function localDateKey(value = new Date()) {
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  const yyyy = date.getFullYear();
+  const mm = String(date.getMonth() + 1).padStart(2, '0');
+  const dd = String(date.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
+}
 
 function safeJsonParse(value, fallback) {
   try {
