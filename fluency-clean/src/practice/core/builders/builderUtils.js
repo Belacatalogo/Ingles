@@ -55,10 +55,22 @@ export function createQuestion(base) {
     answer: cleanPracticeText(base.answer),
     answerKind: base.answerKind || detectAnswerKind(base.answer),
     options: Array.isArray(base.options) ? unique(base.options) : [],
+    optionLabels: base.optionLabels && typeof base.optionLabels === 'object' ? base.optionLabels : undefined,
     words: Array.isArray(base.words) ? unique(base.words) : [],
     audioText: cleanPracticeText(base.audioText || ''),
     explanation: cleanPracticeText(base.explanation || ''),
     source: base.source || 'builder',
+    readingSkillTag: base.readingSkillTag,
+    listeningSkillTag: base.listeningSkillTag,
+    writingSkillTag: base.writingSkillTag,
+    grammarTag: base.grammarTag,
+    grammarTagLabel: base.grammarTagLabel,
+    vocabTag: base.vocabTag,
+    vocabTagLabel: base.vocabTagLabel,
+    evidenceTrackId: base.evidenceTrackId,
+    evidenceTrackLabel: base.evidenceTrackLabel,
+    variantPolicy: base.variantPolicy,
+    isReview: Boolean(base.isReview),
   };
 }
 
