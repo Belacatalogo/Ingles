@@ -1,4 +1,5 @@
 import { buildListeningPolicyPrompt, getListeningLevelPolicy } from './listeningLevelPolicy.js';
+import { applyListeningQualityGate } from './listeningQualityGate.js';
 
 export const LISTENING_JSON_CONTRACT_VERSION = 'listening-contract-v1';
 
@@ -124,7 +125,7 @@ function buildNormalizedListeningLesson(rawLesson = {}) {
 }
 
 export function normalizeListeningLessonContract(rawLesson = {}) {
-  return buildNormalizedListeningLesson(rawLesson);
+  return applyListeningQualityGate(buildNormalizedListeningLesson(rawLesson));
 }
 
 export function assertListeningContract(data) {
