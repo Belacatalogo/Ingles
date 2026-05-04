@@ -1,3 +1,4 @@
+import { collectAbaReadingExercises } from '../../reading/readingPracticeVariants.js';
 import { ANSWER_KINDS, PRACTICE_SKILLS } from './PracticeTypes.js';
 
 export function cleanPracticeText(value) {
@@ -97,6 +98,7 @@ export function normalizeLessonForPractice(lesson = {}) {
     ...vocabulary.map((item) => item.word),
     ...allSentences.flatMap(splitPracticeWords),
   ].map(cleanPracticeText).filter((word) => word.length >= 3);
+  const abaReadingExercises = skill === PRACTICE_SKILLS.READING ? collectAbaReadingExercises(lesson) : [];
 
   return {
     id: lesson.id || `lesson-${normalizePracticeText(title).slice(0, 32)}`,
@@ -110,6 +112,7 @@ export function normalizeLessonForPractice(lesson = {}) {
     exercises,
     sentences: allSentences,
     keywords: [...new Set(keywords.map((word) => word.toLowerCase()))],
+    abaReadingExercises,
     raw: lesson,
   };
 }
