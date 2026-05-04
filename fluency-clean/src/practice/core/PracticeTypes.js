@@ -28,6 +28,7 @@ export const QUESTION_TYPES = Object.freeze({
   SPEAK_RESPONSE: 'speak_response',
   TRUE_FALSE: 'true_false',
   NEW_CONTEXT: 'new_context',
+  SUMMARY_CLOZE: 'summary_cloze',
 });
 
 export const ANSWER_KINDS = Object.freeze({
