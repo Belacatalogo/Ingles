@@ -1,6 +1,39 @@
 import { isDuplicateOfAba, VARIANT_POLICY_BY_SKILL } from '../../../reading/readingPracticeVariants.js';
+import { pullSrsReviewItems, SRS_ITEM_TYPES } from '../../../services/practiceSrsExtended.js';
 import { PRACTICE_PHASES, QUESTION_TYPES } from '../PracticeTypes.js';
-import { createQuestion, makeExistingExerciseQuestions, makeFillBlankQuestion, makeVocabularyQuestions, makeWordBankQuestion, makeSentenceOptions } from './builderUtils.js';
+import { createQuestion, makeExistingExerciseQuestions, makeFillBlankQuestion, makeVocabularyQuestions, makeWordBankQuestion, makeSentenceOptions, makeMeaningOptions } from './builderUtils.js';
+
+function buildVocabReviewQuestions(context, limit = 2) {
+  return pullSrsReviewItems({
+    skill: 'reading',
+    level: context.level,
+    limit,
+  })
+    .filter((seed) => seed?.srsItem?.type === SRS_ITEM_TYPES.VOCAB_WORD)
+    .map((seed) => {
+      const item = seed.srsItem;
+      const word = String(item.content || '').replace(/^vocab::/, '');
+      const meaning = item.meta?.meaning || '';
+      if (!word || !meaning) return null;
+
+      return createQuestion({
+        skill: context.skill,
+        phase: PRACTICE_PHASES.WARMUP,
+        type: QUESTION_TYPES.MULTIPLE_CHOICE,
+        title: 'Revisão · vocabulário frágil',
+        prompt: `O que significa “${word}”?`,
+        answer: meaning,
+        options: makeMeaningOptions(meaning, context.vocabulary),
+        vocabTag: `vocab::${word}`,
+        vocabTagLabel: word,
+        readingSkillTag: 'vocabulary_context',
+        isReview: true,
+        source: `srs-review:${item.key}`,
+      });
+    })
+    .filter(Boolean)
+    .slice(0, limit);
+}
 
 export function buildReadingPractice(context) {
   const sentences = context.sentences.filter((sentence) => sentence.length >= 8);
@@ -10,7 +43,7 @@ export function buildReadingPractice(context) {
 
   function tryAdd(question) {
     if (!question) return;
-    if (isDuplicateOfAba(question, abaExercises)) {
+    if (!question.isReview && isDuplicateOfAba(question, abaExercises)) {
       filteredByDuplication += 1;
       return;
     }
@@ -21,6 +54,7 @@ export function buildReadingPractice(context) {
     items.filter(Boolean).forEach(tryAdd);
   }
 
+  tryAddMany(buildVocabReviewQuestions(context, 2));
   tryAddMany(makeVocabularyQuestions(context, 6));
 
   if (sentences[0]) {
