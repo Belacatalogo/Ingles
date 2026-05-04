@@ -59,6 +59,35 @@ export function detectAnswerKind(value) {
   return ANSWER_KINDS.SENTENCE;
 }
 
+function normalizeEvidenceTasksForPractice(lesson, skill) {
+  if (skill !== PRACTICE_SKILLS.READING) return [];
+  const direct = Array.isArray(lesson?.evidenceTasks) ? lesson.evidenceTasks : [];
+  const fromQuestions = Array.isArray(lesson?.readingQuestions)
+    ? lesson.readingQuestions
+      .filter((item) => item?.evidence || item?.quote || item?.expectedEvidence)
+      .map((item, index) => ({
+        id: item?.id || `reading-question-evidence-${index + 1}`,
+        instruction: item?.question || item?.prompt || 'Encontre a evidência que prova a resposta.',
+        expectedEvidence: item?.expectedEvidence || item?.evidence || item?.quote || '',
+        paraphrase: item?.paraphrase || item?.paraphraseModel || '',
+        explanationModel: item?.explanationModel || item?.explanation || '',
+        evidenceClass: item?.evidenceClass || 'direct_sufficient',
+      }))
+    : [];
+
+  return [...direct, ...fromQuestions]
+    .map((item, index) => ({
+      id: item?.id || `evidence-${index + 1}`,
+      instruction: cleanPracticeText(item?.instruction || item?.question || item?.prompt || 'Encontre a evidência que prova a resposta.'),
+      expectedEvidence: cleanPracticeText(item?.expectedEvidence || item?.evidence || item?.quote || ''),
+      paraphrase: cleanPracticeText(item?.paraphrase || item?.paraphraseModel || ''),
+      explanationModel: cleanPracticeText(item?.explanationModel || item?.explanation || ''),
+      evidenceClass: cleanPracticeText(item?.evidenceClass || 'direct_sufficient'),
+    }))
+    .filter((item) => item.expectedEvidence)
+    .slice(0, 6);
+}
+
 export function normalizeLessonForPractice(lesson = {}) {
   const skill = detectPracticeSkill(lesson);
   const title = cleanPracticeText(lesson.title || 'Aula');
@@ -99,6 +128,7 @@ export function normalizeLessonForPractice(lesson = {}) {
     ...allSentences.flatMap(splitPracticeWords),
   ].map(cleanPracticeText).filter((word) => word.length >= 3);
   const abaReadingExercises = skill === PRACTICE_SKILLS.READING ? collectAbaReadingExercises(lesson) : [];
+  const evidenceTasks = normalizeEvidenceTasksForPractice(lesson, skill);
 
   return {
     id: lesson.id || `lesson-${normalizePracticeText(title).slice(0, 32)}`,
@@ -110,6 +140,7 @@ export function normalizeLessonForPractice(lesson = {}) {
     sections,
     vocabulary,
     exercises,
+    evidenceTasks,
     sentences: allSentences,
     keywords: [...new Set(keywords.map((word) => word.toLowerCase()))],
     abaReadingExercises,
