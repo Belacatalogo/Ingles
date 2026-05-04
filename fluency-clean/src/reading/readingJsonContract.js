@@ -74,6 +74,19 @@ export const READING_TRANSFER_CONTEXT_CONTRACT = {
   },
 };
 
+export const READING_SUMMARY_CLOZE_CONTRACT = {
+  summaryText: 'resumo do texto em 3 a 5 frases, com lacunas {{1}}, {{2}}, {{3}}',
+  blanks: [
+    {
+      id: '1',
+      answer: 'palavra exata da lacuna',
+      acceptable: ['variantes aceitas, ex: plural, contraction'],
+      hint: 'pista curta opcional',
+    },
+  ],
+  difficulty: 'easy | medium | hard',
+};
+
 export const READING_JSON_CONTRACT = {
   type: 'reading',
   level: 'A1 | A2 | B1 | B2 | C1',
@@ -96,6 +109,7 @@ export const READING_JSON_CONTRACT = {
   readingQuestions: [READING_QUESTION_CONTRACT],
   evidenceTasks: [READING_EVIDENCE_TASK_CONTRACT],
   transferContexts: [READING_TRANSFER_CONTEXT_CONTRACT],
+  summaryCloze: READING_SUMMARY_CLOZE_CONTRACT,
   postReadingPrompts: [READING_POST_PROMPT_CONTRACT],
   tips: ['string curta de estratégia de leitura para o aluno'],
 };
@@ -169,6 +183,22 @@ function normalizeTransferContext(item) {
   };
 }
 
+function normalizeSummaryCloze(item) {
+  if (!item || typeof item !== 'object' || Array.isArray(item)) return null;
+  const blanks = ensureArray(item.blanks).map((blank) => ({
+    id: clean(blank?.id),
+    answer: clean(blank?.answer),
+    acceptable: ensureArray(blank?.acceptable).map(clean).filter(Boolean),
+    hint: clean(blank?.hint || ''),
+  })).filter((blank) => blank.id && blank.answer);
+
+  return {
+    summaryText: clean(item.summaryText || item.text || ''),
+    blanks,
+    difficulty: clean(item.difficulty || 'easy'),
+  };
+}
+
 function normalizePostPrompt(item, policy) {
   if (typeof item === 'string') {
     return {
@@ -228,6 +258,7 @@ function buildNormalizedReadingLesson(rawLesson = {}) {
   const transferContexts = ensureArray(rawLesson?.transferContexts || rawLesson?.transfer_contexts)
     .map(normalizeTransferContext)
     .filter((item) => item?.text && item?.subQuestion?.answer);
+  const summaryCloze = normalizeSummaryCloze(rawLesson?.summaryCloze || rawLesson?.summary_cloze);
   const postReadingPrompts = ensureArray(rawLesson?.postReadingPrompts || rawLesson?.post_reading_prompts || rawLesson?.prompts || rawLesson?.writingPrompts)
     .map((item) => normalizePostPrompt(item, policy))
     .filter((item) => item.instruction);
@@ -248,6 +279,7 @@ function buildNormalizedReadingLesson(rawLesson = {}) {
     readingQuestions,
     evidenceTasks,
     transferContexts,
+    summaryCloze,
     postReadingPrompts,
     tips: ensureArray(rawLesson?.tips).map(clean).filter(Boolean),
     legacy: {
@@ -300,6 +332,11 @@ export function buildReadingJsonContractInstruction({ level = 'A1' } = {}) {
     '- Para B1/B2/C1, gere 1 a 2 transferContexts: trechos NOVOS curtos que reutilizam vocabulário/estrutura da aula em situação diferente, com subQuestion própria.',
     '- Para A1/A2, NÃO gere transferContexts.',
     '- transferContexts NÃO são parte do readingText. São material extra para a Prática Profunda.',
+    '- Inclua summaryCloze: 1 resumo curto do readingText com lacunas em palavras-chave.',
+    '- summaryCloze.summaryText deve usar marcadores {{1}}, {{2}}, {{3}} como lacunas.',
+    '- Cada lacuna deve ter blank correspondente com id, answer, acceptable e hint opcional.',
+    '- Para A1/A2, use no máximo 2 lacunas em palavras concretas simples.',
+    '- Para B1+, use 3 a 5 lacunas em palavras-chave, conectores, verbos ou adjetivos importantes.',
     '- Não revele a resposta dentro da pergunta.',
     '- Não gere alternativas duplicadas.',
     '- Não use perguntas genéricas que serviriam para qualquer texto.',
