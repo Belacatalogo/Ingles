@@ -272,7 +272,11 @@ export function checkPracticeAnswer(question, rawAnswer) {
   const expectedWords = expected.split(' ').filter(Boolean);
   const userWords = user.split(' ').filter(Boolean);
   const closeWords = expectedWords.filter((word, index) => word === userWords[index] || (word.length > 3 && levenshtein(word, userWords[index] || '') <= 1)).length;
-  const near = ratio >= 0.80 || distance <= 3 || (expectedWords.length > 2 && closeWords / expectedWords.length >= 0.70);
+  const answerIsTooShort = user.length < Math.max(3, Math.floor(expected.length * 0.35));
+  const isReadingShortAnswer = question?.skill === 'reading' && question?.type === QUESTION_TYPES.WRITE_SHORT;
+  const nearThreshold = isReadingShortAnswer ? 0.88 : 0.80;
+  const closeWordThreshold = isReadingShortAnswer ? 0.82 : 0.70;
+  const near = !answerIsTooShort && (ratio >= nearThreshold || distance <= 2 || (expectedWords.length > 2 && closeWords / expectedWords.length >= closeWordThreshold));
 
   if (near) {
     return finalizePracticeResult(question, {
