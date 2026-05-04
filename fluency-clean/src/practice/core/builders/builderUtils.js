@@ -70,6 +70,9 @@ export function createQuestion(base) {
     evidenceTrackId: base.evidenceTrackId,
     evidenceTrackLabel: base.evidenceTrackLabel,
     variantPolicy: base.variantPolicy,
+    newContext: base.newContext && typeof base.newContext === 'object' ? base.newContext : undefined,
+    subQuestion: base.subQuestion && typeof base.subQuestion === 'object' ? base.subQuestion : undefined,
+    transferTags: Array.isArray(base.transferTags) ? base.transferTags : [],
     isReview: Boolean(base.isReview),
   };
 }
