@@ -1,31 +1,23 @@
 import { diagnostics } from './diagnostics.js';
 import { inferLessonTypeFromText, normalizeLessonType } from './lessonTypes.js';
-import { maskApiKey, normalizeLessonKeys, GEMINI_LESSON_STATUS } from './geminiLessons.js';
+import { GEMINI_LESSON_STATUS, maskApiKey, normalizeLessonKeys } from './geminiLessons.js';
 import { reviewLessonAsTeacher, attachTeacherReview } from './teacherReviewer.js';
-import { AI_REVIEW_MAX_RETRIES, reviewLessonWithAI, shouldRegenerateLesson, mergeReviews } from './aiTeacherReviewer.js';
+import { AI_REVIEW_MAX_RETRIES, mergeReviews, reviewLessonWithAI, shouldRegenerateLesson } from './aiTeacherReviewer.js';
+import { buildLessonHistoryPromptPrefix } from './lessonHistoryContext.js';
 
 const FLASH_MODELS = ['gemini-2.5-flash', 'gemini-2.5-flash-lite'];
 const PRO_MODELS = ['gemini-2.5-pro'];
 
-function clean(value) {
-  return String(value ?? '').trim();
-}
-
-function ensureArray(value) {
-  return Array.isArray(value) ? value : [];
-}
+function clean(value) { return String(value ?? '').trim(); }
+function ensureArray(value) { return Array.isArray(value) ? value : []; }
 
 function extractTextFromGemini(data) {
   const parts = data?.candidates?.[0]?.content?.parts;
-  if (!Array.isArray(parts)) return '';
-  return parts.map((part) => part?.text ?? '').join('\n').trim();
+  return Array.isArray(parts) ? parts.map((part) => part?.text ?? '').join('\n').trim() : '';
 }
 
 function stripFences(value) {
-  return clean(value)
-    .replace(/^```(?:json)?\s*/i, '')
-    .replace(/```$/i, '')
-    .trim();
+  return clean(value).replace(/^```(?:json)?\s*/i, '').replace(/```$/i, '').trim();
 }
 
 function extractJsonObjectText(value) {
@@ -37,68 +29,45 @@ function extractJsonObjectText(value) {
 
 function unescapeSerializedJson(value) {
   let text = stripFences(value);
-
   try {
     const parsed = JSON.parse(text);
     if (typeof parsed === 'string') text = parsed;
     else if (parsed && typeof parsed === 'object') return JSON.stringify(parsed);
   } catch {
-    // continua com reparos textuais abaixo
+    // segue para reparos textuais
   }
-
   text = extractJsonObjectText(text);
-
   if (/^\{\\"/.test(text) || /\\"(?:type|title|level|sections|vocabulary|exercises|prompts|listeningText)\\"/.test(text)) {
-    text = text
-      .replace(/\\"/g, '"')
-      .replace(/\\\\n/g, '\\n')
-      .replace(/\\\\r/g, '')
-      .replace(/\\\\t/g, ' ');
+    text = text.replace(/\\"/g, '"').replace(/\\\\n/g, '\\n').replace(/\\\\r/g, '').replace(/\\\\t/g, ' ');
   }
-
   return extractJsonObjectText(text);
 }
 
 function repairJsonText(value) {
-  let text = unescapeSerializedJson(value);
-  text = text.replace(/[\u0000-\u001F\u007F]/g, (char) => {
-    if (char === '\n') return '\\n';
-    if (char === '\r') return '';
-    if (char === '\t') return ' ';
-    return ' ';
-  });
-  text = text.replace(/\\'/g, "'");
-  text = text.replace(/\\(?!["\\/bfnrtu])/g, '\\\\');
-  text = text.replace(/,\s*([}\]])/g, '$1');
-  return text;
+  return unescapeSerializedJson(value)
+    .replace(/[\u0000-\u001F\u007F]/g, (char) => (char === '\n' ? '\\n' : char === '\r' ? '' : char === '\t' ? ' ' : ' '))
+    .replace(/\\'/g, "'")
+    .replace(/\\(?!["\\/bfnrtu])/g, '\\\\')
+    .replace(/,\s*([}\]])/g, '$1');
 }
 
 export function parseResilientGeminiJson(text) {
-  const candidates = [
-    extractJsonObjectText(text),
-    unescapeSerializedJson(text),
-    repairJsonText(text),
-  ];
-
+  const candidates = [extractJsonObjectText(text), unescapeSerializedJson(text), repairJsonText(text)];
   let lastError = null;
   for (const candidate of candidates) {
     try {
       const parsed = JSON.parse(candidate);
-      if (typeof parsed === 'string') return JSON.parse(unescapeSerializedJson(parsed));
-      return parsed;
+      return typeof parsed === 'string' ? JSON.parse(unescapeSerializedJson(parsed)) : parsed;
     } catch (error) {
       lastError = error;
     }
   }
-
-  const preview = clean(text).slice(0, 220).replace(/\s+/g, ' ');
-  throw new Error(`JSON resiliente falhou: ${lastError?.message || lastError}. Preview: ${preview}`);
+  throw new Error(`JSON resiliente falhou: ${lastError?.message || lastError}. Preview: ${clean(text).slice(0, 220).replace(/\s+/g, ' ')}`);
 }
 
 function resolveLessonType({ prompt = '', forcedType = '' } = {}) {
   const normalized = normalizeLessonType(forcedType);
-  if (normalized && normalized !== 'default') return normalized;
-  return inferLessonTypeFromText(prompt);
+  return normalized && normalized !== 'default' ? normalized : inferLessonTypeFromText(prompt);
 }
 
 function buildAttempts({ keys = [], proKey = '' }) {
@@ -111,32 +80,22 @@ function buildAttempts({ keys = [], proKey = '' }) {
 }
 
 function buildPrompt({ prompt, lessonType, level, aiReviewHint = '' }) {
+  const historyPrefix = buildLessonHistoryPromptPrefix({ lessonType, level });
   return [
+    historyPrefix,
     'Você é o gerador resiliente de aulas do Fluency.',
-    'Retorne SOMENTE um objeto JSON real, sem markdown, sem comentários e sem texto fora do JSON.',
-    'Se o modelo tentar escapar o JSON, corrija antes de responder: o primeiro caractere deve ser { e o último deve ser }.',
-    'Nunca use {\\"type\\". Use {"type".',
-    '',
+    'Retorne SOMENTE JSON válido. Sem markdown, comentários ou texto fora do JSON.',
+    'Use um objeto com: type, level, title, intro, objective, focus, sections, tips, listeningText, vocabulary, exercises e prompts.',
     `Tipo obrigatório da aula: ${lessonType}.`,
     `Nível obrigatório: ${level || 'A1'}.`,
-    aiReviewHint ? `AVISO DO PROFESSOR REVISOR: a tentativa anterior foi reprovada. Motivo: "${clean(aiReviewHint)}". Corrija especificamente isso na nova versão.` : '',
-    '',
-    'Formato obrigatório:',
-    '{"type":"listening","level":"A1","title":"...","intro":"...","objective":"...","focus":"...","sections":[{"title":"...","content":"..."}],"tips":["..."],"listeningText":"...","vocabulary":[{"word":"...","meaning":"...","example":"..."}],"exercises":[{"question":"...","options":["...","...","..."],"answer":"...","explanation":"..."}],"prompts":["..."]}',
-    '',
-    'Regras de qualidade:',
-    '- Faça aula completa, não resumo.',
-    '- Para listening/reading, listeningText deve ter 220 a 340 palavras.',
-    '- sections deve ter 6 a 7 itens curtos e úteis.',
-    '- vocabulary deve ter 12 a 16 itens.',
-    '- exercises deve ter 12 a 16 questões.',
-    '- Inclua pelo menos 3 exercícios abertos sem alternativas para evitar falso domínio.',
-    '- prompts deve ter 5 a 7 comandos de produção ou shadowing.',
-    '- Não revele resposta antes da tentativa; answer deve ficar apenas no campo answer.',
-    '',
+    aiReviewHint ? `Correção obrigatória do professor revisor: ${clean(aiReviewHint)}.` : '',
+    'A aula deve ser completa, profunda, clara e adequada ao nível.',
+    'Para reading/listening, listeningText deve ter 220 a 340 palavras.',
+    'sections deve ter 6 a 7 itens; vocabulary 12 a 16; exercises 12 a 16; prompts 5 a 7.',
+    'Inclua exercícios abertos e não revele resposta antes da tentativa.',
     'Pedido original do cronograma:',
     clean(prompt) || 'Gerar aula de inglês A1.',
-  ].filter((line) => line !== '').join('\n');
+  ].filter(Boolean).join('\n');
 }
 
 function normalizeFallbackLesson(data, { lessonType, level }) {
@@ -166,28 +125,21 @@ function normalizeFallbackLesson(data, { lessonType, level }) {
     })).filter((item) => item.question || item.answer || item.options.length),
     prompts: ensureArray(data?.prompts).map(clean).filter(Boolean),
     generationSeed: `resilient-${Date.now().toString(36)}`,
-    planContract: 'resilient-json-v1',
+    planContract: 'resilient-json-v1+history-context',
   };
 }
 
 async function callGemini({ attempt, prompt, fetcher }) {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(attempt.model)}:generateContent?key=${encodeURIComponent(attempt.key)}`;
+  const base = 'https://generativelanguage.googleapis.com/v1beta/models/';
+  const url = `${base}${encodeURIComponent(attempt.model)}:generateContent?key=${encodeURIComponent(attempt.key)}`;
   const body = {
     contents: [{ role: 'user', parts: [{ text: prompt }] }],
-    generationConfig: {
-      temperature: 0.22,
-      maxOutputTokens: attempt.paid ? 7800 : 6200,
-      responseMimeType: 'application/json',
-    },
+    generationConfig: { temperature: 0.22, maxOutputTokens: attempt.paid ? 7800 : 6200, responseMimeType: 'application/json' },
   };
   const response = await fetcher(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
   if (!response || typeof response.ok === 'undefined') throw new Error('Gemini retornou resposta vazia no fallback resiliente.');
-  if (!response.ok) {
-    const text = await response.text().catch(() => '');
-    throw new Error(`HTTP ${response.status} ${text.slice(0, 180)}`);
-  }
-  const data = await response.json();
-  return parseResilientGeminiJson(extractTextFromGemini(data));
+  if (!response.ok) throw new Error(`HTTP ${response.status} ${(await response.text().catch(() => '')).slice(0, 180)}`);
+  return parseResilientGeminiJson(extractTextFromGemini(await response.json()));
 }
 
 function attachMergedReview(lesson, mergedReview) {
@@ -198,13 +150,13 @@ function attachMergedReview(lesson, mergedReview) {
       ...(reviewedLesson?.quality && typeof reviewedLesson.quality === 'object' ? reviewedLesson.quality : {}),
       aiReview: mergedReview.aiReview || null,
       aiReviewerVersion: mergedReview.aiReview?.reviewerVersion || null,
+      historyContextApplied: true,
     },
   };
 }
 
 async function reviewAndMaybeRegenerate({ attempt, prompt, lessonType, level, keys, fetcher }) {
   let aiReviewHint = '';
-
   for (let retryCount = 0; retryCount <= AI_REVIEW_MAX_RETRIES; retryCount += 1) {
     const data = await callGemini({ attempt, prompt: buildPrompt({ prompt, lessonType, level, aiReviewHint }), fetcher });
     const lesson = normalizeFallbackLesson(data, { lessonType, level });
@@ -222,10 +174,8 @@ async function reviewAndMaybeRegenerate({ attempt, prompt, lessonType, level, ke
       diagnostics.log(`AI Teacher Reviewer reprovou a aula. Regenerando uma vez: ${aiReviewHint}`, 'warn');
       continue;
     }
-
     return attachMergedReview(lesson, mergedReview);
   }
-
   throw new Error('AI Teacher Reviewer não conseguiu finalizar a aula após regeneração.');
 }
 
@@ -235,7 +185,7 @@ export async function generateResilientLessonDraft({ prompt, keys = [], proKey =
   if (!attempts.length) return { status: GEMINI_LESSON_STATUS.missingKeys, lesson: null, error: 'Nenhuma key Gemini válida configurada para aulas.' };
 
   diagnostics.setPhase('fallback resiliente de JSON', GEMINI_LESSON_STATUS.generating);
-  diagnostics.log('Geração em blocos falhou por JSON escapado. Acionando fallback resiliente.', 'warn');
+  diagnostics.log('Geração em blocos falhou por JSON escapado. Acionando fallback resiliente com contexto histórico.', 'warn');
 
   let lastError = null;
   for (let index = 0; index < attempts.length; index += 1) {
