@@ -1,3 +1,4 @@
+import { buildGrammarJsonContractInstruction } from '../grammar/grammarJsonContract.js';
 import { buildReadingJsonContractInstruction } from '../reading/readingJsonContract.js';
 import { buildRubricInstruction, getLessonRubric } from './lessonRubrics.js';
 
@@ -49,6 +50,10 @@ export const READING_QUESTION_COMPAT_CONTRACT = {
 
 function isReadingContractRequest(lessonType) {
   return String(lessonType || '').trim().toLowerCase() === 'reading';
+}
+
+function isGrammarContractRequest(lessonType) {
+  return String(lessonType || '').trim().toLowerCase() === 'grammar';
 }
 
 function mapReadingQuestionsToExercises(readingQuestions = []) {
@@ -135,9 +140,13 @@ export function getBlockJsonShape(blockId, lessonType = 'reading') {
   return {};
 }
 
-export function buildJsonContractInstruction({ lessonType = 'reading', blockId = 'structure' } = {}) {
+export function buildJsonContractInstruction({ lessonType = 'reading', blockId = 'structure', level = 'A1' } = {}) {
+  if (isGrammarContractRequest(lessonType)) {
+    return buildGrammarJsonContractInstruction({ level });
+  }
+
   if (isReadingContractRequest(lessonType)) {
-    const baseReadingContract = buildReadingJsonContractInstruction({ level: 'A1' });
+    const baseReadingContract = buildReadingJsonContractInstruction({ level });
     const requiredKeys = getRequiredKeysForBlock(blockId);
     const shape = getBlockJsonShape(blockId, lessonType);
 
