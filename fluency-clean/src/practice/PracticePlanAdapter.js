@@ -10,6 +10,7 @@ const TYPE_TO_UI = Object.freeze({
   [QUESTION_TYPES.WRITE_SHORT]: 'write',
   [QUESTION_TYPES.SPEAK_RESPONSE]: 'speak',
   [QUESTION_TYPES.TRUE_FALSE]: 'choice',
+  [QUESTION_TYPES.NEW_CONTEXT]: 'newContext',
 });
 
 const BAD_OPTION = /(undefined|null)/i;
@@ -102,6 +103,9 @@ function adaptQuestion(question, index) {
     phase: question.phase,
     skill: question.skill,
     isReview: Boolean(question.isReview),
+    newContext: question.newContext,
+    subQuestion: question.subQuestion,
+    transferTags: Array.isArray(question.transferTags) ? question.transferTags : [],
     sourceEngine: 'core',
     coreQuestion: question,
   };
@@ -109,7 +113,7 @@ function adaptQuestion(question, index) {
 
 function hasRenderableShape(item) {
   if (!item?.type || !item?.prompt || !item?.answer) return false;
-  if (['choice', 'listenChoice', 'fillBlank'].includes(item.type)) return Array.isArray(item.options) && item.options.length >= 2;
+  if (['choice', 'listenChoice', 'fillBlank', 'newContext'].includes(item.type)) return Array.isArray(item.options) && item.options.length >= 2;
   if (item.type === 'wordBank') return Array.isArray(item.words) && item.words.length >= 3;
   if (item.type === 'dictation') return item.answer.length <= 64 && wordCount(item.answer) <= 8;
   return true;
