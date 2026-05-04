@@ -1,0 +1,12 @@
+/* BLOCO-H4 — CSS Consolidation
+   Arquivo temático: base global.
+   Mantém a ordem interna dos arquivos de origem via @import seguro para não alterar regras antes do smoke test visual. */
+
+/* de: index.css */
+@import './index.css';
+
+/* de: reference.css */
+@import './reference.css';
+
+/* de: hotfix-ui-consistency.css */
+@import './hotfix-ui-consistency.css';
