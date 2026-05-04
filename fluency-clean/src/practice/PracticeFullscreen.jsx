@@ -13,6 +13,7 @@ import { SummaryClozeExercise } from './components/SummaryClozeExercise.jsx';
 import { TextExercise } from './components/TextExercise.jsx';
 import { WordBankExercise } from './components/WordBankExercise.jsx';
 import { PRACTICE_EVENTS, PRACTICE_STATES, usePracticeStateMachine } from './core/PracticeStateMachine.js';
+import { recordPracticeSession } from './core/PracticeTelemetry.js';
 
 const STARTING_LIVES = 5;
 const CHECKING_DELAY_MS = 80;
@@ -24,6 +25,17 @@ function getSpeechRecognition() {
 
 function clean(value) {
   return String(value ?? '').trim();
+}
+
+function getPracticeSkill(lesson) {
+  const type = String(lesson?.type || 'mixed').toLowerCase();
+  if (type.includes('listening')) return 'listening';
+  if (type.includes('speaking')) return 'speaking';
+  if (type.includes('reading')) return 'reading';
+  if (type.includes('grammar')) return 'grammar';
+  if (type.includes('writing')) return 'writing';
+  if (type.includes('vocabulary')) return 'vocabulary';
+  return 'mixed';
 }
 
 function getPracticeSkillLabel(lesson) {
@@ -71,6 +83,14 @@ function isPracticeActive(state) {
   ].includes(state);
 }
 
+function getPlanQuality(items) {
+  return items?.[0]?.practicePlanQuality || {};
+}
+
+function isPurityBelowThreshold(quality) {
+  return quality?.purityValidation ? !quality.purityValidation.ok : false;
+}
+
 function mergeTouchedMasteryTags(previousTags, nextTags) {
   const byTag = new Map();
   [...previousTags, ...(Array.isArray(nextTags) ? nextTags : [])].forEach((tag) => {
@@ -94,6 +114,7 @@ export function PracticeFullscreen({ lesson, open, onClose, onComplete }) {
   const [lives, setLives] = useState(STARTING_LIVES);
   const [reviewMode, setReviewMode] = useState(false);
   const [touchedMasteryTags, setTouchedMasteryTags] = useState([]);
+  const [sessionStartedAt, setSessionStartedAt] = useState(0);
   const lessonKey = `${lesson?.id || lesson?.title || 'lesson'}-${lesson?.generationMeta?.id || ''}`;
 
   useEffect(() => {
@@ -110,6 +131,7 @@ export function PracticeFullscreen({ lesson, open, onClose, onComplete }) {
     setLives(STARTING_LIVES);
     setReviewMode(false);
     setTouchedMasteryTags([]);
+    setSessionStartedAt(Date.now());
     reset({ lessonKey, lessonId: lesson?.id || null, total: nextItems.length });
     dispatch(PRACTICE_EVENTS.PLAN_LOADED, { lessonKey, lessonId: lesson?.id || null, total: nextItems.length });
   }, [open, lessonKey, lesson, reset, dispatch]);
@@ -127,9 +149,22 @@ export function PracticeFullscreen({ lesson, open, onClose, onComplete }) {
 
   useEffect(() => {
     if (!open || state !== PRACTICE_STATES.SAVING) return;
+    const quality = getPlanQuality(items);
+    recordPracticeSession({
+      skill: getPracticeSkill(lesson),
+      level: lesson?.level || 'A1',
+      questionCount: items.length,
+      correctCount,
+      incorrectCount: mistakeCount,
+      purityReport: quality.purityReport,
+      leakDiscardCount: quality.leakDiscarded,
+      purityBelowThreshold: isPurityBelowThreshold(quality),
+      durationMs: sessionStartedAt ? Date.now() - sessionStartedAt : 0,
+      masteryTagsUpdated: touchedMasteryTags,
+    });
     onComplete?.({ total: items.length, correct: correctCount, mistakes: mistakeCount, lives, reviewMode, results, touchedMasteryTags });
     dispatch(PRACTICE_EVENTS.SAVE_DONE, { savedAt: Date.now() });
-  }, [open, state, items.length, correctCount, mistakeCount, lives, reviewMode, results, touchedMasteryTags, onComplete, dispatch]);
+  }, [open, state, items, correctCount, mistakeCount, lives, reviewMode, results, touchedMasteryTags, sessionStartedAt, lesson, onComplete, dispatch]);
 
   if (!open) return null;
 
@@ -316,6 +351,7 @@ export function PracticeFullscreen({ lesson, open, onClose, onComplete }) {
     setLives(STARTING_LIVES);
     setReviewMode(false);
     setTouchedMasteryTags([]);
+    setSessionStartedAt(Date.now());
     reset({ lessonKey, lessonId: lesson?.id || null, total: nextItems.length });
     dispatch(PRACTICE_EVENTS.PLAN_LOADED, { lessonKey, lessonId: lesson?.id || null, total: nextItems.length });
   }
