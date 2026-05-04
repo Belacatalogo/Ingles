@@ -4,6 +4,7 @@ import { buildReadingJsonContractInstruction } from '../reading/readingJsonContr
 import { buildSpeakingJsonContractInstruction } from '../speaking/speakingJsonContract.js';
 import { buildWritingJsonContractInstruction } from '../writing/writingJsonContract.js';
 import { buildRubricInstruction, getLessonRubric } from './lessonRubrics.js';
+import { buildLessonHistoryPromptPrefix } from './lessonHistoryContext.js';
 
 export const LESSON_JSON_CONTRACT_VERSION = 'lesson-contract-v1';
 
@@ -155,21 +156,28 @@ export function getBlockJsonShape(blockId, lessonType = 'reading') {
   return {};
 }
 
+function buildHistoryPrefix({ lessonType, blockId, level }) {
+  if (blockId !== 'structure') return '';
+  return buildLessonHistoryPromptPrefix({ lessonType, level });
+}
+
 export function buildJsonContractInstruction({ lessonType = 'reading', blockId = 'structure', level = 'A1' } = {}) {
+  const historyPrefix = buildHistoryPrefix({ lessonType, blockId, level });
+
   if (isGrammarContractRequest(lessonType)) {
-    return buildGrammarJsonContractInstruction({ level });
+    return [historyPrefix, buildGrammarJsonContractInstruction({ level })].filter(Boolean).join('\n\n');
   }
 
   if (isListeningContractRequest(lessonType)) {
-    return buildListeningJsonContractInstruction({ level });
+    return [historyPrefix, buildListeningJsonContractInstruction({ level })].filter(Boolean).join('\n\n');
   }
 
   if (isWritingContractRequest(lessonType)) {
-    return buildWritingJsonContractInstruction({ level });
+    return [historyPrefix, buildWritingJsonContractInstruction({ level })].filter(Boolean).join('\n\n');
   }
 
   if (isSpeakingContractRequest(lessonType)) {
-    return buildSpeakingJsonContractInstruction({ level });
+    return [historyPrefix, buildSpeakingJsonContractInstruction({ level })].filter(Boolean).join('\n\n');
   }
 
   if (isReadingContractRequest(lessonType)) {
@@ -178,6 +186,7 @@ export function buildJsonContractInstruction({ lessonType = 'reading', blockId =
     const shape = getBlockJsonShape(blockId, lessonType);
 
     return [
+      historyPrefix,
       `CONTRATO JSON FLUENCY ${LESSON_JSON_CONTRACT_VERSION} · READING POR HABILIDADE`,
       'Retorne APENAS JSON válido. Não use markdown. Não use texto antes ou depois do JSON.',
       'Use aspas duplas em todas as chaves e strings.',
@@ -199,7 +208,7 @@ export function buildJsonContractInstruction({ lessonType = 'reading', blockId =
       '- Se houver diferença entre exercises e readingQuestions, readingQuestions será a fonte principal dos exercícios internos da aba Reading.',
       '- Para o bloco production, gere postReadingPrompts e também prompts compatível com o render antigo.',
       '- O aluno não deve ver nenhuma explicação sobre contrato JSON, política interna ou compatibilidade.',
-    ].join('\n');
+    ].filter(Boolean).join('\n');
   }
 
   const rubric = getLessonRubric(lessonType);
@@ -207,6 +216,7 @@ export function buildJsonContractInstruction({ lessonType = 'reading', blockId =
   const shape = getBlockJsonShape(blockId, lessonType);
 
   return [
+    historyPrefix,
     `CONTRATO JSON FLUENCY ${LESSON_JSON_CONTRACT_VERSION}`,
     'Retorne APENAS JSON válido. Não use markdown. Não use texto antes ou depois do JSON.',
     'Use aspas duplas em todas as chaves e strings.',
@@ -234,7 +244,7 @@ export function buildJsonContractInstruction({ lessonType = 'reading', blockId =
     '- Não use opções como undefined, null, answer, resposta ou exemplo.',
     '',
     buildRubricInstruction(rubric.type),
-  ].join('\n');
+  ].filter(Boolean).join('\n');
 }
 
 export function assertJsonContractBlock(blockId, data) {
