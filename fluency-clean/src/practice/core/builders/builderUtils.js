@@ -73,6 +73,8 @@ export function createQuestion(base) {
     newContext: base.newContext && typeof base.newContext === 'object' ? base.newContext : undefined,
     subQuestion: base.subQuestion && typeof base.subQuestion === 'object' ? base.subQuestion : undefined,
     transferTags: Array.isArray(base.transferTags) ? base.transferTags : [],
+    summaryText: cleanPracticeText(base.summaryText || ''),
+    blanks: Array.isArray(base.blanks) ? base.blanks : [],
     isReview: Boolean(base.isReview),
   };
 }
