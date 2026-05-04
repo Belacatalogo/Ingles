@@ -164,7 +164,61 @@ Branch estável protegida: `rewrite-fluency-clean`
 - `BLOCO-G2-PRACTICE-A11Y-AUDIT-LAB.md`
 - `BLOCO-G3-PRACTICE-IPHONE-FINAL-AUDIT-LAB.md`
 
-## ÚLTIMO BLOCO FECHADO — G3 PRACTICE IPHONE FINAL AUDIT
+## AI TEACHER REVIEWER
+
+### `BLOCO-H1-AI-TEACHER-REVIEWER-LAB` — IMPLEMENTADO TECNICAMENTE
+
+Documentação criada:
+- `fluency-clean/docs/BLOCO-H1-AI-TEACHER-REVIEWER-LAB.md`
+
+Arquivos criados:
+- `fluency-clean/src/services/aiReviewerPrompts.js`
+- `fluency-clean/src/services/aiTeacherReviewer.js`
+
+Arquivos alterados:
+- `fluency-clean/src/services/resilientGeminiLessonDraft.js`
+- `fluency-clean/src/services/index.js`
+- `REWRITE_HANDOFF.md`
+
+O que foi fechado:
+- Prompts de revisão IA por tipo: Grammar, Listening, Reading, Writing e Speaking.
+- Revisor IA usando Gemini Flash, com resumo econômico da aula.
+- Fallback aprovado se review falhar, sem bloquear o aluno.
+- Regeneração automática limitada a 1 tentativa quando score < 78 ou houver `criticalIssues`.
+- Merge do revisor mecânico com IA: 40% mecânico + 60% IA.
+- `quality.aiReview` anexado na aula final do fallback resiliente.
+- Logs para diagnóstico: score, aprovação e motivo de regeneração.
+
+Preservado sem alteração:
+- `modelPolicy.js`;
+- `geminiLessons.js`;
+- `teacherReviewer.js`;
+- `bundle.js`;
+- `main`;
+- `rewrite-fluency-clean`;
+- backend Azure privado;
+- Firebase/Azure de produção;
+- sistema de gravação;
+- `speakingFlow.js`;
+- `SpeakingStepper.jsx`;
+- `SpeakingScreen.jsx`.
+
+Status:
+- Código/documentação: concluídos.
+- Validação final: pendente de gerar aula no preview da branch lab e confirmar logs/`quality.aiReview`.
+
+## ÚLTIMO BLOCO FECHADO — H1 AI TEACHER REVIEWER
+
+### Smoke test manual pendente no iPhone/preview
+
+1. Gerar uma aula Grammar A1.
+2. Confirmar no console/diagnóstico: `[AI Reviewer] score: XX, approved: true/false`.
+3. Confirmar que a aula salva contém `quality.aiReview.score`.
+4. Testar cenário sem key API válida e confirmar que a aula segue com `source: 'fallback'`.
+5. Se possível, forçar reprovação e confirmar regeneração única com `[AI Reviewer] Regenerando: motivo`.
+6. Confirmar que o tempo extra de geração continua aceitável.
+
+## BLOCO ANTERIOR — G3 PRACTICE IPHONE FINAL AUDIT
 
 ### `BLOCO-G3-PRACTICE-IPHONE-FINAL-AUDIT-LAB` — IMPLEMENTADO TECNICAMENTE
 
@@ -178,47 +232,9 @@ Arquivos confirmados/alterados neste fechamento:
 - `fluency-clean/src/practice/components/SummaryClozeExercise.jsx`
 - `fluency-clean/src/practice/components/NewContextExercise.jsx`
 
-O que foi fechado:
-- `practice-a11y.css` está importado em `main.jsx`.
-- Safe area reforçada.
-- Teclado iOS considerado com `scroll-padding-bottom` e padding inferior.
-- Inputs protegidos contra zoom automático no iOS com fonte mínima de 16px.
-- Touch targets mínimos reforçados.
-- Botão de fala mantido com mínimo de 56px.
-- Overflow/word-break reforçado para telas estreitas.
-- Reduced motion respeitado.
-- Foco visível reforçado.
-- `NewContextExercise.jsx` recebeu `radiogroup/radio`, `aria-checked`, `aria-disabled` e redução de ruído para VoiceOver.
-
-Preservado sem alteração:
-- lógica da prática;
-- seleção/confirmação de alternativa;
-- Azure;
-- Firebase;
-- backend Azure privado;
-- sistema de gravação;
-- `speakingFlow.js`;
-- `SpeakingStepper.jsx`;
-- `SpeakingScreen.jsx`;
-- `bundle.js`.
-
-### Status final do G3
-
+Status final do G3:
 - Código/documentação: concluídos.
 - Aprovação final: pendente do smoke test manual no iPhone após deploy do preview da branch `rewrite-fluency-clean-lab`.
-
-### Smoke test manual pendente no iPhone
-
-1. Abrir aula Grammar A1 e iniciar Prática Profunda.
-2. Testar múltipla escolha, correction, word bank e resposta curta.
-3. Abrir teclado em resposta curta e confirmar se campo/botão continuam acessíveis.
-4. Concluir prática e verificar MasteryRecap sem overflow em 375px.
-5. Abrir aula Listening B1 e testar áudio, escolha, ditado e shadowing.
-6. Abrir aula Speaking A2 e confirmar que o fluxo aprovado de Speaking continua intacto.
-7. Abrir Reading B1 com `summary_cloze` e confirmar inputs inline.
-8. Abrir Reading B1 com `new_context` e confirmar blockquote, seleção, foco e botão Confirmar.
-9. Confirmar ausência de crash no fluxo normal.
-10. Confirmar ausência de resposta vazada visível antes do feedback.
 
 ## ALERTA IMPORTANTE — VOCAB/TRILHA
 
@@ -231,9 +247,9 @@ Objetivo:
 ## ORDEM DEFINIDA PARA PRÓXIMOS PASSOS
 
 1. Aguardar deploy do preview da branch `rewrite-fluency-clean-lab`.
-2. Executar smoke test manual do G3 no iPhone.
-3. Se aprovado, considerar a refatoração da Prática Profunda tecnicamente concluída.
-4. Próximo bloco planejado: `BLOCO-VOCAB-TRAIL-CONTINUATION-LAB`.
+2. Executar smoke test manual do H1 no preview/iPhone.
+3. Se aprovado, seguir para `BLOCO-H2-LESSON-HISTORY-CONTEXT-LAB` ou bloco explicitamente enviado pelo usuário.
+4. `BLOCO-VOCAB-TRAIL-CONTINUATION-LAB` continua pendente.
 5. `HOTFIX-READING-7-ANCHOR-EVIDENCE-LAB` apenas quando for possível alterar `ReadingLesson.jsx` completo com segurança.
 
 ## NÃO FAZER AGORA
@@ -246,8 +262,8 @@ Objetivo:
 - Não alterar política de chaves agora.
 - Não mexer em `main`, `rewrite-fluency-clean`, `bundle.js` ou backend Azure privado.
 - Não remover o preview temporário até o usuário aprovar ou pedir remoção.
-- Não iniciar novos blocos antes do smoke test manual do G3, salvo instrução explícita.
+- Não iniciar novos blocos antes do smoke test manual, salvo instrução explícita.
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch obrigatória é `rewrite-fluency-clean-lab`. Não mexa em `main`, `rewrite-fluency-clean`, `bundle.js`, backend Azure privado, Firebase, Azure, sistema de gravação, `speakingFlow.js`, `SpeakingStepper.jsx` ou `SpeakingScreen.jsx`. O último bloco fechado tecnicamente foi `BLOCO-G3-PRACTICE-IPHONE-FINAL-AUDIT-LAB`. Código e docs foram concluídos, mas a aprovação final depende do smoke test manual no iPhone depois do deploy do preview. Próximo bloco planejado após aprovação: `BLOCO-VOCAB-TRAIL-CONTINUATION-LAB`."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch obrigatória é `rewrite-fluency-clean-lab`. Não mexa em `main`, `rewrite-fluency-clean`, `bundle.js`, backend Azure privado, Firebase, Azure, sistema de gravação, `speakingFlow.js`, `SpeakingStepper.jsx` ou `SpeakingScreen.jsx`. O último bloco fechado tecnicamente foi `BLOCO-H1-AI-TEACHER-REVIEWER-LAB`. Código e docs foram concluídos, mas a aprovação final depende do smoke test manual no preview/iPhone. Próximo bloco recomendado: `BLOCO-H2-LESSON-HISTORY-CONTEXT-LAB`, salvo se o usuário enviar outro bloco."
