@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { BookOpen, CheckCircle2, ChevronDown, ChevronUp, Headphones, Pause, Play, Save, ShieldCheck, Target, Volume2 } from 'lucide-react';
+import { normalizeListeningLessonContract } from '../listening/listeningJsonContract.js';
 import { playLearningAudio, stopLearningAudio } from '../services/audioPlayback.js';
 import { parseDialogueTurns, prepareMultiSpeakerDialogue, playPreparedMultiSpeakerDialogue, stopMultiSpeakerAudio } from '../services/multiSpeakerAudio.js';
 import { diagnostics } from '../services/diagnostics.js';
@@ -58,7 +59,9 @@ function normalizeVocabulary(lesson) {
   })).filter((item) => item.word || item.meaning || item.example);
 }
 
-function shadowingFrom(transcript, prompts) {
+function shadowingFrom(transcript, prompts, lessonShadowingLines = []) {
+  const provided = Array.isArray(lessonShadowingLines) ? lessonShadowingLines.map(cleanText).filter(Boolean) : [];
+  if (provided.length) return provided.slice(0, 8);
   const lines = transcript.flatMap((line) => cleanText(line).split(/(?<=[.!?])\s+/)).map((line) => line.trim()).filter((line) => line.length >= 6 && line.length <= 120).slice(0, 8);
   return lines.length ? lines : prompts.slice(0, 5);
 }
@@ -116,7 +119,8 @@ function ListeningStepper({ activeStep, completed, onJump }) {
   );
 }
 
-export function ListeningLessonClean({ lesson }) {
+export function ListeningLessonClean({ lesson: rawLesson }) {
+  const lesson = useMemo(() => normalizeListeningLessonContract(rawLesson), [rawLesson]);
   const [message, setMessage] = useState('');
   const [audioState, setAudioState] = useState('idle');
   const [answer, setAnswer] = useState(() => getLessonDraft(draftKey(lesson)));
@@ -134,10 +138,10 @@ export function ListeningLessonClean({ lesson }) {
   const prompts = useMemo(() => normalizeList(lesson?.prompts, ['Repeat the sentence out loud.', 'Spell your name slowly.', 'Say one short sentence about you.']), [lesson]);
   const sections = useMemo(() => normalizeSections(lesson), [lesson]);
   const vocabulary = useMemo(() => normalizeVocabulary(lesson), [lesson]);
-  const shadowingLines = useMemo(() => shadowingFrom(dialogue.isDialogue ? dialogue.turns.map((turn) => turn.text) : transcript, prompts), [dialogue, transcript, prompts]);
+  const shadowingLines = useMemo(() => shadowingFrom(dialogue.isDialogue ? dialogue.turns.map((turn) => turn.text) : transcript, prompts, lesson?.shadowingLines), [dialogue, transcript, prompts, lesson]);
   const audioText = dialogue.isDialogue ? dialogue.plainText : transcript.join(' ');
   const currentShadowingLine = shadowingLines[shadowingIndex] || shadowingLines[0] || prompts[0];
-  const renderReport = { ok: Boolean(transcript.length && audioText.length), transcriptLines: transcript.length, shadowingLines: shadowingLines.length, answersHidden: true, dialogue: dialogue.isDialogue, speakers: dialogue.speakers.length };
+  const renderReport = { ok: Boolean(transcript.length && audioText.length), transcriptLines: transcript.length, shadowingLines: shadowingLines.length, answersHidden: true, dialogue: dialogue.isDialogue, speakers: dialogue.speakers.length, contractVersion: lesson.contractVersion || '' };
 
   useEffect(() => {
     setActiveStep('listening-start');
