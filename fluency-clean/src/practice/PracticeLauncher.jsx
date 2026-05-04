@@ -3,6 +3,7 @@ import { CheckCircle2, Dumbbell, Heart, PlayCircle, RotateCcw, ShieldCheck, Targ
 import { buildPracticeItems } from './PracticePlanAdapter.js';
 import { PracticeFullscreen } from './PracticeFullscreen.jsx';
 import { getPracticeSessionsForLesson, recordPracticeSession } from '../services/progressStore.js';
+import { recordLessonAsCurrentCurriculumUnit } from '../services/curriculumPracticeAdapter.js';
 
 function getBestSession(sessions) {
   return sessions.reduce((best, session) => {
@@ -30,6 +31,11 @@ export function PracticeLauncher({ lesson, onComplete }) {
     onComplete?.(session);
   }
 
+  function openPractice() {
+    recordLessonAsCurrentCurriculumUnit(lesson);
+    setOpen(true);
+  }
+
   return (
     <section className={`pillar-card practice-launcher-card practice-launcher-polished ${hasPractice ? 'practice-launcher-completed' : ''}`} id="lesson-practice">
       <div className="pillar-card-title"><Dumbbell size={17} /> Prática profunda</div>
@@ -51,7 +57,7 @@ export function PracticeLauncher({ lesson, onComplete }) {
           <span>{bestSession.mistakes ? `${bestSession.mistakes} ponto(s) para revisar` : 'sem erros nessa sessão'}</span>
         </div>
       ) : null}
-      <button type="button" className="primary-action practice-deep-cta" onClick={() => setOpen(true)}>
+      <button type="button" className="primary-action practice-deep-cta" onClick={openPractice}>
         <span>{hasPractice ? <RotateCcw size={20} /> : <PlayCircle size={20} />}</span>
         <b>{hasPractice ? 'Revisar novamente' : 'Começar prática'}</b>
       </button>
