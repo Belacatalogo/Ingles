@@ -65,6 +65,18 @@ function getPhaseIssue(question) {
   return '';
 }
 
+function getSummaryClozeIssues(question) {
+  const issues = [];
+  if (!cleanPracticeText(question?.summaryText)) issues.push('summary_cloze sem summaryText.');
+  const blanks = Array.isArray(question?.blanks) ? question.blanks : [];
+  if (!blanks.length) issues.push('summary_cloze sem blanks.');
+  if (blanks.length > 5) issues.push('summary_cloze com lacunas demais.');
+  if (blanks.some((blank) => !cleanPracticeText(blank?.id) || !cleanPracticeText(blank?.answer))) issues.push('summary_cloze com blank inválido.');
+  const markers = Array.from(cleanPracticeText(question?.summaryText).matchAll(/\{\{(\d+)\}\}/g)).map((match) => match[1]);
+  if (markers.length !== blanks.length) issues.push('summary_cloze com marcadores incompatíveis.');
+  return issues;
+}
+
 export function getPracticeQuestionIssues(question, limits = DEFAULT_PRACTICE_LIMITS) {
   const issues = [];
   if (!question || typeof question !== 'object') return ['Questão inválida.'];
@@ -82,6 +94,11 @@ export function getPracticeQuestionIssues(question, limits = DEFAULT_PRACTICE_LI
   if (!prompt) issues.push('Enunciado vazio.');
   if (prompt.length < 6 || GENERIC_PROMPT.test(prompt)) issues.push('Enunciado genérico demais.');
   if (!hasPortugueseInstruction(prompt) && type !== QUESTION_TYPES.SPEAK_RESPONSE) issues.push('Enunciado principal deve orientar em português.');
+
+  if (type === QUESTION_TYPES.SUMMARY_CLOZE) {
+    return [...issues, ...getSummaryClozeIssues(question)];
+  }
+
   if (!answer && type !== QUESTION_TYPES.SPEAK_RESPONSE) issues.push('Resposta esperada vazia.');
   if (answer && VAGUE_ANSWER.test(answer)) issues.push('Resposta esperada vaga ou pessoal demais.');
   if (answerKind === ANSWER_KINDS.PERSONAL && [QUESTION_TYPES.MULTIPLE_CHOICE, QUESTION_TYPES.AUDIO_CHOICE, QUESTION_TYPES.TRUE_FALSE].includes(type)) {
