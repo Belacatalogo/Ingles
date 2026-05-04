@@ -174,7 +174,58 @@ function finalizePracticeResult(question, result) {
   return { ...result, touchedMasteryTags };
 }
 
+function checkSummaryCloze(question, rawAnswer) {
+  const userValues = rawAnswer && typeof rawAnswer === 'object' && !Array.isArray(rawAnswer) ? rawAnswer : {};
+  const blanks = Array.isArray(question?.blanks) ? question.blanks : [];
+  const total = blanks.length;
+
+  if (!total || blanks.some((blank) => !cleanPracticeText(userValues[blank.id]))) {
+    return finalizePracticeResult(question, {
+      status: PRACTICE_RESULT_STATUS.EMPTY,
+      correct: false,
+      retryable: false,
+      loseLife: false,
+      message: 'Complete todas as lacunas antes de continuar.',
+      expected: question?.answer || '',
+      hintWord: '',
+      perBlank: [],
+      correctCount: 0,
+      totalCount: total,
+    });
+  }
+
+  const perBlank = blanks.map((blank) => {
+    const given = cleanPracticeText(userValues[blank.id] || '');
+    const userVal = normalizePracticeText(given);
+    const correctNormalized = normalizePracticeText(blank.answer);
+    const acceptableNormalized = Array.isArray(blank.acceptable) ? blank.acceptable.map(normalizePracticeText) : [];
+    const isCorrect = userVal === correctNormalized || acceptableNormalized.includes(userVal);
+    return { id: blank.id, expected: blank.answer, given, isCorrect };
+  });
+
+  const correctCount = perBlank.filter((item) => item.isCorrect).length;
+  const ratio = total ? correctCount / total : 0;
+  const status = ratio >= 0.7 ? PRACTICE_RESULT_STATUS.CORRECT : correctCount > 0 ? PRACTICE_RESULT_STATUS.NEAR : PRACTICE_RESULT_STATUS.INCORRECT;
+
+  return finalizePracticeResult(question, {
+    status,
+    correct: status === PRACTICE_RESULT_STATUS.CORRECT,
+    retryable: status === PRACTICE_RESULT_STATUS.NEAR,
+    loseLife: status === PRACTICE_RESULT_STATUS.INCORRECT,
+    message: status === PRACTICE_RESULT_STATUS.CORRECT ? 'Muito bem!' : status === PRACTICE_RESULT_STATUS.NEAR ? 'Você acertou parte do resumo. Ajuste as lacunas.' : 'Revise o resumo e tente de novo.',
+    expected: question?.answer || '',
+    hintWord: '',
+    perBlank,
+    correctCount,
+    totalCount: total,
+  });
+}
+
 export function checkPracticeAnswer(question, rawAnswer) {
+  if (question?.type === QUESTION_TYPES.SUMMARY_CLOZE) {
+    return checkSummaryCloze(question, rawAnswer);
+  }
+
   const answer = Array.isArray(rawAnswer) ? rawAnswer.join(' ') : cleanPracticeText(rawAnswer);
   const user = normalizePracticeText(answer);
   const expected = normalizePracticeText(question?.answer);
@@ -191,7 +242,7 @@ export function checkPracticeAnswer(question, rawAnswer) {
     });
   }
 
-  if ([QUESTION_TYPES.MULTIPLE_CHOICE, QUESTION_TYPES.AUDIO_CHOICE, QUESTION_TYPES.FILL_BLANK, QUESTION_TYPES.TRUE_FALSE].includes(question?.type)) {
+  if ([QUESTION_TYPES.MULTIPLE_CHOICE, QUESTION_TYPES.AUDIO_CHOICE, QUESTION_TYPES.FILL_BLANK, QUESTION_TYPES.TRUE_FALSE, QUESTION_TYPES.NEW_CONTEXT].includes(question?.type)) {
     const correct = user === expected;
     return finalizePracticeResult(question, {
       status: correct ? PRACTICE_RESULT_STATUS.CORRECT : PRACTICE_RESULT_STATUS.INCORRECT,
