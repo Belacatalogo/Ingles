@@ -99,6 +99,7 @@ function adaptQuestion(question, index) {
     audioText: clean(question.audioText || question.answer),
     phase: question.phase,
     skill: question.skill,
+    isReview: Boolean(question.isReview),
     sourceEngine: 'core',
     coreQuestion: question,
   };
