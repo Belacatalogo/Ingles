@@ -29,6 +29,16 @@ function sentenceCount(value) {
   return clean(value).split(/[.!?]+/).map(clean).filter(Boolean).length;
 }
 
+export function getWritingRubricForLevel(level = 'A1') {
+  const policy = getWritingLevelPolicy(level);
+  if (!policy.rubricApplied) return null;
+  return {
+    level: policy.level,
+    criteria: getWritingRubricCriteria(),
+    passingScore: policy.rubricPassingScore,
+  };
+}
+
 export function evaluateWritingResponse({ studentText, modelAnswer, level }) {
   const student = clean(studentText);
   const model = clean(modelAnswer);
