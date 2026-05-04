@@ -1,0 +1,33 @@
+/* BLOCO-H4 — CSS Consolidation
+   Arquivo temático: prática profunda e speaking.
+   Mantém a ordem interna dos arquivos de origem via @import seguro para não alterar regras antes do smoke test visual. */
+
+/* de: choice-polish.css */
+@import './choice-polish.css';
+
+/* de: speaking-session.css */
+@import './speaking-session.css';
+
+/* de: speaking-history.css */
+@import './speaking-history.css';
+
+/* de: speaking-stepper-real.css */
+@import './speaking-stepper-real.css';
+
+/* de: practice-fullscreen.css */
+@import './practice-fullscreen.css';
+
+/* de: practice-new-context.css */
+@import './practice-new-context.css';
+
+/* de: practice-summary-cloze.css */
+@import './practice-summary-cloze.css';
+
+/* de: practice-mastery-recap.css */
+@import './practice-mastery-recap.css';
+
+/* de: practice-lives-hotfix.css */
+@import './practice-lives-hotfix.css';
+
+/* de: practice-a11y.css */
+@import './practice-a11y.css';
