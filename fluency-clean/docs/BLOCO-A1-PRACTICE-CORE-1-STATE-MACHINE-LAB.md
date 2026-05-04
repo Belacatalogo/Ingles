@@ -5,7 +5,7 @@ Branch: `rewrite-fluency-clean-lab`
 
 ## Status
 
-Implementado.
+Implementado e revalidado em 2026-05-04.
 
 ## Pré-requisitos
 
@@ -99,6 +99,17 @@ O estado `CHECKING` existe mesmo para validação síncrona, com delay curto ape
 - Durante `CHECKING`, o botão fica como `Conferindo...` e não envia novamente.
 - Ao concluir todos os exercícios, `onComplete` roda no estado `SAVING` e depois a tela final aparece em `DONE`.
 - Fechamento antes do fim dispara `ABORT` quando a transição é válida.
+
+## Revalidação 2026-05-04
+
+Checklist técnico conferido na branch `rewrite-fluency-clean-lab` antes deste commit:
+
+- `PracticeStateMachine.js` existe e expõe estados, eventos, transições, máquina, snapshot, subscribe, reset e hook React.
+- `PracticeFullscreen.jsx` importa `PRACTICE_EVENTS`, `PRACTICE_STATES` e `usePracticeStateMachine`.
+- Feedback visível continua condicionado a `state === PRACTICE_STATES.FEEDBACK`.
+- `CHECKING` continua obrigatório entre envio e feedback.
+- `SAVING` continua centralizando `recordPracticeSession`, `onComplete` e `SAVE_DONE`.
+- `PracticeSessionState.js`, `bundle.js`, backend Azure privado, Firebase/Azure de produção e branchs protegidas não foram alterados nesta revalidação.
 
 ## Critérios de aceitação
 
