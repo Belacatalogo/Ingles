@@ -109,6 +109,7 @@ function adaptQuestion(question, index) {
     transferTags: Array.isArray(question.transferTags) ? question.transferTags : [],
     summaryText: clean(question.summaryText || ''),
     blanks: Array.isArray(question.blanks) ? question.blanks : [],
+    writingRubric: question.writingRubric,
     sourceEngine: 'core',
     coreQuestion: question,
   };
@@ -189,6 +190,7 @@ export function evaluatePracticeAnswer(item, value) {
       hintWord: result.hintWord || '',
       loseLife: result.loseLife,
       expected: result.expected || item.answer,
+      rubricResult: result.rubricResult,
       touchedMasteryTags: Array.isArray(result.touchedMasteryTags) ? result.touchedMasteryTags : [],
     };
   }
