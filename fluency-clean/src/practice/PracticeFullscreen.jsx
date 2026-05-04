@@ -9,6 +9,7 @@ import { PracticeFeedback } from './components/PracticeFeedback.jsx';
 import { PracticeHeader, LivesBar } from './components/PracticeHeader.jsx';
 import { PracticeIntro } from './components/PracticeIntro.jsx';
 import { SpeakExercise } from './components/SpeakExercise.jsx';
+import { SummaryClozeExercise } from './components/SummaryClozeExercise.jsx';
 import { TextExercise } from './components/TextExercise.jsx';
 import { WordBankExercise } from './components/WordBankExercise.jsx';
 import { PRACTICE_EVENTS, PRACTICE_STATES, usePracticeStateMachine } from './core/PracticeStateMachine.js';
@@ -40,7 +41,7 @@ function getQuestionActionLabel(type) {
   if (type === 'wordBank') return 'Conferir frase';
   if (type === 'speak') return 'Conferir fala';
   if (type === 'write') return 'Conferir resposta';
-  if (type === 'newContext') return 'Confirmar';
+  if (type === 'newContext' || type === 'summaryCloze') return 'Confirmar';
   return 'Verificar';
 }
 
@@ -48,7 +49,7 @@ function canSubmitQuestion(current, value, wordBankValue) {
   if (!current) return false;
   if (['choice', 'listenChoice', 'fillBlank'].includes(current.type)) return true;
   if (current.type === 'wordBank') return Boolean(clean(wordBankValue.join(' ')));
-  if (current.type === 'newContext') return false;
+  if (current.type === 'newContext' || current.type === 'summaryCloze') return false;
   return Boolean(clean(value));
 }
 
@@ -171,7 +172,7 @@ export function PracticeFullscreen({ lesson, open, onClose, onComplete }) {
       id: current.id,
       type: current.type,
       correct: evaluation.correct,
-      answer: finalValue,
+      answer: typeof finalValue === 'object' ? JSON.stringify(finalValue).slice(0, 180) : finalValue,
       expected: evaluation.expected || current.answer,
       lifeLost,
       sourceEngine: current.sourceEngine,
@@ -188,6 +189,17 @@ export function PracticeFullscreen({ lesson, open, onClose, onComplete }) {
     const submitted = dispatch(PRACTICE_EVENTS.USER_SUBMITTED, { answer: finalValue, questionId: current.id });
     if (!submitted.ok) return;
 
+    window.setTimeout(() => {
+      commitEvaluation(evaluation, finalValue);
+    }, CHECKING_DELAY_MS);
+  }
+
+  function submitDirect(finalValue) {
+    if (!current || !can(PRACTICE_EVENTS.USER_SUBMITTED)) return;
+    const evaluation = evaluatePracticeAnswer(current, finalValue);
+    if (evaluation.empty) return;
+    const submitted = dispatch(PRACTICE_EVENTS.USER_SUBMITTED, { answer: finalValue, questionId: current.id });
+    if (!submitted.ok) return;
     window.setTimeout(() => {
       commitEvaluation(evaluation, finalValue);
     }, CHECKING_DELAY_MS);
@@ -367,6 +379,10 @@ export function PracticeFullscreen({ lesson, open, onClose, onComplete }) {
 
           {current.type === 'newContext' ? (
             <NewContextExercise item={current} feedback={visibleFeedback} normalize={normalizeForPractice} onSelect={selectOption} />
+          ) : null}
+
+          {current.type === 'summaryCloze' ? (
+            <SummaryClozeExercise item={current} feedback={visibleFeedback} onSubmit={submitDirect} />
           ) : null}
 
           {current.type === 'dictation' || current.type === 'correction' || current.type === 'write' ? (
