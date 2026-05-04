@@ -1,0 +1,27 @@
+.reading-complete-render-review-lab .reading-mini-exercise-group:first-of-type .reading-mini-exercise span,
+.reading-complete-render-review-lab .reading-mini-exercise-group:first-of-type .reading-mini-exercise small {
+  display: none !important;
+}
+
+.reading-complete-render-review-lab .reading-mini-exercise-group:first-of-type .reading-mini-exercise:hover span,
+.reading-complete-render-review-lab .reading-mini-exercise-group:first-of-type .reading-mini-exercise:hover small,
+.reading-complete-render-review-lab .reading-mini-exercise-group:first-of-type .reading-mini-exercise:active span,
+.reading-complete-render-review-lab .reading-mini-exercise-group:first-of-type .reading-mini-exercise:active small,
+.reading-complete-render-review-lab .reading-mini-exercise-group:first-of-type .reading-mini-exercise:focus-within span,
+.reading-complete-render-review-lab .reading-mini-exercise-group:first-of-type .reading-mini-exercise:focus-within small {
+  display: none !important;
+}
+
+.reading-complete-render-review-lab .reading-mini-exercise-group:first-of-type .reading-mini-exercise::after {
+  display: block !important;
+  content: 'Pense primeiro. O gabarito desta parte não aparece antes da tentativa.' !important;
+  color: #93c5fd;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.reading-complete-render-review-lab .reading-mini-exercise-group:first-of-type .reading-mini-exercise:hover::after,
+.reading-complete-render-review-lab .reading-mini-exercise-group:first-of-type .reading-mini-exercise:active::after,
+.reading-complete-render-review-lab .reading-mini-exercise-group:first-of-type .reading-mini-exercise:focus-within::after {
+  display: block !important;
+}
