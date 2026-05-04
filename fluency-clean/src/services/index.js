@@ -12,3 +12,5 @@ export { unlockAudioForIOS, isAudioUnlocked, getAudioContext } from './audioUnlo
 export { speakText, stopSpeech, getAvailableVoices } from './tts.js';
 export { startRecording, stopRecording, cancelRecording, isRecording } from './recorder.js';
 export { generateGeminiTtsAudio, playGeminiTtsAudio } from './geminiTts.js';
+export { AI_REVIEWER_VERSION, buildReviewerPromptForType } from './aiReviewerPrompts.js';
+export { AI_REVIEW_APPROVAL_SCORE, AI_REVIEW_MAX_RETRIES, reviewLessonWithAI, shouldRegenerateLesson, mergeReviews } from './aiTeacherReviewer.js';
