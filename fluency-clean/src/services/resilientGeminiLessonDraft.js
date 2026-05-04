@@ -1,6 +1,8 @@
 import { diagnostics } from './diagnostics.js';
 import { inferLessonTypeFromText, normalizeLessonType } from './lessonTypes.js';
 import { maskApiKey, normalizeLessonKeys, GEMINI_LESSON_STATUS } from './geminiLessons.js';
+import { reviewLessonAsTeacher, attachTeacherReview } from './teacherReviewer.js';
+import { AI_REVIEW_MAX_RETRIES, reviewLessonWithAI, shouldRegenerateLesson, mergeReviews } from './aiTeacherReviewer.js';
 
 const FLASH_MODELS = ['gemini-2.5-flash', 'gemini-2.5-flash-lite'];
 const PRO_MODELS = ['gemini-2.5-pro'];
@@ -108,7 +110,7 @@ function buildAttempts({ keys = [], proKey = '' }) {
   return attempts;
 }
 
-function buildPrompt({ prompt, lessonType, level }) {
+function buildPrompt({ prompt, lessonType, level, aiReviewHint = '' }) {
   return [
     'Você é o gerador resiliente de aulas do Fluency.',
     'Retorne SOMENTE um objeto JSON real, sem markdown, sem comentários e sem texto fora do JSON.',
@@ -117,6 +119,7 @@ function buildPrompt({ prompt, lessonType, level }) {
     '',
     `Tipo obrigatório da aula: ${lessonType}.`,
     `Nível obrigatório: ${level || 'A1'}.`,
+    aiReviewHint ? `AVISO DO PROFESSOR REVISOR: a tentativa anterior foi reprovada. Motivo: "${clean(aiReviewHint)}". Corrija especificamente isso na nova versão.` : '',
     '',
     'Formato obrigatório:',
     '{"type":"listening","level":"A1","title":"...","intro":"...","objective":"...","focus":"...","sections":[{"title":"...","content":"..."}],"tips":["..."],"listeningText":"...","vocabulary":[{"word":"...","meaning":"...","example":"..."}],"exercises":[{"question":"...","options":["...","...","..."],"answer":"...","explanation":"..."}],"prompts":["..."]}',
@@ -133,7 +136,7 @@ function buildPrompt({ prompt, lessonType, level }) {
     '',
     'Pedido original do cronograma:',
     clean(prompt) || 'Gerar aula de inglês A1.',
-  ].join('\n');
+  ].filter((line) => line !== '').join('\n');
 }
 
 function normalizeFallbackLesson(data, { lessonType, level }) {
@@ -187,6 +190,45 @@ async function callGemini({ attempt, prompt, fetcher }) {
   return parseResilientGeminiJson(extractTextFromGemini(data));
 }
 
+function attachMergedReview(lesson, mergedReview) {
+  const reviewedLesson = attachTeacherReview(lesson, mergedReview);
+  return {
+    ...reviewedLesson,
+    quality: {
+      ...(reviewedLesson?.quality && typeof reviewedLesson.quality === 'object' ? reviewedLesson.quality : {}),
+      aiReview: mergedReview.aiReview || null,
+      aiReviewerVersion: mergedReview.aiReview?.reviewerVersion || null,
+    },
+  };
+}
+
+async function reviewAndMaybeRegenerate({ attempt, prompt, lessonType, level, keys, fetcher }) {
+  let aiReviewHint = '';
+
+  for (let retryCount = 0; retryCount <= AI_REVIEW_MAX_RETRIES; retryCount += 1) {
+    const data = await callGemini({ attempt, prompt: buildPrompt({ prompt, lessonType, level, aiReviewHint }), fetcher });
+    const lesson = normalizeFallbackLesson(data, { lessonType, level });
+    const mechanicalReview = reviewLessonAsTeacher(lesson, { expectedLevel: level, expectedType: lessonType });
+    const aiReview = await reviewLessonWithAI(lesson, { type: lessonType, level, apiKeys: keys, fetcher });
+    const mergedReview = mergeReviews(mechanicalReview, aiReview);
+    const { shouldRegenerate, reason } = shouldRegenerateLesson(aiReview);
+
+    console.info(`[AI Reviewer] score: ${aiReview.score}, approved: ${aiReview.approved}`);
+    diagnostics.log(`AI Teacher Reviewer: score ${aiReview.score}, approved=${aiReview.approved}, source=${aiReview.source}.`, aiReview.approved ? 'success' : 'warn');
+
+    if (shouldRegenerate && retryCount < AI_REVIEW_MAX_RETRIES) {
+      aiReviewHint = reason || aiReview.suggestedFix || 'melhorar qualidade pedagógica real';
+      console.warn(`[AI Reviewer] Regenerando: ${aiReviewHint}`);
+      diagnostics.log(`AI Teacher Reviewer reprovou a aula. Regenerando uma vez: ${aiReviewHint}`, 'warn');
+      continue;
+    }
+
+    return attachMergedReview(lesson, mergedReview);
+  }
+
+  throw new Error('AI Teacher Reviewer não conseguiu finalizar a aula após regeneração.');
+}
+
 export async function generateResilientLessonDraft({ prompt, keys = [], proKey = '', fetcher = fetch, forcedType = '', level = 'A1' } = {}) {
   const lessonType = resolveLessonType({ prompt, forcedType });
   const attempts = buildAttempts({ keys, proKey });
@@ -200,9 +242,8 @@ export async function generateResilientLessonDraft({ prompt, keys = [], proKey =
     const attempt = attempts[index];
     try {
       diagnostics.log(`Fallback resiliente ${index + 1}/${attempts.length}: ${attempt.model} com key ${attempt.masked}.`, 'info');
-      const data = await callGemini({ attempt, prompt: buildPrompt({ prompt, lessonType, level }), fetcher });
-      const lesson = normalizeFallbackLesson(data, { lessonType, level });
-      diagnostics.log(`Fallback resiliente conseguiu parsear JSON e montar aula ${lesson.type}.`, 'success');
+      const lesson = await reviewAndMaybeRegenerate({ attempt, prompt, lessonType, level, keys, fetcher });
+      diagnostics.log(`Fallback resiliente conseguiu parsear JSON, revisar e montar aula ${lesson.type}.`, 'success');
       return { status: GEMINI_LESSON_STATUS.success, lesson, error: null };
     } catch (error) {
       lastError = error;
