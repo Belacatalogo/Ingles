@@ -5,7 +5,7 @@ Branch: `rewrite-fluency-clean-lab`
 
 ## Status
 
-Parcialmente implementado tecnicamente.
+Implementado tecnicamente.
 
 ## Objetivo
 
@@ -22,6 +22,7 @@ O contexto deve ser sugestivo, não obrigatório. Ele não força tópico e não
 
 - `fluency-clean/src/services/lessonJsonContract.js`
 - `fluency-clean/src/services/index.js`
+- `fluency-clean/src/services/resilientGeminiLessonDraft.js`
 
 ## Implementação realizada
 
@@ -65,25 +66,25 @@ Regra aplicada:
 
 Isso preserva o motor atual de geração em blocos e evita reescrever `geminiLessons.js`, que consome `buildJsonContractInstruction` para montar cada prompt.
 
+### Integração no fallback resiliente
+
+`fluency-clean/src/services/resilientGeminiLessonDraft.js` também recebeu o contexto histórico:
+
+- importa `buildLessonHistoryPromptPrefix`;
+- injeta o histórico no `buildPrompt` do fallback resiliente;
+- mantém o fallback com revisão IA do H1;
+- marca `planContract` como `resilient-json-v1+history-context`;
+- grava `quality.historyContextApplied = true` na aula final revisada.
+
 ### Export público
 
-`fluency-clean/src/services/index.js` passou a exportar:
+`fluency-clean/src/services/index.js` exporta:
 
 - `LESSON_HISTORY_CONTEXT_VERSION`
 - `LESSON_HISTORY_CONTEXT_MAX_CHARS`
 - `buildLessonHistoryContext`
 - `formatHistoryContextForPrompt`
 - `buildLessonHistoryPromptPrefix`
-
-## Pendência técnica
-
-O bloco também solicitava alterar `fluency-clean/src/services/resilientGeminiLessonDraft.js` para passar o contexto ao fallback resiliente.
-
-A tentativa de alteração completa desse arquivo foi bloqueada pelo conector antes de aplicar. Portanto:
-
-- `resilientGeminiLessonDraft.js` não foi alterado neste fechamento;
-- o gerador principal em blocos já recebe o contexto histórico;
-- o fallback resiliente ainda não recebe o contexto histórico.
 
 ## Critérios de aceitação
 
@@ -92,16 +93,16 @@ A tentativa de alteração completa desse arquivo foi bloqueada pelo conector an
 - [x] Aluno novo/sem histórico retorna `''` e nada é injetado.
 - [x] Erro ao ler histórico não quebra geração.
 - [x] Contexto não força tópico.
-- [x] Contexto não é injetado em todos os blocos; apenas em `structure`.
+- [x] Contexto não é injetado em todos os blocos; apenas em `structure` no gerador principal.
 - [x] Export público adicionado em `services/index.js`.
 - [x] Geração principal em blocos recebe contexto via `lessonJsonContract.js`.
-- [ ] `resilientGeminiLessonDraft.js` recebe contexto no fallback resiliente.
+- [x] `resilientGeminiLessonDraft.js` recebe contexto no fallback resiliente.
 - [ ] Smoke test manual no preview/iPhone.
 
 ## O que NÃO foi feito
 
 - Não forcei tópico de aula.
-- Não injetei histórico em todos os blocos.
+- Não injetei histórico em todos os blocos do gerador principal.
 - Não gravei dados pessoais no prompt.
 - Não mexi em `bundle.js`.
 - Não mexi em `main`.
@@ -117,11 +118,8 @@ A tentativa de alteração completa desse arquivo foi bloqueada pelo conector an
 - Confirmar que o prompt de estrutura usa o histórico sem mostrar isso na UI da aula.
 - Confirmar aluno novo sem histórico gera aula normalmente.
 - Confirmar que a aula não muda de tópico de forma forçada.
+- Confirmar fallback resiliente com `quality.historyContextApplied = true` quando usado.
 
-## Próximo ajuste recomendado
-
-Finalizar a integração do contexto em `resilientGeminiLessonDraft.js` quando o conector permitir alteração segura desse arquivo.
-
-Depois disso, seguir para:
+## Próximo bloco recomendado
 
 `BLOCO-H3-CURRICULUM-PRACTICE-BRIDGE-LAB`.
