@@ -1,0 +1,24 @@
+/* BLOCO-H4 — CSS Consolidation
+   Arquivo temático: telas e navegação.
+   Mantém a ordem interna dos arquivos de origem via @import seguro para não alterar regras antes do smoke test visual. */
+
+/* de: access.css */
+@import './access.css';
+
+/* de: lab-polish.css */
+@import './lab-polish.css';
+
+/* de: today-polish.css */
+@import './today-polish.css';
+
+/* de: nav-polish.css */
+@import './nav-polish.css';
+
+/* de: level-certification.css */
+@import './level-certification.css';
+
+/* de: progress-polish.css */
+@import './progress-polish.css';
+
+/* de: settings-polish.css */
+@import './settings-polish.css';
