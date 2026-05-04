@@ -13,6 +13,8 @@ Branch estável protegida: `rewrite-fluency-clean`
 - Não usar DOM injection.
 - Não usar HTML remendado.
 - Não mexer no backend Azure privado.
+- Não mexer no Firebase/Azure de produção sem instrução explícita.
+- Não mexer no sistema de gravação, `speakingFlow.js`, `SpeakingStepper.jsx` ou `SpeakingScreen.jsx` durante blocos de Practice/iPhone audit.
 - Manter tudo modular em `fluency-clean/src/`, `fluency-clean/public/` ou arquivos reais de configuração.
 
 ## DIRETRIZ DE UI — NÃO POLUIR A AULA
@@ -33,224 +35,190 @@ Branch estável protegida: `rewrite-fluency-clean`
 
 ## ESTADO ATUAL — READING
 
-### `BLOCO-READING-COMPLETE-RENDER-REVIEW-LAB` — IMPLEMENTADO
+### Blocos Reading implementados
 
-- Reestruturou o render de Reading em `ReadingLesson.jsx`.
-- Adicionou texto principal dividido, vocabulário em contexto, perguntas com evidência textual, produção curta e render seguro.
-- Criou estilos modulares em `fluency-clean/src/styles/reading-complete-render-review.css`.
-- Importou o estilo em `main.jsx`.
-- Criou documentação em `fluency-clean/docs/BLOCO-READING-COMPLETE-RENDER-REVIEW-LAB.md`.
+- `BLOCO-READING-COMPLETE-RENDER-REVIEW-LAB`
+- `BLOCO-READING-1-ESTRUTURA-PEDAGOGICA-FIXA-LAB`
+- `BLOCO-READING-2-POLITICA-POR-NIVEL-A1-C1-LAB`
+- `HOTFIX-READING-2 — Remover poluição técnica da aula`
+- `BLOCO-READING-3-CONTRATO-JSON-PROPRIO-LAB`
+- `BLOCO-READING-4-GERACAO-POR-HABILIDADE-LAB`
+- `BLOCO-READING-5-RENDER-POR-ETAPAS-LAB`
+- `BLOCO-READING-6-EXERCICIOS-INTERNOS-LAB`
+- `HOTFIX-READING-6 — Não revelar gabarito dos exercícios internos`
+- `BLOCO-READING-7-EVIDENCIA-TEXTUAL-INTELIGENTE-LAB` — implementação inicial segura.
+- `BLOCO-READING-8-QUALITY-GATE-LAB`
 
-### `BLOCO-READING-1 — Estrutura pedagógica fixa da aba Reading` — IMPLEMENTADO
+### Estado Reading
 
-- Reading é uma aula completa dentro da própria aba.
-- A Prática Profunda é complemento posterior, não substitui os exercícios internos da Reading.
-- Ordem oficial: objetivo, pré-leitura, texto principal, ideia geral, vocabulário em contexto, compreensão/evidência, produção curta e conclusão.
-- Em `LessonScreen.jsx`, a Prática Profunda aparece depois da aula quando `lesson.type === 'reading'`.
-- Criada documentação em `fluency-clean/docs/BLOCO-READING-1-ESTRUTURA-PEDAGOGICA-FIXA-LAB.md`.
+- Reading é aula completa dentro da própria aba.
+- A Prática Profunda é complemento posterior, não substitui exercícios internos.
+- `ReadingLesson.jsx` renderiza por etapas com stepper.
+- `readingLevelPolicy.js`, `readingJsonContract.js` e `readingQualityGate.js` estão implementados.
+- Gabaritos internos ficam ocultos antes da interação.
+- Quality gate de Reading normaliza texto, perguntas, evidências e produção curta.
 
-### `BLOCO-READING-2 — Política por nível A1→C1` — IMPLEMENTADO
+### Pendente Reading
 
-- Criado `fluency-clean/src/reading/readingLevelPolicy.js`.
-- Definidos níveis A1, A2, B1, B2 e C1.
-- Definidas habilidades oficiais: `main_idea`, `detail`, `vocabulary_context`, `sequence`, `evidence`, `inference`, `author_purpose`, `fact_opinion`, `tone`, `implication`, `critical_response`.
-- A produção curta usa internamente a instrução definida pela política do nível.
-- Criada documentação em `fluency-clean/docs/BLOCO-READING-2-POLITICA-POR-NIVEL-A1-C1-LAB.md`.
-
-### `HOTFIX-READING-2 — Remover poluição técnica da aula` — IMPLEMENTADO
-
-- Removido o card visual `Plano do nível`.
-- Mantida a política por nível funcionando internamente.
-- Compactado o card lateral de segurança para `Aula segura`.
-
-### `BLOCO-READING-3 — Contrato JSON próprio de Reading` — IMPLEMENTADO
-
-- Criado `fluency-clean/src/reading/readingJsonContract.js`.
-- Campos próprios: `readingText`, `textGenre`, `readingPurpose`, `preReading`, `vocabulary`, `readingQuestions`, `evidenceTasks`, `postReadingPrompts`, `tips`.
-- Compatibilidade com aulas antigas que usam `listeningText`/`transcript`.
-- Criadas funções `normalizeReadingLessonContract`, `buildReadingJsonContractInstruction` e `assertReadingContract`.
-- `ReadingLesson.jsx` normaliza a aula usando `normalizeReadingLessonContract` antes de renderizar.
-- O contrato permanece interno e não aparece como card na aula.
-- Criada documentação em `fluency-clean/docs/BLOCO-READING-3-CONTRATO-JSON-PROPRIO-LAB.md`.
-
-### `BLOCO-READING-4 — Geração da aula Reading por habilidade` — IMPLEMENTADO
-
-- `lessonJsonContract.js` importa `buildReadingJsonContractInstruction`.
-- Quando `lessonType === 'reading'`, o prompt geral usa o contrato próprio de Reading.
-- O prompt pede `readingText`, `textGenre`, `readingPurpose`, `preReading`, `readingQuestions`, `evidenceTasks` e `postReadingPrompts`.
-- Compatibilidade: `readingText` preenche `listeningText`, `readingQuestions` converte para `exercises`, `postReadingPrompts` converte para `prompts`.
-- Se a IA gerar `readingQuestions`, elas viram fonte principal dos exercícios internos da Reading, preservando `skill`, `evidence`, `questionLanguage` e `difficulty`.
-- `lessonTypes.js` preserva campos novos de Reading.
-- Criada documentação em `fluency-clean/docs/BLOCO-READING-4-GERACAO-POR-HABILIDADE-LAB.md`.
-
-### `BLOCO-READING-5 — Render por etapas` — IMPLEMENTADO
-
-- `ReadingLesson.jsx` recebeu estado `activeStep`.
-- Criado stepper da Reading com 8 etapas: começar, pré-leitura, texto, ideia geral, vocabulário, compreensão, produção e concluir.
-- Cada etapa tem `id` próprio.
-- Clicar numa etapa faz scroll suave até o bloco correspondente.
-- Botões de avanço foram adicionados.
-- O conteúdo continua visível; o stepper guia a leitura, mas não trava a aula.
-- Ao concluir a aula, a etapa ativa vira `Concluir`.
-- `reading-complete-render-review.css` recebeu estilos do stepper sticky, scroll horizontal no iPhone e destaque discreto.
-- Criada documentação em `fluency-clean/docs/BLOCO-READING-5-RENDER-POR-ETAPAS-LAB.md`.
-
-### `BLOCO-READING-6 — Exercícios internos da aba Reading` — IMPLEMENTADO
-
-- Em `ReadingLesson.jsx`, adicionado bloco compacto `Exercícios de leitura` dentro de `Compreensão com evidência textual`.
-- O bloco pode renderizar verdadeiro/falso, copiar evidência e resposta curta.
-- Criadas funções internas `normalizeEvidenceTasks`, `buildTrueFalseTasks` e `buildShortAnswerTasks`.
-- Criado componente `InternalReadingExercises`.
-- O bloco usa `evidenceTasks` quando a IA fornecer; se não houver, cria tarefas simples a partir das evidências das perguntas.
-- Adicionado estado `exerciseDrafts` para respostas digitadas nos exercícios internos.
-- `completeLesson` recebe `multipleChoice: selectedAnswers` e `internalExercises: exerciseDrafts`.
-- Criada documentação em `fluency-clean/docs/BLOCO-READING-6-EXERCICIOS-INTERNOS-LAB.md`.
-
-### `HOTFIX-READING-6 — Não revelar gabarito dos exercícios internos` — IMPLEMENTADO
-
-- Em `reading-complete-render-review.css`, o gabarito dos exercícios internos deixou de aparecer imediatamente.
-- Em verdadeiro/falso, resposta/evidência ficam ocultas por padrão e aparece uma orientação curta para pensar primeiro.
-- Em exercícios digitados, apoio/modelo/evidência ficam ocultos por padrão e aparecem após interação/foco/digitação.
-- Não foi adicionado card técnico.
-
-### `BLOCO-READING-7 — Evidência textual inteligente` — IMPLEMENTAÇÃO INICIAL SEGURA
-
-- Aplicada a parte visual segura em `reading-complete-render-review.css`.
-- Feedback de evidência agora fica como cartão de prova mais claro, com borda/fundo discreto e orientação curta.
-- Adicionados estilos preparados para parágrafos-alvo:
-  - `p:target`;
-  - `.reading-evidence-target`.
-- Nenhum card técnico foi adicionado.
-- Stepper e exercícios internos permanecem preservados.
-- Criada documentação em `fluency-clean/docs/BLOCO-READING-7-EVIDENCIA-TEXTUAL-INTELIGENTE-LAB.md`.
-
-Pendente para fechar 100% o bloco:
-- `HOTFIX-READING-7-ANCHOR-EVIDENCE-LAB`, apenas quando for possível alterar `ReadingLesson.jsx` completo com segurança.
-
-### `BLOCO-READING-8 — Quality gate Reading` — IMPLEMENTADO
-
-- Criado `fluency-clean/src/reading/readingQualityGate.js`.
-- Exporta `applyReadingQualityGate(rawLesson)` e `assertReadingQualityGate(gatedLesson)`.
-- Quality gate verifica/normaliza:
-  - `readingText` vazio ou curto demais;
-  - perguntas sem enunciado;
-  - perguntas sem resposta;
-  - resposta vazada no enunciado;
-  - alternativas duplicadas;
-  - resposta correta ausente nas opções;
-  - evidência ausente;
-  - evidência que não aparece no texto;
-  - ausência de pré-leitura;
-  - ausência de produção pós-leitura.
-- Quality gate cria reparos seguros quando possível:
-  - remove perguntas quebradas;
-  - adiciona resposta correta às opções se faltar;
-  - infere evidência pelo texto quando possível;
-  - cria `evidenceTasks` a partir das perguntas;
-  - cria pré-leitura padrão;
-  - cria produção curta padrão.
-- `readingJsonContract.js` agora importa `applyReadingQualityGate`.
-- `normalizeReadingLessonContract(rawLesson)` agora retorna `applyReadingQualityGate(buildNormalizedReadingLesson(rawLesson))`.
-- Não foi mexido no render aprovado de `ReadingLesson.jsx`.
-- Não foi adicionado card técnico de quality gate na aula.
-- Criada documentação em `fluency-clean/docs/BLOCO-READING-8-QUALITY-GATE-LAB.md`.
-
-Pendente validar no iPhone:
-- Usar `Testar Reading`.
-- Confirmar que a aula ainda abre.
-- Confirmar que texto, perguntas, evidências, exercícios internos, stepper e conclusão continuam funcionando.
-- Confirmar que não apareceu card técnico de quality gate.
+- Validar no iPhone depois do quality gate.
+- `HOTFIX-READING-7-ANCHOR-EVIDENCE-LAB` apenas quando for possível alterar `ReadingLesson.jsx` completo com segurança.
 
 ## ESTADO ATUAL — GRAMMAR
 
 ### `BLOCO-GRAMMAR-STEPPER-REAL-LAB` — IMPLEMENTADO
 
-- Portado o padrão de stepper real aprovado na Reading para `GrammarLesson.jsx`.
-- Adaptação feita para aula séria de gramática, sem gamificar.
-- Criado `grammarFlowSteps` com 7 etapas: começar, regra, exemplos, prática, correção, produção e concluir.
-- Criado estado `activeStep` e componente `GrammarStepper`.
-- Cada etapa tem `id` e scroll suave.
-- Mantido render seguro atual de Grammar: `normalizeSections`, `collectProfessorExamples`, `SectionContent`, `ExampleCard`.
-- Adicionadas seções próprias: exemplos com padrão, prática guiada, correção/transformação e conclusão.
-- Criado CSS compartilhado em `fluency-clean/src/styles/lesson-type-stepper-real.css`.
-- Importado CSS em `main.jsx`.
-- Criada documentação em `fluency-clean/docs/BLOCO-GRAMMAR-STEPPER-REAL-LAB.md`.
+- Stepper real portado para `GrammarLesson.jsx`.
+- Fluxo com 7 etapas: começar, regra, exemplos, prática, correção, produção e concluir.
+- Mantido render seguro atual de Grammar.
+- CSS compartilhado em `fluency-clean/src/styles/lesson-type-stepper-real.css`.
+- Documentação: `fluency-clean/docs/BLOCO-GRAMMAR-STEPPER-REAL-LAB.md`.
 
-Pendente validar no iPhone:
-- Abrir aula Grammar real.
-- Confirmar stepper com 7 etapas, scroll horizontal, exemplos em cards, prática/correção/produção, salvar e concluir.
+### Refatoração Practice Grammar — IMPLEMENTADA nos blocos do plano
+
+- `BLOCO-C1-GRAMMAR-1-LEVEL-POLICY-LAB.md`
+- `BLOCO-C2-GRAMMAR-2-JSON-CONTRACT-LAB.md`
+- `BLOCO-C3-GRAMMAR-3-QUALITY-GATE-LAB.md`
+- `BLOCO-C4-GRAMMAR-4-PRACTICE-BUILDER-V2-LAB.md`
+
+### Pendente Grammar
+
+- Validar stepper e Prática Profunda no iPhone.
 
 ## ESTADO ATUAL — LISTENING
 
 ### `BLOCO-LISTENING-STEPPER-REAL-LAB` — IMPLEMENTADO
 
-- Portado o padrão de stepper real para `ListeningLessonClean.jsx`.
-- Adaptação feita para aula de escuta, preservando primeira escuta sem leitura.
-- Criado `listeningFlowSteps` com 8 etapas: preparar, 1ª escuta, compreensão, texto, vocabulário, shadowing, produção e concluir.
-- Criado estado `activeStep` e componente `ListeningStepper`.
-- Cada etapa aponta para parte real da aula.
-- Clicar na etapa abre a seção correspondente quando necessário.
-- Ao iniciar áudio, etapa ativa vira `1ª escuta`; ao concluir, vira `Concluir`.
-- Mantido sistema existente: áudio natural, fallback, diálogo multi-voz, transcrição controlada e shadowing real.
-- Criada documentação em `fluency-clean/docs/BLOCO-LISTENING-STEPPER-REAL-LAB.md`.
+- Stepper real portado para `ListeningLessonClean.jsx`.
+- Fluxo com 8 etapas: preparar, 1ª escuta, compreensão, texto, vocabulário, shadowing, produção e concluir.
+- Preservado áudio natural, fallback, diálogo multi-voz, transcrição controlada e shadowing real.
+- Documentação: `fluency-clean/docs/BLOCO-LISTENING-STEPPER-REAL-LAB.md`.
 
-Pendente validar no iPhone:
-- Usar `Testar Listening`.
-- Confirmar stepper com 8 etapas, scroll horizontal, primeira escuta sem leitura, transcrição fechada no início, áudio, diálogo, vocabulário, shadowing e conclusão.
+### Refatoração Practice Listening — IMPLEMENTADA nos blocos do plano
+
+- `BLOCO-D1-LISTENING-1-LEVEL-POLICY-LAB.md`
+- `BLOCO-D2-LISTENING-2-JSON-CONTRACT-LAB.md`
+- `BLOCO-D3-LISTENING-3-QUALITY-GATE-LAB.md`
+- `BLOCO-D4-LISTENING-4-PRACTICE-BUILDER-V2-LAB.md`
+
+### Pendente Listening
+
+- Validar stepper e Prática Profunda no iPhone.
 
 ## ESTADO ATUAL — SPEAKING
 
 ### `BLOCO-SPEAKING-COMPLETE-RENDER-REVIEW-LAB` — IMPLEMENTADO
 
-- Revisada a renderização da aba Speaking sem alterar o motor.
+- Renderização da aba Speaking revisada sem alterar o motor.
 - Criado modelo modular `fluency-clean/src/speaking/speakingFlow.js`.
 - Criado componente `fluency-clean/src/speaking/SpeakingStepper.jsx`.
 - Criado estilo `fluency-clean/src/styles/speaking-stepper-real.css`.
-- Importado CSS em `main.jsx`.
-- `SpeakingScreen.jsx` agora usa stepper real adaptado por modo.
-- Fluxo Conversa:
-  1. Modo
-  2. Histórico
-  3. Cenário
-  4. Conversa
-  5. Gravar
-  6. Concluir
-- Fluxo Pronúncia:
-  1. Modo
-  2. Histórico
-  3. Modelo
-  4. Pontuação
-  5. Repetir
-  6. Avançar
-- Fluxo Imersão:
-  1. Modo
-  2. Histórico
-  3. Cenário
-  4. Frase
-  5. Responder
-  6. Registrar
-- Adicionados IDs reais para navegação por etapa.
-- Troca de modo atualiza o fluxo do stepper.
-- Começar gravação/concluir/trocar frase atualiza a etapa ativa.
-- Preservado sem alteração:
-  - Azure Pronunciation;
-  - reconhecimento de fala;
-  - `startRecording`;
-  - histórico real;
-  - gravação automática por silêncio;
-  - modos Conversa, Pronúncia e Imersão.
-- Criada documentação em `fluency-clean/docs/BLOCO-SPEAKING-COMPLETE-RENDER-REVIEW-LAB.md`.
+- `SpeakingScreen.jsx` usa stepper real adaptado por modo.
+- Preservado sem alteração: Azure Pronunciation, reconhecimento de fala, `startRecording`, histórico real, gravação automática por silêncio, modos Conversa/Pronúncia/Imersão.
+- Documentação: `fluency-clean/docs/BLOCO-SPEAKING-COMPLETE-RENDER-REVIEW-LAB.md`.
 
-Pendente validar no iPhone:
-- Abrir aba Speaking.
-- Confirmar stepper no topo.
-- Confirmar que o stepper muda entre Conversa/Pronúncia/Imersão.
-- Confirmar scroll horizontal.
-- Confirmar que tocar nas etapas leva para as áreas corretas.
-- Confirmar que Conversa grava e analisa.
-- Confirmar que Pronúncia ouve, grava, pontua e avança.
-- Confirmar que Imersão escolhe cenário, ouve e grava.
-- Confirmar que histórico continua aparecendo.
+### Refatoração Practice Speaking — IMPLEMENTADA nos blocos do plano
+
+- `BLOCO-F1-SPEAKING-1-LEVEL-POLICY-LAB.md`
+- `BLOCO-F2-SPEAKING-2-JSON-CONTRACT-LAB.md`
+- `BLOCO-F3-SPEAKING-3-QUALITY-GATE-LAB.md`
+- `BLOCO-F4-SPEAKING-4-PRACTICE-BUILDER-V2-LAB.md`
+
+### Pendente Speaking
+
+- Validar stepper e Prática Profunda no iPhone.
+
+## ESTADO ATUAL — WRITING
+
+### Refatoração Practice Writing — IMPLEMENTADA nos blocos do plano
+
+- `BLOCO-E1-WRITING-1-LEVEL-POLICY-LAB.md`
+- `BLOCO-E2-WRITING-2-JSON-CONTRACT-LAB.md`
+- `BLOCO-E3-WRITING-3-RUBRIC-MULTI-LAB.md`
+- `BLOCO-E4-WRITING-4-PRACTICE-BUILDER-V2-LAB.md`
+
+### Pendente Writing
+
+- Validar Prática Profunda no iPhone quando houver fluxo de writing no smoke test.
+
+## PLANO DE REFATORAÇÃO DA PRÁTICA PROFUNDA
+
+### Fundação transversal — IMPLEMENTADA
+
+- `BLOCO-A1-PRACTICE-CORE-1-STATE-MACHINE-LAB.md`
+- `BLOCO-A2-PRACTICE-CORE-2-LEAK-DETECTOR-LAB.md`
+- `BLOCO-A3-PRACTICE-CORE-3-PURITY-MATRIX-LAB.md`
+- `BLOCO-A4-PRACTICE-CORE-4-SRS-EXTENDED-LAB.md`
+- `BLOCO-A5-PRACTICE-CORE-5-MASTERY-TAGS-LAB.md`
+
+### Reading Practice — IMPLEMENTADA
+
+- `BLOCO-B1-READING-PRACTICE-1-VARIANT-POLICY-LAB.md`
+- `BLOCO-B2-READING-PRACTICE-2-VOCAB-FRAGIL-LAB.md`
+- `BLOCO-B3-READING-PRACTICE-3-EVIDENCE-LAYERED-LAB.md`
+- `BLOCO-B4-READING-PRACTICE-4-NEW-CONTEXT-LAB.md`
+- `BLOCO-B5-READING-PRACTICE-5-SUMMARY-CLOZE-LAB.md`
+
+### Blocos finais — IMPLEMENTADOS TECNICAMENTE
+
+- `BLOCO-G1-PRACTICE-TELEMETRY-LAB.md`
+- `BLOCO-G2-PRACTICE-A11Y-AUDIT-LAB.md`
+- `BLOCO-G3-PRACTICE-IPHONE-FINAL-AUDIT-LAB.md`
+
+## ÚLTIMO BLOCO FECHADO — G3 PRACTICE IPHONE FINAL AUDIT
+
+### `BLOCO-G3-PRACTICE-IPHONE-FINAL-AUDIT-LAB` — IMPLEMENTADO TECNICAMENTE
+
+Documentação criada:
+- `fluency-clean/docs/BLOCO-G3-PRACTICE-IPHONE-FINAL-AUDIT-LAB.md`
+
+Arquivos confirmados/alterados neste fechamento:
+- `fluency-clean/src/styles/practice-a11y.css`
+- `fluency-clean/src/practice/components/TextExercise.jsx`
+- `fluency-clean/src/practice/components/SpeakExercise.jsx`
+- `fluency-clean/src/practice/components/SummaryClozeExercise.jsx`
+- `fluency-clean/src/practice/components/NewContextExercise.jsx`
+
+O que foi fechado:
+- `practice-a11y.css` está importado em `main.jsx`.
+- Safe area reforçada.
+- Teclado iOS considerado com `scroll-padding-bottom` e padding inferior.
+- Inputs protegidos contra zoom automático no iOS com fonte mínima de 16px.
+- Touch targets mínimos reforçados.
+- Botão de fala mantido com mínimo de 56px.
+- Overflow/word-break reforçado para telas estreitas.
+- Reduced motion respeitado.
+- Foco visível reforçado.
+- `NewContextExercise.jsx` recebeu `radiogroup/radio`, `aria-checked`, `aria-disabled` e redução de ruído para VoiceOver.
+
+Preservado sem alteração:
+- lógica da prática;
+- seleção/confirmação de alternativa;
+- Azure;
+- Firebase;
+- backend Azure privado;
+- sistema de gravação;
+- `speakingFlow.js`;
+- `SpeakingStepper.jsx`;
+- `SpeakingScreen.jsx`;
+- `bundle.js`.
+
+### Status final do G3
+
+- Código/documentação: concluídos.
+- Aprovação final: pendente do smoke test manual no iPhone após deploy do preview da branch `rewrite-fluency-clean-lab`.
+
+### Smoke test manual pendente no iPhone
+
+1. Abrir aula Grammar A1 e iniciar Prática Profunda.
+2. Testar múltipla escolha, correction, word bank e resposta curta.
+3. Abrir teclado em resposta curta e confirmar se campo/botão continuam acessíveis.
+4. Concluir prática e verificar MasteryRecap sem overflow em 375px.
+5. Abrir aula Listening B1 e testar áudio, escolha, ditado e shadowing.
+6. Abrir aula Speaking A2 e confirmar que o fluxo aprovado de Speaking continua intacto.
+7. Abrir Reading B1 com `summary_cloze` e confirmar inputs inline.
+8. Abrir Reading B1 com `new_context` e confirmar blockquote, seleção, foco e botão Confirmar.
+9. Confirmar ausência de crash no fluxo normal.
+10. Confirmar ausência de resposta vazada visível antes do feedback.
 
 ## ALERTA IMPORTANTE — VOCAB/TRILHA
 
@@ -260,22 +228,17 @@ Objetivo:
 - Continuar o sistema de trilha de vocabulário que estava sendo desenvolvido na aba `Cartas`.
 - Separar definitivamente `Trilha de vocabulário` de `Flashcards da aula`.
 
-## ORDEM DEFINIDA PELO USUÁRIO PARA OS PRÓXIMOS CHATS/BLOCOS
+## ORDEM DEFINIDA PARA PRÓXIMOS PASSOS
 
-Próximos blocos:
-1. Validar Reading no iPhone depois do quality gate.
-2. Validar Grammar stepper.
-3. Validar Listening stepper.
-4. Validar Speaking stepper.
-5. `BLOCO-VOCAB-TRAIL-CONTINUATION-LAB`.
-
-Depois:
-- `BLOCO-PRACTICE-DEEP-SYSTEM-CORRECTION-LAB` — aguardar o usuário mandar o modelo antes de iniciar.
-- `HOTFIX-READING-7-ANCHOR-EVIDENCE-LAB` apenas se for possível alterar `ReadingLesson.jsx` completo com segurança.
+1. Aguardar deploy do preview da branch `rewrite-fluency-clean-lab`.
+2. Executar smoke test manual do G3 no iPhone.
+3. Se aprovado, considerar a refatoração da Prática Profunda tecnicamente concluída.
+4. Próximo bloco planejado: `BLOCO-VOCAB-TRAIL-CONTINUATION-LAB`.
+5. `HOTFIX-READING-7-ANCHOR-EVIDENCE-LAB` apenas quando for possível alterar `ReadingLesson.jsx` completo com segurança.
 
 ## NÃO FAZER AGORA
 
-- Não implementar Cirurgia 3 ainda.
+- Não implementar Cirurgia 3 agora.
 - Não mexer no `deepGrammarPipeline.js`.
 - Não relaxar o professor revisor.
 - Não portar Pro para keys free.
@@ -283,8 +246,8 @@ Depois:
 - Não alterar política de chaves agora.
 - Não mexer em `main`, `rewrite-fluency-clean`, `bundle.js` ou backend Azure privado.
 - Não remover o preview temporário até o usuário aprovar ou pedir remoção.
-- Não iniciar correção profunda da prática antes de o usuário mandar o modelo prometido.
+- Não iniciar novos blocos antes do smoke test manual do G3, salvo instrução explícita.
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch principal é `rewrite-fluency-clean-lab`. Não mexa em `main`, `rewrite-fluency-clean`, `bundle.js` ou backend Azure privado. O último bloco implementado foi `BLOCO-SPEAKING-COMPLETE-RENDER-REVIEW-LAB`. Validar Speaking no iPhone e depois seguir para `BLOCO-VOCAB-TRAIL-CONTINUATION-LAB`."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch obrigatória é `rewrite-fluency-clean-lab`. Não mexa em `main`, `rewrite-fluency-clean`, `bundle.js`, backend Azure privado, Firebase, Azure, sistema de gravação, `speakingFlow.js`, `SpeakingStepper.jsx` ou `SpeakingScreen.jsx`. O último bloco fechado tecnicamente foi `BLOCO-G3-PRACTICE-IPHONE-FINAL-AUDIT-LAB`. Código e docs foram concluídos, mas a aprovação final depende do smoke test manual no iPhone depois do deploy do preview. Próximo bloco planejado após aprovação: `BLOCO-VOCAB-TRAIL-CONTINUATION-LAB`."
