@@ -14,3 +14,4 @@ export { startRecording, stopRecording, cancelRecording, isRecording } from './r
 export { generateGeminiTtsAudio, playGeminiTtsAudio } from './geminiTts.js';
 export { AI_REVIEWER_VERSION, buildReviewerPromptForType } from './aiReviewerPrompts.js';
 export { AI_REVIEW_APPROVAL_SCORE, AI_REVIEW_MAX_RETRIES, reviewLessonWithAI, shouldRegenerateLesson, mergeReviews } from './aiTeacherReviewer.js';
+export { LESSON_HISTORY_CONTEXT_VERSION, LESSON_HISTORY_CONTEXT_MAX_CHARS, buildLessonHistoryContext, formatHistoryContextForPrompt, buildLessonHistoryPromptPrefix } from './lessonHistoryContext.js';
