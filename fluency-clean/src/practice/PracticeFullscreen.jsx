@@ -3,6 +3,7 @@ import { playLearningAudio } from '../services/audioPlayback.js';
 import { buildPracticeItems, evaluatePracticeAnswer, normalizeForPractice } from './PracticePlanAdapter.js';
 import { AudioPrompt } from './components/AudioPrompt.jsx';
 import { ChoiceGrid } from './components/ChoiceGrid.jsx';
+import { NewContextExercise } from './components/NewContextExercise.jsx';
 import { PracticeDone } from './components/PracticeDone.jsx';
 import { PracticeFeedback } from './components/PracticeFeedback.jsx';
 import { PracticeHeader, LivesBar } from './components/PracticeHeader.jsx';
@@ -39,6 +40,7 @@ function getQuestionActionLabel(type) {
   if (type === 'wordBank') return 'Conferir frase';
   if (type === 'speak') return 'Conferir fala';
   if (type === 'write') return 'Conferir resposta';
+  if (type === 'newContext') return 'Confirmar';
   return 'Verificar';
 }
 
@@ -46,6 +48,7 @@ function canSubmitQuestion(current, value, wordBankValue) {
   if (!current) return false;
   if (['choice', 'listenChoice', 'fillBlank'].includes(current.type)) return true;
   if (current.type === 'wordBank') return Boolean(clean(wordBankValue.join(' ')));
+  if (current.type === 'newContext') return false;
   return Boolean(clean(value));
 }
 
@@ -360,6 +363,10 @@ export function PracticeFullscreen({ lesson, open, onClose, onComplete }) {
 
           {(current.type === 'choice' || current.type === 'listenChoice' || current.type === 'fillBlank') ? (
             <ChoiceGrid item={current} value={value} feedback={visibleFeedback} normalize={normalizeForPractice} onSelect={selectOption} />
+          ) : null}
+
+          {current.type === 'newContext' ? (
+            <NewContextExercise item={current} feedback={visibleFeedback} normalize={normalizeForPractice} onSelect={selectOption} />
           ) : null}
 
           {current.type === 'dictation' || current.type === 'correction' || current.type === 'write' ? (
