@@ -7,4 +7,5 @@ export * from './PracticeStateMachine.js';
 export * from './PracticeLeakDetector.js';
 export * from './PracticePurityMatrix.js';
 export * from './PracticeMasteryTags.js';
+export * from './PracticeTelemetry.js';
 export * from './PracticeBuilder.js';
