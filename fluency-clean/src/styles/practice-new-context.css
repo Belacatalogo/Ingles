@@ -1,0 +1,115 @@
+.practice-new-context {
+  display: grid;
+  gap: 14px;
+  min-height: 0;
+}
+
+.practice-new-context-text {
+  margin: 0;
+  padding: 16px 18px;
+  border-left: 3px solid rgba(110, 168, 255, 0.95);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.065);
+  color: rgba(248, 250, 252, 0.94);
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(16px, 4.2vw, 20px);
+  line-height: 1.55;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.05);
+}
+
+.practice-new-context-sub {
+  display: grid;
+  gap: 12px;
+}
+
+.practice-new-context-sub-prompt {
+  margin: 0;
+  color: rgba(226, 232, 240, 0.94);
+  font-size: 15px;
+  font-weight: 900;
+  line-height: 1.35;
+}
+
+.practice-new-context-options {
+  display: grid;
+  gap: 9px;
+}
+
+.practice-new-context-options button {
+  min-height: 54px;
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 18px;
+  border: 1px solid rgba(154,169,220,.18);
+  background: rgba(255,255,255,.065);
+  color: #f8fafc;
+  text-align: left;
+}
+
+.practice-new-context-options button span {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 13px;
+  color: #bfdbfe;
+  background: rgba(110,168,255,.14);
+  font-size: 14px;
+  font-weight: 950;
+}
+
+.practice-new-context-options button b {
+  min-width: 0;
+  color: inherit;
+  font-size: 16px;
+  line-height: 1.18;
+  font-weight: 900;
+}
+
+.practice-new-context-options button.is-selected {
+  border-color: rgba(94,231,255,.72);
+  background: rgba(94,231,255,.12);
+  color: #e0faff;
+}
+
+.practice-new-context-options button.right {
+  border-color: rgba(83,230,162,.72);
+  background: rgba(83,230,162,.14);
+  color: #d1fae5;
+}
+
+.practice-new-context-options button.wrong {
+  border-color: rgba(255,124,138,.72);
+  background: rgba(255,124,138,.13);
+  color: #ffe4e6;
+}
+
+.practice-new-context-submit {
+  min-height: 52px;
+  border: 0;
+  border-radius: 18px;
+  background: linear-gradient(135deg, var(--practice-blue), var(--practice-violet));
+  color: white;
+  font-size: 16px;
+  font-weight: 950;
+}
+
+.practice-new-context-submit:disabled {
+  background: rgba(255,255,255,.08);
+  color: #6f7f9f;
+}
+
+@media (max-height: 720px) {
+  .practice-new-context-text {
+    font-size: 15px;
+    line-height: 1.45;
+    padding: 13px 15px;
+  }
+
+  .practice-new-context-options button {
+    min-height: 48px;
+  }
+}
