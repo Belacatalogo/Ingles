@@ -1,11 +1,25 @@
-/* BLOCO-G2 — Practice A11y Audit
-   Acessibilidade incremental para Prática Profunda.
-   Não altera fluxo funcional; apenas melhora leitura, foco, alvos de toque e Dynamic Type. */
+/* BLOCO-G2/G3 — Practice A11y + iPhone Final Audit
+   Acessibilidade incremental e hardening iOS para Prática Profunda.
+   Não altera fluxo funcional; melhora leitura, foco, teclado, safe area e alvos de toque. */
+
+html,
+body {
+  scroll-padding-bottom: 100px;
+}
 
 .practice-fullscreen {
   overflow-wrap: break-word;
   word-break: break-word;
   -webkit-text-size-adjust: 100%;
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
+}
+
+.practice-topbar {
+  padding-top: max(10px, env(safe-area-inset-top));
+}
+
+.practice-feedback {
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
 }
 
 .practice-question,
@@ -13,6 +27,7 @@
 .practice-done {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  padding-bottom: max(120px, calc(96px + env(safe-area-inset-bottom)));
 }
 
 .practice-question-card,
@@ -20,9 +35,15 @@
 .practice-feedback,
 .practice-wordbank,
 .practice-speak-box,
-.practice-writing-rubric {
+.practice-writing-rubric,
+.practice-mastery-recap,
+.practice-mastery-item,
+.practice-mastery-label,
+.practice-mastery-band {
   overflow-wrap: break-word;
   word-break: break-word;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .practice-kind {
@@ -72,20 +93,30 @@
 .practice-done button,
 .practice-answer-line button,
 .practice-word-options button,
-.practice-speak-box button {
+.practice-speak-box button,
+.practice-summary-cloze-submit,
+.practice-new-context-submit,
+.practice-new-context-options button {
   min-height: 44px;
   min-width: 44px;
   height: auto;
   touch-action: manipulation;
 }
 
+.practice-speak-box button {
+  min-height: 56px;
+  padding-block: 14px;
+}
+
 .practice-option-btn,
-.practice-choice-grid button {
+.practice-choice-grid button,
+.practice-new-context-options button {
   padding: 12px 16px;
 }
 
 .practice-textarea,
-.practice-speak-box input {
+.practice-speak-box input,
+.practice-summary-cloze input {
   min-height: 44px;
   font-size: max(1rem, 16px);
   line-height: 1.45;
@@ -106,7 +137,11 @@
 .practice-word-options button:focus-visible,
 .practice-speak-box button:focus-visible,
 .practice-textarea:focus-visible,
-.practice-speak-box input:focus-visible {
+.practice-speak-box input:focus-visible,
+.practice-summary-cloze input:focus-visible,
+.practice-summary-cloze-submit:focus-visible,
+.practice-new-context-submit:focus-visible,
+.practice-new-context-options button:focus-visible {
   outline: 2px solid #1F8FFF;
   outline-offset: 3px;
 }
@@ -122,7 +157,11 @@
 .practice-word-options button:disabled,
 .practice-speak-box button:disabled,
 .practice-textarea:disabled,
-.practice-speak-box input:disabled {
+.practice-speak-box input:disabled,
+.practice-summary-cloze input:disabled,
+.practice-summary-cloze-submit:disabled,
+.practice-new-context-submit:disabled,
+.practice-new-context-options button:disabled {
   opacity: 0.45;
   cursor: not-allowed;
 }
@@ -144,10 +183,32 @@
   color: rgba(248, 250, 252, 0.55);
 }
 
+.practice-mastery-list,
+.practice-mastery-item {
+  max-width: 100%;
+}
+
+.practice-mastery-bar {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.practice-mastery-fill {
+  max-width: 100%;
+}
+
+.practice-transition,
+.practice-feedback-enter {
+  transition-duration: 180ms;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .practice-fullscreen *,
   .practice-fullscreen *::before,
-  .practice-fullscreen *::after {
+  .practice-fullscreen *::after,
+  .practice-transition,
+  .practice-feedback-enter {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;
@@ -157,7 +218,8 @@
 
 @media (max-width: 420px) {
   .practice-option-btn,
-  .practice-choice-grid button {
+  .practice-choice-grid button,
+  .practice-new-context-options button {
     padding: 12px 14px;
   }
 
