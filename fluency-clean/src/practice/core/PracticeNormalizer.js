@@ -1,4 +1,5 @@
 import { collectAbaReadingExercises } from '../../reading/readingPracticeVariants.js';
+import { getCurrentCurriculumUnit, buildCurriculumContextForBuilder } from '../../services/curriculumPracticeAdapter.js';
 import { ANSWER_KINDS, PRACTICE_SKILLS } from './PracticeTypes.js';
 
 export function cleanPracticeText(value) {
@@ -176,6 +177,8 @@ export function normalizeLessonForPractice(lesson = {}) {
   const evidenceTasks = normalizeEvidenceTasksForPractice(lesson, skill);
   const transferContexts = normalizeTransferContextsForPractice(lesson, skill);
   const summaryCloze = normalizeSummaryClozeForPractice(lesson, skill);
+  const curriculumUnit = getCurrentCurriculumUnit();
+  const curriculum = buildCurriculumContextForBuilder(curriculumUnit);
 
   return {
     id: lesson.id || `lesson-${normalizePracticeText(title).slice(0, 32)}`,
@@ -193,6 +196,7 @@ export function normalizeLessonForPractice(lesson = {}) {
     sentences: allSentences,
     keywords: [...new Set(keywords.map((word) => word.toLowerCase()))],
     abaReadingExercises,
+    curriculum,
     raw: lesson,
   };
 }
