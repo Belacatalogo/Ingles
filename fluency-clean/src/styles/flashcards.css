@@ -1,0 +1,12 @@
+/* BLOCO-H4 — CSS Consolidation
+   Arquivo temático: flashcards/cartas.
+   Mantém a ordem interna dos arquivos de origem via @import seguro para não alterar regras antes do smoke test visual. */
+
+/* de: flashcards-polish.css */
+@import './flashcards-polish.css';
+
+/* de: flashcards-session.css */
+@import './flashcards-session.css';
+
+/* de: flashcards-new-words-hotfix.css */
+@import './flashcards-new-words-hotfix.css';
