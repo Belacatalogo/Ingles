@@ -115,6 +115,24 @@ function normalizeTransferContextsForPractice(lesson, skill) {
   }).filter((item) => item.text && item.subQuestion.answer).slice(0, 2);
 }
 
+function normalizeSummaryClozeForPractice(lesson, skill) {
+  if (skill !== PRACTICE_SKILLS.READING) return null;
+  const raw = lesson?.summaryCloze || lesson?.summary_cloze;
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+  return {
+    summaryText: cleanPracticeText(raw.summaryText || raw.text || ''),
+    blanks: Array.isArray(raw.blanks)
+      ? raw.blanks.map((blank) => ({
+        id: cleanPracticeText(blank?.id),
+        answer: cleanPracticeText(blank?.answer),
+        acceptable: Array.isArray(blank?.acceptable) ? blank.acceptable.map(cleanPracticeText).filter(Boolean) : [],
+        hint: cleanPracticeText(blank?.hint || ''),
+      })).filter((blank) => blank.id && blank.answer)
+      : [],
+    difficulty: cleanPracticeText(raw.difficulty || 'easy'),
+  };
+}
+
 export function normalizeLessonForPractice(lesson = {}) {
   const skill = detectPracticeSkill(lesson);
   const title = cleanPracticeText(lesson.title || 'Aula');
@@ -157,6 +175,7 @@ export function normalizeLessonForPractice(lesson = {}) {
   const abaReadingExercises = skill === PRACTICE_SKILLS.READING ? collectAbaReadingExercises(lesson) : [];
   const evidenceTasks = normalizeEvidenceTasksForPractice(lesson, skill);
   const transferContexts = normalizeTransferContextsForPractice(lesson, skill);
+  const summaryCloze = normalizeSummaryClozeForPractice(lesson, skill);
 
   return {
     id: lesson.id || `lesson-${normalizePracticeText(title).slice(0, 32)}`,
@@ -170,6 +189,7 @@ export function normalizeLessonForPractice(lesson = {}) {
     exercises,
     evidenceTasks,
     transferContexts,
+    summaryCloze,
     sentences: allSentences,
     keywords: [...new Set(keywords.map((word) => word.toLowerCase()))],
     abaReadingExercises,
