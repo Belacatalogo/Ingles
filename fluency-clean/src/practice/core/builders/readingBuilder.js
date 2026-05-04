@@ -1,15 +1,33 @@
+import { isDuplicateOfAba, VARIANT_POLICY_BY_SKILL } from '../../../reading/readingPracticeVariants.js';
 import { PRACTICE_PHASES, QUESTION_TYPES } from '../PracticeTypes.js';
 import { createQuestion, makeExistingExerciseQuestions, makeFillBlankQuestion, makeVocabularyQuestions, makeWordBankQuestion, makeSentenceOptions } from './builderUtils.js';
 
 export function buildReadingPractice(context) {
   const sentences = context.sentences.filter((sentence) => sentence.length >= 8);
   const questions = [];
+  const abaExercises = context.abaReadingExercises || [];
+  let filteredByDuplication = 0;
 
-  questions.push(...makeVocabularyQuestions(context, 6));
+  function tryAdd(question) {
+    if (!question) return;
+    if (isDuplicateOfAba(question, abaExercises)) {
+      filteredByDuplication += 1;
+      return;
+    }
+    questions.push(question);
+  }
+
+  function tryAddMany(items) {
+    items.filter(Boolean).forEach(tryAdd);
+  }
+
+  tryAddMany(makeVocabularyQuestions(context, 6));
 
   if (sentences[0]) {
-    questions.push(createQuestion({
+    tryAdd(createQuestion({
       skill: context.skill,
+      readingSkillTag: 'main_idea',
+      variantPolicy: VARIANT_POLICY_BY_SKILL.main_idea,
       phase: PRACTICE_PHASES.COMPREHENSION,
       type: QUESTION_TYPES.MULTIPLE_CHOICE,
       title: 'Ideia principal',
@@ -20,21 +38,35 @@ export function buildReadingPractice(context) {
     }));
   }
 
-  questions.push(...makeExistingExerciseQuestions(context, PRACTICE_PHASES.COMPREHENSION));
+  tryAddMany(makeExistingExerciseQuestions(context, PRACTICE_PHASES.COMPREHENSION));
 
   sentences.slice(0, 6).forEach((sentence) => {
     const fillBlank = makeFillBlankQuestion({ sentence, context, phase: PRACTICE_PHASES.RECOGNITION });
-    if (fillBlank) questions.push(fillBlank);
+    if (fillBlank) {
+      tryAdd({
+        ...fillBlank,
+        readingSkillTag: 'detail',
+        variantPolicy: VARIANT_POLICY_BY_SKILL.detail,
+      });
+    }
   });
 
   sentences.slice(0, 5).forEach((sentence) => {
     const wordBank = makeWordBankQuestion({ sentence, context, phase: PRACTICE_PHASES.WRITING, prompt: 'Monte uma frase do texto.' });
-    if (wordBank) questions.push(wordBank);
+    if (wordBank) {
+      tryAdd({
+        ...wordBank,
+        readingSkillTag: 'detail',
+        variantPolicy: VARIANT_POLICY_BY_SKILL.detail,
+      });
+    }
   });
 
   sentences.slice(0, 4).forEach((sentence) => {
-    questions.push(createQuestion({
+    tryAdd(createQuestion({
       skill: context.skill,
+      readingSkillTag: 'detail',
+      variantPolicy: VARIANT_POLICY_BY_SKILL.detail,
       phase: PRACTICE_PHASES.WRITING,
       type: QUESTION_TYPES.WRITE_SHORT,
       title: 'Resposta curta',
@@ -43,6 +75,10 @@ export function buildReadingPractice(context) {
       source: 'reading-short-answer',
     }));
   });
+
+  if (filteredByDuplication > 0) {
+    console.info(`[reading-variants] ${filteredByDuplication} questões filtradas por duplicação`);
+  }
 
   return questions;
 }
