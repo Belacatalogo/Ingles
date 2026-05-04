@@ -10,6 +10,7 @@ import { PracticeLauncher } from '../practice/PracticeLauncher.jsx';
 import { getCurrentLesson, getCurrentLessonFull } from '../services/lessonStore.js';
 import { getPreviewLesson } from '../services/lessonPreviewSamples.js';
 import { getLessonStats } from '../services/lessonStats.js';
+import { recordLessonAsCurrentCurriculumUnit } from '../services/curriculumPracticeAdapter.js';
 
 const fallbackLesson = {
   id: 'fallback-reading',
@@ -145,6 +146,10 @@ export function LessonScreen({ lessonRevision = 0, onNavigate }) {
   const currentProgress = Math.round(((activeSection + 1) / lessonSections.length) * 100);
   const meta = lesson?.generationMeta || null;
   const score = meta?.pedagogicalScore || lesson?.quality?.teacherScore || lesson?.quality?.pedagogicalScore || 0;
+
+  useEffect(() => {
+    recordLessonAsCurrentCurriculumUnit(lesson);
+  }, [lesson?.id, lesson?.title, lesson?.type, lesson?.level, lesson?.generationMeta?.id]);
 
   function jumpToSection(section, index) {
     setActiveSection(index);
