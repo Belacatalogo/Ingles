@@ -1,12 +1,9 @@
 /* BLOCO-H4 — CSS Consolidation
    Arquivo temático: base global.
-   Mantém a ordem interna dos arquivos de origem via @import seguro para não alterar regras antes do smoke test visual. */
+   Stage seguro: preserva a ordem original do bootstrap sem alterar regras CSS. */
 
 /* de: index.css */
 @import './index.css';
 
-/* de: reference.css */
-@import './reference.css';
-
-/* de: hotfix-ui-consistency.css */
-@import './hotfix-ui-consistency.css';
+/* de: access.css */
+@import './access.css';
