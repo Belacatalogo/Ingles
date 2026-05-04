@@ -75,6 +75,7 @@ export function createQuestion(base) {
     transferTags: Array.isArray(base.transferTags) ? base.transferTags : [],
     summaryText: cleanPracticeText(base.summaryText || ''),
     blanks: Array.isArray(base.blanks) ? base.blanks : [],
+    writingRubric: base.writingRubric && typeof base.writingRubric === 'object' ? base.writingRubric : undefined,
     isReview: Boolean(base.isReview),
   };
 }
