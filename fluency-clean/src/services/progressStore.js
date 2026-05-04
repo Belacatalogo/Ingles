@@ -1,6 +1,7 @@
 import { diagnostics } from './diagnostics.js';
 import { markCurriculumLessonComplete } from './curriculumPlan.js';
 import { recordLessonMastery } from './masteryStore.js';
+import { recordPracticeSrsResult, SRS_ITEM_TYPES } from './practiceSrsExtended.js';
 import { storage } from './storage.js';
 
 const PROGRESS_KEY = 'progress.summary';
@@ -52,6 +53,81 @@ function compactPracticeResult(result) {
     lifeLost: Boolean(result?.lifeLost),
     sourceEngine: result?.sourceEngine || '',
   };
+}
+
+function normalizeAnswerValue(value) {
+  return String(value ?? '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9\s-]/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+function collectReadingQuestionSources(lesson) {
+  return [
+    ...(Array.isArray(lesson?.readingQuestions) ? lesson.readingQuestions : []),
+    ...(Array.isArray(lesson?.comprehension) ? lesson.comprehension : []),
+    ...(Array.isArray(lesson?.questions) ? lesson.questions : []),
+    ...(Array.isArray(lesson?.exercises) ? lesson.exercises : []),
+  ];
+}
+
+function extractQuotedWord(value) {
+  const match = String(value || '').match(/[“\"]([^”\"]{2,40})[”\"]/);
+  return match?.[1] || '';
+}
+
+function getVocabWordFromQuestion(question) {
+  return String(
+    question?.word || question?.term || question?.vocab || question?.targetWord || question?.english || extractQuotedWord(question?.question || question?.prompt || question?.instruction) || question?.answer || question?.correctAnswer || ''
+  ).trim();
+}
+
+function getVocabMeaningFromQuestion(question) {
+  return String(
+    question?.meaning || question?.translation || question?.definition || question?.portuguese || question?.answer || question?.correctAnswer || question?.expectedAnswer || ''
+  ).trim();
+}
+
+function registerReadingVocabularyMistakes({ lesson, answers = {} }) {
+  if (String(lesson?.type || '').toLowerCase() !== 'reading') return [];
+
+  const selectedAnswers = safeObject(answers?.multipleChoice);
+  const sources = collectReadingQuestionSources(lesson);
+  const registered = [];
+
+  sources.forEach((item, index) => {
+    const skill = String(item?.skill || item?.readingSkill || item?.type || '').toLowerCase();
+    if (skill !== 'vocabulary_context') return;
+
+    const questionIndex = item?.index ?? index;
+    const selected = selectedAnswers[questionIndex];
+    if (typeof selected !== 'string') return;
+
+    const expected = item?.answer || item?.correctAnswer || item?.correct || item?.expectedAnswer || '';
+    if (!expected || normalizeAnswerValue(selected) === normalizeAnswerValue(expected)) return;
+
+    const word = getVocabWordFromQuestion(item);
+    const meaning = getVocabMeaningFromQuestion(item);
+    if (!word || !meaning) return;
+
+    const srsItem = recordPracticeSrsResult({
+      type: SRS_ITEM_TYPES.VOCAB_WORD,
+      content: `vocab::${word}`,
+      label: word,
+      correct: false,
+      skill: 'reading',
+      level: lesson?.level || 'A1',
+      meta: {
+        lessonId: getCompletionId(lesson),
+        meaning,
+        example: item?.example || item?.sentence || item?.context || '',
+        contextClue: item?.contextClue || item?.evidence || item?.quote || '',
+        sourceTab: 'reading_inner',
+      },
+    });
+
+    if (srsItem) registered.push(srsItem);
+  });
+
+  if (registered.length) diagnostics.log(`${registered.length} vocabulário(s) frágil(eis) de Reading enviados para revisão.`, 'info');
+  return registered;
 }
 
 export function getProgressSummary() { return normalizeProgress(storage.get(PROGRESS_KEY, {})); }
@@ -173,10 +249,11 @@ export function completeLesson({ lesson, answers = {}, writtenAnswer = '' }) {
   else if (progress.lastStudyDate === date) nextStreak = progress.streakDays || 1;
   else if (isYesterday(progress.lastStudyDate, date)) nextStreak = (progress.streakDays || 0) + 1;
   else nextStreak = 1;
+  const fragileVocabulary = registerReadingVocabularyMistakes({ lesson, answers });
   const masteryProfile = recordLessonMastery({ lesson, answers, writtenAnswer });
   const lessonPillar = String(lesson?.type || 'reading').toLowerCase();
   const masteryScore = masteryProfile?.pillars?.[lessonPillar]?.score || 0;
-  const completion = { lessonId, curriculumId: lesson?.curriculumId || lesson?.raw?.curriculumId || lessonId, title: lesson?.title || 'Aula', type: lesson?.type || 'lesson', level: lesson?.level || 'A1', completedAt: now.toISOString(), answers, writtenAnswer, xp: xpGain, masteryScore };
+  const completion = { lessonId, curriculumId: lesson?.curriculumId || lesson?.raw?.curriculumId || lessonId, title: lesson?.title || 'Aula', type: lesson?.type || 'lesson', level: lesson?.level || 'A1', completedAt: now.toISOString(), answers, writtenAnswer, xp: xpGain, masteryScore, fragileVocabularyCount: fragileVocabulary.length };
   const nextCompletions = alreadyCompleted ? completions.map((item) => item.lessonId === lessonId ? { ...item, ...completion, xp: item.xp || 0 } : item) : [completion, ...completions];
   const nextProgress = normalizeProgress({ ...progress, xp: progress.xp + xpGain, completedLessons: alreadyCompleted ? progress.completedLessons : progress.completedLessons + 1, streakDays: nextStreak, lastStudyDate: date, weekly: { ...progress.weekly, [currentWeek]: { completed: alreadyCompleted ? previousWeekly.completed : previousWeekly.completed + 1, xp: previousWeekly.xp + xpGain } } });
   storage.set(LESSON_COMPLETIONS_KEY, nextCompletions);
