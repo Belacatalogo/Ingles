@@ -75,51 +75,57 @@ Implementadas tecnicamente:
 
 ### `BLOCO-H2-LESSON-HISTORY-CONTEXT-LAB` — IMPLEMENTADO TECNICAMENTE
 
-Documentação:
-- `fluency-clean/docs/BLOCO-H2-LESSON-HISTORY-CONTEXT-LAB.md`
-
-Arquivos criados/alterados:
-- `fluency-clean/src/services/lessonHistoryContext.js`
-- `fluency-clean/src/services/lessonJsonContract.js`
-- `fluency-clean/src/services/index.js`
-- `fluency-clean/src/services/resilientGeminiLessonDraft.js`
-
-O que foi fechado:
 - Contexto histórico do aluno baseado em SRS, Mastery Tags e Telemetry.
-- Limite de 400 caracteres no prompt.
-- Retorno vazio para aluno novo/sem histórico relevante.
-- Leitura de histórico protegida por `try/catch`.
-- Log `[LessonHistoryContext] suggestedFocus: "..."` quando há foco sugerido.
-- Injeção apenas no bloco `structure` do gerador principal em blocos, via `lessonJsonContract.js`.
+- Injeção no gerador principal em blocos via `lessonJsonContract.js`.
 - Contexto histórico também aplicado ao fallback resiliente em `resilientGeminiLessonDraft.js`.
 - Fallback resiliente marca `planContract: resilient-json-v1+history-context` e `quality.historyContextApplied = true`.
-- Sem forçar tópico e sem dados pessoais no prompt.
 
 ### `BLOCO-H3-CURRICULUM-PRACTICE-BRIDGE-LAB` — IMPLEMENTADO TECNICAMENTE
 
+- Adaptador curricular local com storage `curriculum.currentUnit.v1`.
+- Expiração da unidade atual após 12 horas.
+- Registro da unidade/aula atual ao abrir `LessonScreen.jsx` e ao clicar em `Começar prática`.
+- `normalizeLessonForPractice` popula `context.curriculum`.
+- Builder de Grammar prioriza frases relevantes ao tópico curricular via `context.curriculum.isTopicRelevant`, sem excluir frases fora do tópico.
+
+### `BLOCO-H4-CSS-CONSOLIDATION-LAB` — STAGE SEGURO IMPLEMENTADO TECNICAMENTE
+
 Documentação:
-- `fluency-clean/docs/BLOCO-H3-CURRICULUM-PRACTICE-BRIDGE-LAB.md`
+- `fluency-clean/docs/BLOCO-H4-CSS-CONSOLIDATION-LAB.md`
 
 Arquivos criados:
-- `fluency-clean/src/services/curriculumPracticeAdapter.js`
+- `fluency-clean/src/styles/base.css`
+- `fluency-clean/src/styles/practice.css`
+- `fluency-clean/src/styles/flashcards.css`
+- `fluency-clean/src/styles/screens.css`
+- `fluency-clean/docs/BLOCO-H4-CSS-CONSOLIDATION-LAB.md`
+
+Arquivo temático já existente usado:
+- `fluency-clean/src/styles/lessons.css`
 
 Arquivos alterados:
-- `fluency-clean/src/practice/core/PracticeNormalizer.js`
-- `fluency-clean/src/practice/PracticeLauncher.jsx`
-- `fluency-clean/src/practice/core/builders/grammarBuilder.js`
-- `fluency-clean/src/screens/LessonScreen.jsx`
-- `fluency-clean/src/services/index.js`
+- `fluency-clean/src/main.jsx`
+- `fluency-clean/src/styles/base.css`
+- `fluency-clean/src/styles/practice.css`
+- `fluency-clean/src/styles/flashcards.css`
+- `fluency-clean/src/styles/screens.css`
 - `REWRITE_HANDOFF.md`
 
 O que foi fechado:
-- Adaptador curricular local com storage `curriculum.currentUnit.v1`.
-- Expiração da unidade atual após 12 horas.
-- Extração de keywords do título, foco, grammarFocus/focusArea e vocabulário da aula.
-- Registro da unidade/aula atual ao abrir `LessonScreen.jsx`.
-- Registro novamente ao clicar em `Começar prática` no `PracticeLauncher.jsx`.
-- `normalizeLessonForPractice` agora popula `context.curriculum` com `buildCurriculumContextForBuilder(getCurrentCurriculumUnit())`.
-- Builder de Grammar prioriza frases relevantes ao tópico curricular via `context.curriculum.isTopicRelevant`, sem excluir frases fora do tópico.
-- Exports públicos adicionados em `services/index.js`.
+- `main.jsx` agora importa apenas 5 arquivos CSS:
+  - `base.css`
+  - `lessons.css`
+  - `practice.css`
+  - `flashcards.css`
+  - `screens.css`
+- Arquivos antigos continuam como fontes internas carregadas por `@import` nos agregadores.
+- Comentários `/* de: arquivo.css */` foram adicionados para rastreabilidade.
+- Nenhuma regra CSS antiga foi alterada manualmente.
+- Nenhum arquivo CSS antigo foi deletado ainda.
+
+Pendência intencional de segurança:
+- Remover fisicamente os arquivos CSS antigos só depois de smoke test visual no iPhone.
+- O bloco original pedia deleção total, mas isso foi adiado para evitar perda visual sem teste.
 
 Preservado sem alteração:
 - `bundle.js`;
@@ -132,16 +138,24 @@ Preservado sem alteração:
 - `SpeakingStepper.jsx`;
 - `SpeakingScreen.jsx`.
 
-## ÚLTIMO BLOCO FECHADO — H3 CURRICULUM PRACTICE BRIDGE
+## ÚLTIMO BLOCO FECHADO — H4 CSS CONSOLIDATION STAGE SEGURO
 
 ### Smoke test manual pendente no iPhone/preview
 
-1. Abrir uma aula Grammar de rotina/Present Simple.
-2. Iniciar Prática Profunda.
-3. Confirmar que exercícios priorizam frases/vocabulário do tópico da aula.
-4. Confirmar que aluno sem unidade curricular explícita ainda recebe contexto a partir da própria aula.
-5. Confirmar que, após 12h, `getCurrentCurriculumUnit()` retorna `null`.
-6. Confirmar que a prática continua funcionando normalmente sem contexto curricular.
+1. Abrir Today.
+2. Abrir Lesson.
+3. Abrir Practice.
+4. Abrir Flashcards.
+5. Abrir Progress.
+6. Abrir Speaking e conferir tela de gravação.
+7. Abrir Grammar e conferir stepper.
+8. Abrir Listening e conferir UX de áudio.
+
+Após aprovação visual:
+- Copiar fisicamente o conteúdo dos CSS antigos para os 5 arquivos temáticos.
+- Manter comentários `/* de: nome-original.css */`.
+- Deletar arquivos antigos.
+- Manter `main.jsx` com os mesmos 5 imports.
 
 ## ALERTA IMPORTANTE — VOCAB/TRILHA
 
@@ -154,8 +168,8 @@ Objetivo:
 ## ORDEM DEFINIDA PARA PRÓXIMOS PASSOS
 
 1. Aguardar deploy do preview da branch `rewrite-fluency-clean-lab`.
-2. Executar smoke test manual do H3 no preview/iPhone.
-3. Se aprovado, seguir para `BLOCO-H4-CSS-CONSOLIDATION-LAB` ou bloco explicitamente enviado pelo usuário.
+2. Executar smoke test manual do H4 no preview/iPhone.
+3. Se visual estiver idêntico, fazer etapa final de deleção física dos CSS antigos.
 4. `BLOCO-VOCAB-TRAIL-CONTINUATION-LAB` continua pendente.
 5. `HOTFIX-READING-7-ANCHOR-EVIDENCE-LAB` apenas quando for possível alterar `ReadingLesson.jsx` completo com segurança.
 
@@ -169,8 +183,7 @@ Objetivo:
 - Não alterar política de chaves agora.
 - Não mexer em `main`, `rewrite-fluency-clean`, `bundle.js` ou backend Azure privado.
 - Não remover o preview temporário até o usuário aprovar ou pedir remoção.
-- Não iniciar novos blocos antes do smoke test manual, salvo instrução explícita.
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch obrigatória é `rewrite-fluency-clean-lab`. Não mexa em `main`, `rewrite-fluency-clean`, `bundle.js`, backend Azure privado, Firebase, Azure, sistema de gravação, `speakingFlow.js`, `SpeakingStepper.jsx` ou `SpeakingScreen.jsx`. O último bloco fechado tecnicamente foi `BLOCO-H3-CURRICULUM-PRACTICE-BRIDGE-LAB`. Código e docs foram concluídos, mas o smoke test manual no preview/iPhone está pendente. Próximo recomendado: `BLOCO-H4-CSS-CONSOLIDATION-LAB`, salvo se o usuário enviar outro bloco."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch obrigatória é `rewrite-fluency-clean-lab`. Não mexa em `main`, `rewrite-fluency-clean`, `bundle.js`, backend Azure privado, Firebase, Azure, sistema de gravação, `speakingFlow.js`, `SpeakingStepper.jsx` ou `SpeakingScreen.jsx`. O último bloco fechado tecnicamente foi `BLOCO-H4-CSS-CONSOLIDATION-LAB` em stage seguro: `main.jsx` importa apenas 5 CSS temáticos, mas os CSS antigos continuam como fontes internas por `@import`. Smoke test visual no preview/iPhone está pendente antes de deletar fisicamente os arquivos antigos."
