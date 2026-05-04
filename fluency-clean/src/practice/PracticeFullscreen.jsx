@@ -195,14 +195,20 @@ export function PracticeFullscreen({ lesson, open, onClose, onComplete }) {
   }
 
   function submitDirect(finalValue) {
-    if (!current || !can(PRACTICE_EVENTS.USER_SUBMITTED)) return;
-    const evaluation = evaluatePracticeAnswer(current, finalValue);
-    if (evaluation.empty) return;
-    const submitted = dispatch(PRACTICE_EVENTS.USER_SUBMITTED, { answer: finalValue, questionId: current.id });
-    if (!submitted.ok) return;
+    if (!current) return;
+    if (state === PRACTICE_STATES.PRESENTING && can(PRACTICE_EVENTS.USER_INTERACTED)) {
+      dispatch(PRACTICE_EVENTS.USER_INTERACTED, { interaction: current.type, questionId: current.id });
+    }
     window.setTimeout(() => {
-      commitEvaluation(evaluation, finalValue);
-    }, CHECKING_DELAY_MS);
+      if (!can(PRACTICE_EVENTS.USER_SUBMITTED)) return;
+      const evaluation = evaluatePracticeAnswer(current, finalValue);
+      if (evaluation.empty) return;
+      const submitted = dispatch(PRACTICE_EVENTS.USER_SUBMITTED, { answer: finalValue, questionId: current.id });
+      if (!submitted.ok) return;
+      window.setTimeout(() => {
+        commitEvaluation(evaluation, finalValue);
+      }, CHECKING_DELAY_MS);
+    }, 0);
   }
 
   function continueNext() {
