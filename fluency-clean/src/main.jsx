@@ -24,6 +24,7 @@ import './styles/listening-ux-hotfix.css';
 import './styles/lesson-preview-lab.css';
 import './styles/practice-fullscreen.css';
 import './styles/practice-new-context.css';
+import './styles/practice-summary-cloze.css';
 import './styles/practice-mastery-recap.css';
 import './styles/grammar-examples-hotfix.css';
 import './styles/hotfix-ui-consistency.css';
