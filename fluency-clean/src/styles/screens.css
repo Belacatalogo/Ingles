@@ -1,6 +1,6 @@
 /* BLOCO-H4 — CSS Consolidation
-   Arquivo temático: telas e navegação.
-   Stage seguro: preserva a ordem original do bootstrap sem alterar regras CSS. */
+   Arquivo temático: telas, navegação e ajustes visuais de aula.
+   Stage seguro: mantém os arquivos antigos como fontes internas via @import até aprovação visual no iPhone. */
 
 /* de: reference.css */
 @import './reference.css';
@@ -14,6 +14,12 @@
 /* de: nav-polish.css */
 @import './nav-polish.css';
 
+/* de: lesson-polish.css */
+@import './lesson-polish.css';
+
+/* de: error-bank.css */
+@import './error-bank.css';
+
 /* de: level-certification.css */
 @import './level-certification.css';
 
@@ -23,5 +29,23 @@
 /* de: settings-polish.css */
 @import './settings-polish.css';
 
+/* de: listening-ux-hotfix.css */
+@import './listening-ux-hotfix.css';
+
+/* de: lesson-preview-lab.css */
+@import './lesson-preview-lab.css';
+
+/* de: grammar-examples-hotfix.css */
+@import './grammar-examples-hotfix.css';
+
 /* de: hotfix-ui-consistency.css */
 @import './hotfix-ui-consistency.css';
+
+/* de: reading-complete-render-review.css */
+@import './reading-complete-render-review.css';
+
+/* de: reading-internal-answer-leak-hotfix.css */
+@import './reading-internal-answer-leak-hotfix.css';
+
+/* de: lesson-type-stepper-real.css */
+@import './lesson-type-stepper-real.css';
