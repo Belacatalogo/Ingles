@@ -12,7 +12,7 @@ const TYPE_TO_UI = Object.freeze({
   [QUESTION_TYPES.TRUE_FALSE]: 'choice',
 });
 
-const BAD_OPTION = /(resposta\/|^resposta\b|^answer\b|resposta pessoal|personal answer|exemplo:|example:|undefined|null)/i;
+const BAD_OPTION = /(undefined|null)/i;
 const GENERIC_OPTIONS = new Set(['resposta', 'pergunta', 'frase', 'palavra', 'coisa', 'exemplo', 'texto', 'aula', 'answer', 'question', 'sentence', 'word', 'thing', 'example', 'text', 'lesson']);
 const LISTENING_PRIORITY = ['listenChoice', 'dictation', 'speak', 'wordBank', 'fillBlank', 'choice', 'write', 'correction'];
 
@@ -60,9 +60,9 @@ function isSafeOption(value, answer = '') {
   if (!option) return false;
   if (BAD_OPTION.test(option)) return false;
   if (GENERIC_OPTIONS.has(normalizePracticeText(option))) return false;
-  if (option.length > 62) return false;
-  if (wordCount(option) > 8) return false;
-  if (answer && wordCount(answer) <= 2 && wordCount(option) > 4) return false;
+  if (option.length > 96) return false;
+  if (wordCount(option) > 12) return false;
+  if (answer && wordCount(answer) <= 2 && wordCount(option) > 8) return false;
   return true;
 }
 
@@ -88,13 +88,15 @@ function normalizeOptions(question) {
 
 function adaptQuestion(question, index) {
   const uiType = TYPE_TO_UI[question.type] || 'write';
+  const title = clean(question.title || 'Prática guiada');
   return {
     id: question.id || `core-practice-${index + 1}`,
     type: uiType,
-    title: clean(question.title || 'Prática guiada'),
+    title: question.isReview ? `Revisão · ${title}` : title,
     prompt: clean(question.prompt),
     answer: clean(question.answer),
     options: normalizeOptions(question),
+    optionLabels: question.optionLabels,
     words: Array.isArray(question.words) ? question.words.map(clean).filter(Boolean).filter((word) => word.length <= 24).slice(0, 12) : [],
     audioText: clean(question.audioText || question.answer),
     phase: question.phase,
