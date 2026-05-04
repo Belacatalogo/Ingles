@@ -22,6 +22,7 @@ export const PURITY_MATRIX = Object.freeze({
       QUESTION_TYPES.AUDIO_CHOICE,
       QUESTION_TYPES.DICTATION,
       QUESTION_TYPES.SPEAK_RESPONSE,
+      QUESTION_TYPES.NEW_CONTEXT,
     ]),
   }),
 
@@ -40,6 +41,7 @@ export const PURITY_MATRIX = Object.freeze({
     banned: Object.freeze([
       QUESTION_TYPES.WRITE_SHORT,
       QUESTION_TYPES.CORRECTION,
+      QUESTION_TYPES.NEW_CONTEXT,
     ]),
   }),
 
@@ -48,6 +50,7 @@ export const PURITY_MATRIX = Object.freeze({
       QUESTION_TYPES.MULTIPLE_CHOICE,
       QUESTION_TYPES.TRUE_FALSE,
       QUESTION_TYPES.FILL_BLANK,
+      QUESTION_TYPES.NEW_CONTEXT,
     ]),
     support: Object.freeze([
       QUESTION_TYPES.WORD_BANK,
@@ -75,6 +78,7 @@ export const PURITY_MATRIX = Object.freeze({
       QUESTION_TYPES.WRITE_SHORT,
       QUESTION_TYPES.WORD_BANK,
       QUESTION_TYPES.CORRECTION,
+      QUESTION_TYPES.NEW_CONTEXT,
     ]),
   }),
 
@@ -93,6 +97,7 @@ export const PURITY_MATRIX = Object.freeze({
       QUESTION_TYPES.AUDIO_CHOICE,
       QUESTION_TYPES.DICTATION,
       QUESTION_TYPES.SPEAK_RESPONSE,
+      QUESTION_TYPES.NEW_CONTEXT,
     ]),
   }),
 
