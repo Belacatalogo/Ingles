@@ -9,6 +9,7 @@ export const SRS_ITEM_TYPES = Object.freeze({
   ERROR_PATTERN: 'error_pattern',
   EVIDENCE_TRACK: 'evidence_track',
   LISTENING_PATTERN: 'listening_pattern',
+  VOCAB_WORD: 'vocab_word',
 });
 
 export const SRS_STATUS = Object.freeze({
@@ -180,6 +181,7 @@ function suggestQuestionTypeForSrsItem(item) {
     case SRS_ITEM_TYPES.PRONUNCIATION_WORD:
       return QUESTION_TYPES.SPEAK_RESPONSE;
     case SRS_ITEM_TYPES.ERROR_PATTERN:
+    case SRS_ITEM_TYPES.VOCAB_WORD:
       return QUESTION_TYPES.MULTIPLE_CHOICE;
     case SRS_ITEM_TYPES.EVIDENCE_TRACK:
       return QUESTION_TYPES.MULTIPLE_CHOICE;
