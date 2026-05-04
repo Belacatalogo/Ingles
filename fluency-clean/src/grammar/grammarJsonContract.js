@@ -1,3 +1,4 @@
+import { applyGrammarQualityGate } from './grammarQualityGate.js';
 import { buildGrammarPolicyPrompt, getGrammarLevelPolicy, GRAMMAR_FOCUS_AREAS } from './grammarLevelPolicy.js';
 
 export const GRAMMAR_JSON_CONTRACT_VERSION = 'grammar-contract-v1';
@@ -138,8 +139,7 @@ function buildNormalizedGrammarLesson(rawLesson = {}) {
 }
 
 export function normalizeGrammarLessonContract(rawLesson = {}) {
-  // applyGrammarQualityGate entra no BLOCO-C3.
-  return buildNormalizedGrammarLesson(rawLesson);
+  return applyGrammarQualityGate(buildNormalizedGrammarLesson(rawLesson));
 }
 
 export function getGrammarRequiredKeys() {
