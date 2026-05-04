@@ -39,7 +39,14 @@ body {
 .practice-mastery-recap,
 .practice-mastery-item,
 .practice-mastery-label,
-.practice-mastery-band {
+.practice-mastery-band,
+.practice-new-context,
+.practice-new-context-text,
+.practice-new-context-sub,
+.practice-new-context-sub-prompt,
+.practice-summary-cloze,
+.practice-summary-cloze-text,
+.practice-summary-cloze-inline {
   overflow-wrap: break-word;
   word-break: break-word;
   min-width: 0;
@@ -57,7 +64,8 @@ body {
 }
 
 .practice-option-text,
-.practice-choice-grid button b {
+.practice-choice-grid button b,
+.practice-new-context-options button b {
   font-size: clamp(1rem, 4.7vw, 1.5625rem);
   white-space: normal;
   overflow: visible;
@@ -71,7 +79,9 @@ body {
 .practice-feedback-placeholder,
 .practice-rubric-criteria,
 .practice-rubric-errors,
-.practice-rubric-rewrite {
+.practice-rubric-rewrite,
+.practice-new-context-text,
+.practice-summary-cloze-text {
   font-size: 1rem;
   line-height: 1.5;
 }
