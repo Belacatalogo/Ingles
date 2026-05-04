@@ -1,0 +1,97 @@
+/* BLOCO-G2 — Practice A11y Audit */
+
+.practice-fullscreen,
+.practice-fullscreen * {
+  overflow-wrap: break-word;
+}
+
+.practice-question-card h1,
+.practice-prompt,
+.practice-option-text,
+.practice-feedback,
+.practice-textarea,
+.practice-speak-box input {
+  font-size: 1rem;
+}
+
+.practice-option-btn,
+.practice-confirm-btn,
+.practice-next-btn,
+.practice-audio-btn,
+.practice-close,
+.practice-word-options button,
+.practice-answer-line button,
+.practice-speak-box button,
+.practice-speak-box input {
+  min-height: 44px;
+  min-width: 44px;
+  height: auto;
+}
+
+.practice-option-btn,
+.practice-choice-grid button,
+.practice-word-options button,
+.practice-answer-line button {
+  padding: 0.75rem 1rem;
+}
+
+.practice-textarea,
+.practice-speak-box input {
+  min-height: 44px;
+  font-size: 1rem;
+  line-height: 1.45;
+}
+
+.practice-option-btn:focus-visible,
+.practice-choice-grid button:focus-visible,
+.practice-confirm-btn:focus-visible,
+.practice-next-btn:focus-visible,
+.practice-audio-btn:focus-visible,
+.practice-close:focus-visible,
+.practice-word-options button:focus-visible,
+.practice-answer-line button:focus-visible,
+.practice-textarea:focus-visible,
+.practice-speak-box button:focus-visible,
+.practice-speak-box input:focus-visible {
+  outline: 2px solid #1f8fff;
+  outline-offset: 3px;
+}
+
+.practice-confirm-btn:disabled,
+.practice-option-btn:disabled,
+.practice-audio-btn:disabled,
+.practice-word-options button:disabled,
+.practice-answer-line button:disabled,
+.practice-speak-box button:disabled,
+.practice-speak-box input:disabled,
+.practice-textarea:disabled {
+  opacity: 0.48;
+  cursor: not-allowed;
+}
+
+.practice-feedback-correct .practice-feedback-text strong::before {
+  content: '✓ ';
+}
+
+.practice-feedback-incorrect .practice-feedback-text strong::before {
+  content: '✗ ';
+}
+
+.practice-progress[role='progressbar'] {
+  min-height: 0.5rem;
+}
+
+.practice-fullscreen button {
+  touch-action: manipulation;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .practice-fullscreen *,
+  .practice-fullscreen *::before,
+  .practice-fullscreen *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
