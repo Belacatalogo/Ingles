@@ -27,6 +27,10 @@ function shouldUseResilientGeminiFallback(result) {
   return /JSON Parse error|Unterminated string|Unrecognized token|Expected '\]'|Expected \]|JSON resiliente|\\"type\\"|Preview:\s*\{\\"|Conte[úu]do principal ficou curto demais|texto principal ficou curto|aula sem texto\/transcri[çc][ãa]o principal suficiente/i.test(text);
 }
 
+function shouldPreferResilientFirst(lessonType) {
+  return lessonType === 'reading' || lessonType === 'listening';
+}
+
 async function attachPlanToResult(result, plan, planSeed, options = {}) {
   if (result?.status !== 'success' || !result.lesson) return result;
   let lesson = result.lesson;
@@ -157,6 +161,23 @@ export async function generatePlannedLessonDraft(options = {}) {
     };
   }
 
+  if (shouldPreferResilientFirst(lessonType)) {
+    diagnostics.setPhase('geração resiliente direta', 'generating');
+    diagnostics.log(`${lessonType === 'reading' ? 'Reading' : 'Listening'} usa geração resiliente direta para evitar falso curto no bloco 2/5 e JSON truncado.`, 'info');
+    const resilientFirstResult = await generateResilientLessonDraft({
+      ...options,
+      prompt: plannedPrompt,
+      forcedType,
+      level,
+    });
+
+    if (resilientFirstResult?.status === 'success' && resilientFirstResult.lesson) {
+      return attachPlanToResult(resilientFirstResult, plan, planSeed, options);
+    }
+
+    diagnostics.log('Geração resiliente direta não concluiu. Tentando geração em blocos antes do fallback externo.', 'warn', resilientFirstResult);
+  }
+
   const result = await generateLessonDraft({
     ...options,
     prompt: plannedPrompt,
@@ -169,7 +190,7 @@ export async function generatePlannedLessonDraft(options = {}) {
     return attachPlanToResult(result, plan, planSeed, options);
   }
 
-  if (shouldUseResilientGeminiFallback(result)) {
+  if (shouldUseResilientGeminiFallback(result) && !shouldPreferResilientFirst(lessonType)) {
     diagnostics.setPhase('fallback resiliente por JSON ou tamanho', 'generating');
     diagnostics.log('Gemini em blocos falhou por JSON truncado/escapado ou por validação de tamanho. Tentando fallback resiliente antes do fallback externo.', 'warn', result);
     const resilientResult = await generateResilientLessonDraft({
