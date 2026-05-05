@@ -13,29 +13,39 @@ function countWords(value) {
   return text ? text.split(/\s+/).filter(Boolean).length : 0;
 }
 
-function isGrammar(rawLesson) {
-  return clean(rawLesson?.type).toLowerCase() === 'grammar';
+function lessonKind(rawLesson) {
+  return clean(rawLesson?.type).toLowerCase() || 'reading';
 }
 
-function buildGrammarObjective(lesson) {
-  const title = clean(lesson.title) || 'a estrutura gramatical da aula';
+function buildObjectiveByType(lesson) {
+  const title = clean(lesson.title) || 'a aula';
+  const focus = clean(lesson.focus) || title;
   const sectionTitles = ensureArray(lesson.sections).map((section) => clean(section?.title)).filter(Boolean).slice(0, 4).join(', ');
-  const focus = clean(lesson.focus);
+  const type = lessonKind(lesson);
+
+  const baseByType = {
+    grammar: `Dominar ${focus} em situações reais de comunicação, entendendo quando usar a estrutura, como formar frases afirmativas, negativas e perguntas, quais erros brasileiros evitar e como produzir respostas próprias com segurança.`,
+    reading: `Ler e compreender um texto em inglês sobre ${focus}, identificando ideia principal, detalhes importantes, vocabulário pelo contexto e evidências no próprio texto antes de produzir respostas curtas com segurança.`,
+    listening: `Escutar e compreender uma fala em inglês sobre ${focus}, reconhecendo informações principais, detalhes do áudio, vocabulário essencial e praticando repetição/shadowing para ganhar confiança.`,
+    writing: `Escrever frases e um pequeno texto em inglês sobre ${focus}, usando modelo, vocabulário útil, estrutura clara, revisão guiada e produção própria adequada ao nível.`,
+    speaking: `Falar em inglês sobre ${focus}, praticando frases-modelo, repetição, pronúncia, ritmo e produção oral própria com clareza e segurança.`,
+  };
+
   return [
-    `Dominar ${focus || title} em situações reais de comunicação, entendendo quando usar a estrutura, como formar frases afirmativas, negativas e perguntas, quais erros brasileiros evitar e como produzir respostas próprias com segurança.`,
+    baseByType[type] || baseByType.reading,
     sectionTitles ? `A aula desenvolve esses pontos por meio de ${sectionTitles}.` : '',
   ].filter(Boolean).join(' ');
 }
 
 function normalizeLessonForReadiness(rawLesson) {
   const lesson = normalizeLesson(rawLesson);
-  if (isGrammar(lesson) && countWords(lesson.objective) < 10) {
+  if (countWords(lesson.objective) < 10) {
     return {
       ...lesson,
-      objective: buildGrammarObjective(lesson),
+      objective: buildObjectiveByType(lesson),
       readinessAutoRepair: {
         ...(lesson.readinessAutoRepair && typeof lesson.readinessAutoRepair === 'object' ? lesson.readinessAutoRepair : {}),
-        objective: 'grammar-objective-autofilled-v1',
+        objective: `${lessonKind(lesson)}-objective-autofilled-v2`,
       },
     };
   }
@@ -141,7 +151,7 @@ function checkSpeaking(lesson, text, counts) {
 }
 
 function checkByType(lesson, text, counts) {
-  const type = clean(lesson.type).toLowerCase();
+  const type = lessonKind(lesson);
   if (type === 'listening') return checkListening(lesson, text, counts);
   if (type === 'grammar') return checkGrammar(lesson, text, counts);
   if (type === 'reading') return checkReading(lesson, text, counts);
@@ -197,7 +207,7 @@ export function evaluateStudyReadiness(rawLesson, { teacherReview = {}, pedagogi
     criticalIssues,
     repairedLesson: lesson.readinessAutoRepair ? lesson : null,
     autoRepair: lesson.readinessAutoRepair || null,
-    version: 'study-readiness-v1+grammar-objective-repair',
+    version: 'study-readiness-v1+objective-repair-all-types-v2',
   };
 }
 
