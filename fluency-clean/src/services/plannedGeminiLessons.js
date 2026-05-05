@@ -1,6 +1,7 @@
 import { diagnostics } from './diagnostics.js';
 import { generateLessonDraft } from './geminiLessons.js';
 import { generateExternalLessonDraft, shouldForceExternalLessonProviderOnce } from './externalLessonProviders.js';
+import { generateResilientLessonDraft } from './resilientGeminiLessonDraft.js';
 import { enrichGrammarSectionsSequentially } from './grammarSectionGenerator.js';
 import { summarizeModelPolicyForDiagnostics } from './modelPolicy.js';
 import { buildPedagogicalPlan, buildPlanPromptText, summarizePlanForDiagnostics } from './lessonPlan.js';
@@ -19,6 +20,11 @@ function resolvePlanType({ prompt = '', forcedType = '' } = {}) {
 function normalizeExternalTarget(value) {
   const target = String(value || '').toLowerCase().trim();
   return target === 'groq' || target === 'cerebras' ? target : '';
+}
+
+function shouldUseResilientGeminiFallback(result) {
+  const text = String(result?.error || result?.status || '');
+  return /JSON Parse error|Unterminated string|Unrecognized token|Expected '\]'|Expected \]|JSON resiliente|\\"type\\"|Preview:\s*\{\\"|Conte[úu]do principal ficou curto demais|texto principal ficou curto|aula sem texto\/transcri[çc][ãa]o principal suficiente/i.test(text);
 }
 
 async function attachPlanToResult(result, plan, planSeed, options = {}) {
@@ -64,6 +70,7 @@ const JSON_OUTPUT_GUARD = [
   'Forma proibida: {\\"type\\":\\"listening\\",\\"level\\":\\"A1"}',
   'Não coloque markdown, texto explicativo, comentários ou aspas envolvendo o objeto JSON.',
   'Se a API pedir application/json, devolva objeto JSON real, não texto serializado dentro de texto.',
+  'Se o bloco for longo, feche a string, feche o objeto JSON e nunca pare no meio de uma frase.',
 ].join('\n');
 
 const LISTENING_SOURCE_OF_TRUTH_GUARD = [
@@ -160,6 +167,23 @@ export async function generatePlannedLessonDraft(options = {}) {
 
   if (result?.status === 'success' && result.lesson) {
     return attachPlanToResult(result, plan, planSeed, options);
+  }
+
+  if (shouldUseResilientGeminiFallback(result)) {
+    diagnostics.setPhase('fallback resiliente por JSON ou tamanho', 'generating');
+    diagnostics.log('Gemini em blocos falhou por JSON truncado/escapado ou por validação de tamanho. Tentando fallback resiliente antes do fallback externo.', 'warn', result);
+    const resilientResult = await generateResilientLessonDraft({
+      ...options,
+      prompt: plannedPrompt,
+      forcedType,
+      level,
+    });
+
+    if (resilientResult?.status === 'success' && resilientResult.lesson) {
+      return attachPlanToResult(resilientResult, plan, planSeed, options);
+    }
+
+    diagnostics.log('Fallback resiliente não conseguiu finalizar. Continuando para fallback externo.', 'warn', resilientResult);
   }
 
   diagnostics.log('Gemini não concluiu a aula. Tentando fallback externo Groq/Cerebras antes de devolver erro.', 'warn', result);
