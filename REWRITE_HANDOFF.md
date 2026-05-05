@@ -127,10 +127,29 @@ Pendência intencional de segurança:
 - Remover fisicamente os arquivos CSS antigos só depois de smoke test visual no iPhone.
 - O bloco original pedia deleção total, mas isso foi adiado para evitar perda visual sem teste.
 
+## HOTFIX ATUAL — geração parando por JSON/parse e falso curto
+
+Arquivos alterados:
+- `fluency-clean/src/services/plannedGeminiLessons.js`
+- `fluency-clean/src/services/resilientGeminiLessonDraft.js`
+- `REWRITE_HANDOFF.md`
+
+O que foi corrigido:
+- O gerador planejado agora tenta o fallback resiliente do próprio Gemini quando a geração em blocos falha por JSON truncado/escapado ou por validação de tamanho do texto principal.
+- Antes, erros como `JSON Parse error: Unterminated string` e `Conteúdo principal ficou curto demais` podiam encerrar a geração ou cair tarde demais em fallback.
+- `plannedGeminiLessons.js` recebeu `shouldUseResilientGeminiFallback()` para capturar `Unterminated string`, `Unrecognized token`, JSON escapado e texto principal curto.
+- `resilientGeminiLessonDraft.js` recebeu parser balanceado para extrair objeto JSON sem depender apenas de `lastIndexOf('}')`.
+- O fallback resiliente agora aceita `readingText`, `mainText`, `text` e `transcript` como fonte do texto principal, além de `listeningText`.
+- O prompt resiliente foi endurecido para exigir JSON real não escapado, objeto fechado e texto com começo, meio e fim.
+- `planContract` do fallback resiliente agora marca `resilient-json-v1+history-context+hard-parser-v2`.
+
+Observação:
+- Houve dois commits intermediários acidentais criando e removendo um arquivo temporário `__nonexistent_test__.txt`; o arquivo não existe mais na branch. O estado final da árvore está limpo.
+
 Preservado sem alteração:
-- `bundle.js`;
 - `main`;
 - `rewrite-fluency-clean`;
+- `bundle.js`;
 - backend Azure privado;
 - Firebase/Azure de produção;
 - sistema de gravação;
@@ -138,24 +157,16 @@ Preservado sem alteração:
 - `SpeakingStepper.jsx`;
 - `SpeakingScreen.jsx`.
 
-## ÚLTIMO BLOCO FECHADO — H4 CSS CONSOLIDATION STAGE SEGURO
+## ÚLTIMO BLOCO FECHADO — HOTFIX GERAÇÃO JSON/PARSE
 
 ### Smoke test manual pendente no iPhone/preview
 
 1. Abrir Today.
-2. Abrir Lesson.
-3. Abrir Practice.
-4. Abrir Flashcards.
-5. Abrir Progress.
-6. Abrir Speaking e conferir tela de gravação.
-7. Abrir Grammar e conferir stepper.
-8. Abrir Listening e conferir UX de áudio.
-
-Após aprovação visual:
-- Copiar fisicamente o conteúdo dos CSS antigos para os 5 arquivos temáticos.
-- Manter comentários `/* de: nome-original.css */`.
-- Deletar arquivos antigos.
-- Manter `main.jsx` com os mesmos 5 imports.
+2. Gerar a próxima aula Reading/Listening pelo cronograma.
+3. Confirmar no Diagnóstico que, se o bloco 2 falhar por `Unterminated string` ou texto curto, o fallback resiliente entra e a geração continua.
+4. Confirmar que a aula é salva e aberta na aba Aula.
+5. Confirmar que o texto principal não vem cortado no meio.
+6. Confirmar que o diagnóstico não fica preso eternamente em `generating` após falha de bloco.
 
 ## ALERTA IMPORTANTE — VOCAB/TRILHA
 
@@ -168,10 +179,11 @@ Objetivo:
 ## ORDEM DEFINIDA PARA PRÓXIMOS PASSOS
 
 1. Aguardar deploy do preview da branch `rewrite-fluency-clean-lab`.
-2. Executar smoke test manual do H4 no preview/iPhone.
-3. Se visual estiver idêntico, fazer etapa final de deleção física dos CSS antigos.
-4. `BLOCO-VOCAB-TRAIL-CONTINUATION-LAB` continua pendente.
-5. `HOTFIX-READING-7-ANCHOR-EVIDENCE-LAB` apenas quando for possível alterar `ReadingLesson.jsx` completo com segurança.
+2. Executar smoke test manual do hotfix de geração no preview/iPhone.
+3. Depois, executar smoke test visual do H4 no preview/iPhone.
+4. Se visual estiver idêntico, fazer etapa final de deleção física dos CSS antigos.
+5. `BLOCO-VOCAB-TRAIL-CONTINUATION-LAB` continua pendente.
+6. `HOTFIX-READING-7-ANCHOR-EVIDENCE-LAB` apenas quando for possível alterar `ReadingLesson.jsx` completo com segurança.
 
 ## NÃO FAZER AGORA
 
@@ -186,4 +198,4 @@ Objetivo:
 
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch obrigatória é `rewrite-fluency-clean-lab`. Não mexa em `main`, `rewrite-fluency-clean`, `bundle.js`, backend Azure privado, Firebase, Azure, sistema de gravação, `speakingFlow.js`, `SpeakingStepper.jsx` ou `SpeakingScreen.jsx`. O último bloco fechado tecnicamente foi `BLOCO-H4-CSS-CONSOLIDATION-LAB` em stage seguro: `main.jsx` importa apenas 5 CSS temáticos, mas os CSS antigos continuam como fontes internas por `@import`. Smoke test visual no preview/iPhone está pendente antes de deletar fisicamente os arquivos antigos."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch obrigatória é `rewrite-fluency-clean-lab`. Não mexa em `main`, `rewrite-fluency-clean`, `bundle.js`, backend Azure privado, Firebase, Azure, sistema de gravação, `speakingFlow.js`, `SpeakingStepper.jsx` ou `SpeakingScreen.jsx`. O último ajuste foi o HOTFIX de geração JSON/parse: `plannedGeminiLessons.js` chama fallback resiliente quando há JSON truncado/escapado ou bloco curto, e `resilientGeminiLessonDraft.js` tem parser balanceado hard-parser-v2. Smoke test no preview/iPhone está pendente."
