@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { BookOpen, CheckCircle2, Clock, Headphones, MessageCircle, Mic, RefreshCw, ShieldCheck, Sparkles, Target, Zap } from 'lucide-react';
 import { Card } from '../components/ui/Card.jsx';
 import { LessonQualityPanel } from '../components/lesson/LessonQualityPanel.jsx';
-import { ReadingLesson } from '../lessons/ReadingLesson.jsx';
+import { ReadingLessonGuided } from '../lessons/ReadingLessonGuided.jsx';
 import { GrammarLesson } from '../lessons/GrammarLesson.jsx';
 import { ListeningLessonClean } from '../lessons/ListeningLessonClean.jsx';
 import { WritingLesson } from '../lessons/WritingLesson.jsx';
@@ -59,7 +59,7 @@ function formatDateTime(value) {
 }
 
 function LessonRenderer({ lesson }) {
-  if (lesson?.type === 'reading') return <ReadingLesson lesson={lesson} />;
+  if (lesson?.type === 'reading') return <ReadingLessonGuided lesson={lesson} />;
   if (lesson?.type === 'grammar') return <GrammarLesson lesson={lesson} />;
   if (lesson?.type === 'listening') return <ListeningLessonClean lesson={lesson} />;
   if (lesson?.type === 'writing') return <WritingLesson lesson={lesson} />;
