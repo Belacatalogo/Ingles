@@ -20,11 +20,43 @@ function stripFences(value) {
   return clean(value).replace(/^```(?:json)?\s*/i, '').replace(/```$/i, '').trim();
 }
 
-function extractJsonObjectText(value) {
+function extractBalancedJsonObjectText(value) {
   const text = stripFences(value);
   const start = text.indexOf('{');
+  if (start < 0) return text;
+
+  let inString = false;
+  let escaped = false;
+  let depth = 0;
+
+  for (let index = start; index < text.length; index += 1) {
+    const char = text[index];
+    if (escaped) {
+      escaped = false;
+      continue;
+    }
+    if (char === '\\') {
+      escaped = true;
+      continue;
+    }
+    if (char === '"') {
+      inString = !inString;
+      continue;
+    }
+    if (inString) continue;
+    if (char === '{') depth += 1;
+    if (char === '}') {
+      depth -= 1;
+      if (depth === 0) return text.slice(start, index + 1);
+    }
+  }
+
   const end = text.lastIndexOf('}');
-  return start >= 0 && end > start ? text.slice(start, end + 1) : text;
+  return end > start ? text.slice(start, end + 1) : text.slice(start);
+}
+
+function extractJsonObjectText(value) {
+  return extractBalancedJsonObjectText(value);
 }
 
 function unescapeSerializedJson(value) {
@@ -37,7 +69,7 @@ function unescapeSerializedJson(value) {
     // segue para reparos textuais
   }
   text = extractJsonObjectText(text);
-  if (/^\{\\"/.test(text) || /\\"(?:type|title|level|sections|vocabulary|exercises|prompts|listeningText)\\"/.test(text)) {
+  if (/^\{\\"/.test(text) || /\\"(?:type|title|level|sections|vocabulary|exercises|prompts|listeningText|readingText)\\"/.test(text)) {
     text = text.replace(/\\"/g, '"').replace(/\\\\n/g, '\\n').replace(/\\\\r/g, '').replace(/\\\\t/g, ' ');
   }
   return extractJsonObjectText(text);
@@ -85,20 +117,23 @@ function buildPrompt({ prompt, lessonType, level, aiReviewHint = '' }) {
     historyPrefix,
     'Você é o gerador resiliente de aulas do Fluency.',
     'Retorne SOMENTE JSON válido. Sem markdown, comentários ou texto fora do JSON.',
+    'A resposta deve começar com { e terminar com }. Não devolva JSON como string escapada.',
     'Use um objeto com: type, level, title, intro, objective, focus, sections, tips, listeningText, vocabulary, exercises e prompts.',
     `Tipo obrigatório da aula: ${lessonType}.`,
     `Nível obrigatório: ${level || 'A1'}.`,
     aiReviewHint ? `Correção obrigatória do professor revisor: ${clean(aiReviewHint)}.` : '',
-    'A aula deve ser completa, profunda, clara e adequada ao nível.',
-    'Para reading/listening, listeningText deve ter 220 a 340 palavras.',
+    'A aula deve ser completa, clara e adequada ao nível, mas o JSON precisa ser estável e fechado.',
+    'Para reading/listening, listeningText deve ter 260 a 340 palavras, com começo, meio e fechamento.',
     'sections deve ter 6 a 7 itens; vocabulary 12 a 16; exercises 12 a 16; prompts 5 a 7.',
     'Inclua exercícios abertos e não revele resposta antes da tentativa.',
+    'Evite aspas internas e barras invertidas dentro dos textos. Use frases simples com pontuação normal.',
     'Pedido original do cronograma:',
     clean(prompt) || 'Gerar aula de inglês A1.',
   ].filter(Boolean).join('\n');
 }
 
 function normalizeFallbackLesson(data, { lessonType, level }) {
+  const mainText = clean(data?.listeningText || data?.readingText || data?.mainText || data?.text || data?.transcript);
   return {
     type: clean(data?.type) || lessonType,
     level: clean(data?.level) || level || 'A1',
@@ -111,21 +146,21 @@ function normalizeFallbackLesson(data, { lessonType, level }) {
       content: clean(section?.content || section?.text || section?.body),
     })).filter((section) => section.title || section.content),
     tips: ensureArray(data?.tips).map(clean).filter(Boolean),
-    listeningText: clean(data?.listeningText),
+    listeningText: mainText,
     vocabulary: ensureArray(data?.vocabulary).map((item) => ({
       word: clean(item?.word || item?.term),
       meaning: clean(item?.meaning || item?.translation),
       example: clean(item?.example || item?.sentence),
     })).filter((item) => item.word || item.meaning || item.example),
-    exercises: ensureArray(data?.exercises).map((item, index) => ({
+    exercises: ensureArray(data?.exercises || data?.readingQuestions).map((item, index) => ({
       question: clean(item?.question || item?.prompt || `Questão ${index + 1}`),
       options: ensureArray(item?.options).map(clean).filter(Boolean),
       answer: clean(item?.answer || item?.correctAnswer),
-      explanation: clean(item?.explanation || item?.feedback),
+      explanation: clean(item?.explanation || item?.feedback || item?.evidence),
     })).filter((item) => item.question || item.answer || item.options.length),
-    prompts: ensureArray(data?.prompts).map(clean).filter(Boolean),
+    prompts: ensureArray(data?.prompts || data?.postReadingPrompts).map((item) => clean(item?.instruction || item?.prompt || item)).filter(Boolean),
     generationSeed: `resilient-${Date.now().toString(36)}`,
-    planContract: 'resilient-json-v1+history-context',
+    planContract: 'resilient-json-v1+history-context+hard-parser-v2',
   };
 }
 
@@ -134,7 +169,7 @@ async function callGemini({ attempt, prompt, fetcher }) {
   const url = `${base}${encodeURIComponent(attempt.model)}:generateContent?key=${encodeURIComponent(attempt.key)}`;
   const body = {
     contents: [{ role: 'user', parts: [{ text: prompt }] }],
-    generationConfig: { temperature: 0.22, maxOutputTokens: attempt.paid ? 7800 : 6200, responseMimeType: 'application/json' },
+    generationConfig: { temperature: 0.18, maxOutputTokens: attempt.paid ? 8200 : 6800, responseMimeType: 'application/json' },
   };
   const response = await fetcher(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
   if (!response || typeof response.ok === 'undefined') throw new Error('Gemini retornou resposta vazia no fallback resiliente.');
@@ -185,7 +220,7 @@ export async function generateResilientLessonDraft({ prompt, keys = [], proKey =
   if (!attempts.length) return { status: GEMINI_LESSON_STATUS.missingKeys, lesson: null, error: 'Nenhuma key Gemini válida configurada para aulas.' };
 
   diagnostics.setPhase('fallback resiliente de JSON', GEMINI_LESSON_STATUS.generating);
-  diagnostics.log('Geração em blocos falhou por JSON escapado. Acionando fallback resiliente com contexto histórico.', 'warn');
+  diagnostics.log('Fallback resiliente ativado para JSON truncado/escapado ou bloco curto.', 'warn');
 
   let lastError = null;
   for (let index = 0; index < attempts.length; index += 1) {
