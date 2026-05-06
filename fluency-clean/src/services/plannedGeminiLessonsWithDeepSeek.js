@@ -1,8 +1,8 @@
 import { diagnostics } from './diagnostics.js';
 import { generatePlannedLessonDraft as generateBasePlannedLessonDraft } from './plannedGeminiLessons.js';
-import { generateResilientLessonDraft } from './resilientGeminiLessonDraft.js';
 import { repairReadingExercisesWithDeepSeek } from './deepSeekReadingRepair.js';
 import { repairGrammarWithDeepSeek } from './deepSeekGrammarRepair.js';
+import { getDeepSeekReadingRepairStatus } from './deepSeekReadingRepair.js';
 import { inferLessonTypeFromText, normalizeLessonType } from './lessonTypes.js';
 
 function clean(value) { return String(value ?? '').trim(); }
@@ -67,36 +67,57 @@ function buildLocalGrammarSeedLesson(options = {}) {
   };
 }
 
+async function repairReadingIfAvailable(result, options = {}) {
+  if (result?.status !== 'success' || !result.lesson) return result;
+  try {
+    const repair = await repairReadingExercisesWithDeepSeek(result.lesson, { fetcher: options.fetcher });
+    if (repair?.applied && repair.lesson) {
+      diagnostics.log('Aula Reading recebeu reparo DeepSeek antes da validação final da tela.', 'success', repair.lesson.readingExerciseRepair);
+      return { ...result, lesson: repair.lesson, deepSeekReadingRepair: true };
+    }
+    diagnostics.log(`DeepSeek Reading Repair não aplicado: ${repair?.reason || 'indisponível'}.`, 'info', repair);
+  } catch (error) {
+    diagnostics.log(`DeepSeek Reading Repair falhou e a aula original foi mantida: ${error?.message || error}`, 'warn');
+  }
+  return result;
+}
+
+async function repairGrammarOrBlock(result, options = {}) {
+  if (result?.status !== 'success' || !result.lesson) return result;
+  const deepSeekStatus = getDeepSeekReadingRepairStatus();
+  if (!deepSeekStatus.configured) {
+    const error = 'DeepSeek Grammar Repair obrigatório para Grammar profunda não está configurado. Configure a key DeepSeek antes de gerar Grammar.';
+    diagnostics.setPhase('Grammar bloqueada sem DeepSeek', 'error');
+    diagnostics.log(error, 'error');
+    return { status: 'error', lesson: null, error };
+  }
+
+  try {
+    const repair = await repairGrammarWithDeepSeek(result.lesson, { fetcher: options.fetcher });
+    if (repair?.applied && repair.lesson) {
+      diagnostics.log('Aula Grammar recebeu reparo DeepSeek profundo antes da validação final.', 'success', repair.lesson.grammarRepair);
+      return { ...result, lesson: repair.lesson, deepSeekGrammarRepair: true };
+    }
+
+    const validation = repair?.validation;
+    const detail = validation?.sectionWordCounts?.length ? ` ${validation.deepSections}/8 seções profundas (${validation.sectionWordCounts.join('/')}) e ${validation.exercises?.length || 0}/18 exercícios.` : '';
+    const error = `Grammar bloqueada: DeepSeek não entregou profundidade mínima.${detail}`;
+    diagnostics.setPhase('Grammar bloqueada por profundidade', 'error');
+    diagnostics.log(error, 'error', repair);
+    return { status: 'error', lesson: null, error };
+  } catch (error) {
+    const message = `Grammar bloqueada: DeepSeek Grammar Repair falhou antes de validar. ${error?.message || error}`;
+    diagnostics.setPhase('Grammar bloqueada por falha no DeepSeek', 'error');
+    diagnostics.log(message, 'error');
+    return { status: 'error', lesson: null, error: message };
+  }
+}
+
 async function repairWithDeepSeekIfAvailable(result, options = {}) {
   if (result?.status !== 'success' || !result.lesson) return result;
   const type = String(result.lesson.type || '').toLowerCase();
-
-  if (type === 'reading') {
-    try {
-      const repair = await repairReadingExercisesWithDeepSeek(result.lesson, { fetcher: options.fetcher });
-      if (repair?.applied && repair.lesson) {
-        diagnostics.log('Aula Reading recebeu reparo DeepSeek antes da validação final da tela.', 'success', repair.lesson.readingExerciseRepair);
-        return { ...result, lesson: repair.lesson, deepSeekReadingRepair: true };
-      }
-      diagnostics.log(`DeepSeek Reading Repair não aplicado: ${repair?.reason || 'indisponível'}.`, 'info', repair);
-    } catch (error) {
-      diagnostics.log(`DeepSeek Reading Repair falhou e a aula original foi mantida: ${error?.message || error}`, 'warn');
-    }
-  }
-
-  if (type === 'grammar') {
-    try {
-      const repair = await repairGrammarWithDeepSeek(result.lesson, { fetcher: options.fetcher });
-      if (repair?.applied && repair.lesson) {
-        diagnostics.log('Aula Grammar recebeu reparo DeepSeek antes da validação final.', 'success', repair.lesson.grammarRepair);
-        return { ...result, lesson: repair.lesson, deepSeekGrammarRepair: true };
-      }
-      diagnostics.log(`DeepSeek Grammar Repair não aplicado: ${repair?.reason || 'indisponível'}.`, 'info', repair);
-    } catch (error) {
-      diagnostics.log(`DeepSeek Grammar Repair falhou e a aula original foi mantida: ${error?.message || error}`, 'warn');
-    }
-  }
-
+  if (type === 'reading') return repairReadingIfAvailable(result, options);
+  if (type === 'grammar') return repairGrammarOrBlock(result, options);
   return result;
 }
 
@@ -105,16 +126,9 @@ export async function generatePlannedLessonDraft(options = {}) {
 
   if (lessonType === 'grammar') {
     diagnostics.setPhase('Grammar seed seguro', 'generating');
-    diagnostics.log('Grammar usa seed local seguro antes do DeepSeek para não quebrar no início por JSON escapado do Gemini.', 'warn');
+    diagnostics.log('Grammar usa seed local seguro e só salva se o DeepSeek entregar profundidade mínima. Não há fallback frouxo para salvar aula curta.', 'warn');
     const seedResult = { status: 'success', lesson: buildLocalGrammarSeedLesson(options), error: null };
-    const repairedSeed = await repairWithDeepSeekIfAvailable(seedResult, options);
-    if (repairedSeed?.deepSeekGrammarRepair) return repairedSeed;
-
-    diagnostics.setPhase('Grammar fallback Gemini resiliente', 'generating');
-    diagnostics.log('DeepSeek não reparou Grammar. Tentando Gemini resiliente como fallback secundário.', 'warn');
-    const result = await generateResilientLessonDraft({ ...options, forcedType: 'grammar', level: options.level || 'A1' });
-    const repairedResult = await repairWithDeepSeekIfAvailable(result, options);
-    return repairedResult?.status === 'success' ? repairedResult : seedResult;
+    return repairGrammarOrBlock(seedResult, options);
   }
 
   const result = await generateBasePlannedLessonDraft(options);
