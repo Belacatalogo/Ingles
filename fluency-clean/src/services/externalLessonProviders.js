@@ -195,12 +195,22 @@ export function getExternalLessonProviderStatus() {
   const policy = getExternalProviderPolicy();
   const groqKey = readLocalText(policy.groq.keyStorage);
   const cerebrasKey = readLocalText(policy.cerebras.keyStorage);
+  const deepSeekKey = readLocalText(policy.deepseek.keyStorage);
   const groqModel = readLocalText(policy.groq.modelStorage) || policy.groq.defaultModel;
   const cerebrasModel = readLocalText(policy.cerebras.modelStorage) || policy.cerebras.defaultModel;
+  const deepSeekModel = readLocalText(policy.deepseek.modelStorage) || policy.deepseek.defaultModel;
   const forceExternalNext = Boolean(storage.get(FORCE_EXTERNAL_NEXT_STORAGE, false)) || readRawLocalStorage(FORCE_EXTERNAL_NEXT_STORAGE) === 'true';
   const forceProvider = normalizeForcedProvider(readLocalText(FORCE_EXTERNAL_PROVIDER_STORAGE));
   const providers = providersFromLocalStorage(forceProvider);
-  return { enabled: providersFromLocalStorage().length > 0, forceExternalNext, forceProvider, groq: { configured: Boolean(groqKey), masked: maskApiKey(groqKey), model: groqModel, defaultModel: policy.groq.defaultModel }, cerebras: { configured: Boolean(cerebrasKey), masked: maskApiKey(cerebrasKey), model: cerebrasModel, defaultModel: policy.cerebras.defaultModel }, providers: providers.map((provider) => ({ id: provider.id, label: provider.label, model: provider.model, masked: provider.masked })) };
+  return {
+    enabled: providersFromLocalStorage().length > 0,
+    forceExternalNext,
+    forceProvider,
+    groq: { configured: Boolean(groqKey), masked: maskApiKey(groqKey), model: groqModel, defaultModel: policy.groq.defaultModel },
+    cerebras: { configured: Boolean(cerebrasKey), masked: maskApiKey(cerebrasKey), model: cerebrasModel, defaultModel: policy.cerebras.defaultModel },
+    deepseek: { configured: Boolean(deepSeekKey), masked: maskApiKey(deepSeekKey), model: deepSeekModel, defaultModel: policy.deepseek.defaultModel },
+    providers: providers.map((provider) => ({ id: provider.id, label: provider.label, model: provider.model, masked: provider.masked })),
+  };
 }
 export function setForceExternalLessonProviderNext(value, provider = '') { const enabled = Boolean(value); const forcedProvider = normalizeForcedProvider(provider); storage.set(FORCE_EXTERNAL_NEXT_STORAGE, enabled); writeRawLocalStorage(FORCE_EXTERNAL_NEXT_STORAGE, enabled ? 'true' : ''); saveLocalText(FORCE_EXTERNAL_PROVIDER_STORAGE, enabled ? forcedProvider : ''); diagnostics.log(`Modo teste fallback externo ${enabled ? `ativado para a próxima geração${forcedProvider ? ` usando ${forcedProvider}` : ''}` : 'desativado'}.`, enabled ? 'warn' : 'info'); return getExternalLessonProviderStatus(); }
 export function shouldForceExternalLessonProviderOnce() { const status = getExternalLessonProviderStatus(); if (status.forceExternalNext) setForceExternalLessonProviderNext(false); return status.forceExternalNext ? status.forceProvider || 'external' : ''; }
