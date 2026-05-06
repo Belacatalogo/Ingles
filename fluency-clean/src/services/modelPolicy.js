@@ -36,6 +36,11 @@ export const EXTERNAL_PROVIDER_POLICY = {
     modelStorage: 'lesson.cerebras.model',
     defaultModel: 'llama-3.3-70b',
   },
+  deepseek: {
+    keyStorage: 'lesson.deepseek.key',
+    modelStorage: 'lesson.deepseek.model',
+    defaultModel: 'deepseek-chat',
+  },
 };
 
 export function getLessonModelPolicy(lessonType = 'default') {
@@ -52,5 +57,5 @@ export function summarizeModelPolicyForDiagnostics(lessonType = 'default') {
   const primary = policy.primaryModels.join(' / ');
   const fallback = policy.optionalFallbackModels.join(' / ');
   const external = policy.externalFallback.join(' / ');
-  return `Política de modelos ${MODEL_POLICY_VERSION}: keys free usam ${primary}; key Pro paga usa ${fallback} apenas como fallback opcional; Pro em keys free está desativado; fallback externo opcional: ${external}.`;
+  return `Política de modelos ${MODEL_POLICY_VERSION}: keys free usam ${primary}; key Pro paga usa ${fallback} apenas como fallback opcional; Pro em keys free está desativado; fallback externo opcional: ${external}; DeepSeek pode reparar exercícios Reading quando configurado.`;
 }
