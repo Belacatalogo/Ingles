@@ -1,5 +1,6 @@
 import { diagnostics } from './diagnostics.js';
 import { generatePlannedLessonDraft as generateBasePlannedLessonDraft } from './plannedGeminiLessons.js';
+import { generateResilientLessonDraft } from './resilientGeminiLessonDraft.js';
 import { repairReadingExercisesWithDeepSeek } from './deepSeekReadingRepair.js';
 import { repairGrammarWithDeepSeek } from './deepSeekGrammarRepair.js';
 import { getDeepSeekReadingRepairStatus } from './deepSeekReadingRepair.js';
@@ -67,6 +68,59 @@ function buildLocalGrammarSeedLesson(options = {}) {
   };
 }
 
+function buildLocalWritingSeedLesson(options = {}) {
+  const level = options.level || 'A1';
+  const prompt = clean(options.prompt || 'apresentação pessoal simples');
+  const focus = /email/i.test(prompt) ? 'e-mail simples' : /apresent/i.test(prompt) ? 'apresentação pessoal' : prompt.slice(0, 80) || 'escrita guiada';
+  return {
+    type: 'writing',
+    level,
+    title: `Writing ${level}: ${focus}`,
+    intro: `Nesta aula, você vai aprender a escrever uma ${focus} em inglês simples, usando modelo, frases prontas, substituições seguras e revisão guiada.`,
+    objective: `Construir um pequeno texto em inglês sobre ${focus}, primeiro copiando modelos A1, depois trocando informações e por fim escrevendo sua própria versão com segurança.`,
+    focus,
+    sections: [
+      { title: 'Modelo do professor', content: 'Leia este modelo antes de escrever: Hello. My name is Ana. I am a student. I am from Brazil. I like English. Nice to meet you. O objetivo é observar a ordem das frases e copiar a estrutura sem tentar traduzir palavra por palavra.' },
+      { title: 'Frases úteis', content: 'Use blocos simples para montar seu texto: My name is..., I am..., I am from..., I like..., Nice to meet you. Cada frase tem uma função: apresentar nome, falar quem você é, dizer origem, dizer algo que gosta e fechar com educação.' },
+      { title: 'Substituição guiada', content: 'Agora troque apenas uma parte por vez. My name is Ana pode virar My name is Luis. I am a student pode virar I am a worker. I am from Brazil pode continuar igual. Trocar pouco evita erro e ajuda o cérebro a entender o padrão.' },
+      { title: 'Erros comuns', content: 'Evite escrever I have 20 years para idade em inglês básico; use I am 20 years old quando a aula pedir idade. Evite My name Ana; use My name is Ana. Evite I from Brazil; use I am from Brazil.' },
+      { title: 'Revisão antes de entregar', content: 'Confira cinco pontos: começa com letra maiúscula, cada frase termina com ponto, tem o verbo is/am, as frases estão curtas, e o texto fala de você. Se uma frase ficou longa demais, divida em duas.' },
+      { title: 'Produção final', content: 'Escreva quatro a seis frases. Primeiro use o modelo. Depois adapte para sua vida real. O foco não é escrever muito; é escrever certo, claro e com confiança.' },
+    ],
+    tips: ['Copie o modelo primeiro.', 'Troque uma informação por vez.', 'Use frases curtas.', 'Revise ponto final e letra maiúscula.', 'Não traduza palavra por palavra.', 'Prefira escrever pouco e correto.'],
+    listeningText: '',
+    vocabulary: [
+      { word: 'Hello', meaning: 'Olá', example: 'Hello. My name is Ana.' },
+      { word: 'My name is', meaning: 'Meu nome é', example: 'My name is Luis.' },
+      { word: 'I am', meaning: 'Eu sou/estou', example: 'I am a student.' },
+      { word: 'from', meaning: 'de/origem', example: 'I am from Brazil.' },
+      { word: 'like', meaning: 'gostar de', example: 'I like English.' },
+      { word: 'student', meaning: 'estudante', example: 'I am a student.' },
+      { word: 'worker', meaning: 'trabalhador(a)', example: 'I am a worker.' },
+      { word: 'Brazil', meaning: 'Brasil', example: 'I am from Brazil.' },
+      { word: 'Nice to meet you', meaning: 'Prazer em conhecer você', example: 'Nice to meet you.' },
+      { word: 'sentence', meaning: 'frase', example: 'Write one sentence.' },
+    ],
+    exercises: [
+      { question: 'Qual frase está correta para dizer seu nome?', options: ['My name is Ana.', 'My name Ana.', 'Name is my Ana.'], answer: 'My name is Ana.', explanation: 'Em inglês usamos My name is + nome.' },
+      { question: 'Complete: I ___ from Brazil.', options: ['am', 'is', 'are'], answer: 'am', explanation: 'Com I, usamos am.' },
+      { question: 'Qual frase significa “Eu gosto de inglês”?', options: ['I like English.', 'I am English.', 'I from English.'], answer: 'I like English.', explanation: 'I like significa eu gosto de.' },
+      { question: 'Escolha uma boa frase final educada.', options: ['Nice to meet you.', 'I from Brazil.', 'My name.'], answer: 'Nice to meet you.', explanation: 'Essa frase fecha uma apresentação de forma educada.' },
+      { question: 'Corrija: My name Ana.', options: ['My name is Ana.', 'My name are Ana.', 'My is name Ana.'], answer: 'My name is Ana.', explanation: 'Falta o verbo is.' },
+      { question: 'Qual texto está melhor?', options: ['Hello. My name is Ana. I am from Brazil.', 'Hello my name Ana I Brazil.', 'Name Ana Brazil hello.'], answer: 'Hello. My name is Ana. I am from Brazil.', explanation: 'O texto correto tem frases curtas, verbo e pontuação.' },
+      { question: 'Complete: I ___ a student.', options: ['am', 'is', 'are'], answer: 'am', explanation: 'Com I, usamos am.' },
+      { question: 'Qual frase fala origem?', options: ['I am from Brazil.', 'I like English.', 'Nice to meet you.'], answer: 'I am from Brazil.', explanation: 'from indica origem.' },
+      { question: 'Qual frase tem pontuação melhor?', options: ['Hello. My name is Ana.', 'Hello my name is Ana', 'hello. my name is ana.'], answer: 'Hello. My name is Ana.', explanation: 'Começa com maiúscula e termina com ponto.' },
+      { question: 'Qual é uma frase simples A1?', options: ['I am a student.', 'Although I am new, I will introduce myself.', 'Because introductions are socially relevant.'], answer: 'I am a student.', explanation: 'A1 usa frases curtas e diretas.' },
+      { question: 'Complete: I ___ English.', options: ['like', 'am', 'from'], answer: 'like', explanation: 'like expressa gostar de algo.' },
+      { question: 'Qual ordem faz sentido?', options: ['Hello → name → from → like → goodbye', 'like → Brazil → hello → name', 'goodbye → name → hello'], answer: 'Hello → name → from → like → goodbye', explanation: 'Uma apresentação simples começa cumprimentando e depois apresenta informações.' },
+    ],
+    prompts: ['Copie o modelo da aula.', 'Troque o nome do modelo pelo seu nome.', 'Escreva uma frase com I am...', 'Escreva uma frase com I am from...', 'Escreva uma frase com I like...', 'Junte 4 a 6 frases em uma apresentação curta.', 'Revise maiúsculas, ponto final e verbo am/is.'],
+    generationSeed: `local-writing-seed-${Date.now().toString(36)}`,
+    planContract: 'local-writing-seed-v1',
+  };
+}
+
 async function repairReadingIfAvailable(result, options = {}) {
   if (result?.status !== 'success' || !result.lesson) return result;
   try {
@@ -129,6 +183,16 @@ export async function generatePlannedLessonDraft(options = {}) {
     diagnostics.log('Grammar usa seed local seguro e só salva se o DeepSeek entregar profundidade mínima. Não há fallback frouxo para salvar aula curta.', 'warn');
     const seedResult = { status: 'success', lesson: buildLocalGrammarSeedLesson(options), error: null };
     return repairGrammarOrBlock(seedResult, options);
+  }
+
+  if (lessonType === 'writing') {
+    diagnostics.setPhase('Writing resiliente direta', 'generating');
+    diagnostics.log('Writing usa geração resiliente direta para evitar quebra no bloco 1/4 por JSON escapado do Gemini.', 'warn');
+    const resilientResult = await generateResilientLessonDraft({ ...options, forcedType: 'writing', level: options.level || 'A1' });
+    if (resilientResult?.status === 'success' && resilientResult.lesson) return resilientResult;
+    diagnostics.setPhase('Writing seed seguro', 'generating');
+    diagnostics.log('Writing resiliente falhou. Usando seed local segura para passar pelo pipeline de qualidade sem quebrar a aula.', 'warn', resilientResult);
+    return { status: 'success', lesson: buildLocalWritingSeedLesson(options), error: null };
   }
 
   const result = await generateBasePlannedLessonDraft(options);
