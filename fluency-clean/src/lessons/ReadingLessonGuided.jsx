@@ -6,7 +6,11 @@ import { playLearningAudio } from '../services/audioPlayback.js';
 import { completeLesson, getLessonDraft, isLessonCompleted, saveLessonDraft } from '../services/progressStore.js';
 
 function clean(value) {
-  return String(value ?? '').replace(/\*\*(.*?)\*\*/g, '$1').replace(/\s+([,.!?;:])/g, '$1').replace(/([.!?])(?=[A-ZÁÉÍÓÚÂÊÔÃÕ])/g, '$1 ').trim();
+  return String(value ?? '')
+    .replace(/\*\*(.*?)\*\*/g, '$1')
+    .replace(/\s+([,.!?;:])/g, '$1')
+    .replace(/([.!?])(?=[A-ZÁÉÍÓÚÂÊÔÃÕ])/g, '$1 ')
+    .trim();
 }
 function list(value) { return Array.isArray(value) ? value : []; }
 function rawOf(lesson) { return lesson?.raw && typeof lesson.raw === 'object' ? lesson.raw : {}; }
@@ -33,15 +37,75 @@ function splitParagraphs(text) {
   }, []).filter(Boolean);
 }
 
+function splitSentences(text) {
+  return clean(text).split(/(?<=[.!?])\s+/).map(clean).filter(Boolean);
+}
+function exactSentence(text, pattern) {
+  return splitSentences(text).find((sentence) => pattern.test(sentence)) || '';
+}
+function unique(values) { return [...new Set(values.map(clean).filter(Boolean))]; }
+function shuffleStable(values) { return values.slice(0, 4); }
+
+function namesFromText(text) {
+  const names = [];
+  for (const match of clean(text).matchAll(/\bmy name is\s+([A-Z][A-Za-zÀ-ÿ'-]*)\b/g)) names.push(match[1]);
+  for (const match of clean(text).matchAll(/\b([A-Z][A-Za-zÀ-ÿ'-]*)\s+says\b/g)) names.push(match[1]);
+  return unique(names).filter((name) => !['Hello', 'Yes', 'No', 'Nice'].includes(name)).slice(0, 4);
+}
+function addDistractors(answer, pool) { return shuffleStable(unique([answer, ...pool]).filter(Boolean)); }
+function makeQuestion({ skill = 'detail', questionPt, answer, evidence, options }) {
+  return { skill, questionPt, answer: clean(answer), evidence: clean(evidence), options: unique(options).slice(0, 4), explanation: '' };
+}
+
+function syntheticQuestionsFromText(text) {
+  const names = namesFromText(text);
+  const sentences = splitSentences(text);
+  const questions = [];
+  const namePool = addDistractors('', [...names, 'Maria', 'John', 'Teacher', 'Ms. Green']).filter(Boolean);
+  const firstName = names[0] || '';
+  const secondName = names.find((name) => name !== firstName) || '';
+
+  if (firstName) {
+    const evidence = exactSentence(text, new RegExp(`my name is\\s+${firstName}`, 'i')) || sentences[0] || '';
+    questions.push(makeQuestion({ skill: 'detail', questionPt: `Quem se apresenta dizendo “My name is ${firstName}”?`, answer: firstName, evidence, options: addDistractors(firstName, namePool) }));
+  }
+  if (secondName) {
+    const evidence = exactSentence(text, new RegExp(`my name is\\s+${secondName}`, 'i')) || '';
+    questions.push(makeQuestion({ skill: 'detail', questionPt: `Qual é o nome do outro personagem que se apresenta?`, answer: secondName, evidence, options: addDistractors(secondName, namePool) }));
+  }
+  if (/nice to meet you/i.test(text)) {
+    const evidence = exactSentence(text, /nice to meet you/i);
+    questions.push(makeQuestion({ skill: 'vocabulary_context', questionPt: 'Qual frase do texto significa “prazer em conhecer você”?', answer: 'Nice to meet you', evidence, options: addDistractors('Nice to meet you', ['Goodbye', 'Thank you', 'How are you?']) }));
+  }
+  if (/play together/i.test(text)) {
+    const evidence = exactSentence(text, /play together/i);
+    questions.push(makeQuestion({ skill: 'detail', questionPt: 'O que os personagens fazem juntos?', answer: 'They play together.', evidence, options: addDistractors('They play together.', ['They read books.', 'They eat lunch.', 'They study English.']) }));
+  } else if (/\bplay\b/i.test(text)) {
+    const evidence = exactSentence(text, /\bplay\b/i);
+    questions.push(makeQuestion({ skill: 'detail', questionPt: 'Qual ação aparece no texto?', answer: 'Play', evidence, options: addDistractors('Play', ['Read', 'Sleep', 'Cook']) }));
+  }
+  if (/friendly/i.test(text)) {
+    const evidence = exactSentence(text, /friendly/i);
+    questions.push(makeQuestion({ skill: 'inference', questionPt: 'Como o texto descreve um dos personagens?', answer: 'Friendly', evidence, options: addDistractors('Friendly', ['Angry', 'Late', 'Tired']) }));
+  }
+  if (/happy/i.test(text)) {
+    const evidence = exactSentence(text, /happy/i);
+    questions.push(makeQuestion({ skill: 'detail', questionPt: 'Como Ana se sente no final do texto?', answer: 'Happy', evidence, options: addDistractors('Happy', ['Sad', 'Angry', 'Hungry']) }));
+  }
+  if (questions.length) {
+    const mainAnswer = firstName && secondName ? `${firstName} meets ${secondName}.` : 'A person introduces themself.';
+    questions.unshift(makeQuestion({ skill: 'main_idea', questionPt: 'Qual é a ideia principal do texto?', answer: mainAnswer, evidence: sentences.slice(0, 3).join(' '), options: addDistractors(mainAnswer, ['A shopping list.', 'A weather report.', 'A long grammar rule.']) }));
+  }
+  return questions.slice(0, 7).map((item, index) => ({ ...item, index }));
+}
+
 function ptQuestion(question, skill) {
   const q = clean(question);
   if (!q) return 'Qual alternativa responde melhor ao texto?';
   if (/[áéíóúãõç]|qual|quem|onde|quando|por que|o que|como/i.test(q)) return q;
   if (/^what is the main idea/i.test(q)) return 'Qual é a ideia principal do texto?';
-  let match = q.match(/^what does ([A-Z][A-Za-zÀ-ÿ]*) write/i); if (match) return `O que ${match[1]} escreve?`;
-  match = q.match(/^what does ([A-Z][A-Za-zÀ-ÿ]*) do when/i); if (match) return `O que ${match[1]} faz nessa situação?`;
-  match = q.match(/^what does ([A-Z][A-Za-zÀ-ÿ]*)/i); if (match) return `O que ${match[1]} faz no texto?`;
-  match = q.match(/^why does ([A-Z][A-Za-zÀ-ÿ]*)/i); if (match) return `Por que ${match[1]} faz isso?`;
+  if (/^what does [A-Z]/i.test(q)) return 'Qual informação aparece no texto?';
+  if (/^why does [A-Z]/i.test(q)) return 'Por que isso acontece no texto?';
   if (/where/i.test(q)) return 'Onde isso acontece no texto?';
   if (/when/i.test(q)) return 'Quando isso acontece no texto?';
   if (/who/i.test(q)) return 'Quem aparece no texto?';
@@ -51,19 +115,31 @@ function ptQuestion(question, skill) {
 }
 
 function optionList(item) {
-  return [...new Set(list(item?.options || item?.choices || item?.alternatives).map((option) => clean(typeof option === 'string' ? option : option?.text || option?.label || option?.value)).filter(Boolean))].slice(0, 4);
+  return unique(list(item?.options || item?.choices || item?.alternatives).map((option) => clean(typeof option === 'string' ? option : option?.text || option?.label || option?.value))).slice(0, 4);
 }
 function sourceQuestions(lesson) {
   const raw = rawOf(lesson);
   return list(lesson?.readingQuestions).length ? lesson.readingQuestions : list(raw.readingQuestions).length ? raw.readingQuestions : list(lesson?.questions).length ? lesson.questions : list(raw.questions).length ? raw.questions : list(lesson?.exercises).length ? lesson.exercises : list(raw.exercises);
 }
-function buildQuestions(lesson, paragraphs) {
+function isGenericGeneratedQuestion(item) {
+  const q = clean(item.questionPt).toLowerCase();
+  const options = item.options.join(' ').toLowerCase();
+  return /qual alternativa responde corretamente|qual informação aparece no texto/.test(q) || /goodbye|thank you|how are you/.test(options) && !/goodbye|thank you|how are you/i.test(item.evidence);
+}
+function generatedQuestions(lesson, paragraphs) {
   return sourceQuestions(lesson).map((item, index) => {
     const skill = clean(item?.skill || item?.type || (index === 0 ? 'main_idea' : 'detail'));
     const answer = first(item?.answer, item?.correctAnswer, item?.correct);
     const evidence = first(item?.evidence, item?.quote, item?.reference) || paragraphs.find((p) => answer && p.toLowerCase().includes(answer.toLowerCase())) || '';
     return { index, skill, questionPt: ptQuestion(first(item?.questionPt, item?.question_pt, item?.questionPortuguese, item?.question), skill), options: optionList(item), answer, evidence, explanation: first(item?.explanationPt, item?.explanation_pt, item?.explanation, item?.feedback) };
-  }).filter((item) => item.questionPt && item.options.length >= 2 && item.answer).slice(0, 10);
+  }).filter((item) => item.questionPt && item.options.length >= 2 && item.answer && item.evidence).slice(0, 10);
+}
+function buildQuestions(lesson, paragraphs, text) {
+  const synthetic = syntheticQuestionsFromText(text);
+  const generated = generatedQuestions(lesson, paragraphs);
+  const genericCount = generated.filter(isGenericGeneratedQuestion).length;
+  if (synthetic.length >= 4 && (generated.length < 4 || genericCount >= Math.ceil(generated.length / 2))) return synthetic;
+  return generated.length >= 4 ? generated : synthetic;
 }
 function buildVocabulary(lesson) {
   const raw = list(lesson?.vocabulary).length ? lesson.vocabulary : list(rawOf(lesson).vocabulary);
@@ -88,7 +164,7 @@ function QuestionCard({ item, index, selected, onSelect }) {
       <div className="option-list reading-option-list-v3">
         {item.options.map((option) => <button key={option} type="button" className={`option-button reading-option-button-v3${current === option ? ' selected' : ''}${current === option && answered ? (ok ? ' correct' : ' incorrect') : ''}`} onClick={() => onSelect(item.index, option)}>{option}</button>)}
       </div>
-      {answered ? <div className={ok ? 'question-feedback correct' : 'question-feedback incorrect'}><strong>{ok ? 'Correto.' : 'Ainda não. Volte ao texto e compare com calma.'}</strong>{item.evidence ? <p>Trecho de apoio: “{item.evidence}”</p> : null}{item.explanation ? <p>{item.explanation}</p> : null}</div> : null}
+      {answered ? <div className={ok ? 'question-feedback correct' : 'question-feedback incorrect'}><strong>{ok ? 'Correto.' : 'Ainda não. Volte ao texto e compare com calma.'}</strong>{ok && item.evidence ? <p>Trecho de apoio: “{item.evidence}”</p> : null}{ok && item.explanation ? <p>{item.explanation}</p> : null}</div> : null}
     </article>
   );
 }
@@ -102,7 +178,7 @@ export function ReadingLessonGuided({ lesson }) {
   const [completionMessage, setCompletionMessage] = useState(isLessonCompleted(lesson) ? 'Esta aula já foi concluída.' : '');
   const text = useMemo(() => getMainText(lesson), [lesson]);
   const paras = useMemo(() => splitParagraphs(text), [text]);
-  const questions = useMemo(() => buildQuestions(lesson, paras), [lesson, paras]);
+  const questions = useMemo(() => buildQuestions(lesson, paras, text), [lesson, paras, text]);
   const words = useMemo(() => buildVocabulary(lesson), [lesson]);
   const prep = useMemo(() => buildPreReading(lesson), [lesson]);
   const evidenceTasks = questions.filter((q) => q.evidence).slice(0, 3);
