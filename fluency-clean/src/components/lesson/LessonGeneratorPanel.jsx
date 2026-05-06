@@ -2,7 +2,7 @@ import { AlertCircle, Clock3, Loader2, RefreshCw, Sparkles } from 'lucide-react'
 import { useMemo, useState } from 'react';
 import { buildCurriculumPrompt, getCurriculumSummary, setActiveCurriculumLesson } from '../../services/curriculumPlan.js';
 import { diagnostics } from '../../services/diagnostics.js';
-import { generatePlannedLessonDraft } from '../../services/plannedGeminiLessons.js';
+import { generatePlannedLessonDraft } from '../../services/plannedGeminiLessonsWithDeepSeek.js';
 import { generateResilientLessonDraft } from '../../services/resilientGeminiLessonDraft.js';
 import { getLessonKeysStatus, getLessonFlashKeys, getLessonProKey } from '../../services/lessonKeys.js';
 import { getCurrentLessonRaw, getLastGenerationStatus, saveCurrentLesson } from '../../services/lessonStore.js';
