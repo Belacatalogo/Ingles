@@ -22,66 +22,28 @@ export function LessonKeysPanel() {
   const [draftGroqModel, setDraftGroqModel] = useState('');
   const [draftCerebrasKey, setDraftCerebrasKey] = useState('');
   const [draftCerebrasModel, setDraftCerebrasModel] = useState('');
+  const [draftDeepSeekKey, setDraftDeepSeekKey] = useState('');
+  const [draftDeepSeekModel, setDraftDeepSeekModel] = useState('');
   const [version, setVersion] = useState(0);
   const status = useMemo(() => getLessonKeysStatus(), [version]);
   const externalStatus = useMemo(() => getExternalLessonProviderStatus(), [version]);
 
-  function refresh() {
-    setVersion((value) => value + 1);
-  }
+  function refresh() { setVersion((value) => value + 1); }
+  function handleAddFlash() { addLessonFlashKey(draftFlashKey); setDraftFlashKey(''); refresh(); }
+  function handleSavePro() { saveLessonProKey(draftProKey); setDraftProKey(''); refresh(); }
+  function handleClearPro() { clearLessonProKey(); refresh(); }
 
-  function handleAddFlash() {
-    addLessonFlashKey(draftFlashKey);
-    setDraftFlashKey('');
-    refresh();
-  }
+  function handleSaveGroq() { saveExternalLessonProviderKey('groq', draftGroqKey, draftGroqModel || externalStatus.groq.defaultModel); setDraftGroqKey(''); setDraftGroqModel(''); refresh(); }
+  function handleSaveGroqModel() { saveExternalLessonProviderModel('groq', draftGroqModel || externalStatus.groq.defaultModel); setDraftGroqModel(''); refresh(); }
+  function handleClearGroq() { clearExternalLessonProvider('groq'); refresh(); }
 
-  function handleSavePro() {
-    saveLessonProKey(draftProKey);
-    setDraftProKey('');
-    refresh();
-  }
+  function handleSaveCerebras() { saveExternalLessonProviderKey('cerebras', draftCerebrasKey, draftCerebrasModel || externalStatus.cerebras.defaultModel); setDraftCerebrasKey(''); setDraftCerebrasModel(''); refresh(); }
+  function handleSaveCerebrasModel() { saveExternalLessonProviderModel('cerebras', draftCerebrasModel || externalStatus.cerebras.defaultModel); setDraftCerebrasModel(''); refresh(); }
+  function handleClearCerebras() { clearExternalLessonProvider('cerebras'); refresh(); }
 
-  function handleClearPro() {
-    clearLessonProKey();
-    refresh();
-  }
-
-  function handleSaveGroq() {
-    saveExternalLessonProviderKey('groq', draftGroqKey, draftGroqModel || externalStatus.groq.defaultModel);
-    setDraftGroqKey('');
-    setDraftGroqModel('');
-    refresh();
-  }
-
-  function handleSaveGroqModel() {
-    saveExternalLessonProviderModel('groq', draftGroqModel || externalStatus.groq.defaultModel);
-    setDraftGroqModel('');
-    refresh();
-  }
-
-  function handleClearGroq() {
-    clearExternalLessonProvider('groq');
-    refresh();
-  }
-
-  function handleSaveCerebras() {
-    saveExternalLessonProviderKey('cerebras', draftCerebrasKey, draftCerebrasModel || externalStatus.cerebras.defaultModel);
-    setDraftCerebrasKey('');
-    setDraftCerebrasModel('');
-    refresh();
-  }
-
-  function handleSaveCerebrasModel() {
-    saveExternalLessonProviderModel('cerebras', draftCerebrasModel || externalStatus.cerebras.defaultModel);
-    setDraftCerebrasModel('');
-    refresh();
-  }
-
-  function handleClearCerebras() {
-    clearExternalLessonProvider('cerebras');
-    refresh();
-  }
+  function handleSaveDeepSeek() { saveExternalLessonProviderKey('deepseek', draftDeepSeekKey, draftDeepSeekModel || externalStatus.deepseek.defaultModel); setDraftDeepSeekKey(''); setDraftDeepSeekModel(''); refresh(); }
+  function handleSaveDeepSeekModel() { saveExternalLessonProviderModel('deepseek', draftDeepSeekModel || externalStatus.deepseek.defaultModel); setDraftDeepSeekModel(''); refresh(); }
+  function handleClearDeepSeek() { clearExternalLessonProvider('deepseek'); refresh(); }
 
   function handleToggleForceExternal(provider = '') {
     const sameProviderActive = externalStatus.forceExternalNext && externalStatus.forceProvider === provider;
@@ -92,35 +54,17 @@ export function LessonKeysPanel() {
   return (
     <section className="lesson-keys-panel">
       <div className="panel-title"><KeyRound size={18} /> Chaves exclusivas de aulas</div>
-      <p>
-        Estas chaves são usadas somente para gerar aulas. Elas não substituem as chaves gerais de IA do restante do sistema.
-      </p>
+      <p>Estas chaves são usadas somente para gerar aulas. Elas não substituem as chaves gerais de IA do restante do sistema.</p>
 
       <div className="lesson-key-status">
-        <div>
-          <ShieldCheck size={17} />
-          <span>Flash/free</span>
-          <strong>{status.flashCount}/{status.maxFlashKeys}</strong>
-        </div>
-        <div>
-          <ShieldCheck size={17} />
-          <span>Pro fallback</span>
-          <strong>{status.proMasked || 'não configurada'}</strong>
-        </div>
+        <div><ShieldCheck size={17} /><span>Flash/free</span><strong>{status.flashCount}/{status.maxFlashKeys}</strong></div>
+        <div><ShieldCheck size={17} /><span>Pro fallback</span><strong>{status.proMasked || 'não configurada'}</strong></div>
       </div>
 
       <div className="key-form">
         <label htmlFor="lesson-flash-key">Adicionar key Flash/free</label>
         <div>
-          <input
-            id="lesson-flash-key"
-            value={draftFlashKey}
-            onChange={(event) => setDraftFlashKey(event.target.value)}
-            placeholder="AIza..."
-            autoCapitalize="none"
-            autoCorrect="off"
-            spellCheck="false"
-          />
+          <input id="lesson-flash-key" value={draftFlashKey} onChange={(event) => setDraftFlashKey(event.target.value)} placeholder="AIza..." autoCapitalize="none" autoCorrect="off" spellCheck="false" />
           <button type="button" onClick={handleAddFlash}><Plus size={16} /> Adicionar</button>
         </div>
       </div>
@@ -128,8 +72,7 @@ export function LessonKeysPanel() {
       <div className="saved-keys-list">
         {status.flashMasked.length ? status.flashMasked.map((key, index) => (
           <div className="saved-key-row" key={`${key}-${index}`}>
-            <span>Flash {index + 1}</span>
-            <strong>{key}</strong>
+            <span>Flash {index + 1}</span><strong>{key}</strong>
             <button type="button" onClick={() => { removeLessonFlashKey(index); refresh(); }}><Trash2 size={15} /></button>
           </div>
         )) : <p className="empty-note">Nenhuma key Flash/free exclusiva de aulas configurada.</p>}
@@ -138,109 +81,70 @@ export function LessonKeysPanel() {
       <div className="key-form pro-form">
         <label htmlFor="lesson-pro-key">Key Pro paga — último caso</label>
         <div>
-          <input
-            id="lesson-pro-key"
-            value={draftProKey}
-            onChange={(event) => setDraftProKey(event.target.value)}
-            placeholder="AIza..."
-            autoCapitalize="none"
-            autoCorrect="off"
-            spellCheck="false"
-          />
+          <input id="lesson-pro-key" value={draftProKey} onChange={(event) => setDraftProKey(event.target.value)} placeholder="AIza..." autoCapitalize="none" autoCorrect="off" spellCheck="false" />
           <button type="button" onClick={handleSavePro}><Plus size={16} /> Salvar Pro</button>
         </div>
-        {status.proMasked ? (
-          <button type="button" className="danger-button" onClick={handleClearPro}><Trash2 size={15} /> Remover Pro {status.proMasked}</button>
-        ) : null}
+        {status.proMasked ? <button type="button" className="danger-button" onClick={handleClearPro}><Trash2 size={15} /> Remover Pro {status.proMasked}</button> : null}
       </div>
 
       <div className="lesson-key-status">
-        <div>
-          <ShieldCheck size={17} />
-          <span>Groq fallback</span>
-          <strong>{externalStatus.groq.configured ? externalStatus.groq.masked : 'não configurada'}</strong>
-        </div>
-        <div>
-          <ShieldCheck size={17} />
-          <span>Cerebras fallback</span>
-          <strong>{externalStatus.cerebras.configured ? externalStatus.cerebras.masked : 'não configurada'}</strong>
-        </div>
+        <div><ShieldCheck size={17} /><span>Groq fallback</span><strong>{externalStatus.groq.configured ? externalStatus.groq.masked : 'não configurada'}</strong></div>
+        <div><ShieldCheck size={17} /><span>Cerebras fallback</span><strong>{externalStatus.cerebras.configured ? externalStatus.cerebras.masked : 'não configurada'}</strong></div>
+      </div>
+
+      <div className="lesson-key-status">
+        <div><ShieldCheck size={17} /><span>DeepSeek Reading</span><strong>{externalStatus.deepseek.configured ? externalStatus.deepseek.masked : 'não configurada'}</strong></div>
+        <div><ShieldCheck size={17} /><span>Função</span><strong>reparar Reading</strong></div>
       </div>
 
       <div className="key-form pro-form">
         <label>Teste controlado de motor</label>
-        <button type="button" className={externalStatus.forceExternalNext && !externalStatus.forceProvider ? 'danger-button' : ''} onClick={() => handleToggleForceExternal('')}>
-          <Zap size={16} /> {externalStatus.forceExternalNext && !externalStatus.forceProvider ? 'Fallback externo será usado na próxima geração' : 'Forçar fallback externo na próxima geração'}
-        </button>
-        <button type="button" className={externalStatus.forceExternalNext && externalStatus.forceProvider === 'groq' ? 'danger-button' : ''} onClick={() => handleToggleForceExternal('groq')} disabled={!externalStatus.groq.configured}>
-          <Zap size={16} /> {externalStatus.forceExternalNext && externalStatus.forceProvider === 'groq' ? 'Groq será usado na próxima geração' : 'Forçar Groq na próxima geração'}
-        </button>
-        <button type="button" className={externalStatus.forceExternalNext && externalStatus.forceProvider === 'cerebras' ? 'danger-button' : ''} onClick={() => handleToggleForceExternal('cerebras')} disabled={!externalStatus.cerebras.configured}>
-          <Zap size={16} /> {externalStatus.forceExternalNext && externalStatus.forceProvider === 'cerebras' ? 'Cerebras será usado na próxima geração' : 'Forçar Cerebras na próxima geração'}
-        </button>
-        <p className="empty-note">Para comparar: gere uma vez normal com Flash, depois force Groq, depois force Cerebras. O diagnóstico mostra uma assinatura/hash da aula salva.</p>
+        <button type="button" className={externalStatus.forceExternalNext && !externalStatus.forceProvider ? 'danger-button' : ''} onClick={() => handleToggleForceExternal('')}><Zap size={16} /> {externalStatus.forceExternalNext && !externalStatus.forceProvider ? 'Fallback externo será usado na próxima geração' : 'Forçar fallback externo na próxima geração'}</button>
+        <button type="button" className={externalStatus.forceExternalNext && externalStatus.forceProvider === 'groq' ? 'danger-button' : ''} onClick={() => handleToggleForceExternal('groq')} disabled={!externalStatus.groq.configured}><Zap size={16} /> {externalStatus.forceExternalNext && externalStatus.forceProvider === 'groq' ? 'Groq será usado na próxima geração' : 'Forçar Groq na próxima geração'}</button>
+        <button type="button" className={externalStatus.forceExternalNext && externalStatus.forceProvider === 'cerebras' ? 'danger-button' : ''} onClick={() => handleToggleForceExternal('cerebras')} disabled={!externalStatus.cerebras.configured}><Zap size={16} /> {externalStatus.forceExternalNext && externalStatus.forceProvider === 'cerebras' ? 'Cerebras será usado na próxima geração' : 'Forçar Cerebras na próxima geração'}</button>
+        <p className="empty-note">DeepSeek não substitui o motor principal: quando configurado, ele revisa e reescreve apenas os exercícios de Reading com evidência textual.</p>
+      </div>
+
+      <div className="key-form pro-form">
+        <label htmlFor="lesson-deepseek-key">DeepSeek — reparo de exercícios Reading</label>
+        <div>
+          <input id="lesson-deepseek-key" value={draftDeepSeekKey} onChange={(event) => setDraftDeepSeekKey(event.target.value)} placeholder="sk-..." autoCapitalize="none" autoCorrect="off" spellCheck="false" />
+          <button type="button" onClick={handleSaveDeepSeek}><Plus size={16} /> Salvar DeepSeek</button>
+        </div>
+        <div>
+          <input value={draftDeepSeekModel} onChange={(event) => setDraftDeepSeekModel(event.target.value)} placeholder={externalStatus.deepseek.model || externalStatus.deepseek.defaultModel} autoCapitalize="none" autoCorrect="off" spellCheck="false" />
+          <button type="button" onClick={handleSaveDeepSeekModel}>Modelo</button>
+        </div>
+        <p className="empty-note">Modelo atual: {externalStatus.deepseek.model}. Uso: criar perguntas em português A1, alternativas coerentes e evidência literal do texto.</p>
+        {externalStatus.deepseek.configured ? <button type="button" className="danger-button" onClick={handleClearDeepSeek}><Trash2 size={15} /> Remover DeepSeek {externalStatus.deepseek.masked}</button> : null}
       </div>
 
       <div className="key-form pro-form">
         <label htmlFor="lesson-groq-key">Groq fallback externo</label>
         <div>
-          <input
-            id="lesson-groq-key"
-            value={draftGroqKey}
-            onChange={(event) => setDraftGroqKey(event.target.value)}
-            placeholder="gsk_..."
-            autoCapitalize="none"
-            autoCorrect="off"
-            spellCheck="false"
-          />
+          <input id="lesson-groq-key" value={draftGroqKey} onChange={(event) => setDraftGroqKey(event.target.value)} placeholder="gsk_..." autoCapitalize="none" autoCorrect="off" spellCheck="false" />
           <button type="button" onClick={handleSaveGroq}><Plus size={16} /> Salvar Groq</button>
         </div>
         <div>
-          <input
-            value={draftGroqModel}
-            onChange={(event) => setDraftGroqModel(event.target.value)}
-            placeholder={externalStatus.groq.model || externalStatus.groq.defaultModel}
-            autoCapitalize="none"
-            autoCorrect="off"
-            spellCheck="false"
-          />
+          <input value={draftGroqModel} onChange={(event) => setDraftGroqModel(event.target.value)} placeholder={externalStatus.groq.model || externalStatus.groq.defaultModel} autoCapitalize="none" autoCorrect="off" spellCheck="false" />
           <button type="button" onClick={handleSaveGroqModel}>Modelo</button>
         </div>
         <p className="empty-note">Modelo atual: {externalStatus.groq.model}</p>
-        {externalStatus.groq.configured ? (
-          <button type="button" className="danger-button" onClick={handleClearGroq}><Trash2 size={15} /> Remover Groq {externalStatus.groq.masked}</button>
-        ) : null}
+        {externalStatus.groq.configured ? <button type="button" className="danger-button" onClick={handleClearGroq}><Trash2 size={15} /> Remover Groq {externalStatus.groq.masked}</button> : null}
       </div>
 
       <div className="key-form pro-form">
         <label htmlFor="lesson-cerebras-key">Cerebras fallback externo</label>
         <div>
-          <input
-            id="lesson-cerebras-key"
-            value={draftCerebrasKey}
-            onChange={(event) => setDraftCerebrasKey(event.target.value)}
-            placeholder="csk_..."
-            autoCapitalize="none"
-            autoCorrect="off"
-            spellCheck="false"
-          />
+          <input id="lesson-cerebras-key" value={draftCerebrasKey} onChange={(event) => setDraftCerebrasKey(event.target.value)} placeholder="csk_..." autoCapitalize="none" autoCorrect="off" spellCheck="false" />
           <button type="button" onClick={handleSaveCerebras}><Plus size={16} /> Salvar Cerebras</button>
         </div>
         <div>
-          <input
-            value={draftCerebrasModel}
-            onChange={(event) => setDraftCerebrasModel(event.target.value)}
-            placeholder={externalStatus.cerebras.model || externalStatus.cerebras.defaultModel}
-            autoCapitalize="none"
-            autoCorrect="off"
-            spellCheck="false"
-          />
+          <input value={draftCerebrasModel} onChange={(event) => setDraftCerebrasModel(event.target.value)} placeholder={externalStatus.cerebras.model || externalStatus.cerebras.defaultModel} autoCapitalize="none" autoCorrect="off" spellCheck="false" />
           <button type="button" onClick={handleSaveCerebrasModel}>Modelo</button>
         </div>
         <p className="empty-note">Modelo atual: {externalStatus.cerebras.model}</p>
-        {externalStatus.cerebras.configured ? (
-          <button type="button" className="danger-button" onClick={handleClearCerebras}><Trash2 size={15} /> Remover Cerebras {externalStatus.cerebras.masked}</button>
-        ) : null}
+        {externalStatus.cerebras.configured ? <button type="button" className="danger-button" onClick={handleClearCerebras}><Trash2 size={15} /> Remover Cerebras {externalStatus.cerebras.masked}</button> : null}
       </div>
     </section>
   );
