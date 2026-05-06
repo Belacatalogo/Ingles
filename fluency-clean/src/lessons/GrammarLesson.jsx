@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { BookOpenCheck, CheckCircle2, Lightbulb, ListChecks, MessageSquareText, PencilLine, Sparkles, Target } from 'lucide-react';
+import { BookOpenCheck, CheckCircle2, Lightbulb, ListChecks, MessageSquareText, PencilLine, Sparkles, Target, XCircle } from 'lucide-react';
 import { Card } from '../components/ui/Card.jsx';
 import { ProgressPill } from '../components/ui/ProgressPill.jsx';
 import { completeLesson, getLessonDraft, isLessonCompleted, saveLessonDraft } from '../services/progressStore.js';
@@ -80,10 +80,21 @@ function collectAllExamples(sections) {
 function normalizeExercises(lesson) {
   const exercises = Array.isArray(lesson?.exercises) ? lesson.exercises : [];
   return exercises.map((item, index) => ({
+    id: `grammar-exercise-${index}`,
     question: cleanText(item?.question || item?.prompt || item?.instruction || `Exercício ${index + 1}`),
+    options: Array.isArray(item?.options) ? item.options.map(cleanText).filter(Boolean).slice(0, 4) : [],
     answer: cleanText(item?.answer || item?.expectedAnswer || item?.correctAnswer || ''),
-    explanation: cleanText(item?.explanation || item?.feedback || ''),
-  })).filter((item) => item.question).slice(0, 4);
+    explanation: cleanText(item?.explanation || item?.explanationPt || item?.feedback || ''),
+  })).filter((item) => item.question).slice(0, 20);
+}
+
+function normalizeAnswer(value) {
+  return cleanText(value).toLowerCase().replace(/[.!?]+$/g, '').replace(/\s+/g, ' ');
+}
+
+function isCorrectAnswer(value, answer) {
+  if (!answer) return false;
+  return normalizeAnswer(value) === normalizeAnswer(answer);
 }
 
 function GrammarStepper({ activeStep, completed, onJump }) {
@@ -110,7 +121,7 @@ function GrammarStepper({ activeStep, completed, onJump }) {
   );
 }
 
-function GuidedPractice({ exercises }) {
+function GuidedPractice({ exercises, selectedAnswers, writtenPractice, onSelectAnswer, onWriteAnswer }) {
   if (!exercises.length) {
     return (
       <section className="grammar-section-card grammar-step-panel grammar-guided-practice-card" id="grammar-guided-practice">
@@ -122,34 +133,87 @@ function GuidedPractice({ exercises }) {
 
   return (
     <section className="grammar-section-card grammar-step-panel grammar-guided-practice-card" id="grammar-guided-practice">
-      <div className="panel-title"><ListChecks size={18} /> Prática guiada</div>
+      <div className="panel-title"><ListChecks size={18} /> Prática guiada interativa</div>
+      <p className="grammar-practice-intro">Responda aqui mesmo. A correção aparece depois da tentativa, sem entregar o gabarito antes.</p>
       <div className="grammar-guided-practice-list">
-        {exercises.map((exercise, index) => (
-          <article key={`${exercise.question}-${index}`}>
-            <span>Prática {index + 1}</span>
-            <strong>{exercise.question}</strong>
-            {exercise.answer ? <small>Resposta fica para conferência depois da tentativa.</small> : null}
-          </article>
-        ))}
+        {exercises.map((exercise, index) => {
+          const hasOptions = exercise.options.length >= 2;
+          const selected = selectedAnswers[exercise.id] || '';
+          const written = writtenPractice[exercise.id] || '';
+          const attempted = hasOptions ? Boolean(selected) : Boolean(cleanText(written));
+          const correct = hasOptions ? isCorrectAnswer(selected, exercise.answer) : isCorrectAnswer(written, exercise.answer);
+          return (
+            <article key={`${exercise.question}-${index}`}>
+              <span>Prática {index + 1}</span>
+              <strong>{exercise.question}</strong>
+              {hasOptions ? (
+                <div className="option-list grammar-option-list-v2">
+                  {exercise.options.map((option) => {
+                    const isSelected = selected === option;
+                    const optionCorrect = attempted && isCorrectAnswer(option, exercise.answer);
+                    const optionWrong = isSelected && attempted && !correct;
+                    return (
+                      <button
+                        type="button"
+                        key={option}
+                        className={`option-button grammar-option-button-v2${isSelected ? ' selected' : ''}${optionCorrect ? ' correct' : ''}${optionWrong ? ' incorrect' : ''}`}
+                        onClick={() => onSelectAnswer(exercise.id, option)}
+                        aria-pressed={isSelected}
+                      >
+                        {option}
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : (
+                <label className="grammar-inline-answer-label">
+                  Sua resposta
+                  <input
+                    type="text"
+                    inputMode="text"
+                    autoCapitalize="sentences"
+                    autoCorrect="on"
+                    spellCheck="true"
+                    value={written}
+                    onChange={(event) => onWriteAnswer(exercise.id, event.target.value)}
+                    placeholder="Digite sua resposta..."
+                  />
+                </label>
+              )}
+              {!attempted ? <small>Resposta fica para conferência depois da tentativa.</small> : null}
+              {attempted ? (
+                <div className={correct ? 'question-feedback correct' : 'question-feedback incorrect'}>
+                  <strong>{correct ? <><CheckCircle2 size={15} /> Correto.</> : <><XCircle size={15} /> Ainda não.</>}</strong>
+                  {!correct && exercise.answer ? <p>Modelo correto: <b>{exercise.answer}</b></p> : null}
+                  {exercise.explanation ? <p>{exercise.explanation}</p> : null}
+                </div>
+              ) : null}
+            </article>
+          );
+        })}
       </div>
     </section>
   );
 }
 
-function CorrectionPanel({ exercises }) {
+function CorrectionPanel({ exercises, selectedAnswers, writtenPractice }) {
   return (
     <section className="grammar-section-card grammar-step-panel grammar-correction-card" id="grammar-correction">
       <div className="panel-title"><CheckCircle2 size={18} /> Correção e transformação</div>
       <p>Depois de tentar, compare com o modelo e transforme a frase: afirmativa → negativa → pergunta.</p>
       {exercises.length ? (
         <div className="grammar-correction-list">
-          {exercises.map((exercise, index) => (
-            <article key={`${exercise.answer}-${index}`}>
-              <span>Modelo {index + 1}</span>
-              <strong>{exercise.answer || 'Use a regra para montar uma resposta possível.'}</strong>
-              {exercise.explanation ? <p>{exercise.explanation}</p> : null}
-            </article>
-          ))}
+          {exercises.map((exercise, index) => {
+            const userAnswer = selectedAnswers[exercise.id] || writtenPractice[exercise.id] || '';
+            return (
+              <article key={`${exercise.answer}-${index}`}>
+                <span>Modelo {index + 1}</span>
+                {userAnswer ? <p>Sua tentativa: <b>{userAnswer}</b></p> : null}
+                <strong>{exercise.answer || 'Use a regra para montar uma resposta possível.'}</strong>
+                {exercise.explanation ? <p>{exercise.explanation}</p> : null}
+              </article>
+            );
+          })}
         </div>
       ) : null}
     </section>
@@ -161,6 +225,8 @@ export function GrammarLesson({ lesson }) {
   const [completed, setCompleted] = useState(false);
   const [completionMessage, setCompletionMessage] = useState('');
   const [activeStep, setActiveStep] = useState('grammar-start');
+  const [selectedAnswers, setSelectedAnswers] = useState({});
+  const [writtenPractice, setWrittenPractice] = useState({});
   const sections = useMemo(() => normalizeSections(lesson), [lesson]);
   const tips = useMemo(() => normalizeTips(lesson), [lesson]);
   const renderReport = useMemo(() => buildGrammarRenderReport(sections), [sections]);
@@ -173,6 +239,8 @@ export function GrammarLesson({ lesson }) {
     setCompleted(isLessonCompleted(lesson));
     setCompletionMessage(isLessonCompleted(lesson) ? 'Esta aula já foi concluída.' : '');
     setActiveStep('grammar-start');
+    setSelectedAnswers({});
+    setWrittenPractice({});
   }, [lesson?.id, lesson?.title]);
 
   function jumpToGrammarStep(stepId) {
@@ -185,20 +253,28 @@ export function GrammarLesson({ lesson }) {
     if (next) jumpToGrammarStep(next.id);
   }
 
+  function handleSelectAnswer(exerciseId, option) {
+    setSelectedAnswers((current) => ({ ...current, [exerciseId]: option }));
+  }
+
+  function handleWritePractice(exerciseId, value) {
+    setWrittenPractice((current) => ({ ...current, [exerciseId]: value }));
+  }
+
   function handleSaveDraft() {
     saveLessonDraft({ lesson, answer: writtenAnswer });
     setCompletionMessage('Rascunho salvo.');
   }
 
   function handleCompleteLesson() {
-    const result = completeLesson({ lesson, answers: {}, writtenAnswer });
+    const result = completeLesson({ lesson, answers: { selectedAnswers, writtenPractice }, writtenAnswer });
     setCompleted(true);
     setActiveStep('grammar-finish');
     setCompletionMessage(result.alreadyCompleted ? 'Aula já estava concluída. Progresso mantido.' : '+25 XP. Grammar concluída e progresso salvo.');
   }
 
   return (
-    <article className="grammar-layout grammar-lesson-v1 grammar-deep-lesson-v2 grammar-renderer-system-v3 grammar-renderer-overflow-v4 grammar-renderer-card-trim-v5 grammar-renderer-card-split-v6 grammar-render-safety-gate-v1 grammar-stepper-real-v1">
+    <article className="grammar-layout grammar-lesson-v1 grammar-deep-lesson-v2 grammar-renderer-system-v3 grammar-renderer-overflow-v4 grammar-renderer-card-trim-v5 grammar-renderer-card-split-v6 grammar-render-safety-gate-v1 grammar-stepper-real-v1 grammar-interactive-practice-v2">
       <Card
         eyebrow={`Grammar profunda · ${lesson.level}`}
         title={lesson.title}
@@ -256,10 +332,10 @@ export function GrammarLesson({ lesson }) {
         <button type="button" className="lesson-type-next-step-button" onClick={goToNextStep}>Começar prática guiada</button>
       </section>
 
-      <GuidedPractice exercises={exercises} />
+      <GuidedPractice exercises={exercises} selectedAnswers={selectedAnswers} writtenPractice={writtenPractice} onSelectAnswer={handleSelectAnswer} onWriteAnswer={handleWritePractice} />
       <button type="button" className="lesson-type-next-step-button" onClick={goToNextStep}>Ir para correção</button>
 
-      <CorrectionPanel exercises={exercises} />
+      <CorrectionPanel exercises={exercises} selectedAnswers={selectedAnswers} writtenPractice={writtenPractice} />
       <button type="button" className="lesson-type-next-step-button" onClick={goToNextStep}>Ir para produção</button>
 
       <section className="answer-card guided-answer-card grammar-step-panel" id="grammar-production" data-grammar-step-active={activeStep === 'grammar-production'}>
