@@ -34,6 +34,10 @@ function stableHash(value) {
   return (hash >>> 0).toString(16).padStart(8, '0');
 }
 
+function isStaticLessonPayload(lesson) {
+  return Boolean(String(lesson?.schemaVersion || '').startsWith('static-lesson-schema') || lesson?.generationMeta?.source === 'static-curriculum' || lesson?.provider === 'static');
+}
+
 function buildLessonSignature(lesson) {
   const normalized = normalizeLesson(lesson);
   const sectionWordCounts = normalized.sections.map((section) => countWords(section?.content));
@@ -148,6 +152,8 @@ function getFreshestLessonRawSyncFallback() {
   const latestHistory = Array.isArray(history) ? history[0] : null;
   const statusLesson = findHistoryLessonByStatus(history, storage.get(LAST_GENERATION_STATUS_KEY, null));
 
+  if (isStaticLessonPayload(current)) return current;
+
   if (statusLesson && (!current || lessonTime(statusLesson) >= lessonTime(current) || statusLesson?.generationMeta?.id !== current?.generationMeta?.id)) {
     storage.set(CURRENT_LESSON_KEY, statusLesson);
     diagnostics.log(`Aula atual sincronizada pelo último status salvo: ${statusLesson.title || 'sem título'}`, 'info');
@@ -165,6 +171,7 @@ function getFreshestLessonRawSyncFallback() {
 
 export async function getCurrentLessonFull() {
   const pointer = storage.get(CURRENT_LESSON_KEY, null);
+  if (isStaticLessonPayload(pointer)) return pointer;
   if (pointer?.storageMode === FULL_LESSON_POINTER_CONTRACT && pointer?.indexedDbGenerationId) {
     const fullLesson = await getFullLessonBestEffort(pointer.indexedDbGenerationId);
     if (fullLesson) return fullLesson;
@@ -179,7 +186,9 @@ export function getLessonComparisonRuns() {
 
 export function getCurrentLesson() {
   const lesson = getFreshestLessonRawSyncFallback();
-  return lesson ? normalizeLesson(lesson) : null;
+  if (!lesson) return null;
+  if (isStaticLessonPayload(lesson)) return lesson;
+  return normalizeLesson(lesson);
 }
 
 export function getCurrentLessonRaw() {
