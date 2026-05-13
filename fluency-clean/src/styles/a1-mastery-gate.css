@@ -1,5 +1,6 @@
 .a1-mastery-gate-card,
-.a1-final-exam-shell-card {
+.a1-final-exam-shell-card,
+.a1-checkpoint-shell-card {
   border: 1px solid rgba(148, 163, 184, 0.18);
   border-radius: 24px;
   padding: 18px;
@@ -14,6 +15,11 @@
   background: radial-gradient(circle at 16% 0%, rgba(96, 165, 250, 0.18), transparent 34%), linear-gradient(145deg, rgba(15, 23, 42, 0.94), rgba(30, 41, 59, 0.82));
 }
 
+.a1-checkpoint-shell-card {
+  border-color: rgba(168, 85, 247, 0.24);
+  background: radial-gradient(circle at 16% 0%, rgba(168, 85, 247, 0.16), transparent 34%), linear-gradient(145deg, rgba(15, 23, 42, 0.94), rgba(30, 41, 59, 0.82));
+}
+
 .a1-mastery-gate-card.ready {
   border-color: rgba(250, 204, 21, 0.34);
 }
@@ -24,6 +30,7 @@
 
 .a1-mastery-gate-card header,
 .a1-final-exam-shell-card header,
+.a1-checkpoint-shell-card header,
 .a1-gate-title,
 .a1-gate-status-row,
 .a1-gate-review-row {
@@ -33,7 +40,8 @@
 }
 
 .a1-mastery-gate-card header,
-.a1-final-exam-shell-card header {
+.a1-final-exam-shell-card header,
+.a1-checkpoint-shell-card header {
   justify-content: space-between;
   flex-wrap: wrap;
 }
@@ -51,6 +59,11 @@
 .a1-final-exam-shell-card .a1-gate-title span {
   color: #bfdbfe;
   background: rgba(96, 165, 250, 0.12);
+}
+
+.a1-checkpoint-shell-card .a1-gate-title span {
+  color: #e9d5ff;
+  background: rgba(168, 85, 247, 0.12);
 }
 
 .a1-gate-title div {
@@ -71,6 +84,7 @@
 
 .a1-mastery-gate-card header em,
 .a1-final-exam-shell-card header em,
+.a1-checkpoint-shell-card header em,
 .a1-gate-status-row span,
 .a1-gate-review-row span {
   border-radius: 999px;
@@ -91,6 +105,11 @@
 .a1-final-exam-shell-card header em {
   color: #bfdbfe;
   background: rgba(96, 165, 250, 0.1);
+}
+
+.a1-checkpoint-shell-card header em {
+  color: #e9d5ff;
+  background: rgba(168, 85, 247, 0.1);
 }
 
 .a1-gate-grid {
@@ -234,13 +253,15 @@
   font-weight: 850;
 }
 
-.a1-final-exam-sections {
+.a1-final-exam-sections,
+.a1-checkpoint-pillar-list {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
 }
 
-.a1-final-exam-sections article {
+.a1-final-exam-sections article,
+.a1-checkpoint-pillar-list article {
   border: 1px solid rgba(148, 163, 184, 0.16);
   border-radius: 18px;
   padding: 13px;
@@ -254,14 +275,18 @@
   background: rgba(37, 99, 235, 0.14);
 }
 
-.a1-final-exam-sections article div {
+.a1-final-exam-sections article div,
+.a1-checkpoint-pillar-list article div {
   display: flex;
   align-items: center;
   gap: 8px;
   color: #f8fafc;
+  flex-wrap: wrap;
 }
 
-.a1-final-exam-sections article p {
+.a1-final-exam-sections article p,
+.a1-checkpoint-pillar-list article p,
+.a1-checkpoint-active-card p {
   margin: 0;
   color: rgba(226, 232, 240, 0.74);
   font-size: 0.82rem;
@@ -270,6 +295,75 @@
 
 .a1-final-exam-sections article small {
   color: #bfdbfe;
+  font-weight: 800;
+}
+
+.a1-checkpoint-pillar-list article span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border-radius: 999px;
+  padding: 5px 8px;
+  color: #e9d5ff;
+  background: rgba(168, 85, 247, 0.1);
+  font-size: .72rem;
+  font-weight: 900;
+}
+
+.a1-checkpoint-pillar-list ul {
+  margin: 0;
+  padding-left: 18px;
+  color: rgba(226, 232, 240, 0.72);
+  font-size: .82rem;
+  line-height: 1.5;
+}
+
+.a1-checkpoint-tabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.a1-checkpoint-tabs::-webkit-scrollbar { display: none; }
+
+.a1-checkpoint-tabs button {
+  flex: 0 0 auto;
+  min-height: 40px;
+  border: 1px solid rgba(168, 85, 247, 0.22);
+  border-radius: 14px;
+  background: rgba(168, 85, 247, 0.08);
+  color: #e9d5ff;
+  padding: 0 13px;
+  font-weight: 900;
+}
+
+.a1-checkpoint-tabs button.active {
+  border-color: rgba(168, 85, 247, 0.58);
+  background: rgba(168, 85, 247, 0.2);
+  color: #faf5ff;
+}
+
+.a1-checkpoint-active-card {
+  border: 1px solid rgba(168, 85, 247, 0.16);
+  border-radius: 18px;
+  padding: 13px;
+  background: rgba(168, 85, 247, 0.08);
+  display: grid;
+  gap: 8px;
+}
+
+.a1-checkpoint-active-card div {
+  display: grid;
+  gap: 3px;
+}
+
+.a1-checkpoint-active-card strong {
+  color: #f8fafc;
+}
+
+.a1-checkpoint-active-card small {
+  color: #e9d5ff;
   font-weight: 800;
 }
 
@@ -455,7 +549,8 @@
 
 @media (max-width: 760px) {
   .a1-mastery-gate-card,
-  .a1-final-exam-shell-card {
+  .a1-final-exam-shell-card,
+  .a1-checkpoint-shell-card {
     border-radius: 20px;
     padding: 14px;
   }
@@ -463,6 +558,7 @@
   .a1-gate-grid,
   .a1-gate-pillar-grid,
   .a1-final-exam-sections,
+  .a1-checkpoint-pillar-list,
   .a1-final-question-options,
   .a1-final-result-card div {
     grid-template-columns: 1fr;
@@ -470,6 +566,7 @@
 
   .a1-mastery-gate-card header em,
   .a1-final-exam-shell-card header em,
+  .a1-checkpoint-shell-card header em,
   .a1-final-exam-note span,
   .a1-final-save-message {
     width: 100%;
