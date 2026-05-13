@@ -1,8 +1,9 @@
 import { A1_FINAL_EXAM_VERSION, scoreA1FinalExamObjectiveAnswers } from '../content/curriculum/levels/A1/a1FinalExamModel.js';
-import { recordA1FinalExamPillarScore } from './a1MasteryGateService.js';
+import { markA1ProductiveSkillReviewed, recordA1FinalExamPillarScore } from './a1MasteryGateService.js';
 
 const STORAGE_KEY = 'fluency:a1-final-exam:objective-attempt:v1';
 const OBJECTIVE_PILLARS = Object.freeze(['grammar', 'vocabulary', 'reading', 'listening']);
+const PRODUCTIVE_SKILLS = Object.freeze(['speaking', 'writing']);
 
 function safeParse(value, fallback) {
   try { return value ? JSON.parse(value) : fallback; } catch { return fallback; }
@@ -10,6 +11,12 @@ function safeParse(value, fallback) {
 
 function canUseStorage() {
   return typeof window !== 'undefined' && Boolean(window.localStorage);
+}
+
+function clampScore(value) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return 0;
+  return Math.max(0, Math.min(100, Math.round(number)));
 }
 
 function getStoredAttempt() {
@@ -37,6 +44,7 @@ export function saveA1FinalExamObjectiveAttempt(objectiveAnswers = {}) {
     savedAt: new Date().toISOString(),
     objectiveAnswers,
     productiveDrafts: current.productiveDrafts || {},
+    productiveReviews: current.productiveReviews || {},
     scoring,
   });
   return persistAttempt(attempt);
@@ -57,7 +65,7 @@ export function saveAndSyncA1FinalExamObjectiveAttempt(objectiveAnswers = {}) {
 }
 
 export function saveA1FinalExamProductiveDraft(skill, draft = '') {
-  if (!['speaking', 'writing'].includes(skill)) return getStoredAttempt();
+  if (!PRODUCTIVE_SKILLS.includes(skill)) return getStoredAttempt();
   const current = getStoredAttempt() || {};
   const attempt = Object.freeze({
     ...current,
@@ -68,6 +76,32 @@ export function saveA1FinalExamProductiveDraft(skill, draft = '') {
     productiveDrafts: {
       ...(current.productiveDrafts || {}),
       [skill]: String(draft || '').trim(),
+    },
+    productiveReviews: current.productiveReviews || {},
+    scoring: current.scoring || scoreA1FinalExamObjectiveAnswers(current.objectiveAnswers || {}),
+  });
+  return persistAttempt(attempt);
+}
+
+export function reviewA1FinalExamProductiveSkill(skill, score, note = '') {
+  if (!PRODUCTIVE_SKILLS.includes(skill)) return getStoredAttempt();
+  const current = getStoredAttempt() || {};
+  const finalScore = clampScore(score);
+  recordA1FinalExamPillarScore(skill, finalScore);
+  markA1ProductiveSkillReviewed(skill, true);
+  const attempt = Object.freeze({
+    ...current,
+    version: A1_FINAL_EXAM_VERSION,
+    reviewedAt: new Date().toISOString(),
+    objectiveAnswers: current.objectiveAnswers || {},
+    productiveDrafts: current.productiveDrafts || {},
+    productiveReviews: {
+      ...(current.productiveReviews || {}),
+      [skill]: {
+        score: finalScore,
+        note: String(note || '').trim(),
+        reviewedAt: new Date().toISOString(),
+      },
     },
     scoring: current.scoring || scoreA1FinalExamObjectiveAnswers(current.objectiveAnswers || {}),
   });
