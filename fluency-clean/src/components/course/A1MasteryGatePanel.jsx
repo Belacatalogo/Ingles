@@ -11,6 +11,15 @@ const pillarLabels = {
 };
 
 function safeArray(value) { return Array.isArray(value) ? value : []; }
+function humanAction(item = '') {
+  return String(item)
+    .replace('Concluir 100% das aulas do nível.', 'Concluir todas as aulas do A1.')
+    .replace('Atingir média mínima de 80% nos checkpoints.', 'Atingir média mínima de 80% nas avaliações do A1.')
+    .replace('Atingir 80% ou mais na prova final do nível.', 'Tirar 80% ou mais na prova final do A1.')
+    .replace('Speaking precisa de revisão por IA/professor.', 'Speaking precisa ser revisado.')
+    .replace('Writing precisa de revisão por IA/professor.', 'Writing precisa ser revisado.')
+    .replace('Reforçar pilares abaixo de 75%:', 'Reforçar áreas abaixo de 75%:');
+}
 
 function ProgressLine({ label, value, target = 100 }) {
   const percent = Math.max(0, Math.min(100, Number(value || 0)));
@@ -34,8 +43,8 @@ export function A1MasteryGatePanel() {
         <div className="a1-gate-title">
           <span><GraduationCap size={18} /></span>
           <div>
-            <strong>A1 Mastery Gate</strong>
-            <small>Avanço para A2 depende de domínio real, não só de aulas assistidas.</small>
+            <strong>Critérios para liberar o A2</strong>
+            <small>Você só avança quando mostra domínio real do A1, não apenas por assistir aulas.</small>
           </div>
         </div>
         <em><Icon size={14} /> {summary.statusLabel}</em>
@@ -43,14 +52,14 @@ export function A1MasteryGatePanel() {
 
       <div className="a1-gate-grid">
         <ProgressLine label="Aulas A1 concluídas" value={state.lessonCompletionPercent} target={100} />
-        <ProgressLine label="Média dos checkpoints" value={readiness.checkpointAveragePercent} target={80} />
-        <ProgressLine label="Nota final ponderada" value={gate.overall} target={80} />
+        <ProgressLine label="Média das avaliações" value={readiness.checkpointAveragePercent} target={80} />
+        <ProgressLine label="Resultado da prova final" value={gate.overall} target={80} />
       </div>
 
       <div className="a1-gate-status-row">
         <span className={summary.canTakeFinalExam ? 'ok' : 'warn'}>
           {summary.canTakeFinalExam ? <CheckCircle2 size={14} /> : <AlertTriangle size={14} />}
-          {summary.canTakeFinalExam ? 'Pode fazer o A1 Final Exam' : 'Ainda não pode fazer o A1 Final Exam'}
+          {summary.canTakeFinalExam ? 'Pode fazer a prova final do A1' : 'Ainda não pode fazer a prova final do A1'}
         </span>
         <span className={summary.canUnlockA2 ? 'ok' : 'warn'}>
           {summary.canUnlockA2 ? <Sparkles size={14} /> : <Lock size={14} />}
@@ -71,14 +80,14 @@ export function A1MasteryGatePanel() {
       </div>
 
       <div className="a1-gate-review-row">
-        <span className={state.speakingReviewed ? 'ok' : 'warn'}><ShieldCheck size={14} /> Speaking {state.speakingReviewed ? 'revisado' : 'sem revisão'}</span>
-        <span className={state.writingReviewed ? 'ok' : 'warn'}><ShieldCheck size={14} /> Writing {state.writingReviewed ? 'revisado' : 'sem revisão'}</span>
+        <span className={state.speakingReviewed ? 'ok' : 'warn'}><ShieldCheck size={14} /> Speaking {state.speakingReviewed ? 'revisado' : 'aguardando revisão'}</span>
+        <span className={state.writingReviewed ? 'ok' : 'warn'}><ShieldCheck size={14} /> Writing {state.writingReviewed ? 'revisado' : 'aguardando revisão'}</span>
       </div>
 
       {safeArray(summary.requiredActions).length ? (
         <div className="a1-gate-actions-list">
-          <strong>Pendências antes de liberar A2</strong>
-          <ul>{summary.requiredActions.slice(0, 6).map((item) => <li key={item}>{item}</li>)}</ul>
+          <strong>O que falta para liberar o A2</strong>
+          <ul>{summary.requiredActions.slice(0, 6).map((item) => <li key={item}>{humanAction(item)}</li>)}</ul>
         </div>
       ) : (
         <div className="a1-gate-success"><CheckCircle2 size={16} /> Todos os critérios do A1 foram cumpridos. A2 pode ser liberado.</div>
