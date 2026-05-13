@@ -103,6 +103,24 @@
   background: linear-gradient(180deg, rgba(91,156,246,.22), rgba(13,19,42,.78));
 }
 
+.course-level-tabs button.locked {
+  border-color: rgba(248,113,113,.24);
+  background: linear-gradient(180deg, rgba(127,29,29,.22), rgba(13,19,42,.72));
+  opacity: .82;
+}
+
+.course-level-tabs button.locked strong {
+  color: #fecaca;
+}
+
+.course-level-tabs button.locked span {
+  color: #fca5a5;
+}
+
+.course-level-tabs button.locked small {
+  color: #f3c7c7;
+}
+
 .course-level-tabs strong {
   color: #fff;
   font-size: 24px;
