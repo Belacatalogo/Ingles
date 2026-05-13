@@ -1,3 +1,4 @@
+import { findStaticLesson } from '../content/curriculum/index.js';
 import { diagnostics } from './diagnostics.js';
 import { markCurriculumLessonComplete } from './curriculumPlan.js';
 import { normalizeLesson } from './lessonTypes.js';
@@ -10,6 +11,7 @@ const LESSON_DRAFT_PROMPT_KEY = 'lesson.promptDraft';
 const LAST_GENERATION_STATUS_KEY = 'lesson.lastGenerationStatus';
 const COMPARISON_HISTORY_KEY = 'lesson.comparisonRuns';
 const FULL_LESSON_POINTER_CONTRACT = 'lesson-full-indexeddb-v1';
+const STATIC_LESSON_CONTENT_VERSION = 'static-content-refresh-2026-05-13-v2';
 
 function makeGenerationId(date = new Date()) {
   return `gen-${date.toISOString().replace(/[-:TZ.]/g, '').slice(0, 14)}-${Math.random().toString(36).slice(2, 6)}`;
@@ -36,6 +38,39 @@ function stableHash(value) {
 
 function isStaticLessonPayload(lesson) {
   return Boolean(String(lesson?.schemaVersion || '').startsWith('static-lesson-schema') || lesson?.generationMeta?.source === 'static-curriculum' || lesson?.provider === 'static');
+}
+
+function refreshStaticLessonPayload(lesson) {
+  if (!isStaticLessonPayload(lesson) || !lesson?.id) return lesson;
+  const canonical = findStaticLesson(lesson.id);
+  if (!canonical || canonical.status !== 'ready') return lesson;
+  const currentVersion = lesson?.generationMeta?.contentVersion || '';
+  const currentHash = stableHash(JSON.stringify(lesson));
+  const canonicalHash = stableHash(JSON.stringify(canonical));
+  if (currentVersion === STATIC_LESSON_CONTENT_VERSION && currentHash === canonicalHash) return lesson;
+  const now = new Date().toISOString();
+  const refreshed = {
+    ...canonical,
+    type: canonical.pillar,
+    provider: 'static',
+    generationMeta: {
+      ...(lesson.generationMeta || {}),
+      id: lesson.generationMeta?.id || `static-${canonical.id}`,
+      source: 'static-curriculum',
+      provider: 'static',
+      model: 'curated',
+      status: 'ready',
+      generatedAt: canonical.updatedAt || lesson.generationMeta?.generatedAt || now,
+      savedAt: now,
+      contractVersion: canonical.schemaVersion || lesson.generationMeta?.contractVersion || 'static-lesson-schema-v1',
+      pedagogicalScore: 100,
+      contentVersion: STATIC_LESSON_CONTENT_VERSION,
+      refreshedFromCurriculum: true,
+    },
+  };
+  storage.set(CURRENT_LESSON_KEY, refreshed);
+  diagnostics.log(`Aula fixa atualizada a partir do currículo: ${refreshed.title}`, 'info');
+  return refreshed;
 }
 
 function buildLessonSignature(lesson) {
@@ -152,7 +187,7 @@ function getFreshestLessonRawSyncFallback() {
   const latestHistory = Array.isArray(history) ? history[0] : null;
   const statusLesson = findHistoryLessonByStatus(history, storage.get(LAST_GENERATION_STATUS_KEY, null));
 
-  if (isStaticLessonPayload(current)) return current;
+  if (isStaticLessonPayload(current)) return refreshStaticLessonPayload(current);
 
   if (statusLesson && (!current || lessonTime(statusLesson) >= lessonTime(current) || statusLesson?.generationMeta?.id !== current?.generationMeta?.id)) {
     storage.set(CURRENT_LESSON_KEY, statusLesson);
@@ -171,7 +206,7 @@ function getFreshestLessonRawSyncFallback() {
 
 export async function getCurrentLessonFull() {
   const pointer = storage.get(CURRENT_LESSON_KEY, null);
-  if (isStaticLessonPayload(pointer)) return pointer;
+  if (isStaticLessonPayload(pointer)) return refreshStaticLessonPayload(pointer);
   if (pointer?.storageMode === FULL_LESSON_POINTER_CONTRACT && pointer?.indexedDbGenerationId) {
     const fullLesson = await getFullLessonBestEffort(pointer.indexedDbGenerationId);
     if (fullLesson) return fullLesson;
@@ -187,7 +222,7 @@ export function getLessonComparisonRuns() {
 export function getCurrentLesson() {
   const lesson = getFreshestLessonRawSyncFallback();
   if (!lesson) return null;
-  if (isStaticLessonPayload(lesson)) return lesson;
+  if (isStaticLessonPayload(lesson)) return refreshStaticLessonPayload(lesson);
   return normalizeLesson(lesson);
 }
 
