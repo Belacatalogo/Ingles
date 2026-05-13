@@ -1,5 +1,6 @@
 import { A1_FOUNDATIONS_BY_PILLAR, A1_FOUNDATIONS_LESSONS } from './levels/A1/foundationsSafe.js';
 import { A1_DEEP_GRAMMAR_BY_PILLAR, A1_DEEP_GRAMMAR_FOUNDATIONS } from './levels/A1/deepGrammarFoundations.js';
+import { A1_DEEP_GRAMMAR_EXTRA, A1_DEEP_GRAMMAR_EXTRA_BY_PILLAR } from './levels/A1/deepGrammarFoundationsExtra.js';
 import { A1_FULL_CONTENT_BY_PILLAR, A1_FULL_CONTENT_LESSONS } from './levels/A1/fullContent.js';
 import { A1_CHECKPOINT_LESSONS } from './levels/A1/checkpoints.js';
 import { validateStaticLessonList } from '../schemas/index.js';
@@ -13,9 +14,9 @@ function mergeUniqueLessons(...groups) {
   }).sort((a, b) => String(a.pillar).localeCompare(String(b.pillar)) || Number(a.order || 0) - Number(b.order || 0));
 }
 
-function mergePillarLessons(deepGrammar, foundations, full) {
+function mergePillarLessons(deepGrammar, deepGrammarExtra, foundations, full) {
   return Object.freeze({
-    grammar: Object.freeze(mergeUniqueLessons(deepGrammar.grammar || [], foundations.grammar || [], full.grammar || [])),
+    grammar: Object.freeze(mergeUniqueLessons(deepGrammar.grammar || [], deepGrammarExtra.grammar || [], foundations.grammar || [], full.grammar || [])),
     vocabulary: Object.freeze(mergeUniqueLessons(foundations.vocabulary || [], full.vocabulary || [])),
     reading: Object.freeze(mergeUniqueLessons(foundations.reading || [], full.reading || [])),
     listening: Object.freeze(mergeUniqueLessons(foundations.listening || [], full.listening || [])),
@@ -25,14 +26,14 @@ function mergePillarLessons(deepGrammar, foundations, full) {
   });
 }
 
-export const STATIC_READY_LESSONS = Object.freeze(mergeUniqueLessons(A1_DEEP_GRAMMAR_FOUNDATIONS, A1_FOUNDATIONS_LESSONS, A1_FULL_CONTENT_LESSONS, A1_CHECKPOINT_LESSONS));
+export const STATIC_READY_LESSONS = Object.freeze(mergeUniqueLessons(A1_DEEP_GRAMMAR_FOUNDATIONS, A1_DEEP_GRAMMAR_EXTRA, A1_FOUNDATIONS_LESSONS, A1_FULL_CONTENT_LESSONS, A1_CHECKPOINT_LESSONS));
 
 export const STATIC_READY_LESSONS_BY_LEVEL = Object.freeze({
   A1: Object.freeze([...STATIC_READY_LESSONS]),
 });
 
 export const STATIC_READY_LESSONS_BY_LEVEL_AND_PILLAR = Object.freeze({
-  A1: mergePillarLessons(A1_DEEP_GRAMMAR_BY_PILLAR, A1_FOUNDATIONS_BY_PILLAR, A1_FULL_CONTENT_BY_PILLAR),
+  A1: mergePillarLessons(A1_DEEP_GRAMMAR_BY_PILLAR, A1_DEEP_GRAMMAR_EXTRA_BY_PILLAR, A1_FOUNDATIONS_BY_PILLAR, A1_FULL_CONTENT_BY_PILLAR),
 });
 
 export function getStaticReadyLessons(level = 'A1') {
