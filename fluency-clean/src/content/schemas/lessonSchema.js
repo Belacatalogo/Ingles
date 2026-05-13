@@ -195,7 +195,7 @@ export const STATIC_DEEP_MINIMUMS = Object.freeze({
     conceptExplanationWords: 120,
     stepByStep: 5,
     portugueseContrast: 2,
-    teacherExamples: 20,
+    teacherExamples: 12,
     commonBrazilianMistakes: 8,
     controlledPractice: 4,
     guidedPractice: 8,
