@@ -1,5 +1,6 @@
 import { A1_FOUNDATIONS_BY_PILLAR, A1_FOUNDATIONS_LESSONS } from './levels/A1/foundationsSafe.js';
 import { A1_FULL_CONTENT_BY_PILLAR, A1_FULL_CONTENT_LESSONS } from './levels/A1/fullContent.js';
+import { A1_CHECKPOINT_LESSONS } from './levels/A1/checkpoints.js';
 import { validateStaticLessonList } from '../schemas/index.js';
 
 function mergeUniqueLessons(...groups) {
@@ -19,10 +20,11 @@ function mergePillarLessons(foundations, full) {
     listening: Object.freeze(mergeUniqueLessons(foundations.listening || [], full.listening || [])),
     speaking: Object.freeze(mergeUniqueLessons(foundations.speaking || [], full.speaking || [])),
     writing: Object.freeze(mergeUniqueLessons(foundations.writing || [], full.writing || [])),
+    checkpoint: Object.freeze([...A1_CHECKPOINT_LESSONS]),
   });
 }
 
-export const STATIC_READY_LESSONS = Object.freeze(mergeUniqueLessons(A1_FOUNDATIONS_LESSONS, A1_FULL_CONTENT_LESSONS));
+export const STATIC_READY_LESSONS = Object.freeze(mergeUniqueLessons(A1_FOUNDATIONS_LESSONS, A1_FULL_CONTENT_LESSONS, A1_CHECKPOINT_LESSONS));
 
 export const STATIC_READY_LESSONS_BY_LEVEL = Object.freeze({
   A1: Object.freeze([...STATIC_READY_LESSONS]),
