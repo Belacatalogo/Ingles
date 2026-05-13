@@ -1,9 +1,10 @@
-import { Activity, BookOpen, Brain, Flame, Home, LineChart, Mic, Settings, X } from 'lucide-react';
+import { Activity, BookOpen, Brain, Flame, Home, LineChart, Map, Mic, Settings, X } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { AccessGate } from './components/auth/AccessGate.jsx';
 import { BottomNav } from './components/layout/BottomNav.jsx';
 import { DiagnosticPanel } from './components/system/DiagnosticPanel.jsx';
 import { TodayScreen } from './screens/TodayScreen.jsx';
+import { CourseScreen } from './screens/CourseScreen.jsx';
 import { LessonScreen } from './screens/LessonScreen.jsx';
 import { ProgressScreen } from './screens/ProgressScreen.jsx';
 import { SpeakingScreen } from './screens/SpeakingScreen.jsx';
@@ -13,6 +14,7 @@ import { getProgressSummary } from './services/progressStore.js';
 
 const tabs = [
   { id: 'today', label: 'Hoje', icon: Home, component: TodayScreen },
+  { id: 'course', label: 'Curso', icon: Map, component: CourseScreen },
   { id: 'lesson', label: 'Aula', icon: BookOpen, component: LessonScreen },
   { id: 'cards', label: 'Cartas', icon: Brain, component: FlashcardsScreen },
   { id: 'speaking', label: 'Speaking', icon: Mic, component: SpeakingScreen },
@@ -50,7 +52,7 @@ function AppContent() {
           <strong>Fluency</strong>
         </div>
         <div className="reference-top-actions">
-          <button className="reference-pill level-pill" type="button">
+          <button className="reference-pill level-pill" type="button" onClick={() => setActiveTab('course')}>
             <span /> A1
           </button>
           <button className="reference-pill streak-pill" type="button">
