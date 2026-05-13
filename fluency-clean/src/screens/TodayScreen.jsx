@@ -1,20 +1,22 @@
 import { useEffect, useState } from 'react';
 import { BookOpen, Brain, ChevronRight, Flame, LineChart, Map, Mic, Quote, Sparkles, Target, Volume2, Zap } from 'lucide-react';
 import { LessonGeneratorPanel } from '../components/lesson/LessonGeneratorPanel.jsx';
+import { StaticNextLessonPanel } from '../components/lesson/StaticNextLessonPanel.jsx';
+import { canShowLegacyAiLessonGenerator } from '../config/staticCurriculumFlags.js';
 import { getCurrentLesson, getCurrentLessonFull } from '../services/lessonStore.js';
 import { getLessonStats } from '../services/lessonStats.js';
 import { getFlashcardSessions, getLessonCompletions, getProgressSummary, hasFlashcardSessionToday, hasSpeakingSessionToday, localDateKey } from '../services/progressStore.js';
 import { getVocabularySrsSummary } from '../services/vocabularySrs.js';
 
 const baseTasks = [
-  { id: 'lesson', label: 'Aula de hoje', status: 'Aula guiada pela IA', icon: BookOpen, target: 'lesson', color: 'blue' },
+  { id: 'lesson', label: 'Aula de hoje', status: 'Curso fixo premium', icon: BookOpen, target: 'lesson', color: 'blue' },
   { id: 'cards', label: 'Revisar flashcards', status: 'Aguardando cards reais', icon: Brain, target: 'cards', color: 'violet' },
   { id: 'vocab-bubble', label: 'Concluir 1 bolha da trilha', status: 'Vocabulário em prática guiada', icon: Map, target: 'cards', color: 'blue' },
-  { id: 'speaking', label: 'Conversação', status: 'Speaking guiado com IA', time: '~8 min', icon: Mic, target: 'speaking', color: 'teal' },
+  { id: 'speaking', label: 'Conversação', status: 'Speaking guiado com IA auxiliar', time: '~8 min', icon: Mic, target: 'speaking', color: 'teal' },
 ];
 
 function getGreeting() { const hour = new Date().getHours(); if (hour < 12) return 'Bom dia'; if (hour < 18) return 'Boa tarde'; return 'Boa noite'; }
-function getLessonTypeStatus(lesson) { const labels = { reading: 'Reading gerada pela IA', grammar: 'Grammar gerada pela IA', listening: 'Listening gerada pela IA', writing: 'Writing gerada pela IA' }; return labels[lesson?.type] || 'Aula guiada pela IA'; }
+function getLessonTypeStatus(lesson) { const labels = { reading: 'Reading do curso fixo', grammar: 'Grammar do curso fixo', listening: 'Listening do curso fixo', writing: 'Writing do curso fixo' }; return labels[lesson?.type] || 'Aula do curso fixo'; }
 function getItemLocalDate(value) { return localDateKey(value?.completedAt || value?.createdAt || value); }
 function getWeekDaysFromCompletions(completions) {
   const labels = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
@@ -79,10 +81,10 @@ export function TodayScreen({ onLessonGenerated, onNavigate }) {
   }, []);
 
   const tasks = baseTasks.map((task) => {
-    if (task.id === 'lesson') return { ...task, status: lessonDoneToday ? 'Aula concluída hoje' : currentLesson ? getLessonTypeStatus(currentLesson) : 'Nenhuma aula gerada ainda', time: currentLesson ? `~${lessonStats.minutes} min` : '' };
+    if (task.id === 'lesson') return { ...task, status: lessonDoneToday ? 'Aula concluída hoje' : currentLesson ? getLessonTypeStatus(currentLesson) : 'Curso fixo em preparação', time: currentLesson ? `~${lessonStats.minutes} min` : '' };
     if (task.id === 'cards') return { ...task, status: cardsDoneToday ? 'Sessão real concluída hoje' : vocabularySrs.dueToday ? `${vocabularySrs.dueToday} revisão(ões) vencida(s)` : cardsAvailable ? `${cardsAvailable} cards da aula atual` : 'Nenhum card real disponível ainda', time: cardsDoneToday ? 'feito' : vocabularySrs.dueToday ? '~5 min' : cardsAvailable ? '~5 min' : '' };
     if (task.id === 'vocab-bubble') return { ...task, status: vocabBubbleDoneToday ? 'Bolha da trilha concluída hoje' : 'Complete uma bolha para fixar vocabulário', time: vocabBubbleDoneToday ? 'feito' : '~8 min' };
-    if (task.id === 'speaking') return { ...task, status: speakingDoneToday ? 'Conversação real concluída hoje' : 'Speaking A1 com Azure', time: speakingDoneToday ? 'feito' : '~5 falas' };
+    if (task.id === 'speaking') return { ...task, status: speakingDoneToday ? 'Conversação real concluída hoje' : 'Speaking A1 com Azure e IA auxiliar', time: speakingDoneToday ? 'feito' : '~5 falas' };
     return task;
   });
 
@@ -101,7 +103,8 @@ export function TodayScreen({ onLessonGenerated, onNavigate }) {
       <div className="today-task-list">{tasks.map((task) => { const Icon = task.icon; return <button className="today-task-card" type="button" key={task.id} onClick={() => onNavigate?.(task.target)}><span className={`today-task-icon ${task.color}`}><Icon size={23} /></span><span className="today-task-copy"><strong>{task.label}</strong><small>{task.status}</small>{task.time ? <em>{task.time}</em> : null}</span><ChevronRight className="today-task-arrow" size={20} /></button>; })}</div>
       <section className="today-week-card"><span>Esta semana</span><strong>Atividade real</strong><p>{completions.length ? 'Baseado nas aulas concluídas.' : 'Sem aulas concluídas ainda.'}</p><b>{completions.length} registro(s)</b><div className="today-week-bars">{weekDays.map((item) => <div key={item.day}><div className="today-week-bar"><i className={item.active ? 'active' : ''} style={{ height: `${item.value}%` }} /></div><strong>{item.day}</strong><small>{item.label}</small></div>)}</div></section>
       <section className="today-quote-card"><Quote size={18} /><p>“The best way to predict the future is to invent it.”</p><span>“A melhor forma de prever o futuro é inventá-lo.”</span><footer><small>— Alan Kay</small><button type="button"><Volume2 size={15} /> Ouvir</button></footer></section>
-      <details className="today-generator-details"><summary><Sparkles size={17} /> Gerar nova aula por IA</summary><LessonGeneratorPanel onGenerated={onLessonGenerated} /></details>
+      <StaticNextLessonPanel onNavigate={onNavigate} />
+      {canShowLegacyAiLessonGenerator() ? <details className="today-generator-details"><summary><Sparkles size={17} /> Gerar nova aula por IA — legado/dev</summary><LessonGeneratorPanel onGenerated={onLessonGenerated} /></details> : null}
     </section>
   );
 }
