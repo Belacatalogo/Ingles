@@ -42,7 +42,7 @@ function QuestionField({ question, value, onChange }) {
   );
 }
 
-export function A1FinalExamShell() {
+export function A1FinalExamShell({ onObjectiveScoresSaved }) {
   const previousAttempt = useMemo(() => getA1FinalExamObjectiveAttempt(), []);
   const sections = getA1FinalExamStudentSections();
   const gate = getA1MasteryGateSummary();
@@ -71,6 +71,7 @@ export function A1FinalExamShell() {
     const attempt = saveAndSyncA1FinalExamObjectiveAttempt(answers);
     setResult(attempt.scoring);
     setSaveMessage('Resultado salvo e enviado para os critérios do A1.');
+    onObjectiveScoresSaved?.(attempt.scoring);
   }
 
   return (
