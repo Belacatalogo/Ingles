@@ -1,5 +1,7 @@
 import React from 'react';
 
+const STORAGE_PREFIXES_TO_RESET = ['fluency.clean.', 'fluency:'];
+
 export class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
@@ -30,12 +32,12 @@ export class ErrorBoundary extends React.Component {
 
   handleResetPreview = () => {
     try {
-      const keepKeys = [];
+      const keysToRemove = [];
       for (let index = 0; index < window.localStorage.length; index += 1) {
         const key = window.localStorage.key(index);
-        if (key?.startsWith('fluency:')) keepKeys.push(key);
+        if (STORAGE_PREFIXES_TO_RESET.some((prefix) => key?.startsWith(prefix))) keysToRemove.push(key);
       }
-      keepKeys.forEach((key) => window.localStorage.removeItem(key));
+      keysToRemove.forEach((key) => window.localStorage.removeItem(key));
     } catch {
       // ignore storage failures
     }
