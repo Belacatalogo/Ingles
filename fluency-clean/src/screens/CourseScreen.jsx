@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { BookOpenCheck, CheckCircle2, ChevronRight, Lock, Map, Play, ShieldCheck, Sparkles, Target } from 'lucide-react';
 import { Card } from '../components/ui/Card.jsx';
 import { ErrorReviewPanel } from '../components/review/ErrorReviewPanel.jsx';
+import { A1MasteryGatePanel } from '../components/course/A1MasteryGatePanel.jsx';
 import { CURRICULUM_LEVELS, CURRICULUM_PILLARS, getStaticLevel, getStaticLessons } from '../content/curriculum/index.js';
 import { getStaticCurriculumValidationStatus } from '../content/validators/index.js';
 import { getStaticCourseSummary, getNextStaticLesson, setStaticCurrentLevel } from '../services/curriculumEngine.js';
@@ -78,6 +79,8 @@ export function CourseScreen({ onNavigate }) {
         </div>
         {message ? <p className="generator-message completion-message">{message}</p> : null}
       </section>
+
+      {activeLevel === 'A1' ? <A1MasteryGatePanel /> : null}
 
       <ErrorReviewPanel onNavigate={onNavigate} compact />
 
