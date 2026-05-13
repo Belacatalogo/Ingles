@@ -7,6 +7,7 @@ import './styles/practice.css';
 import './styles/flashcards.css';
 import './styles/screens.css';
 import './styles/static-gates.css';
+import './styles/course-screen.css';
 
 const rootElement = document.getElementById('root');
 const root = createRoot(rootElement);
