@@ -321,6 +321,11 @@
   background: rgba(15, 23, 42, 0.5);
 }
 
+.a1-final-productive-card {
+  border-color: rgba(250, 204, 21, 0.18);
+  background: rgba(15, 23, 42, 0.62);
+}
+
 .a1-final-section-card h3,
 .a1-final-result-card strong {
   margin: 0;
@@ -374,9 +379,9 @@
   gap: 8px;
 }
 
-.a1-final-answer-input {
+.a1-final-answer-input,
+.a1-final-draft-area {
   width: 100%;
-  min-height: 44px;
   border: 1px solid rgba(148, 163, 184, 0.22);
   border-radius: 14px;
   background: rgba(15, 23, 42, 0.62);
@@ -385,7 +390,19 @@
   font: inherit;
 }
 
-.a1-final-answer-input::placeholder {
+.a1-final-answer-input {
+  min-height: 44px;
+}
+
+.a1-final-draft-area {
+  min-height: 150px;
+  padding: 12px;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.a1-final-answer-input::placeholder,
+.a1-final-draft-area::placeholder {
   color: rgba(226, 232, 240, 0.42);
 }
 
