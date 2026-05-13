@@ -286,7 +286,8 @@
 
 .a1-final-exam-sections article p,
 .a1-checkpoint-pillar-list article p,
-.a1-checkpoint-active-card p {
+.a1-checkpoint-active-card p,
+.a1-checkpoint-question-card p {
   margin: 0;
   color: rgba(226, 232, 240, 0.74);
   font-size: 0.82rem;
@@ -307,6 +308,15 @@
   color: #e9d5ff;
   background: rgba(168, 85, 247, 0.1);
   font-size: .72rem;
+  font-weight: 900;
+}
+
+.a1-checkpoint-pillar-list article button {
+  min-height: 38px;
+  border: 1px solid rgba(168, 85, 247, 0.22);
+  border-radius: 14px;
+  background: rgba(168, 85, 247, 0.1);
+  color: #e9d5ff;
   font-weight: 900;
 }
 
@@ -344,13 +354,14 @@
   color: #faf5ff;
 }
 
-.a1-checkpoint-active-card {
+.a1-checkpoint-active-card,
+.a1-checkpoint-question-card {
   border: 1px solid rgba(168, 85, 247, 0.16);
   border-radius: 18px;
   padding: 13px;
   background: rgba(168, 85, 247, 0.08);
   display: grid;
-  gap: 8px;
+  gap: 10px;
 }
 
 .a1-checkpoint-active-card div {
@@ -358,13 +369,25 @@
   gap: 3px;
 }
 
-.a1-checkpoint-active-card strong {
+.a1-checkpoint-active-card strong,
+.a1-checkpoint-question-card h3 {
   color: #f8fafc;
+  margin: 0;
 }
 
 .a1-checkpoint-active-card small {
   color: #e9d5ff;
   font-weight: 800;
+}
+
+.a1-checkpoint-question-card blockquote {
+  margin: 0;
+  border-left: 3px solid rgba(168, 85, 247, 0.72);
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(168, 85, 247, 0.1);
+  color: #f3e8ff;
+  line-height: 1.55;
 }
 
 .a1-final-exam-sections article button,
