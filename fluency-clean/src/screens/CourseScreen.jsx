@@ -32,8 +32,9 @@ export function CourseScreen({ onNavigate }) {
   const [activeLevel, setActiveLevel] = useState('A1');
   const [activePillar, setActivePillar] = useState('grammar');
   const [message, setMessage] = useState('');
+  const [a1RefreshKey, setA1RefreshKey] = useState(0);
   const completedIds = useMemo(() => getCompletedLessonIds(), [activeLevel, activePillar, message]);
-  const a1Gate = useMemo(() => getA1MasteryGateSummary(), [activeLevel, message]);
+  const a1Gate = useMemo(() => getA1MasteryGateSummary(), [activeLevel, message, a1RefreshKey]);
   const summary = useMemo(() => getStaticCourseSummary(activeLevel), [activeLevel, message]);
   const levelData = useMemo(() => getStaticLevel(activeLevel), [activeLevel]);
   const validation = useMemo(() => getStaticCurriculumValidationStatus(activeLevel), [activeLevel]);
@@ -42,6 +43,11 @@ export function CourseScreen({ onNavigate }) {
 
   function isLevelBlocked(level) {
     return level !== 'A1' && !a1Gate.canUnlockA2;
+  }
+
+  function handleA1GateUpdated() {
+    setA1RefreshKey((current) => current + 1);
+    setMessage('Critérios do A1 atualizados. Speaking e Writing ainda precisam de revisão.');
   }
 
   function handleLevel(level) {
@@ -94,8 +100,8 @@ export function CourseScreen({ onNavigate }) {
         {message ? <p className="generator-message completion-message">{message}</p> : null}
       </section>
 
-      {activeLevel === 'A1' ? <A1MasteryGatePanel /> : null}
-      {activeLevel === 'A1' ? <A1FinalExamShell /> : null}
+      {activeLevel === 'A1' ? <A1MasteryGatePanel key={a1RefreshKey} /> : null}
+      {activeLevel === 'A1' ? <A1FinalExamShell onObjectiveScoresSaved={handleA1GateUpdated} /> : null}
 
       <ErrorReviewPanel onNavigate={onNavigate} compact />
 
