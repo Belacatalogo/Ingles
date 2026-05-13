@@ -6,9 +6,24 @@ function slug(value) {
   return clean(value).toLowerCase().replace(/[^a-z0-9]+/gi, '-').replace(/^-+|-+$/g, '') || 'card';
 }
 
+function looksEnglish(value = '') {
+  const text = clean(value);
+  if (!text) return false;
+  const common = /\b(i|you|he|she|it|we|they|am|are|is|my|your|his|her|hello|hi|good|morning|name|phone|number|from|brazil|student|teacher|mother|father|brother|sister|friend|ready|book|city|country)\b/i;
+  const portugueseOnly = /\b(eu|você|vocês|ele|ela|nós|eles|elas|meu|minha|seu|sua|brasileiro|brasileira|estudante|professor|mãe|pai|irmão|irmã)\b/i;
+  if (common.test(text)) return true;
+  if (portugueseOnly.test(text) && !/[a-z]{2,}\s+(am|are|is)\b/i.test(text)) return false;
+  return /[a-z]/i.test(text) && !/[ãõçáéíóúâêôà]/i.test(text);
+}
+
+function isTooLongFront(value = '') {
+  const text = clean(value);
+  return text.length > 54 || text.split(' ').length > 9;
+}
+
 function makeCard(raw = {}, index = 0, source = 'Aula atual') {
   const word = clean(raw.word || raw.term || raw.expression || raw.chunk || raw.text || raw.english || raw.question || raw.prompt || raw.title || raw.pattern || raw.label);
-  if (!word) return null;
+  if (!word || isTooLongFront(word)) return null;
 
   const translation = clean(raw.translation || raw.pt || raw.portuguese || raw.meaning || raw.answer || raw.definition || raw.expected || raw.right);
   const example = clean(raw.example || raw.sentence || raw.context || raw.why || raw.note || raw.explanation || raw.warning || raw.howToAvoid);
@@ -48,52 +63,50 @@ function dedupe(cards) {
   });
 }
 
+function subjectPronounCards(title) {
+  return [
+    { word: 'I', translation: 'eu', definition: 'Sempre com letra maiúscula.', example: 'I am Luis.' },
+    { word: 'you', translation: 'você / vocês', definition: 'Pode ser singular ou plural. O contexto mostra.', example: 'You are my friend.' },
+    { word: 'he', translation: 'ele', definition: 'Use para homem/menino.', example: 'He is my brother.' },
+    { word: 'she', translation: 'ela', definition: 'Use para mulher/menina.', example: 'She is my sister.' },
+    { word: 'it', translation: 'ele/ela para coisa, animal ou ideia', definition: 'Use para objeto, lugar, ideia ou animal quando não estamos tratando como pessoa.', example: 'It is my phone.' },
+    { word: 'we', translation: 'nós', definition: 'Inclui você no grupo.', example: 'We are ready.' },
+    { word: 'they', translation: 'eles / elas', definition: 'Use para grupo de pessoas ou coisas no plural.', example: 'They are students.' },
+  ].map((card, index) => makeCard({ ...card, deck: `${title} · pronomes` }, index, `${title} · pronomes`)).filter(Boolean);
+}
+
 function cardsFromDeepGrammar(lesson, title) {
+  if (lesson?.id === 'A1-GRAMMAR-001' || /subject pronouns/i.test(title)) {
+    return subjectPronounCards(title);
+  }
+
   const cards = [];
 
-  cards.push(...fromArray(lesson?.grammarTable, `${title} · regra`, (item) => ({
-    word: item?.pattern || item?.label,
-    meaning: item?.note || item?.translation || 'Padrão gramatical da aula.',
-    example: item?.example,
-    deck: `${title} · regra`,
-  })));
+  cards.push(...fromArray(lesson?.grammarTable, `${title} · padrões`, (item) => {
+    const front = item?.example && looksEnglish(item.example) ? item.example : item?.pattern;
+    return {
+      word: front,
+      meaning: item?.note || item?.translation || 'Padrão gramatical da aula.',
+      example: item?.pattern && item?.example !== item?.pattern ? item.pattern : '',
+      deck: `${title} · padrões`,
+    };
+  }).filter((card) => looksEnglish(card.word)));
 
   cards.push(...fromArray(lesson?.teacherExamples, `${title} · exemplos`, (item) => ({
     word: item?.english || item?.text || item?.sentence,
     meaning: item?.translation || item?.meaning,
     example: item?.why || item?.warning,
     deck: `${title} · exemplos`,
-  })));
+  })).filter((card) => looksEnglish(card.word)));
 
-  cards.push(...fromArray(lesson?.commonBrazilianMistakes, `${title} · erros`, (item) => ({
+  cards.push(...fromArray(lesson?.commonBrazilianMistakes, `${title} · correções`, (item) => ({
     word: item?.right || item?.correct || item?.answer,
     meaning: item?.why || item?.howToAvoid || 'Correção importante da aula.',
     example: item?.wrong ? `Evite: ${item.wrong}` : item?.miniPractice,
-    deck: `${title} · erros`,
-  })));
+    deck: `${title} · correções`,
+  })).filter((card) => looksEnglish(card.word)));
 
-  cards.push(...fromArray(lesson?.formationGuide, `${title} · formação`, (item) => ({
-    word: item?.instruction || item?.text || item?.pattern,
-    meaning: item?.note || item?.expected || 'Formação da aula.',
-    example: item?.example,
-    deck: `${title} · formação`,
-  })));
-
-  cards.push(...fromArray(lesson?.controlledPractice, `${title} · prática`, (item) => ({
-    word: item?.expected || item?.answer || item?.instruction || item?.text,
-    meaning: item?.note || item?.explanation || 'Prática guiada da aula.',
-    example: item?.instruction,
-    deck: `${title} · prática`,
-  })));
-
-  cards.push(...fromArray(lesson?.guidedPractice, `${title} · quiz`, (item) => ({
-    word: item?.answer || item?.question,
-    meaning: item?.explanation || item?.context || 'Resposta importante da aula.',
-    example: item?.question,
-    deck: `${title} · quiz`,
-  })));
-
-  return cards;
+  return cards.slice(0, 24);
 }
 
 function cardsFromDeepVocabulary(lesson, title) {
@@ -106,32 +119,27 @@ function cardsFromDeepVocabulary(lesson, title) {
     example: item?.example,
     note: item?.note,
     deck: title,
-  })));
+  })).filter((card) => looksEnglish(card.word)));
   cards.push(...fromArray(lesson?.chunks, `${title} · chunks`, (item) => ({
     word: item?.chunk || item?.expression || item?.word,
     meaning: item?.translation || item?.meaning,
     example: item?.why || item?.example,
     note: item?.warning,
     deck: `${title} · chunks`,
-  })));
+  })).filter((card) => looksEnglish(card.word)));
   cards.push(...fromArray(lesson?.collocations, `${title} · collocations`, (item) => ({
     word: item?.instruction || item?.text || item?.word || item?.chunk,
     meaning: item?.note || item?.meaning || 'Combinação natural da aula.',
     example: item?.expected || item?.example,
     deck: `${title} · collocations`,
-  })));
-  cards.push(...fromArray(lesson?.examples, `${title} · exemplos`, (item) => ({
-    word: item?.text || item?.english || item?.sentence,
-    meaning: item?.translation || item?.meaning,
-    example: item?.why || item?.warning,
-    deck: `${title} · exemplos`,
-  })));
+  })).filter((card) => looksEnglish(card.word)));
 
   if (Array.isArray(lesson?.miniDialogues)) {
     lesson.miniDialogues.forEach((dialogue, dialogueIndex) => {
       const lines = Array.isArray(dialogue?.lines) ? dialogue.lines : [];
       lines.forEach((line, lineIndex) => {
         const text = clean(line).replace(/^[^:]{1,24}:\s*/, '');
+        if (!looksEnglish(text) || isTooLongFront(text)) return;
         const card = makeCard({
           word: text,
           meaning: dialogue?.focus || 'Frase de diálogo da aula.',
@@ -143,48 +151,18 @@ function cardsFromDeepVocabulary(lesson, title) {
     });
   }
 
-  cards.push(...fromArray(lesson?.recognitionPractice, `${title} · prática`, (item) => ({
-    word: item?.answer || item?.question,
-    meaning: item?.explanation || item?.context || 'Item cobrado na prática da aula.',
-    example: item?.question,
-    deck: `${title} · prática`,
-  })));
-  cards.push(...fromArray(lesson?.usagePractice, `${title} · uso`, (item) => ({
-    word: item?.answer || item?.question,
-    meaning: item?.explanation || item?.context || 'Uso em contexto da aula.',
-    example: item?.question,
-    deck: `${title} · uso`,
-  })));
-
-  return cards;
+  return cards.slice(0, 32);
 }
 
 function fallbackCards(lesson, title) {
-  const cards = [];
   const objective = Array.isArray(lesson?.objectives) ? lesson.objectives[0] : lesson?.objective;
-  const recap = Array.isArray(lesson?.lessonRecap) ? lesson.lessonRecap[0] : '';
-  const bridge = clean(lesson?.nextLessonBridge);
-
-  cards.push(makeCard({
+  const card = makeCard({
     word: title,
     meaning: 'Tema principal da aula atual.',
-    example: clean(objective || recap || bridge),
+    example: clean(objective),
     deck: 'Aula atual',
-  }, 0, 'Aula atual'));
-
-  if (Array.isArray(lesson?.objectives)) {
-    lesson.objectives.slice(0, 4).forEach((item, index) => {
-      const card = makeCard({
-        word: item,
-        meaning: 'Objetivo importante da aula.',
-        example: title,
-        deck: `${title} · objetivos`,
-      }, index + 1, `${title} · objetivos`);
-      if (card) cards.push(card);
-    });
-  }
-
-  return cards.filter(Boolean);
+  }, 0, 'Aula atual');
+  return card ? [card] : [];
 }
 
 export function buildLessonFlashcards(lesson = {}) {
@@ -194,8 +172,8 @@ export function buildLessonFlashcards(lesson = {}) {
     ...cardsFromDeepGrammar(lesson, title),
   ]);
 
-  if (cards.length) return cards.slice(0, 48);
-  return dedupe(fallbackCards(lesson, title)).slice(0, 12);
+  if (cards.length) return cards.slice(0, 32);
+  return dedupe(fallbackCards(lesson, title)).slice(0, 4);
 }
 
 export function hasLessonFlashcards(lesson = {}) {
