@@ -296,6 +296,114 @@
   font-weight: 900;
 }
 
+.error-review-panel-wrap .card {
+  border-color: rgba(251,191,36,.20);
+  background: radial-gradient(circle at 18% 0%, rgba(251,191,36,.10), transparent 30%), rgba(7,13,31,.54);
+}
+
+.error-review-summary {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+}
+
+.error-review-summary p {
+  margin: 0;
+  color: #d7def4;
+  line-height: 1.45;
+}
+
+.error-review-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.error-review-card {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid rgba(251,191,36,.18);
+  border-radius: 20px;
+  background: rgba(15,23,42,.58);
+}
+
+.error-review-card-head {
+  display: grid;
+  gap: 5px;
+}
+
+.error-review-card-head span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  color: #fde68a;
+  font-size: 12px;
+  font-weight: 950;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+}
+
+.error-review-card-head strong {
+  color: #fff;
+  line-height: 1.3;
+}
+
+.error-review-card p {
+  margin: 0;
+  color: #aeb9d8;
+  line-height: 1.45;
+}
+
+.error-review-lessons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.error-review-lessons small {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 9px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.06);
+  color: #bfdbfe;
+  font-weight: 800;
+}
+
+.error-review-card button {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid rgba(251,191,36,.26);
+  border-radius: 16px;
+  background: rgba(251,191,36,.10);
+  color: #fde68a;
+  font-weight: 950;
+}
+
+.error-review-empty {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin-top: 14px;
+  padding: 14px;
+  border-radius: 18px;
+  background: rgba(34,197,94,.08);
+  color: #bbf7d0;
+}
+
+.error-review-empty p {
+  margin: 0;
+  color: #d7def4;
+  line-height: 1.45;
+}
+
 @media (max-width: 720px) {
   .course-hero-card { padding: 18px; border-radius: 26px; }
   .course-pillar-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -303,4 +411,5 @@
   .course-lesson-row { grid-template-columns: 38px minmax(0, 1fr) auto; }
   .course-lesson-row > svg { display: none; }
   .course-lesson-state { grid-column: 2 / 4; width: fit-content; }
+  .error-review-summary { grid-template-columns: 1fr; }
 }
