@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { registerPwaServiceWorker } from './services/pwa.js';
 import './styles/base.css';
 import './styles/lessons.css';
+import './styles/deep-lesson-mobile.css';
 import './styles/practice.css';
 import './styles/flashcards.css';
 import './styles/screens.css';
