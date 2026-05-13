@@ -152,7 +152,7 @@ export function A1FinalExamShell({ onObjectiveScoresSaved }) {
           {activeSection && isObjectiveSection(activeSection) ? (
             <div className="a1-final-section-card">
               {activeSection.text ? <blockquote>{activeSection.text}</blockquote> : null}
-              {activeSection.id === 'listening' ? <p className="a1-final-listening-note">Nesta primeira versão, a escuta ainda usa perguntas do roteiro. O áudio real será ligado em outro bloco.</p> : null}
+              {activeSection.id === 'listening' ? <p className="a1-final-listening-note">Por enquanto, responda com base nas informações desta etapa. O áudio será adicionado depois.</p> : null}
               <h3>{activeSection.studentTitle || activeSection.title}</h3>
               <p>{activeSection.instructions}</p>
               <div className="a1-final-question-list">
@@ -170,7 +170,7 @@ export function A1FinalExamShell({ onObjectiveScoresSaved }) {
             <div className="a1-final-section-card a1-final-productive-card">
               <h3>{activeSection.studentTitle || activeSection.title}</h3>
               <p>{activeSection.prompt}</p>
-              {activeSection.id === 'speaking' ? <p className="a1-final-listening-note">Grave sua resposta fora desta etapa por enquanto e escreva aqui um resumo do que você falou. A gravação real será ligada depois.</p> : null}
+              {activeSection.id === 'speaking' ? <p className="a1-final-listening-note">Fale sua resposta em voz alta e escreva aqui um resumo do que você falou. A gravação direta será adicionada depois.</p> : null}
               <textarea
                 className="a1-final-draft-area"
                 value={productiveDrafts[activeSection.id] || ''}
@@ -183,7 +183,7 @@ export function A1FinalExamShell({ onObjectiveScoresSaved }) {
                 </button>
               </div>
               <div className="a1-final-review-box">
-                <strong>Revisão local</strong>
+                <strong>Revisão da resposta</strong>
                 <p>Lance uma nota somente depois de revisar a resposta. Isso entra nos critérios do A1.</p>
                 <input
                   className="a1-final-answer-input"
