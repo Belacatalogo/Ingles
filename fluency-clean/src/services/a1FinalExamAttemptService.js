@@ -12,23 +12,34 @@ function canUseStorage() {
   return typeof window !== 'undefined' && Boolean(window.localStorage);
 }
 
-export function getA1FinalExamObjectiveAttempt() {
+function getStoredAttempt() {
   if (!canUseStorage()) return null;
   const attempt = safeParse(window.localStorage.getItem(STORAGE_KEY), null);
   if (!attempt || attempt.version !== A1_FINAL_EXAM_VERSION) return null;
   return attempt;
 }
 
+function persistAttempt(attempt) {
+  if (canUseStorage()) window.localStorage.setItem(STORAGE_KEY, JSON.stringify(attempt));
+  return attempt;
+}
+
+export function getA1FinalExamObjectiveAttempt() {
+  return getStoredAttempt();
+}
+
 export function saveA1FinalExamObjectiveAttempt(objectiveAnswers = {}) {
+  const current = getStoredAttempt() || {};
   const scoring = scoreA1FinalExamObjectiveAnswers(objectiveAnswers);
   const attempt = Object.freeze({
+    ...current,
     version: A1_FINAL_EXAM_VERSION,
     savedAt: new Date().toISOString(),
     objectiveAnswers,
+    productiveDrafts: current.productiveDrafts || {},
     scoring,
   });
-  if (canUseStorage()) window.localStorage.setItem(STORAGE_KEY, JSON.stringify(attempt));
-  return attempt;
+  return persistAttempt(attempt);
 }
 
 export function syncA1FinalExamObjectiveScoresToGate(scoring) {
@@ -43,6 +54,24 @@ export function saveAndSyncA1FinalExamObjectiveAttempt(objectiveAnswers = {}) {
   const attempt = saveA1FinalExamObjectiveAttempt(objectiveAnswers);
   syncA1FinalExamObjectiveScoresToGate(attempt.scoring);
   return attempt;
+}
+
+export function saveA1FinalExamProductiveDraft(skill, draft = '') {
+  if (!['speaking', 'writing'].includes(skill)) return getStoredAttempt();
+  const current = getStoredAttempt() || {};
+  const attempt = Object.freeze({
+    ...current,
+    version: A1_FINAL_EXAM_VERSION,
+    savedAt: current.savedAt || null,
+    productiveSavedAt: new Date().toISOString(),
+    objectiveAnswers: current.objectiveAnswers || {},
+    productiveDrafts: {
+      ...(current.productiveDrafts || {}),
+      [skill]: String(draft || '').trim(),
+    },
+    scoring: current.scoring || scoreA1FinalExamObjectiveAnswers(current.objectiveAnswers || {}),
+  });
+  return persistAttempt(attempt);
 }
 
 export function clearA1FinalExamObjectiveAttempt() {
