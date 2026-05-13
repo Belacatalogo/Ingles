@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { BookOpenCheck, CheckCircle2, Clock3, Mic, PenLine, PlayCircle, ShieldCheck } from 'lucide-react';
 import { A1_FINAL_EXAM_MODEL, A1_FINAL_EXAM_SECTIONS, getA1FinalExamStudentSections } from '../../content/curriculum/levels/A1/a1FinalExamModel.js';
 import { getA1MasteryGateSummary } from '../../services/a1MasteryGateService.js';
-import { getA1FinalExamObjectiveAttempt, saveAndSyncA1FinalExamObjectiveAttempt } from '../../services/a1FinalExamAttemptService.js';
+import { getA1FinalExamObjectiveAttempt, saveA1FinalExamProductiveDraft, saveAndSyncA1FinalExamObjectiveAttempt } from '../../services/a1FinalExamAttemptService.js';
 
 const sectionIcons = {
   grammar: BookOpenCheck,
@@ -14,8 +14,10 @@ const sectionIcons = {
 };
 
 const objectiveSectionIds = ['grammar', 'vocabulary', 'reading', 'listening'];
+const productiveSectionIds = ['speaking', 'writing'];
 
 function isObjectiveSection(section) { return objectiveSectionIds.includes(section?.id); }
+function isProductiveSection(section) { return productiveSectionIds.includes(section?.id); }
 function getSection(sectionId) { return A1_FINAL_EXAM_SECTIONS.find((section) => section.id === sectionId) || null; }
 function getOptionKey(questionId, option) { return `${questionId}-${String(option).toLowerCase().replace(/\W+/g, '-')}`; }
 
@@ -49,6 +51,7 @@ export function A1FinalExamShell({ onObjectiveScoresSaved }) {
   const canStart = gate.canTakeFinalExam || gate.canUnlockA2;
   const [activeSectionId, setActiveSectionId] = useState('grammar');
   const [answers, setAnswers] = useState(previousAttempt?.objectiveAnswers || {});
+  const [productiveDrafts, setProductiveDrafts] = useState(previousAttempt?.productiveDrafts || {});
   const [result, setResult] = useState(previousAttempt?.scoring || null);
   const [saveMessage, setSaveMessage] = useState(previousAttempt ? 'Tentativa anterior recuperada.' : '');
   const activeSection = getSection(activeSectionId);
@@ -67,11 +70,21 @@ export function A1FinalExamShell({ onObjectiveScoresSaved }) {
     setSaveMessage('');
   }
 
+  function updateProductiveDraft(skill, value) {
+    setProductiveDrafts((current) => ({ ...current, [skill]: value }));
+    setSaveMessage('');
+  }
+
   function calculateResult() {
     const attempt = saveAndSyncA1FinalExamObjectiveAttempt(answers);
     setResult(attempt.scoring);
     setSaveMessage('Resultado salvo e enviado para os critérios do A1.');
     onObjectiveScoresSaved?.(attempt.scoring);
+  }
+
+  function saveProductiveDraft(skill) {
+    saveA1FinalExamProductiveDraft(skill, productiveDrafts[skill] || '');
+    setSaveMessage('Resposta salva como aguardando revisão.');
   }
 
   return (
@@ -105,7 +118,7 @@ export function A1FinalExamShell({ onObjectiveScoresSaved }) {
               <div><Icon size={17} /><strong>{section.title}</strong></div>
               <p>{section.instructions}</p>
               <small>{section.requiresReview ? 'Será revisado antes de liberar o A2' : `Meta mínima: ${section.minimumScore}%`}</small>
-              {isObjectiveSection(section) ? <button type="button" onClick={() => setActiveSectionId(section.id)}>Responder</button> : null}
+              {isObjectiveSection(section) || isProductiveSection(section) ? <button type="button" onClick={() => setActiveSectionId(section.id)}>{isObjectiveSection(section) ? 'Responder' : 'Preparar resposta'}</button> : null}
             </article>
           );
         })}
@@ -114,14 +127,14 @@ export function A1FinalExamShell({ onObjectiveScoresSaved }) {
       {canStart ? (
         <div className="a1-final-exam-flow">
           <div className="a1-final-section-tabs">
-            {objectiveSections.map((section) => (
+            {[...objectiveSections, ...sections.filter((section) => productiveSectionIds.includes(section.id))].map((section) => (
               <button key={section.id} type="button" className={activeSectionId === section.id ? 'active' : ''} onClick={() => setActiveSectionId(section.id)}>
                 {section.title}
               </button>
             ))}
           </div>
 
-          {activeSection ? (
+          {activeSection && isObjectiveSection(activeSection) ? (
             <div className="a1-final-section-card">
               {activeSection.text ? <blockquote>{activeSection.text}</blockquote> : null}
               {activeSection.id === 'listening' ? <p className="a1-final-listening-note">Nesta primeira versão, a escuta ainda usa perguntas do roteiro. O áudio real será ligado em outro bloco.</p> : null}
@@ -134,6 +147,25 @@ export function A1FinalExamShell({ onObjectiveScoresSaved }) {
                     <QuestionField question={question} value={currentAnswers[question.id]} onChange={(value) => updateAnswer(question.id, value)} />
                   </label>
                 ))}
+              </div>
+            </div>
+          ) : null}
+
+          {activeSection && isProductiveSection(activeSection) ? (
+            <div className="a1-final-section-card a1-final-productive-card">
+              <h3>{activeSection.studentTitle || activeSection.title}</h3>
+              <p>{activeSection.prompt}</p>
+              {activeSection.id === 'speaking' ? <p className="a1-final-listening-note">Grave sua resposta fora desta etapa por enquanto e escreva aqui um resumo do que você falou. A gravação real será ligada depois.</p> : null}
+              <textarea
+                className="a1-final-draft-area"
+                value={productiveDrafts[activeSection.id] || ''}
+                onChange={(event) => updateProductiveDraft(activeSection.id, event.target.value)}
+                placeholder={activeSection.id === 'speaking' ? 'Resumo da sua resposta falada...' : 'Escreva sua resposta aqui...'}
+              />
+              <div className="answer-actions">
+                <button type="button" className="secondary-button" onClick={() => saveProductiveDraft(activeSection.id)}>
+                  <ShieldCheck size={16} /> Salvar como aguardando revisão
+                </button>
               </div>
             </div>
           ) : null}
