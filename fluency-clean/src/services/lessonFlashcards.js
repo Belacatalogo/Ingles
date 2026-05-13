@@ -7,18 +7,18 @@ function slug(value) {
 }
 
 function makeCard(raw = {}, index = 0, source = 'Aula atual') {
-  const word = clean(raw.word || raw.term || raw.expression || raw.chunk || raw.text || raw.question || raw.prompt || raw.title);
+  const word = clean(raw.word || raw.term || raw.expression || raw.chunk || raw.text || raw.english || raw.question || raw.prompt || raw.title || raw.pattern || raw.label);
   if (!word) return null;
 
-  const translation = clean(raw.translation || raw.pt || raw.portuguese || raw.meaning || raw.answer || raw.definition || raw.expected);
-  const example = clean(raw.example || raw.sentence || raw.context || raw.why || raw.note || raw.explanation);
+  const translation = clean(raw.translation || raw.pt || raw.portuguese || raw.meaning || raw.answer || raw.definition || raw.expected || raw.right);
+  const example = clean(raw.example || raw.sentence || raw.context || raw.why || raw.note || raw.explanation || raw.warning || raw.howToAvoid);
   const deck = clean(raw.deck || raw.category || raw.source || source) || 'Aula atual';
 
   return {
     id: raw.id || `${slug(deck)}-${slug(word)}-${index}`,
     word,
     translation,
-    definition: clean(raw.definition || raw.meaning || translation || 'Vocabulário da aula atual.'),
+    definition: clean(raw.definition || raw.meaning || translation || 'Item importante da aula atual.'),
     example,
     deck,
   };
@@ -48,8 +48,55 @@ function dedupe(cards) {
   });
 }
 
-export function buildLessonFlashcards(lesson = {}) {
-  const title = clean(lesson?.title) || 'Aula atual';
+function cardsFromDeepGrammar(lesson, title) {
+  const cards = [];
+
+  cards.push(...fromArray(lesson?.grammarTable, `${title} · regra`, (item) => ({
+    word: item?.pattern || item?.label,
+    meaning: item?.note || item?.translation || 'Padrão gramatical da aula.',
+    example: item?.example,
+    deck: `${title} · regra`,
+  })));
+
+  cards.push(...fromArray(lesson?.teacherExamples, `${title} · exemplos`, (item) => ({
+    word: item?.english || item?.text || item?.sentence,
+    meaning: item?.translation || item?.meaning,
+    example: item?.why || item?.warning,
+    deck: `${title} · exemplos`,
+  })));
+
+  cards.push(...fromArray(lesson?.commonBrazilianMistakes, `${title} · erros`, (item) => ({
+    word: item?.right || item?.correct || item?.answer,
+    meaning: item?.why || item?.howToAvoid || 'Correção importante da aula.',
+    example: item?.wrong ? `Evite: ${item.wrong}` : item?.miniPractice,
+    deck: `${title} · erros`,
+  })));
+
+  cards.push(...fromArray(lesson?.formationGuide, `${title} · formação`, (item) => ({
+    word: item?.instruction || item?.text || item?.pattern,
+    meaning: item?.note || item?.expected || 'Formação da aula.',
+    example: item?.example,
+    deck: `${title} · formação`,
+  })));
+
+  cards.push(...fromArray(lesson?.controlledPractice, `${title} · prática`, (item) => ({
+    word: item?.expected || item?.answer || item?.instruction || item?.text,
+    meaning: item?.note || item?.explanation || 'Prática guiada da aula.',
+    example: item?.instruction,
+    deck: `${title} · prática`,
+  })));
+
+  cards.push(...fromArray(lesson?.guidedPractice, `${title} · quiz`, (item) => ({
+    word: item?.answer || item?.question,
+    meaning: item?.explanation || item?.context || 'Resposta importante da aula.',
+    example: item?.question,
+    deck: `${title} · quiz`,
+  })));
+
+  return cards;
+}
+
+function cardsFromDeepVocabulary(lesson, title) {
   const cards = [];
 
   cards.push(...fromArray(lesson?.vocabulary, title));
@@ -108,6 +155,16 @@ export function buildLessonFlashcards(lesson = {}) {
     example: item?.question,
     deck: `${title} · uso`,
   })));
+
+  return cards;
+}
+
+export function buildLessonFlashcards(lesson = {}) {
+  const title = clean(lesson?.title) || 'Aula atual';
+  const cards = [
+    ...cardsFromDeepVocabulary(lesson, title),
+    ...cardsFromDeepGrammar(lesson, title),
+  ];
 
   return dedupe(cards).slice(0, 48);
 }
