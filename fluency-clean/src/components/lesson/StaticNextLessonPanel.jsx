@@ -1,5 +1,6 @@
-import { BookOpenCheck, Lock, Map, PlayCircle, Sparkles } from 'lucide-react';
+import { BookOpenCheck, CheckCircle2, Lock, Map, PlayCircle, ShieldCheck, Sparkles } from 'lucide-react';
 import { getNextStaticLesson, getStaticCourseSummary } from '../../services/curriculumEngine.js';
+import { getA1MasteryGateSummary } from '../../services/a1MasteryGateService.js';
 import { openStaticCourseLesson } from '../../services/staticCourseLauncher.js';
 
 function pillarLabel(pillar) {
@@ -9,11 +10,15 @@ function pillarLabel(pillar) {
 
 export function StaticNextLessonPanel({ onNavigate }) {
   const summary = getStaticCourseSummary('A1');
+  const masteryGate = getA1MasteryGateSummary();
   const next = getNextStaticLesson('A1');
   const lesson = next.lesson;
-  const canOpen = Boolean(lesson && !next.lockReason);
+  const allReadyLessonsCompleted = Boolean(summary.readyTotal && summary.readyCompleted >= summary.readyTotal);
+  const shouldShowFinalGate = allReadyLessonsCompleted || masteryGate.canTakeFinalExam || masteryGate.canUnlockA2;
+  const canOpen = Boolean(lesson && !next.lockReason && !shouldShowFinalGate);
 
   function openNextLesson() {
+    if (shouldShowFinalGate) { onNavigate?.('course'); return; }
     if (!canOpen) { onNavigate?.('course'); return; }
     const result = openStaticCourseLesson(lesson);
     if (result.ok) onNavigate?.('lesson');
@@ -27,10 +32,19 @@ export function StaticNextLessonPanel({ onNavigate }) {
 
       <div className="generation-status-box">
         <div><span>Nível atual</span><strong>{summary.level}</strong></div>
-        <div><span>Aulas prontas</span><strong>{summary.readyTotal || 0}/{summary.total || 0}</strong></div>
+        <div><span>Aulas prontas no mapa</span><strong>{summary.readyTotal || 0}/{summary.total || 0}</strong></div>
+        <div><span>Aulas concluídas</span><strong>{summary.readyCompleted || 0}/{summary.readyTotal || 0}</strong></div>
       </div>
 
-      {lesson ? (
+      {shouldShowFinalGate ? (
+        <div className="inline-warning curriculum-next-box">
+          {masteryGate.canUnlockA2 ? <CheckCircle2 size={16} /> : <ShieldCheck size={16} />}
+          <span>
+            {masteryGate.canUnlockA2 ? 'A2 liberado' : masteryGate.canTakeFinalExam ? 'Próximo passo: A1 Final Exam' : 'Aulas prontas concluídas. Ver pendências do A1 Gate'}
+            <small>{masteryGate.statusLabel}. A2 não libera só por assistir aula.</small>
+          </span>
+        </div>
+      ) : lesson ? (
         <div className="inline-warning curriculum-next-box">
           {canOpen ? <Sparkles size={16} /> : <Lock size={16} />}
           <span>
@@ -44,13 +58,13 @@ export function StaticNextLessonPanel({ onNavigate }) {
 
       <div className="answer-actions">
         <button type="button" className="primary-button" onClick={openNextLesson}>
-          <PlayCircle size={16} /> {canOpen ? 'Abrir próxima aula pronta' : 'Ver mapa do curso'}
+          <PlayCircle size={16} /> {shouldShowFinalGate ? 'Ver A1 Mastery Gate' : canOpen ? 'Abrir próxima aula pronta' : 'Ver mapa do curso'}
         </button>
         <button type="button" className="secondary-button" onClick={() => onNavigate?.('course')}>
           <Map size={16} /> Ver mapa do curso
         </button>
       </div>
-      <p className="empty-note">Aulas planejadas não abrem mais como “Aula padrão”. Só aulas prontas entram na aba Aula.</p>
+      <p className="empty-note">“Aulas prontas no mapa” mostra conteúdo implementado. Para liberar A2, precisa concluir aulas, checkpoints, Final Exam e revisão de Speaking/Writing.</p>
     </section>
   );
 }
