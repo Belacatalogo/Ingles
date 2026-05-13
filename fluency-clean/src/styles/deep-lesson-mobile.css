@@ -1,6 +1,14 @@
+.fluency-reference-shell {
+  padding-bottom: calc(190px + env(safe-area-inset-bottom, 0px));
+}
+
+.lesson-screen {
+  padding-bottom: calc(200px + env(safe-area-inset-bottom, 0px));
+}
+
 .static-lesson-layout {
-  padding-bottom: calc(136px + env(safe-area-inset-bottom, 0px));
-  scroll-padding-bottom: calc(136px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(210px + env(safe-area-inset-bottom, 0px));
+  scroll-padding-bottom: calc(210px + env(safe-area-inset-bottom, 0px));
 }
 
 .static-deep-lesson-layout {
@@ -31,11 +39,34 @@
   line-height: 1.55;
 }
 
+.diagnostic-mini-button {
+  bottom: calc(118px + env(safe-area-inset-bottom, 0px));
+}
+
+@supports (-webkit-touch-callout: none) {
+  .fluency-reference-shell {
+    padding-bottom: calc(220px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .lesson-screen {
+    padding-bottom: calc(230px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .static-lesson-layout {
+    padding-bottom: calc(238px + env(safe-area-inset-bottom, 0px));
+    scroll-padding-bottom: calc(238px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .diagnostic-mini-button {
+    bottom: calc(132px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
 @media (max-width: 720px) {
   .static-lesson-layout {
     gap: 11px;
-    padding-bottom: calc(172px + env(safe-area-inset-bottom, 0px));
-    scroll-padding-bottom: calc(172px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(240px + env(safe-area-inset-bottom, 0px));
+    scroll-padding-bottom: calc(240px + env(safe-area-inset-bottom, 0px));
   }
 
   .static-lesson-card {
