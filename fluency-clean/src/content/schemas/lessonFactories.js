@@ -18,6 +18,7 @@ export function createStaticLessonBase(input = {}) {
     id: makeId({ level, pillar, order, id: input.id }),
     level,
     pillar,
+    type: pillar,
     title: clean(input.title) || `${pillar} ${level}`,
     order,
     estimatedMinutes: Number(input.estimatedMinutes || 30),
