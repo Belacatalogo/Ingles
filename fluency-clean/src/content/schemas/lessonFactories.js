@@ -3,10 +3,29 @@ import { normalizeStaticLevel, normalizeStaticPillar, STATIC_LESSON_SCHEMA_VERSI
 function clean(value) { return String(value ?? '').trim(); }
 function safeArray(value) { return Array.isArray(value) ? value : []; }
 function safeObject(value) { return value && typeof value === 'object' && !Array.isArray(value) ? value : {}; }
+function firstNonEmpty(...values) { return values.map(clean).find(Boolean) || ''; }
+function taskOrNull(value) { return value && typeof value === 'object' ? value : value ? { instruction: clean(value) } : null; }
 
 function makeId({ level, pillar, order, id }) {
   if (id) return clean(id);
   return `${level}-${pillar.toUpperCase()}-${String(order || 1).padStart(3, '0')}`;
+}
+
+function normalizeDeepCommon(input = {}) {
+  return {
+    teacherOpening: clean(input.teacherOpening),
+    whyItMatters: clean(input.whyItMatters),
+    realLifeUseCases: safeArray(input.realLifeUseCases),
+    conceptExplanation: clean(input.conceptExplanation),
+    mentalModel: input.mentalModel || null,
+    stepByStep: safeArray(input.stepByStep),
+    portugueseContrast: safeArray(input.portugueseContrast),
+    guidedDiscovery: safeArray(input.guidedDiscovery),
+    guidedBeforeQuiz: safeArray(input.guidedBeforeQuiz),
+    selfAssessment: safeArray(input.selfAssessment),
+    lessonRecap: safeArray(input.lessonRecap),
+    nextLessonBridge: clean(input.nextLessonBridge),
+  };
 }
 
 export function createStaticLessonBase(input = {}) {
@@ -14,7 +33,7 @@ export function createStaticLessonBase(input = {}) {
   const pillar = normalizeStaticPillar(input.pillar);
   const order = Number(input.order || 1);
   return {
-    schemaVersion: STATIC_LESSON_SCHEMA_VERSION,
+    schemaVersion: input.schemaVersion || STATIC_LESSON_SCHEMA_VERSION,
     id: makeId({ level, pillar, order, id: input.id }),
     level,
     pillar,
@@ -27,16 +46,30 @@ export function createStaticLessonBase(input = {}) {
     masteryCriteria: safeObject(input.masteryCriteria),
     status: input.status || STATIC_LESSON_STATUS.DRAFT,
     tags: safeArray(input.tags).map(clean).filter(Boolean),
+    ...normalizeDeepCommon(input),
   };
 }
 
 export function createGrammarLesson(input = {}) {
+  const professorExamples = safeArray(input.teacherExamples?.length ? input.teacherExamples : input.professorExamples);
+  const commonMistakes = safeArray(input.commonBrazilianMistakes?.length ? input.commonBrazilianMistakes : input.commonMistakes);
+  const guidedPractice = safeArray(input.guidedPractice);
   return {
     ...createStaticLessonBase({ ...input, pillar: 'grammar' }),
+    grammarGoal: clean(input.grammarGoal),
+    formationGuide: safeArray(input.formationGuide),
+    whenToUse: safeArray(input.whenToUse),
+    whenNotToUse: safeArray(input.whenNotToUse),
+    grammarTable: safeArray(input.grammarTable),
+    teacherExamples: professorExamples,
+    commonBrazilianMistakes: commonMistakes,
+    controlledPractice: safeArray(input.controlledPractice),
+    errorCorrectionPractice: safeArray(input.errorCorrectionPractice),
+    translationPractice: safeArray(input.translationPractice),
     explanationSections: safeArray(input.explanationSections),
-    professorExamples: safeArray(input.professorExamples),
-    commonMistakes: safeArray(input.commonMistakes),
-    guidedPractice: safeArray(input.guidedPractice),
+    professorExamples,
+    commonMistakes,
+    guidedPractice,
     transformationPractice: safeArray(input.transformationPractice),
     productionTasks: safeArray(input.productionTasks),
     finalChecklist: safeArray(input.finalChecklist),
@@ -44,12 +77,21 @@ export function createGrammarLesson(input = {}) {
 }
 
 export function createVocabularyLesson(input = {}) {
+  const examples = safeArray(input.examples);
   return {
     ...createStaticLessonBase({ ...input, pillar: 'vocabulary' }),
-    theme: clean(input.theme || input.title),
+    topicContext: clean(input.topicContext),
+    essentialWords: safeArray(input.essentialWords),
+    chunks: safeArray(input.chunks),
+    pronunciationFocus: input.pronunciationFocus || null,
+    dangerousConfusions: safeArray(input.dangerousConfusions),
+    collocations: safeArray(input.collocations),
+    miniDialogues: safeArray(input.miniDialogues),
+    spacedReview: safeArray(input.spacedReview),
+    theme: firstNonEmpty(input.theme, input.title),
     lexicalSets: safeArray(input.lexicalSets),
     pronunciationNotes: safeArray(input.pronunciationNotes),
-    examples: safeArray(input.examples),
+    examples,
     recognitionPractice: safeArray(input.recognitionPractice),
     usagePractice: safeArray(input.usagePractice),
     productionTasks: safeArray(input.productionTasks),
@@ -57,10 +99,20 @@ export function createVocabularyLesson(input = {}) {
 }
 
 export function createReadingLesson(input = {}) {
+  const mainText = clean(input.mainText);
   return {
     ...createStaticLessonBase({ ...input, pillar: 'reading' }),
+    readingPurpose: clean(input.readingPurpose),
+    preReadingVocabulary: safeArray(input.preReadingVocabulary),
+    readingStrategy: safeArray(input.readingStrategy),
+    firstReadTask: taskOrNull(input.firstReadTask),
+    secondReadTasks: safeArray(input.secondReadTasks),
+    evidenceQuestions: safeArray(input.evidenceQuestions?.length ? input.evidenceQuestions : input.comprehensionQuestions),
+    contextVocabularyTasks: safeArray(input.contextVocabularyTasks),
+    guidedSummary: taskOrNull(input.guidedSummary),
+    connectedProduction: taskOrNull(input.connectedProduction || input.productionTask),
     preReading: safeArray(input.preReading),
-    mainText: clean(input.mainText),
+    mainText,
     vocabulary: safeArray(input.vocabulary),
     comprehensionQuestions: safeArray(input.comprehensionQuestions),
     evidenceTasks: safeArray(input.evidenceTasks),
@@ -73,12 +125,18 @@ export function createListeningLesson(input = {}) {
   const transcript = clean(input.transcript || input.audioScript);
   return {
     ...createStaticLessonBase({ ...input, pillar: 'listening' }),
+    listeningPreparation: safeArray(input.listeningPreparation),
+    keyWordsToHear: safeArray(input.keyWordsToHear),
     audioScript: clean(input.audioScript || transcript),
     firstListenTasks: safeArray(input.firstListenTasks),
     secondListenTasks: safeArray(input.secondListenTasks),
     transcript,
     vocabulary: safeArray(input.vocabulary),
     shadowing: safeArray(input.shadowing),
+    dictationTasks: safeArray(input.dictationTasks),
+    pronunciationChunks: safeArray(input.pronunciationChunks),
+    listeningComprehension: safeArray(input.listeningComprehension?.length ? input.listeningComprehension : input.comprehensionQuestions),
+    oralProduction: taskOrNull(input.oralProduction),
     comprehensionQuestions: safeArray(input.comprehensionQuestions),
   };
 }
@@ -86,8 +144,14 @@ export function createListeningLesson(input = {}) {
 export function createSpeakingLesson(input = {}) {
   return {
     ...createStaticLessonBase({ ...input, pillar: 'speaking' }),
+    speakingSituation: clean(input.speakingSituation),
     modelPhrases: safeArray(input.modelPhrases),
+    pronunciationChunks: safeArray(input.pronunciationChunks),
+    repeatAfterMe: safeArray(input.repeatAfterMe),
     substitutionDrills: safeArray(input.substitutionDrills),
+    questionAnswerDrills: safeArray(input.questionAnswerDrills),
+    buildYourAnswer: safeArray(input.buildYourAnswer),
+    speakingChecklist: safeArray(input.speakingChecklist),
     pronunciationFocus: input.pronunciationFocus || null,
     guidedSpeaking: safeArray(input.guidedSpeaking),
     recordingTasks: safeArray(input.recordingTasks),
@@ -99,9 +163,15 @@ export function createWritingLesson(input = {}) {
   return {
     ...createStaticLessonBase({ ...input, pillar: 'writing' }),
     modelText: clean(input.modelText),
+    modelTextBreakdown: safeArray(input.modelTextBreakdown),
     writingBlocks: safeArray(input.writingBlocks),
-    guidedSubstitution: safeArray(input.guidedSubstitution),
     grammarForWriting: safeArray(input.grammarForWriting),
+    usefulSentences: safeArray(input.usefulSentences),
+    guidedSubstitution: safeArray(input.guidedSubstitution),
+    commonWritingMistakes: safeArray(input.commonWritingMistakes),
+    revisionChecklist: safeArray(input.revisionChecklist?.length ? input.revisionChecklist : input.checklist),
+    finalVersionTask: taskOrNull(input.finalVersionTask || input.revisionTask),
+    feedbackPreparation: safeArray(input.feedbackPreparation),
     checklist: safeArray(input.checklist),
     draftTask: input.draftTask || null,
     revisionTask: input.revisionTask || null,
