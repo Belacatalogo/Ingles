@@ -9,6 +9,7 @@ import './styles/flashcards.css';
 import './styles/screens.css';
 import './styles/static-gates.css';
 import './styles/course-screen.css';
+import './styles/a1-mastery-gate.css';
 
 const rootElement = document.getElementById('root');
 const root = createRoot(rootElement);
