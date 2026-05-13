@@ -1,6 +1,8 @@
 import { A1_FINAL_EXAM_VERSION, scoreA1FinalExamObjectiveAnswers } from '../content/curriculum/levels/A1/a1FinalExamModel.js';
+import { recordA1FinalExamPillarScore } from './a1MasteryGateService.js';
 
 const STORAGE_KEY = 'fluency:a1-final-exam:objective-attempt:v1';
+const OBJECTIVE_PILLARS = Object.freeze(['grammar', 'vocabulary', 'reading', 'listening']);
 
 function safeParse(value, fallback) {
   try { return value ? JSON.parse(value) : fallback; } catch { return fallback; }
@@ -26,6 +28,20 @@ export function saveA1FinalExamObjectiveAttempt(objectiveAnswers = {}) {
     scoring,
   });
   if (canUseStorage()) window.localStorage.setItem(STORAGE_KEY, JSON.stringify(attempt));
+  return attempt;
+}
+
+export function syncA1FinalExamObjectiveScoresToGate(scoring) {
+  const pillarScores = scoring?.objectivePillarScores || {};
+  OBJECTIVE_PILLARS.forEach((pillar) => {
+    recordA1FinalExamPillarScore(pillar, pillarScores[pillar] || 0);
+  });
+  return Object.freeze({ syncedPillars: OBJECTIVE_PILLARS });
+}
+
+export function saveAndSyncA1FinalExamObjectiveAttempt(objectiveAnswers = {}) {
+  const attempt = saveA1FinalExamObjectiveAttempt(objectiveAnswers);
+  syncA1FinalExamObjectiveScoresToGate(attempt.scoring);
   return attempt;
 }
 
