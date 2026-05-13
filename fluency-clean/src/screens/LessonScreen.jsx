@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { BookOpen, CheckCircle2, Clock, Headphones, Mic, RefreshCw, ShieldCheck, Sparkles, Target, Zap } from 'lucide-react';
+import { BookOpen, CheckCircle2, Clock, Headphones, Mic, PenLine, RefreshCw, ShieldCheck, Sparkles, Target, Zap } from 'lucide-react';
 import { Card } from '../components/ui/Card.jsx';
 import { LessonQualityPanel } from '../components/lesson/LessonQualityPanel.jsx';
 import { ReadingLessonGuided } from '../lessons/ReadingLessonGuided.jsx';
@@ -35,6 +35,7 @@ const pillarOptions = [
   { id: 'reading', label: 'Abrir Reading fixo', icon: BookOpen },
   { id: 'listening', label: 'Abrir Listening fixo', icon: Headphones },
   { id: 'speaking', label: 'Abrir Speaking fixo', icon: Mic },
+  { id: 'writing', label: 'Abrir Writing fixo', icon: PenLine },
 ];
 
 function getLessonTitle(lesson) { return lesson?.title?.replace(/^(Reading|Grammar|Listening|Writing)\s*[—-]\s*/i, '') || 'Aula'; }
