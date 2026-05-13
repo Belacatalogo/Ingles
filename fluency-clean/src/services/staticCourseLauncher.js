@@ -1,3 +1,4 @@
+import { findStaticLesson } from '../content/curriculum/index.js';
 import { getStaticLessonById, markStaticLessonOpened as markCourseLessonOpened } from './curriculumEngine.js';
 import { saveCurrentLesson } from './lessonStore.js';
 import { markStaticLessonOpened } from './staticLessonProgress.js';
@@ -20,7 +21,7 @@ export function openStaticCourseLesson(lesson, options = {}) {
     return { ok: false, reason: getStaticLessonOpenReason(lesson), lesson: lesson || null };
   }
   const saved = saveCurrentLesson({ ...lesson, type: lesson.pillar }, {
-    source: 'static-curriculum',
+    source: options.source || 'static-curriculum',
     provider: 'static',
     model: 'curated',
     status: 'ready',
@@ -34,4 +35,9 @@ export function openStaticCourseLesson(lesson, options = {}) {
 
 export function openStaticCourseLessonById(lessonId, level = 'A1') {
   return openStaticCourseLesson(getStaticLessonById(lessonId, level));
+}
+
+export function openStaticReviewLessonById(lessonId) {
+  const lesson = findStaticLesson(lessonId);
+  return openStaticCourseLesson(lesson, { source: 'static-review-from-errors' });
 }
