@@ -159,14 +159,43 @@ function cardsFromDeepVocabulary(lesson, title) {
   return cards;
 }
 
+function fallbackCards(lesson, title) {
+  const cards = [];
+  const objective = Array.isArray(lesson?.objectives) ? lesson.objectives[0] : lesson?.objective;
+  const recap = Array.isArray(lesson?.lessonRecap) ? lesson.lessonRecap[0] : '';
+  const bridge = clean(lesson?.nextLessonBridge);
+
+  cards.push(makeCard({
+    word: title,
+    meaning: 'Tema principal da aula atual.',
+    example: clean(objective || recap || bridge),
+    deck: 'Aula atual',
+  }, 0, 'Aula atual'));
+
+  if (Array.isArray(lesson?.objectives)) {
+    lesson.objectives.slice(0, 4).forEach((item, index) => {
+      const card = makeCard({
+        word: item,
+        meaning: 'Objetivo importante da aula.',
+        example: title,
+        deck: `${title} · objetivos`,
+      }, index + 1, `${title} · objetivos`);
+      if (card) cards.push(card);
+    });
+  }
+
+  return cards.filter(Boolean);
+}
+
 export function buildLessonFlashcards(lesson = {}) {
   const title = clean(lesson?.title) || 'Aula atual';
-  const cards = [
+  const cards = dedupe([
     ...cardsFromDeepVocabulary(lesson, title),
     ...cardsFromDeepGrammar(lesson, title),
-  ];
+  ]);
 
-  return dedupe(cards).slice(0, 48);
+  if (cards.length) return cards.slice(0, 48);
+  return dedupe(fallbackCards(lesson, title)).slice(0, 12);
 }
 
 export function hasLessonFlashcards(lesson = {}) {
