@@ -4,7 +4,6 @@ import {
   BookOpenCheck,
   Brain,
   CheckCircle2,
-  ChevronRight,
   Flame,
   Lock,
   Mic,
@@ -17,11 +16,12 @@ import {
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { PracticeProgressSummary } from '../components/progress/PracticeProgressSummary.jsx';
-import { CURRICULUM_LEVELS, getCurriculumLessons, getCurriculumProgress, getCurriculumSummary } from '../services/curriculumPlan.js';
+import { CURRICULUM_LEVELS, CURRICULUM_PILLARS, getStaticLessons } from '../content/curriculum/index.js';
+import { getNextStaticLesson, getStaticCourseSummary } from '../services/curriculumEngine.js';
+import { getCompletedLessonIds, isStaticLessonReady } from '../services/lessonProgression.js';
 import { getCurrentWeekStats, getLessonCompletions, getProgressSummary } from '../services/progressStore.js';
 import { getSpeakingHistorySummary } from '../services/speakingHistory.js';
 import { getErrorBankSummary } from '../services/errorBank.js';
-import { getLevelCertificationSummary } from '../services/levelCertification.js';
 
 const cefrLevels = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 const skillConfig = [
@@ -32,6 +32,10 @@ const skillConfig = [
   { key: 'grammar', label: 'Grammar', tone: 'green' },
 ];
 
+function safeArray(value) { return Array.isArray(value) ? value : []; }
+function safeObject(value) { return value && typeof value === 'object' && !Array.isArray(value) ? value : {}; }
+function safeNumber(value) { return Number.isFinite(Number(value)) ? Number(value) : 0; }
+function clamp(value, min = 0, max = 100) { return Math.max(min, Math.min(max, Math.round(safeNumber(value)))); }
 function dateKeyFromIso(value) { return value ? String(value).slice(0, 10) : ''; }
 function getLastThirtyDays() {
   return Array.from({ length: 30 }, (_, index) => {
@@ -40,52 +44,9 @@ function getLastThirtyDays() {
     return date.toISOString().slice(0, 10);
   });
 }
-function buildSkillScores(completions, speakingSummary) {
-  const counts = completions.reduce((acc, item) => {
-    const type = String(item.type || '').toLowerCase();
-    acc[type] = (acc[type] || 0) + 1;
-    return acc;
-  }, {});
-  return skillConfig.map((skill) => {
-    if (skill.key === 'speaking') {
-      const count = speakingSummary.totalSessions || 0;
-      const score = speakingSummary.averageScore ? Math.min(100, Math.round(speakingSummary.averageScore * 0.8 + Math.min(20, count * 2))) : 0;
-      return { ...skill, score, count };
-    }
-    const count = counts[skill.key] || 0;
-    const score = count ? Math.min(100, count * 20) : 0;
-    return { ...skill, score, count };
-  });
-}
-function buildActivity(completions) {
-  const completionMap = completions.reduce((acc, item) => {
-    const key = dateKeyFromIso(item.completedAt);
-    if (!key) return acc;
-    acc[key] = (acc[key] || 0) + 1;
-    return acc;
-  }, {});
-  return getLastThirtyDays().map((date) => ({ date, value: Math.min(4, completionMap[date] || 0) }));
-}
-function getCurriculumLevelRows(curriculumProgress) {
-  const completed = new Set(curriculumProgress.completedIds || []);
-  const allLessons = getCurriculumLessons();
-  const nextLesson = getCurriculumSummary().nextLesson;
-  const currentLevel = nextLesson?.level || 'A1';
-  const currentLevelIndex = cefrLevels.indexOf(currentLevel);
-  return CURRICULUM_LEVELS.map((level, index) => {
-    const lessons = allLessons.filter((lesson) => lesson.level === level.level);
-    const done = lessons.filter((lesson) => completed.has(lesson.id)).length;
-    const total = lessons.length || 1;
-    const percent = Math.round((done / total) * 100);
-    const locked = index > currentLevelIndex;
-    const current = level.level === currentLevel;
-    const completeEnough = percent >= Math.round(level.requiredCompletion * 100);
-    return { ...level, done, total, percent, locked, current, completeEnough };
-  });
-}
-function getUpcomingLessons(curriculumProgress, limit = 5) {
-  const completed = new Set(curriculumProgress.completedIds || []);
-  return getCurriculumLessons().filter((lesson) => !completed.has(lesson.id)).slice(0, limit);
+function pillarLabel(value) {
+  const labels = { grammar: 'Grammar', vocabulary: 'Vocabulary', reading: 'Reading', listening: 'Listening', speaking: 'Speaking', writing: 'Writing' };
+  return labels[value] || value || 'Aula';
 }
 function categoryLabel(value) {
   const labels = { grammar: 'Gramática', vocabulary: 'Vocabulário', pronunciation: 'Pronúncia', listening: 'Listening', reading: 'Reading', writing: 'Writing', practice: 'Prática' };
@@ -95,6 +56,78 @@ function severityLabel(value) {
   if (value === 'high') return 'alta prioridade';
   if (value === 'medium') return 'revisar em breve';
   return 'monitorar';
+}
+function buildActivity(completions) {
+  const completionMap = safeArray(completions).reduce((acc, item) => {
+    const key = dateKeyFromIso(item?.completedAt);
+    if (!key) return acc;
+    acc[key] = (acc[key] || 0) + 1;
+    return acc;
+  }, {});
+  return getLastThirtyDays().map((date) => ({ date, value: Math.min(4, completionMap[date] || 0) }));
+}
+function buildSkillScores(completions, speakingSummary) {
+  const counts = safeArray(completions).reduce((acc, item) => {
+    const type = String(item?.type || '').toLowerCase();
+    if (type) acc[type] = (acc[type] || 0) + 1;
+    return acc;
+  }, {});
+
+  return skillConfig.map((skill) => {
+    if (skill.key === 'speaking') {
+      const count = safeNumber(speakingSummary?.totalSessions);
+      const average = safeNumber(speakingSummary?.averageScore);
+      const score = count ? clamp(average * 0.8 + Math.min(20, count * 2)) : 0;
+      return { ...skill, score, count };
+    }
+    const count = counts[skill.key] || 0;
+    return { ...skill, score: count ? Math.min(100, count * 20) : 0, count };
+  });
+}
+function getStaticLevelRows() {
+  const completedIds = getCompletedLessonIds();
+  return CURRICULUM_LEVELS.map((level) => {
+    const lessons = safeArray(getStaticLessons(level));
+    const readyLessons = lessons.filter(isStaticLessonReady);
+    const completed = readyLessons.filter((lesson) => completedIds?.has?.(lesson.id)).length;
+    const total = readyLessons.length;
+    return {
+      level,
+      ready: total,
+      completed,
+      percent: total ? Math.round((completed / total) * 100) : 0,
+      locked: level !== 'A1' && total === 0,
+      current: level === 'A1',
+    };
+  });
+}
+function buildCertificationSnapshot(summary, speakingSummary, errorSummary) {
+  const completionScore = clamp(summary?.readyPercent || 0);
+  const speakingScore = clamp((safeNumber(speakingSummary?.averageScore) || 0) * 0.75 + Math.min(25, safeNumber(speakingSummary?.totalSessions) * 4));
+  const errorPenalty = clamp(safeNumber(errorSummary?.highPriority) * 8 + safeNumber(errorSummary?.dueToday) * 3, 0, 40);
+  const score = clamp(completionScore * 0.55 + speakingScore * 0.25 + (100 - errorPenalty) * 0.2);
+  const readyTotal = safeNumber(summary?.readyTotal);
+  const readyCompleted = safeNumber(summary?.readyCompleted);
+  const blockers = [];
+  if (readyTotal && readyCompleted < readyTotal) blockers.push(`concluir ${readyTotal - readyCompleted} aula(s) pronta(s) do A1.`);
+  if (speakingScore < 55) blockers.push('fazer mais Speaking real antes de certificar.');
+  if (safeNumber(errorSummary?.highPriority) > 0) blockers.push('reduzir erros de alta prioridade no banco de erros.');
+  const status = score >= 85 && blockers.length === 0 ? 'certified' : score >= 70 ? 'ready' : score >= 55 ? 'almost' : 'progressing';
+  const label = status === 'certified' ? 'Certificado' : status === 'ready' ? 'Pronto para certificação' : status === 'almost' ? 'Quase pronto' : 'Em andamento';
+  return {
+    level: summary?.level || 'A1',
+    label,
+    status,
+    score,
+    completed: readyCompleted,
+    total: readyTotal,
+    completionScore,
+    speakingScore,
+    errorPenalty,
+    blockers,
+    nextAction: blockers[0] || 'fazer mini prova/certificação final para consolidar o nível.',
+    version: 'static-progress-safe-v1',
+  };
 }
 function certificationTone(status) {
   if (status === 'certified') return 'certified';
@@ -112,26 +145,17 @@ function CertificationCard({ certification }) {
       </div>
       <div className="level-cert-hero">
         <div>
-          <span>{certification.level} · {certification.title}</span>
+          <span>{certification.level} · curso fixo premium</span>
           <strong>{certification.label}</strong>
-          <p>{certification.completed}/{certification.total} aulas · precisa {certification.requiredCompletion}% · nota {certification.score}/100</p>
+          <p>{certification.completed}/{certification.total} aulas prontas · nota {certification.score}/100</p>
         </div>
         <b>{certification.score}</b>
       </div>
       <div className="level-cert-metrics">
-        <article><span>Currículo</span><strong>{certification.completionScore}%</strong></article>
-        <article><span>Habilidades</span><strong>{certification.skillScore}%</strong></article>
-        <article><span>Simulados</span><strong>{certification.checkpointScore}%</strong></article>
+        <article><span>Curso</span><strong>{certification.completionScore}%</strong></article>
         <article><span>Speaking</span><strong>{certification.speakingScore}%</strong></article>
-      </div>
-      <div className="level-cert-skills">
-        {certification.skills.map((skill) => (
-          <div key={skill.key} className={skill.passed ? 'passed' : 'pending'}>
-            {skill.passed ? <CheckCircle2 size={13} /> : <AlertTriangle size={13} />}
-            <span>{skill.label}</span>
-            <strong>{skill.score}%</strong>
-          </div>
-        ))}
+        <article><span>Erros</span><strong>-{certification.errorPenalty}</strong></article>
+        <article><span>Prontas</span><strong>{certification.total}</strong></article>
       </div>
       {certification.blockers.length ? (
         <div className="level-cert-blockers">
@@ -147,26 +171,27 @@ function CertificationCard({ certification }) {
 }
 
 function ErrorBankCard({ summary }) {
+  const topErrors = safeArray(summary?.topErrors);
   return (
     <section className="progress-section-card error-bank-card">
       <div className="progress-section-title">
         <span>Banco de erros real</span>
-        <small>{summary.hasData ? `${summary.uniqueErrors} pontos fracos` : 'sem erros registrados'}</small>
+        <small>{summary?.hasData ? `${summary.uniqueErrors} pontos fracos` : 'sem erros registrados'}</small>
       </div>
-      {summary.hasData ? (
+      {summary?.hasData ? (
         <>
           <div className="speaking-real-metrics">
-            <article><span>Erros</span><strong>{summary.totalErrors}</strong></article>
-            <article><span>Alta</span><strong>{summary.highPriority}</strong></article>
-            <article><span>Hoje</span><strong>{summary.dueToday}</strong></article>
+            <article><span>Erros</span><strong>{summary.totalErrors || 0}</strong></article>
+            <article><span>Alta</span><strong>{summary.highPriority || 0}</strong></article>
+            <article><span>Hoje</span><strong>{summary.dueToday || 0}</strong></article>
           </div>
           <div className="error-bank-list">
-            {summary.topErrors.slice(0, 5).map((item) => (
-              <article key={item.id} className={`error-bank-row ${item.severity}`}>
+            {topErrors.slice(0, 5).map((item) => (
+              <article key={item.id || item.title} className={`error-bank-row ${item.severity || 'low'}`}>
                 <AlertTriangle size={15} />
                 <div>
-                  <strong>{item.title}</strong>
-                  <span>{categoryLabel(item.category)} · {severityLabel(item.severity)} · {item.count}x</span>
+                  <strong>{item.title || 'Erro registrado'}</strong>
+                  <span>{categoryLabel(item.category)} · {severityLabel(item.severity)} · {item.count || 1}x</span>
                   {item.examples?.[0]?.note ? <p>{item.examples[0].note}</p> : null}
                 </div>
               </article>
@@ -185,24 +210,21 @@ function ErrorBankCard({ summary }) {
 
 export function ProgressScreen() {
   const [range, setRange] = useState('30d');
-  const progress = useMemo(() => getProgressSummary(), []);
-  const week = useMemo(() => getCurrentWeekStats(), []);
-  const completions = useMemo(() => getLessonCompletions(), []);
-  const curriculum = useMemo(() => getCurriculumSummary(), []);
-  const curriculumProgress = useMemo(() => getCurriculumProgress(), []);
-  const speakingSummary = useMemo(() => getSpeakingHistorySummary({ limit: 4 }), []);
-  const errorSummary = useMemo(() => getErrorBankSummary({ limit: 8 }), []);
-  const certification = useMemo(() => getLevelCertificationSummary(curriculum.currentLevel), [curriculum.currentLevel]);
-  const curriculumLevels = useMemo(() => getCurriculumLevelRows(curriculumProgress), [curriculumProgress]);
-  const upcomingLessons = useMemo(() => getUpcomingLessons(curriculumProgress), [curriculumProgress]);
-  const recentCompletions = completions.slice(0, 4);
-  const skillScores = useMemo(() => buildSkillScores(completions, speakingSummary), [completions, speakingSummary]);
+  const progress = useMemo(() => safeObject(getProgressSummary()), []);
+  const week = useMemo(() => safeObject(getCurrentWeekStats()), []);
+  const completions = useMemo(() => safeArray(getLessonCompletions()).filter((item) => item && typeof item === 'object'), []);
+  const curriculum = useMemo(() => safeObject(getStaticCourseSummary('A1')), []);
+  const next = useMemo(() => safeObject(getNextStaticLesson('A1')), []);
+  const levelRows = useMemo(() => getStaticLevelRows(), []);
+  const speakingSummary = useMemo(() => safeObject(getSpeakingHistorySummary({ limit: 4 })), []);
+  const errorSummary = useMemo(() => safeObject(getErrorBankSummary({ limit: 8 })), []);
+  const certification = useMemo(() => buildCertificationSnapshot(curriculum, speakingSummary, errorSummary), [curriculum, speakingSummary, errorSummary]);
   const activity = useMemo(() => buildActivity(completions), [completions]);
+  const skillScores = useMemo(() => buildSkillScores(completions, speakingSummary), [completions, speakingSummary]);
+  const recentCompletions = completions.slice(0, 4);
   const wordsRegistered = completions.reduce((total, item) => total + String(item.writtenAnswer || '').trim().split(/\s+/).filter(Boolean).length, 0);
-  const speakingSessions = speakingSummary.totalSessions || 0;
-  const nextLesson = curriculum.nextLesson;
-  const currentLevelData = curriculumLevels.find((item) => item.current) || curriculumLevels[0];
-  const lessonsToUnlock = Math.max(0, Math.ceil((currentLevelData?.total || 1) * (currentLevelData?.requiredCompletion || 0.92)) - (currentLevelData?.done || 0));
+  const speakingSessions = safeNumber(speakingSummary.totalSessions);
+  const nextLesson = next.lesson || null;
 
   return (
     <section className="progress-screen" aria-label="Progresso do Fluency">
@@ -210,7 +232,7 @@ export function ProgressScreen() {
         <div>
           <p className="progress-eyebrow">Progresso</p>
           <h1>Sua jornada</h1>
-          <p>Do A1 ao C2, com certificação, histórico real e banco de erros.</p>
+          <p>Do A1 ao C2, com progresso seguro baseado no curso fixo e dados reais.</p>
         </div>
         <div className="progress-range-toggle" aria-label="Período do progresso">
           {['7d', '30d', 'Tudo'].map((item) => (
@@ -220,16 +242,16 @@ export function ProgressScreen() {
       </div>
 
       <section className="progress-level-hero">
-        <span>Nível do cronograma</span>
-        <strong>{curriculum.currentLevel}</strong>
-        <p>{curriculum.completedInLevel}/{curriculum.levelTotal} aulas do nível · {curriculum.levelProgress}% concluído</p>
+        <span>Nível do curso fixo</span>
+        <strong>{curriculum.level || 'A1'}</strong>
+        <p>{curriculum.readyCompleted || 0}/{curriculum.readyTotal || 0} aulas prontas concluídas · mapa total {curriculum.total || 0}</p>
         <div className="progress-cefr-road" aria-label="Mapa CEFR de A1 a C2">
           {cefrLevels.map((level, index) => {
-            const row = curriculumLevels.find((item) => item.level === level);
+            const row = levelRows.find((item) => item.level === level) || { locked: true, current: false, percent: 0 };
             return (
               <div className="progress-cefr-step" key={level}>
-                <div className={`progress-cefr-node ${!row?.locked ? 'reached' : ''} ${row?.current ? 'current' : ''}`}>{level}</div>
-                {index < cefrLevels.length - 1 ? <i className={row?.completeEnough ? 'filled' : ''} /> : null}
+                <div className={`progress-cefr-node ${!row.locked ? 'reached' : ''} ${row.current ? 'current' : ''}`}>{level}</div>
+                {index < cefrLevels.length - 1 ? <i className={row.percent >= 100 ? 'filled' : ''} /> : null}
               </div>
             );
           })}
@@ -239,21 +261,22 @@ export function ProgressScreen() {
       <CertificationCard certification={certification} />
 
       <section className="progress-section-card curriculum-card">
-        <div className="progress-section-title"><span>Trilha obrigatória</span><small>{curriculum.completedTotal}/{curriculum.totalLessons} aulas</small></div>
+        <div className="progress-section-title"><span>Trilha obrigatória</span><small>{curriculum.readyCompleted || 0}/{curriculum.readyTotal || 0} prontas</small></div>
         <div className="curriculum-next-lesson">
           <div><Route size={18} /></div>
           <article>
             <span>Próxima aula</span>
-            <strong>{nextLesson?.title || 'Cronograma concluído'}</strong>
-            <p>{nextLesson ? `${nextLesson.level} · ${nextLesson.type} · ${nextLesson.unitTitle}` : 'Todas as aulas planejadas foram concluídas.'}</p>
+            <strong>{nextLesson?.title || 'Aguardando próxima aula pronta'}</strong>
+            <p>{nextLesson ? `${nextLesson.level} · ${pillarLabel(nextLesson.pillar)} · ${nextLesson.packageId || 'curso fixo'}` : 'As próximas aulas ainda estão planejadas ou já foram concluídas.'}</p>
+            {next.lockReason ? <small>{next.lockReason}</small> : null}
           </article>
         </div>
         <div className="curriculum-upcoming-list">
-          {upcomingLessons.map((lesson, index) => (
-            <article className={index === 0 ? 'active' : ''} key={lesson.id}>
-              <b>{index + 1}</b>
-              <div><strong>{lesson.title}</strong><span>{lesson.level} · {lesson.type} · {lesson.unitTitle}</span></div>
-              {index === 0 ? <ChevronRight size={18} /> : <Lock size={15} />}
+          {levelRows.map((row) => (
+            <article className={row.current ? 'active' : ''} key={row.level}>
+              <b>{row.level}</b>
+              <div><strong>{row.ready ? `${row.completed}/${row.ready} aulas prontas` : 'planejado'}</strong><span>{row.percent}% concluído</span></div>
+              {row.ready ? <CheckCircle2 size={18} /> : <Lock size={15} />}
             </article>
           ))}
         </div>
@@ -268,13 +291,13 @@ export function ProgressScreen() {
 
       {speakingSummary.hasData ? (
         <section className="progress-section-card speaking-real-history-card">
-          <div className="progress-section-title"><span>Speaking real</span><small>{speakingSummary.trend.label}</small></div>
+          <div className="progress-section-title"><span>Speaking real</span><small>{speakingSummary.trend?.label || 'histórico real'}</small></div>
           <div className="speaking-real-metrics">
-            <article><span>Falas</span><strong>{speakingSummary.totalSpoken}</strong></article>
+            <article><span>Falas</span><strong>{speakingSummary.totalSpoken || 0}</strong></article>
             <article><span>Minutos</span><strong>{speakingSummary.minutes || 0}</strong></article>
-            <article><span>Hoje</span><strong>{speakingSummary.todaySessions}</strong></article>
+            <article><span>Hoje</span><strong>{speakingSummary.todaySessions || 0}</strong></article>
           </div>
-          {speakingSummary.weakWords.length ? <p>Palavras para revisar: {speakingSummary.weakWords.slice(0, 6).map((item) => item.word).join(', ')}</p> : <p>Nenhuma palavra fraca acumulada ainda.</p>}
+          {safeArray(speakingSummary.weakWords).length ? <p>Palavras para revisar: {speakingSummary.weakWords.slice(0, 6).map((item) => item.word).join(', ')}</p> : <p>Nenhuma palavra fraca acumulada ainda.</p>}
         </section>
       ) : null}
 
@@ -309,7 +332,7 @@ export function ProgressScreen() {
             { label: `${wordsRegistered} palavras`, icon: Brain, tone: 'violet', locked: wordsRegistered === 0 },
             { label: `${speakingSessions} speaking`, icon: Mic, tone: 'teal', locked: speakingSessions === 0 },
             { label: `${errorSummary.uniqueErrors || 0} erros`, icon: AlertTriangle, tone: 'amber', locked: !errorSummary.uniqueErrors },
-            { label: certification.label, icon: ShieldCheck, tone: 'green', locked: certification.status === 'in-progress' },
+            { label: certification.label, icon: ShieldCheck, tone: 'green', locked: certification.status === 'progressing' },
             { label: 'próxima', icon: Lock, tone: 'muted', locked: true },
           ].map((achievement) => {
             const Icon = achievement.icon;
@@ -322,10 +345,10 @@ export function ProgressScreen() {
         <div className="progress-section-title"><span>Histórico recente</span><small>{recentCompletions.length ? 'últimas aulas' : 'sem aulas ainda'}</small></div>
         {recentCompletions.length ? (
           <div className="progress-history-list">
-            {recentCompletions.map((item) => (
-              <article className="progress-history-row" key={`${item.lessonId}-${item.completedAt}`}>
+            {recentCompletions.map((item, index) => (
+              <article className="progress-history-row" key={`${item.lessonId || item.title || index}-${item.completedAt || index}`}>
                 <div className="progress-history-icon"><CheckCircle2 size={16} /></div>
-                <div><strong>{item.title}</strong><span>{item.type} · {item.level}</span></div>
+                <div><strong>{item.title || 'Aula concluída'}</strong><span>{item.type || 'lesson'} · {item.level || 'A1'}</span></div>
                 <b>+{item.xp || 0} XP</b>
               </article>
             ))}
@@ -336,7 +359,7 @@ export function ProgressScreen() {
       <section className="progress-footer-focus">
         <div><Trophy size={18} /> Próximo marco</div>
         <strong>{certification.nextAction}</strong>
-        <p>O cronograma escolhe a próxima aula em ordem, mas a certificação mostra se o nível está realmente consolidado.</p>
+        <p>O cronograma mostra apenas aulas fixas prontas; aulas planejadas não entram mais como conteúdo vazio.</p>
         <small><Zap size={13} /> progresso seguro para testes no Vercel</small>
       </section>
     </section>
