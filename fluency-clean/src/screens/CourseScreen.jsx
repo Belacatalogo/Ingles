@@ -5,7 +5,7 @@ import { ErrorReviewPanel } from '../components/review/ErrorReviewPanel.jsx';
 import { CURRICULUM_LEVELS, CURRICULUM_PILLARS, getStaticLevel, getStaticLessons } from '../content/curriculum/index.js';
 import { getStaticCurriculumValidationStatus } from '../content/validators/index.js';
 import { getStaticCourseSummary, getNextStaticLesson, setStaticCurrentLevel } from '../services/curriculumEngine.js';
-import { getCompletedLessonIds, getLessonLockReason } from '../services/lessonProgression.js';
+import { getCompletedLessonIds, getLessonLockReason, isStaticLessonReady } from '../services/lessonProgression.js';
 import { getStaticLessonOpenReason, openStaticCourseLesson } from '../services/staticCourseLauncher.js';
 
 const pillarLabels = {
@@ -19,10 +19,9 @@ const pillarLabels = {
 
 function safeArray(value) { return Array.isArray(value) ? value : []; }
 function statusLabel(lesson, completedIds) {
-  if (completedIds.has(lesson.id)) return { label: 'Concluída', className: 'done', icon: CheckCircle2 };
-  if (lesson.status !== 'ready') return { label: 'Planejada', className: 'planned', icon: Lock };
+  if (completedIds?.has?.(lesson.id)) return { label: 'Concluída', className: 'done', icon: CheckCircle2 };
   const lock = getLessonLockReason(lesson, completedIds);
-  if (lock) return { label: 'Bloqueada', className: 'locked', icon: Lock, reason: lock };
+  if (lock) return { label: lesson?.status === 'planned' ? 'Planejada' : 'Bloqueada', className: lesson?.status === 'planned' ? 'planned' : 'locked', icon: Lock, reason: lock };
   return { label: 'Pronta', className: 'ready', icon: Play };
 }
 
@@ -69,12 +68,12 @@ export function CourseScreen({ onNavigate }) {
         <h1>{summary.title}</h1>
         <p>{summary.description}</p>
         <div className="course-hero-progress">
-          <div><span>Progresso do nível</span><strong>{summary.completed}/{summary.total}</strong></div>
-          <i><b style={{ width: `${summary.percent}%` }} /></i>
-          <em>{summary.percent}% concluído</em>
+          <div><span>Aulas prontas</span><strong>{summary.readyCompleted || 0}/{summary.readyTotal || 0}</strong></div>
+          <i><b style={{ width: `${summary.readyPercent || 0}%` }} /></i>
+          <em>{summary.readyPercent || 0}% das prontas concluído · mapa total {summary.total || 0}</em>
         </div>
         <div className="answer-actions">
-          <button type="button" className="primary-button" onClick={handleOpenNext}><Play size={16} /> Abrir próxima aula</button>
+          <button type="button" className="primary-button" onClick={handleOpenNext}><Play size={16} /> {next.lockReason ? 'Ver próxima pendência' : 'Abrir próxima aula pronta'}</button>
           <button type="button" className="secondary-button" onClick={() => setMessage(validation.label)}><ShieldCheck size={16} /> Status do currículo</button>
         </div>
         {message ? <p className="generator-message completion-message">{message}</p> : null}
@@ -85,18 +84,18 @@ export function CourseScreen({ onNavigate }) {
       <div className="course-level-tabs">
         {CURRICULUM_LEVELS.map((level) => {
           const data = getStaticLevel(level);
-          const readyCount = getStaticLessons(level).filter((lesson) => lesson.status === 'ready').length;
+          const readyCount = safeArray(getStaticLessons(level)).filter(isStaticLessonReady).length;
           return <button key={level} type="button" className={activeLevel === level ? 'active' : ''} onClick={() => handleLevel(level)}><strong>{level}</strong><span>{readyCount ? `${readyCount} prontas` : 'planejado'}</span><small>{data.title}</small></button>;
         })}
       </div>
 
       <div className="course-pillar-grid">
         {CURRICULUM_PILLARS.map((pillar) => {
-          const progress = summary.pillars?.[pillar] || { total: 0, completed: 0, percent: 0 };
+          const progress = summary.pillars?.[pillar] || { total: 0, ready: 0, completed: 0, percent: 0 };
           return (
             <button key={pillar} type="button" className={activePillar === pillar ? 'active' : ''} onClick={() => setActivePillar(pillar)}>
               <span>{pillarLabels[pillar]}</span>
-              <strong>{progress.completed}/{progress.total}</strong>
+              <strong>{progress.completed}/{progress.ready || progress.total}</strong>
               <i><b style={{ width: `${progress.percent}%` }} /></i>
             </button>
           );
@@ -107,7 +106,7 @@ export function CourseScreen({ onNavigate }) {
         {next.lesson ? (
           <div className="course-next-card">
             <div><strong>{next.lesson.level} · {pillarLabels[next.lesson.pillar]}</strong><span>{next.lesson.packageId || 'Pacote sem nome'}</span>{next.lockReason ? <small>{next.lockReason}</small> : null}</div>
-            <button type="button" className="primary-button" onClick={handleOpenNext}><Play size={16} /> Abrir</button>
+            <button type="button" className="primary-button" onClick={handleOpenNext}><Play size={16} /> {next.lockReason ? 'Ver no mapa' : 'Abrir'}</button>
           </div>
         ) : <p>Não há próxima aula disponível neste nível.</p>}
       </Card>
