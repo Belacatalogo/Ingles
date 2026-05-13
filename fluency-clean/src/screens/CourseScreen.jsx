@@ -6,6 +6,7 @@ import { A1MasteryGatePanel } from '../components/course/A1MasteryGatePanel.jsx'
 import { CURRICULUM_LEVELS, CURRICULUM_PILLARS, getStaticLevel, getStaticLessons } from '../content/curriculum/index.js';
 import { getStaticCurriculumValidationStatus } from '../content/validators/index.js';
 import { getStaticCourseSummary, getNextStaticLesson, setStaticCurrentLevel } from '../services/curriculumEngine.js';
+import { getA1MasteryGateSummary } from '../services/a1MasteryGateService.js';
 import { getCompletedLessonIds, getLessonLockReason, isStaticLessonReady } from '../services/lessonProgression.js';
 import { getStaticLessonOpenReason, openStaticCourseLesson } from '../services/staticCourseLauncher.js';
 
@@ -31,13 +32,25 @@ export function CourseScreen({ onNavigate }) {
   const [activePillar, setActivePillar] = useState('grammar');
   const [message, setMessage] = useState('');
   const completedIds = useMemo(() => getCompletedLessonIds(), [activeLevel, activePillar, message]);
+  const a1Gate = useMemo(() => getA1MasteryGateSummary(), [activeLevel, message]);
   const summary = useMemo(() => getStaticCourseSummary(activeLevel), [activeLevel, message]);
   const levelData = useMemo(() => getStaticLevel(activeLevel), [activeLevel]);
   const validation = useMemo(() => getStaticCurriculumValidationStatus(activeLevel), [activeLevel]);
   const next = useMemo(() => getNextStaticLesson(activeLevel), [activeLevel, message]);
   const lessons = safeArray(levelData.pillars?.[activePillar]);
 
+  function isLevelBlocked(level) {
+    return level !== 'A1' && !a1Gate.canUnlockA2;
+  }
+
   function handleLevel(level) {
+    if (isLevelBlocked(level)) {
+      setActiveLevel('A1');
+      setActivePillar('grammar');
+      setStaticCurrentLevel('A1');
+      setMessage('A2 ainda bloqueado. Complete os critérios do A1 para avançar.');
+      return;
+    }
     setActiveLevel(level);
     setActivePillar('grammar');
     setMessage('');
@@ -64,18 +77,18 @@ export function CourseScreen({ onNavigate }) {
         <div className="lesson-chip-row">
           <span className="lesson-chip blue"><Map size={12} /> Curso fixo premium</span>
           <span className="lesson-chip violet">{activeLevel}</span>
-          <span className="lesson-chip"><ShieldCheck size={12} /> {validation.approved ? 'validado' : 'pendente'}</span>
+          <span className="lesson-chip"><ShieldCheck size={12} /> {validation.approved ? 'validado' : 'em revisão'}</span>
         </div>
         <h1>{summary.title}</h1>
         <p>{summary.description}</p>
         <div className="course-hero-progress">
-          <div><span>Aulas prontas</span><strong>{summary.readyCompleted || 0}/{summary.readyTotal || 0}</strong></div>
+          <div><span>Aulas concluídas</span><strong>{summary.readyCompleted || 0}/{summary.readyTotal || 0}</strong></div>
           <i><b style={{ width: `${summary.readyPercent || 0}%` }} /></i>
-          <em>{summary.readyPercent || 0}% das prontas concluído · mapa total {summary.total || 0}</em>
+          <em>{summary.readyPercent || 0}% das aulas prontas concluído · mapa total {summary.total || 0}</em>
         </div>
         <div className="answer-actions">
           <button type="button" className="primary-button" onClick={handleOpenNext}><Play size={16} /> {next.lockReason ? 'Ver próxima pendência' : 'Abrir próxima aula pronta'}</button>
-          <button type="button" className="secondary-button" onClick={() => setMessage(validation.label)}><ShieldCheck size={16} /> Status do currículo</button>
+          <button type="button" className="secondary-button" onClick={() => setMessage(validation.label)}><ShieldCheck size={16} /> Ver status</button>
         </div>
         {message ? <p className="generator-message completion-message">{message}</p> : null}
       </section>
@@ -87,8 +100,16 @@ export function CourseScreen({ onNavigate }) {
       <div className="course-level-tabs">
         {CURRICULUM_LEVELS.map((level) => {
           const data = getStaticLevel(level);
+          const blocked = isLevelBlocked(level);
           const readyCount = safeArray(getStaticLessons(level)).filter(isStaticLessonReady).length;
-          return <button key={level} type="button" className={activeLevel === level ? 'active' : ''} onClick={() => handleLevel(level)}><strong>{level}</strong><span>{readyCount ? `${readyCount} prontas` : 'planejado'}</span><small>{data.title}</small></button>;
+          const buttonClass = [activeLevel === level ? 'active' : '', blocked ? 'locked' : ''].filter(Boolean).join(' ');
+          return (
+            <button key={level} type="button" className={buttonClass} onClick={() => handleLevel(level)}>
+              <strong>{level}</strong>
+              <span>{blocked ? 'Bloqueado' : readyCount ? `${readyCount} prontas` : 'planejado'}</span>
+              <small>{blocked ? 'Conclua o A1 primeiro' : data.title}</small>
+            </button>
+          );
         })}
       </div>
 
@@ -134,8 +155,8 @@ export function CourseScreen({ onNavigate }) {
 
       <section className="course-readiness-card">
         <div><Target size={18} /><strong>Pronto para o próximo nível?</strong></div>
-        <p>{summary.gate?.message || 'Complete as aulas, práticas e checkpoints para liberar avanço.'}</p>
-        {safeArray(summary.gate?.missing).length ? <ul>{summary.gate.missing.map((item) => <li key={item}>{item}</li>)}</ul> : <span><Sparkles size={15} /> Tudo certo neste nível.</span>}
+        <p>{activeLevel === 'A1' ? 'Complete aulas, avaliações, prova final e revisões para liberar o A2.' : summary.gate?.message || 'Complete as aulas e avaliações para liberar avanço.'}</p>
+        {activeLevel !== 'A1' && safeArray(summary.gate?.missing).length ? <ul>{summary.gate.missing.map((item) => <li key={item}>{item}</li>)}</ul> : <span><Sparkles size={15} /> {activeLevel === 'A1' ? 'Veja os critérios do A1 acima.' : 'Tudo certo neste nível.'}</span>}
       </section>
     </section>
   );
