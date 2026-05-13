@@ -9,10 +9,10 @@ function slug(value) {
 function looksEnglish(value = '') {
   const text = clean(value);
   if (!text) return false;
-  const common = /\b(i|you|he|she|it|we|they|am|are|is|my|your|his|her|hello|hi|good|morning|name|phone|number|from|brazil|student|teacher|mother|father|brother|sister|friend|ready|book|city|country)\b/i;
-  const portugueseOnly = /\b(eu|você|vocês|ele|ela|nós|eles|elas|meu|minha|seu|sua|brasileiro|brasileira|estudante|professor|mãe|pai|irmão|irmã)\b/i;
+  const common = /\b(i|you|he|she|it|we|they|am|are|is|my|your|his|her|hello|hi|good|morning|name|phone|number|from|brazil|student|teacher|mother|father|brother|sister|friend|ready|book|city|country|live|family|please|thanks|spell|repeat|nice|meet|bye|see|later|years|old|english|online|music|coffee)\b/i;
+  const portugueseOnly = /\b(eu|você|vocês|ele|ela|nós|eles|elas|meu|minha|seu|sua|brasileiro|brasileira|estudante|professor|mãe|pai|irmão|irmã|escreva|leia|complete|troque|revise)\b/i;
   if (common.test(text)) return true;
-  if (portugueseOnly.test(text) && !/[a-z]{2,}\s+(am|are|is)\b/i.test(text)) return false;
+  if (portugueseOnly.test(text) && !/[a-z]{2,}\s+(am|are|is|live|like|study)\b/i.test(text)) return false;
   return /[a-z]/i.test(text) && !/[ãõçáéíóúâêôà]/i.test(text);
 }
 
@@ -23,7 +23,7 @@ function isTooLongFront(value = '') {
 
 function makeCard(raw = {}, index = 0, source = 'Aula atual') {
   const word = clean(raw.word || raw.term || raw.expression || raw.chunk || raw.text || raw.english || raw.question || raw.prompt || raw.title || raw.pattern || raw.label);
-  if (!word || isTooLongFront(word)) return null;
+  if (!word || isTooLongFront(word) || !looksEnglish(word)) return null;
 
   const translation = clean(raw.translation || raw.pt || raw.portuguese || raw.meaning || raw.answer || raw.definition || raw.expected || raw.right);
   const example = clean(raw.example || raw.sentence || raw.context || raw.why || raw.note || raw.explanation || raw.warning || raw.howToAvoid);
@@ -90,26 +90,26 @@ function cardsFromDeepGrammar(lesson, title) {
       example: item?.pattern && item?.example !== item?.pattern ? item.pattern : '',
       deck: `${title} · padrões`,
     };
-  }).filter((card) => looksEnglish(card.word)));
+  }));
 
   cards.push(...fromArray(lesson?.teacherExamples, `${title} · exemplos`, (item) => ({
     word: item?.english || item?.text || item?.sentence,
     meaning: item?.translation || item?.meaning,
     example: item?.why || item?.warning,
     deck: `${title} · exemplos`,
-  })).filter((card) => looksEnglish(card.word)));
+  })));
 
   cards.push(...fromArray(lesson?.commonBrazilianMistakes, `${title} · correções`, (item) => ({
     word: item?.right || item?.correct || item?.answer,
     meaning: item?.why || item?.howToAvoid || 'Correção importante da aula.',
     example: item?.wrong ? `Evite: ${item.wrong}` : item?.miniPractice,
     deck: `${title} · correções`,
-  })).filter((card) => looksEnglish(card.word)));
+  })));
 
   return cards.slice(0, 24);
 }
 
-function cardsFromDeepVocabulary(lesson, title) {
+function cardsFromVocabularyLikeFields(lesson, title) {
   const cards = [];
 
   cards.push(...fromArray(lesson?.vocabulary, title));
@@ -119,27 +119,50 @@ function cardsFromDeepVocabulary(lesson, title) {
     example: item?.example,
     note: item?.note,
     deck: title,
-  })).filter((card) => looksEnglish(card.word)));
+  })));
+  cards.push(...fromArray(lesson?.preReadingVocabulary, `${title} · pré-leitura`, (item) => ({
+    word: item?.word,
+    meaning: item?.meaning,
+    example: item?.example,
+    deck: `${title} · pré-leitura`,
+  })));
+  cards.push(...fromArray(lesson?.keyWordsToHear, `${title} · listening`, (item) => ({
+    word: item?.word,
+    meaning: item?.meaning,
+    example: item?.example,
+    deck: `${title} · listening`,
+  })));
   cards.push(...fromArray(lesson?.chunks, `${title} · chunks`, (item) => ({
     word: item?.chunk || item?.expression || item?.word,
     meaning: item?.translation || item?.meaning,
     example: item?.why || item?.example,
     note: item?.warning,
     deck: `${title} · chunks`,
-  })).filter((card) => looksEnglish(card.word)));
+  })));
+  cards.push(...fromArray(lesson?.modelPhrases, `${title} · fala`, (item) => ({
+    word: item?.text,
+    meaning: item?.translation,
+    example: item?.note,
+    deck: `${title} · fala`,
+  })));
+  cards.push(...fromArray(lesson?.usefulSentences, `${title} · escrita`, (item) => ({
+    word: item,
+    meaning: 'Frase útil da aula.',
+    deck: `${title} · escrita`,
+  })));
   cards.push(...fromArray(lesson?.collocations, `${title} · collocations`, (item) => ({
     word: item?.instruction || item?.text || item?.word || item?.chunk,
     meaning: item?.note || item?.meaning || 'Combinação natural da aula.',
     example: item?.expected || item?.example,
     deck: `${title} · collocations`,
-  })).filter((card) => looksEnglish(card.word)));
+  })));
 
   if (Array.isArray(lesson?.miniDialogues)) {
     lesson.miniDialogues.forEach((dialogue, dialogueIndex) => {
       const lines = Array.isArray(dialogue?.lines) ? dialogue.lines : [];
       lines.forEach((line, lineIndex) => {
         const text = clean(line).replace(/^[^:]{1,24}:\s*/, '');
-        if (!looksEnglish(text) || isTooLongFront(text)) return;
+        if (isTooLongFront(text)) return;
         const card = makeCard({
           word: text,
           meaning: dialogue?.focus || 'Frase de diálogo da aula.',
@@ -154,26 +177,14 @@ function cardsFromDeepVocabulary(lesson, title) {
   return cards.slice(0, 32);
 }
 
-function fallbackCards(lesson, title) {
-  const objective = Array.isArray(lesson?.objectives) ? lesson.objectives[0] : lesson?.objective;
-  const card = makeCard({
-    word: title,
-    meaning: 'Tema principal da aula atual.',
-    example: clean(objective),
-    deck: 'Aula atual',
-  }, 0, 'Aula atual');
-  return card ? [card] : [];
-}
-
 export function buildLessonFlashcards(lesson = {}) {
   const title = clean(lesson?.title) || 'Aula atual';
   const cards = dedupe([
-    ...cardsFromDeepVocabulary(lesson, title),
+    ...cardsFromVocabularyLikeFields(lesson, title),
     ...cardsFromDeepGrammar(lesson, title),
   ]);
 
-  if (cards.length) return cards.slice(0, 32);
-  return dedupe(fallbackCards(lesson, title)).slice(0, 4);
+  return cards.slice(0, 32);
 }
 
 export function hasLessonFlashcards(lesson = {}) {
