@@ -1,4 +1,5 @@
-.a1-mastery-gate-card {
+.a1-mastery-gate-card,
+.a1-final-exam-shell-card {
   border: 1px solid rgba(148, 163, 184, 0.18);
   border-radius: 24px;
   padding: 18px;
@@ -6,6 +7,11 @@
   box-shadow: 0 22px 70px rgba(15, 23, 42, 0.32);
   display: grid;
   gap: 16px;
+}
+
+.a1-final-exam-shell-card {
+  border-color: rgba(96, 165, 250, 0.24);
+  background: radial-gradient(circle at 16% 0%, rgba(96, 165, 250, 0.18), transparent 34%), linear-gradient(145deg, rgba(15, 23, 42, 0.94), rgba(30, 41, 59, 0.82));
 }
 
 .a1-mastery-gate-card.ready {
@@ -17,6 +23,7 @@
 }
 
 .a1-mastery-gate-card header,
+.a1-final-exam-shell-card header,
 .a1-gate-title,
 .a1-gate-status-row,
 .a1-gate-review-row {
@@ -25,7 +32,8 @@
   gap: 12px;
 }
 
-.a1-mastery-gate-card header {
+.a1-mastery-gate-card header,
+.a1-final-exam-shell-card header {
   justify-content: space-between;
   flex-wrap: wrap;
 }
@@ -38,6 +46,11 @@
   place-items: center;
   color: #facc15;
   background: rgba(250, 204, 21, 0.12);
+}
+
+.a1-final-exam-shell-card .a1-gate-title span {
+  color: #bfdbfe;
+  background: rgba(96, 165, 250, 0.12);
 }
 
 .a1-gate-title div {
@@ -57,6 +70,7 @@
 }
 
 .a1-mastery-gate-card header em,
+.a1-final-exam-shell-card header em,
 .a1-gate-status-row span,
 .a1-gate-review-row span {
   border-radius: 999px;
@@ -72,6 +86,11 @@
 .a1-mastery-gate-card header em {
   color: #fde68a;
   background: rgba(250, 204, 21, 0.1);
+}
+
+.a1-final-exam-shell-card header em {
+  color: #bfdbfe;
+  background: rgba(96, 165, 250, 0.1);
 }
 
 .a1-gate-grid {
@@ -127,7 +146,8 @@
 .a1-gate-status-row .ok,
 .a1-gate-review-row .ok,
 .a1-gate-pillar-grid .ok,
-.a1-gate-success {
+.a1-gate-success,
+.a1-final-exam-note span {
   color: #bbf7d0;
   background: rgba(34, 197, 94, 0.1);
   border: 1px solid rgba(34, 197, 94, 0.18);
@@ -189,25 +209,75 @@
   margin-top: 5px;
 }
 
-.a1-gate-success {
+.a1-gate-success,
+.a1-final-exam-note span {
   display: flex;
   align-items: center;
   gap: 8px;
   font-weight: 800;
 }
 
+.a1-final-exam-note span {
+  width: fit-content;
+  border-radius: 999px;
+  padding: 9px 11px;
+}
+
+.a1-final-exam-sections {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.a1-final-exam-sections article {
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 18px;
+  padding: 13px;
+  background: rgba(15, 23, 42, 0.48);
+  display: grid;
+  gap: 8px;
+}
+
+.a1-final-exam-sections article div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #f8fafc;
+}
+
+.a1-final-exam-sections article p {
+  margin: 0;
+  color: rgba(226, 232, 240, 0.74);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.a1-final-exam-sections article small {
+  color: #bfdbfe;
+  font-weight: 800;
+}
+
+.a1-final-exam-shell-card .primary-button:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+}
+
 @media (max-width: 760px) {
-  .a1-mastery-gate-card {
+  .a1-mastery-gate-card,
+  .a1-final-exam-shell-card {
     border-radius: 20px;
     padding: 14px;
   }
 
   .a1-gate-grid,
-  .a1-gate-pillar-grid {
+  .a1-gate-pillar-grid,
+  .a1-final-exam-sections {
     grid-template-columns: 1fr;
   }
 
-  .a1-mastery-gate-card header em {
+  .a1-mastery-gate-card header em,
+  .a1-final-exam-shell-card header em,
+  .a1-final-exam-note span {
     width: 100%;
     justify-content: center;
   }
