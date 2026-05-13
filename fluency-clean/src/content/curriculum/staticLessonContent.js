@@ -1,4 +1,4 @@
-import { A1_FOUNDATIONS_BY_PILLAR, A1_FOUNDATIONS_LESSONS } from './levels/A1/foundations.js';
+import { A1_FOUNDATIONS_BY_PILLAR, A1_FOUNDATIONS_LESSONS } from './levels/A1/foundationsSafe.js';
 import { validateStaticLessonList } from '../schemas/index.js';
 
 export const STATIC_READY_LESSONS = Object.freeze([...A1_FOUNDATIONS_LESSONS]);
