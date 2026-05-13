@@ -1,6 +1,7 @@
 import { ArrowLeft, Award, Brain, CheckCircle2, Layers3, Lock, Map, RotateCcw, Sparkles, Volume2 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { playLearningAudio } from '../services/audioPlayback.js';
+import { buildLessonFlashcards } from '../services/lessonFlashcards.js';
 import { getCurrentLesson, getCurrentLessonFull } from '../services/lessonStore.js';
 import { getFlashcardSessions, localDateKey, recordFlashcardSession } from '../services/progressStore.js';
 import { getTotalVocabularyBankCount, VOCABULARY_BANK_TARGET } from '../services/vocabularyDecks.js';
@@ -42,7 +43,12 @@ function ActivityCard({ activity, selected, builtWords, feedback, onChoose, onBu
 
 export function FlashcardsScreen({ onNavigate }) {
   const [currentLesson, setCurrentLesson] = useState(() => getCurrentLesson());
-  const lessonCards = useMemo(() => { const direct = Array.isArray(currentLesson?.vocabulary) ? currentLesson.vocabulary.map(cardFrom) : []; return direct.length ? direct : fallbackCardsFromLesson(currentLesson); }, [currentLesson]);
+  const lessonCards = useMemo(() => {
+    const deepCards = buildLessonFlashcards(currentLesson);
+    if (deepCards.length) return deepCards;
+    const direct = Array.isArray(currentLesson?.vocabulary) ? currentLesson.vocabulary.map(cardFrom) : [];
+    return direct.length ? direct : fallbackCardsFromLesson(currentLesson);
+  }, [currentLesson]);
   const [stage, setStage] = useState('map');
   const [pathVersion, setPathVersion] = useState(0);
   const [srsVersion, setSrsVersion] = useState(0);
