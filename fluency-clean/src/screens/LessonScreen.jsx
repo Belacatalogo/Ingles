@@ -60,10 +60,11 @@ function LessonRenderer({ lesson }) {
 function PracticeMount({ lesson, complementary = false }) {
   if (isStaticLesson(lesson)) {
     return (
-      <section className="lesson-practice-mount lesson-practice-complement-mount static-practice-placeholder">
+      <section className="lesson-practice-mount lesson-practice-complement-mount">
         <Card eyebrow="Complemento" title="Prática Profunda complementar">
-          <p>A Prática Profunda será adaptada no BLOCO-STATIC-07 para derivar questões premium desta aula fixa. Por enquanto, os exercícios internos da aula aparecem antes deste complemento para evitar prática desalinhada.</p>
+          <p>Esta prática agora é derivada da aula fixa: usa exemplos, perguntas, texto, transcript, modelos e produção da própria aula. Ela vem depois dos exercícios internos e não substitui o conteúdo principal.</p>
         </Card>
+        <PracticeLauncher lesson={lesson} />
       </section>
     );
   }
