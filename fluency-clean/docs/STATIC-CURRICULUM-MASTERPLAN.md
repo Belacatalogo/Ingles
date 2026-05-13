@@ -53,6 +53,87 @@ O fluxo antigo de geração dinâmica era instável para um curso educacional s�
 8. O curso deve ser extremamente completo, mesmo que aumente a quantidade de aulas.
 9. O sistema deve preferir conteúdo previsível e validado a geração dinâmica instável.
 10. O app deve preservar a experiência mobile-first e evitar poluição técnica na UI.
+11. Aulas fixas devem ser completas e aprofundadas, mesmo que fiquem longas.
+12. Não compactar explicações pedagógicas importantes para caber em cards curtos.
+13. O conteúdo pode e deve ser dividido em mais seções, mais exercícios ou mais aulas quando isso melhorar a aprendizagem.
+14. A qualidade pedagógica tem prioridade sobre brevidade.
+
+## Padrão mínimo de profundidade das aulas fixas
+
+Este padrão vale para todos os próximos blocos de conteúdo real, especialmente `BLOCO-STATIC-05-A1-CONTENT-FOUNDATIONS` e `BLOCO-STATIC-10-A1-FULL-CONTENT`.
+
+### Grammar
+
+Cada aula principal de Grammar deve ter:
+
+- 8 a 12 seções quando necessário.
+- Explicação em português clara e aprofundada.
+- Seções principais com conteúdo suficiente para ensinar de verdade, não apenas resumir.
+- 20 a 40 exemplos úteis.
+- 4 a 8 erros comuns de brasileiros.
+- 18 a 30 exercícios internos.
+- Prática de reconhecimento, lacuna, correção, transformação, tradução controlada e produção.
+- Produção própria guiada.
+- Checklist final.
+
+### Vocabulary
+
+Cada aula principal de Vocabulary deve ter:
+
+- Grupos lexicais claros.
+- Traduções e exemplos naturais.
+- Pronúncia/uso quando necessário.
+- 20 a 40 itens ou exemplos quando o tema permitir.
+- Exercícios de reconhecimento, associação, uso em frase e produção.
+- Revisão conectada ao SRS no futuro.
+
+### Reading
+
+Cada aula principal de Reading deve ter:
+
+- Texto principal adequado ao nível, mas completo.
+- Vocabulário de apoio.
+- Perguntas em português nos níveis iniciais.
+- Perguntas de ideia geral, detalhes, evidência, vocabulário em contexto e produção.
+- Toda questão importante deve ter evidência textual.
+- O texto não deve ser curto só para caber na tela.
+
+### Listening
+
+Cada aula principal de Listening deve ter:
+
+- Script/transcript completo.
+- Primeira escuta sem texto.
+- Segunda escuta com foco.
+- Tarefas de detalhe.
+- Shadowing.
+- Dictation leve quando adequado.
+- Perguntas alinhadas ao transcript.
+
+### Speaking
+
+Cada aula principal de Speaking deve ter:
+
+- Frases-modelo suficientes.
+- Substitution drills.
+- Perguntas e respostas guiadas.
+- Pronúncia/foco oral.
+- Gravação guiada.
+- Fala livre final.
+- Checklist de comunicação.
+
+### Writing
+
+Cada aula principal de Writing deve ter:
+
+- Modelo completo.
+- Blocos úteis.
+- Substituição guiada.
+- Microprática.
+- Rascunho.
+- Checklist.
+- Revisão.
+- Versão final.
 
 ## Pilares oficiais
 
@@ -121,67 +202,47 @@ Melhorias futuras:
 - Integrar com conteúdo real quando as aulas fixas existirem.
 - Melhorar cálculo de mastery com dados reais de prática e checkpoints.
 
-## BLOCO-STATIC-02-LESSON-SCHEMAS — próximo recomendado
+## BLOCO-STATIC-02-LESSON-SCHEMAS — feito
 
 Objetivo:
 - Transformar o schema documentado em contrato real de código.
 - Criar factories, normalizadores e validadores leves para aulas fixas.
 
-Arquivos sugeridos:
+Arquivos:
 - `fluency-clean/src/content/schemas/lessonSchema.js`
 - `fluency-clean/src/content/schemas/lessonFactories.js`
 - `fluency-clean/src/content/schemas/lessonValidators.js`
 - `fluency-clean/src/content/schemas/index.js`
 
-O que fazer:
-- Definir constantes de pilares e níveis.
-- Criar shape base de aula fixa.
-- Criar helpers por pilar.
-- Criar validação mínima por pilar.
-- Não conectar ainda na UI pesada.
+Status:
+- Criado.
+- Precisa ser aprofundado conforme os novos mínimos de aula completa quando o validador completo for implementado.
 
-Melhorias a analisar dentro do bloco:
-- Criar mensagens de erro humanas para cada aula inválida.
-- Criar validação de IDs únicos para listas pequenas.
-- Criar compatibilidade temporária com campos legados sem manter dependência do legado.
-- Preparar o caminho para o validador completo do bloco 14.
-
-## BLOCO-STATIC-03-REMOVE-AI-GENERATOR-FROM-FLOW
+## BLOCO-STATIC-03-REMOVE-AI-GENERATOR-FROM-FLOW — feito
 
 Objetivo:
 - Remover/desativar a geração dinâmica de aula por IA como fluxo principal.
 
-O que fazer:
-- Esconder botão “Gerar aula”.
-- Substituir por “Abrir próxima aula” ou “Continuar curso”.
-- Mover `LessonGeneratorPanel` e serviços de geração para legado ou dev-only.
-- Manter IA apenas em funções auxiliares.
+Status:
+- Gerador antigo ocultado do fluxo principal.
+- Fluxo estático ativado por flags.
+- Gerador antigo permanece como legado/dev-only, sem apagar serviços ainda.
 
-Estratégia:
-- Primeiro ocultar/desconectar do fluxo principal.
-- Não apagar tudo imediatamente.
-- Não quebrar telas existentes antes de existirem aulas fixas renderizáveis.
-
-## BLOCO-STATIC-04-A1-CURRICULUM-MAP
+## BLOCO-STATIC-04-A1-CURRICULUM-MAP — feito
 
 Objetivo:
 - Refinar o mapa completo do A1 antes de escrever aulas reais.
 
-Pilares e totais planejados:
-- Grammar: 27 aulas.
-- Vocabulary: 20 aulas.
-- Reading: 20 aulas.
-- Listening: 18 aulas.
-- Speaking: 18 aulas.
-- Writing: 16 aulas.
+Status:
+- Mapa A1 detalhado criado.
 - Total estimado: 119 aulas.
 
-Melhorias a analisar:
+Melhorias futuras:
 - Se o A1 precisar de mais aulas para não pular base, aumentar sem medo.
 - Garantir que Speaking e Vocabulary não fiquem subordinados aos outros pilares.
 - Garantir checkpoints suficientes.
 
-## BLOCO-STATIC-05-A1-CONTENT-FOUNDATIONS
+## BLOCO-STATIC-05-A1-CONTENT-FOUNDATIONS — em andamento
 
 Objetivo:
 - Criar o primeiro pacote real de conteúdo A1.
@@ -194,17 +255,11 @@ Pacote A1.1:
 - Speaking 001–004
 - Writing 001–003
 
-Qualidade mínima:
-- Grammar: 6–8 seções, 20–40 exemplos, 18–25 exercícios internos.
-- Reading: texto A1 120–220 palavras, 8–12 perguntas com evidência.
-- Listening: transcrição 100–220 palavras, primeira/segunda escuta, shadowing.
-- Speaking: modelos, substituição, gravação guiada.
-- Writing: modelo, blocos, substituição, checklist e produção.
-
-Melhorias a analisar:
-- Criar conteúdo em arquivos pequenos por aula.
-- Não colocar conteúdo gigante em um arquivo único.
-- Validar cada aula fixa com o schema antes de renderizar.
+Qualidade obrigatória atualizada:
+- As aulas não devem ser compactadas.
+- Se necessário, expandir conteúdo, exemplos, exercícios e seções.
+- O conteúdo real deve ser completo e aprofundado, mesmo que as aulas fiquem longas.
+- O pacote Foundations criado inicialmente pode ser expandido/refinado antes de ser considerado definitivo.
 
 ## BLOCO-STATIC-06-RENDERERS-STABLE
 
@@ -216,11 +271,13 @@ Regras:
 - Não mostrar gabarito antes da interação.
 - Não quebrar se a aula fixa estiver válida.
 - Renderizar exercícios internos antes da Prática Profunda.
+- Suportar aulas longas com boa UX mobile, sem cortar conteúdo pedagógico.
 
 Melhorias a analisar:
 - Compatibilidade de transição com aulas antigas só onde for necessário.
 - Stepper por pilar.
 - UX mobile limpa.
+- Colapsar seções visualmente se necessário, mas nunca remover conteúdo.
 
 ## BLOCO-STATIC-07-PRACTICE-FROM-STATIC-LESSONS
 
@@ -331,6 +388,8 @@ Valida:
 - Writing com modelo.
 - Grammar com seções longas.
 - Checkpoints completos.
+
+O validador deve usar o padrão atualizado de aulas completas e aprofundadas, não o mínimo antigo compacto.
 
 ## BLOCO-STATIC-15-COURSE-SCREEN
 
