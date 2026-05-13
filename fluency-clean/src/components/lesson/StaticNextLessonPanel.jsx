@@ -40,8 +40,8 @@ export function StaticNextLessonPanel({ onNavigate }) {
         <div className="inline-warning curriculum-next-box">
           {masteryGate.canUnlockA2 ? <CheckCircle2 size={16} /> : <ShieldCheck size={16} />}
           <span>
-            {masteryGate.canUnlockA2 ? 'A2 liberado' : masteryGate.canTakeFinalExam ? 'Próximo passo: A1 Final Exam' : 'Aulas prontas concluídas. Ver pendências do A1 Gate'}
-            <small>{masteryGate.statusLabel}. A2 não libera só por assistir aula.</small>
+            {masteryGate.canUnlockA2 ? 'A2 liberado' : masteryGate.canTakeFinalExam ? 'Próximo passo: prova final do A1' : 'Aulas concluídas. Veja o que falta para liberar o A2'}
+            <small>{masteryGate.statusLabel}. O A2 só libera depois das avaliações e revisões.</small>
           </span>
         </div>
       ) : lesson ? (
@@ -58,13 +58,13 @@ export function StaticNextLessonPanel({ onNavigate }) {
 
       <div className="answer-actions">
         <button type="button" className="primary-button" onClick={openNextLesson}>
-          <PlayCircle size={16} /> {shouldShowFinalGate ? 'Ver A1 Mastery Gate' : canOpen ? 'Abrir próxima aula pronta' : 'Ver mapa do curso'}
+          <PlayCircle size={16} /> {shouldShowFinalGate ? 'Ver critérios do A1' : canOpen ? 'Abrir próxima aula pronta' : 'Ver mapa do curso'}
         </button>
         <button type="button" className="secondary-button" onClick={() => onNavigate?.('course')}>
           <Map size={16} /> Ver mapa do curso
         </button>
       </div>
-      <p className="empty-note">“Aulas prontas no mapa” mostra conteúdo implementado. Para liberar A2, precisa concluir aulas, checkpoints, Final Exam e revisão de Speaking/Writing.</p>
+      <p className="empty-note">“Aulas prontas no mapa” mostra o conteúdo já implementado. Para liberar A2, conclua as aulas, avaliações, prova final e revisões de Speaking/Writing.</p>
     </section>
   );
 }
