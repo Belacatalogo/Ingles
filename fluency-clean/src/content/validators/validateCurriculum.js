@@ -1,6 +1,7 @@
 import { STATIC_CURRICULUM, CURRICULUM_LEVELS, CURRICULUM_PILLARS, getStaticLessons } from '../curriculum/index.js';
 import { getStaticReadyLessons } from '../curriculum/staticLessonContent.js';
 import { validateStaticLesson } from '../schemas/index.js';
+import { validatePedagogicalContentQuality } from './validatePedagogicalContentQuality.js';
 
 function clean(value) { return String(value ?? '').trim(); }
 function safeArray(value) { return Array.isArray(value) ? value : []; }
@@ -8,9 +9,13 @@ function words(value) { const text = clean(value); return text ? text.split(/\s+
 function issue(code, message, severity = 'error', path = '') { return { code, message, severity, path }; }
 function hasError(issues) { return safeArray(issues).some((item) => item.severity === 'error'); }
 function isReady(lesson) { return clean(lesson?.status) === 'ready' || clean(lesson?.schemaVersion).startsWith('static-lesson-schema'); }
+function isDeepLesson(lesson) { return clean(lesson?.schemaVersion).startsWith('static-lesson-schema-v2'); }
 function summarizeIssues(issues) {
   const list = safeArray(issues);
   return { total: list.length, errors: list.filter((item) => item.severity === 'error').length, warnings: list.filter((item) => item.severity !== 'error').length };
+}
+function prefixIssues(issues, prefix) {
+  return safeArray(issues).map((item) => ({ ...item, code: `${prefix}.${item.code || 'issue'}` }));
 }
 
 const STRICT_MINIMUMS = Object.freeze({
@@ -64,11 +69,11 @@ function validateLevelMap(levelKey, levelData) {
 
 function validateDeepGrammar(lesson) {
   const min = STRICT_MINIMUMS.grammar;
-  const totalPractice = safeArray(lesson.guidedPractice).length + safeArray(lesson.transformationPractice).length;
+  const totalPractice = safeArray(lesson.guidedPractice).length + safeArray(lesson.transformationPractice).length + safeArray(lesson.errorCorrectionPractice).length + safeArray(lesson.translationPractice).length;
   return [
-    safeArray(lesson.explanationSections).length < min.sections ? issue('deep.grammar.sections', `${lesson.id}: Grammar precisa de pelo menos ${min.sections} seções.`, 'error') : null,
-    safeArray(lesson.professorExamples).length < min.examples ? issue('deep.grammar.examples', `${lesson.id}: Grammar precisa de pelo menos ${min.examples} exemplos.`, 'warn') : null,
-    safeArray(lesson.commonMistakes).length < min.mistakes ? issue('deep.grammar.mistakes', `${lesson.id}: Grammar precisa de pelo menos ${min.mistakes} erros comuns.`, 'warn') : null,
+    safeArray(lesson.explanationSections).length < min.sections && !isDeepLesson(lesson) ? issue('deep.grammar.sections', `${lesson.id}: Grammar precisa de pelo menos ${min.sections} seções.`, 'error') : null,
+    safeArray(lesson.professorExamples).length < min.examples && safeArray(lesson.teacherExamples).length < min.examples ? issue('deep.grammar.examples', `${lesson.id}: Grammar precisa de pelo menos ${min.examples} exemplos.`, 'warn') : null,
+    safeArray(lesson.commonMistakes).length < min.mistakes && safeArray(lesson.commonBrazilianMistakes).length < min.mistakes ? issue('deep.grammar.mistakes', `${lesson.id}: Grammar precisa de pelo menos ${min.mistakes} erros comuns.`, 'warn') : null,
     totalPractice < min.totalPractice ? issue('deep.grammar.practice', `${lesson.id}: Grammar precisa de prática interna mais robusta. Atual: ${totalPractice}.`, 'warn') : null,
     safeArray(lesson.productionTasks).length < min.production ? issue('deep.grammar.production', `${lesson.id}: Grammar precisa de produção própria guiada.`, 'error') : null,
   ].filter(Boolean);
@@ -76,7 +81,7 @@ function validateDeepGrammar(lesson) {
 
 function validateDeepVocabulary(lesson) {
   const min = STRICT_MINIMUMS.vocabulary;
-  const lexicalItems = safeArray(lesson.lexicalSets).flatMap((set) => safeArray(set.items)).length;
+  const lexicalItems = safeArray(lesson.lexicalSets).flatMap((set) => safeArray(set.items)).length + safeArray(lesson.essentialWords).length;
   return [
     lexicalItems < min.lexicalItems ? issue('deep.vocabulary.items', `${lesson.id}: Vocabulary precisa de mais itens lexicais. Atual: ${lexicalItems}.`, 'warn') : null,
     safeArray(lesson.examples).length < min.examples ? issue('deep.vocabulary.examples', `${lesson.id}: Vocabulary precisa de exemplos naturais.`, 'warn') : null,
@@ -89,9 +94,9 @@ function validateDeepReading(lesson) {
   const required = min.textWords[lesson.level] || min.textWords.A1;
   const issues = [];
   if (words(lesson.mainText) < required) issues.push(issue('deep.reading.text', `${lesson.id}: Reading texto curto para ${lesson.level}. Atual: ${words(lesson.mainText)}, meta ${required}.`, 'warn'));
-  if (safeArray(lesson.comprehensionQuestions).length < min.questions) issues.push(issue('deep.reading.questions', `${lesson.id}: Reading precisa de mais perguntas.`, 'warn'));
-  if (safeArray(lesson.evidenceTasks).length < min.evidenceTasks) issues.push(issue('deep.reading.evidence', `${lesson.id}: Reading precisa de evidência textual.`, 'error'));
-  if (safeArray(lesson.vocabulary).length < min.vocab) issues.push(issue('deep.reading.vocab', `${lesson.id}: Reading precisa de vocabulário de apoio.`, 'warn'));
+  if (safeArray(lesson.comprehensionQuestions).length < min.questions && safeArray(lesson.evidenceQuestions).length < min.questions) issues.push(issue('deep.reading.questions', `${lesson.id}: Reading precisa de mais perguntas.`, 'warn'));
+  if (safeArray(lesson.evidenceTasks).length < min.evidenceTasks && safeArray(lesson.evidenceQuestions).length < min.evidenceTasks) issues.push(issue('deep.reading.evidence', `${lesson.id}: Reading precisa de evidência textual.`, 'error'));
+  if (safeArray(lesson.vocabulary).length < min.vocab && safeArray(lesson.preReadingVocabulary).length < min.vocab) issues.push(issue('deep.reading.vocab', `${lesson.id}: Reading precisa de vocabulário de apoio.`, 'warn'));
   return issues;
 }
 
@@ -104,7 +109,7 @@ function validateDeepListening(lesson) {
   if (safeArray(lesson.firstListenTasks).length < min.first) issues.push(issue('deep.listening.first', `${lesson.id}: Listening precisa de primeira escuta.`, 'error'));
   if (safeArray(lesson.secondListenTasks).length < min.second) issues.push(issue('deep.listening.second', `${lesson.id}: Listening precisa de segunda escuta.`, 'error'));
   if (safeArray(lesson.shadowing).length < min.shadowing) issues.push(issue('deep.listening.shadowing', `${lesson.id}: Listening precisa de shadowing.`, 'warn'));
-  if (safeArray(lesson.comprehensionQuestions).length < min.questions) issues.push(issue('deep.listening.questions', `${lesson.id}: Listening precisa de perguntas alinhadas.`, 'warn'));
+  if (safeArray(lesson.comprehensionQuestions).length < min.questions && safeArray(lesson.listeningComprehension).length < min.questions) issues.push(issue('deep.listening.questions', `${lesson.id}: Listening precisa de perguntas alinhadas.`, 'warn'));
   return issues;
 }
 
@@ -113,7 +118,7 @@ function validateDeepSpeaking(lesson) {
   return [
     safeArray(lesson.modelPhrases).length < min.models ? issue('deep.speaking.models', `${lesson.id}: Speaking precisa de frases-modelo.`, 'error') : null,
     safeArray(lesson.substitutionDrills).length < min.drills ? issue('deep.speaking.drills', `${lesson.id}: Speaking precisa de substitution drills.`, 'error') : null,
-    safeArray(lesson.guidedSpeaking).length < min.guided ? issue('deep.speaking.guided', `${lesson.id}: Speaking precisa de fala guiada.`, 'warn') : null,
+    safeArray(lesson.guidedSpeaking).length < min.guided && safeArray(lesson.questionAnswerDrills).length < min.guided ? issue('deep.speaking.guided', `${lesson.id}: Speaking precisa de fala guiada.`, 'warn') : null,
     safeArray(lesson.recordingTasks).length < min.recording ? issue('deep.speaking.recording', `${lesson.id}: Speaking precisa de gravação guiada.`, 'error') : null,
     safeArray(lesson.freeSpeaking).length < min.free ? issue('deep.speaking.free', `${lesson.id}: Speaking precisa de fala livre final.`, 'error') : null,
   ].filter(Boolean);
@@ -126,9 +131,9 @@ function validateDeepWriting(lesson) {
     words(lesson.modelText) < required ? issue('deep.writing.model', `${lesson.id}: Writing modelText curto para ${lesson.level}. Atual: ${words(lesson.modelText)}, meta ${required}.`, 'warn') : null,
     safeArray(lesson.writingBlocks).length < min.blocks ? issue('deep.writing.blocks', `${lesson.id}: Writing precisa de blocos úteis.`, 'error') : null,
     safeArray(lesson.guidedSubstitution).length < min.substitutions ? issue('deep.writing.substitution', `${lesson.id}: Writing precisa de substituição guiada.`, 'warn') : null,
-    safeArray(lesson.checklist).length < min.checklist ? issue('deep.writing.checklist', `${lesson.id}: Writing precisa de checklist.`, 'error') : null,
+    safeArray(lesson.checklist).length < min.checklist && safeArray(lesson.revisionChecklist).length < min.checklist ? issue('deep.writing.checklist', `${lesson.id}: Writing precisa de checklist.`, 'error') : null,
     !lesson.draftTask ? issue('deep.writing.draft', `${lesson.id}: Writing precisa de rascunho.`, 'error') : null,
-    !lesson.revisionTask ? issue('deep.writing.revision', `${lesson.id}: Writing precisa de revisão.`, 'warn') : null,
+    !lesson.revisionTask && !lesson.finalVersionTask ? issue('deep.writing.revision', `${lesson.id}: Writing precisa de revisão.`, 'warn') : null,
   ].filter(Boolean);
 }
 
@@ -160,7 +165,9 @@ function validateReadyLessons(level) {
   const reports = lessons.map((lesson) => {
     const schema = validateStaticLesson(lesson);
     const deepIssues = validateDeepLesson(lesson);
-    const issues = [...schema.issues, ...deepIssues];
+    const content = validatePedagogicalContentQuality(lesson);
+    const contentIssues = prefixIssues(content.issues, 'content');
+    const issues = [...schema.issues, ...deepIssues, ...contentIssues];
     return {
       lessonId: lesson.id,
       level: lesson.level,
@@ -169,16 +176,23 @@ function validateReadyLessons(level) {
       status: lesson.status,
       approved: !hasError(issues),
       schemaApproved: schema.approved,
+      structureApproved: !hasError([...schema.issues, ...deepIssues]),
+      contentApproved: content.contentApproved,
+      deepApproved: !hasError(issues),
       issues,
       errors: issues.filter((item) => item.severity === 'error'),
       warnings: issues.filter((item) => item.severity !== 'error'),
+      contentReport: content,
     };
   });
   return {
     level,
     total: lessons.length,
     approved: reports.every((report) => report.approved),
+    structureApproved: reports.every((report) => report.structureApproved),
+    contentApproved: reports.every((report) => report.contentApproved),
     approvedCount: reports.filter((report) => report.approved).length,
+    contentApprovedCount: reports.filter((report) => report.contentApproved).length,
     rejectedCount: reports.filter((report) => !report.approved).length,
     reports,
   };
@@ -201,6 +215,8 @@ export function validateStaticCurriculum(options = {}) {
       readyLessons: getStaticReadyLessons(level).length,
       mapApproved: !hasError(mapReport.issues),
       readyApproved: readyReport.approved,
+      structureApproved: readyReport.structureApproved,
+      contentApproved: readyReport.contentApproved,
       approved: !hasError(issues),
       issues,
       summary: summarizeIssues(issues),
@@ -231,13 +247,13 @@ export function getStaticCurriculumValidationStatus(level = 'A1') {
   const label = levelReport.approved
     ? `${level}: aprovado (${levelReport.readyLessons || levelReport.plannedLessons} aulas)`
     : `${level}: pendente (${levelReport.summary.errors} erro(s), ${levelReport.summary.warnings} aviso(s))`;
-  return { level, approved: levelReport.approved, label, report: levelReport };
+  return { level, approved: levelReport.approved, contentApproved: levelReport.contentApproved, label, report: levelReport };
 }
 
 export function summarizeStaticCurriculumValidation(report = validateStaticCurriculum()) {
   const lines = [`Currículo ${report.approved ? 'aprovado' : 'pendente'} · ${report.totals.plannedLessons} planejadas · ${report.totals.readyLessons} prontas.`];
   Object.values(report.levels || {}).forEach((level) => {
-    lines.push(`${level.level}: ${level.approved ? 'aprovado' : 'pendente'} · planejadas ${level.plannedLessons} · prontas ${level.readyLessons} · erros ${level.summary.errors} · avisos ${level.summary.warnings}`);
+    lines.push(`${level.level}: ${level.approved ? 'aprovado' : 'pendente'} · estrutura ${level.structureApproved ? 'ok' : 'pendente'} · conteúdo ${level.contentApproved ? 'ok' : 'pendente'} · planejadas ${level.plannedLessons} · prontas ${level.readyLessons} · erros ${level.summary.errors} · avisos ${level.summary.warnings}`);
   });
   if (report.globalIssues?.length) lines.push(`Globais: ${report.globalSummary.errors} erro(s), ${report.globalSummary.warnings} aviso(s).`);
   return lines.join('\n');
