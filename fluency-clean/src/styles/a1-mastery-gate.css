@@ -1,0 +1,214 @@
+.a1-mastery-gate-card {
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 24px;
+  padding: 18px;
+  background: linear-gradient(145deg, rgba(15, 23, 42, 0.94), rgba(30, 41, 59, 0.82));
+  box-shadow: 0 22px 70px rgba(15, 23, 42, 0.32);
+  display: grid;
+  gap: 16px;
+}
+
+.a1-mastery-gate-card.ready {
+  border-color: rgba(250, 204, 21, 0.34);
+}
+
+.a1-mastery-gate-card.unlocked {
+  border-color: rgba(34, 197, 94, 0.42);
+}
+
+.a1-mastery-gate-card header,
+.a1-gate-title,
+.a1-gate-status-row,
+.a1-gate-review-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.a1-mastery-gate-card header {
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.a1-gate-title span {
+  width: 40px;
+  height: 40px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  color: #facc15;
+  background: rgba(250, 204, 21, 0.12);
+}
+
+.a1-gate-title div {
+  display: grid;
+  gap: 3px;
+}
+
+.a1-gate-title strong {
+  color: #f8fafc;
+  font-size: 1rem;
+}
+
+.a1-gate-title small,
+.a1-gate-progress-line small,
+.a1-gate-actions-list li {
+  color: rgba(226, 232, 240, 0.72);
+}
+
+.a1-mastery-gate-card header em,
+.a1-gate-status-row span,
+.a1-gate-review-row span {
+  border-radius: 999px;
+  padding: 8px 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.78rem;
+  font-style: normal;
+  font-weight: 800;
+}
+
+.a1-mastery-gate-card header em {
+  color: #fde68a;
+  background: rgba(250, 204, 21, 0.1);
+}
+
+.a1-gate-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.a1-gate-progress-line {
+  border-radius: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  background: rgba(15, 23, 42, 0.52);
+  padding: 12px;
+  display: grid;
+  gap: 8px;
+}
+
+.a1-gate-progress-line div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.a1-gate-progress-line span {
+  color: rgba(226, 232, 240, 0.82);
+  font-size: 0.78rem;
+}
+
+.a1-gate-progress-line strong {
+  color: #f8fafc;
+}
+
+.a1-gate-progress-line i {
+  height: 7px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(51, 65, 85, 0.9);
+}
+
+.a1-gate-progress-line i b {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #facc15, #22c55e);
+}
+
+.a1-gate-status-row,
+.a1-gate-review-row {
+  flex-wrap: wrap;
+}
+
+.a1-gate-status-row .ok,
+.a1-gate-review-row .ok,
+.a1-gate-pillar-grid .ok,
+.a1-gate-success {
+  color: #bbf7d0;
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.18);
+}
+
+.a1-gate-status-row .warn,
+.a1-gate-review-row .warn,
+.a1-gate-pillar-grid .weak {
+  color: #fed7aa;
+  background: rgba(249, 115, 22, 0.1);
+  border: 1px solid rgba(249, 115, 22, 0.18);
+}
+
+.a1-gate-pillar-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.a1-gate-pillar-grid span {
+  border-radius: 16px;
+  padding: 10px;
+  display: grid;
+  gap: 4px;
+}
+
+.a1-gate-pillar-grid strong {
+  font-size: 0.73rem;
+}
+
+.a1-gate-pillar-grid small {
+  font-size: 0.9rem;
+  font-weight: 900;
+}
+
+.a1-gate-actions-list,
+.a1-gate-success {
+  border-radius: 18px;
+  padding: 13px;
+}
+
+.a1-gate-actions-list {
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  background: rgba(15, 23, 42, 0.44);
+}
+
+.a1-gate-actions-list strong {
+  display: block;
+  color: #f8fafc;
+  margin-bottom: 8px;
+}
+
+.a1-gate-actions-list ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.a1-gate-actions-list li + li {
+  margin-top: 5px;
+}
+
+.a1-gate-success {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 800;
+}
+
+@media (max-width: 760px) {
+  .a1-mastery-gate-card {
+    border-radius: 20px;
+    padding: 14px;
+  }
+
+  .a1-gate-grid,
+  .a1-gate-pillar-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .a1-mastery-gate-card header em {
+    width: 100%;
+    justify-content: center;
+  }
+}
