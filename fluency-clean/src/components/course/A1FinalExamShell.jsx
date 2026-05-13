@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react';
 import { BookOpenCheck, CheckCircle2, Clock3, Mic, PenLine, PlayCircle, ShieldCheck } from 'lucide-react';
-import { A1_FINAL_EXAM_MODEL, A1_FINAL_EXAM_SECTIONS, getA1FinalExamStudentSections, scoreA1FinalExamObjectiveAnswers } from '../../content/curriculum/levels/A1/a1FinalExamModel.js';
+import { A1_FINAL_EXAM_MODEL, A1_FINAL_EXAM_SECTIONS, getA1FinalExamStudentSections } from '../../content/curriculum/levels/A1/a1FinalExamModel.js';
 import { getA1MasteryGateSummary } from '../../services/a1MasteryGateService.js';
+import { getA1FinalExamObjectiveAttempt, saveA1FinalExamObjectiveAttempt } from '../../services/a1FinalExamAttemptService.js';
 
 const sectionIcons = {
   grammar: BookOpenCheck,
@@ -42,12 +43,14 @@ function QuestionField({ question, value, onChange }) {
 }
 
 export function A1FinalExamShell() {
+  const previousAttempt = useMemo(() => getA1FinalExamObjectiveAttempt(), []);
   const sections = getA1FinalExamStudentSections();
   const gate = getA1MasteryGateSummary();
   const canStart = gate.canTakeFinalExam || gate.canUnlockA2;
   const [activeSectionId, setActiveSectionId] = useState('grammar');
-  const [answers, setAnswers] = useState({});
-  const [result, setResult] = useState(null);
+  const [answers, setAnswers] = useState(previousAttempt?.objectiveAnswers || {});
+  const [result, setResult] = useState(previousAttempt?.scoring || null);
+  const [saveMessage, setSaveMessage] = useState(previousAttempt ? 'Tentativa anterior recuperada.' : '');
   const activeSection = getSection(activeSectionId);
   const objectiveSections = useMemo(() => sections.filter((section) => objectiveSectionIds.includes(section.id)), [sections]);
   const currentAnswers = answers[activeSectionId] || {};
@@ -61,10 +64,13 @@ export function A1FinalExamShell() {
       },
     }));
     setResult(null);
+    setSaveMessage('');
   }
 
   function calculateResult() {
-    setResult(scoreA1FinalExamObjectiveAnswers(answers));
+    const attempt = saveA1FinalExamObjectiveAttempt(answers);
+    setResult(attempt.scoring);
+    setSaveMessage('Resultado salvo.');
   }
 
   return (
@@ -87,6 +93,8 @@ export function A1FinalExamShell() {
           <span><ShieldCheck size={16} /> Complete os critérios do A1 acima para liberar a prova final.</span>
         )}
       </div>
+
+      {saveMessage ? <p className="a1-final-save-message">{saveMessage}</p> : null}
 
       <div className="a1-final-exam-sections">
         {sections.map((section) => {
@@ -131,7 +139,7 @@ export function A1FinalExamShell() {
 
           <div className="answer-actions">
             <button type="button" className="primary-button" onClick={calculateResult}>
-              <CheckCircle2 size={16} /> Ver resultado objetivo
+              <CheckCircle2 size={16} /> Salvar e ver resultado
             </button>
           </div>
 
