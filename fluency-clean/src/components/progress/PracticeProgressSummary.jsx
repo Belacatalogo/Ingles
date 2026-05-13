@@ -1,6 +1,8 @@
 import { AlertTriangle, CheckCircle2, Heart, RotateCcw, Target } from 'lucide-react';
 import { getPracticeReviewQueue, getPracticeSessions } from '../../services/progressStore.js';
 
+function safeArray(value) { return Array.isArray(value) ? value : []; }
+function safeNumber(value) { return Number.isFinite(Number(value)) ? Number(value) : 0; }
 function formatDate(value) {
   if (!value) return '';
   try {
@@ -11,14 +13,14 @@ function formatDate(value) {
 }
 
 export function PracticeProgressSummary() {
-  const sessions = getPracticeSessions();
-  const reviewQueue = getPracticeReviewQueue(6);
+  const sessions = safeArray(getPracticeSessions()).filter((session) => session && typeof session === 'object');
+  const reviewQueue = safeArray(getPracticeReviewQueue(6)).filter((item) => item && typeof item === 'object');
   const latest = sessions[0] || null;
   const average = sessions.length
-    ? Math.round(sessions.reduce((total, session) => total + Number(session.accuracy || 0), 0) / sessions.length)
+    ? Math.round(sessions.reduce((total, session) => total + safeNumber(session.accuracy), 0) / sessions.length)
     : 0;
-  const totalExercises = sessions.reduce((total, session) => total + Number(session.total || 0), 0);
-  const totalMistakes = sessions.reduce((total, session) => total + Number(session.mistakes || 0), 0);
+  const totalExercises = sessions.reduce((total, session) => total + safeNumber(session.total), 0);
+  const totalMistakes = sessions.reduce((total, session) => total + safeNumber(session.mistakes), 0);
 
   return (
     <section className="progress-section-card practice-progress-card">
@@ -54,8 +56,8 @@ export function PracticeProgressSummary() {
               </div>
               <section>
                 <span>Última prática · {formatDate(latest.completedAt)}</span>
-                <strong>{latest.title}</strong>
-                <p>{latest.correct}/{latest.total} acertos · {latest.accuracy}% precisão · {latest.lives} vida(s)</p>
+                <strong>{latest.title || 'Prática registrada'}</strong>
+                <p>{safeNumber(latest.correct)}/{safeNumber(latest.total)} acertos · {safeNumber(latest.accuracy)}% precisão · {safeNumber(latest.lives)} vida(s)</p>
               </section>
               {latest.reviewMode ? <b>revisão</b> : <Heart size={16} />}
             </article>
@@ -68,11 +70,11 @@ export function PracticeProgressSummary() {
                 <span>erros recentes da prática</span>
               </header>
               {reviewQueue.slice(0, 4).map((item, index) => (
-                <article key={`${item.lessonId}-${item.id}-${index}`}>
-                  <span>{item.type}</span>
+                <article key={`${item.lessonId || 'lesson'}-${item.id || 'item'}-${index}`}>
+                  <span>{item.type || 'prática'}</span>
                   <div>
                     <strong>{item.expected || 'Resposta esperada'}</strong>
-                    <small>{item.lessonTitle}</small>
+                    <small>{item.lessonTitle || 'Aula atual'}</small>
                   </div>
                 </article>
               ))}
