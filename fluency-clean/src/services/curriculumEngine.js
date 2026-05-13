@@ -1,11 +1,12 @@
 import { CURRICULUM_PILLARS, getStaticCurriculum, getStaticLessons, getStaticLevel } from '../content/curriculum/index.js';
-import { getCompletedLessonIds, getLessonLockReason, summarizePillarProgress } from './lessonProgression.js';
+import { getCompletedLessonIds, getLessonLockReason, isStaticLessonReady, summarizePillarProgress } from './lessonProgression.js';
 import { evaluateStaticLevelGate } from './masteryGate.js';
 import { storage } from './storage.js';
 
 const STATIC_COURSE_STATE_KEY = 'staticCurriculum.state.v1';
 
 function safeObject(value) { return value && typeof value === 'object' && !Array.isArray(value) ? value : {}; }
+function safeArray(value) { return Array.isArray(value) ? value : []; }
 function clean(value) { return String(value || '').trim(); }
 
 export function getStaticCourseState() {
@@ -36,10 +37,14 @@ export function getStaticCourseSummary(level = getStaticCourseState().currentLev
   const pillars = Object.fromEntries(
     CURRICULUM_PILLARS.map((pillar) => [pillar, summarizePillarProgress(staticLevel.pillars?.[pillar] || [], completedIds)]),
   );
-  const lessons = getStaticLessons(level);
+  const lessons = safeArray(getStaticLessons(level));
+  const readyLessons = lessons.filter(isStaticLessonReady);
   const total = lessons.length;
-  const completed = lessons.filter((lesson) => completedIds.has(lesson.id)).length;
+  const readyTotal = readyLessons.length;
+  const completed = lessons.filter((lesson) => completedIds?.has?.(lesson.id)).length;
+  const readyCompleted = readyLessons.filter((lesson) => completedIds?.has?.(lesson.id)).length;
   const percent = total ? Math.round((completed / total) * 100) : 0;
+  const readyPercent = readyTotal ? Math.round((readyCompleted / readyTotal) * 100) : 0;
   const gate = evaluateStaticLevelGate(level, { completedIds });
   return {
     version: getStaticCurriculum().version,
@@ -47,9 +52,13 @@ export function getStaticCourseSummary(level = getStaticCourseState().currentLev
     title: staticLevel.title,
     description: staticLevel.description,
     total,
+    readyTotal,
     completed,
+    readyCompleted,
     pending: Math.max(0, total - completed),
+    readyPending: Math.max(0, readyTotal - readyCompleted),
     percent,
+    readyPercent,
     packages: staticLevel.packages || [],
     pillars,
     gate,
@@ -65,19 +74,19 @@ export function getNextStaticLesson(level = getStaticCourseState().currentLevel)
     : CURRICULUM_PILLARS;
 
   for (const pillar of pillarOrder) {
-    const lesson = (staticLevel.pillars?.[pillar] || []).find((item) => !completedIds.has(item.id) && !getLessonLockReason(item, completedIds));
+    const lesson = safeArray(staticLevel.pillars?.[pillar]).find((item) => !completedIds?.has?.(item.id) && !getLessonLockReason(item, completedIds));
     if (lesson) return { lesson, lockReason: '', level, pillar };
   }
 
-  const blocked = CURRICULUM_PILLARS
-    .flatMap((pillar) => staticLevel.pillars?.[pillar] || [])
-    .find((item) => !completedIds.has(item.id));
+  const planned = CURRICULUM_PILLARS
+    .flatMap((pillar) => safeArray(staticLevel.pillars?.[pillar]))
+    .find((item) => !completedIds?.has?.(item.id));
 
-  return blocked ? { lesson: blocked, lockReason: getLessonLockReason(blocked, completedIds), level, pillar: blocked.pillar } : { lesson: null, lockReason: '', level, pillar: '' };
+  return planned ? { lesson: planned, lockReason: getLessonLockReason(planned, completedIds), level, pillar: planned.pillar } : { lesson: null, lockReason: '', level, pillar: '' };
 }
 
 export function getStaticLessonById(lessonId, level = getStaticCourseState().currentLevel) {
-  return getStaticLessons(level).find((lesson) => lesson.id === lessonId) || null;
+  return safeArray(getStaticLessons(level)).find((lesson) => lesson.id === lessonId) || null;
 }
 
 export function markStaticLessonOpened(lessonId) {
