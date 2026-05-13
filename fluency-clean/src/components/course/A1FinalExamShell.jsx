@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { BookOpenCheck, CheckCircle2, Clock3, Mic, PenLine, PlayCircle, ShieldCheck } from 'lucide-react';
 import { A1_FINAL_EXAM_MODEL, A1_FINAL_EXAM_SECTIONS, getA1FinalExamStudentSections } from '../../content/curriculum/levels/A1/a1FinalExamModel.js';
 import { getA1MasteryGateSummary } from '../../services/a1MasteryGateService.js';
-import { getA1FinalExamObjectiveAttempt, saveA1FinalExamObjectiveAttempt } from '../../services/a1FinalExamAttemptService.js';
+import { getA1FinalExamObjectiveAttempt, saveAndSyncA1FinalExamObjectiveAttempt } from '../../services/a1FinalExamAttemptService.js';
 
 const sectionIcons = {
   grammar: BookOpenCheck,
@@ -68,9 +68,9 @@ export function A1FinalExamShell() {
   }
 
   function calculateResult() {
-    const attempt = saveA1FinalExamObjectiveAttempt(answers);
+    const attempt = saveAndSyncA1FinalExamObjectiveAttempt(answers);
     setResult(attempt.scoring);
-    setSaveMessage('Resultado salvo.');
+    setSaveMessage('Resultado salvo e enviado para os critérios do A1.');
   }
 
   return (
@@ -139,14 +139,14 @@ export function A1FinalExamShell() {
 
           <div className="answer-actions">
             <button type="button" className="primary-button" onClick={calculateResult}>
-              <CheckCircle2 size={16} /> Salvar e ver resultado
+              <CheckCircle2 size={16} /> Salvar e atualizar critérios
             </button>
           </div>
 
           {result ? (
             <div className="a1-final-result-card">
               <strong>Resultado das partes objetivas</strong>
-              <p>Esse resultado ainda não libera o A2 sozinho. Speaking e Writing também precisam de revisão.</p>
+              <p>Grammar, Vocabulary, Reading e Listening já entram nos critérios do A1. Speaking e Writing ainda precisam de revisão.</p>
               <div>
                 {result.sectionScores.filter((item) => !item.requiresReview).map((item) => (
                   <span key={item.sectionId}>{sections.find((section) => section.id === item.sectionId)?.title}: <b>{item.percent}%</b></span>
