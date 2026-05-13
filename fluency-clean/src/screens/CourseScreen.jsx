@@ -3,6 +3,7 @@ import { BookOpenCheck, CheckCircle2, ChevronRight, Lock, Map, Play, ShieldCheck
 import { Card } from '../components/ui/Card.jsx';
 import { ErrorReviewPanel } from '../components/review/ErrorReviewPanel.jsx';
 import { A1MasteryGatePanel } from '../components/course/A1MasteryGatePanel.jsx';
+import { A1FinalExamShell } from '../components/course/A1FinalExamShell.jsx';
 import { CURRICULUM_LEVELS, CURRICULUM_PILLARS, getStaticLevel, getStaticLessons } from '../content/curriculum/index.js';
 import { getStaticCurriculumValidationStatus } from '../content/validators/index.js';
 import { getStaticCourseSummary, getNextStaticLesson, setStaticCurrentLevel } from '../services/curriculumEngine.js';
@@ -94,6 +95,7 @@ export function CourseScreen({ onNavigate }) {
       </section>
 
       {activeLevel === 'A1' ? <A1MasteryGatePanel /> : null}
+      {activeLevel === 'A1' ? <A1FinalExamShell /> : null}
 
       <ErrorReviewPanel onNavigate={onNavigate} compact />
 
