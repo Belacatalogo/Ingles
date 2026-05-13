@@ -223,6 +223,17 @@
   padding: 9px 11px;
 }
 
+.a1-final-save-message {
+  margin: 0;
+  width: fit-content;
+  border-radius: 999px;
+  padding: 8px 11px;
+  color: #bfdbfe;
+  background: rgba(96, 165, 250, 0.1);
+  border: 1px solid rgba(96, 165, 250, 0.18);
+  font-weight: 850;
+}
+
 .a1-final-exam-sections {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -418,8 +429,10 @@
 
   .a1-mastery-gate-card header em,
   .a1-final-exam-shell-card header em,
-  .a1-final-exam-note span {
+  .a1-final-exam-note span,
+  .a1-final-save-message {
     width: 100%;
     justify-content: center;
+    text-align: center;
   }
 }
