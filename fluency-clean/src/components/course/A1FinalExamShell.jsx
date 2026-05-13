@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { BookOpenCheck, CheckCircle2, Clock3, Mic, PenLine, PlayCircle, ShieldCheck } from 'lucide-react';
 import { A1_FINAL_EXAM_MODEL, A1_FINAL_EXAM_SECTIONS, getA1FinalExamStudentSections } from '../../content/curriculum/levels/A1/a1FinalExamModel.js';
 import { getA1MasteryGateSummary } from '../../services/a1MasteryGateService.js';
-import { getA1FinalExamObjectiveAttempt, saveA1FinalExamProductiveDraft, saveAndSyncA1FinalExamObjectiveAttempt } from '../../services/a1FinalExamAttemptService.js';
+import { getA1FinalExamObjectiveAttempt, reviewA1FinalExamProductiveSkill, saveA1FinalExamProductiveDraft, saveAndSyncA1FinalExamObjectiveAttempt } from '../../services/a1FinalExamAttemptService.js';
 
 const sectionIcons = {
   grammar: BookOpenCheck,
@@ -52,6 +52,8 @@ export function A1FinalExamShell({ onObjectiveScoresSaved }) {
   const [activeSectionId, setActiveSectionId] = useState('grammar');
   const [answers, setAnswers] = useState(previousAttempt?.objectiveAnswers || {});
   const [productiveDrafts, setProductiveDrafts] = useState(previousAttempt?.productiveDrafts || {});
+  const [productiveReviews, setProductiveReviews] = useState(previousAttempt?.productiveReviews || {});
+  const [reviewInputs, setReviewInputs] = useState(previousAttempt?.productiveReviews || {});
   const [result, setResult] = useState(previousAttempt?.scoring || null);
   const [saveMessage, setSaveMessage] = useState(previousAttempt ? 'Tentativa anterior recuperada.' : '');
   const activeSection = getSection(activeSectionId);
@@ -75,6 +77,11 @@ export function A1FinalExamShell({ onObjectiveScoresSaved }) {
     setSaveMessage('');
   }
 
+  function updateReviewInput(skill, key, value) {
+    setReviewInputs((current) => ({ ...current, [skill]: { ...(current[skill] || {}), [key]: value } }));
+    setSaveMessage('');
+  }
+
   function calculateResult() {
     const attempt = saveAndSyncA1FinalExamObjectiveAttempt(answers);
     setResult(attempt.scoring);
@@ -85,6 +92,14 @@ export function A1FinalExamShell({ onObjectiveScoresSaved }) {
   function saveProductiveDraft(skill) {
     saveA1FinalExamProductiveDraft(skill, productiveDrafts[skill] || '');
     setSaveMessage('Resposta salva como aguardando revisão.');
+  }
+
+  function reviewProductiveSkill(skill) {
+    const review = reviewInputs[skill] || {};
+    const attempt = reviewA1FinalExamProductiveSkill(skill, review.score, review.note);
+    setProductiveReviews(attempt?.productiveReviews || {});
+    setSaveMessage(`${skill === 'speaking' ? 'Speaking' : 'Writing'} revisado e enviado para os critérios do A1.`);
+    onObjectiveScoresSaved?.(attempt?.scoring);
   }
 
   return (
@@ -166,6 +181,29 @@ export function A1FinalExamShell({ onObjectiveScoresSaved }) {
                 <button type="button" className="secondary-button" onClick={() => saveProductiveDraft(activeSection.id)}>
                   <ShieldCheck size={16} /> Salvar como aguardando revisão
                 </button>
+              </div>
+              <div className="a1-final-review-box">
+                <strong>Revisão local</strong>
+                <p>Lance uma nota somente depois de revisar a resposta. Isso entra nos critérios do A1.</p>
+                <input
+                  className="a1-final-answer-input"
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={reviewInputs[activeSection.id]?.score || ''}
+                  onChange={(event) => updateReviewInput(activeSection.id, 'score', event.target.value)}
+                  placeholder="Nota de 0 a 100"
+                />
+                <textarea
+                  className="a1-final-draft-area small"
+                  value={reviewInputs[activeSection.id]?.note || ''}
+                  onChange={(event) => updateReviewInput(activeSection.id, 'note', event.target.value)}
+                  placeholder="Comentário curto da revisão"
+                />
+                <button type="button" className="primary-button" onClick={() => reviewProductiveSkill(activeSection.id)}>
+                  <CheckCircle2 size={16} /> Marcar como revisado
+                </button>
+                {productiveReviews[activeSection.id] ? <small>Revisado: {productiveReviews[activeSection.id].score}%</small> : null}
               </div>
             </div>
           ) : null}
