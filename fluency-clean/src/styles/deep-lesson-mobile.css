@@ -39,6 +39,43 @@
   line-height: 1.55;
 }
 
+.static-practice-card textarea,
+.static-question-card textarea,
+.static-writing-answer-card textarea {
+  width: 100%;
+  min-height: 132px;
+  resize: vertical;
+  font-size: 16px;
+  line-height: 1.5;
+  border-radius: 18px;
+  padding: 14px;
+  scroll-margin-bottom: calc(170px + env(safe-area-inset-bottom, 0px));
+}
+
+.static-writing-answer-card textarea {
+  min-height: 190px;
+}
+
+.static-question-card,
+.static-writing-answer-card {
+  scroll-margin-top: 96px;
+  scroll-margin-bottom: calc(180px + env(safe-area-inset-bottom, 0px));
+}
+
+.static-option-list button,
+.static-reveal-card button,
+.speak-exercise button,
+.lesson-preview-lab-actions button {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.static-reveal-card button,
+.speak-exercise button {
+  min-height: 48px;
+  border-radius: 16px;
+}
+
 .diagnostic-mini-button {
   bottom: calc(118px + env(safe-area-inset-bottom, 0px));
 }
@@ -53,8 +90,19 @@
   }
 
   .static-lesson-layout {
-    padding-bottom: calc(238px + env(safe-area-inset-bottom, 0px));
-    scroll-padding-bottom: calc(238px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(258px + env(safe-area-inset-bottom, 0px));
+    scroll-padding-bottom: calc(258px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .static-practice-card textarea,
+  .static-question-card textarea,
+  .static-writing-answer-card textarea {
+    font-size: 16px;
+    min-height: 146px;
+  }
+
+  .static-writing-answer-card textarea {
+    min-height: 210px;
   }
 
   .diagnostic-mini-button {
@@ -63,16 +111,101 @@
 }
 
 @media (max-width: 720px) {
+  .lesson-reference-screen {
+    padding-inline: 12px;
+  }
+
+  .lesson-reference-hero,
+  .lesson-preview-lab-card,
+  .lesson-stepper-card,
+  .lesson-progress-strip {
+    border-radius: 22px;
+  }
+
+  .lesson-reference-hero {
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .lesson-reference-hero h1 {
+    font-size: clamp(28px, 8vw, 38px);
+    line-height: 1.02;
+  }
+
+  .lesson-chip-row {
+    gap: 7px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    scrollbar-width: none;
+  }
+
+  .lesson-chip-row::-webkit-scrollbar {
+    display: none;
+  }
+
+  .lesson-chip {
+    flex: 0 0 auto;
+    min-height: 30px;
+  }
+
+  .lesson-preview-lab-card {
+    padding: 13px;
+    gap: 10px;
+  }
+
+  .lesson-preview-lab-card strong {
+    font-size: 14px;
+  }
+
+  .lesson-preview-lab-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .lesson-preview-lab-actions button {
+    min-height: 44px;
+    justify-content: center;
+    border-radius: 14px;
+    padding: 9px 10px;
+    font-size: 12.5px;
+  }
+
+  .lesson-stepper-card {
+    position: sticky;
+    top: 8px;
+    z-index: 8;
+    padding: 8px;
+    backdrop-filter: blur(14px);
+  }
+
+  .lesson-stepper-row {
+    overflow-x: auto;
+    gap: 7px;
+    scrollbar-width: none;
+  }
+
+  .lesson-stepper-row::-webkit-scrollbar {
+    display: none;
+  }
+
+  .lesson-stepper-row button {
+    flex: 0 0 auto;
+    min-height: 42px;
+    padding: 9px 11px;
+    border-radius: 14px;
+  }
+
   .static-lesson-layout {
     gap: 11px;
-    padding-bottom: calc(240px + env(safe-area-inset-bottom, 0px));
-    scroll-padding-bottom: calc(240px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(260px + env(safe-area-inset-bottom, 0px));
+    scroll-padding-bottom: calc(260px + env(safe-area-inset-bottom, 0px));
   }
 
   .static-lesson-card {
-    padding: 13px;
-    border-radius: 20px;
-    gap: 10px;
+    padding: 14px;
+    border-radius: 21px;
+    gap: 11px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, .14);
   }
 
@@ -93,19 +226,29 @@
   .static-production-card,
   .static-check-card,
   .static-vocab-card {
-    padding: 12px;
-    border-radius: 16px;
-    gap: 6px;
+    padding: 13px;
+    border-radius: 17px;
+    gap: 7px;
   }
 
-  .static-lesson-stack {
-    gap: 9px;
+  .static-question-card,
+  .static-writing-answer-card {
+    gap: 10px;
+  }
+
+  .static-lesson-stack,
+  .static-question-list {
+    gap: 10px;
   }
 
   .static-deep-section p,
   .static-main-text-card p {
     font-size: 15.5px;
     line-height: 1.58;
+  }
+
+  .static-main-text-card p {
+    white-space: pre-line;
   }
 
   .static-deep-section h3 {
@@ -141,9 +284,55 @@
     line-height: 1.38;
   }
 
+  .static-option-list {
+    gap: 8px;
+  }
+
   .static-option-list button {
-    min-height: 48px;
-    padding: 11px 12px;
-    border-radius: 15px;
+    min-height: 50px;
+    padding: 12px 13px;
+    border-radius: 16px;
+    text-align: left;
+  }
+
+  .static-practice-card textarea,
+  .static-question-card textarea,
+  .static-writing-answer-card textarea {
+    min-height: 148px;
+    border-radius: 17px;
+    padding: 14px;
+  }
+
+  .static-writing-answer-card textarea {
+    min-height: 215px;
+  }
+}
+
+@media (max-width: 390px) {
+  .lesson-reference-screen {
+    padding-inline: 10px;
+  }
+
+  .lesson-preview-lab-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .lesson-preview-lab-actions button {
+    min-height: 42px;
+  }
+
+  .static-lesson-card {
+    padding: 12px;
+    border-radius: 19px;
+  }
+
+  .static-deep-section,
+  .static-example-card,
+  .static-mistake-card,
+  .static-question-card,
+  .static-production-card,
+  .static-check-card,
+  .static-vocab-card {
+    padding: 12px;
   }
 }
