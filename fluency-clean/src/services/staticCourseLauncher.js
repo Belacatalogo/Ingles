@@ -1,5 +1,5 @@
 import { findStaticLesson } from '../content/curriculum/index.js';
-import { getStaticLessonById, markStaticLessonOpened as markCourseLessonOpened } from './curriculumEngine.js';
+import { getNextStaticLesson, getStaticLessonById, markStaticLessonOpened as markCourseLessonOpened } from './curriculumEngine.js';
 import { getCompletedLessonIds, getLessonLockReason } from './lessonProgression.js';
 import { saveGenerationStatus } from './lessonStore.js';
 import { markStaticLessonOpened } from './staticLessonProgress.js';
@@ -8,17 +8,28 @@ import { storage } from './storage.js';
 const CURRENT_LESSON_KEY = 'lesson.current';
 
 function clean(value) { return String(value ?? '').trim(); }
+function sameLesson(a, b) { return Boolean(clean(a?.id) && clean(a?.id) === clean(b?.id)); }
+
+function getGuidedCourseLockReason(lesson, completedIds = getCompletedLessonIds()) {
+  if (!lesson) return 'Aula não encontrada.';
+  if (completedIds?.has?.(lesson.id)) return '';
+  const next = getNextStaticLesson(lesson.level || 'A1');
+  if (sameLesson(lesson, next.lesson)) return '';
+  return 'Essa aula ainda está bloqueada. Continue pela próxima aula liberada.';
+}
 
 export function canOpenStaticCourseLesson(lesson) {
   if (!lesson || clean(lesson.status) !== 'ready' || !clean(lesson.schemaVersion).startsWith('static-lesson-schema')) return false;
-  return !getLessonLockReason(lesson, getCompletedLessonIds());
+  const completedIds = getCompletedLessonIds();
+  return !getLessonLockReason(lesson, completedIds) && !getGuidedCourseLockReason(lesson, completedIds);
 }
 
 export function getStaticLessonOpenReason(lesson) {
   if (!lesson) return 'Aula não encontrada.';
   if (canOpenStaticCourseLesson(lesson)) return '';
   if (lesson.status === 'planned') return 'Aula planejada, mas o conteúdo real ainda não foi implementado.';
-  const lockReason = getLessonLockReason(lesson, getCompletedLessonIds());
+  const completedIds = getCompletedLessonIds();
+  const lockReason = getLessonLockReason(lesson, completedIds) || getGuidedCourseLockReason(lesson, completedIds);
   if (lockReason) return lockReason;
   return 'Aula ainda não está pronta para abrir.';
 }
