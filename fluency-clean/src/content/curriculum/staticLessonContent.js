@@ -9,6 +9,7 @@ import { A1_DEEP_WRITING_BY_PILLAR, A1_DEEP_WRITING_FOUNDATIONS } from './levels
 import { A1_DEEP_PERSONAL_LIFE, A1_DEEP_PERSONAL_LIFE_BY_PILLAR } from './levels/A1/deepPersonalLife.js';
 import { A1_DEEP_DAILY_ROUTINE, A1_DEEP_DAILY_ROUTINE_BY_PILLAR } from './levels/A1/deepDailyRoutine.js';
 import { A1_DEEP_PRACTICAL_SITUATIONS, A1_DEEP_PRACTICAL_SITUATIONS_BY_PILLAR } from './levels/A1/deepPracticalSituations.js';
+import { A1_DEEP_PRACTICAL_SITUATIONS_PLACES, A1_DEEP_PRACTICAL_SITUATIONS_PLACES_BY_PILLAR } from './levels/A1/deepPracticalSituationsPlaces.js';
 import { A1_FULL_CONTENT_BY_PILLAR, A1_FULL_CONTENT_LESSONS } from './levels/A1/fullContent.js';
 import { A1_CHECKPOINT_LESSONS } from './levels/A1/checkpoints.js';
 import { validateStaticLessonList } from '../schemas/index.js';
@@ -22,26 +23,26 @@ function mergeUniqueLessons(...groups) {
   }).sort((a, b) => String(a.pillar).localeCompare(String(b.pillar)) || Number(a.order || 0) - Number(b.order || 0));
 }
 
-function mergePillarLessons(deepGrammar, deepGrammarExtra, deepVocabulary, deepReading, deepListening, deepSpeaking, deepWriting, personalLife, dailyRoutine, practicalSituations, foundations, full) {
+function mergePillarLessons(deepGrammar, deepGrammarExtra, deepVocabulary, deepReading, deepListening, deepSpeaking, deepWriting, personalLife, dailyRoutine, practicalSituations, practicalSituationsPlaces, foundations, full) {
   return Object.freeze({
-    grammar: Object.freeze(mergeUniqueLessons(deepGrammar.grammar || [], deepGrammarExtra.grammar || [], personalLife.grammar || [], dailyRoutine.grammar || [], practicalSituations.grammar || [], foundations.grammar || [], full.grammar || [])),
-    vocabulary: Object.freeze(mergeUniqueLessons(deepVocabulary.vocabulary || [], personalLife.vocabulary || [], dailyRoutine.vocabulary || [], practicalSituations.vocabulary || [], foundations.vocabulary || [], full.vocabulary || [])),
-    reading: Object.freeze(mergeUniqueLessons(deepReading.reading || [], personalLife.reading || [], dailyRoutine.reading || [], practicalSituations.reading || [], foundations.reading || [], full.reading || [])),
-    listening: Object.freeze(mergeUniqueLessons(deepListening.listening || [], personalLife.listening || [], dailyRoutine.listening || [], practicalSituations.listening || [], foundations.listening || [], full.listening || [])),
-    speaking: Object.freeze(mergeUniqueLessons(deepSpeaking.speaking || [], personalLife.speaking || [], dailyRoutine.speaking || [], practicalSituations.speaking || [], foundations.speaking || [], full.speaking || [])),
-    writing: Object.freeze(mergeUniqueLessons(deepWriting.writing || [], personalLife.writing || [], dailyRoutine.writing || [], practicalSituations.writing || [], foundations.writing || [], full.writing || [])),
+    grammar: Object.freeze(mergeUniqueLessons(deepGrammar.grammar || [], deepGrammarExtra.grammar || [], personalLife.grammar || [], dailyRoutine.grammar || [], practicalSituations.grammar || [], practicalSituationsPlaces.grammar || [], foundations.grammar || [], full.grammar || [])),
+    vocabulary: Object.freeze(mergeUniqueLessons(deepVocabulary.vocabulary || [], personalLife.vocabulary || [], dailyRoutine.vocabulary || [], practicalSituations.vocabulary || [], practicalSituationsPlaces.vocabulary || [], foundations.vocabulary || [], full.vocabulary || [])),
+    reading: Object.freeze(mergeUniqueLessons(deepReading.reading || [], personalLife.reading || [], dailyRoutine.reading || [], practicalSituations.reading || [], practicalSituationsPlaces.reading || [], foundations.reading || [], full.reading || [])),
+    listening: Object.freeze(mergeUniqueLessons(deepListening.listening || [], personalLife.listening || [], dailyRoutine.listening || [], practicalSituations.listening || [], practicalSituationsPlaces.listening || [], foundations.listening || [], full.listening || [])),
+    speaking: Object.freeze(mergeUniqueLessons(deepSpeaking.speaking || [], personalLife.speaking || [], dailyRoutine.speaking || [], practicalSituations.speaking || [], practicalSituationsPlaces.speaking || [], foundations.speaking || [], full.speaking || [])),
+    writing: Object.freeze(mergeUniqueLessons(deepWriting.writing || [], personalLife.writing || [], dailyRoutine.writing || [], practicalSituations.writing || [], practicalSituationsPlaces.writing || [], foundations.writing || [], full.writing || [])),
     checkpoint: Object.freeze([...A1_CHECKPOINT_LESSONS]),
   });
 }
 
-export const STATIC_READY_LESSONS = Object.freeze(mergeUniqueLessons(A1_DEEP_GRAMMAR_FOUNDATIONS, A1_DEEP_GRAMMAR_EXTRA, A1_DEEP_VOCABULARY_FOUNDATIONS, A1_DEEP_READING_FOUNDATIONS, A1_DEEP_LISTENING_FOUNDATIONS, A1_DEEP_SPEAKING_FOUNDATIONS, A1_DEEP_WRITING_FOUNDATIONS, A1_DEEP_PERSONAL_LIFE, A1_DEEP_DAILY_ROUTINE, A1_DEEP_PRACTICAL_SITUATIONS, A1_FOUNDATIONS_LESSONS, A1_FULL_CONTENT_LESSONS, A1_CHECKPOINT_LESSONS));
+export const STATIC_READY_LESSONS = Object.freeze(mergeUniqueLessons(A1_DEEP_GRAMMAR_FOUNDATIONS, A1_DEEP_GRAMMAR_EXTRA, A1_DEEP_VOCABULARY_FOUNDATIONS, A1_DEEP_READING_FOUNDATIONS, A1_DEEP_LISTENING_FOUNDATIONS, A1_DEEP_SPEAKING_FOUNDATIONS, A1_DEEP_WRITING_FOUNDATIONS, A1_DEEP_PERSONAL_LIFE, A1_DEEP_DAILY_ROUTINE, A1_DEEP_PRACTICAL_SITUATIONS, A1_DEEP_PRACTICAL_SITUATIONS_PLACES, A1_FOUNDATIONS_LESSONS, A1_FULL_CONTENT_LESSONS, A1_CHECKPOINT_LESSONS));
 
 export const STATIC_READY_LESSONS_BY_LEVEL = Object.freeze({
   A1: Object.freeze([...STATIC_READY_LESSONS]),
 });
 
 export const STATIC_READY_LESSONS_BY_LEVEL_AND_PILLAR = Object.freeze({
-  A1: mergePillarLessons(A1_DEEP_GRAMMAR_BY_PILLAR, A1_DEEP_GRAMMAR_EXTRA_BY_PILLAR, A1_DEEP_VOCABULARY_BY_PILLAR, A1_DEEP_READING_BY_PILLAR, A1_DEEP_LISTENING_BY_PILLAR, A1_DEEP_SPEAKING_BY_PILLAR, A1_DEEP_WRITING_BY_PILLAR, A1_DEEP_PERSONAL_LIFE_BY_PILLAR, A1_DEEP_DAILY_ROUTINE_BY_PILLAR, A1_DEEP_PRACTICAL_SITUATIONS_BY_PILLAR, A1_FOUNDATIONS_BY_PILLAR, A1_FULL_CONTENT_BY_PILLAR),
+  A1: mergePillarLessons(A1_DEEP_GRAMMAR_BY_PILLAR, A1_DEEP_GRAMMAR_EXTRA_BY_PILLAR, A1_DEEP_VOCABULARY_BY_PILLAR, A1_DEEP_READING_BY_PILLAR, A1_DEEP_LISTENING_BY_PILLAR, A1_DEEP_SPEAKING_BY_PILLAR, A1_DEEP_WRITING_BY_PILLAR, A1_DEEP_PERSONAL_LIFE_BY_PILLAR, A1_DEEP_DAILY_ROUTINE_BY_PILLAR, A1_DEEP_PRACTICAL_SITUATIONS_BY_PILLAR, A1_DEEP_PRACTICAL_SITUATIONS_PLACES_BY_PILLAR, A1_FOUNDATIONS_BY_PILLAR, A1_FULL_CONTENT_BY_PILLAR),
 });
 
 export function getStaticReadyLessons(level = 'A1') {
