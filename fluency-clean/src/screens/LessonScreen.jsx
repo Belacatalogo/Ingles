@@ -184,9 +184,9 @@ export function LessonScreen({ lessonRevision = 0 }) {
       <section className="lesson-stepper-card"><div className="lesson-stepper-row">{lessonSections.map((section, index) => { const Icon = index < activeSection ? CheckCircle2 : section.icon; const active = index === activeSection; const done = index < activeSection; return <button type="button" key={section.id} className={active ? 'active' : done ? 'done' : ''} onClick={() => jumpToSection(section, index)}><Icon size={12} />{section.title}</button>; })}</div></section>
       <section className="lesson-progress-strip"><div><span>Progresso da aula</span><strong>{activeSection + 1}/{lessonSections.length}</strong></div><i><b style={{ width: `${currentProgress}%` }} /></i></section>
 
+      {isListening ? <ListeningMiniDialoguePractice lesson={lesson} /> : null}
       <LessonRenderer lesson={lesson} />
       {isListening ? <ListeningShadowingPractice lesson={lesson} /> : null}
-      {isListening ? <ListeningMiniDialoguePractice lesson={lesson} /> : null}
       <PracticeMount lesson={lesson} complementary={isReading || staticLesson} />
     </section>
   );
