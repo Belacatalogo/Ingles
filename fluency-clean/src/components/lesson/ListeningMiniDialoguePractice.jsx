@@ -7,6 +7,7 @@ function clean(value) {
 }
 
 function getPrompt(lesson) {
+  if (lesson?.oralProductionPrompt) return lesson.oralProductionPrompt;
   const production = Array.isArray(lesson?.oralProduction) ? lesson.oralProduction[0] : null;
   if (typeof production === 'string') return production;
   if (production && typeof production === 'object') {
