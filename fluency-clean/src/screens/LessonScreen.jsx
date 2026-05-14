@@ -14,6 +14,7 @@ import { openStaticCourseLesson } from '../services/staticCourseLauncher.js';
 import { getCurrentLesson, getCurrentLessonFull } from '../services/lessonStore.js';
 import { getLessonStats } from '../services/lessonStats.js';
 import { recordLessonAsCurrentCurriculumUnit } from '../services/curriculumPracticeAdapter.js';
+import { normalizeStaticLessonForDisplay } from '../services/staticLessonDisplayNormalizer.js';
 
 const fallbackLesson = {
   id: 'fallback-reading',
@@ -117,12 +118,12 @@ export function LessonScreen({ lessonRevision = 0 }) {
     return () => { active = false; };
   }, [pointerGenerationId, lessonRevision, localRevision]);
 
-  const savedLesson = fullLesson || savedLessonPointer;
-  const lesson = savedLesson || fallbackLesson;
+  const rawLesson = fullLesson || savedLessonPointer || fallbackLesson;
+  const lesson = useMemo(() => normalizeStaticLessonForDisplay(rawLesson), [rawLesson]);
   const staticLesson = isStaticLesson(lesson);
   const lessonStats = useMemo(() => getLessonStats(lesson), [lesson]);
-  const usingGenerated = Boolean(savedLesson) && !staticLesson;
-  const usingStatic = Boolean(savedLesson) && staticLesson;
+  const usingGenerated = Boolean(savedLessonPointer || fullLesson) && !staticLesson;
+  const usingStatic = Boolean(savedLessonPointer || fullLesson) && staticLesson;
   const isReading = lesson?.type === 'reading' || lesson?.pillar === 'reading';
   const currentProgress = Math.round(((activeSection + 1) / lessonSections.length) * 100);
   const meta = lesson?.generationMeta || null;
