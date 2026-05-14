@@ -96,6 +96,18 @@ export function openStaticCourseLesson(lesson, options = {}) {
   return { ok: true, lesson: saved, navigateTo: options.navigateTo || 'lesson' };
 }
 
+export function openDailyStaticCourseLesson(level = 'A1') {
+  const next = getNextStaticLesson(level);
+  const lesson = next.lesson;
+  if (!lesson) {
+    return { ok: false, reason: 'Nenhuma aula liberada agora. Veja os critérios do nível.', lesson: null, next };
+  }
+  if (next.lockReason) {
+    return { ok: false, reason: next.lockReason, lesson, next };
+  }
+  return { ...openStaticCourseLesson(lesson, { source: 'daily-guided-course' }), next };
+}
+
 export function openStaticCourseLessonById(lessonId, level = 'A1') {
   return openStaticCourseLesson(getStaticLessonById(lessonId, level));
 }
