@@ -1,5 +1,6 @@
 import { findStaticLesson } from '../content/curriculum/index.js';
 import { getStaticLessonById, markStaticLessonOpened as markCourseLessonOpened } from './curriculumEngine.js';
+import { getCompletedLessonIds, getLessonLockReason } from './lessonProgression.js';
 import { saveGenerationStatus } from './lessonStore.js';
 import { markStaticLessonOpened } from './staticLessonProgress.js';
 import { storage } from './storage.js';
@@ -9,13 +10,16 @@ const CURRENT_LESSON_KEY = 'lesson.current';
 function clean(value) { return String(value ?? '').trim(); }
 
 export function canOpenStaticCourseLesson(lesson) {
-  return Boolean(lesson && clean(lesson.status) === 'ready' && clean(lesson.schemaVersion).startsWith('static-lesson-schema'));
+  if (!lesson || clean(lesson.status) !== 'ready' || !clean(lesson.schemaVersion).startsWith('static-lesson-schema')) return false;
+  return !getLessonLockReason(lesson, getCompletedLessonIds());
 }
 
 export function getStaticLessonOpenReason(lesson) {
   if (!lesson) return 'Aula não encontrada.';
   if (canOpenStaticCourseLesson(lesson)) return '';
   if (lesson.status === 'planned') return 'Aula planejada, mas o conteúdo real ainda não foi implementado.';
+  const lockReason = getLessonLockReason(lesson, getCompletedLessonIds());
+  if (lockReason) return lockReason;
   return 'Aula ainda não está pronta para abrir.';
 }
 
