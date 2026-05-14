@@ -1,7 +1,7 @@
 import { BookOpenCheck, CheckCircle2, Lock, Map, PlayCircle, ShieldCheck, Sparkles } from 'lucide-react';
 import { getNextStaticLesson, getStaticCourseSummary } from '../../services/curriculumEngine.js';
 import { getA1MasteryGateSummary } from '../../services/a1MasteryGateService.js';
-import { openStaticCourseLesson } from '../../services/staticCourseLauncher.js';
+import { openDailyStaticCourseLesson } from '../../services/staticCourseLauncher.js';
 
 function pillarLabel(pillar) {
   const labels = { grammar: 'Grammar', vocabulary: 'Vocabulary', reading: 'Reading', listening: 'Listening', speaking: 'Speaking', writing: 'Writing' };
@@ -19,8 +19,7 @@ export function StaticNextLessonPanel({ onNavigate }) {
 
   function openNextLesson() {
     if (shouldShowFinalGate) { onNavigate?.('course'); return; }
-    if (!canOpen) { onNavigate?.('course'); return; }
-    const result = openStaticCourseLesson(lesson);
+    const result = openDailyStaticCourseLesson('A1');
     if (result.ok) onNavigate?.('lesson');
     else onNavigate?.('course');
   }
