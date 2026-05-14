@@ -91,12 +91,18 @@ function normalizeMentalModel(model) {
   };
 }
 
+function normalizeOralProductionPrompt(value) {
+  if (Array.isArray(value)) return normalizePromptList(value).join('\n');
+  return itemPromptText(value);
+}
+
 export function normalizeStaticLessonForDisplay(lesson) {
   if (!lesson || typeof lesson !== 'object') return lesson;
   const pillar = lesson.pillar || lesson.type;
   if (pillar !== 'listening') return lesson;
 
   const shadowingPhrases = normalizePromptList(lesson.shadowing);
+  const oralProductionPrompt = normalizeOralProductionPrompt(lesson.oralProduction);
 
   return {
     ...lesson,
@@ -113,6 +119,8 @@ export function normalizeStaticLessonForDisplay(lesson) {
     secondListenTasks: normalizePromptList(lesson.secondListenTasks),
     shadowing: [],
     shadowingPhrases,
+    oralProduction: null,
+    oralProductionPrompt,
     lessonRecap: normalizePromptList(lesson.lessonRecap),
     selfAssessment: normalizePromptList(lesson.selfAssessment),
     mentalModel: normalizeMentalModel(lesson.mentalModel),
