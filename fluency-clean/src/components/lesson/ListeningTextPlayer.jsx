@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Headphones, PauseCircle, PlayCircle } from 'lucide-react';
 import { getGeneralAiKeys } from '../../services/aiKeys.js';
 import { Card } from '../ui/Card.jsx';
@@ -97,8 +97,13 @@ async function generateGeminiAudio(text) {
 export function ListeningTextPlayer({ lesson }) {
   const [status, setStatus] = useState('');
   const [loading, setLoading] = useState(false);
+  const [audioUrl, setAudioUrl] = useState('');
   const audioRef = useRef(null);
   const text = useMemo(() => getListeningText(lesson), [lesson]);
+
+  useEffect(() => () => {
+    if (audioUrl) URL.revokeObjectURL(audioUrl);
+  }, [audioUrl]);
 
   function stopAudio() {
     if (audioRef.current) {
@@ -108,7 +113,7 @@ export function ListeningTextPlayer({ lesson }) {
     setStatus('Áudio parado.');
   }
 
-  async function playAudio() {
+  async function prepareAudio() {
     if (!text) {
       setStatus('Esta aula ainda não tem texto de áudio cadastrado.');
       return;
@@ -118,13 +123,11 @@ export function ListeningTextPlayer({ lesson }) {
     try {
       const blob = await generateGeminiAudio(text);
       const url = URL.createObjectURL(blob);
-      if (audioRef.current) audioRef.current.pause();
-      const audio = new Audio(url);
-      audioRef.current = audio;
-      audio.onended = () => setStatus('Escuta concluída.');
-      audio.onerror = () => setStatus('Não foi possível tocar o áudio natural agora.');
-      await audio.play();
-      setStatus('Ouvindo áudio natural.');
+      setAudioUrl((currentUrl) => {
+        if (currentUrl) URL.revokeObjectURL(currentUrl);
+        return url;
+      });
+      setStatus('Áudio pronto. Toque no player para ouvir.');
     } catch (error) {
       setStatus(error?.message || 'Áudio natural ainda não configurado.');
     } finally {
@@ -136,15 +139,31 @@ export function ListeningTextPlayer({ lesson }) {
 
   return (
     <Card eyebrow="Listening" title="Ouça o texto da aula">
-      <p>Toque em ouvir antes de abrir o transcript. Depois escute de novo acompanhando o texto.</p>
+      <p>Toque em preparar para gerar o áudio natural. Quando o player aparecer, toque nele para ouvir.</p>
       <div className="answer-actions">
-        <button type="button" className="primary-button" onClick={playAudio} disabled={loading}>
-          <PlayCircle size={16} /> {loading ? 'Preparando...' : 'Ouvir áudio natural'}
+        <button type="button" className="primary-button" onClick={prepareAudio} disabled={loading}>
+          <PlayCircle size={16} /> {loading ? 'Preparando...' : 'Preparar áudio natural'}
         </button>
         <button type="button" className="secondary-button" onClick={stopAudio}>
           <PauseCircle size={16} /> Parar áudio
         </button>
       </div>
+      {audioUrl ? (
+        <audio
+          ref={audioRef}
+          className="listening-natural-audio-player"
+          controls
+          src={audioUrl}
+          onPlay={() => setStatus('Ouvindo áudio natural.')}
+          onEnded={() => setStatus('Escuta concluída.')}
+        />
+      ) : null}
+      {text ? (
+        <details className="listening-audio-text-preview">
+          <summary>Texto que será ouvido</summary>
+          <p>{text}</p>
+        </details>
+      ) : null}
       {status ? <p className="generator-message completion-message"><Headphones size={14} /> {status}</p> : null}
       {!text ? <p className="static-lesson-muted">Esta aula ainda não tem texto de áudio cadastrado.</p> : null}
     </Card>
