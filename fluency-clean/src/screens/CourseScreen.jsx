@@ -10,7 +10,7 @@ import { getStaticCurriculumValidationStatus, validateGuidedCourseAccess } from 
 import { getStaticCourseSummary, getNextStaticLesson, setStaticCurrentLevel } from '../services/curriculumEngine.js';
 import { getA1MasteryGateSummary } from '../services/a1MasteryGateService.js';
 import { getCompletedLessonIds, getLessonLockReason, isStaticLessonReady } from '../services/lessonProgression.js';
-import { getStaticLessonOpenReason, openStaticCourseLesson } from '../services/staticCourseLauncher.js';
+import { openDailyStaticCourseLesson, openStaticCourseLesson } from '../services/staticCourseLauncher.js';
 
 const pillarLabels = {
   grammar: 'Grammar',
@@ -31,7 +31,6 @@ export function CourseScreen({ onNavigate }) {
   const completedIds = useMemo(() => getCompletedLessonIds(), [activeLevel, message]);
   const a1Gate = useMemo(() => getA1MasteryGateSummary(), [activeLevel, message, a1RefreshKey]);
   const summary = useMemo(() => getStaticCourseSummary(activeLevel), [activeLevel, message]);
-  const levelData = useMemo(() => getStaticLevel(activeLevel), [activeLevel]);
   const validation = useMemo(() => getStaticCurriculumValidationStatus(activeLevel), [activeLevel]);
   const guidedAccess = useMemo(() => validateGuidedCourseAccess(activeLevel), [activeLevel, message]);
   const next = useMemo(() => getNextStaticLesson(activeLevel), [activeLevel, message]);
@@ -67,12 +66,9 @@ export function CourseScreen({ onNavigate }) {
   }
 
   function handleStartDailyLesson() {
-    if (!nextLesson) { setMessage('Nenhuma aula liberada agora. Veja os critérios do nível.'); return; }
-    const lock = getLessonLockReason(nextLesson, completedIds);
-    if (lock) { setMessage(lock); return; }
-    const result = openStaticCourseLesson(nextLesson);
-    if (!result.ok) { setMessage(result.reason || getStaticLessonOpenReason(nextLesson)); return; }
-    setMessage(`Aula liberada: ${nextLesson.title}`);
+    const result = openDailyStaticCourseLesson(activeLevel);
+    if (!result.ok) { setMessage(result.reason || 'Nenhuma aula liberada agora. Veja os critérios do nível.'); return; }
+    setMessage(`Aula liberada: ${result.lesson?.title || 'aula do dia'}`);
     onNavigate?.('lesson');
   }
 
