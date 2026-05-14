@@ -22,11 +22,14 @@ const pillarLabels = {
 };
 
 function safeArray(value) { return Array.isArray(value) ? value : []; }
-function statusLabel(lesson, completedIds) {
-  if (completedIds?.has?.(lesson.id)) return { label: 'Concluída', className: 'done', icon: CheckCircle2 };
+function isSameLesson(a, b) { return Boolean(a?.id && b?.id && a.id === b.id); }
+function statusLabel(lesson, completedIds, nextLesson) {
+  if (completedIds?.has?.(lesson.id)) return { label: 'Concluída', className: 'done', icon: CheckCircle2, visibleTitle: lesson.title, visibleSubtitle: 'Aula já liberada para revisão.' };
+  const isNext = isSameLesson(lesson, nextLesson);
   const lock = getLessonLockReason(lesson, completedIds);
-  if (lock) return { label: lesson?.status === 'planned' ? 'Planejada' : 'Bloqueada', className: lesson?.status === 'planned' ? 'planned' : 'locked', icon: Lock, reason: lock };
-  return { label: 'Pronta', className: 'ready', icon: Play };
+  if (!isNext) return { label: 'Bloqueada', className: 'locked', icon: Lock, reason: 'Continue pela próxima aula liberada.', visibleTitle: 'Aula futura bloqueada', visibleSubtitle: 'Conteúdo protegido pelo curso guiado.' };
+  if (lock) return { label: lesson?.status === 'planned' ? 'Planejada' : 'Bloqueada', className: lesson?.status === 'planned' ? 'planned' : 'locked', icon: Lock, reason: lock, visibleTitle: 'Próxima etapa ainda indisponível', visibleSubtitle: 'Aguarde a liberação no curso.' };
+  return { label: 'Próxima', className: 'ready', icon: Play, visibleTitle: lesson.title, visibleSubtitle: lesson.packageId || lesson.objective || 'Aula liberada pelo curso.' };
 }
 
 export function CourseScreen({ onNavigate }) {
@@ -71,6 +74,12 @@ export function CourseScreen({ onNavigate }) {
   }
 
   function handleOpenLesson(lesson) {
+    const alreadyCompleted = completedIds?.has?.(lesson.id);
+    const isNextLesson = isSameLesson(lesson, next.lesson);
+    if (!alreadyCompleted && !isNextLesson) {
+      setMessage('Essa aula ainda está bloqueada. Continue pela próxima aula liberada.');
+      return;
+    }
     const lock = getLessonLockReason(lesson, completedIds);
     if (lock) { setMessage(lock); return; }
     const result = openStaticCourseLesson(lesson);
@@ -88,7 +97,7 @@ export function CourseScreen({ onNavigate }) {
     <section className="screen-stack course-screen">
       <section className="course-hero-card">
         <div className="lesson-chip-row">
-          <span className="lesson-chip blue"><Map size={12} /> Curso fixo premium</span>
+          <span className="lesson-chip blue"><Map size={12} /> Curso guiado</span>
           <span className="lesson-chip violet">{activeLevel}</span>
           <span className="lesson-chip"><ShieldCheck size={12} /> {validation.approved ? 'validado' : 'em revisão'}</span>
         </div>
@@ -97,10 +106,10 @@ export function CourseScreen({ onNavigate }) {
         <div className="course-hero-progress">
           <div><span>Aulas concluídas</span><strong>{summary.readyCompleted || 0}/{summary.readyTotal || 0}</strong></div>
           <i><b style={{ width: `${summary.readyPercent || 0}%` }} /></i>
-          <em>{summary.readyPercent || 0}% das aulas prontas concluído · mapa total {summary.total || 0}</em>
+          <em>{summary.readyPercent || 0}% das aulas prontas concluído · avance em ordem</em>
         </div>
         <div className="answer-actions">
-          <button type="button" className="primary-button" onClick={handleOpenNext}><Play size={16} /> {next.lockReason ? 'Ver próxima pendência' : 'Abrir próxima aula pronta'}</button>
+          <button type="button" className="primary-button" onClick={handleOpenNext}><Play size={16} /> {next.lockReason ? 'Ver próxima pendência' : 'Continuar curso'}</button>
           <button type="button" className="secondary-button" onClick={() => setMessage(validation.label)}><ShieldCheck size={16} /> Ver status</button>
         </div>
         {message ? <p className="generator-message completion-message">{message}</p> : null}
@@ -122,7 +131,7 @@ export function CourseScreen({ onNavigate }) {
             <button key={level} type="button" className={buttonClass} onClick={() => handleLevel(level)}>
               <strong>{level}</strong>
               <span>{blocked ? 'Bloqueado' : readyCount ? `${readyCount} prontas` : 'planejado'}</span>
-              <small>{blocked ? 'Conclua o A1 primeiro' : data.title}</small>
+              <small>{blocked ? 'Conclua o nível atual primeiro' : data.title}</small>
             </button>
           );
         })}
@@ -141,11 +150,11 @@ export function CourseScreen({ onNavigate }) {
         })}
       </div>
 
-      <Card eyebrow="Próxima aula" title={next.lesson ? next.lesson.title : 'Nível sem próxima aula'}>
+      <Card eyebrow="Próxima aula" title={next.lesson && !next.lockReason ? next.lesson.title : 'Continue pelo caminho guiado'}>
         {next.lesson ? (
           <div className="course-next-card">
-            <div><strong>{next.lesson.level} · {pillarLabels[next.lesson.pillar]}</strong><span>{next.lesson.packageId || 'Pacote sem nome'}</span>{next.lockReason ? <small>{next.lockReason}</small> : null}</div>
-            <button type="button" className="primary-button" onClick={handleOpenNext}><Play size={16} /> {next.lockReason ? 'Ver no mapa' : 'Abrir'}</button>
+            <div><strong>{next.lesson.level} · {pillarLabels[next.lesson.pillar]}</strong><span>{next.lockReason ? 'Próxima etapa bloqueada' : 'Aula liberada agora'}</span>{next.lockReason ? <small>{next.lockReason}</small> : null}</div>
+            <button type="button" className="primary-button" onClick={handleOpenNext}><Play size={16} /> {next.lockReason ? 'Ver pendência' : 'Abrir'}</button>
           </div>
         ) : <p>Não há próxima aula disponível neste nível.</p>}
       </Card>
@@ -154,12 +163,12 @@ export function CourseScreen({ onNavigate }) {
         <div className="panel-title"><BookOpenCheck size={18} /> {pillarLabels[activePillar]} · {activeLevel}</div>
         <div className="course-lesson-list">
           {lessons.map((lesson) => {
-            const state = statusLabel(lesson, completedIds);
+            const state = statusLabel(lesson, completedIds, next.lesson);
             const Icon = state.icon;
             return (
               <button type="button" key={lesson.id} className={`course-lesson-row ${state.className}`} onClick={() => handleOpenLesson(lesson)}>
                 <span className="course-lesson-number">{String(lesson.order).padStart(2, '0')}</span>
-                <span className="course-lesson-copy"><strong>{lesson.title}</strong><small>{lesson.packageId || lesson.objective || 'Aula do currículo fixo'}</small>{state.reason ? <em>{state.reason}</em> : null}</span>
+                <span className="course-lesson-copy"><strong>{state.visibleTitle}</strong><small>{state.visibleSubtitle}</small>{state.reason ? <em>{state.reason}</em> : null}</span>
                 <span className="course-lesson-state"><Icon size={15} /> {state.label}</span>
                 <ChevronRight size={18} />
               </button>
