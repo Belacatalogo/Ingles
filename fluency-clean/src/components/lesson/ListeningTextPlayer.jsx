@@ -4,7 +4,8 @@ import { getGeneralAiKeys } from '../../services/aiKeys.js';
 import { Card } from '../ui/Card.jsx';
 
 const GEMINI_TTS_MODEL = 'gemini-2.5-flash-preview-tts';
-const GEMINI_TTS_VOICE = 'Kore';
+const DEFAULT_VOICE = 'Kore';
+const SPEAKER_VOICES = ['Kore', 'Puck', 'Zephyr', 'Charon', 'Leda', 'Orus', 'Aoede', 'Fenrir'];
 
 function clean(value) {
   return String(value ?? '').trim();
@@ -12,6 +13,20 @@ function clean(value) {
 
 function getListeningText(lesson) {
   return clean(lesson?.audioText || lesson?.transcript || lesson?.audioScript || lesson?.mainText || '');
+}
+
+function getSpeakerName(line) {
+  const match = String(line).match(/^\s*([A-ZÁÉÍÓÚÂÊÔÃÕÇ][\wÁÉÍÓÚÂÊÔÃÕÇáéíóúâêôãõç' -]{1,28})\s*:/);
+  return match ? match[1].trim() : '';
+}
+
+function getSpeakers(text) {
+  const names = [];
+  String(text).split('\n').forEach((line) => {
+    const name = getSpeakerName(line);
+    if (name && !names.includes(name)) names.push(name);
+  });
+  return names.slice(0, 6);
 }
 
 function base64ToBytes(base64) {
@@ -66,7 +81,30 @@ function findAudioPart(payload) {
   };
 }
 
-async function generateGeminiAudio(text) {
+function buildSpeechConfig(speakers) {
+  if (speakers.length >= 2) {
+    return {
+      multiSpeakerVoiceConfig: {
+        speakerVoiceConfigs: speakers.map((speaker, index) => ({
+          speaker,
+          voiceConfig: {
+            prebuiltVoiceConfig: { voiceName: SPEAKER_VOICES[index % SPEAKER_VOICES.length] },
+          },
+        })),
+      },
+    };
+  }
+  return { voiceConfig: { prebuiltVoiceConfig: { voiceName: DEFAULT_VOICE } } };
+}
+
+function buildAudioPrompt(text, speakers) {
+  if (speakers.length >= 2) {
+    return `Read this English listening dialogue naturally, clearly, and a little slowly for an A1 student. Use a different voice for each speaker. Keep the exact speaker turns and do not add explanations. Speakers: ${speakers.join(', ')}. Dialogue:\n${text}`;
+  }
+  return `Read this English listening lesson naturally, clearly, and a little slowly for an A1 student. Do not add explanations. Text: ${text}`;
+}
+
+async function generateGeminiAudio(text, speakers) {
   const [key] = getGeneralAiKeys();
   if (!key) throw new Error('Adicione uma key em Ajustes > Chaves de aulas > IA geral.');
 
@@ -76,13 +114,11 @@ async function generateGeminiAudio(text) {
     body: JSON.stringify({
       contents: [{
         role: 'user',
-        parts: [{ text: `Read this English listening lesson naturally, clearly, and a little slowly for an A1 student. Do not add explanations. Text: ${text}` }],
+        parts: [{ text: buildAudioPrompt(text, speakers) }],
       }],
       generationConfig: {
         responseModalities: ['AUDIO'],
-        speechConfig: {
-          voiceConfig: { prebuiltVoiceConfig: { voiceName: GEMINI_TTS_VOICE } },
-        },
+        speechConfig: buildSpeechConfig(speakers),
       },
     }),
   });
@@ -100,6 +136,7 @@ export function ListeningTextPlayer({ lesson }) {
   const [audioUrl, setAudioUrl] = useState('');
   const audioRef = useRef(null);
   const text = useMemo(() => getListeningText(lesson), [lesson]);
+  const speakers = useMemo(() => getSpeakers(text), [text]);
 
   useEffect(() => () => {
     if (audioUrl) URL.revokeObjectURL(audioUrl);
@@ -119,9 +156,9 @@ export function ListeningTextPlayer({ lesson }) {
       return;
     }
     setLoading(true);
-    setStatus('Preparando áudio natural...');
+    setStatus(speakers.length >= 2 ? 'Preparando diálogo com vozes diferentes...' : 'Preparando áudio natural...');
     try {
-      const blob = await generateGeminiAudio(text);
+      const blob = await generateGeminiAudio(text, speakers);
       const url = URL.createObjectURL(blob);
       setAudioUrl((currentUrl) => {
         if (currentUrl) URL.revokeObjectURL(currentUrl);
@@ -139,7 +176,7 @@ export function ListeningTextPlayer({ lesson }) {
 
   return (
     <Card eyebrow="Listening" title="Ouça o texto da aula">
-      <p>Toque em preparar para gerar o áudio natural. Quando o player aparecer, toque nele para ouvir.</p>
+      <p>{speakers.length >= 2 ? `Diálogo detectado: ${speakers.join(' e ')} terão vozes diferentes.` : 'Toque em preparar para gerar o áudio natural. Quando o player aparecer, toque nele para ouvir.'}</p>
       <div className="answer-actions">
         <button type="button" className="primary-button" onClick={prepareAudio} disabled={loading}>
           <PlayCircle size={16} /> {loading ? 'Preparando...' : 'Preparar áudio natural'}
