@@ -1,4 +1,4 @@
-import { findStaticLesson } from '../content/curriculum/index.js';
+import { findStaticLesson, getStaticLevel } from '../content/curriculum/index.js';
 import { getNextStaticLesson, getStaticLessonById, markStaticLessonOpened as markCourseLessonOpened } from './curriculumEngine.js';
 import { getCompletedLessonIds, getLessonLockReason } from './lessonProgression.js';
 import { getLessonCompletions, localDateKey } from './progressStore.js';
@@ -7,12 +7,39 @@ import { markStaticLessonOpened } from './staticLessonProgress.js';
 import { storage } from './storage.js';
 
 const CURRENT_LESSON_KEY = 'lesson.current';
+const WEEKLY_PILLAR_BY_DAY = Object.freeze({
+  1: 'grammar',
+  2: 'vocabulary',
+  3: 'reading',
+  4: 'listening',
+  5: 'speaking',
+  6: 'writing',
+});
+const WEEKLY_PILLAR_LABELS = Object.freeze({
+  grammar: 'Grammar',
+  vocabulary: 'Vocabulary',
+  reading: 'Reading',
+  listening: 'Listening',
+  speaking: 'Speaking',
+  writing: 'Writing',
+});
 
 function clean(value) { return String(value ?? '').trim(); }
+function safeArray(value) { return Array.isArray(value) ? value : []; }
 function sameLesson(a, b) { return Boolean(clean(a?.id) && clean(a?.id) === clean(b?.id)); }
 function isReadyStaticLesson(lesson) { return Boolean(lesson && clean(lesson.status) === 'ready' && clean(lesson.schemaVersion).startsWith('static-lesson-schema')); }
 function getCurrentStoredLesson() { return storage.get(CURRENT_LESSON_KEY, null); }
 function isSunday(date = new Date()) { return date.getDay() === 0; }
+function getStudyPillarForDate(date = new Date()) { return WEEKLY_PILLAR_BY_DAY[date.getDay()] || ''; }
+function getWeeklyPillarLabel(pillar) { return WEEKLY_PILLAR_LABELS[pillar] || 'Descanso'; }
+function getNextLessonForPillar(level = 'A1', pillar = '', completedIds = getCompletedLessonIds()) {
+  if (!pillar) return { lesson: null, lockReason: 'Domingo é dia de descanso. A próxima aula libera de segunda a sábado.', level, pillar: '' };
+  const lessons = safeArray(getStaticLevel(level).pillars?.[pillar]);
+  const lesson = lessons.find((item) => !completedIds?.has?.(item.id) && !getLessonLockReason(item, completedIds));
+  if (lesson) return { lesson, lockReason: '', level, pillar };
+  const planned = lessons.find((item) => !completedIds?.has?.(item.id));
+  return planned ? { lesson: planned, lockReason: getLessonLockReason(planned, completedIds), level, pillar } : { lesson: null, lockReason: `Nenhuma aula de ${getWeeklyPillarLabel(pillar)} liberada agora.`, level, pillar };
+}
 function getTodayLessonCompletion(date = new Date()) {
   const today = localDateKey(date);
   return getLessonCompletions().find((item) => localDateKey(item?.completedAt || item?.createdAt || item) === today) || null;
@@ -29,35 +56,41 @@ function getDailyStudyLockReason({ lesson = null, current = null, completedIds =
 function getGuidedCourseLockReason(lesson, completedIds = getCompletedLessonIds()) {
   if (!lesson) return 'Aula não encontrada.';
   if (completedIds?.has?.(lesson.id)) return '';
-  const next = getNextStaticLesson(lesson.level || 'A1');
+  const pillar = getStudyPillarForDate();
+  const next = pillar ? getNextLessonForPillar(lesson.level || 'A1', pillar, completedIds) : getNextStaticLesson(lesson.level || 'A1');
   if (sameLesson(lesson, next.lesson)) return '';
-  return 'Essa aula ainda está bloqueada. Continue pela próxima aula liberada.';
+  return 'Essa aula ainda está bloqueada. Continue pela aula liberada no cronograma semanal.';
 }
 
 export function getDailyStaticCourseLessonState(level = 'A1') {
   const completedIds = getCompletedLessonIds();
-  const next = getNextStaticLesson(level);
+  const studyPillar = getStudyPillarForDate();
+  const next = getNextLessonForPillar(level, studyPillar, completedIds);
   const lesson = next.lesson;
   const current = getCurrentStoredLesson();
   const todayCompletion = getTodayLessonCompletion();
   const shouldResume = Boolean(lesson && current && sameLesson(current, lesson) && !completedIds.has(lesson.id));
-  const sequenceLockReason = lesson ? (next.lockReason || getLessonLockReason(lesson, completedIds)) : 'Nenhuma aula liberada agora. Veja os critérios do nível.';
+  const sequenceLockReason = lesson ? (next.lockReason || getLessonLockReason(lesson, completedIds)) : next.lockReason || 'Nenhuma aula liberada agora. Veja os critérios do nível.';
   const dailyLockReason = shouldResume ? '' : getDailyStudyLockReason({ lesson, current, completedIds });
   const lockReason = sequenceLockReason || dailyLockReason;
+  const pillarLabel = getWeeklyPillarLabel(studyPillar);
 
   return {
     level,
     lesson: lesson || null,
     currentLesson: current || null,
     next,
+    studyPillar,
+    pillarLabel,
+    weeklySchedule: WEEKLY_PILLAR_BY_DAY,
     canOpen: Boolean(lesson && !lockReason && isReadyStaticLesson(lesson)),
     shouldResume,
     actionLabel: shouldResume ? 'Retomar aula' : 'Começar aula',
-    statusLabel: shouldResume ? 'Aula em andamento' : lesson && !lockReason ? 'Aula liberada' : 'Próxima etapa bloqueada',
+    statusLabel: shouldResume ? 'Aula em andamento' : lesson && !lockReason ? `Aula de ${pillarLabel}` : 'Próxima etapa bloqueada',
     helperText: shouldResume
       ? 'Você já começou esta aula. Toque para continuar de onde parou.'
       : lesson && !lockReason
-        ? 'Esta é a aula que será aberta automaticamente.'
+        ? `Hoje é dia de ${pillarLabel}. Esta aula será aberta automaticamente.`
         : lockReason,
     reason: lockReason || '',
     todayCompletion,
