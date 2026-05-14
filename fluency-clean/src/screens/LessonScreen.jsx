@@ -3,6 +3,7 @@ import { BookOpen, CheckCircle2, Clock, Headphones, Mic, PenLine, RefreshCw, Shi
 import { Card } from '../components/ui/Card.jsx';
 import { LessonQualityPanel } from '../components/lesson/LessonQualityPanel.jsx';
 import { ListeningTextPlayer } from '../components/lesson/ListeningTextPlayer.jsx';
+import { ListeningShadowingPractice } from '../components/lesson/ListeningShadowingPractice.jsx';
 import { ReadingLessonGuided } from '../lessons/ReadingLessonGuided.jsx';
 import { GrammarLesson } from '../lessons/GrammarLesson.jsx';
 import { ListeningLessonClean } from '../lessons/ListeningLessonClean.jsx';
@@ -125,6 +126,7 @@ export function LessonScreen({ lessonRevision = 0 }) {
   const usingGenerated = Boolean(savedLessonPointer || fullLesson) && !staticLesson;
   const usingStatic = Boolean(savedLessonPointer || fullLesson) && staticLesson;
   const isReading = lesson?.type === 'reading' || lesson?.pillar === 'reading';
+  const isListening = lesson?.type === 'listening' || lesson?.pillar === 'listening';
   const currentProgress = Math.round(((activeSection + 1) / lessonSections.length) * 100);
   const meta = lesson?.generationMeta || null;
   const score = meta?.pedagogicalScore || lesson?.quality?.teacherScore || lesson?.quality?.pedagogicalScore || 0;
@@ -182,6 +184,7 @@ export function LessonScreen({ lessonRevision = 0 }) {
       <section className="lesson-progress-strip"><div><span>Progresso da aula</span><strong>{activeSection + 1}/{lessonSections.length}</strong></div><i><b style={{ width: `${currentProgress}%` }} /></i></section>
 
       <LessonRenderer lesson={lesson} />
+      {isListening ? <ListeningShadowingPractice lesson={lesson} /> : null}
       <PracticeMount lesson={lesson} complementary={isReading || staticLesson} />
     </section>
   );
