@@ -1,7 +1,7 @@
 import { BookOpenCheck, CheckCircle2, Lock, Map, PlayCircle, ShieldCheck, Sparkles } from 'lucide-react';
-import { getNextStaticLesson, getStaticCourseSummary } from '../../services/curriculumEngine.js';
+import { getStaticCourseSummary } from '../../services/curriculumEngine.js';
 import { getA1MasteryGateSummary } from '../../services/a1MasteryGateService.js';
-import { openDailyStaticCourseLesson } from '../../services/staticCourseLauncher.js';
+import { getDailyStaticCourseLessonState, openDailyStaticCourseLesson } from '../../services/staticCourseLauncher.js';
 
 function pillarLabel(pillar) {
   const labels = { grammar: 'Grammar', vocabulary: 'Vocabulary', reading: 'Reading', listening: 'Listening', speaking: 'Speaking', writing: 'Writing' };
@@ -11,11 +11,11 @@ function pillarLabel(pillar) {
 export function StaticNextLessonPanel({ onNavigate }) {
   const summary = getStaticCourseSummary('A1');
   const masteryGate = getA1MasteryGateSummary();
-  const next = getNextStaticLesson('A1');
-  const lesson = next.lesson;
+  const dailyState = getDailyStaticCourseLessonState('A1');
+  const lesson = dailyState.lesson;
   const allReadyLessonsCompleted = Boolean(summary.readyTotal && summary.readyCompleted >= summary.readyTotal);
   const shouldShowFinalGate = allReadyLessonsCompleted || masteryGate.canTakeFinalExam || masteryGate.canUnlockA2;
-  const canOpen = Boolean(lesson && !next.lockReason && !shouldShowFinalGate);
+  const canOpen = Boolean(dailyState.canOpen && !shouldShowFinalGate);
 
   function openNextLesson() {
     if (shouldShowFinalGate) { onNavigate?.('course'); return; }
@@ -27,7 +27,7 @@ export function StaticNextLessonPanel({ onNavigate }) {
   return (
     <section className="lesson-generator-panel static-next-lesson-panel">
       <div className="panel-title"><BookOpenCheck size={18} /> Curso guiado premium</div>
-      <p>Toque em começar aula e o Fluency abre automaticamente o conteúdo liberado para o seu progresso.</p>
+      <p>Toque em {dailyState.actionLabel.toLowerCase()} e o Fluency abre automaticamente a aula certa.</p>
 
       <div className="generation-status-box">
         <div><span>Nível atual</span><strong>{summary.level}</strong></div>
@@ -47,8 +47,8 @@ export function StaticNextLessonPanel({ onNavigate }) {
         <div className="inline-warning curriculum-next-box">
           {canOpen ? <Sparkles size={16} /> : <Lock size={16} />}
           <span>
-            {canOpen ? 'Aula liberada automaticamente' : 'Próxima etapa bloqueada'}: <b>{lesson.level}</b> · {pillarLabel(lesson.pillar)} · {canOpen ? lesson.title : 'continue pelo caminho guiado'}
-            {next.lockReason ? <small>{next.lockReason}</small> : null}
+            {dailyState.statusLabel}: <b>{lesson.level}</b> · {pillarLabel(lesson.pillar)} · {canOpen ? lesson.title : 'continue pelo caminho guiado'}
+            {dailyState.helperText ? <small>{dailyState.helperText}</small> : null}
           </span>
         </div>
       ) : (
@@ -57,7 +57,7 @@ export function StaticNextLessonPanel({ onNavigate }) {
 
       <div className="answer-actions">
         <button type="button" className="primary-button" onClick={openNextLesson}>
-          <PlayCircle size={16} /> {shouldShowFinalGate ? 'Ver critérios do A1' : canOpen ? 'Começar aula' : 'Ver mapa do curso'}
+          <PlayCircle size={16} /> {shouldShowFinalGate ? 'Ver critérios do A1' : canOpen ? dailyState.actionLabel : 'Ver mapa do curso'}
         </button>
         <button type="button" className="secondary-button" onClick={() => onNavigate?.('course')}>
           <Map size={16} /> Ver caminho
