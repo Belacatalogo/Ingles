@@ -6,10 +6,10 @@ function firstText(...values) {
   return values.map(clean).find(Boolean) || '';
 }
 
-function itemText(item) {
+function itemMainText(item) {
   if (item == null) return '';
   if (typeof item !== 'object') return clean(item);
-  const main = firstText(
+  return firstText(
     item.text,
     item.content,
     item.instruction,
@@ -26,7 +26,11 @@ function itemText(item) {
     item.line,
     item.value,
   );
-  const support = firstText(
+}
+
+function itemSupportText(item) {
+  if (!item || typeof item !== 'object') return '';
+  return firstText(
     item.meaning,
     item.translation,
     item.soundHint,
@@ -37,13 +41,29 @@ function itemText(item) {
     item.explanation,
     item.reason,
   );
+}
+
+function itemText(item) {
+  if (item == null) return '';
+  if (typeof item !== 'object') return clean(item);
+  const main = itemMainText(item);
+  const support = itemSupportText(item);
   if (main && support && main !== support) return `${main} — ${support}`;
   return main || support || '';
+}
+
+function itemPromptText(item) {
+  return itemMainText(item) || clean(item);
 }
 
 function normalizeTextList(value) {
   if (!Array.isArray(value)) return value;
   return value.map(itemText).filter(Boolean);
+}
+
+function normalizePromptList(value) {
+  if (!Array.isArray(value)) return value;
+  return value.map(itemPromptText).filter(Boolean);
 }
 
 function normalizeQuizList(value) {
@@ -76,22 +96,25 @@ export function normalizeStaticLessonForDisplay(lesson) {
   const pillar = lesson.pillar || lesson.type;
   if (pillar !== 'listening') return lesson;
 
+  const shadowingPhrases = normalizePromptList(lesson.shadowing);
+
   return {
     ...lesson,
     objectives: normalizeTextList(lesson.objectives),
     realLifeUseCases: normalizeTextList(lesson.realLifeUseCases),
     stepByStep: normalizeTextList(lesson.stepByStep),
     portugueseContrast: normalizeTextList(lesson.portugueseContrast),
-    guidedBeforeQuiz: normalizeTextList(lesson.guidedBeforeQuiz),
-    guidedDiscovery: normalizeTextList(lesson.guidedDiscovery),
-    listeningPreparation: normalizeTextList(lesson.listeningPreparation),
+    guidedBeforeQuiz: normalizePromptList(lesson.guidedBeforeQuiz),
+    guidedDiscovery: normalizePromptList(lesson.guidedDiscovery),
+    listeningPreparation: normalizePromptList(lesson.listeningPreparation),
     keyWordsToHear: normalizeTextList(lesson.keyWordsToHear),
     vocabulary: normalizeTextList(lesson.vocabulary),
-    firstListenTasks: normalizeTextList(lesson.firstListenTasks),
-    secondListenTasks: normalizeTextList(lesson.secondListenTasks),
-    shadowing: normalizeTextList(lesson.shadowing),
-    lessonRecap: normalizeTextList(lesson.lessonRecap),
-    selfAssessment: normalizeTextList(lesson.selfAssessment),
+    firstListenTasks: normalizePromptList(lesson.firstListenTasks),
+    secondListenTasks: normalizePromptList(lesson.secondListenTasks),
+    shadowing: [],
+    shadowingPhrases,
+    lessonRecap: normalizePromptList(lesson.lessonRecap),
+    selfAssessment: normalizePromptList(lesson.selfAssessment),
     mentalModel: normalizeMentalModel(lesson.mentalModel),
     dictationTasks: normalizeQuizList(lesson.dictationTasks),
     listeningComprehension: normalizeQuizList(lesson.listeningComprehension),
