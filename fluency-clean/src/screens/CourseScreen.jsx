@@ -6,7 +6,7 @@ import { A1MasteryGatePanel } from '../components/course/A1MasteryGatePanel.jsx'
 import { A1CheckpointShell } from '../components/course/A1CheckpointShell.jsx';
 import { A1FinalExamShell } from '../components/course/A1FinalExamShell.jsx';
 import { CURRICULUM_LEVELS, CURRICULUM_PILLARS, getStaticLevel, getStaticLessons } from '../content/curriculum/index.js';
-import { getStaticCurriculumValidationStatus } from '../content/validators/index.js';
+import { getStaticCurriculumValidationStatus, validateGuidedCourseAccess } from '../content/validators/index.js';
 import { getStaticCourseSummary, getNextStaticLesson, setStaticCurrentLevel } from '../services/curriculumEngine.js';
 import { getA1MasteryGateSummary } from '../services/a1MasteryGateService.js';
 import { getCompletedLessonIds, getLessonLockReason, isStaticLessonReady } from '../services/lessonProgression.js';
@@ -42,8 +42,10 @@ export function CourseScreen({ onNavigate }) {
   const summary = useMemo(() => getStaticCourseSummary(activeLevel), [activeLevel, message]);
   const levelData = useMemo(() => getStaticLevel(activeLevel), [activeLevel]);
   const validation = useMemo(() => getStaticCurriculumValidationStatus(activeLevel), [activeLevel]);
+  const guidedAccess = useMemo(() => validateGuidedCourseAccess(activeLevel), [activeLevel, message]);
   const next = useMemo(() => getNextStaticLesson(activeLevel), [activeLevel, message]);
   const lessons = safeArray(levelData.pillars?.[activePillar]);
+  const guidedStatusLabel = guidedAccess.approved ? 'sequência protegida' : 'sequência em revisão';
 
   function isLevelBlocked(level) {
     return level !== 'A1' && !a1Gate.canUnlockA2;
@@ -93,13 +95,21 @@ export function CourseScreen({ onNavigate }) {
     handleOpenLesson(next.lesson);
   }
 
+  function showFriendlyStatus() {
+    if (!guidedAccess.approved) {
+      setMessage('A sequência do curso está em revisão. Continue apenas pela próxima aula liberada.');
+      return;
+    }
+    setMessage(validation.approved ? 'Curso validado e sequência protegida.' : 'Sequência protegida. Conteúdo pedagógico ainda está em revisão interna.');
+  }
+
   return (
     <section className="screen-stack course-screen">
       <section className="course-hero-card">
         <div className="lesson-chip-row">
           <span className="lesson-chip blue"><Map size={12} /> Curso guiado</span>
           <span className="lesson-chip violet">{activeLevel}</span>
-          <span className="lesson-chip"><ShieldCheck size={12} /> {validation.approved ? 'validado' : 'em revisão'}</span>
+          <span className="lesson-chip"><ShieldCheck size={12} /> {guidedStatusLabel}</span>
         </div>
         <h1>{summary.title}</h1>
         <p>{summary.description}</p>
@@ -110,7 +120,7 @@ export function CourseScreen({ onNavigate }) {
         </div>
         <div className="answer-actions">
           <button type="button" className="primary-button" onClick={handleOpenNext}><Play size={16} /> {next.lockReason ? 'Ver próxima pendência' : 'Continuar curso'}</button>
-          <button type="button" className="secondary-button" onClick={() => setMessage(validation.label)}><ShieldCheck size={16} /> Ver status</button>
+          <button type="button" className="secondary-button" onClick={showFriendlyStatus}><ShieldCheck size={16} /> Ver status</button>
         </div>
         {message ? <p className="generator-message completion-message">{message}</p> : null}
       </section>
