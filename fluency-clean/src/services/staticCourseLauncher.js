@@ -9,6 +9,8 @@ const CURRENT_LESSON_KEY = 'lesson.current';
 
 function clean(value) { return String(value ?? '').trim(); }
 function sameLesson(a, b) { return Boolean(clean(a?.id) && clean(a?.id) === clean(b?.id)); }
+function isReadyStaticLesson(lesson) { return Boolean(lesson && clean(lesson.status) === 'ready' && clean(lesson.schemaVersion).startsWith('static-lesson-schema')); }
+function getCurrentStoredLesson() { return storage.get(CURRENT_LESSON_KEY, null); }
 
 function getGuidedCourseLockReason(lesson, completedIds = getCompletedLessonIds()) {
   if (!lesson) return 'Aula não encontrada.';
@@ -18,8 +20,34 @@ function getGuidedCourseLockReason(lesson, completedIds = getCompletedLessonIds(
   return 'Essa aula ainda está bloqueada. Continue pela próxima aula liberada.';
 }
 
+export function getDailyStaticCourseLessonState(level = 'A1') {
+  const completedIds = getCompletedLessonIds();
+  const next = getNextStaticLesson(level);
+  const lesson = next.lesson;
+  const current = getCurrentStoredLesson();
+  const shouldResume = Boolean(lesson && current && sameLesson(current, lesson) && !completedIds.has(lesson.id));
+  const lockReason = lesson ? (next.lockReason || getLessonLockReason(lesson, completedIds)) : 'Nenhuma aula liberada agora. Veja os critérios do nível.';
+
+  return {
+    level,
+    lesson: lesson || null,
+    currentLesson: current || null,
+    next,
+    canOpen: Boolean(lesson && !lockReason && isReadyStaticLesson(lesson)),
+    shouldResume,
+    actionLabel: shouldResume ? 'Retomar aula' : 'Começar aula',
+    statusLabel: shouldResume ? 'Aula em andamento' : lesson && !lockReason ? 'Aula liberada' : 'Próxima etapa bloqueada',
+    helperText: shouldResume
+      ? 'Você já começou esta aula. Toque para continuar de onde parou.'
+      : lesson && !lockReason
+        ? 'Esta é a aula que será aberta automaticamente.'
+        : lockReason,
+    reason: lockReason || '',
+  };
+}
+
 export function canOpenStaticCourseLesson(lesson) {
-  if (!lesson || clean(lesson.status) !== 'ready' || !clean(lesson.schemaVersion).startsWith('static-lesson-schema')) return false;
+  if (!isReadyStaticLesson(lesson)) return false;
   const completedIds = getCompletedLessonIds();
   return !getLessonLockReason(lesson, completedIds) && !getGuidedCourseLockReason(lesson, completedIds);
 }
@@ -97,15 +125,15 @@ export function openStaticCourseLesson(lesson, options = {}) {
 }
 
 export function openDailyStaticCourseLesson(level = 'A1') {
-  const next = getNextStaticLesson(level);
-  const lesson = next.lesson;
+  const state = getDailyStaticCourseLessonState(level);
+  const lesson = state.lesson;
   if (!lesson) {
-    return { ok: false, reason: 'Nenhuma aula liberada agora. Veja os critérios do nível.', lesson: null, next };
+    return { ok: false, reason: state.reason || 'Nenhuma aula liberada agora. Veja os critérios do nível.', lesson: null, next: state.next, state };
   }
-  if (next.lockReason) {
-    return { ok: false, reason: next.lockReason, lesson, next };
+  if (state.reason) {
+    return { ok: false, reason: state.reason, lesson, next: state.next, state };
   }
-  return { ...openStaticCourseLesson(lesson, { source: 'daily-guided-course' }), next };
+  return { ...openStaticCourseLesson(lesson, { source: state.shouldResume ? 'daily-guided-course-resume' : 'daily-guided-course' }), next: state.next, state };
 }
 
 export function openStaticCourseLessonById(lessonId, level = 'A1') {
