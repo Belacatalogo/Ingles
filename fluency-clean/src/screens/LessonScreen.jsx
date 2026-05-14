@@ -35,13 +35,15 @@ const lessonSections = [
 
 const pillarOptions = [
   { id: 'real', label: 'Aula real', icon: Sparkles },
+  { id: 'grammar', label: 'Abrir Grammar fixo', icon: BookOpen },
+  { id: 'vocabulary', label: 'Abrir Vocabulary fixo', icon: Target },
   { id: 'reading', label: 'Abrir Reading fixo', icon: BookOpen },
   { id: 'listening', label: 'Abrir Listening fixo', icon: Headphones },
   { id: 'speaking', label: 'Abrir Speaking fixo', icon: Mic },
   { id: 'writing', label: 'Abrir Writing fixo', icon: PenLine },
 ];
 
-function getLessonTitle(lesson) { return lesson?.title?.replace(/^(Reading|Grammar|Listening|Writing)\s*[—-]\s*/i, '') || 'Aula'; }
+function getLessonTitle(lesson) { return lesson?.title?.replace(/^(Reading|Grammar|Vocabulary|Listening|Writing)\s*[—-]\s*/i, '') || 'Aula'; }
 function getLessonDescription(lesson) { return lesson?.intro || lesson?.subtitle || lesson?.objective || lesson?.objectives?.[0] || 'Estude com explicação guiada, prática ativa e conclusão salva no seu progresso.'; }
 function getLessonTypeLabel(lesson) { const labels = { reading: 'Leitura', grammar: 'Gramática', listening: 'Escuta', writing: 'Escrita', vocabulary: 'Vocabulário', speaking: 'Speaking' }; return labels[lesson?.type || lesson?.pillar] || 'Aula'; }
 function formatDateTime(value) { if (!value) return ''; try { return new Date(value).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }); } catch { return String(value).slice(0, 16); } }
@@ -145,9 +147,9 @@ export function LessonScreen({ lessonRevision = 0 }) {
       setMessage(`${type[0].toUpperCase()}${type.slice(1)} ainda não tem aula fixa pronta conectada ao novo sistema. Vamos criar esse pilar nos próximos blocos.`);
       return;
     }
-    const result = openStaticCourseLesson(target, { source: `lesson-pillar-shortcut-${type}` });
+    const result = openStaticCourseLesson(target, { source: `lesson-pillar-shortcut-${type}`, ignoreDailyLimit: true });
     if (!result.ok) { setMessage(result.reason || 'Não foi possível abrir a aula fixa deste pilar.'); return; }
-    setMessage(`Aula fixa aberta: ${target.title}`);
+    setMessage(`Aula fixa aberta para teste de UI: ${target.title}`);
     setActiveSection(0);
     setLoadedGenerationId('');
     setLocalRevision((value) => value + 1);
@@ -157,7 +159,7 @@ export function LessonScreen({ lessonRevision = 0 }) {
   return (
     <section className="lesson-reference-screen lesson-preview-lab-enabled">
       <section className="lesson-preview-lab-card" aria-label="Atalhos para aulas fixas por pilar">
-        <div><strong>Atalhos do curso fixo</strong><small>Abre aulas reais do currículo novo. Não usa mais previews legados.</small></div>
+        <div><strong>Atalhos do curso fixo</strong><small>Área de teste visual. Não altera a regra real de aula do dia.</small></div>
         <div className="lesson-preview-lab-actions">{pillarOptions.map((option) => { const Icon = option.icon; const active = option.id !== 'real' && (lesson?.pillar === option.id || lesson?.type === option.id); return <button type="button" key={option.id} className={active ? 'active' : ''} onClick={() => handlePillarShortcut(option.id)}><Icon size={14} /> {option.label}</button>; })}</div>
         {message ? <p className="generator-message completion-message">{message}</p> : null}
       </section>
