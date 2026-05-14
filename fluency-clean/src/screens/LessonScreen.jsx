@@ -34,17 +34,17 @@ const lessonSections = [
 
 const pillarOptions = [
   { id: 'real', label: 'Aula real', icon: Sparkles },
-  { id: 'grammar', label: 'Abrir Grammar fixo', icon: BookOpen },
-  { id: 'vocabulary', label: 'Abrir Vocabulary fixo', icon: Target },
-  { id: 'reading', label: 'Abrir Reading fixo', icon: BookOpen },
-  { id: 'listening', label: 'Abrir Listening fixo', icon: Headphones },
-  { id: 'speaking', label: 'Abrir Speaking fixo', icon: Mic },
-  { id: 'writing', label: 'Abrir Writing fixo', icon: PenLine },
+  { id: 'grammar', label: 'Testar Grammar', icon: BookOpen },
+  { id: 'vocabulary', label: 'Testar Vocabulary', icon: Target },
+  { id: 'reading', label: 'Testar Reading', icon: BookOpen },
+  { id: 'listening', label: 'Testar Listening', icon: Headphones },
+  { id: 'speaking', label: 'Testar Speaking', icon: Mic },
+  { id: 'writing', label: 'Testar Writing', icon: PenLine },
 ];
 
-function getLessonTitle(lesson) { return lesson?.title?.replace(/^(Reading|Grammar|Vocabulary|Listening|Writing)\s*[—-]\s*/i, '') || 'Aula'; }
+function getLessonTitle(lesson) { return lesson?.title?.replace(/^(Reading|Grammar|Vocabulary|Listening|Writing|Speaking)\s*[—-]\s*/i, '') || 'Aula'; }
 function getLessonDescription(lesson) { return lesson?.intro || lesson?.subtitle || lesson?.objective || lesson?.objectives?.[0] || 'Estude com explicação guiada, prática ativa e conclusão salva no seu progresso.'; }
-function getLessonTypeLabel(lesson) { const labels = { reading: 'Leitura', grammar: 'Gramática', listening: 'Escuta', writing: 'Escrita', vocabulary: 'Vocabulário', speaking: 'Speaking' }; return labels[lesson?.type || lesson?.pillar] || 'Aula'; }
+function getLessonTypeLabel(lesson) { const labels = { reading: 'Leitura', grammar: 'Gramática', listening: 'Escuta', writing: 'Escrita', vocabulary: 'Vocabulário', speaking: 'Fala' }; return labels[lesson?.type || lesson?.pillar] || 'Aula'; }
 function formatDateTime(value) { if (!value) return ''; try { return new Date(value).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }); } catch { return String(value).slice(0, 16); } }
 function isReadyStaticLesson(lesson) { return lesson?.status === 'ready' && String(lesson?.schemaVersion || '').startsWith('static-lesson-schema'); }
 function firstReadyLessonByPillar(level = 'A1', pillar = '') { return (getStaticLevel(level)?.pillars?.[pillar] || []).find(isReadyStaticLesson) || null; }
@@ -90,8 +90,8 @@ function PracticeMount({ lesson, complementary = false }) {
   if (isStaticLesson(lesson)) {
     return (
       <section className="lesson-practice-mount lesson-practice-complement-mount">
-        <Card eyebrow="Complemento" title="Prática Profunda complementar">
-          <p>Esta prática agora é derivada da aula fixa: usa exemplos, perguntas, texto, transcript, modelos e produção da própria aula. Ela vem depois dos exercícios internos e não substitui o conteúdo principal.</p>
+        <Card eyebrow="Reforço" title="Prática extra da aula">
+          <p>Use esta parte depois dos exercícios principais para reforçar o conteúdo da aula.</p>
         </Card>
         <PracticeLauncher lesson={lesson} />
       </section>
@@ -100,8 +100,8 @@ function PracticeMount({ lesson, complementary = false }) {
   if (!complementary) return <section className="lesson-practice-mount"><PracticeLauncher lesson={lesson} /></section>;
   return (
     <section className="lesson-practice-mount lesson-practice-complement-mount">
-      <Card eyebrow="Complemento" title="Prática Profunda complementar">
-        <p>Faça esta parte depois de terminar a aula Reading. Ela serve para reforçar vocabulário, detalhes e interpretação, não para substituir os exercícios da leitura.</p>
+      <Card eyebrow="Reforço" title="Prática extra da aula">
+        <p>Faça esta parte depois da aula principal. Ela serve para reforçar vocabulário, detalhes e interpretação.</p>
       </Card>
       <PracticeLauncher lesson={lesson} />
     </section>
@@ -163,39 +163,38 @@ export function LessonScreen({ lessonRevision = 0 }) {
     if (type === 'real') { forceRefreshLesson(); setMessage('Aula real recarregada.'); return; }
     const target = firstReadyLessonByPillar('A1', type);
     if (!target) {
-      setMessage(`${type[0].toUpperCase()}${type.slice(1)} ainda não tem aula fixa pronta conectada ao novo sistema. Vamos criar esse pilar nos próximos blocos.`);
+      setMessage(`${type[0].toUpperCase()}${type.slice(1)} ainda não tem aula fixa pronta conectada.`);
       return;
     }
     const previewLesson = buildVisualPreviewLesson(target, `lesson-pillar-visual-preview-${type}`);
     setFullLesson(previewLesson);
     setLoadedGenerationId(previewLesson.generationMeta.id);
-    setMessage(`Preview visual aberto: ${target.title}. Isso não conta como aula feita e não altera o cronograma real.`);
+    setMessage(`Modo teste aberto: ${target.title}. Isso não conta como aula feita e não altera o cronograma real.`);
     setActiveSection(0);
     requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: 'smooth' }));
   }
 
   return (
     <section className="lesson-reference-screen lesson-preview-lab-enabled">
-      <section className="lesson-preview-lab-card" aria-label="Atalhos para aulas fixas por pilar">
-        <div><strong>Atalhos do curso fixo</strong><small>Área de teste visual. Não altera a regra real de aula do dia.</small></div>
+      <section className="lesson-preview-lab-card" aria-label="Atalhos para testar aulas fixas por pilar">
+        <div><strong>Testar aulas por pilar</strong><small>Área temporária para encontrar erros. Não altera o cronograma real.</small></div>
         <div className="lesson-preview-lab-actions">{pillarOptions.map((option) => { const Icon = option.icon; const active = option.id !== 'real' && (lesson?.pillar === option.id || lesson?.type === option.id); return <button type="button" key={option.id} className={active ? 'active' : ''} onClick={() => handlePillarShortcut(option.id)}><Icon size={14} /> {option.label}</button>; })}</div>
         {message ? <p className="generator-message completion-message">{message}</p> : null}
       </section>
 
       <section className="lesson-reference-hero">
         <div className="lesson-chip-row">
-          <span className="lesson-chip blue"><Sparkles size={11} /> {usingStatic ? 'Curso fixo premium' : usingGenerated ? 'Legado IA' : 'Aula inicial'}</span>
+          <span className="lesson-chip blue"><Sparkles size={11} /> {usingStatic ? 'Curso fixo premium' : usingGenerated ? 'Aula salva' : 'Aula inicial'}</span>
           <span className="lesson-chip">{getLessonTypeLabel(lesson)}</span>
           <span className="lesson-chip violet">{lesson?.level || 'A1'}</span>
-          {lesson?.packageId ? <span className="lesson-chip">{lesson.packageId}</span> : null}
-          {savedLessonPointer?.storageMode === 'lesson-full-indexeddb-v1' ? <span className="lesson-chip">IndexedDB completo</span> : null}
+          {lesson?.packageId ? <span className="lesson-chip">Pacote {lesson.packageId}</span> : null}
         </div>
         <h1>{getLessonTitle(lesson)}</h1>
         <p>{loadingFullLesson && savedLessonPointer && !fullLesson ? 'Carregando aula completa...' : getLessonDescription(lesson)}</p>
         {usingGenerated ? (
-          <div className="lesson-generation-proof"><ShieldCheck size={15} /><span>{meta?.id ? <b>{meta.id}</b> : <b>Aula antiga sem ID de geração</b>}<small>{meta?.contractVersion || 'sem contrato antigo'} · qualidade {score}/100{meta?.generatedAt ? ` · ${formatDateTime(meta.generatedAt)}` : ''}</small></span></div>
+          <div className="lesson-generation-proof"><ShieldCheck size={15} /><span><b>Aula salva</b><small>{meta?.generatedAt ? `Atualizada em ${formatDateTime(meta.generatedAt)}` : 'Conteúdo salvo localmente'}</small></span></div>
         ) : null}
-        {usingStatic ? <div className="lesson-generation-proof"><ShieldCheck size={15} /><span><b>Aula fixa validável</b><small>{lesson.schemaVersion || 'static schema'} · exercícios internos antes da Prática Profunda</small></span></div> : null}
+        {usingStatic ? <div className="lesson-generation-proof"><ShieldCheck size={15} /><span><b>Aula fixa validada</b><small>Exercícios internos antes da prática extra.</small></span></div> : null}
         <footer><div><span><Clock size={13} /> {lessonStats.minutes} min</span><span><Target size={13} /> {lessonStats.exercises} ex.</span></div><button type="button" aria-label="Atualizar aula salva" onClick={forceRefreshLesson}><RefreshCw size={14} /></button></footer>
       </section>
 
