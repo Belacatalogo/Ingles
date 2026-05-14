@@ -35,6 +35,7 @@ export function CourseScreen({ onNavigate }) {
   const validation = useMemo(() => getStaticCurriculumValidationStatus(activeLevel), [activeLevel]);
   const guidedAccess = useMemo(() => validateGuidedCourseAccess(activeLevel), [activeLevel, message]);
   const next = useMemo(() => getNextStaticLesson(activeLevel), [activeLevel, message]);
+  const completedReviewLessons = useMemo(() => safeArray(getStaticLessons(activeLevel)).filter((lesson) => completedIds.has(lesson.id)).slice(0, 6), [activeLevel, message]);
   const guidedStatusLabel = guidedAccess.approved ? 'sequência protegida' : 'sequência em revisão';
   const nextLesson = next.lesson;
   const nextIsBlocked = Boolean(nextLesson && getLessonLockReason(nextLesson, completedIds));
@@ -72,6 +73,17 @@ export function CourseScreen({ onNavigate }) {
     const result = openStaticCourseLesson(nextLesson);
     if (!result.ok) { setMessage(result.reason || getStaticLessonOpenReason(nextLesson)); return; }
     setMessage(`Aula liberada: ${nextLesson.title}`);
+    onNavigate?.('lesson');
+  }
+
+  function handleReviewLesson(lesson) {
+    if (!completedIds.has(lesson.id)) {
+      setMessage('Somente aulas concluídas aparecem para revisão. Use Começar aula para continuar.');
+      return;
+    }
+    const result = openStaticCourseLesson(lesson);
+    if (!result.ok) { setMessage(result.reason || 'Não foi possível abrir esta revisão agora.'); return; }
+    setMessage(`Revisão aberta: ${lesson.title}`);
     onNavigate?.('lesson');
   }
 
@@ -123,6 +135,21 @@ export function CourseScreen({ onNavigate }) {
       {activeLevel === 'A1' ? <A1FinalExamShell onObjectiveScoresSaved={handleA1GateUpdated} /> : null}
 
       <ErrorReviewPanel onNavigate={onNavigate} compact />
+
+      {completedReviewLessons.length ? (
+        <section className="course-lesson-list-card">
+          <div className="panel-title"><CheckCircle2 size={18} /> Revisar aulas concluídas</div>
+          <div className="course-lesson-list">
+            {completedReviewLessons.map((lesson) => (
+              <button type="button" key={lesson.id} className="course-lesson-row done" onClick={() => handleReviewLesson(lesson)}>
+                <span className="course-lesson-number">✓</span>
+                <span className="course-lesson-copy"><strong>{lesson.title}</strong><small>{lesson.level} · {pillarLabels[lesson.pillar] || 'Aula'} · revisão liberada</small></span>
+                <span className="course-lesson-state"><CheckCircle2 size={15} /> Revisar</span>
+              </button>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       <section className="course-lesson-list-card">
         <div className="panel-title"><BookOpenCheck size={18} /> Caminho do curso</div>
