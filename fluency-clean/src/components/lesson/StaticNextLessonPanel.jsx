@@ -28,7 +28,7 @@ export function StaticNextLessonPanel({ onNavigate }) {
   return (
     <section className="lesson-generator-panel static-next-lesson-panel">
       <div className="panel-title"><BookOpenCheck size={18} /> Curso guiado premium</div>
-      <p>O Fluency libera o conteúdo em ordem. A IA fica somente como tutora, corretora e revisão adaptativa.</p>
+      <p>Toque em começar aula e o Fluency abre automaticamente o conteúdo liberado para o seu progresso.</p>
 
       <div className="generation-status-box">
         <div><span>Nível atual</span><strong>{summary.level}</strong></div>
@@ -48,7 +48,7 @@ export function StaticNextLessonPanel({ onNavigate }) {
         <div className="inline-warning curriculum-next-box">
           {canOpen ? <Sparkles size={16} /> : <Lock size={16} />}
           <span>
-            {canOpen ? 'Próxima aula liberada' : 'Próxima etapa bloqueada'}: <b>{lesson.level}</b> · {pillarLabel(lesson.pillar)} · {canOpen ? lesson.title : 'continue pelo caminho guiado'}
+            {canOpen ? 'Aula liberada automaticamente' : 'Próxima etapa bloqueada'}: <b>{lesson.level}</b> · {pillarLabel(lesson.pillar)} · {canOpen ? lesson.title : 'continue pelo caminho guiado'}
             {next.lockReason ? <small>{next.lockReason}</small> : null}
           </span>
         </div>
@@ -58,13 +58,13 @@ export function StaticNextLessonPanel({ onNavigate }) {
 
       <div className="answer-actions">
         <button type="button" className="primary-button" onClick={openNextLesson}>
-          <PlayCircle size={16} /> {shouldShowFinalGate ? 'Ver critérios do A1' : canOpen ? 'Continuar curso' : 'Ver mapa do curso'}
+          <PlayCircle size={16} /> {shouldShowFinalGate ? 'Ver critérios do A1' : canOpen ? 'Começar aula' : 'Ver mapa do curso'}
         </button>
         <button type="button" className="secondary-button" onClick={() => onNavigate?.('course')}>
-          <Map size={16} /> Ver mapa do curso
+          <Map size={16} /> Ver caminho
         </button>
       </div>
-      <p className="empty-note">Conteúdos preparados podem existir no sistema, mas só a próxima aula liberada pode ser aberta. Para liberar A2, conclua aulas, avaliações, prova final e revisões de Speaking/Writing.</p>
+      <p className="empty-note">Você não precisa escolher pilar ou aula manualmente. Conteúdos preparados podem existir no sistema, mas só a aula liberada automaticamente pode ser aberta.</p>
     </section>
   );
 }
