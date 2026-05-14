@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { CheckCircle2, ClipboardCheck, Lock, PlayCircle, ShieldCheck, Target } from 'lucide-react';
-import { getA1CheckpointShellItems, scoreA1CheckpointObjectiveAnswers } from '../../content/curriculum/levels/A1/a1CheckpointModel.js';
+import { getA1CheckpointShellItems } from '../../content/curriculum/levels/A1/a1CheckpointModel.js';
+import { getA1CheckpointAttempts, saveAndSyncA1CheckpointAttempt } from '../../services/a1CheckpointAttemptService.js';
 
 const objectivePillars = ['grammar', 'vocabulary', 'reading', 'listening'];
 
@@ -22,12 +23,16 @@ function QuestionField({ question, value, onChange }) {
   return <input className="a1-final-answer-input" value={value || ''} onChange={(event) => onChange(event.target.value)} placeholder="Digite sua resposta" />;
 }
 
-export function A1CheckpointShell() {
+export function A1CheckpointShell({ onCheckpointSaved }) {
   const checkpoints = useMemo(() => getA1CheckpointShellItems(), []);
-  const [activeId, setActiveId] = useState(checkpoints[0]?.id || '');
+  const previousAttempts = useMemo(() => getA1CheckpointAttempts(), []);
+  const restoredAnswers = useMemo(() => Object.fromEntries(Object.entries(previousAttempts).map(([checkpointId, attempt]) => [checkpointId, attempt.answers || {}])), [previousAttempts]);
+  const firstCheckpointId = checkpoints[0]?.id || '';
+  const [activeId, setActiveId] = useState(firstCheckpointId);
   const [activePillarId, setActivePillarId] = useState('grammar');
-  const [answers, setAnswers] = useState({});
-  const [result, setResult] = useState(null);
+  const [answers, setAnswers] = useState(restoredAnswers);
+  const [result, setResult] = useState(previousAttempts[firstCheckpointId]?.scoring || null);
+  const [saveMessage, setSaveMessage] = useState(Object.keys(previousAttempts).length ? 'Tentativa anterior recuperada.' : '');
   const active = checkpoints.find((checkpoint) => checkpoint.id === activeId) || checkpoints[0];
   const activePillar = active?.pillars.find((pillar) => pillar.id === activePillarId) || active?.pillars.find((pillar) => objectivePillars.includes(pillar.id));
 
@@ -36,7 +41,8 @@ export function A1CheckpointShell() {
   function changeCheckpoint(checkpointId) {
     setActiveId(checkpointId);
     setActivePillarId('grammar');
-    setResult(null);
+    setResult(previousAttempts[checkpointId]?.scoring || null);
+    setSaveMessage('');
   }
 
   function updateAnswer(questionId, value) {
@@ -48,10 +54,14 @@ export function A1CheckpointShell() {
       },
     }));
     setResult(null);
+    setSaveMessage('');
   }
 
-  function calculateResult() {
-    setResult(scoreA1CheckpointObjectiveAnswers(active.id, answers[active.id] || {}));
+  function saveCheckpoint() {
+    const attempt = saveAndSyncA1CheckpointAttempt(active.id, answers[active.id] || {});
+    setResult(attempt.scoring);
+    setSaveMessage('Checkpoint salvo e enviado para os critérios do A1.');
+    onCheckpointSaved?.(attempt.scoring);
   }
 
   return (
@@ -66,6 +76,8 @@ export function A1CheckpointShell() {
         </div>
         <em><ShieldCheck size={14} /> Meta: {active.passingScore}%</em>
       </header>
+
+      {saveMessage ? <p className="a1-final-save-message">{saveMessage}</p> : null}
 
       <div className="a1-checkpoint-tabs">
         {checkpoints.map((checkpoint) => (
@@ -103,7 +115,7 @@ export function A1CheckpointShell() {
       {activePillar ? (
         <div className="a1-checkpoint-question-card">
           <h3>{activePillar.title}</h3>
-          <p>Responda as perguntas abaixo. O salvamento definitivo entra no próximo bloco.</p>
+          <p>Responda as perguntas abaixo e salve para atualizar os critérios do A1.</p>
           <div className="a1-final-question-list">
             {activePillar.questions.map((question, index) => (
               <label key={question.id} className="a1-final-question-card">
@@ -113,8 +125,8 @@ export function A1CheckpointShell() {
             ))}
           </div>
           <div className="answer-actions">
-            <button type="button" className="primary-button" onClick={calculateResult}>
-              <PlayCircle size={16} /> Ver resultado deste checkpoint
+            <button type="button" className="primary-button" onClick={saveCheckpoint}>
+              <PlayCircle size={16} /> Salvar checkpoint
             </button>
           </div>
         </div>
@@ -123,7 +135,7 @@ export function A1CheckpointShell() {
       {result ? (
         <div className="a1-final-result-card">
           <strong>Resultado do checkpoint</strong>
-          <p>Resultado objetivo: {result.percent}% ({result.correct}/{result.total}). O salvamento entra no próximo bloco.</p>
+          <p>Resultado objetivo: {result.percent}% ({result.correct}/{result.total}).</p>
           <div>
             {Object.entries(result.pillarScores).map(([pillarId, score]) => (
               <span key={pillarId}>{active.pillars.find((pillar) => pillar.id === pillarId)?.title}: <b>{score}%</b></span>
