@@ -11,7 +11,6 @@ import { StaticLessonRenderer, isStaticLesson } from '../lessons/static/StaticLe
 import { ListeningInteractiveLesson } from '../lessons/static/ListeningInteractiveLesson.jsx';
 import { PracticeLauncher } from '../practice/PracticeLauncher.jsx';
 import { getStaticLevel } from '../content/curriculum/index.js';
-import { openStaticCourseLesson } from '../services/staticCourseLauncher.js';
 import { getCurrentLesson, getCurrentLessonFull } from '../services/lessonStore.js';
 import { getLessonStats } from '../services/lessonStats.js';
 import { recordLessonAsCurrentCurriculumUnit } from '../services/curriculumPracticeAdapter.js';
@@ -49,6 +48,26 @@ function getLessonTypeLabel(lesson) { const labels = { reading: 'Leitura', gramm
 function formatDateTime(value) { if (!value) return ''; try { return new Date(value).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }); } catch { return String(value).slice(0, 16); } }
 function isReadyStaticLesson(lesson) { return lesson?.status === 'ready' && String(lesson?.schemaVersion || '').startsWith('static-lesson-schema'); }
 function firstReadyLessonByPillar(level = 'A1', pillar = '') { return (getStaticLevel(level)?.pillars?.[pillar] || []).find(isReadyStaticLesson) || null; }
+
+function buildVisualPreviewLesson(lesson, source = 'lesson-pillar-visual-preview') {
+  const now = new Date().toISOString();
+  return {
+    ...lesson,
+    type: lesson?.type || lesson?.pillar,
+    provider: 'static-preview',
+    generationMeta: {
+      id: `preview-${lesson?.id || 'static-lesson'}`,
+      source,
+      provider: 'static-preview',
+      model: 'curated',
+      status: 'preview-only',
+      generatedAt: lesson?.updatedAt || now,
+      savedAt: now,
+      contractVersion: lesson?.schemaVersion || 'static-lesson-schema-v1',
+      pedagogicalScore: 100,
+    },
+  };
+}
 
 function LessonRenderer({ lesson }) {
   const isListening = lesson?.type === 'listening' || lesson?.pillar === 'listening';
@@ -147,12 +166,11 @@ export function LessonScreen({ lessonRevision = 0 }) {
       setMessage(`${type[0].toUpperCase()}${type.slice(1)} ainda não tem aula fixa pronta conectada ao novo sistema. Vamos criar esse pilar nos próximos blocos.`);
       return;
     }
-    const result = openStaticCourseLesson(target, { source: `lesson-pillar-shortcut-${type}`, ignoreDailyLimit: true });
-    if (!result.ok) { setMessage(result.reason || 'Não foi possível abrir a aula fixa deste pilar.'); return; }
-    setMessage(`Aula fixa aberta para teste de UI: ${target.title}`);
+    const previewLesson = buildVisualPreviewLesson(target, `lesson-pillar-visual-preview-${type}`);
+    setFullLesson(previewLesson);
+    setLoadedGenerationId(previewLesson.generationMeta.id);
+    setMessage(`Preview visual aberto: ${target.title}. Isso não conta como aula feita e não altera o cronograma real.`);
     setActiveSection(0);
-    setLoadedGenerationId('');
-    setLocalRevision((value) => value + 1);
     requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: 'smooth' }));
   }
 
