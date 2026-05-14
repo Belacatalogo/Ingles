@@ -3,13 +3,12 @@ import { BookOpen, CheckCircle2, Clock, Headphones, Mic, PenLine, RefreshCw, Shi
 import { Card } from '../components/ui/Card.jsx';
 import { LessonQualityPanel } from '../components/lesson/LessonQualityPanel.jsx';
 import { ListeningTextPlayer } from '../components/lesson/ListeningTextPlayer.jsx';
-import { ListeningShadowingPractice } from '../components/lesson/ListeningShadowingPractice.jsx';
-import { ListeningMiniDialoguePractice } from '../components/lesson/ListeningMiniDialoguePractice.jsx';
 import { ReadingLessonGuided } from '../lessons/ReadingLessonGuided.jsx';
 import { GrammarLesson } from '../lessons/GrammarLesson.jsx';
 import { ListeningLessonClean } from '../lessons/ListeningLessonClean.jsx';
 import { WritingLesson } from '../lessons/WritingLesson.jsx';
 import { StaticLessonRenderer, isStaticLesson } from '../lessons/static/StaticLessonRenderer.jsx';
+import { ListeningInteractiveLesson } from '../lessons/static/ListeningInteractiveLesson.jsx';
 import { PracticeLauncher } from '../practice/PracticeLauncher.jsx';
 import { getStaticLevel } from '../content/curriculum/index.js';
 import { openStaticCourseLesson } from '../services/staticCourseLauncher.js';
@@ -50,6 +49,8 @@ function isReadyStaticLesson(lesson) { return lesson?.status === 'ready' && Stri
 function firstReadyLessonByPillar(level = 'A1', pillar = '') { return (getStaticLevel(level)?.pillars?.[pillar] || []).find(isReadyStaticLesson) || null; }
 
 function LessonRenderer({ lesson }) {
+  const isListening = lesson?.type === 'listening' || lesson?.pillar === 'listening';
+  if (isStaticLesson(lesson) && isListening) return <ListeningInteractiveLesson lesson={lesson} />;
   if (isStaticLesson(lesson)) return <StaticLessonRenderer lesson={lesson} />;
   if (lesson?.type === 'reading') return <ReadingLessonGuided lesson={lesson} />;
   if (lesson?.type === 'grammar') return <GrammarLesson lesson={lesson} />;
@@ -185,9 +186,7 @@ export function LessonScreen({ lessonRevision = 0 }) {
       <section className="lesson-progress-strip"><div><span>Progresso da aula</span><strong>{activeSection + 1}/{lessonSections.length}</strong></div><i><b style={{ width: `${currentProgress}%` }} /></i></section>
 
       <LessonRenderer lesson={lesson} />
-      {isListening ? <ListeningShadowingPractice lesson={lesson} /> : null}
-      {isListening ? <ListeningMiniDialoguePractice lesson={lesson} /> : null}
-      <PracticeMount lesson={lesson} complementary={isReading || staticLesson} />
+      {!isListening ? <PracticeMount lesson={lesson} complementary={isReading || staticLesson} /> : null}
     </section>
   );
 }
