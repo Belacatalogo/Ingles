@@ -7,10 +7,10 @@ import { A1CheckpointShell } from '../components/course/A1CheckpointShell.jsx';
 import { A1FinalExamShell } from '../components/course/A1FinalExamShell.jsx';
 import { CURRICULUM_LEVELS, getStaticLevel, getStaticLessons } from '../content/curriculum/index.js';
 import { getStaticCurriculumValidationStatus, validateGuidedCourseAccess } from '../content/validators/index.js';
-import { getStaticCourseSummary, getNextStaticLesson, setStaticCurrentLevel } from '../services/curriculumEngine.js';
+import { getStaticCourseSummary, setStaticCurrentLevel } from '../services/curriculumEngine.js';
 import { getA1MasteryGateSummary } from '../services/a1MasteryGateService.js';
-import { getCompletedLessonIds, getLessonLockReason, isStaticLessonReady } from '../services/lessonProgression.js';
-import { openDailyStaticCourseLesson, openStaticCourseLesson } from '../services/staticCourseLauncher.js';
+import { getCompletedLessonIds, isStaticLessonReady } from '../services/lessonProgression.js';
+import { getDailyStaticCourseLessonState, openDailyStaticCourseLesson, openStaticCourseLesson } from '../services/staticCourseLauncher.js';
 
 const pillarLabels = {
   grammar: 'Grammar',
@@ -33,11 +33,11 @@ export function CourseScreen({ onNavigate }) {
   const summary = useMemo(() => getStaticCourseSummary(activeLevel), [activeLevel, message]);
   const validation = useMemo(() => getStaticCurriculumValidationStatus(activeLevel), [activeLevel]);
   const guidedAccess = useMemo(() => validateGuidedCourseAccess(activeLevel), [activeLevel, message]);
-  const next = useMemo(() => getNextStaticLesson(activeLevel), [activeLevel, message]);
+  const dailyState = useMemo(() => getDailyStaticCourseLessonState(activeLevel), [activeLevel, message]);
   const completedReviewLessons = useMemo(() => safeArray(getStaticLessons(activeLevel)).filter((lesson) => completedIds.has(lesson.id)).slice(0, 6), [activeLevel, message]);
   const guidedStatusLabel = guidedAccess.approved ? 'sequência protegida' : 'sequência em revisão';
-  const nextLesson = next.lesson;
-  const nextIsBlocked = Boolean(nextLesson && getLessonLockReason(nextLesson, completedIds));
+  const nextLesson = dailyState.lesson;
+  const nextIsBlocked = Boolean(nextLesson && dailyState.reason);
 
   function isLevelBlocked(level) {
     return level !== 'A1' && !a1Gate.canUnlockA2;
@@ -68,7 +68,7 @@ export function CourseScreen({ onNavigate }) {
   function handleStartDailyLesson() {
     const result = openDailyStaticCourseLesson(activeLevel);
     if (!result.ok) { setMessage(result.reason || 'Nenhuma aula liberada agora. Veja os critérios do nível.'); return; }
-    setMessage(`Aula liberada: ${result.lesson?.title || 'aula do dia'}`);
+    setMessage(`${result.state?.shouldResume ? 'Retomando' : 'Aula liberada'}: ${result.lesson?.title || 'aula do dia'}`);
     onNavigate?.('lesson');
   }
 
@@ -107,23 +107,23 @@ export function CourseScreen({ onNavigate }) {
           <em>{summary.readyPercent || 0}% concluído · avance em ordem</em>
         </div>
         <div className="answer-actions">
-          <button type="button" className="primary-button" onClick={handleStartDailyLesson}><Play size={16} /> Começar aula</button>
+          <button type="button" className="primary-button" onClick={handleStartDailyLesson}><Play size={16} /> {dailyState.actionLabel}</button>
           <button type="button" className="secondary-button" onClick={showFriendlyStatus}><ShieldCheck size={16} /> Ver status</button>
         </div>
         {message ? <p className="generator-message completion-message">{message}</p> : null}
       </section>
 
-      <Card eyebrow="Aula liberada" title={nextLesson && !nextIsBlocked ? nextLesson.title : 'Continue pelo caminho guiado'}>
+      <Card eyebrow={dailyState.statusLabel} title={nextLesson && !nextIsBlocked ? nextLesson.title : 'Continue pelo caminho guiado'}>
         {nextLesson ? (
           <div className="course-next-card">
             <div>
               <strong>{nextLesson.level} · {pillarLabels[nextLesson.pillar] || 'Aula'}</strong>
-              <span>{nextIsBlocked ? 'Próxima etapa bloqueada' : 'Esta é a aula que será aberta automaticamente.'}</span>
-              {nextIsBlocked ? <small>{getLessonLockReason(nextLesson, completedIds)}</small> : null}
+              <span>{dailyState.helperText}</span>
+              {nextIsBlocked ? <small>{dailyState.reason}</small> : null}
             </div>
-            <button type="button" className="primary-button" onClick={handleStartDailyLesson}><Play size={16} /> Começar</button>
+            <button type="button" className="primary-button" onClick={handleStartDailyLesson}><Play size={16} /> {dailyState.actionLabel.replace(' aula', '')}</button>
           </div>
-        ) : <p>Nenhuma aula liberada agora. Veja os critérios do nível para saber o próximo passo.</p>}
+        ) : <p>{dailyState.reason || 'Nenhuma aula liberada agora. Veja os critérios do nível para saber o próximo passo.'}</p>}
       </Card>
 
       {activeLevel === 'A1' ? <A1MasteryGatePanel key={a1RefreshKey} /> : null}
@@ -168,7 +168,7 @@ export function CourseScreen({ onNavigate }) {
           <Lock size={16} />
           <span>
             As aulas futuras ficam bloqueadas.
-            <small>O botão Começar aula escolhe automaticamente o próximo conteúdo liberado. Você não precisa selecionar pilar ou aula manualmente.</small>
+            <small>O botão {dailyState.actionLabel} escolhe automaticamente o próximo conteúdo liberado. Você não precisa selecionar pilar ou aula manualmente.</small>
           </span>
         </div>
       </section>
