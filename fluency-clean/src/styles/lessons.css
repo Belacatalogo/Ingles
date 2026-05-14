@@ -73,6 +73,11 @@
 .static-main-text-card { background: linear-gradient(180deg, rgba(12,18,40,.82), rgba(8,14,34,.72)); }
 .static-practice-placeholder .card { border-style: dashed; }
 
+.listening-natural-audio-player { width: 100%; min-height: 44px; margin-top: 6px; border-radius: 18px; background: rgba(15,23,42,.72); }
+.listening-audio-text-preview { border: 1px solid rgba(147,160,213,.18); border-radius: 18px; padding: 12px 14px; background: rgba(15,23,42,.46); }
+.listening-audio-text-preview summary { color: #bfdbfe; cursor: pointer; font-weight: 950; }
+.listening-audio-text-preview p { margin: 10px 0 0; color: #d7def4; font-size: 15px; line-height: 1.6; white-space: pre-wrap; }
+
 .listening-light-layout { gap: 12px; }
 .lesson-local-tabs { display: none; }
 .listening-focus-card { padding: 20px; }
