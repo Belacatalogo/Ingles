@@ -39,6 +39,7 @@ export function getDailyStaticCourseLessonState(level = 'A1') {
   const next = getNextStaticLesson(level);
   const lesson = next.lesson;
   const current = getCurrentStoredLesson();
+  const todayCompletion = getTodayLessonCompletion();
   const shouldResume = Boolean(lesson && current && sameLesson(current, lesson) && !completedIds.has(lesson.id));
   const sequenceLockReason = lesson ? (next.lockReason || getLessonLockReason(lesson, completedIds)) : 'Nenhuma aula liberada agora. Veja os critérios do nível.';
   const dailyLockReason = shouldResume ? '' : getDailyStudyLockReason({ lesson, current, completedIds });
