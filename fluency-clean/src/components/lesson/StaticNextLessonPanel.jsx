@@ -27,12 +27,12 @@ export function StaticNextLessonPanel({ onNavigate }) {
 
   return (
     <section className="lesson-generator-panel static-next-lesson-panel">
-      <div className="panel-title"><BookOpenCheck size={18} /> Curso fixo premium</div>
-      <p>O Fluency usa aulas fixas A1 → C2. A IA fica somente como tutora, corretora e revisão adaptativa.</p>
+      <div className="panel-title"><BookOpenCheck size={18} /> Curso guiado premium</div>
+      <p>O Fluency libera o conteúdo em ordem. A IA fica somente como tutora, corretora e revisão adaptativa.</p>
 
       <div className="generation-status-box">
         <div><span>Nível atual</span><strong>{summary.level}</strong></div>
-        <div><span>Aulas prontas no mapa</span><strong>{summary.readyTotal || 0}/{summary.total || 0}</strong></div>
+        <div><span>Conteúdo preparado</span><strong>{summary.readyTotal || 0}/{summary.total || 0}</strong></div>
         <div><span>Aulas concluídas</span><strong>{summary.readyCompleted || 0}/{summary.readyTotal || 0}</strong></div>
       </div>
 
@@ -48,23 +48,23 @@ export function StaticNextLessonPanel({ onNavigate }) {
         <div className="inline-warning curriculum-next-box">
           {canOpen ? <Sparkles size={16} /> : <Lock size={16} />}
           <span>
-            {canOpen ? 'Próxima aula pronta' : 'Próxima aula planejada'}: <b>{lesson.level}</b> · {pillarLabel(lesson.pillar)} · {lesson.title}
+            {canOpen ? 'Próxima aula liberada' : 'Próxima etapa bloqueada'}: <b>{lesson.level}</b> · {pillarLabel(lesson.pillar)} · {canOpen ? lesson.title : 'continue pelo caminho guiado'}
             {next.lockReason ? <small>{next.lockReason}</small> : null}
           </span>
         </div>
       ) : (
-        <div className="inline-warning curriculum-next-box"><Map size={16} /><span>Mapa A1 concluído ou aguardando conteúdo real.</span></div>
+        <div className="inline-warning curriculum-next-box"><Map size={16} /><span>Mapa A1 concluído ou aguardando a próxima liberação.</span></div>
       )}
 
       <div className="answer-actions">
         <button type="button" className="primary-button" onClick={openNextLesson}>
-          <PlayCircle size={16} /> {shouldShowFinalGate ? 'Ver critérios do A1' : canOpen ? 'Abrir próxima aula pronta' : 'Ver mapa do curso'}
+          <PlayCircle size={16} /> {shouldShowFinalGate ? 'Ver critérios do A1' : canOpen ? 'Continuar curso' : 'Ver mapa do curso'}
         </button>
         <button type="button" className="secondary-button" onClick={() => onNavigate?.('course')}>
           <Map size={16} /> Ver mapa do curso
         </button>
       </div>
-      <p className="empty-note">“Aulas prontas no mapa” mostra o conteúdo já implementado. Para liberar A2, conclua as aulas, avaliações, prova final e revisões de Speaking/Writing.</p>
+      <p className="empty-note">Conteúdos preparados podem existir no sistema, mas só a próxima aula liberada pode ser aberta. Para liberar A2, conclua aulas, avaliações, prova final e revisões de Speaking/Writing.</p>
     </section>
   );
 }
