@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { BookOpen, CheckCircle2, Clock, Headphones, Mic, PenLine, RefreshCw, ShieldCheck, Sparkles, Target, Zap } from 'lucide-react';
 import { Card } from '../components/ui/Card.jsx';
 import { LessonQualityPanel } from '../components/lesson/LessonQualityPanel.jsx';
+import { ListeningTextPlayer } from '../components/lesson/ListeningTextPlayer.jsx';
 import { ReadingLessonGuided } from '../lessons/ReadingLessonGuided.jsx';
 import { GrammarLesson } from '../lessons/GrammarLesson.jsx';
 import { ListeningLessonClean } from '../lessons/ListeningLessonClean.jsx';
@@ -174,6 +175,7 @@ export function LessonScreen({ lessonRevision = 0 }) {
       </section>
 
       {usingGenerated ? <LessonQualityPanel lesson={lesson} /> : null}
+      <ListeningTextPlayer lesson={lesson} />
 
       <section className="lesson-stepper-card"><div className="lesson-stepper-row">{lessonSections.map((section, index) => { const Icon = index < activeSection ? CheckCircle2 : section.icon; const active = index === activeSection; const done = index < activeSection; return <button type="button" key={section.id} className={active ? 'active' : done ? 'done' : ''} onClick={() => jumpToSection(section, index)}><Icon size={12} />{section.title}</button>; })}</div></section>
       <section className="lesson-progress-strip"><div><span>Progresso da aula</span><strong>{activeSection + 1}/{lessonSections.length}</strong></div><i><b style={{ width: `${currentProgress}%` }} /></i></section>
