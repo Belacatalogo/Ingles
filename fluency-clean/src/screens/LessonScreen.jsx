@@ -4,6 +4,7 @@ import { Card } from '../components/ui/Card.jsx';
 import { LessonQualityPanel } from '../components/lesson/LessonQualityPanel.jsx';
 import { ListeningTextPlayer } from '../components/lesson/ListeningTextPlayer.jsx';
 import { ListeningShadowingPractice } from '../components/lesson/ListeningShadowingPractice.jsx';
+import { ListeningMiniDialoguePractice } from '../components/lesson/ListeningMiniDialoguePractice.jsx';
 import { ReadingLessonGuided } from '../lessons/ReadingLessonGuided.jsx';
 import { GrammarLesson } from '../lessons/GrammarLesson.jsx';
 import { ListeningLessonClean } from '../lessons/ListeningLessonClean.jsx';
@@ -185,6 +186,7 @@ export function LessonScreen({ lessonRevision = 0 }) {
 
       <LessonRenderer lesson={lesson} />
       {isListening ? <ListeningShadowingPractice lesson={lesson} /> : null}
+      {isListening ? <ListeningMiniDialoguePractice lesson={lesson} /> : null}
       <PracticeMount lesson={lesson} complementary={isReading || staticLesson} />
     </section>
   );
