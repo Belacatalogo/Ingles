@@ -51,6 +51,11 @@ export function CourseScreen({ onNavigate }) {
     setMessage('Critérios do A1 atualizados. Speaking e Writing ainda precisam de revisão.');
   }
 
+  function handleA1CheckpointSaved() {
+    setA1RefreshKey((current) => current + 1);
+    setMessage('Checkpoint salvo. Os critérios do A1 foram atualizados.');
+  }
+
   function handleLevel(level) {
     if (isLevelBlocked(level)) {
       setActiveLevel('A1');
@@ -102,7 +107,7 @@ export function CourseScreen({ onNavigate }) {
       </section>
 
       {activeLevel === 'A1' ? <A1MasteryGatePanel key={a1RefreshKey} /> : null}
-      {activeLevel === 'A1' ? <A1CheckpointShell /> : null}
+      {activeLevel === 'A1' ? <A1CheckpointShell onCheckpointSaved={handleA1CheckpointSaved} /> : null}
       {activeLevel === 'A1' ? <A1FinalExamShell onObjectiveScoresSaved={handleA1GateUpdated} /> : null}
 
       <ErrorReviewPanel onNavigate={onNavigate} compact />
