@@ -13,7 +13,7 @@ function getPrompt(lesson) {
   if (production && typeof production === 'object') {
     return clean(production.prompt || production.task || production.instruction || production.text || production.title);
   }
-  return 'Crie um mini diálogo usando as frases da aula: Hi, my name is... / Hello... / How are you? / I am good, thanks.';
+  return 'Crie um mini diálogo usando as frases da aula.';
 }
 
 function storageKey(lesson) {
@@ -101,7 +101,7 @@ export function ListeningMiniDialoguePractice({ lesson }) {
         className="listening-mini-dialogue-input"
         value={answer}
         onChange={(event) => setAnswer(event.target.value)}
-        placeholder={'Exemplo:\nAna: Hi, my name is Ana.\nLuis: Hello, Ana. My name is Luis.\nAna: How are you?\nLuis: I am fine, thanks.'}
+        placeholder="Escreva seu mini diálogo aqui."
       />
       <div className="answer-actions">
         {!listening ? (
