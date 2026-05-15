@@ -35,6 +35,8 @@ function expectedOf(value) {
   if (!value || typeof value !== 'object') return '';
   return firstUseful(value.expected, value.answer, value.expectedAnswer, value.correctAnswer);
 }
+function supportOf(value) { return firstUseful(expectedOf(value), noteOf(value)); }
+function isAttempted(attempts, id, minWords = 1) { return wordCount(attempts?.[id]) >= minWords; }
 function meaningOf(value) {
   if (!value || typeof value !== 'object') return '';
   return firstUseful(value.meaning, value.translation, value.note, value.explanation, value.expectedUse);
@@ -107,6 +109,11 @@ function FixedFooter({ children, onBack, backDisabled = false, helper }) {
 }
 function CoachNote({ icon: Icon = Sparkles, title, children, tone = 'blue' }) {
   return <div className={`reading-coach-note ${tone}`}><Icon size={17} /><div><strong>{title}</strong><p>{children}</p></div></div>;
+}
+function AfterAttemptSupport({ item, attempts, attemptId }) {
+  const support = supportOf(item);
+  if (!support || !isAttempted(attempts, attemptId)) return null;
+  return <div className="reading-model-after-attempt"><Check size={14} /> Depois da sua tentativa: <b>{support}</b></div>;
 }
 
 function ReadingHeader({ lesson, stageIndex, onBack }) {
@@ -270,7 +277,7 @@ function ComprehensionStage({ lesson, attempts, setAttempts, goNext, goBack, mar
         <p>O objetivo é medir compreensão real, não procurar visualmente a resposta.</p>
       </div>
       <CoachNote icon={Brain} title="Por que sem olhar?" tone="violet">Esse momento transforma leitura passiva em estudo ativo. Tente primeiro, mesmo que sua resposta fique simples.</CoachNote>
-      {list.map((item, index) => <GlassCard strong key={index} className="reading-question-card"><span className="reading-mini-label">Pergunta de memória {index + 1}</span><h3>{textOf(item) || 'Qual é a ideia geral do texto?'}</h3>{noteOf(item) ? <p>{noteOf(item)}</p> : null}<TextAreaTask id={`comp-${index}`} label="Sua tentativa" placeholder="Responda com suas palavras..." attempts={attempts} setAttempts={setAttempts} /></GlassCard>)}
+      {list.map((item, index) => { const attemptId = `comp-${index}`; return <GlassCard strong key={index} className="reading-question-card"><span className="reading-mini-label">Pergunta de memória {index + 1}</span><h3>{textOf(item) || 'Qual é a ideia geral do texto?'}</h3><TextAreaTask id={attemptId} label="Sua tentativa" placeholder="Responda com suas palavras..." attempts={attempts} setAttempts={setAttempts} /><AfterAttemptSupport item={item} attempts={attempts} attemptId={attemptId} /></GlassCard>; })}
       <FixedFooter onBack={goBack} helper={ready ? 'Tentativa pronta. Agora vamos voltar ao texto com foco.' : 'Registre uma tentativa curta em todas as perguntas antes de avançar.'}>
         <PrimaryButton variant={ready ? 'primary' : 'secondary'} disabled={!ready} onClick={() => { mark('comprehensionAttempted'); goNext(); }}>Registrar tentativa <ArrowRight size={16} /></PrimaryButton>
       </FixedFooter>
@@ -292,7 +299,7 @@ function FocusStage({ lesson, attempts, setAttempts, goNext, goBack, mark }) {
         <span className="reading-mini-label">Texto completo disponível para consulta</span>
         <p>{getMainText(lesson)}</p>
       </GlassCard>
-      {list.map((item, index) => <GlassCard strong key={index} className="reading-question-card"><span className="reading-mini-label">Foco {index + 1}</span><h3>{textOf(item)}</h3>{noteOf(item) ? <p>{noteOf(item)}</p> : null}<TextAreaTask id={`focus-${index}`} label="O que encontrei" placeholder="Anote a informação encontrada no texto..." rows={3} minWords={2} attempts={attempts} setAttempts={setAttempts} /></GlassCard>)}
+      {list.map((item, index) => { const attemptId = `focus-${index}`; return <GlassCard strong key={index} className="reading-question-card"><span className="reading-mini-label">Foco {index + 1}</span><h3>{textOf(item)}</h3><TextAreaTask id={attemptId} label="O que encontrei" placeholder="Anote a informação encontrada no texto..." rows={3} minWords={2} attempts={attempts} setAttempts={setAttempts} /><AfterAttemptSupport item={item} attempts={attempts} attemptId={attemptId} /></GlassCard>; })}
       <FixedFooter onBack={goBack} helper={ready ? 'Leitura com foco concluída. Agora vamos provar.' : 'Responda todos os focos de segunda leitura.'}>
         <PrimaryButton variant={ready ? 'primary' : 'secondary'} disabled={!ready} onClick={() => { mark('focusedRead'); goNext(); }}>Ir para evidência <ArrowRight size={16} /></PrimaryButton>
       </FixedFooter>
@@ -311,7 +318,7 @@ function EvidenceStage({ lesson, attempts, setAttempts, goNext, goBack, mark }) 
         <p>Resposta sem trecho do texto vira chute. Aqui a leitura vira investigação.</p>
       </div>
       <CoachNote icon={ShieldCheck} title="Regra de ouro" tone="mint">Toda resposta importante precisa de uma frase do texto que comprove. Isso treina leitura de verdade.</CoachNote>
-      {list.map((item, index) => <GlassCard strong key={index} className="reading-evidence-card"><span className="reading-mini-label">Evidência {index + 1}</span><h3>{textOf(item)}</h3>{noteOf(item) ? <p>{noteOf(item)}</p> : null}<TextAreaTask id={`evidence-answer-${index}`} label="Sua resposta" placeholder="Digite a resposta..." rows={2} minWords={1} attempts={attempts} setAttempts={setAttempts} /><TextAreaTask id={`evidence-proof-${index}`} label={<><Quote size={13} /> Evidência do texto</>} placeholder="Copie a frase do texto que comprova..." rows={3} minWords={3} attempts={attempts} setAttempts={setAttempts} variant="dashed" />{expectedOf(item) && hasText(attempts[`evidence-answer-${index}`]) ? <div className="reading-model-after-attempt"><Check size={14} /> Modelo para comparar: <b>{expectedOf(item)}</b></div> : null}</GlassCard>)}
+      {list.map((item, index) => { const answerId = `evidence-answer-${index}`; const proofId = `evidence-proof-${index}`; return <GlassCard strong key={index} className="reading-evidence-card"><span className="reading-mini-label">Evidência {index + 1}</span><h3>{textOf(item)}</h3><TextAreaTask id={answerId} label="Sua resposta" placeholder="Digite a resposta..." rows={2} minWords={1} attempts={attempts} setAttempts={setAttempts} /><TextAreaTask id={proofId} label={<><Quote size={13} /> Evidência do texto</>} placeholder="Copie a frase do texto que comprova..." rows={3} minWords={3} attempts={attempts} setAttempts={setAttempts} variant="dashed" /><AfterAttemptSupport item={item} attempts={attempts} attemptId={answerId} /></GlassCard>; })}
       <FixedFooter onBack={goBack} helper={ready ? 'Evidência registrada. Agora vamos estudar palavras pelo contexto.' : 'Preencha resposta e evidência em todas as questões para avançar.'}>
         <PrimaryButton variant={ready ? 'mint' : 'secondary'} disabled={!ready} onClick={() => { mark('evidenceRecorded'); goNext(); }}>Validar evidência <ArrowRight size={16} /></PrimaryButton>
       </FixedFooter>
@@ -363,7 +370,7 @@ function SummaryStage({ lesson, attempts, setAttempts, goNext, goBack, mark }) {
       <CoachNote icon={Map} title="Como escrever agora" tone="violet">Use o texto como modelo de estrutura, mas troque as informações para criar uma resposta sua.</CoachNote>
       <GlassCard strong><span className="reading-mini-label">Resumo</span><h3>{summaryPrompt}</h3><TextAreaTask id="summary" label="Meu resumo" placeholder="Escreva seu resumo..." rows={5} minWords={4} attempts={attempts} setAttempts={setAttempts} /></GlassCard>
       <GlassCard><span className="reading-mini-label mint">Produção conectada</span><h3>{productionPrompt}</h3><TextAreaTask id="production" label="Minha produção" placeholder="Every morning, I..." rows={5} minWords={4} attempts={attempts} setAttempts={setAttempts} variant="mint" /></GlassCard>
-      {extraTasks.map((item, index) => <GlassCard key={`${textOf(item)}-${index}`}><span className="reading-mini-label violet">Tarefa extra da aula profunda {index + 1}</span><h3>{textOf(item)}</h3>{noteOf(item) ? <p className="reading-soft-text">{noteOf(item)}</p> : null}<TextAreaTask id={`summary-extra-${index}`} label="Minha resposta" placeholder="Responda a tarefa extra..." rows={4} minWords={3} attempts={attempts} setAttempts={setAttempts} /></GlassCard>)}
+      {extraTasks.map((item, index) => { const attemptId = `summary-extra-${index}`; return <GlassCard key={`${textOf(item)}-${index}`}><span className="reading-mini-label violet">Tarefa extra da aula profunda {index + 1}</span><h3>{textOf(item)}</h3><TextAreaTask id={attemptId} label="Minha resposta" placeholder="Responda a tarefa extra..." rows={4} minWords={3} attempts={attempts} setAttempts={setAttempts} /><AfterAttemptSupport item={item} attempts={attempts} attemptId={attemptId} /></GlassCard>; })}
       <FixedFooter onBack={goBack} helper={ready ? 'Resumo e produção prontos. Vamos revisar.' : 'Faça todas as produções da aula para liberar a revisão.'}>
         <PrimaryButton variant={ready ? 'mint' : 'secondary'} disabled={!ready} onClick={() => { mark('summaryDone'); mark('productionDone'); goNext(); }}>Salvar produção <ArrowRight size={16} /></PrimaryButton>
       </FixedFooter>
