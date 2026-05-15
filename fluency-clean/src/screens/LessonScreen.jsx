@@ -9,6 +9,7 @@ import { ListeningLessonClean } from '../lessons/ListeningLessonClean.jsx';
 import { WritingLesson } from '../lessons/WritingLesson.jsx';
 import { StaticLessonRenderer, isStaticLesson } from '../lessons/static/StaticLessonRenderer.jsx';
 import { ListeningInteractiveLesson } from '../lessons/static/ListeningInteractiveLesson.jsx';
+import { ReadingLessonFlow } from '../lessons/flow/reading/ReadingLessonFlow.jsx';
 import { PracticeLauncher } from '../practice/PracticeLauncher.jsx';
 import { getStaticLevel } from '../content/curriculum/index.js';
 import { getCurrentLesson, getCurrentLessonFull } from '../services/lessonStore.js';
@@ -70,7 +71,9 @@ function buildVisualPreviewLesson(lesson, source = 'lesson-pillar-visual-preview
 }
 
 function LessonRenderer({ lesson }) {
+  const isReading = lesson?.type === 'reading' || lesson?.pillar === 'reading';
   const isListening = lesson?.type === 'listening' || lesson?.pillar === 'listening';
+  if (isStaticLesson(lesson) && isReading) return <ReadingLessonFlow lesson={lesson} />;
   if (isStaticLesson(lesson) && isListening) return <ListeningInteractiveLesson lesson={lesson} />;
   if (isStaticLesson(lesson)) return <StaticLessonRenderer lesson={lesson} />;
   if (lesson?.type === 'reading') return <ReadingLessonGuided lesson={lesson} />;
@@ -150,9 +153,9 @@ export function LessonScreen({ lessonRevision = 0 }) {
   const usingStatic = Boolean(savedLessonPointer || fullLesson) && staticLesson;
   const isReading = lesson?.type === 'reading' || lesson?.pillar === 'reading';
   const isListening = lesson?.type === 'listening' || lesson?.pillar === 'listening';
+  const usesPremiumReadingFlow = staticLesson && isReading;
   const currentProgress = Math.round(((activeSection + 1) / lessonSections.length) * 100);
   const meta = lesson?.generationMeta || null;
-  const score = meta?.pedagogicalScore || lesson?.quality?.teacherScore || lesson?.quality?.pedagogicalScore || 0;
 
   useEffect(() => { recordLessonAsCurrentCurriculumUnit(lesson); }, [lesson?.id, lesson?.title, lesson?.type, lesson?.pillar, lesson?.level, lesson?.generationMeta?.id]);
 
@@ -175,37 +178,40 @@ export function LessonScreen({ lessonRevision = 0 }) {
   }
 
   return (
-    <section className="lesson-reference-screen lesson-preview-lab-enabled">
+    <section className={`lesson-reference-screen lesson-preview-lab-enabled ${usesPremiumReadingFlow ? 'reading-premium-active' : ''}`}>
       <section className="lesson-preview-lab-card" aria-label="Atalhos para testar aulas fixas por pilar">
         <div><strong>Testar aulas por pilar</strong><small>Área temporária para encontrar erros. Não altera o cronograma real.</small></div>
         <div className="lesson-preview-lab-actions">{pillarOptions.map((option) => { const Icon = option.icon; const active = option.id !== 'real' && (lesson?.pillar === option.id || lesson?.type === option.id); return <button type="button" key={option.id} className={active ? 'active' : ''} onClick={() => handlePillarShortcut(option.id)}><Icon size={14} /> {option.label}</button>; })}</div>
         {message ? <p className="generator-message completion-message">{message}</p> : null}
       </section>
 
-      <section className="lesson-reference-hero">
-        <div className="lesson-chip-row">
-          <span className="lesson-chip blue"><Sparkles size={11} /> {usingStatic ? 'Curso fixo premium' : usingGenerated ? 'Aula salva' : 'Aula inicial'}</span>
-          <span className="lesson-chip">{getLessonTypeLabel(lesson)}</span>
-          <span className="lesson-chip violet">{lesson?.level || 'A1'}</span>
-          {lesson?.packageId ? <span className="lesson-chip">Pacote {lesson.packageId}</span> : null}
-        </div>
-        <h1>{getLessonTitle(lesson)}</h1>
-        <p>{loadingFullLesson && savedLessonPointer && !fullLesson ? 'Carregando aula completa...' : getLessonDescription(lesson)}</p>
-        {usingGenerated ? (
-          <div className="lesson-generation-proof"><ShieldCheck size={15} /><span><b>Aula salva</b><small>{meta?.generatedAt ? `Atualizada em ${formatDateTime(meta.generatedAt)}` : 'Conteúdo salvo localmente'}</small></span></div>
-        ) : null}
-        {usingStatic ? <div className="lesson-generation-proof"><ShieldCheck size={15} /><span><b>Aula fixa validada</b><small>Exercícios internos antes da prática extra.</small></span></div> : null}
-        <footer><div><span><Clock size={13} /> {lessonStats.minutes} min</span><span><Target size={13} /> {lessonStats.exercises} ex.</span></div><button type="button" aria-label="Atualizar aula salva" onClick={forceRefreshLesson}><RefreshCw size={14} /></button></footer>
-      </section>
+      {!usesPremiumReadingFlow ? <>
+        <section className="lesson-reference-hero">
+          <div className="lesson-chip-row">
+            <span className="lesson-chip blue"><Sparkles size={11} /> {usingStatic ? 'Curso fixo premium' : usingGenerated ? 'Aula salva' : 'Aula inicial'}</span>
+            <span className="lesson-chip">{getLessonTypeLabel(lesson)}</span>
+            <span className="lesson-chip violet">{lesson?.level || 'A1'}</span>
+            {lesson?.packageId ? <span className="lesson-chip">Pacote {lesson.packageId}</span> : null}
+          </div>
+          <h1>{getLessonTitle(lesson)}</h1>
+          <p>{loadingFullLesson && savedLessonPointer && !fullLesson ? 'Carregando aula completa...' : getLessonDescription(lesson)}</p>
+          {usingGenerated ? (
+            <div className="lesson-generation-proof"><ShieldCheck size={15} /><span><b>Aula salva</b><small>{meta?.generatedAt ? `Atualizada em ${formatDateTime(meta.generatedAt)}` : 'Conteúdo salvo localmente'}</small></span></div>
+          ) : null}
+          {usingStatic ? <div className="lesson-generation-proof"><ShieldCheck size={15} /><span><b>Aula fixa validada</b><small>Exercícios internos antes da prática extra.</small></span></div> : null}
+          <footer><div><span><Clock size={13} /> {lessonStats.minutes} min</span><span><Target size={13} /> {lessonStats.exercises} ex.</span></div><button type="button" aria-label="Atualizar aula salva" onClick={forceRefreshLesson}><RefreshCw size={14} /></button></footer>
+        </section>
 
-      {usingGenerated ? <LessonQualityPanel lesson={lesson} /> : null}
-      <ListeningTextPlayer lesson={lesson} />
+        {usingGenerated ? <LessonQualityPanel lesson={lesson} /> : null}
+        <ListeningTextPlayer lesson={lesson} />
 
-      <section className="lesson-stepper-card"><div className="lesson-stepper-row">{lessonSections.map((section, index) => { const Icon = index < activeSection ? CheckCircle2 : section.icon; const active = index === activeSection; const done = index < activeSection; return <button type="button" key={section.id} className={active ? 'active' : done ? 'done' : ''} onClick={() => jumpToSection(section, index)}><Icon size={12} />{section.title}</button>; })}</div></section>
-      <section className="lesson-progress-strip"><div><span>Progresso da aula</span><strong>{activeSection + 1}/{lessonSections.length}</strong></div><i><b style={{ width: `${currentProgress}%` }} /></i></section>
+        <section className="lesson-stepper-card"><div className="lesson-stepper-row">{lessonSections.map((section, index) => { const Icon = index < activeSection ? CheckCircle2 : section.icon; const active = index === activeSection; const done = index < activeSection; return <button type="button" key={section.id} className={active ? 'active' : done ? 'done' : ''} onClick={() => jumpToSection(section, index)}><Icon size={12} />{section.title}</button>; })}</div></section>
+        <section className="lesson-progress-strip"><div><span>Progresso da aula</span><strong>{activeSection + 1}/{lessonSections.length}</strong></div><i><b style={{ width: `${currentProgress}%` }} /></i></section>
+      </> : null}
 
       <LessonRenderer lesson={lesson} />
-      {!isListening ? <PracticeMount lesson={lesson} complementary={isReading || staticLesson} /> : null}
+      {!isListening && !usesPremiumReadingFlow ? <PracticeMount lesson={lesson} complementary={isReading || staticLesson} /> : null}
+      {usesPremiumReadingFlow ? <PracticeMount lesson={lesson} complementary /> : null}
     </section>
   );
 }
