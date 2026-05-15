@@ -7,6 +7,7 @@ const common = { level, status, estimatedMinutes: 60, tags: ['a2-6', 'reviews-ch
 function task(instruction, note = '', expected = '') { return { instruction, note, expected }; }
 function vocab(word, meaning, example = '', note = '') { return { word, meaning, example, note }; }
 function mistake(wrong, right, why = '') { return { wrong, right, why }; }
+function ex(english, translation = '', note = '') { return { english, translation, note }; }
 
 export const A2_DEEP_REVIEWS_CHECKPOINTS = Object.freeze([
   createGrammarLesson({
