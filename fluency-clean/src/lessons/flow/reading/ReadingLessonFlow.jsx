@@ -1,17 +1,21 @@
-import { useMemo, useState } from 'react';
-import { ArrowLeft, ArrowRight, BookOpen, Brain, Check, ChevronLeft, Coffee, Lock, Quote, RotateCcw, ShieldCheck, Sparkles, Target, Trophy } from 'lucide-react';
+import { useState } from 'react';
+import { ArrowLeft, ArrowRight, BookOpen, Brain, Check, ChevronLeft, Coffee, Eye, Lightbulb, Lock, Map, Quote, RotateCcw, Search, ShieldCheck, Sparkles, Target, Trophy } from 'lucide-react';
 import { AiTutorPanel } from '../../../components/tutor/AiTutorPanel.jsx';
 import { StaticCompletionGate } from '../../static/StaticCompletionGate.jsx';
 import './reading-lesson-flow.css';
 
 const TECHNICAL_WORDS = new Set(['subject', 'expected', 'answer', 'correctAnswer', 'expectedAnswer', 'schemaVersion', 'undefined', 'null', '[object Object]']);
 const STAGES = [
-  { key: 'overview', label: 'Objetivo' },
-  { key: 'text', label: 'Leitura' },
-  { key: 'comprehension', label: 'Ideia' },
-  { key: 'evidence', label: 'Evidência' },
-  { key: 'summary', label: 'Produção' },
-  { key: 'mastery', label: 'Mastery' },
+  { key: 'overview', label: 'Missão' },
+  { key: 'prepare', label: 'Preparar' },
+  { key: 'text', label: 'Ler' },
+  { key: 'comprehension', label: 'Memória' },
+  { key: 'focus', label: 'Foco' },
+  { key: 'evidence', label: 'Prova' },
+  { key: 'context', label: 'Contexto' },
+  { key: 'summary', label: 'Produzir' },
+  { key: 'recap', label: 'Revisar' },
+  { key: 'mastery', label: 'Gate' },
 ];
 
 function clean(value) { return String(value ?? '').trim(); }
@@ -31,13 +35,17 @@ function expectedOf(value) {
   if (!value || typeof value !== 'object') return '';
   return firstUseful(value.expected, value.answer, value.expectedAnswer, value.correctAnswer);
 }
+function meaningOf(value) {
+  if (!value || typeof value !== 'object') return '';
+  return firstUseful(value.meaning, value.translation, value.note, value.explanation, value.expectedUse);
+}
 function asList(value) { if (Array.isArray(value)) return value; return hasText(value) ? [value] : []; }
 function mergeLists(...groups) {
   return groups.flatMap(asList).filter((item) => hasText(textOf(item)) || hasText(noteOf(item)) || hasText(item?.word) || hasText(item?.meaning));
 }
 function wordCount(value) { return clean(value).split(/\s+/).filter(Boolean).length; }
-function normalizeId(value) { return clean(value).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'item'; }
 function stripPillarPrefix(title = '') { return clean(title).replace(/^Reading\s*[—-]\s*/i, '') || 'Aula de Reading'; }
+function uniqueItems(list) { const seen = new Set(); return list.filter((item) => { const key = clean(typeof item === 'string' ? item : textOf(item)).toLowerCase(); if (!key || seen.has(key)) return false; seen.add(key); return true; }); }
 
 function getVocabularyAnchors(lesson) {
   const list = mergeLists(lesson.preReadingVocabulary, lesson.vocabulary, lesson.keyVocabulary, lesson.contextVocabularyTasks)
@@ -45,20 +53,37 @@ function getVocabularyAnchors(lesson) {
     .filter(Boolean);
   return [...new Set(list)].slice(0, 8);
 }
-function getObjectives(lesson) {
-  return safeArray(lesson.objectives).map(textOf).filter(Boolean).slice(0, 4);
-}
-function getMainText(lesson) {
-  return firstUseful(lesson.mainText, lesson.text, lesson.readingText, lesson.content, lesson.transcript) || 'Texto principal ainda não encontrado para esta aula.';
+function getObjectives(lesson) { return safeArray(lesson.objectives).map(textOf).filter(Boolean).slice(0, 4); }
+function getMainText(lesson) { return firstUseful(lesson.mainText, lesson.text, lesson.readingText, lesson.content, lesson.transcript) || 'Texto principal ainda não encontrado para esta aula.'; }
+function getPreparationItems(lesson) {
+  const base = mergeLists(lesson.readingStrategy, lesson.preReading, lesson.preReadingTasks, lesson.beforeReading, lesson.preReadingVocabulary).slice(0, 5);
+  return base.length ? base : [
+    'Descubra quem aparece no texto.',
+    'Procure onde a pessoa está ou vive.',
+    'Identifique o que ela faz na rotina.',
+  ];
 }
 function getComprehensionTasks(lesson) {
-  return mergeLists([lesson.firstReadTask].filter(Boolean), lesson.comprehensionQuestions).slice(0, 4);
+  const list = mergeLists([lesson.firstReadTask].filter(Boolean), lesson.firstReadTasks, lesson.comprehensionQuestions).slice(0, 3);
+  return list.length ? list : [{ prompt: 'Qual é a ideia geral do texto?' }];
+}
+function getFocusTasks(lesson) {
+  const list = mergeLists(lesson.secondReadTasks, lesson.readingFocusTasks, lesson.detailQuestions).slice(0, 4);
+  return list.length ? list : [{ prompt: 'Volte ao texto e encontre uma informação específica importante.' }];
 }
 function getEvidenceTasks(lesson) {
-  return mergeLists(lesson.evidenceQuestions, lesson.secondReadTasks, lesson.comprehensionQuestions).slice(0, 5);
+  const list = mergeLists(lesson.evidenceQuestions, lesson.comprehensionQuestions).slice(0, 4);
+  return list.length ? list : [{ question: 'Where does the main person work/live?', prompt: 'Copie a frase do texto que comprova sua resposta.' }];
+}
+function getContextVocabularyTasks(lesson) {
+  return uniqueItems(mergeLists(lesson.contextVocabularyTasks, lesson.vocabularyInContext, lesson.preReadingVocabulary, lesson.vocabulary)).slice(0, 6);
 }
 function getSummaryTasks(lesson) {
   return mergeLists([lesson.guidedSummary, lesson.connectedProduction, lesson.productionTask].filter(Boolean), lesson.productionTasks).slice(0, 4);
+}
+function getRecapItems(lesson) {
+  const list = safeArray(lesson.lessonRecap).map(textOf).filter(Boolean).slice(0, 5);
+  return list.length ? list : ['Você leu o texto principal.', 'Você respondeu de memória.', 'Você voltou ao texto para provar respostas.', 'Você produziu algo próprio a partir da leitura.'];
 }
 
 function GlassCard({ children, className = '', strong = false }) {
@@ -80,6 +105,9 @@ function FixedFooter({ children, onBack, backDisabled = false, helper }) {
       </div>
     </footer>
   );
+}
+function CoachNote({ icon: Icon = Sparkles, title, children, tone = 'blue' }) {
+  return <div className={`reading-coach-note ${tone}`}><Icon size={17} /><div><strong>{title}</strong><p>{children}</p></div></div>;
 }
 
 function ReadingHeader({ lesson, stageIndex, onBack }) {
@@ -153,6 +181,17 @@ function OverviewStage({ lesson, goNext }) {
         <h2>{objectives[0] || 'Entender a ideia principal, localizar evidências e produzir uma resposta conectada.'}</h2>
         {objectives.length > 1 ? <ul>{objectives.slice(1).map((item) => <li key={item}>{item}</li>)}</ul> : null}
       </GlassCard>
+      <GlassCard className="reading-study-path-card">
+        <span className="reading-mini-label">Como vamos estudar</span>
+        <div className="reading-study-path">
+          <b>Preparar</b><i />
+          <b>Ler</b><i />
+          <b>Lembrar</b><i />
+          <b>Provar</b><i />
+          <b>Produzir</b>
+        </div>
+        <p>Você não vai só ver conteúdo. Vai passar por uma sequência de leitura ativa, tentativa, evidência e produção.</p>
+      </GlassCard>
       <div className="reading-two-card-grid">
         <GlassCard>
           <span className="reading-mini-label">Âncoras</span>
@@ -160,11 +199,38 @@ function OverviewStage({ lesson, goNext }) {
         </GlassCard>
         <GlassCard>
           <span className="reading-mini-label">Regra do fluxo</span>
-          <p className="reading-soft-text"><Lock size={14} /> Perguntas e modelos ficam fora da leitura inicial.</p>
+          <p className="reading-soft-text"><Lock size={14} /> Perguntas, modelos e produção ficam fora da leitura inicial.</p>
         </GlassCard>
       </div>
-      <FixedFooter backDisabled helper="Comece pela leitura limpa. Depois desbloqueamos compreensão e evidência.">
-        <PrimaryButton onClick={goNext}>Começar leitura <ArrowRight size={16} /></PrimaryButton>
+      <FixedFooter backDisabled helper="Primeiro vamos preparar seu foco antes de abrir o texto.">
+        <PrimaryButton onClick={goNext}>Preparar leitura <ArrowRight size={16} /></PrimaryButton>
+      </FixedFooter>
+    </div>
+  );
+}
+
+function PrepareStage({ lesson, attempts, setAttempts, goNext, goBack, mark }) {
+  const items = getPreparationItems(lesson);
+  const ready = wordCount(attempts.readingMission) >= 3;
+  return (
+    <div className="reading-stage-content fade-up">
+      <div className="reading-stage-title-block compact">
+        <StageBadge icon={Eye}>Antes de ler</StageBadge>
+        <h2>Prepare seu cérebro.</h2>
+        <p>Reading melhora quando você sabe o que procurar. Não comece tentando traduzir tudo.</p>
+      </div>
+      <CoachNote icon={Lightbulb} title="Postura de estudo">Leia como investigador: primeiro descubra o sentido geral, depois volte para detalhes e evidências.</CoachNote>
+      <GlassCard strong>
+        <span className="reading-mini-label">O que procurar</span>
+        <div className="reading-prep-list">{items.map((item, index) => <article key={`${textOf(item)}-${index}`}><b>{index + 1}</b><p>{textOf(item)}</p>{meaningOf(item) ? <small>{meaningOf(item)}</small> : null}</article>)}</div>
+      </GlassCard>
+      <GlassCard>
+        <span className="reading-mini-label mint">Missão pessoal</span>
+        <h3>Antes de abrir o texto, escreva o que você precisa descobrir.</h3>
+        <TextAreaTask id="readingMission" label="Minha missão de leitura" placeholder="Ex: descobrir quem é a pessoa e qual é a rotina dela..." rows={3} minWords={3} attempts={attempts} setAttempts={setAttempts} variant="mint" />
+      </GlassCard>
+      <FixedFooter onBack={goBack} helper={ready ? 'Missão definida. Agora leia com foco.' : 'Defina uma missão curta antes de ler.'}>
+        <PrimaryButton variant={ready ? 'primary' : 'secondary'} disabled={!ready} onClick={() => { mark('prepared'); goNext(); }}>Abrir texto <ArrowRight size={16} /></PrimaryButton>
       </FixedFooter>
     </div>
   );
@@ -178,6 +244,7 @@ function TextStage({ lesson, goNext, goBack, mark }) {
         <h2>Leia uma vez sem responder.</h2>
         <p>Foque na ideia geral. As perguntas ficam bloqueadas nesta etapa.</p>
       </div>
+      <CoachNote icon={Coffee} title="Como estudar esta tela" tone="amber">Leia até o fim sem pausar a cada palavra. Entender 70% com fluidez é melhor do que travar tentando traduzir 100%.</CoachNote>
       <GlassCard strong className="reading-text-card">
         <div className="reading-text-card-head">
           <div className="reading-card-icon amber"><Coffee size={18} /></div>
@@ -194,9 +261,7 @@ function TextStage({ lesson, goNext, goBack, mark }) {
 }
 
 function ComprehensionStage({ lesson, attempts, setAttempts, goNext, goBack, mark }) {
-  const tasks = getComprehensionTasks(lesson);
-  const fallback = { prompt: 'Qual é a ideia geral do texto?' };
-  const list = tasks.length ? tasks : [fallback];
+  const list = getComprehensionTasks(lesson);
   const ready = list.every((item, index) => wordCount(attempts[`comp-${index}`]) >= 2);
   return (
     <div className="reading-stage-content fade-up">
@@ -205,18 +270,39 @@ function ComprehensionStage({ lesson, attempts, setAttempts, goNext, goBack, mar
         <h2>Agora responda de memória.</h2>
         <p>O objetivo é medir compreensão real, não procurar visualmente a resposta.</p>
       </div>
-      {list.map((item, index) => <GlassCard strong key={index} className="reading-question-card"><span className="reading-mini-label">Pergunta {index + 1}</span><h3>{textOf(item) || 'Qual é a ideia geral do texto?'}</h3>{noteOf(item) ? <p>{noteOf(item)}</p> : null}<TextAreaTask id={`comp-${index}`} label="Sua tentativa" placeholder="Responda com suas palavras..." attempts={attempts} setAttempts={setAttempts} /></GlassCard>)}
-      <FixedFooter onBack={goBack} helper={ready ? 'Tentativa pronta. Você pode continuar.' : 'Registre uma tentativa curta antes de avançar.'}>
+      <CoachNote icon={Brain} title="Por que sem olhar?" tone="violet">Esse momento transforma leitura passiva em estudo ativo. Tente primeiro, mesmo que sua resposta fique simples.</CoachNote>
+      {list.map((item, index) => <GlassCard strong key={index} className="reading-question-card"><span className="reading-mini-label">Pergunta de memória {index + 1}</span><h3>{textOf(item) || 'Qual é a ideia geral do texto?'}</h3>{noteOf(item) ? <p>{noteOf(item)}</p> : null}<TextAreaTask id={`comp-${index}`} label="Sua tentativa" placeholder="Responda com suas palavras..." attempts={attempts} setAttempts={setAttempts} /></GlassCard>)}
+      <FixedFooter onBack={goBack} helper={ready ? 'Tentativa pronta. Agora vamos voltar ao texto com foco.' : 'Registre uma tentativa curta antes de avançar.'}>
         <PrimaryButton variant={ready ? 'primary' : 'secondary'} disabled={!ready} onClick={() => { mark('comprehensionAttempted'); goNext(); }}>Registrar tentativa <ArrowRight size={16} /></PrimaryButton>
       </FixedFooter>
     </div>
   );
 }
 
+function FocusStage({ lesson, attempts, setAttempts, goNext, goBack, mark }) {
+  const list = getFocusTasks(lesson);
+  const ready = list.every((item, index) => wordCount(attempts[`focus-${index}`]) >= 2);
+  return (
+    <div className="reading-stage-content fade-up">
+      <div className="reading-stage-title-block compact">
+        <StageBadge icon={Search}>Segunda leitura</StageBadge>
+        <h2>Volte ao texto com uma missão.</h2>
+        <p>Agora você não lê tudo igual. Você procura informações específicas.</p>
+      </div>
+      <GlassCard className="reading-text-mini-card">
+        <span className="reading-mini-label">Texto disponível para consulta</span>
+        <p>{getMainText(lesson)}</p>
+      </GlassCard>
+      {list.map((item, index) => <GlassCard strong key={index} className="reading-question-card"><span className="reading-mini-label">Foco {index + 1}</span><h3>{textOf(item)}</h3>{noteOf(item) ? <p>{noteOf(item)}</p> : null}<TextAreaTask id={`focus-${index}`} label="O que encontrei" placeholder="Anote a informação encontrada no texto..." rows={3} minWords={2} attempts={attempts} setAttempts={setAttempts} /></GlassCard>)}
+      <FixedFooter onBack={goBack} helper={ready ? 'Leitura com foco concluída. Agora vamos provar.' : 'Responda os focos de segunda leitura.'}>
+        <PrimaryButton variant={ready ? 'primary' : 'secondary'} disabled={!ready} onClick={() => { mark('focusedRead'); goNext(); }}>Ir para evidência <ArrowRight size={16} /></PrimaryButton>
+      </FixedFooter>
+    </div>
+  );
+}
+
 function EvidenceStage({ lesson, attempts, setAttempts, goNext, goBack, mark }) {
-  const tasks = getEvidenceTasks(lesson);
-  const fallback = { question: 'Where does Ana work?', prompt: 'Copie a frase do texto que comprova sua resposta.' };
-  const list = (tasks.length ? tasks : [fallback]).slice(0, 4);
+  const list = getEvidenceTasks(lesson);
   const ready = list.every((item, index) => hasText(attempts[`evidence-answer-${index}`]) && wordCount(attempts[`evidence-proof-${index}`]) >= 3);
   return (
     <div className="reading-stage-content fade-up">
@@ -225,9 +311,37 @@ function EvidenceStage({ lesson, attempts, setAttempts, goNext, goBack, mark }) 
         <h2>Prove com o texto.</h2>
         <p>Resposta sem trecho do texto vira chute. Aqui a leitura vira investigação.</p>
       </div>
-      {list.map((item, index) => <GlassCard strong key={index} className="reading-evidence-card"><span className="reading-mini-label">Evidência {index + 1}</span><h3>{textOf(item) || 'Where does Ana work?'}</h3>{noteOf(item) ? <p>{noteOf(item)}</p> : null}<TextAreaTask id={`evidence-answer-${index}`} label="Sua resposta" placeholder="Digite a resposta..." rows={2} minWords={1} attempts={attempts} setAttempts={setAttempts} /><TextAreaTask id={`evidence-proof-${index}`} label={<><Quote size={13} /> Evidência do texto</>} placeholder="Copie a frase do texto que comprova..." rows={3} minWords={3} attempts={attempts} setAttempts={setAttempts} variant="dashed" />{expectedOf(item) && hasText(attempts[`evidence-answer-${index}`]) ? <div className="reading-model-after-attempt"><Check size={14} /> Modelo para comparar: <b>{expectedOf(item)}</b></div> : null}</GlassCard>)}
-      <FixedFooter onBack={goBack} helper={ready ? 'Evidência registrada.' : 'Preencha resposta e evidência para avançar.'}>
+      <CoachNote icon={ShieldCheck} title="Regra de ouro" tone="mint">Toda resposta importante precisa de uma frase do texto que comprove. Isso treina leitura de verdade.</CoachNote>
+      {list.map((item, index) => <GlassCard strong key={index} className="reading-evidence-card"><span className="reading-mini-label">Evidência {index + 1}</span><h3>{textOf(item)}</h3>{noteOf(item) ? <p>{noteOf(item)}</p> : null}<TextAreaTask id={`evidence-answer-${index}`} label="Sua resposta" placeholder="Digite a resposta..." rows={2} minWords={1} attempts={attempts} setAttempts={setAttempts} /><TextAreaTask id={`evidence-proof-${index}`} label={<><Quote size={13} /> Evidência do texto</>} placeholder="Copie a frase do texto que comprova..." rows={3} minWords={3} attempts={attempts} setAttempts={setAttempts} variant="dashed" />{expectedOf(item) && hasText(attempts[`evidence-answer-${index}`]) ? <div className="reading-model-after-attempt"><Check size={14} /> Modelo para comparar: <b>{expectedOf(item)}</b></div> : null}</GlassCard>)}
+      <FixedFooter onBack={goBack} helper={ready ? 'Evidência registrada. Agora vamos estudar palavras pelo contexto.' : 'Preencha resposta e evidência para avançar.'}>
         <PrimaryButton variant={ready ? 'mint' : 'secondary'} disabled={!ready} onClick={() => { mark('evidenceRecorded'); goNext(); }}>Validar evidência <ArrowRight size={16} /></PrimaryButton>
+      </FixedFooter>
+    </div>
+  );
+}
+
+function ContextStage({ lesson, attempts, setAttempts, goNext, goBack, mark }) {
+  const list = getContextVocabularyTasks(lesson);
+  const activeList = list.length ? list : ['Escolha uma palavra do texto e tente entender pelo contexto.'];
+  const ready = wordCount(attempts.contextInsight) >= 3;
+  return (
+    <div className="reading-stage-content fade-up">
+      <div className="reading-stage-title-block compact">
+        <StageBadge icon={Lightbulb} tone="mint">Vocabulário pelo contexto</StageBadge>
+        <h2>Não memorize solto.</h2>
+        <p>Agora olhe as palavras/chunks dentro da leitura e conecte significado com situação.</p>
+      </div>
+      <GlassCard strong>
+        <span className="reading-mini-label">Palavras e chunks da aula</span>
+        <div className="reading-context-grid">{activeList.map((item, index) => <article key={`${textOf(item)}-${index}`}><b>{firstUseful(item.word, item.term, textOf(item))}</b>{meaningOf(item) ? <span>{meaningOf(item)}</span> : null}{item.example ? <p>{item.example}</p> : null}</article>)}</div>
+      </GlassCard>
+      <GlassCard>
+        <span className="reading-mini-label mint">Minha descoberta</span>
+        <h3>Escolha uma palavra/chunk e explique como o texto ajudou você a entender.</h3>
+        <TextAreaTask id="contextInsight" label="Entendi pelo contexto" placeholder="Ex: café aparece perto de work, então entendi que é o local de trabalho..." rows={4} minWords={3} attempts={attempts} setAttempts={setAttempts} variant="mint" />
+      </GlassCard>
+      <FixedFooter onBack={goBack} helper={ready ? 'Vocabulário conectado ao texto.' : 'Registre uma descoberta curta de vocabulário.'}>
+        <PrimaryButton variant={ready ? 'mint' : 'secondary'} disabled={!ready} onClick={() => { mark('contextReviewed'); goNext(); }}>Continuar <ArrowRight size={16} /></PrimaryButton>
       </FixedFooter>
     </div>
   );
@@ -245,10 +359,37 @@ function SummaryStage({ lesson, attempts, setAttempts, goNext, goBack, mark }) {
         <h2>Transforme leitura em prática.</h2>
         <p>Feche a aula produzindo algo seu, sem perder o foco do Reading.</p>
       </div>
+      <CoachNote icon={Map} title="Como escrever agora" tone="violet">Use o texto como modelo de estrutura, mas troque as informações para criar uma resposta sua.</CoachNote>
       <GlassCard strong><span className="reading-mini-label">Resumo</span><h3>{summaryPrompt}</h3><TextAreaTask id="summary" label="Meu resumo" placeholder="Escreva seu resumo..." rows={5} minWords={4} attempts={attempts} setAttempts={setAttempts} /></GlassCard>
       <GlassCard><span className="reading-mini-label mint">Produção conectada</span><h3>{productionPrompt}</h3><TextAreaTask id="production" label="Minha produção" placeholder="Every morning, I..." rows={5} minWords={4} attempts={attempts} setAttempts={setAttempts} variant="mint" /></GlassCard>
-      <FixedFooter onBack={goBack} helper={ready ? 'Resumo e produção prontos.' : 'Faça o resumo e a produção curta para liberar o gate.'}>
+      <FixedFooter onBack={goBack} helper={ready ? 'Resumo e produção prontos. Vamos revisar.' : 'Faça o resumo e a produção curta para liberar a revisão.'}>
         <PrimaryButton variant={ready ? 'mint' : 'secondary'} disabled={!ready} onClick={() => { mark('summaryDone'); mark('productionDone'); goNext(); }}>Salvar produção <ArrowRight size={16} /></PrimaryButton>
+      </FixedFooter>
+    </div>
+  );
+}
+
+function RecapStage({ lesson, attempts, setAttempts, goNext, goBack, mark }) {
+  const items = getRecapItems(lesson);
+  const ready = wordCount(attempts.finalReflection) >= 3;
+  return (
+    <div className="reading-stage-content fade-up">
+      <div className="reading-stage-title-block compact">
+        <StageBadge icon={Check} tone="mint">Revisão final</StageBadge>
+        <h2>Veja o que você realmente fez.</h2>
+        <p>A sensação de estudo vem de perceber o caminho percorrido, não só clicar em concluir.</p>
+      </div>
+      <GlassCard strong className="reading-recap-card">
+        <span className="reading-mini-label">Checklist pedagógico</span>
+        {items.map((item, index) => <article key={`${item}-${index}`}><Check size={15} /><p>{item}</p></article>)}
+      </GlassCard>
+      <GlassCard>
+        <span className="reading-mini-label violet">Reflexão curta</span>
+        <h3>O que ficou mais claro depois desta leitura?</h3>
+        <TextAreaTask id="finalReflection" label="Minha reflexão" placeholder="Ex: entendi melhor como descrever uma rotina simples..." rows={3} minWords={3} attempts={attempts} setAttempts={setAttempts} />
+      </GlassCard>
+      <FixedFooter onBack={goBack} helper={ready ? 'Revisão registrada. Agora vá para o gate.' : 'Escreva uma reflexão curta para fechar o estudo.'}>
+        <PrimaryButton variant={ready ? 'mint' : 'secondary'} disabled={!ready} onClick={() => { mark('recapDone'); goNext(); }}>Ir para Mastery Gate <ArrowRight size={16} /></PrimaryButton>
       </FixedFooter>
     </div>
   );
@@ -256,11 +397,15 @@ function SummaryStage({ lesson, attempts, setAttempts, goNext, goBack, mark }) {
 
 function MasteryStage({ lesson, progress, goBack, restart }) {
   const items = [
-    ['textRead', 'Texto lido'],
-    ['comprehensionAttempted', 'Compreensão tentada'],
+    ['prepared', 'Missão de leitura definida'],
+    ['textRead', 'Texto lido sem perguntas'],
+    ['comprehensionAttempted', 'Compreensão de memória tentada'],
+    ['focusedRead', 'Segunda leitura com foco feita'],
     ['evidenceRecorded', 'Evidência registrada'],
+    ['contextReviewed', 'Vocabulário conectado ao contexto'],
     ['summaryDone', 'Resumo feito'],
     ['productionDone', 'Produção conectada feita'],
+    ['recapDone', 'Revisão final registrada'],
   ];
   const completed = items.filter(([key]) => progress[key]).length;
   const allDone = completed === items.length;
@@ -270,7 +415,7 @@ function MasteryStage({ lesson, progress, goBack, restart }) {
         <div className="reading-trophy"><Trophy size={30} /></div>
         <span className="reading-mini-label">Mastery Gate</span>
         <h2>{allDone ? 'Reading desbloqueado' : 'Você está quase lá'}</h2>
-        <p>{allDone ? 'A próxima fase é Prática Profunda complementar — você já garantiu a base.' : 'Complete os itens pendentes para liberar a prática profunda.'}</p>
+        <p>{allDone ? 'Você completou o ciclo de estudo: preparar, ler, lembrar, provar, produzir e revisar.' : 'Complete os itens pendentes para liberar a prática profunda.'}</p>
         <div className="reading-mastery-bar"><i style={{ width: `${(completed / items.length) * 100}%` }} /></div>
         <b>{completed}/{items.length}</b>
       </GlassCard>
@@ -284,15 +429,27 @@ function MasteryStage({ lesson, progress, goBack, restart }) {
   );
 }
 
+const INITIAL_PROGRESS = {
+  prepared: false,
+  textRead: false,
+  comprehensionAttempted: false,
+  focusedRead: false,
+  evidenceRecorded: false,
+  contextReviewed: false,
+  summaryDone: false,
+  productionDone: false,
+  recapDone: false,
+};
+
 export function ReadingLessonFlow({ lesson }) {
   const [stageIndex, setStageIndex] = useState(0);
   const [attempts, setAttempts] = useState({});
-  const [progress, setProgress] = useState({ textRead: false, comprehensionAttempted: false, evidenceRecorded: false, summaryDone: false, productionDone: false });
+  const [progress, setProgress] = useState(INITIAL_PROGRESS);
   const safeStage = Math.max(0, Math.min(stageIndex, STAGES.length - 1));
   const mark = (key) => setProgress((current) => ({ ...current, [key]: true }));
   const goNext = () => setStageIndex((value) => Math.min(value + 1, STAGES.length - 1));
   const goBack = () => setStageIndex((value) => Math.max(value - 1, 0));
-  const restart = () => { setStageIndex(0); setAttempts({}); setProgress({ textRead: false, comprehensionAttempted: false, evidenceRecorded: false, summaryDone: false, productionDone: false }); };
+  const restart = () => { setStageIndex(0); setAttempts({}); setProgress(INITIAL_PROGRESS); };
   const stage = STAGES[safeStage]?.key;
 
   return (
@@ -305,10 +462,14 @@ export function ReadingLessonFlow({ lesson }) {
         <ProgressStepper activeIndex={safeStage} />
         <main className="reading-premium-main">
           {stage === 'overview' ? <OverviewStage lesson={lesson} goNext={goNext} /> : null}
+          {stage === 'prepare' ? <PrepareStage lesson={lesson} attempts={attempts} setAttempts={setAttempts} goNext={goNext} goBack={goBack} mark={mark} /> : null}
           {stage === 'text' ? <TextStage lesson={lesson} goNext={goNext} goBack={goBack} mark={mark} /> : null}
           {stage === 'comprehension' ? <ComprehensionStage lesson={lesson} attempts={attempts} setAttempts={setAttempts} goNext={goNext} goBack={goBack} mark={mark} /> : null}
+          {stage === 'focus' ? <FocusStage lesson={lesson} attempts={attempts} setAttempts={setAttempts} goNext={goNext} goBack={goBack} mark={mark} /> : null}
           {stage === 'evidence' ? <EvidenceStage lesson={lesson} attempts={attempts} setAttempts={setAttempts} goNext={goNext} goBack={goBack} mark={mark} /> : null}
+          {stage === 'context' ? <ContextStage lesson={lesson} attempts={attempts} setAttempts={setAttempts} goNext={goNext} goBack={goBack} mark={mark} /> : null}
           {stage === 'summary' ? <SummaryStage lesson={lesson} attempts={attempts} setAttempts={setAttempts} goNext={goNext} goBack={goBack} mark={mark} /> : null}
+          {stage === 'recap' ? <RecapStage lesson={lesson} attempts={attempts} setAttempts={setAttempts} goNext={goNext} goBack={goBack} mark={mark} /> : null}
           {stage === 'mastery' ? <MasteryStage lesson={lesson} progress={progress} goBack={goBack} restart={restart} /> : null}
         </main>
       </div>
