@@ -1,0 +1,61 @@
+.lesson-flow-shell { display: grid; gap: 14px; padding-bottom: 92px; }
+.lesson-flow-shell.empty { padding: 18px; border: 1px dashed rgba(147,160,213,.24); border-radius: 24px; color: #cbd5e1; background: rgba(15,23,42,.48); }
+
+.lesson-flow-focus-header { display: grid; gap: 16px; padding: 18px; border: 1px solid rgba(147,160,213,.18); border-radius: 28px; background: radial-gradient(circle at 12% 0%, rgba(91,156,246,.20), transparent 34%), linear-gradient(180deg, rgba(13,19,42,.94), rgba(8,14,34,.88)); box-shadow: 0 22px 70px rgba(0,0,0,.26), inset 0 1px 0 rgba(255,255,255,.04); }
+.lesson-flow-chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.lesson-flow-chip-row span { min-height: 30px; display: inline-flex; align-items: center; gap: 6px; padding: 0 10px; border-radius: 999px; border: 1px solid rgba(147,160,213,.18); color: #dbeafe; background: rgba(15,23,42,.56); font-size: 12px; font-weight: 950; text-transform: uppercase; letter-spacing: .08em; }
+.lesson-flow-title-area { display: grid; grid-template-columns: minmax(0, 1fr) minmax(230px, .72fr); gap: 14px; align-items: stretch; }
+.lesson-flow-title-area small { color: #93c5fd; font-size: 12px; font-weight: 950; text-transform: uppercase; letter-spacing: .12em; }
+.lesson-flow-title-area h1 { margin: 8px 0 0; color: #fff; font-size: clamp(31px, 8vw, 54px); line-height: .98; letter-spacing: -.065em; }
+.lesson-flow-current-goal { display: grid; align-content: start; gap: 7px; padding: 14px; border: 1px solid rgba(91,156,246,.22); border-radius: 22px; background: rgba(91,156,246,.10); }
+.lesson-flow-current-goal svg { color: #93c5fd; }
+.lesson-flow-current-goal span { color: #fff; font-size: 18px; font-weight: 950; }
+.lesson-flow-current-goal p { margin: 0; color: #b9c5df; line-height: 1.48; }
+
+.lesson-flow-progress-line { height: 9px; overflow: hidden; border-radius: 999px; background: rgba(147,160,213,.13); }
+.lesson-flow-progress-line span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #68a1ff, #a78bfa); transition: width .25s ease; }
+
+.lesson-flow-stepper { display: flex; gap: 8px; overflow-x: auto; padding: 2px 1px 5px; scrollbar-width: none; }
+.lesson-flow-stepper::-webkit-scrollbar { display: none; }
+.lesson-flow-stepper button { flex: 0 0 auto; min-height: 42px; display: inline-flex; align-items: center; gap: 7px; padding: 0 12px; border-radius: 999px; border: 1px solid rgba(147,160,213,.17); color: #aeb9d8; background: rgba(15,23,42,.58); font-size: 13px; font-weight: 900; }
+.lesson-flow-stepper button.visited { color: #bbf7d0; border-color: rgba(34,197,94,.24); background: rgba(34,197,94,.10); }
+.lesson-flow-stepper button.active { color: #fff; border-color: rgba(91,156,246,.56); background: linear-gradient(135deg, rgba(91,156,246,.35), rgba(167,139,250,.25)); }
+
+.lesson-flow-phase-card { display: grid; gap: 16px; padding: 18px; border: 1px solid rgba(147,160,213,.18); border-radius: 28px; background: linear-gradient(180deg, rgba(12,18,40,.86), rgba(8,14,34,.78)); box-shadow: 0 18px 46px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.035); }
+.lesson-flow-phase-head { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: start; }
+.lesson-flow-phase-head span { color: #93c5fd; font-size: 12px; font-weight: 950; text-transform: uppercase; letter-spacing: .12em; }
+.lesson-flow-phase-head h2 { margin: 7px 0 0; color: #fff; font-size: clamp(28px, 7vw, 42px); line-height: 1.02; letter-spacing: -.055em; }
+.lesson-flow-phase-head p { margin: 9px 0 0; color: #b9c5df; line-height: 1.55; }
+.lesson-flow-phase-status { min-height: 36px; display: inline-flex; align-items: center; justify-content: center; padding: 0 10px; border-radius: 999px; border: 1px solid rgba(147,160,213,.18); background: rgba(255,255,255,.055); color: #cbd5e1; }
+.lesson-flow-phase-status.done { color: #bbf7d0; border-color: rgba(34,197,94,.26); background: rgba(34,197,94,.11); }
+.lesson-flow-phase-status small { font-size: 12px; font-weight: 900; white-space: nowrap; }
+.lesson-flow-phase-body { display: grid; gap: 13px; }
+.lesson-flow-muted { margin: 0; color: #9aa7c8; line-height: 1.5; }
+
+.lesson-flow-action-footer { position: sticky; bottom: 10px; z-index: 20; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 10px; border: 1px solid rgba(147,160,213,.20); border-radius: 22px; background: rgba(8,14,34,.88); backdrop-filter: blur(16px); box-shadow: 0 18px 46px rgba(0,0,0,.28); }
+.lesson-flow-action-footer p { margin: 0; color: #9aa7c8; font-size: 13px; line-height: 1.35; }
+.lesson-flow-primary-action,
+.lesson-flow-secondary-action { min-height: 48px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 0 15px; border-radius: 16px; font-size: 15px; font-weight: 950; }
+.lesson-flow-primary-action { border: 0; color: #fff; background: linear-gradient(135deg, #68a1ff, #a78bfa); box-shadow: 0 14px 34px rgba(91,156,246,.22); }
+.lesson-flow-secondary-action { border: 1px solid rgba(147,160,213,.18); color: #dbeafe; background: rgba(255,255,255,.07); }
+.lesson-flow-secondary-action:disabled { opacity: .45; }
+
+.lesson-flow-reading .lesson-flow-current-goal { border-color: rgba(34,197,94,.24); background: rgba(34,197,94,.09); }
+.lesson-flow-listening .lesson-flow-current-goal { border-color: rgba(56,189,248,.24); background: rgba(56,189,248,.09); }
+.lesson-flow-speaking .lesson-flow-current-goal { border-color: rgba(168,85,247,.24); background: rgba(168,85,247,.10); }
+.lesson-flow-writing .lesson-flow-current-goal { border-color: rgba(244,114,182,.24); background: rgba(244,114,182,.09); }
+
+@media (max-width: 720px) {
+  .lesson-flow-shell { gap: 12px; padding-bottom: 100px; }
+  .lesson-flow-focus-header { padding: 15px; border-radius: 24px; }
+  .lesson-flow-title-area { grid-template-columns: 1fr; }
+  .lesson-flow-current-goal { padding: 13px; border-radius: 19px; }
+  .lesson-flow-stepper button { min-height: 40px; font-size: 12px; }
+  .lesson-flow-phase-card { padding: 15px; border-radius: 24px; }
+  .lesson-flow-phase-head { grid-template-columns: 1fr; }
+  .lesson-flow-phase-status { justify-content: flex-start; width: fit-content; }
+  .lesson-flow-action-footer { grid-template-columns: 1fr 1fr; bottom: 8px; }
+  .lesson-flow-action-footer div { grid-column: 1 / -1; order: -1; }
+  .lesson-flow-primary-action,
+  .lesson-flow-secondary-action { min-height: 50px; width: 100%; }
+}
