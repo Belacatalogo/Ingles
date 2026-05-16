@@ -437,6 +437,88 @@
   border-top: 1px solid rgba(147, 160, 213, .10);
 }
 
+/* ── Audio listen (AudioListenField) ────────────────────── */
+.answer-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.lesson-phase-play {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 14px;
+  color: #fff;
+  background: linear-gradient(135deg, #0ea5e9, #5b9cf6);
+  font-size: 15px;
+  font-weight: 950;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(14, 165, 233, .20);
+}
+
+.lesson-phase-play:disabled {
+  opacity: .4;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.listening-natural-audio-player {
+  width: 100%;
+  height: 44px;
+  border-radius: 12px;
+  accent-color: #5b9cf6;
+}
+
+.lesson-phase-audio-ready {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid rgba(52, 211, 153, .26);
+  border-radius: 999px;
+  background: rgba(52, 211, 153, .08);
+  color: #34d399;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.lesson-phase-audio-ready::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #34d399;
+  box-shadow: 0 0 0 3px rgba(52, 211, 153, .22);
+}
+
+.lesson-phase-play-count {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #5a6a8a;
+  font-size: 12px;
+  margin: 0;
+}
+
+.generator-message,
+.completion-message {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 13px;
+  border: 1px solid rgba(91, 156, 246, .18);
+  border-radius: 13px;
+  background: rgba(91, 156, 246, .07);
+  color: #93c5fd;
+  font-size: 13px;
+  margin: 0;
+}
+
 /* ── iPhone / small screen ──────────────────────────────── */
 @media (max-width: 430px) {
   .lesson-phase-reading-text,

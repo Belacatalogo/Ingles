@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Headphones, PauseCircle, PlayCircle } from 'lucide-react';
+import { Headphones, PauseCircle, PlayCircle, RefreshCw } from 'lucide-react';
 import { generateGeminiAudioBlob } from '../../../services/geminiAudioService.js';
 import { PhaseShell } from './PhaseShell.jsx';
 import { clean } from '../text/normalize.js';
@@ -47,7 +47,7 @@ export function AudioListenField({ phase, flow }) {
         if (currentUrl) URL.revokeObjectURL(currentUrl);
         return url;
       });
-      setStatus('Áudio pronto. Toque no player para ouvir.');
+      setStatus('');
     } catch (error) {
       setStatus(error?.message || 'Não foi possível preparar o áudio agora.');
     } finally {
@@ -58,7 +58,6 @@ export function AudioListenField({ phase, flow }) {
   function markPlay() {
     setPlays((value) => Math.min(value + 1, limit));
     if (!flow.attempts[phase.id]) flow.markAttempt(phase.id, { played: true });
-    setStatus('Ouvindo áudio natural.');
   }
 
   function stopAudio() {
@@ -66,18 +65,28 @@ export function AudioListenField({ phase, flow }) {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
     }
-    setStatus('Áudio parado.');
   }
+
+  const playsLeft = limit - plays;
 
   return (
     <PhaseShell eyebrow="Escuta" title={phase.bodyTitle || phase.title} instruction={phase.instruction}>
       <div className="answer-actions">
-        <button type="button" className="lesson-phase-play lesson-phase-primary" onClick={prepareAudio} disabled={loading || !text}>
-          <PlayCircle size={18} /> {loading ? 'Preparando...' : audioUrl ? 'Preparar novamente' : 'Preparar áudio'}
-        </button>
-        <button type="button" className="lesson-flow-secondary-action" onClick={stopAudio} disabled={!audioUrl}>
-          <PauseCircle size={16} /> Parar
-        </button>
+        {!audioUrl ? (
+          <button type="button" className="lesson-phase-play" onClick={prepareAudio} disabled={loading || !text}>
+            <PlayCircle size={18} /> {loading ? 'Preparando...' : 'Preparar áudio'}
+          </button>
+        ) : (
+          <>
+            <div className="lesson-phase-audio-ready">Áudio pronto</div>
+            <button type="button" className="lesson-flow-secondary-action" onClick={prepareAudio} disabled={loading}>
+              <RefreshCw size={14} /> {loading ? 'Preparando...' : 'Novo áudio'}
+            </button>
+            <button type="button" className="lesson-flow-secondary-action" onClick={stopAudio}>
+              <PauseCircle size={14} /> Parar
+            </button>
+          </>
+        )}
       </div>
       {audioUrl ? (
         <audio
@@ -86,11 +95,13 @@ export function AudioListenField({ phase, flow }) {
           controls
           src={audioUrl}
           onPlay={markPlay}
-          onEnded={() => setStatus('Escuta concluída.')}
+          onEnded={() => setStatus('')}
         />
       ) : null}
-      <p className="lesson-phase-speak-hint"><Headphones size={12} /> Escutas registradas nesta etapa: {plays}/{limit}. Transcript só aparece depois das tentativas iniciais.</p>
-      {status ? <p className="generator-message completion-message"><Headphones size={14} /> {status}</p> : null}
+      <p className="lesson-phase-play-count">
+        <Headphones size={12} /> {plays === 0 ? `Ouça até ${limit}x nesta etapa.` : `Escutas nesta etapa: ${plays}/${limit}${playsLeft > 0 ? ` — ${playsLeft} restante${playsLeft > 1 ? 's' : ''}` : ' — limite atingido'}.`}
+      </p>
+      {status ? <p className="generator-message"><Headphones size={14} /> {status}</p> : null}
     </PhaseShell>
   );
 }

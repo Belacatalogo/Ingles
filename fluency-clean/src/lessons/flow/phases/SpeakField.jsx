@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Check, Mic } from 'lucide-react';
+import { Check, CheckCircle2, Mic } from 'lucide-react';
 import { PhaseShell } from './PhaseShell.jsx';
 import { SpeakExercise } from '../../../practice/components/SpeakExercise.jsx';
 import { clean, expectedOf } from '../text/normalize.js';
@@ -12,8 +12,7 @@ export function SpeakField({ phase, flow, item = {}, eyebrow = 'Sua vez de falar
   const expected = expectedOf(item);
 
   function handleSpeak() {
-    const nextFeedback = { ok: true, retryable: false };
-    setFeedback(nextFeedback);
+    setFeedback({ ok: true, retryable: false });
     flow.markAttempt(phase.id, { spoken: true, value: '' });
   }
 
@@ -24,12 +23,23 @@ export function SpeakField({ phase, flow, item = {}, eyebrow = 'Sua vez de falar
     }
   }
 
+  const feedbackNode = attempted ? (
+    <div className="lesson-phase-feedback ok">
+      <p><CheckCircle2 size={14} /> <b>Tentativa registrada. Você pode avançar.</b></p>
+      {expected ? (
+        <p className="lesson-phase-model-answer">
+          <Check size={13} /> Modelo: <b>{expected}</b>
+        </p>
+      ) : null}
+    </div>
+  ) : null;
+
   return (
     <PhaseShell
       eyebrow={eyebrow}
       title={prompt}
       instruction={instruction || 'Fale em voz alta. Se não puder falar agora, escreva o que você diria.'}
-      feedback={attempted && expected ? <div className="lesson-phase-feedback ok"><p><Check size={14} /> Modelo de fala: <b>{expected}</b></p></div> : null}
+      feedback={feedbackNode}
       footnote="Use fala real ou fallback escrito para liberar a próxima fase."
     >
       <div className="lesson-phase-speak-wrap">

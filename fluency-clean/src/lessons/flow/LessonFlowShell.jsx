@@ -5,9 +5,40 @@ import { LessonPhaseCard } from './LessonPhaseCard.jsx';
 import { LessonPhaseStepper } from './LessonPhaseStepper.jsx';
 import { LessonCompletionCard } from './phases/LessonCompletionCard.jsx';
 import { useLessonFlowState } from './useLessonFlowState.js';
+import { completeLesson } from '../../services/progressStore.js';
+
+function extractAnswers(attempts) {
+  const answers = {};
+  Object.entries(attempts).forEach(([id, data]) => {
+    const text = data && typeof data === 'object' ? String(data.value || '') : '';
+    if (text.trim()) answers[id] = text;
+  });
+  return answers;
+}
+
+function getLongestWritten(attempts) {
+  return Object.values(attempts).reduce((best, data) => {
+    const t = data && typeof data === 'object' ? String(data.value || '') : '';
+    return t.length > best.length ? t : best;
+  }, '');
+}
 
 export function LessonFlowShell({ lesson, phases = [], onPhaseChange, onComplete, children }) {
-  const flow = useLessonFlowState(phases, { onPhaseChange });
+  function handleComplete({ phases: phaseList, attempts }) {
+    try {
+      completeLesson({
+        lesson,
+        answers: extractAnswers(attempts),
+        writtenAnswer: getLongestWritten(attempts),
+      });
+      window.dispatchEvent(new Event('fluency:lesson-updated'));
+    } catch {
+      // fail-safe: never block lesson completion if progressStore throws
+    }
+    onComplete?.({ phases: phaseList, attempts });
+  }
+
+  const flow = useLessonFlowState(phases, { onPhaseChange, onComplete: handleComplete });
 
   if (!flow.phases.length) {
     return (
