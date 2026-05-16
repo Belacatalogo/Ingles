@@ -1,10 +1,14 @@
+import { useState } from 'react';
+import { CheckCircle2, Circle, Loader2, Volume2 } from 'lucide-react';
 import { LessonFlowShell } from '../LessonFlowShell.jsx';
 import { PhaseShell } from '../phases/PhaseShell.jsx';
 import { AttemptField } from '../phases/AttemptField.jsx';
 import { ChoiceField } from '../phases/ChoiceField.jsx';
 import { ListPhase } from '../phases/ListPhase.jsx';
 import { AudioListenField } from '../phases/AudioListenField.jsx';
-import { clean, mergeLists, safeArray, textOf } from '../text/normalize.js';
+import { generateGeminiAudioBlob } from '../../../services/geminiAudioService.js';
+import { playLearningAudio } from '../../../services/audioPlayback.js';
+import { clean, mergeLists, noteOf, safeArray, textOf } from '../text/normalize.js';
 
 function IntroBody({ phase }) {
   return <PhaseShell eyebrow="Preparação" title="Antes de ouvir" instruction={phase.instruction} />;
@@ -16,6 +20,57 @@ function QuizBody({ phase, flow }) { return <ChoiceField phase={phase} flow={flo
 function AttemptBody({ phase, flow }) { return <AttemptField phase={phase} flow={flow} item={phase.item} multiline minWords={phase.minWords || 3} />; }
 function ListBody({ phase }) { return <ListPhase phase={phase} />; }
 function AudioBody({ phase, flow }) { return <AudioListenField phase={phase} flow={flow} />; }
+
+function ShadowingItem({ text, note }) {
+  const [busy, setBusy] = useState(false);
+  const [done, setDone] = useState(false);
+  async function play() {
+    if (busy) return;
+    setBusy(true);
+    try {
+      const blob = await generateGeminiAudioBlob({ text, style: 'shadowing' });
+      const url = URL.createObjectURL(blob);
+      const audio = new Audio(url);
+      audio.onended = () => URL.revokeObjectURL(url);
+      await audio.play();
+    } catch {
+      await playLearningAudio({ text, label: 'shadowing', allowBrowserFallback: true });
+    } finally {
+      setBusy(false);
+    }
+  }
+  return (
+    <div className="listening-shadowing-item">
+      <div className="listening-shadowing-text">
+        <b>{text}</b>
+        {note ? <small>{note}</small> : null}
+      </div>
+      <div className="listening-shadowing-actions">
+        <button type="button" className="lesson-phase-model-audio-btn" onClick={play} disabled={busy} title="Ouvir frase">
+          {busy ? <Loader2 size={14} className="spin" /> : <Volume2 size={14} />}
+        </button>
+        <button type="button" className={`listening-shadowing-done-btn${done ? ' done' : ''}`} onClick={() => setDone((v) => !v)} title="Marcar como praticado">
+          {done ? <CheckCircle2 size={14} /> : <Circle size={14} />}
+          <span>{done ? 'Praticado' : 'Repetir'}</span>
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function ShadowingBody({ phase }) {
+  const items = Array.isArray(phase.items) ? phase.items : [];
+  if (!items.length) return <ListPhase phase={phase} />;
+  return (
+    <PhaseShell eyebrow="Shadowing" title={phase.bodyTitle || phase.title} instruction={phase.instruction || 'Ouça cada frase e repita em voz alta imitando ritmo e entonação.'}>
+      <div className="listening-shadowing-list">
+        {items.map((item, index) => (
+          <ShadowingItem key={index} text={textOf(item)} note={noteOf(item)} />
+        ))}
+      </div>
+    </PhaseShell>
+  );
+}
 
 function listeningText(lesson = {}) {
   return clean(lesson.audioText || lesson.audioScript || lesson.transcript || lesson.script || '');
@@ -98,7 +153,7 @@ function buildPhases(lesson = {}) {
   pushAttempts(phases, 'listening-comprehension', 'Compreensão', 'Pergunta', comprehension, 'Responda com base no áudio e cite o detalhe ouvido.', 5, 'compreensão');
   pushAttempts(phases, 'listening-dictation', 'Dictation', 'Dictation', dictation, 'Digite a frase ou trecho exato que você ouviu.', 2, 'dictation');
 
-  if (shadowing.length) phases.push({ id: 'listening-shadowing', title: 'Shadowing', shortTitle: 'Shadowing', description: 'Repita frases úteis do áudio.', requiresAttempt: false, component: ListBody, eyebrow: 'Shadowing', instruction: 'Leia em voz alta e imite ritmo/entonação.', items: shadowing });
+  if (shadowing.length) phases.push({ id: 'listening-shadowing', title: 'Shadowing', shortTitle: 'Shadowing', description: 'Ouça e repita frases do áudio.', requiresAttempt: false, component: ShadowingBody, eyebrow: 'Shadowing', instruction: 'Ouça cada frase e repita em voz alta imitando ritmo e entonação.', items: shadowing });
   phases.push({ id: 'listening-transcript', title: 'Transcript liberado', shortTitle: 'Transcript', description: 'Confira depois de tentar.', requiresAttempt: false, component: TextBody, eyebrow: 'Transcript', bodyTitle: 'Agora confira o texto', instruction: 'Use o transcript apenas depois de tentar ouvir sem ler.', text: transcript });
   pushAttempts(phases, 'listening-production', 'Produção oral', 'Produção', oralProduction.length ? oralProduction : [{ prompt: 'Escreva o que você diria em voz alta sobre esse áudio.' }], 'Escreva o que você diria em voz alta sobre esse áudio.', 8, 'produção oral');
 
