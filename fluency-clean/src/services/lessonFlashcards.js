@@ -145,7 +145,7 @@ function cardsFromVocabularyLikeFields(lesson, title) {
     example: item?.note,
     deck: `${title} · fala`,
   })));
-  cards.push(...fromArray(lesson?.usefulSentences, `${title} · escrita`, (item) => ({
+  cards.push(...fromArray((lesson?.usefulSentences || []).filter((s) => typeof s !== 'string' || looksEnglish(s)), `${title} · escrita`, (item) => ({
     word: item,
     meaning: 'Frase útil da aula.',
     deck: `${title} · escrita`,
