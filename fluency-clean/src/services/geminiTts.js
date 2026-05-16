@@ -1,4 +1,5 @@
 import { diagnostics } from './diagnostics.js';
+import { getGeneralAiKeys } from './aiKeys.js';
 import { getLessonFlashKeys, getLessonProKey } from './lessonKeys.js';
 import { maskApiKey, normalizeLessonKeys } from './geminiLessons.js';
 import { speakText } from './tts.js';
@@ -65,20 +66,31 @@ function buildTtsPrompt(text, style) {
   return `Read the following English learning text aloud exactly and naturally. Do not translate. Do not improvise. Keep English pronunciation clear and teacher-like. Style: ${cleanStyle}\n\nText:\n${protectedText}`;
 }
 
-function buildAttempts({ flashKeys, proKey }) {
-  const flash = normalizeLessonKeys(flashKeys);
-  const proKeyValue = normalizeLessonKeys([proKey])[0] || '';
+function appendAttempts(attempts, keys, models, source, paid = false) {
+  const normalized = normalizeLessonKeys(keys);
+  for (const key of normalized) {
+    for (const model of models) {
+      attempts.push({ key, model, masked: maskApiKey(key), paid, source });
+    }
+  }
+}
+
+function buildAttempts({ generalKeys, flashKeys, proKey }) {
   const attempts = [];
+  const seen = new Set();
+  const flashModels = TTS_MODELS.filter((model) => model.includes('flash'));
+  const proModels = TTS_MODELS;
 
-  for (const key of flash) {
-    for (const model of TTS_MODELS.filter((model) => model.includes('flash'))) attempts.push({ key, model, masked: maskApiKey(key), paid: false });
-  }
+  appendAttempts(attempts, generalKeys, flashModels, 'general', false);
+  appendAttempts(attempts, flashKeys, flashModels, 'lesson-flash', false);
+  appendAttempts(attempts, [proKey], proModels, 'lesson-pro', true);
 
-  if (proKeyValue) {
-    for (const model of TTS_MODELS) attempts.push({ key: proKeyValue, model, masked: maskApiKey(proKeyValue), paid: true });
-  }
-
-  return attempts;
+  return attempts.filter((attempt) => {
+    const key = `${attempt.key}:${attempt.model}`;
+    if (!attempt.key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 }
 
 async function callGeminiTts({ text, key, model, voiceName, style, fetcher }) {
@@ -154,11 +166,15 @@ export async function generateGeminiTtsAudio({ text, voiceName = DEFAULT_VOICE, 
     }
   }
 
-  const attempts = buildAttempts({ flashKeys: getLessonFlashKeys(), proKey: getLessonProKey() });
-  diagnostics.log(`Gemini TTS natural: ${attempts.length} tentativa(s) preparada(s).`, 'info');
+  const attempts = buildAttempts({
+    generalKeys: getGeneralAiKeys(),
+    flashKeys: getLessonFlashKeys(),
+    proKey: getLessonProKey(),
+  });
+  diagnostics.log(`Gemini TTS natural: ${attempts.length} tentativa(s) preparada(s) usando chaves gerais + chaves de aulas.`, 'info');
 
   if (!attempts.length) {
-    const error = 'Nenhuma key de aulas disponível para Gemini TTS natural.';
+    const error = 'Nenhuma key Gemini disponível para TTS natural. Cadastre em Ajustes > IA geral ou Ajustes > Chaves de aulas.';
     diagnostics.log(error, 'error');
     if (!allowBrowserFallback) return { ok: false, audioUrl: '', source: 'missing-keys', error };
     const fallback = await playBrowserFallback(protectedText);
@@ -170,17 +186,17 @@ export async function generateGeminiTtsAudio({ text, voiceName = DEFAULT_VOICE, 
 
   for (let index = 0; index < attempts.length; index += 1) {
     const attempt = attempts[index];
-    diagnostics.log(`Gemini TTS natural tentativa ${index + 1}/${attempts.length}: ${attempt.model} com ${attempt.masked}`, 'info');
+    diagnostics.log(`Gemini TTS natural tentativa ${index + 1}/${attempts.length}: ${attempt.model} com ${attempt.source} ${attempt.masked}`, 'info');
 
     try {
       const inline = await callGeminiTts({ text: cleanText, key: attempt.key, model: attempt.model, voiceName, style, fetcher });
       setCachedAudio(cacheId, { base64: inline.base64, mimeType: inline.mimeType, sampleRate: DEFAULT_SAMPLE_RATE, textPreview: protectedText });
       const blob = pcmToWavBlob(base64ToUint8Array(inline.base64));
-      diagnostics.log(`Áudio natural Gemini gerado com ${attempt.model}.`, 'info');
+      diagnostics.log(`Áudio natural Gemini gerado com ${attempt.model} usando ${attempt.source}.`, 'info');
       return { ok: true, audioUrl: URL.createObjectURL(blob), source: 'gemini', error: null, cacheId };
     } catch (error) {
       lastError = error;
-      diagnostics.log(`Falha Gemini TTS natural: ${error?.message || error}`, attempt.paid ? 'error' : 'info');
+      diagnostics.log(`Falha Gemini TTS natural (${attempt.source}/${attempt.model}): ${error?.message || error}`, attempt.paid ? 'error' : 'info');
     }
   }
 

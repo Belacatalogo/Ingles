@@ -1,7 +1,11 @@
 import { getGeneralAiKeys } from './aiKeys.js';
 import { getLessonFlashKeys, getLessonProKey } from './lessonKeys.js';
 
-const GEMINI_TTS_MODEL = 'gemini-2.5-flash-preview-tts';
+const GEMINI_TTS_MODELS = [
+  'gemini-2.5-flash-preview-tts',
+  'gemini-2.5-flash-tts',
+  'gemini-2.5-pro-preview-tts',
+];
 const DEFAULT_VOICE = 'Kore';
 const SPEAKER_VOICES = ['Kore', 'Puck', 'Zephyr', 'Charon', 'Leda', 'Orus', 'Aoede', 'Fenrir'];
 
@@ -84,24 +88,39 @@ function buildPrompt({ text, speakers = [], style = 'listening' }) {
   if (style === 'shadowing') {
     return `Read this English phrase naturally and clearly for shadowing practice. Speak slowly enough for an A1 student to repeat. Do not add explanations. Phrase: ${text}`;
   }
-  return `Read this English listening lesson naturally, clearly, and a little slowly for an A1 student. Do not add explanations. Text: ${text}`;
+  return `Read this English learning audio naturally, clearly, and a little slowly for an A1 student. Do not add explanations. Text: ${text}`;
 }
 
-function getAllGeminiKeys() {
+function uniqueKeys(...groups) {
   const seen = new Set();
-  const keys = [...getGeneralAiKeys(), ...getLessonFlashKeys()];
-  const pro = getLessonProKey();
-  if (pro) keys.push(pro);
-  return keys.filter((key) => {
-    if (!key || seen.has(key)) return false;
-    seen.add(key);
+  return groups.flat().filter((key) => {
+    const cleanKey = clean(key);
+    if (!cleanKey || seen.has(cleanKey)) return false;
+    seen.add(cleanKey);
     return true;
   });
 }
 
+function getAllGeminiKeys() {
+  return uniqueKeys(getGeneralAiKeys(), getLessonFlashKeys(), [getLessonProKey()]);
+}
+
+async function requestGeminiAudio({ key, model, body }) {
+  const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
+    body,
+  });
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(payload?.error?.message || `Não foi possível gerar o áudio natural agora. HTTP ${response.status}`);
+  const audio = findAudioPart(payload);
+  if (!audio) throw new Error(`O Gemini não retornou áudio para este texto usando ${model}.`);
+  return audio;
+}
+
 export async function generateGeminiAudioBlob({ text, speakers = [], style = 'listening' }) {
   const keys = getAllGeminiKeys();
-  if (!keys.length) throw new Error('Adicione uma key Gemini em Ajustes > Chaves de aulas para usar o áudio natural.');
+  if (!keys.length) throw new Error('Adicione uma key Gemini em Ajustes > IA geral ou Ajustes > Chaves de aulas para usar o áudio natural.');
   const cleanText = clean(text);
   if (!cleanText) throw new Error('Texto de áudio vazio.');
 
@@ -115,19 +134,13 @@ export async function generateGeminiAudioBlob({ text, speakers = [], style = 'li
 
   let lastError = null;
   for (const key of keys) {
-    try {
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_TTS_MODEL}:generateContent`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
-        body,
-      });
-      const payload = await response.json().catch(() => ({}));
-      if (!response.ok) { lastError = new Error(payload?.error?.message || 'Não foi possível gerar o áudio natural agora.'); continue; }
-      const audio = findAudioPart(payload);
-      if (!audio) { lastError = new Error('O Gemini não retornou áudio para este texto.'); continue; }
-      return audioToBlob(audio.data, audio.mimeType);
-    } catch (err) {
-      lastError = err;
+    for (const model of GEMINI_TTS_MODELS) {
+      try {
+        const audio = await requestGeminiAudio({ key, model, body });
+        return audioToBlob(audio.data, audio.mimeType);
+      } catch (err) {
+        lastError = err;
+      }
     }
   }
   throw lastError || new Error('Não foi possível gerar o áudio com nenhuma key disponível.');
