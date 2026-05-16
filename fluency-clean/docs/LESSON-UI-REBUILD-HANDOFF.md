@@ -1,7 +1,80 @@
 # Lesson UI Rebuild — Handoff
 
-Data: 2026-05-14
-Branch obrigatória: `rewrite-fluency-clean-lab`
+Última atualização: 2026-05-16
+Branch atual: `claude/improve-english-system-hu6gz`
+
+---
+
+## ✅ Bloco concluído: Dark Theme + Completion Card (2026-05-16)
+
+### O que foi feito
+
+**lesson-phase.css — reescrita completa para tema escuro:**
+- Todos os inputs, textareas, choices, feedback, listas passaram para a paleta navy escura
+- Inputs: `rgba(8,14,34,.72)`, bordas visíveis, foco azul com box-shadow
+- Choice buttons: escuros com estados hover/picked/correct/wrong
+- Feedback ok: verde (#a7f3d0) | Feedback warn: âmbar (#fde68a)
+- iPhone: `min-height` 48-54px em todos os botões, `font-size: 16px` nos inputs (previne zoom iOS)
+- Arquivo reescrito de forma legível (era uma linha minificada)
+
+**AttemptField — melhorias pedagógicas:**
+- Contador de palavras em tempo real (x / N palavras, fica verde quando atingido)
+- Ícone `<Check>` no botão "Conferir"
+- Campo bloqueado só quando feedback é 'ok' (sempre pode tentar de novo em 'warn')
+
+**ListPhase — vocab cards inteligentes:**
+- Detecta se itens têm tradução/pt/meaning → renderiza como vocab card
+- Vocab card: palavra grande + tradução azul + nota cinza + exemplo em itálico
+- Fallback limpo para itens simples (steps, rules, examples)
+
+**LessonCompletionCard — fase de conclusão:**
+- Novo componente `phases/LessonCompletionCard.jsx`
+- Aparece quando o usuário clica "Concluir aula" na última fase
+- Mostra: acertos / a revisar / aproveitamento em %
+- Lista etapas com status 'warn' para revisão
+- Botão "Rever aula" volta ao início
+
+**useLessonFlowState — estado de conclusão:**
+- Adicionado `completed` boolean
+- `next()` na última fase seta `completed = true` em vez de não fazer nada
+- `goTo()` reseta `completed` (permite navegar e re-concluir)
+- `onComplete` callback disponível para integração futura
+
+**LessonActionFooter:**
+- Oculta quando `completed = true`
+- Label da última fase: "Concluir aula" (era "Finalizar etapa")
+
+### Arquivos alterados
+- `fluency-clean/src/lessons/flow/lesson-phase.css` — reescrita
+- `fluency-clean/src/lessons/flow/lesson-flow.css` — adicionado CSS do completion card
+- `fluency-clean/src/lessons/flow/phases/AttemptField.jsx` — contador de palavras
+- `fluency-clean/src/lessons/flow/phases/ListPhase.jsx` — vocab cards inteligentes
+- `fluency-clean/src/lessons/flow/phases/LessonCompletionCard.jsx` — NOVO
+- `fluency-clean/src/lessons/flow/LessonFlowShell.jsx` — integra completion card
+- `fluency-clean/src/lessons/flow/LessonActionFooter.jsx` — oculta em completed
+- `fluency-clean/src/lessons/flow/useLessonFlowState.js` — completed state
+
+### Estado atual
+- Todas as aulas (Grammar, Reading, Listening, Speaking, Writing, Vocabulary) usam o tema escuro
+- O sistema de fases está funcionando com início, meio e fim bem definidos
+- Build limpo (2520 módulos, sem erros)
+
+### Próximo bloco recomendado
+- `BLOCO-LESSON-UI-READING-POLISH`: melhorar tipografia e layout do texto de leitura
+- `BLOCO-LESSON-UI-SPEAKING-POLISH`: melhorar o `SpeakField` com feedback visual de fala
+- `BLOCO-LESSON-UI-PROGRESS-INTEGRATION`: conectar `onComplete` do flow ao `completeLessonRecord`
+- `BLOCO-LESSON-UI-AUDIO-POLISH`: melhorar `AudioListenField` UX no iPhone
+
+### Cuidados importantes
+- Não remover o `lesson-phase.css` — é importado em `lesson-phase.css` mas aplicado em toda a camada de fases
+- O `completed` state reseta ao navegar entre fases. Isso é intencional.
+- O `LessonCompletionCard` usa `flow.attempts` — não tem acesso ao progressStore direto
+- `ListPhase` detecta vocab por presença de `translation/pt/portuguese/meaning` nos items. Se itens de lista simples tiverem esses campos, serão renderizados como vocab card (comportamento esperado)
+
+---
+
+Data original: 2026-05-14
+Branch original: `rewrite-fluency-clean-lab`
 
 ## Leia antes de qualquer bloco de UI de aula
 
