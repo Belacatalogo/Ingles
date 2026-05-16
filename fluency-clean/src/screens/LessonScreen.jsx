@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
-import { Clock, RefreshCw, ShieldCheck, Sparkles, Target } from 'lucide-react';
+import { BookOpenCheck, Clock, RefreshCw, ShieldCheck, Sparkles, Target } from 'lucide-react';
 import { Card } from '../components/ui/Card.jsx';
 import { PracticeLauncher } from '../practice/PracticeLauncher.jsx';
 import { getCurrentLesson, getCurrentLessonFull } from '../services/lessonStore.js';
@@ -19,15 +19,6 @@ const LessonScreenDevTools = import.meta.env.DEV
   ? lazy(() => import('./LessonScreen.devTools.jsx').then((module) => ({ default: module.LessonScreenDevTools })))
   : null;
 
-const fallbackLesson = {
-  id: 'fallback-reading',
-  type: 'reading',
-  pillar: 'reading',
-  title: 'Reading — A rotina de uma manhã produtiva',
-  level: 'A1',
-  intro: 'Abra uma aula do curso fixo para estudar com explicação guiada, prática ativa e conclusão salva no seu progresso.',
-};
-
 const FLOW_BY_PILLAR = {
   grammar: GrammarLessonFlow,
   vocabulary: VocabularyLessonFlow,
@@ -36,6 +27,21 @@ const FLOW_BY_PILLAR = {
   speaking: SpeakingLessonFlow,
   writing: WritingLessonFlow,
 };
+
+function NoLessonState() {
+  return (
+    <section className="lesson-no-lesson-state">
+      <Card eyebrow="Aba Aula" title="Nenhuma aula aberta">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', alignItems: 'flex-start' }}>
+          <p>Nenhuma aula foi aberta ainda. Vá até a aba <strong>Curso</strong> e toque em <strong>Começar aula</strong> para o Fluency abrir automaticamente a aula liberada para o seu progresso.</p>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', color: 'var(--text-muted, #888)' }}>
+            <BookOpenCheck size={15} /> A aula aparece aqui assim que você a abrir pelo Curso.
+          </span>
+        </div>
+      </Card>
+    </section>
+  );
+}
 
 function cleanText(value) {
   if (typeof value === 'string' || typeof value === 'number') return String(value).trim();
@@ -160,15 +166,15 @@ export function LessonScreen({ lessonRevision = 0 }) {
     };
   }, [pointerGenerationId, lessonRevision, localRevision]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const rawLesson = fullLesson || savedLessonPointer || fallbackLesson;
+  const hasLesson = Boolean(fullLesson || savedLessonPointer);
+  const rawLesson = fullLesson || savedLessonPointer || null;
   const lesson = useMemo(() => normalizeStaticLessonForDisplay(rawLesson), [rawLesson]);
   const lessonStats = useMemo(() => getLessonStats(lesson), [lesson]);
-  const usingSavedLesson = Boolean(savedLessonPointer || fullLesson);
   const staticLesson = isStaticLesson(lesson);
   const meta = lesson?.generationMeta || null;
 
   useEffect(() => {
-    recordLessonAsCurrentCurriculumUnit(lesson);
+    if (lesson) recordLessonAsCurrentCurriculumUnit(lesson);
   }, [lesson?.id, lesson?.title, lesson?.type, lesson?.pillar, lesson?.level, lesson?.generationMeta?.id]);
 
   function forceRefreshLesson() {
@@ -184,33 +190,37 @@ export function LessonScreen({ lessonRevision = 0 }) {
         </Suspense>
       ) : null}
 
-      <section className="lesson-reference-hero">
-        <div className="lesson-chip-row">
-          <span className="lesson-chip blue"><Sparkles size={11} /> {staticLesson ? 'Curso fixo premium' : usingSavedLesson ? 'Aula salva' : 'Aula inicial'}</span>
-          <span className="lesson-chip">{getLessonTypeLabel(lesson)}</span>
-          <span className="lesson-chip violet">{lesson?.level || 'A1'}</span>
-          {lesson?.packageId ? <span className="lesson-chip">Pacote {lesson.packageId}</span> : null}
-        </div>
-        <h1>{getLessonTitle(lesson)}</h1>
-        <p>{loadingFullLesson && savedLessonPointer && !fullLesson ? 'Carregando aula completa...' : getLessonDescription(lesson)}</p>
-        <div className="lesson-generation-proof">
-          <ShieldCheck size={15} />
-          <span>
-            <b>{staticLesson ? 'Aula fixa validada' : 'Renderizador guiado'}</b>
-            <small>{meta?.generatedAt ? `Atualizada em ${formatDateTime(meta.generatedAt)}` : 'Fluxo por pilar sem cards técnicos.'}</small>
-          </span>
-        </div>
-        <footer>
-          <div>
-            <span><Clock size={13} /> {lessonStats.minutes} min</span>
-            <span><Target size={13} /> {lessonStats.exercises} ex.</span>
-          </div>
-          <button type="button" aria-label="Atualizar aula salva" onClick={forceRefreshLesson}><RefreshCw size={14} /></button>
-        </footer>
-      </section>
+      {!hasLesson ? <NoLessonState /> : (
+        <>
+          <section className="lesson-reference-hero">
+            <div className="lesson-chip-row">
+              <span className="lesson-chip blue"><Sparkles size={11} /> {staticLesson ? 'Curso fixo premium' : 'Aula salva'}</span>
+              <span className="lesson-chip">{getLessonTypeLabel(lesson)}</span>
+              <span className="lesson-chip violet">{lesson?.level || 'A1'}</span>
+              {lesson?.packageId ? <span className="lesson-chip">Pacote {lesson.packageId}</span> : null}
+            </div>
+            <h1>{getLessonTitle(lesson)}</h1>
+            <p>{loadingFullLesson && savedLessonPointer && !fullLesson ? 'Carregando aula completa...' : getLessonDescription(lesson)}</p>
+            <div className="lesson-generation-proof">
+              <ShieldCheck size={15} />
+              <span>
+                <b>{staticLesson ? 'Aula fixa validada' : 'Renderizador guiado'}</b>
+                <small>{meta?.generatedAt ? `Atualizada em ${formatDateTime(meta.generatedAt)}` : 'Fluxo por pilar sem cards técnicos.'}</small>
+              </span>
+            </div>
+            <footer>
+              <div>
+                <span><Clock size={13} /> {lessonStats.minutes} min</span>
+                <span><Target size={13} /> {lessonStats.exercises} ex.</span>
+              </div>
+              <button type="button" aria-label="Atualizar aula salva" onClick={forceRefreshLesson}><RefreshCw size={14} /></button>
+            </footer>
+          </section>
 
-      <LessonRenderer lesson={lesson} />
-      <PracticeMount lesson={lesson} />
+          <LessonRenderer lesson={lesson} />
+          <PracticeMount lesson={lesson} />
+        </>
+      )}
     </section>
   );
 }
