@@ -1,4 +1,5 @@
 import { getGeneralAiKeys } from './aiKeys.js';
+import { getLessonFlashKeys, getLessonProKey } from './lessonKeys.js';
 
 const GEMINI_TTS_MODEL = 'gemini-2.5-flash-preview-tts';
 const DEFAULT_VOICE = 'Kore';
@@ -86,27 +87,48 @@ function buildPrompt({ text, speakers = [], style = 'listening' }) {
   return `Read this English listening lesson naturally, clearly, and a little slowly for an A1 student. Do not add explanations. Text: ${text}`;
 }
 
+function getAllGeminiKeys() {
+  const seen = new Set();
+  const keys = [...getGeneralAiKeys(), ...getLessonFlashKeys()];
+  const pro = getLessonProKey();
+  if (pro) keys.push(pro);
+  return keys.filter((key) => {
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
 export async function generateGeminiAudioBlob({ text, speakers = [], style = 'listening' }) {
-  const [key] = getGeneralAiKeys();
-  if (!key) throw new Error('Adicione uma key em Ajustes > Chaves de aulas > IA geral.');
+  const keys = getAllGeminiKeys();
+  if (!keys.length) throw new Error('Adicione uma key Gemini em Ajustes > Chaves de aulas para usar o áudio natural.');
   const cleanText = clean(text);
   if (!cleanText) throw new Error('Texto de áudio vazio.');
 
-  const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_TTS_MODEL}:generateContent`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
-    body: JSON.stringify({
-      contents: [{ role: 'user', parts: [{ text: buildPrompt({ text: cleanText, speakers, style }) }] }],
-      generationConfig: {
-        responseModalities: ['AUDIO'],
-        speechConfig: buildSpeechConfig(speakers),
-      },
-    }),
+  const body = JSON.stringify({
+    contents: [{ role: 'user', parts: [{ text: buildPrompt({ text: cleanText, speakers, style }) }] }],
+    generationConfig: {
+      responseModalities: ['AUDIO'],
+      speechConfig: buildSpeechConfig(speakers),
+    },
   });
 
-  const payload = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(payload?.error?.message || 'Não foi possível gerar o áudio natural agora.');
-  const audio = findAudioPart(payload);
-  if (!audio) throw new Error('O Gemini não retornou áudio para este texto.');
-  return audioToBlob(audio.data, audio.mimeType);
+  let lastError = null;
+  for (const key of keys) {
+    try {
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_TTS_MODEL}:generateContent`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
+        body,
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) { lastError = new Error(payload?.error?.message || 'Não foi possível gerar o áudio natural agora.'); continue; }
+      const audio = findAudioPart(payload);
+      if (!audio) { lastError = new Error('O Gemini não retornou áudio para este texto.'); continue; }
+      return audioToBlob(audio.data, audio.mimeType);
+    } catch (err) {
+      lastError = err;
+    }
+  }
+  throw lastError || new Error('Não foi possível gerar o áudio com nenhuma key disponível.');
 }
