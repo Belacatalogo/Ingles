@@ -24,7 +24,7 @@ function buildAnswerMap(attempts) {
   return answers;
 }
 
-export function LessonFlowShell({ lesson, phases = [], onPhaseChange, onComplete, children }) {
+export function LessonFlowShell({ lesson, phases = [], onPhaseChange, onComplete, onNavigate, children }) {
   function handleComplete({ phases: phaseList, attempts }) {
     try {
       const scored = computeFlowResults(phaseList, attempts);
@@ -70,7 +70,9 @@ export function LessonFlowShell({ lesson, phases = [], onPhaseChange, onComplete
         <LessonCompletionCard
           phases={flow.phases}
           attempts={flow.attempts}
+          lesson={lesson}
           onRestart={() => flow.goTo(0)}
+          onNavigate={onNavigate}
         />
       ) : null}
       <LessonActionFooter flow={flow} />

@@ -1,9 +1,12 @@
-import { Award, BookOpen, RotateCcw, ThumbsUp } from 'lucide-react';
+import { Award, BookOpen, CreditCard, RotateCcw, ThumbsUp, TriangleAlert } from 'lucide-react';
 import { computeFlowResults } from '../lessonFlowScore.js';
+import { hasLessonFlashcards } from '../../../services/lessonFlashcards.js';
 
-export function LessonCompletionCard({ phases = [], attempts = {}, onRestart }) {
+export function LessonCompletionCard({ phases = [], attempts = {}, lesson = null, onRestart, onNavigate }) {
   const { correct, warn, missed, totalAttempt, score, weakTitles } = computeFlowResults(phases, attempts);
   const isExcellent = score >= 80;
+  const hasFlashcards = lesson ? hasLessonFlashcards(lesson) : false;
+  const hasErrors = weakTitles.length > 0;
 
   return (
     <div className="lesson-completion-card">
@@ -38,7 +41,7 @@ export function LessonCompletionCard({ phases = [], attempts = {}, onRestart }) 
         </div>
       ) : null}
 
-      {weakTitles.length > 0 ? (
+      {hasErrors ? (
         <div className="lesson-completion-missed">
           <span><BookOpen size={12} /> Revise antes de avançar:</span>
           <ul>
@@ -49,11 +52,23 @@ export function LessonCompletionCard({ phases = [], attempts = {}, onRestart }) 
         </div>
       ) : null}
 
-      {onRestart ? (
-        <button type="button" className="lesson-completion-retry" onClick={onRestart}>
-          <RotateCcw size={15} /> Rever aula
-        </button>
-      ) : null}
+      <div className="lesson-completion-actions">
+        {onRestart ? (
+          <button type="button" className="lesson-completion-retry" onClick={onRestart}>
+            <RotateCcw size={15} /> Rever aula
+          </button>
+        ) : null}
+        {hasFlashcards && onNavigate ? (
+          <button type="button" className="lesson-completion-cta" onClick={() => onNavigate('flashcards')}>
+            <CreditCard size={15} /> Ver flashcards
+          </button>
+        ) : null}
+        {hasErrors && onNavigate ? (
+          <button type="button" className="lesson-completion-cta warn" onClick={() => onNavigate('course')}>
+            <TriangleAlert size={15} /> Revisar erros
+          </button>
+        ) : null}
+      </div>
     </div>
   );
 }
