@@ -5,7 +5,91 @@ Branch atual: `claude/improve-english-system-hu6gz`
 
 ---
 
-## ✅ Bloco concluído: Dark Theme + Completion Card (2026-05-16)
+## ✅ Bloco concluído: Estrutura pedagógica real do sistema de aulas (2026-05-16)
+
+### Auditoria — o que estava raso
+
+| Problema | Severidade |
+|---|---|
+| `masteryStore` só conhecia 4 pilares (grammar, writing, reading, listening) | Alta — speaking e vocabulary nunca atualizavam o domínio |
+| `scoreLessonAttempt()` lia `lesson.exercises[]` (formato antigo) | Alta — score sempre 100% falso nas aulas novas |
+| `extractWeakTopics()` usava `lesson.title`, não os erros reais | Alta — tópicos fracos nunca refletiam o que o aluno errou |
+| `completeLesson()` não sabia quais fases foram certas/erradas | Alta — backend de progresso era cego ao resultado real |
+| `errorBank` não lia erros de ChoiceField/AttemptField | Alta — respostas erradas de aulas não chegavam ao banco de erros |
+| `LessonCompletionCard` tinha `buildSummary()` próprio desalinhado com o backend | Média — score da tela e score salvo eram calculados diferente |
+| Feedback pedagógico ignorava `item.hint/explanation/note` | Média — dica disponível no conteúdo, não mostrada ao aluno |
+
+### O que foi feito
+
+**`lessonFlowScore.js` (NOVO — fonte única de verdade):**
+- `computeFlowResults(phases, attempts)` — calcula score real normalizando AttemptField `{value, matched, feedback}`, ChoiceField `{value, matched}`, AudioListenField `{played}`, SpeakField `{spoken}`, ChecklistField `{checked}`
+- `extractFlowErrors(phases, attempts, lessonMeta)` — extrai fases com erro para o banco de erros
+- `getAttemptStatus(attempt)` — normaliza qualquer formato de tentativa
+
+**`masteryStore.js`:**
+- Adicionados pilares `speaking` e `vocabulary`
+- `scoreLessonAttempt()` aceita `preComputedScore` — usa score real do flow
+- `extractWeakTopics()` aceita `flowResults` — tópicos fracos agora são os títulos das fases erradas
+- `recordLessonMastery()` repassa os novos params
+- `pillar` lido de `lesson.pillar || lesson.type` (mais robusto)
+
+**`progressStore.js`:**
+- `completeLesson()` aceita `flowResults` e `preComputedScore`
+- Salva `completion.flowErrors` (fases erradas) e `completion.flowScore` no registro
+- `pillar` lido de `lesson.pillar || lesson.type`
+
+**`errorBank.js`:**
+- `fromLessonCompletions()` lê `completion.flowErrors` — respostas erradas de AttemptField/ChoiceField agora aparecem no banco de erros e no alerta da TodayScreen
+
+**`LessonFlowShell.jsx`:**
+- Usa `computeFlowResults()` e `extractFlowErrors()` ao concluir
+- Passa `preComputedScore` e `flowResults` para `completeLesson()`
+
+**`LessonCompletionCard.jsx`:**
+- Usa `computeFlowResults()` — mesma fonte de verdade do backend
+- `weakTitles` inclui fases `missed` (não tentadas) além de `warn`
+
+**`AttemptField.jsx`:**
+- Exibe `item.hint/tip/explanation/note` como dica pedagógica (Lightbulb âmbar) quando status é `warn`
+- Antes esse campo era ignorado mesmo quando o conteúdo fornecia explicação
+
+**`ChoiceField.jsx`:**
+- Exibe `item.explanation/hint/rationale` após a tentativa
+- Mostra no acerto (como complemento) e no erro (como dica âmbar)
+
+**`lesson-phase.css`:**
+- `.lesson-phase-feedback-hint` — estilo âmbar para dicas pedagógicas, diferente do model-answer azul
+
+### Como cada ponto melhorou
+
+1. **Pilares**: todos os 6 agora atualizam o domínio do aluno (antes speaking/vocabulary eram ignorados)
+2. **Score real**: `masteryStore` usa o resultado real das fases em vez de sempre retornar 100%
+3. **Tópicos fracos**: derivados das fases que o aluno errou, não do título genérico da aula
+4. **Banco de erros**: respostas erradas de aulas chegam ao `errorBank` e aparecem na TodayScreen
+5. **Consistência**: tela de conclusão e dados salvos usam a mesma função de cálculo
+6. **Feedback pedagógico**: explicações e dicas do conteúdo são exibidas ao aluno quando erra
+
+### Arquivos alterados
+- `fluency-clean/src/lessons/flow/lessonFlowScore.js` — NOVO
+- `fluency-clean/src/lessons/flow/LessonFlowShell.jsx`
+- `fluency-clean/src/lessons/flow/phases/LessonCompletionCard.jsx`
+- `fluency-clean/src/lessons/flow/phases/AttemptField.jsx`
+- `fluency-clean/src/lessons/flow/phases/ChoiceField.jsx`
+- `fluency-clean/src/lessons/flow/lesson-phase.css`
+- `fluency-clean/src/services/masteryStore.js`
+- `fluency-clean/src/services/progressStore.js`
+- `fluency-clean/src/services/errorBank.js`
+
+### O que ainda fica para o próximo bloco
+
+- **Persistência mid-lesson**: refresh da página reinicia a aula do zero. Falta salvar `activeIndex` e `attempts` em localStorage enquanto a aula estiver em andamento
+- **Revisão de itens errados**: existe `getErrorReviewQueue()` e `getPracticeReviewQueue()` mas não há tela ou fluxo para revisar especificamente os erros das fases de aula
+- **Mastery por pillar na TodayScreen**: `getMasteryProfile()` tem os dados por pilar mas não são exibidos ao aluno
+- **Gate de avanço por score**: hoje o aluno pode concluir com 0% de acerto. Considerar um mínimo pedagógico opcional por pilar
+
+---
+
+## ✅ Bloco concluído: Dark Theme + Completion Card + Pillar Icons (2026-05-16)
 
 ### O que foi feito
 
