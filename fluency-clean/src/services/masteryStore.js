@@ -2,12 +2,14 @@ import { storage } from './storage.js';
 
 const MASTERY_KEY = 'mastery.skillProfile.v1';
 
-const PILLARS = ['grammar', 'writing', 'reading', 'listening'];
+const PILLARS = ['grammar', 'writing', 'reading', 'listening', 'speaking', 'vocabulary'];
 const TYPE_TO_PILLAR = {
   grammar: 'grammar',
   writing: 'writing',
   reading: 'reading',
   listening: 'listening',
+  speaking: 'speaking',
+  vocabulary: 'vocabulary',
 };
 
 function todayKey(date = new Date()) {
@@ -60,22 +62,30 @@ function normalizeProfile(value = {}) {
   };
 }
 
-function extractWeakTopics({ lesson, answers = {}, writtenAnswer = '' }) {
+function extractWeakTopics({ lesson, answers = {}, writtenAnswer = '', flowResults = [] }) {
   const topics = new Set();
-  if (lesson?.title) topics.add(String(lesson.title));
   if (lesson?.category) topics.add(String(lesson.category));
   if (lesson?.checkpoint) topics.add(String(lesson.checkpoint));
 
-  const exercises = Array.isArray(lesson?.exercises) ? lesson.exercises : [];
-  exercises.forEach((exercise, index) => {
-    const selected = answers?.[index];
-    if (!selected) return;
-    const expected = String(exercise?.answer || '').trim().toLowerCase();
-    const received = String(selected || '').trim().toLowerCase();
-    if (expected && received && expected !== received) {
-      topics.add(String(exercise?.question || exercise?.prompt || `Questão ${index + 1}`).slice(0, 100));
-    }
-  });
+  // Flow-based weak topics: fases com status 'warn' ou 'missed'
+  if (flowResults.length > 0) {
+    flowResults
+      .filter((r) => r.status === 'warn' || r.status === 'missed')
+      .forEach((r) => { if (r.title) topics.add(r.title); });
+  } else {
+    // Fallback legado: lê lesson.exercises (formato antigo)
+    const exercises = Array.isArray(lesson?.exercises) ? lesson.exercises : [];
+    exercises.forEach((exercise, index) => {
+      const selected = answers?.[index];
+      if (!selected) return;
+      const expected = String(exercise?.answer || '').trim().toLowerCase();
+      const received = String(selected || '').trim().toLowerCase();
+      if (expected && received && expected !== received) {
+        topics.add(String(exercise?.question || exercise?.prompt || `Questão ${index + 1}`).slice(0, 100));
+      }
+    });
+    if (lesson?.title) topics.add(String(lesson.title));
+  }
 
   if (String(writtenAnswer || '').trim().length < 40 && lesson?.type === 'writing') {
     topics.add('produção escrita curta ou incompleta');
@@ -84,7 +94,17 @@ function extractWeakTopics({ lesson, answers = {}, writtenAnswer = '' }) {
   return Array.from(topics).filter(Boolean).slice(0, 8);
 }
 
-function scoreLessonAttempt({ lesson, answers = {}, writtenAnswer = '' }) {
+function scoreLessonAttempt({ lesson, answers = {}, writtenAnswer = '', preComputedScore = null }) {
+  // Se o novo sistema de fases já calculou o score, usa direto
+  if (preComputedScore !== null && typeof preComputedScore === 'object') {
+    return {
+      total: preComputedScore.totalAttempt || 1,
+      correct: preComputedScore.correct || 0,
+      score: preComputedScore.score ?? 100,
+    };
+  }
+
+  // Fallback legado: usa lesson.exercises (formato antigo)
   const exercises = Array.isArray(lesson?.exercises) ? lesson.exercises : [];
   let total = exercises.length;
   let correct = 0;
@@ -123,11 +143,11 @@ export function saveMasteryProfile(profile) {
   return next;
 }
 
-export function recordLessonMastery({ lesson, answers = {}, writtenAnswer = '' }) {
+export function recordLessonMastery({ lesson, answers = {}, writtenAnswer = '', flowResults = [], preComputedScore = null }) {
   const profile = getMasteryProfile();
-  const pillar = TYPE_TO_PILLAR[String(lesson?.type || '').toLowerCase()] || 'reading';
-  const result = scoreLessonAttempt({ lesson, answers, writtenAnswer });
-  const weakTopics = extractWeakTopics({ lesson, answers, writtenAnswer });
+  const pillar = TYPE_TO_PILLAR[String(lesson?.type || lesson?.pillar || '').toLowerCase()] || 'reading';
+  const result = scoreLessonAttempt({ lesson, answers, writtenAnswer, preComputedScore });
+  const weakTopics = extractWeakTopics({ lesson, answers, writtenAnswer, flowResults });
   const previous = normalizePillar(profile.pillars[pillar]);
   const weak = result.score < 85;
   const attempts = previous.attempts + 1;

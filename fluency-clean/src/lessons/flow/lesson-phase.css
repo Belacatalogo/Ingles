@@ -233,6 +233,16 @@
   opacity: .82;
 }
 
+.lesson-phase-feedback-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  margin-top: 2px;
+  color: #fde68a;
+  font-size: 13px;
+  opacity: .88;
+}
+
 .lesson-phase-model-answer {
   display: flex;
   align-items: flex-start;

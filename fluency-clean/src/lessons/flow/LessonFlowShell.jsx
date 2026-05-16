@@ -4,17 +4,9 @@ import { LessonFocusHeader } from './LessonFocusHeader.jsx';
 import { LessonPhaseCard } from './LessonPhaseCard.jsx';
 import { LessonPhaseStepper } from './LessonPhaseStepper.jsx';
 import { LessonCompletionCard } from './phases/LessonCompletionCard.jsx';
+import { computeFlowResults, extractFlowErrors } from './lessonFlowScore.js';
 import { useLessonFlowState } from './useLessonFlowState.js';
 import { completeLesson } from '../../services/progressStore.js';
-
-function extractAnswers(attempts) {
-  const answers = {};
-  Object.entries(attempts).forEach(([id, data]) => {
-    const text = data && typeof data === 'object' ? String(data.value || '') : '';
-    if (text.trim()) answers[id] = text;
-  });
-  return answers;
-}
 
 function getLongestWritten(attempts) {
   return Object.values(attempts).reduce((best, data) => {
@@ -23,19 +15,33 @@ function getLongestWritten(attempts) {
   }, '');
 }
 
+function buildAnswerMap(attempts) {
+  const answers = {};
+  Object.entries(attempts).forEach(([id, data]) => {
+    const text = data && typeof data === 'object' ? String(data.value || '') : '';
+    if (text.trim()) answers[id] = text;
+  });
+  return answers;
+}
+
 export function LessonFlowShell({ lesson, phases = [], onPhaseChange, onComplete, children }) {
   function handleComplete({ phases: phaseList, attempts }) {
     try {
+      const scored = computeFlowResults(phaseList, attempts);
+      const flowErrors = extractFlowErrors(phaseList, attempts, lesson || {});
       completeLesson({
         lesson,
-        answers: extractAnswers(attempts),
+        answers: buildAnswerMap(attempts),
         writtenAnswer: getLongestWritten(attempts),
+        flowResults: scored.results,
+        preComputedScore: { totalAttempt: scored.totalAttempt, correct: scored.correct, score: scored.score },
       });
       window.dispatchEvent(new Event('fluency:lesson-updated'));
+      onComplete?.({ phases: phaseList, attempts, scored, flowErrors });
     } catch {
-      // fail-safe: never block lesson completion if progressStore throws
+      // fail-safe: nunca bloquear conclusão de aula
+      onComplete?.({ phases: phaseList, attempts });
     }
-    onComplete?.({ phases: phaseList, attempts });
   }
 
   const flow = useLessonFlowState(phases, { onPhaseChange, onComplete: handleComplete });
@@ -48,8 +54,6 @@ export function LessonFlowShell({ lesson, phases = [], onPhaseChange, onComplete
     );
   }
 
-  const showCompletion = flow.completed;
-
   return (
     <article className="lesson-flow-shell">
       <LessonFocusHeader lesson={lesson} phase={flow.activePhase} percent={flow.percent} />
@@ -61,14 +65,14 @@ export function LessonFlowShell({ lesson, phases = [], onPhaseChange, onComplete
         onSelect={flow.goTo}
       />
       {children ? children(flow) : <LessonPhaseCard phase={flow.activePhase} flow={flow} />}
-      {showCompletion ? (
+      {flow.completed ? (
         <LessonCompletionCard
           phases={flow.phases}
           attempts={flow.attempts}
           onRestart={() => flow.goTo(0)}
         />
       ) : null}
-      <LessonActionFooter flow={flow} onComplete={onComplete} />
+      <LessonActionFooter flow={flow} />
     </article>
   );
 }

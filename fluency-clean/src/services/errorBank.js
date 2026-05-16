@@ -105,6 +105,28 @@ function fromSpeakingSessions(map) {
 
 function fromLessonCompletions(map) {
   for (const completion of getLessonCompletions()) {
+    // Erros de fase do novo sistema de flow (ChoiceField/AttemptField errados)
+    const flowErrors = safeArray(completion.flowErrors);
+    for (const err of flowErrors) {
+      const pillar = clean(err.pillar || completion.pillar || completion.type || 'lesson');
+      pushAggregated(map, {
+        source: 'lesson',
+        category: pillar,
+        key: `${completion.lessonId}:${err.phaseId || err.title}`,
+        title: clean(err.title || 'Fase da aula'),
+        lessonTitle: completion.title,
+        level: completion.level,
+        lastSeen: completion.completedAt,
+        example: {
+          prompt: clean(err.prompt || err.title || ''),
+          answer: clean(err.value || ''),
+          expected: clean(err.expected || ''),
+          note: `Resposta marcada como "${err.status || 'warn'}" na fase da aula.`,
+        },
+      });
+    }
+
+    // Legado: produção escrita muito curta
     const written = clean(completion.writtenAnswer);
     if (!written) continue;
     const words = written.split(/\s+/).filter(Boolean);

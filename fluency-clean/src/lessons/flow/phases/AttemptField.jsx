@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { AlertTriangle, Check, Eye, RotateCcw } from 'lucide-react';
+import { AlertTriangle, Check, Eye, Lightbulb, RotateCcw } from 'lucide-react';
 import { PhaseShell } from './PhaseShell.jsx';
 import { clean, expectedOf, isCorrect, wordCount } from '../text/normalize.js';
 
@@ -14,9 +14,11 @@ function getModelAnswer(item = {}) {
     || clean(item.modelAnswer)
     || clean(item.sampleAnswer)
     || clean(item.suggestedAnswer)
-    || clean(item.referenceAnswer)
-    || clean(item.feedback)
-    || clean(item.explanation);
+    || clean(item.referenceAnswer);
+}
+
+function getHint(item = {}) {
+  return clean(item.hint || item.tip || item.explanation || item.note || item.feedback || item.why || '');
 }
 
 function getRequiredKeywords(item = {}) {
@@ -45,15 +47,15 @@ function buildFeedback({ value, minWords, expected, requiredKeywords }) {
   if (missingKeywords.length) {
     return {
       status: 'warn',
-      title: 'Tentativa registrada — falta um detalhe.',
+      title: 'Resposta registrada — falta um elemento.',
       detail: `Tente incluir: ${missingKeywords.slice(0, 4).join(', ')}.`,
     };
   }
   if (looksVague) {
     return {
       status: 'warn',
-      title: 'Tentativa registrada — ficou vaga.',
-      detail: 'Escreva uma resposta mais específica, citando o que você ouviu, leu ou produziu.',
+      title: 'Resposta registrada — ficou vaga.',
+      detail: 'Escreva com mais especificidade. Cite o que você leu, ouviu ou aprendeu.',
     };
   }
   if (expected) {
@@ -76,6 +78,7 @@ export function AttemptField({
 }) {
   const [value, setValue] = useState('');
   const expected = getModelAnswer(item);
+  const hint = getHint(item);
   const requiredKeywords = useMemo(() => getRequiredKeywords(item), [item]);
   const attempted = Boolean(flow?.attempts?.[phase.id]);
   const words = wordCount(value);
@@ -104,6 +107,11 @@ export function AttemptField({
         {' '}<b>{feedback.title}</b>
       </p>
       {feedback.detail ? <p className="lesson-phase-feedback-detail">{feedback.detail}</p> : null}
+      {hint && feedback.status === 'warn' ? (
+        <p className="lesson-phase-feedback-hint">
+          <Lightbulb size={13} /> {hint}
+        </p>
+      ) : null}
       {expected ? (
         <p className="lesson-phase-model-answer">
           <Eye size={13} /> Modelo: <b>{expected}</b>

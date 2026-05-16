@@ -1,30 +1,8 @@
-import { Award, RotateCcw, ThumbsUp } from 'lucide-react';
-
-function buildSummary(phases = [], attempts = {}) {
-  let correct = 0;
-  let warn = 0;
-  let totalAttempt = 0;
-  const missed = [];
-
-  for (const phase of phases) {
-    if (!phase.requiresAttempt) continue;
-    totalAttempt++;
-    const attempt = attempts[phase.id];
-    if (!attempt) continue;
-    const status = attempt?.feedback?.status ?? (attempt?.matched === false ? 'warn' : 'ok');
-    if (status === 'ok' || attempt?.matched !== false) correct++;
-    else {
-      warn++;
-      if (phase.shortTitle) missed.push(phase.shortTitle);
-    }
-  }
-
-  return { correct, warn, totalAttempt, missed };
-}
+import { Award, BookOpen, RotateCcw, ThumbsUp } from 'lucide-react';
+import { computeFlowResults } from '../lessonFlowScore.js';
 
 export function LessonCompletionCard({ phases = [], attempts = {}, onRestart }) {
-  const { correct, warn, totalAttempt, missed } = buildSummary(phases, attempts);
-  const score = totalAttempt > 0 ? Math.round((correct / totalAttempt) * 100) : 100;
+  const { correct, warn, missed, totalAttempt, score, weakTitles } = computeFlowResults(phases, attempts);
   const isExcellent = score >= 80;
 
   return (
@@ -50,7 +28,7 @@ export function LessonCompletionCard({ phases = [], attempts = {}, onRestart }) 
             <span>acertos</span>
           </div>
           <div>
-            <strong>{warn}</strong>
+            <strong>{warn + missed}</strong>
             <span>a revisar</span>
           </div>
           <div>
@@ -60,11 +38,11 @@ export function LessonCompletionCard({ phases = [], attempts = {}, onRestart }) 
         </div>
       ) : null}
 
-      {missed.length > 0 ? (
+      {weakTitles.length > 0 ? (
         <div className="lesson-completion-missed">
-          <span>Revise antes de avançar:</span>
+          <span><BookOpen size={12} /> Revise antes de avançar:</span>
           <ul>
-            {missed.map((label) => (
+            {weakTitles.map((label) => (
               <li key={label}>{label}</li>
             ))}
           </ul>

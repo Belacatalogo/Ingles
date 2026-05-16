@@ -234,7 +234,7 @@ export function saveLessonDraft({ lesson, answer }) {
   return nextDrafts[lessonId];
 }
 
-export function completeLesson({ lesson, answers = {}, writtenAnswer = '' }) {
+export function completeLesson({ lesson, answers = {}, writtenAnswer = '', flowResults = [], preComputedScore = null }) {
   const lessonId = getCompletionId(lesson);
   const completions = getLessonCompletions();
   const alreadyCompleted = completions.some((item) => item.lessonId === lessonId);
@@ -250,10 +250,27 @@ export function completeLesson({ lesson, answers = {}, writtenAnswer = '' }) {
   else if (isYesterday(progress.lastStudyDate, date)) nextStreak = (progress.streakDays || 0) + 1;
   else nextStreak = 1;
   const fragileVocabulary = registerReadingVocabularyMistakes({ lesson, answers });
-  const masteryProfile = recordLessonMastery({ lesson, answers, writtenAnswer });
-  const lessonPillar = String(lesson?.type || 'reading').toLowerCase();
+  const masteryProfile = recordLessonMastery({ lesson, answers, writtenAnswer, flowResults, preComputedScore });
+  const lessonPillar = String(lesson?.pillar || lesson?.type || 'reading').toLowerCase();
   const masteryScore = masteryProfile?.pillars?.[lessonPillar]?.score || 0;
-  const completion = { lessonId, curriculumId: lesson?.curriculumId || lesson?.raw?.curriculumId || lessonId, title: lesson?.title || 'Aula', type: lesson?.type || 'lesson', level: lesson?.level || 'A1', completedAt: now.toISOString(), answers, writtenAnswer, xp: xpGain, masteryScore, fragileVocabularyCount: fragileVocabulary.length };
+  // flowErrors: fases com resposta errada — lido pelo errorBank
+  const flowErrors = flowResults.filter((r) => r.status === 'warn' || r.status === 'missed');
+  const completion = {
+    lessonId,
+    curriculumId: lesson?.curriculumId || lesson?.raw?.curriculumId || lessonId,
+    title: lesson?.title || 'Aula',
+    type: lesson?.type || 'lesson',
+    pillar: lessonPillar,
+    level: lesson?.level || 'A1',
+    completedAt: now.toISOString(),
+    answers,
+    writtenAnswer,
+    xp: xpGain,
+    masteryScore,
+    fragileVocabularyCount: fragileVocabulary.length,
+    flowScore: preComputedScore?.score ?? null,
+    flowErrors,
+  };
   const nextCompletions = alreadyCompleted ? completions.map((item) => item.lessonId === lessonId ? { ...item, ...completion, xp: item.xp || 0 } : item) : [completion, ...completions];
   const nextProgress = normalizeProgress({ ...progress, xp: progress.xp + xpGain, completedLessons: alreadyCompleted ? progress.completedLessons : progress.completedLessons + 1, streakDays: nextStreak, lastStudyDate: date, weekly: { ...progress.weekly, [currentWeek]: { completed: alreadyCompleted ? previousWeekly.completed : previousWeekly.completed + 1, xp: previousWeekly.xp + xpGain } } });
   storage.set(LESSON_COMPLETIONS_KEY, nextCompletions);
@@ -262,7 +279,7 @@ export function completeLesson({ lesson, answers = {}, writtenAnswer = '' }) {
   if (!alreadyCompleted && lesson?.checkpoint !== 'saturday-adaptive-review') markCurriculumLessonComplete(lesson);
   diagnostics.setPhase('aula concluída', 'success');
   diagnostics.log(`${alreadyCompleted ? 'Aula já estava concluída' : 'Aula concluída'}: ${completion.title}`, 'info');
-  diagnostics.log(`Domínio atualizado para ${lesson?.type || 'pilar'}: ${masteryScore}/100.`, 'info');
+  diagnostics.log(`Domínio (${lessonPillar}): ${masteryScore}/100. Erros de fase: ${flowErrors.length}.`, 'info');
   return { completion, progress: nextProgress, alreadyCompleted };
 }
 
