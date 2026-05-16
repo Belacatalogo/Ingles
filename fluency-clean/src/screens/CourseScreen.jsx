@@ -119,11 +119,20 @@ export function CourseScreen({ onNavigate }) {
             <div>
               <strong>{nextLesson.level} · {pillarLabels[nextLesson.pillar] || 'Aula'}</strong>
               <span>{dailyState.helperText}</span>
-              {nextIsBlocked ? <small>{dailyState.reason}</small> : null}
+              {nextIsBlocked ? <small style={{ display: 'block', marginTop: '0.35rem', lineHeight: 1.4 }}>{dailyState.reason}</small> : null}
             </div>
             <button type="button" className="primary-button" onClick={handleStartDailyLesson}><Play size={16} /> {dailyState.actionLabel.replace(' aula', '')}</button>
           </div>
-        ) : <p>{dailyState.reason || 'Nenhuma aula liberada agora. Veja os critérios do nível para saber o próximo passo.'}</p>}
+        ) : (
+          <div>
+            <p>{dailyState.reason || 'Nenhuma aula liberada agora. Veja os critérios do nível para saber o próximo passo.'}</p>
+            {!dailyState.studyPillar ? (
+              <small style={{ display: 'block', marginTop: '0.35rem', color: 'var(--text-muted,#888)' }}>
+                Cronograma semanal: Seg=Grammar · Ter=Vocabulary · Qua=Reading · Qui=Listening · Sex=Speaking · Sáb=Writing
+              </small>
+            ) : null}
+          </div>
+        )}
       </Card>
 
       {activeLevel === 'A1' ? <A1MasteryGatePanel key={a1RefreshKey} /> : null}

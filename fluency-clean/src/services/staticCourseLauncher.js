@@ -23,6 +23,7 @@ const WEEKLY_PILLAR_LABELS = Object.freeze({
   speaking: 'Speaking',
   writing: 'Writing',
 });
+const WEEKDAY_NAMES_PT = Object.freeze(['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado']);
 
 function clean(value) { return String(value ?? '').trim(); }
 function safeArray(value) { return Array.isArray(value) ? value : []; }
@@ -33,7 +34,7 @@ function isSunday(date = new Date()) { return date.getDay() === 0; }
 function getStudyPillarForDate(date = new Date()) { return WEEKLY_PILLAR_BY_DAY[date.getDay()] || ''; }
 function getWeeklyPillarLabel(pillar) { return WEEKLY_PILLAR_LABELS[pillar] || 'Descanso'; }
 function getNextLessonForPillar(level = 'A1', pillar = '', completedIds = getCompletedLessonIds()) {
-  if (!pillar) return { lesson: null, lockReason: 'Domingo é dia de descanso. A próxima aula libera de segunda a sábado.', level, pillar: '' };
+  if (!pillar) return { lesson: null, lockReason: 'Domingo é dia de descanso. A próxima aula libera na Segunda com Grammar. Cada dia tem um pilar: Seg=Grammar, Ter=Vocabulary, Qua=Reading, Qui=Listening, Sex=Speaking, Sáb=Writing.', level, pillar: '' };
   const lessons = safeArray(getStaticLevel(level).pillars?.[pillar]);
   const lesson = lessons.find((item) => !completedIds?.has?.(item.id) && !getLessonLockReason(item, completedIds));
   if (lesson) return { lesson, lockReason: '', level, pillar };
@@ -53,13 +54,22 @@ function getDailyStudyLockReason({ lesson = null, current = null, completedIds =
   return 'Você já concluiu a aula de hoje. A próxima aula libera no próximo dia de estudo.';
 }
 
+function buildWeeklyScheduleHint() {
+  const today = new Date().getDay();
+  const todayPillar = WEEKLY_PILLAR_BY_DAY[today];
+  if (!todayPillar) return 'Domingo é dia de descanso. As aulas liberam de segunda a sábado.';
+  const todayLabel = WEEKLY_PILLAR_LABELS[todayPillar];
+  const todayName = WEEKDAY_NAMES_PT[today];
+  return `Hoje (${todayName}) é dia de ${todayLabel}. Cada dia libera um pilar: Seg=Grammar, Ter=Vocabulary, Qua=Reading, Qui=Listening, Sex=Speaking, Sáb=Writing.`;
+}
+
 function getGuidedCourseLockReason(lesson, completedIds = getCompletedLessonIds()) {
   if (!lesson) return 'Aula não encontrada.';
   if (completedIds?.has?.(lesson.id)) return '';
   const pillar = getStudyPillarForDate();
   const next = pillar ? getNextLessonForPillar(lesson.level || 'A1', pillar, completedIds) : getNextStaticLesson(lesson.level || 'A1');
   if (sameLesson(lesson, next.lesson)) return '';
-  return 'Essa aula ainda está bloqueada. Continue pela aula liberada no cronograma semanal.';
+  return `Essa aula ainda não é a do dia. ${buildWeeklyScheduleHint()}`;
 }
 
 export function getDailyStaticCourseLessonState(level = 'A1') {
