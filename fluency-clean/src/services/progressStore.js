@@ -234,7 +234,7 @@ export function saveLessonDraft({ lesson, answer }) {
   return nextDrafts[lessonId];
 }
 
-export function completeLesson({ lesson, answers = {}, writtenAnswer = '', flowResults = [], preComputedScore = null }) {
+export function completeLesson({ lesson, answers = {}, writtenAnswer = '', flowResults = [], preComputedScore = null, richFlowErrors = null }) {
   const lessonId = getCompletionId(lesson);
   const completions = getLessonCompletions();
   const alreadyCompleted = completions.some((item) => item.lessonId === lessonId);
@@ -253,8 +253,21 @@ export function completeLesson({ lesson, answers = {}, writtenAnswer = '', flowR
   const masteryProfile = recordLessonMastery({ lesson, answers, writtenAnswer, flowResults, preComputedScore });
   const lessonPillar = String(lesson?.pillar || lesson?.type || 'reading').toLowerCase();
   const masteryScore = masteryProfile?.pillars?.[lessonPillar]?.score || 0;
-  // flowErrors: fases com resposta errada — lido pelo errorBank
-  const flowErrors = flowResults.filter((r) => r.status === 'warn' || r.status === 'missed');
+  // flowErrors: prefere dados ricos (richFlowErrors) com prompt/expected; fallback para flowResults simples
+  const flowErrors = Array.isArray(richFlowErrors) && richFlowErrors.length
+    ? richFlowErrors.map((err) => ({
+        phaseId: err.phaseId || '',
+        title: err.title || '',
+        pillar: err.pillar || lessonPillar,
+        level: err.level || lesson?.level || 'A1',
+        lessonId: err.lessonId || lessonId,
+        lessonTitle: err.lessonTitle || lesson?.title || '',
+        value: err.value || '',
+        prompt: err.prompt || '',
+        expected: err.expected || '',
+        status: err.status || 'warn',
+      }))
+    : flowResults.filter((r) => r.status === 'warn' || r.status === 'missed');
   const completion = {
     lessonId,
     curriculumId: lesson?.curriculumId || lesson?.raw?.curriculumId || lessonId,

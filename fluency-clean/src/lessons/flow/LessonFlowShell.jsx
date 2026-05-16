@@ -35,6 +35,7 @@ export function LessonFlowShell({ lesson, phases = [], onPhaseChange, onComplete
         writtenAnswer: getLongestWritten(attempts),
         flowResults: scored.results,
         preComputedScore: { totalAttempt: scored.totalAttempt, correct: scored.correct, score: scored.score },
+        richFlowErrors: flowErrors,
       });
       window.dispatchEvent(new Event('fluency:lesson-updated'));
       onComplete?.({ phases: phaseList, attempts, scored, flowErrors });
