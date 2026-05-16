@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { AlertTriangle, Check, Eye, Lightbulb, RotateCcw } from 'lucide-react';
 import { PhaseShell } from './PhaseShell.jsx';
 import { clean, expectedOf, isCorrect, wordCount } from '../text/normalize.js';
@@ -8,6 +8,11 @@ const VAGUE_PATTERNS = [
   /^entendi$/i, /^não sei$/i, /^sei lá$/i, /^algo$/i, /^coisa/i,
   /\b(coisas?|algo|pessoas?|algu[eé]m)\b/i,
 ];
+
+const KEYWORD_ALIASES = {
+  brazil: ['brazil', 'brasil'],
+  brasil: ['brasil', 'brazil'],
+};
 
 function getModelAnswer(item = {}) {
   return expectedOf(item)
@@ -34,10 +39,22 @@ function normalize(value = '') {
     .replace(/[^a-z0-9\s]/gi, ' ').replace(/\s+/g, ' ');
 }
 
+function getKeywordAlternatives(keyword = '') {
+  const normalized = normalize(keyword);
+  return KEYWORD_ALIASES[normalized] || [keyword];
+}
+
+function containsKeyword(value = '', keyword = '') {
+  const normalizedValue = normalize(value);
+  return getKeywordAlternatives(keyword).some((option) => {
+    const normalizedOption = normalize(option);
+    return normalizedOption && normalizedValue.includes(normalizedOption);
+  });
+}
+
 function buildFeedback({ value, minWords, expected, requiredKeywords }) {
   const words = wordCount(value);
-  const normalized = normalize(value);
-  const missingKeywords = requiredKeywords.filter((kw) => !normalized.includes(normalize(kw)));
+  const missingKeywords = requiredKeywords.filter((kw) => !containsKeyword(value, kw));
   const looksVague = words < Math.max(minWords + 1, 5)
     || VAGUE_PATTERNS.some((p) => p.test(clean(value)));
 
@@ -72,24 +89,36 @@ function buildFeedback({ value, minWords, expected, requiredKeywords }) {
   };
 }
 
+function getAttemptValue(attempt) {
+  return attempt && typeof attempt === 'object' ? String(attempt.value || '') : '';
+}
+
 export function AttemptField({
   phase, flow, item = {}, multiline = false, minWords = 1,
   placeholder = 'Sua resposta...', instruction, eyebrow,
 }) {
-  const [value, setValue] = useState('');
+  const currentAttempt = flow?.attempts?.[phase.id];
+  const [value, setValue] = useState(() => getAttemptValue(currentAttempt));
   const expected = getModelAnswer(item);
   const hint = getHint(item);
   const requiredKeywords = useMemo(() => getRequiredKeywords(item), [item]);
-  const attempted = Boolean(flow?.attempts?.[phase.id]);
+  const attempted = Boolean(currentAttempt);
   const words = wordCount(value);
   const enoughWords = words >= minWords;
-  const feedback = buildFeedback({ value, minWords, expected, requiredKeywords });
-  const matched = feedback.status === 'ok';
+  const liveFeedback = buildFeedback({ value, minWords, expected, requiredKeywords });
+  const feedback = attempted && currentAttempt && typeof currentAttempt === 'object' && currentAttempt.feedback
+    ? currentAttempt.feedback
+    : liveFeedback;
+  const matched = liveFeedback.status === 'ok';
   const canRetry = attempted && feedback.status === 'warn';
+
+  useEffect(() => {
+    setValue(getAttemptValue(currentAttempt));
+  }, [phase.id, currentAttempt]);
 
   function handleCheck() {
     if (!enoughWords) return;
-    flow.markAttempt(phase.id, { value, matched, feedback });
+    flow.markAttempt(phase.id, { value, matched, feedback: liveFeedback });
   }
 
   function handleRetry() {
