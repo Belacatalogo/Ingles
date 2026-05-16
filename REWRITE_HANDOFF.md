@@ -847,6 +847,71 @@ Branch: `claude/improve-english-system-hu6gz-IuOMv`
 
 ---
 
+## AUDITORIA BLOCO — claude/improve-english-system-hu6gz (2026-05-16 — Bloco 2)
+
+Branch: `claude/improve-english-system-hu6gz`
+
+### Bugs corrigidos neste bloco
+
+| Bug | Arquivo | Correção |
+|---|---|---|
+| ChecklistField auto-marcava quando lista de itens estava vazia | `ChecklistField.jsx` | Guard `!list.length` e `okCount > 0` no useEffect |
+| SpeakField marcava tentativa na primeira letra digitada | `SpeakField.jsx` | `handleChange` agora exige mínimo de 2 palavras antes de marcar |
+| SpeakField sem áudio para modelo | `SpeakField.jsx` | Adicionado `ModelAudioButton` que toca o modelo via Gemini TTS |
+| Footer do iPhone sobrepunha home indicator | `lesson-flow.css` | Substituído `bottom: 10px` por `max(10px, env(safe-area-inset-bottom))` |
+| Speaking sem áudio nas frases-modelo | `SpeakingLessonFlow.jsx` | `ModelBody` agora tem `AudioPlayButton` por item |
+| Listening: shadowing sem áudio | `ListeningLessonFlow.jsx` | `ShadowingBody` com `ShadowingItem` + botão Gemini TTS + indicador "Já repeti" |
+| LessonCompletionCard sem CTAs de próxima ação | `LessonCompletionCard.jsx` | Botões "Ver flashcards" e "Revisar erros" condicionais ao conteúdo da aula |
+| normalizeStaticLessonForDisplay só normalizava listening | `staticLessonDisplayNormalizer.js` | Agora normaliza grammar/vocabulary/reading/speaking/writing com campos específicos |
+| lessonFlashcards gerava cards de instruções em português | `lessonFlashcards.js` | `usefulSentences` filtradas por `looksEnglish` antes de criar card |
+
+### Áudio Gemini — bloco anterior (também aplicado neste branch)
+
+| Arquivo | Correção |
+|---|---|
+| `geminiAudioService.js` | `getAllGeminiKeys()` coleta de `ai.gemini.generalKeys`, `lesson.gemini.flashKeys` e `lesson.gemini.proKey`. Botões de áudio usam Gemini TTS de qualquer fonte de key configurada. |
+
+### Estado do build pós-bloco 2
+- `npm run build` → ✓ sucesso sem erros (apenas avisos de tamanho de chunk esperados)
+
+### Fluxo da aula — status pós-bloco 2
+1. **UI puxa aula certa?** Sim.
+2. **fallback-reading aparece para usuário?** Não.
+3. **Cada pilar usa renderizador certo?** Sim.
+4. **Erros das aulas alimentam revisão?** Sim.
+5. **Scoring menos superficial?** Sim.
+6. **Checklist de fase vazio passa sem interação?** Não — corrigido.
+7. **SpeakField passa com 1 caractere?** Não — exige 2 palavras.
+8. **Footer do iPhone cobre conteúdo?** Não — safe-area aplicado.
+9. **Speaking tem áudio no modelo?** Sim — Gemini TTS por item.
+10. **Listening tem áudio no shadowing?** Sim — botão por frase + marcador "Já repeti".
+11. **LessonCompletionCard sugere próxima ação?** Sim — flashcards e revisão de erros.
+12. **Normalizer cobre todos os pilares?** Sim.
+13. **Flashcards em português filtrados?** Sim.
+
+### Arquivos alterados neste bloco
+- `fluency-clean/src/lessons/flow/phases/ChecklistField.jsx`
+- `fluency-clean/src/lessons/flow/phases/SpeakField.jsx`
+- `fluency-clean/src/lessons/flow/phases/LessonCompletionCard.jsx`
+- `fluency-clean/src/lessons/flow/LessonFlowShell.jsx`
+- `fluency-clean/src/lessons/flow/lesson-flow.css`
+- `fluency-clean/src/lessons/flow/lesson-phase.css`
+- `fluency-clean/src/lessons/flow/speaking/SpeakingLessonFlow.jsx`
+- `fluency-clean/src/lessons/flow/listening/ListeningLessonFlow.jsx`
+- `fluency-clean/src/services/staticLessonDisplayNormalizer.js`
+- `fluency-clean/src/services/lessonFlashcards.js`
+- `fluency-clean/src/services/geminiAudioService.js` (bloco anterior)
+
+### Pendências para o próximo bloco
+- LessonPhaseStepper: fases obrigatórias futuras ainda são clicáveis via tab (aluno pode pular)
+- TAG_RULES em reviewFromErrors: ampliar para speaking/vocabulary/writing por flow
+- Mastery gate: verificar integração real A1 → A2
+- Speaking/Writing: scoring de produção livre via AI tutor (pendente autorização)
+- Flashcards: adicionar cards de `stepByStep` gramatical para aulas de grammar
+- `onNavigate` prop de `LessonFlowShell` ainda não está sendo passado pelos renderizadores por pilar — completionCard com CTAs só funciona quando o pai passa `onNavigate`
+
+---
+
 ## Como continuar em outro chat
 
 "Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch obrigatória é `claude/improve-english-system-hu6gz-IuOMv`. Não mexa em `main`, `bundle.js`, backend Azure privado, Firebase, Azure, sistema de gravação, `speakingFlow.js`, `SpeakingStepper.jsx` ou `SpeakingScreen.jsx`. A nova direção oficial é curso fixo premium A1 → C2 + Prática Profunda complementar derivada da aula fixa + IA apenas como tutora/corretora/revisora adaptativa. Não reativar geração dinâmica de aulas como fluxo principal. Execute os blocos STATIC na ordem do Handoff. A Prática Profunda deve ser alterada no `BLOCO-STATIC-07-PRACTICE-FROM-STATIC-LESSONS`, quando o schema fixo e as primeiras aulas fixas já existirem."
