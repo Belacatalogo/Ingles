@@ -59,7 +59,7 @@ export function LessonCompletionCard({ phases = [], attempts = {}, lesson = null
           </button>
         ) : null}
         {hasFlashcards && onNavigate ? (
-          <button type="button" className="lesson-completion-cta" onClick={() => onNavigate('flashcards')}>
+          <button type="button" className="lesson-completion-cta" onClick={() => onNavigate('cards')}>
             <CreditCard size={15} /> Ver flashcards
           </button>
         ) : null}

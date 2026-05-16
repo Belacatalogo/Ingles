@@ -50,6 +50,6 @@ function buildPhases(lesson = {}) {
   return phases;
 }
 
-export function WritingLessonFlow({ lesson }) {
-  return <LessonFlowShell lesson={lesson} phases={buildPhases(lesson)} />;
+export function WritingLessonFlow({ lesson, onNavigate }) {
+  return <LessonFlowShell lesson={lesson} phases={buildPhases(lesson)} onNavigate={onNavigate} />;
 }

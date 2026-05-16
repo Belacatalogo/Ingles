@@ -102,6 +102,6 @@ function buildPhases(lesson = {}) {
   return phases;
 }
 
-export function SpeakingLessonFlow({ lesson }) {
-  return <LessonFlowShell lesson={lesson} phases={buildPhases(lesson)} />;
+export function SpeakingLessonFlow({ lesson, onNavigate }) {
+  return <LessonFlowShell lesson={lesson} phases={buildPhases(lesson)} onNavigate={onNavigate} />;
 }

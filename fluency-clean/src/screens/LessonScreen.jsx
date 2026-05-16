@@ -88,10 +88,10 @@ function formatDateTime(value) {
   }
 }
 
-function LessonRenderer({ lesson }) {
+function LessonRenderer({ lesson, onNavigate }) {
   const pillar = getLessonPillar(lesson);
   const Flow = FLOW_BY_PILLAR[pillar];
-  if (Flow) return <Flow lesson={lesson} />;
+  if (Flow) return <Flow lesson={lesson} onNavigate={onNavigate} />;
 
   return (
     <Card eyebrow={`Aula · ${lesson?.level || 'A1'}`} title={lesson?.title || 'Aula padrão'}>
@@ -115,7 +115,7 @@ function PracticeMount({ lesson }) {
   );
 }
 
-export function LessonScreen({ lessonRevision = 0 }) {
+export function LessonScreen({ lessonRevision = 0, onNavigate }) {
   const [localRevision, setLocalRevision] = useState(0);
   const [pointerRevision, setPointerRevision] = useState(0);
   const [fullLesson, setFullLesson] = useState(null);
@@ -217,7 +217,7 @@ export function LessonScreen({ lessonRevision = 0 }) {
             </footer>
           </section>
 
-          <LessonRenderer lesson={lesson} />
+          <LessonRenderer lesson={lesson} onNavigate={onNavigate} />
           <PracticeMount lesson={lesson} />
         </>
       )}

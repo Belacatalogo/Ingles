@@ -82,6 +82,6 @@ function buildPhases(lesson = {}) {
   return phases.length ? phases : [{ id: 'grammar-fallback', title: 'Explicação', shortTitle: 'Conceito', description: 'Estude a regra.', requiresAttempt: false, component: TextBody, text: explanation }];
 }
 
-export function GrammarLessonFlow({ lesson }) {
-  return <LessonFlowShell lesson={lesson} phases={buildPhases(lesson)} />;
+export function GrammarLessonFlow({ lesson, onNavigate }) {
+  return <LessonFlowShell lesson={lesson} phases={buildPhases(lesson)} onNavigate={onNavigate} />;
 }
