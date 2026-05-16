@@ -13,15 +13,30 @@ export function getAttemptStatus(attempt) {
   if (attempt.feedback?.status === 'warn') return 'warn';
   // ChoiceField: { value, matched: boolean }
   if (typeof attempt.matched === 'boolean') return attempt.matched ? 'ok' : 'warn';
-  // AudioListenField: { played: true }
+  // AudioListenField: { played: true } — ouvir conta como interação válida
   if (attempt.played === true) return 'ok';
-  // SpeakField: { spoken: true } ou { spoken: false, value: '...' }
+  // SpeakField: spoken=true é gravação real; spoken=false com texto exige mínimo de palavras
   if (attempt.spoken === true) return 'ok';
-  if (attempt.spoken === false && String(attempt.value || '').trim()) return 'ok';
-  // ChecklistField: { checked: { id: true|false } }
-  if (attempt.checked && typeof attempt.checked === 'object') return 'ok';
-  // Tentativa genérica: se existir, conta como ok
-  return 'ok';
+  if (attempt.spoken === false) {
+    const words = String(attempt.value || '').trim().split(/\s+/).filter(Boolean).length;
+    return words >= 3 ? 'ok' : 'warn';
+  }
+  // ChecklistField: exige ao menos um item marcado como true
+  if (attempt.checked && typeof attempt.checked === 'object') {
+    const anyChecked = Object.values(attempt.checked).some(Boolean);
+    return anyChecked ? 'ok' : 'warn';
+  }
+  // Tentativa com resposta esperada: avaliar se correto
+  if (attempt.expected || attempt.answer || attempt.correctAnswer) {
+    const normalize = (v) => String(v || '').toLowerCase().replace(/[.!?,]/g, '').replace(/\s+/g, ' ').trim();
+    const expected = normalize(attempt.expected || attempt.answer || attempt.correctAnswer);
+    const given = normalize(attempt.value || '');
+    if (!given) return 'missed';
+    return given === expected ? 'ok' : 'warn';
+  }
+  // Tentativa genérica sem critério claro: contar como interação mas marcar para revisão
+  if (attempt.value && String(attempt.value).trim()) return 'warn';
+  return 'missed';
 }
 
 /**
@@ -85,10 +100,9 @@ export function extractFlowErrors(phases = [], attempts = {}, lessonMeta = {}) {
   for (const phase of phases) {
     if (!phase.requiresAttempt) continue;
     const attempt = attempts[phase.id];
-    if (!attempt) continue;
-    const status = getAttemptStatus(attempt);
-    if (status !== 'warn') continue;
-    const value = typeof attempt === 'object' ? String(attempt.value || '') : '';
+    const status = attempt ? getAttemptStatus(attempt) : 'missed';
+    if (status !== 'warn' && status !== 'missed') continue;
+    const value = attempt && typeof attempt === 'object' ? String(attempt.value || '') : '';
     errors.push({
       phaseId: phase.id,
       title: phase.shortTitle || phase.title || phase.id,
@@ -97,8 +111,9 @@ export function extractFlowErrors(phases = [], attempts = {}, lessonMeta = {}) {
       lessonId: lessonMeta.id || '',
       lessonTitle: lessonMeta.title || '',
       value,
-      prompt: phase.item?.prompt || phase.item?.question || '',
+      prompt: phase.item?.prompt || phase.item?.question || phase.instruction || '',
       expected: phase.item?.expected || phase.item?.answer || phase.item?.correctAnswer || '',
+      status,
     });
   }
   return errors;
