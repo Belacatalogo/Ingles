@@ -6,6 +6,9 @@ import { AttemptField } from '../phases/AttemptField.jsx';
 import { ChoiceField } from '../phases/ChoiceField.jsx';
 import { clean, mergeLists, safeArray, textOf } from '../text/normalize.js';
 
+function IntroBody({ phase }) {
+  return <PhaseShell eyebrow="Preparação" title="Antes de ouvir" instruction={phase.instruction} />;
+}
 function PlayerBody({ phase, flow }) {
   const [plays, setPlays] = useState(0);
   const limit = phase.limit || 2;
@@ -14,7 +17,7 @@ function PlayerBody({ phase, flow }) {
     setPlays((value) => value + 1);
     if (!flow.attempts[phase.id]) flow.markAttempt(phase.id, { played: true });
   }
-  return <PhaseShell eyebrow="Escuta" title={phase.title} instruction={phase.instruction}><button type="button" className="lesson-phase-play" onClick={play} disabled={plays >= limit}><PlayCircle size={18} /> Ouvir ({plays}/{limit})</button><p className="lesson-phase-speak-hint"><Headphones size={12} /> Transcript só aparece depois das tentativas iniciais.</p></PhaseShell>;
+  return <PhaseShell eyebrow="Escuta" title={phase.title} instruction={phase.instruction}><button type="button" className="lesson-phase-play lesson-phase-primary" onClick={play} disabled={plays >= limit}><PlayCircle size={18} /> Ouvir ({plays}/{limit})</button><p className="lesson-phase-speak-hint"><Headphones size={12} /> Transcript só aparece depois das tentativas iniciais.</p></PhaseShell>;
 }
 function QuizBody({ phase, flow }) { return <ChoiceField phase={phase} flow={flow} item={phase.item} />; }
 function AttemptBody({ phase, flow }) { return <AttemptField phase={phase} flow={flow} item={phase.item} multiline minWords={phase.minWords || 3} />; }
@@ -27,7 +30,7 @@ function buildPhases(lesson = {}) {
   const openQuestion = questions.find((item) => !Array.isArray(item?.options));
   const transcript = clean(lesson.transcript || lesson.audioScript || lesson.script) || 'Transcript não encontrado nesta aula.';
   const phases = [
-    { id: 'listening-before', title: 'Antes de ouvir', shortTitle: 'Preparar', description: 'Entenda o foco da escuta.', requiresAttempt: false, component: PhaseShell, instruction: intro },
+    { id: 'listening-before', title: 'Antes de ouvir', shortTitle: 'Preparar', description: 'Entenda o foco da escuta.', requiresAttempt: false, component: IntroBody, instruction: intro },
     { id: 'listening-first', title: 'Primeira escuta', shortTitle: '1ª escuta', description: 'Ouça sem ler.', requiresAttempt: true, blockedMessage: 'Toque para ouvir antes de avançar.', component: PlayerBody, instruction: 'Ouça tentando entender a ideia geral.', limit: 2 },
     { id: 'listening-second', title: 'Segunda escuta', shortTitle: '2ª escuta', description: 'Ouça com foco em detalhes.', requiresAttempt: true, blockedMessage: 'Faça a segunda escuta antes de avançar.', component: PlayerBody, instruction: 'Ouça novamente buscando palavras-chave.', limit: 2 },
   ];
