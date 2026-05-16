@@ -21,7 +21,7 @@ import { LessonKeysPanel } from '../components/settings/LessonKeysPanel.jsx';
 import { Card } from '../components/ui/Card.jsx';
 import { SectionHeader } from '../components/ui/SectionHeader.jsx';
 import { getCurrentLesson } from '../services/lessonStore.js';
-import { getCurrentWeekStats, getProgressSummary } from '../services/progressStore.js';
+import { getCurrentWeekStats, getProgressSummary, getUserDisplayName, setUserDisplayName } from '../services/progressStore.js';
 
 const groups = [
   { id: 'account', title: 'Conta e acesso', detail: 'login, código de acesso e perfil', icon: Shield },
@@ -62,9 +62,19 @@ export function SettingsScreen() {
   const [dailyReminder, setDailyReminder] = useState(false);
   const [autoplayAudio, setAutoplayAudio] = useState(false);
   const [compactMode, setCompactMode] = useState(false);
+  const [displayName, setDisplayName] = useState(() => getUserDisplayName());
+  const [nameSaved, setNameSaved] = useState(false);
   const progress = getProgressSummary();
   const week = getCurrentWeekStats();
   const currentLesson = getCurrentLesson();
+
+  function handleSaveName() {
+    const trimmed = displayName.trim();
+    if (!trimmed) return;
+    setUserDisplayName(trimmed);
+    setNameSaved(true);
+    setTimeout(() => setNameSaved(false), 2000);
+  }
 
   return (
     <section className="screen-stack settings-screen">
@@ -111,6 +121,28 @@ export function SettingsScreen() {
             <SettingsRow icon={UserRound} label="Perfil" value="gerenciado pelo login" tone="blue" />
             <SettingsRow icon={Shield} label="Código de acesso" value="verificado no gate" tone="blue" />
             <SettingsRow icon={Info} label="Sessão local" value={progress.lastStudyDate ? `último estudo ${progress.lastStudyDate}` : 'sem estudo registrado'} />
+          </div>
+          <div className="settings-name-form">
+            <label htmlFor="settings-display-name">Seu nome (exibido na saudação)</label>
+            <div className="settings-name-row">
+              <input
+                id="settings-display-name"
+                type="text"
+                value={displayName}
+                maxLength={32}
+                placeholder="Como quer ser chamado?"
+                onChange={(e) => { setDisplayName(e.target.value); setNameSaved(false); }}
+                onKeyDown={(e) => e.key === 'Enter' && handleSaveName()}
+              />
+              <button
+                className={`settings-name-save${nameSaved ? ' saved' : ''}`}
+                type="button"
+                onClick={handleSaveName}
+                disabled={!displayName.trim()}
+              >
+                {nameSaved ? 'Salvo ✓' : 'Salvar'}
+              </button>
+            </div>
           </div>
         </Card>
       ) : null}

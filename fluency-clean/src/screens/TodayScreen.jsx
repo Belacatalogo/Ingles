@@ -1,12 +1,32 @@
-import { useEffect, useState } from 'react';
-import { BookOpen, Brain, ChevronRight, Flame, LineChart, Map, Mic, Quote, Sparkles, Target, Volume2, Zap } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { BookOpen, Brain, CheckCircle2, ChevronRight, Flame, LineChart, Map, Mic, Quote, Sparkles, Target, Volume2, Zap } from 'lucide-react';
 import { LessonGeneratorPanel } from '../components/lesson/LessonGeneratorPanel.jsx';
 import { StaticNextLessonPanel } from '../components/lesson/StaticNextLessonPanel.jsx';
 import { canShowLegacyAiLessonGenerator } from '../config/staticCurriculumFlags.js';
 import { getCurrentLesson, getCurrentLessonFull } from '../services/lessonStore.js';
 import { getLessonStats } from '../services/lessonStats.js';
-import { getFlashcardSessions, getLessonCompletions, getProgressSummary, hasFlashcardSessionToday, hasSpeakingSessionToday, localDateKey } from '../services/progressStore.js';
+import { playLearningAudio } from '../services/audioPlayback.js';
+import { getErrorBankSummary } from '../services/errorBank.js';
+import { getFlashcardSessions, getLessonCompletions, getProgressSummary, getUserDisplayName, hasFlashcardSessionToday, hasSpeakingSessionToday, localDateKey } from '../services/progressStore.js';
 import { getVocabularySrsSummary } from '../services/vocabularySrs.js';
+import { getWordOfTheDay } from '../services/wordOfTheDay.js';
+
+const DAILY_QUOTES = [
+  { en: '"The best way to predict the future is to invent it."', pt: '"A melhor forma de prever o futuro é inventá-lo."', author: 'Alan Kay' },
+  { en: '"An investment in knowledge pays the best interest."', pt: '"Um investimento em conhecimento paga o melhor juro."', author: 'Benjamin Franklin' },
+  { en: '"Live as if you were to die tomorrow. Learn as if you were to live forever."', pt: '"Viva como se fosse morrer amanhã. Aprenda como se fosse viver para sempre."', author: 'Mahatma Gandhi' },
+  { en: '"The more that you read, the more things you will know."', pt: '"Quanto mais você lê, mais coisas você saberá."', author: 'Dr. Seuss' },
+  { en: '"A language is not just words. It\'s a culture, a tradition, a unification of a community."', pt: '"Uma língua não é apenas palavras. É uma cultura, uma tradição, a união de uma comunidade."', author: 'Noam Chomsky' },
+  { en: '"To have another language is to possess a second soul."', pt: '"Ter outro idioma é possuir uma segunda alma."', author: 'Charlemagne' },
+  { en: '"The limits of my language mean the limits of my world."', pt: '"Os limites da minha linguagem significam os limites do meu mundo."', author: 'Ludwig Wittgenstein' },
+];
+
+function getDailyQuote() {
+  const today = new Date().toISOString().slice(0, 10);
+  let hash = 0;
+  for (let i = 0; i < today.length; i++) hash = ((hash << 5) - hash + today.charCodeAt(i)) | 0;
+  return DAILY_QUOTES[Math.abs(hash) % DAILY_QUOTES.length];
+}
 
 const baseTasks = [
   { id: 'lesson', label: 'Aula de hoje', status: 'Curso fixo premium', icon: BookOpen, target: 'lesson', color: 'blue' },
@@ -15,32 +35,121 @@ const baseTasks = [
   { id: 'speaking', label: 'Conversação', status: 'Speaking guiado com IA auxiliar', time: '~8 min', icon: Mic, target: 'speaking', color: 'teal' },
 ];
 
-function getGreeting() { const hour = new Date().getHours(); if (hour < 12) return 'Bom dia'; if (hour < 18) return 'Boa tarde'; return 'Boa noite'; }
-function getLessonTypeStatus(lesson) { const labels = { reading: 'Reading do curso fixo', grammar: 'Grammar do curso fixo', listening: 'Listening do curso fixo', writing: 'Writing do curso fixo' }; return labels[lesson?.type] || 'Aula do curso fixo'; }
-function getItemLocalDate(value) { return localDateKey(value?.completedAt || value?.createdAt || value); }
+function getGreeting() {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'Bom dia';
+  if (hour < 18) return 'Boa tarde';
+  return 'Boa noite';
+}
+
+function getLessonTypeStatus(lesson) {
+  const labels = { reading: 'Reading do curso fixo', grammar: 'Grammar do curso fixo', listening: 'Listening do curso fixo', writing: 'Writing do curso fixo' };
+  return labels[lesson?.type] || 'Aula do curso fixo';
+}
+
+function getItemLocalDate(value) {
+  return localDateKey(value?.completedAt || value?.createdAt || value);
+}
+
 function getWeekDaysFromCompletions(completions) {
   const labels = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
   const today = new Date();
   const start = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-  start.setDate(start.getDate() - 4);
-  return Array.from({ length: 5 }, (_, index) => {
+  start.setDate(start.getDate() - 6);
+  return Array.from({ length: 7 }, (_, index) => {
     const date = new Date(start);
     date.setDate(start.getDate() + index);
     const key = localDateKey(date);
     const count = completions.filter((item) => getItemLocalDate(item) === key).length;
-    return { day: labels[date.getDay()], value: Math.min(100, count * 50), label: count ? `${count} aula${count > 1 ? 's' : ''}` : 'sem registro', active: key === localDateKey(today) };
+    return {
+      day: labels[date.getDay()],
+      value: Math.min(100, count * 50),
+      label: count ? `${count}` : '—',
+      active: key === localDateKey(today),
+    };
   });
 }
-function getTodayLessonCompleted(completions) { const today = localDateKey(); return completions.some((item) => getItemLocalDate(item) === today); }
+
+function getTodayLessonCompleted(completions) {
+  const today = localDateKey();
+  return completions.some((item) => getItemLocalDate(item) === today);
+}
+
 function getTodayVocabularyBubbleCompleted() {
   const today = localDateKey();
-  return getFlashcardSessions().some((session) => String(session.lessonId || '').startsWith('path-') && getItemLocalDate(session) === today);
+  return getFlashcardSessions().some(
+    (session) => String(session.lessonId || '').startsWith('path-') && getItemLocalDate(session) === today,
+  );
+}
+
+function WordOfTheDayWidget() {
+  const word = useMemo(() => getWordOfTheDay(), []);
+  const [playing, setPlaying] = useState(false);
+
+  if (!word) return null;
+
+  async function handleAudio() {
+    if (playing) return;
+    setPlaying(true);
+    try {
+      await playLearningAudio({ text: word.word, label: 'palavra do dia' });
+    } finally {
+      setPlaying(false);
+    }
+  }
+
+  return (
+    <section className="today-wotd-card">
+      <div className="today-wotd-header">
+        <span>Palavra do dia</span>
+        <small>{word.level} · {word.deck}</small>
+      </div>
+      <strong className="today-wotd-word">{word.word}</strong>
+      <p className="today-wotd-translation">{word.translation}</p>
+      {word.example ? (
+        <blockquote className="today-wotd-example">"{word.example}"</blockquote>
+      ) : null}
+      <button
+        className="today-wotd-audio"
+        type="button"
+        onClick={handleAudio}
+        disabled={playing}
+        aria-label={`Ouvir pronúncia de ${word.word}`}
+      >
+        <Volume2 size={15} />
+        {playing ? 'Reproduzindo...' : 'Ouvir pronúncia'}
+      </button>
+    </section>
+  );
+}
+
+function ErrorBankAlert({ onNavigate }) {
+  const summary = useMemo(() => {
+    try { return getErrorBankSummary(); } catch { return null; }
+  }, []);
+
+  const dueCount = summary?.dueToday ?? 0;
+  const highPriority = summary?.highPriority ?? 0;
+
+  if (!dueCount) return null;
+
+  return (
+    <button className="today-error-alert" type="button" onClick={() => onNavigate?.('progress')}>
+      <span className="today-error-dot" aria-hidden="true" />
+      <span className="today-error-text">
+        <strong>{dueCount} erro{dueCount > 1 ? 's' : ''} para revisar</strong>
+        {highPriority > 0 ? <small>{highPriority} de alta prioridade</small> : null}
+      </span>
+      <ChevronRight size={16} />
+    </button>
+  );
 }
 
 export function TodayScreen({ onLessonGenerated, onNavigate }) {
   const [lessonRevision, setLessonRevision] = useState(0);
   const [fullLesson, setFullLesson] = useState(null);
   const progress = getProgressSummary();
+  const userName = getUserDisplayName();
   const lessonPointer = getCurrentLesson();
   const currentLesson = fullLesson || lessonPointer;
   const lessonStats = getLessonStats(currentLesson);
@@ -57,6 +166,7 @@ export function TodayScreen({ onLessonGenerated, onNavigate }) {
   const streak = progress.streakDays || 0;
   const levelPercent = Math.min(Math.max(progress.xp || 0, 0), 100);
   const cardsAvailable = Array.isArray(currentLesson?.vocabulary) ? currentLesson.vocabulary.length : 0;
+  const quote = useMemo(() => getDailyQuote(), []);
 
   useEffect(() => {
     let active = true;
@@ -80,31 +190,134 @@ export function TodayScreen({ onLessonGenerated, onNavigate }) {
     };
   }, []);
 
+  const taskDoneMap = { lesson: lessonDoneToday, cards: cardsDoneToday, 'vocab-bubble': vocabBubbleDoneToday, speaking: speakingDoneToday };
+
   const tasks = baseTasks.map((task) => {
-    if (task.id === 'lesson') return { ...task, status: lessonDoneToday ? 'Aula concluída hoje' : currentLesson ? getLessonTypeStatus(currentLesson) : 'Curso fixo em preparação', time: currentLesson ? `~${lessonStats.minutes} min` : '' };
-    if (task.id === 'cards') return { ...task, status: cardsDoneToday ? 'Sessão real concluída hoje' : vocabularySrs.dueToday ? `${vocabularySrs.dueToday} revisão(ões) vencida(s)` : cardsAvailable ? `${cardsAvailable} cards da aula atual` : 'Nenhum card real disponível ainda', time: cardsDoneToday ? 'feito' : vocabularySrs.dueToday ? '~5 min' : cardsAvailable ? '~5 min' : '' };
-    if (task.id === 'vocab-bubble') return { ...task, status: vocabBubbleDoneToday ? 'Bolha da trilha concluída hoje' : 'Complete uma bolha para fixar vocabulário', time: vocabBubbleDoneToday ? 'feito' : '~8 min' };
-    if (task.id === 'speaking') return { ...task, status: speakingDoneToday ? 'Conversação real concluída hoje' : 'Speaking A1 com Azure e IA auxiliar', time: speakingDoneToday ? 'feito' : '~5 falas' };
-    return task;
+    const done = taskDoneMap[task.id] ?? false;
+    if (task.id === 'lesson') return { ...task, done, status: lessonDoneToday ? 'Aula concluída hoje ✓' : currentLesson ? getLessonTypeStatus(currentLesson) : 'Curso fixo em preparação', time: lessonDoneToday ? '' : currentLesson ? `~${lessonStats.minutes} min` : '' };
+    if (task.id === 'cards') return { ...task, done, status: cardsDoneToday ? 'Sessão concluída hoje ✓' : vocabularySrs.dueToday ? `${vocabularySrs.dueToday} revisão(ões) vencida(s)` : cardsAvailable ? `${cardsAvailable} cards da aula atual` : 'Nenhum card disponível ainda', time: cardsDoneToday ? '' : vocabularySrs.dueToday ? '~5 min' : cardsAvailable ? '~5 min' : '' };
+    if (task.id === 'vocab-bubble') return { ...task, done, status: vocabBubbleDoneToday ? 'Bolha da trilha concluída hoje ✓' : 'Complete uma bolha para fixar vocabulário', time: vocabBubbleDoneToday ? '' : '~8 min' };
+    if (task.id === 'speaking') return { ...task, done, status: speakingDoneToday ? 'Conversação concluída hoje ✓' : 'Speaking A1 com Azure e IA auxiliar', time: speakingDoneToday ? '' : '~5 falas' };
+    return { ...task, done };
   });
+
+  async function handleQuoteAudio() {
+    try { await playLearningAudio({ text: quote.en.replace(/["""]/g, ''), label: 'citação do dia' }); } catch { /* best-effort */ }
+  }
 
   return (
     <section className="today-reference-screen" data-lesson-revision={lessonRevision}>
       <section className="today-hero-card">
-        <div className="today-hero-copy"><span>{getGreeting()}, Luis</span><h1><b>{completed || 0} de {totalTasks}</b> tarefas</h1><p>{completed >= totalTasks ? 'Dia completo. Excelente consistência.' : 'Continue para fechar sua rotina de inglês.'}</p></div>
-        <div className="today-ring" style={{ '--today-progress': `${percent}%` }}><strong>{percent}%</strong></div>
-        <div className="today-hero-actions"><button className="today-primary-action" type="button" onClick={() => onNavigate?.(lessonDoneToday ? 'cards' : 'lesson')}><Zap size={16} /> Continuar agora</button><button className="today-secondary-action" type="button" onClick={() => onNavigate?.('progress')} aria-label="Ver progresso"><LineChart size={16} /></button></div>
+        <div className="today-hero-copy">
+          <span>{getGreeting()}, {userName}</span>
+          <h1><b>{completed || 0} de {totalTasks}</b> tarefas</h1>
+          <p>{completed >= totalTasks ? 'Dia completo. Excelente consistência.' : 'Continue para fechar sua rotina de inglês.'}</p>
+        </div>
+        <div className="today-ring" style={{ '--today-progress': `${percent}%` }}>
+          <strong>{percent}%</strong>
+        </div>
+        <div className="today-hero-actions">
+          <button className="today-primary-action" type="button" onClick={() => onNavigate?.(lessonDoneToday ? 'cards' : 'lesson')}>
+            <Zap size={16} /> Continuar agora
+          </button>
+          <button className="today-secondary-action" type="button" onClick={() => onNavigate?.('progress')} aria-label="Ver progresso">
+            <LineChart size={16} />
+          </button>
+        </div>
       </section>
+
       <div className="today-summary-grid">
-        <article className="today-summary-card"><div className="today-card-heading"><span>Ofensiva</span><Flame size={15} /></div><strong>{streak} <small>dias</small></strong><div className="today-streak-days" aria-hidden="true">{['S', 'T', 'Q', 'Q', 'S', 'S', 'D'].map((day, index) => <div key={`${day}-${index}`}><i className={index < Math.min(streak, 7) ? 'active' : ''} /><span>{day}</span></div>)}</div></article>
-        <article className="today-summary-card"><div className="today-card-heading"><span>Nível</span><Target size={15} /></div><strong>A1 <small>→ A2</small></strong><div className="today-level-track"><i style={{ width: `${levelPercent}%` }} /></div><p>{levelPercent}% registrado em XP real</p></article>
+        <article className="today-summary-card">
+          <div className="today-card-heading"><span>Ofensiva</span><Flame size={15} /></div>
+          <strong>{streak} <small>dias</small></strong>
+          <div className="today-streak-days" aria-hidden="true">
+            {['S', 'T', 'Q', 'Q', 'S', 'S', 'D'].map((day, index) => (
+              <div key={`${day}-${index}`}>
+                <i className={index < Math.min(streak, 7) ? 'active' : ''} />
+                <span>{day}</span>
+              </div>
+            ))}
+          </div>
+        </article>
+        <article className="today-summary-card">
+          <div className="today-card-heading"><span>Nível</span><Target size={15} /></div>
+          <strong>A1 <small>→ A2</small></strong>
+          <div className="today-level-track"><i style={{ width: `${levelPercent}%` }} /></div>
+          <p>{levelPercent}% registrado em XP real</p>
+        </article>
       </div>
-      <section className="today-section-head"><h2>Tarefas do dia</h2><button type="button" onClick={() => onNavigate?.('settings')}>Personalizar</button></section>
-      <div className="today-task-list">{tasks.map((task) => { const Icon = task.icon; return <button className="today-task-card" type="button" key={task.id} onClick={() => onNavigate?.(task.target)}><span className={`today-task-icon ${task.color}`}><Icon size={23} /></span><span className="today-task-copy"><strong>{task.label}</strong><small>{task.status}</small>{task.time ? <em>{task.time}</em> : null}</span><ChevronRight className="today-task-arrow" size={20} /></button>; })}</div>
-      <section className="today-week-card"><span>Esta semana</span><strong>Atividade real</strong><p>{completions.length ? 'Baseado nas aulas concluídas.' : 'Sem aulas concluídas ainda.'}</p><b>{completions.length} registro(s)</b><div className="today-week-bars">{weekDays.map((item) => <div key={item.day}><div className="today-week-bar"><i className={item.active ? 'active' : ''} style={{ height: `${item.value}%` }} /></div><strong>{item.day}</strong><small>{item.label}</small></div>)}</div></section>
-      <section className="today-quote-card"><Quote size={18} /><p>“The best way to predict the future is to invent it.”</p><span>“A melhor forma de prever o futuro é inventá-lo.”</span><footer><small>— Alan Kay</small><button type="button"><Volume2 size={15} /> Ouvir</button></footer></section>
+
+      <ErrorBankAlert onNavigate={onNavigate} />
+
+      <section className="today-section-head">
+        <h2>Tarefas do dia</h2>
+        <button type="button" onClick={() => onNavigate?.('settings')}>Personalizar</button>
+      </section>
+
+      <div className="today-task-list">
+        {tasks.map((task) => {
+          const Icon = task.icon;
+          return (
+            <button
+              className={`today-task-card${task.done ? ' done' : ''}`}
+              type="button"
+              key={task.id}
+              onClick={() => onNavigate?.(task.target)}
+            >
+              <span className={`today-task-icon ${task.color}${task.done ? ' done' : ''}`}>
+                {task.done ? <CheckCircle2 size={23} /> : <Icon size={23} />}
+              </span>
+              <span className="today-task-copy">
+                <strong>{task.label}</strong>
+                <small>{task.status}</small>
+                {task.time ? <em>{task.time}</em> : null}
+              </span>
+              <ChevronRight className="today-task-arrow" size={20} />
+            </button>
+          );
+        })}
+      </div>
+
+      <section className="today-week-card">
+        <span>Últimos 7 dias</span>
+        <strong>Atividade real</strong>
+        <p>{completions.length ? 'Baseado nas aulas concluídas.' : 'Sem aulas concluídas ainda.'}</p>
+        <b>{completions.length} registro(s) total</b>
+        <div className="today-week-bars today-week-bars--7">
+          {weekDays.map((item) => (
+            <div key={item.day}>
+              <div className="today-week-bar">
+                <i className={item.active ? 'active' : ''} style={{ height: `${item.value}%` }} />
+              </div>
+              <strong>{item.day}</strong>
+              <small>{item.label}</small>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <WordOfTheDayWidget />
+
+      <section className="today-quote-card">
+        <Quote size={18} />
+        <p>{quote.en}</p>
+        <span>{quote.pt}</span>
+        <footer>
+          <small>— {quote.author}</small>
+          <button type="button" onClick={handleQuoteAudio}>
+            <Volume2 size={15} /> Ouvir
+          </button>
+        </footer>
+      </section>
+
       <StaticNextLessonPanel onNavigate={onNavigate} />
-      {canShowLegacyAiLessonGenerator() ? <details className="today-generator-details"><summary><Sparkles size={17} /> Gerar nova aula por IA — legado/dev</summary><LessonGeneratorPanel onGenerated={onLessonGenerated} /></details> : null}
+
+      {canShowLegacyAiLessonGenerator() ? (
+        <details className="today-generator-details">
+          <summary><Sparkles size={17} /> Gerar nova aula por IA — legado/dev</summary>
+          <LessonGeneratorPanel onGenerated={onLessonGenerated} />
+        </details>
+      ) : null}
     </section>
   );
 }

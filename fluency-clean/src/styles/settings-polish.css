@@ -325,6 +325,48 @@
   font-size: 10.5px;
 }
 
+.settings-name-form {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(148,163,184,.12);
+}
+
+.settings-name-form label {
+  display: block;
+  margin-bottom: 8px;
+  color: #93c5fd;
+  font-size: 12px;
+  font-weight: 850;
+  letter-spacing: .08em;
+}
+
+.settings-name-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+}
+
+.settings-name-save {
+  min-height: 46px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 15px;
+  color: white;
+  font-weight: 850;
+  font-size: 14px;
+  background: linear-gradient(135deg, #5b9cf6, #a78bfa);
+  white-space: nowrap;
+  transition: opacity .15s;
+}
+
+.settings-name-save.saved {
+  background: linear-gradient(135deg, #34d399, #059669);
+}
+
+.settings-name-save:disabled {
+  opacity: .45;
+}
+
 @media (max-width: 380px) {
   .settings-key-status {
     grid-template-columns: 1fr;
@@ -337,5 +379,9 @@
   .settings-profile-badge {
     grid-column: 2;
     justify-self: start;
+  }
+
+  .settings-name-row {
+    grid-template-columns: 1fr;
   }
 }

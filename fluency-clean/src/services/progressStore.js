@@ -268,3 +268,5 @@ export function completeLesson({ lesson, answers = {}, writtenAnswer = '' }) {
 
 export function isLessonCompleted(lesson) { return getLessonCompletions().some((item) => item.lessonId === getCompletionId(lesson)); }
 export function getCurrentWeekStats() { return getProgressSummary().weekly[weekKey(new Date())] || { completed: 0, xp: 0 }; }
+export function getUserDisplayName() { return storage.getText('user.displayName', '') || 'Estudante'; }
+export function setUserDisplayName(name) { storage.setText('user.displayName', String(name || '').trim()); }
