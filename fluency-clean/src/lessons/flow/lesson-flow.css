@@ -1,4 +1,4 @@
-.lesson-flow-shell { display: grid; gap: 14px; padding-bottom: max(92px, calc(80px + env(safe-area-inset-bottom, 0px))); }
+.lesson-flow-shell { display: grid; gap: 14px; padding-bottom: max(92px, calc(80px + env(safe-area-inset-bottom, 0px))); scroll-padding-bottom: max(92px, calc(80px + env(safe-area-inset-bottom, 0px))); }
 .lesson-flow-shell.empty { padding: 18px; border: 1px dashed rgba(147,160,213,.24); border-radius: 24px; color: #cbd5e1; background: rgba(15,23,42,.48); }
 
 /* ── Completion card ─────────────────────────────────────── */
@@ -155,6 +155,7 @@
 .lesson-flow-stepper button { flex: 0 0 auto; min-height: 42px; display: inline-flex; align-items: center; gap: 7px; padding: 0 12px; border-radius: 999px; border: 1px solid rgba(147,160,213,.17); color: #aeb9d8; background: rgba(15,23,42,.58); font-size: 13px; font-weight: 900; }
 .lesson-flow-stepper button.visited { color: #bbf7d0; border-color: rgba(34,197,94,.24); background: rgba(34,197,94,.10); }
 .lesson-flow-stepper button.active { color: #fff; border-color: rgba(91,156,246,.56); background: linear-gradient(135deg, rgba(91,156,246,.35), rgba(167,139,250,.25)); }
+.lesson-flow-stepper button.blocked { opacity: .42; cursor: not-allowed; }
 
 .lesson-flow-phase-card { display: grid; gap: 16px; padding: 18px; border: 1px solid rgba(147,160,213,.18); border-radius: 28px; background: linear-gradient(180deg, rgba(12,18,40,.86), rgba(8,14,34,.78)); box-shadow: 0 18px 46px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.035); }
 .lesson-flow-phase-head { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: start; }

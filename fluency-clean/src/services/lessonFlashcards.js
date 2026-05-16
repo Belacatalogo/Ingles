@@ -16,6 +16,11 @@ function looksEnglish(value = '') {
   return /[a-z]/i.test(text) && !/[ãõçáéíóúâêôà]/i.test(text);
 }
 
+function isInstructionText(value = '') {
+  // Portuguese/mixed instruction starters — should not appear on flashcard fronts
+  return /^(complete|troque|escreva|leia|observe|revise|use\s|repita|ouça|fale|substitua|anote|monte|responda|identifique|marque|escolha|assinale|copie|forme|transforme|reescreva|coloque|organize)\b/i.test(clean(value));
+}
+
 function isTooLongFront(value = '') {
   const text = clean(value);
   return text.length > 54 || text.split(' ').length > 9;
@@ -23,7 +28,7 @@ function isTooLongFront(value = '') {
 
 function makeCard(raw = {}, index = 0, source = 'Aula atual') {
   const word = clean(raw.word || raw.term || raw.expression || raw.chunk || raw.text || raw.english || raw.question || raw.prompt || raw.title || raw.pattern || raw.label);
-  if (!word || isTooLongFront(word) || !looksEnglish(word)) return null;
+  if (!word || isTooLongFront(word) || !looksEnglish(word) || isInstructionText(word)) return null;
 
   const translation = clean(raw.translation || raw.pt || raw.portuguese || raw.meaning || raw.answer || raw.definition || raw.expected || raw.right);
   const example = clean(raw.example || raw.sentence || raw.context || raw.why || raw.note || raw.explanation || raw.warning || raw.howToAvoid);
@@ -177,14 +182,87 @@ function cardsFromVocabularyLikeFields(lesson, title) {
   return cards.slice(0, 32);
 }
 
+function cardsFromSpeakingFields(lesson, title) {
+  const cards = [];
+  cards.push(...fromArray(lesson?.modelPhrases, `${title} · fala`, (item) => ({
+    word: item?.text || item?.english,
+    meaning: item?.translation || item?.meaning || 'Frase modelo de fala.',
+    example: item?.note || item?.context,
+    deck: `${title} · fala`,
+  })));
+  cards.push(...fromArray(lesson?.pronunciationChunks, `${title} · pronúncia`, (item) => ({
+    word: item?.chunk || item?.text || item,
+    meaning: item?.note || item?.tip || 'Pronunciar com atenção.',
+    deck: `${title} · pronúncia`,
+  })));
+  cards.push(...fromArray(lesson?.repeatAfterMe, `${title} · repetição`));
+  return cards;
+}
+
+function cardsFromWritingFields(lesson, title) {
+  const cards = [];
+  const filtered = (lesson?.usefulSentences || []).filter((s) => typeof s !== 'string' || looksEnglish(s));
+  cards.push(...fromArray(filtered, `${title} · escrita`, (item) => ({
+    word: item?.text || item?.english || item,
+    meaning: item?.translation || item?.note || 'Frase útil para escrita.',
+    deck: `${title} · escrita`,
+  })));
+  cards.push(...fromArray(lesson?.writingBlocks, `${title} · blocos`, (item) => ({
+    word: item?.chunk || item?.block || item?.text || item,
+    meaning: item?.note || item?.tip || 'Bloco de construção de texto.',
+    deck: `${title} · blocos`,
+  })));
+  cards.push(...fromArray(lesson?.connectors, `${title} · conectivos`, (item) => ({
+    word: item?.connector || item?.text || item,
+    meaning: item?.use || item?.note || 'Conectivo de texto.',
+    deck: `${title} · conectivos`,
+  })));
+  return cards;
+}
+
+function cardsFromListeningFields(lesson, title) {
+  const cards = [];
+  cards.push(...fromArray(lesson?.keyWordsToHear, `${title} · escuta`, (item) => ({
+    word: item?.word || item?.text || item,
+    meaning: item?.meaning || item?.translation || 'Palavra-chave na escuta.',
+    example: item?.example || item?.context,
+    deck: `${title} · escuta`,
+  })));
+  cards.push(...fromArray(lesson?.shadowingPhrases, `${title} · shadowing`));
+  return cards;
+}
+
 export function buildLessonFlashcards(lesson = {}) {
   const title = clean(lesson?.title) || 'Aula atual';
-  const cards = dedupe([
-    ...cardsFromVocabularyLikeFields(lesson, title),
-    ...cardsFromDeepGrammar(lesson, title),
-  ]);
+  const pillar = String(lesson?.pillar || lesson?.type || '').toLowerCase();
 
-  return cards.slice(0, 32);
+  let ordered = [];
+  if (pillar === 'speaking') {
+    ordered = [
+      ...cardsFromSpeakingFields(lesson, title),
+      ...cardsFromVocabularyLikeFields(lesson, title),
+      ...cardsFromDeepGrammar(lesson, title),
+    ];
+  } else if (pillar === 'writing') {
+    ordered = [
+      ...cardsFromWritingFields(lesson, title),
+      ...cardsFromVocabularyLikeFields(lesson, title),
+      ...cardsFromDeepGrammar(lesson, title),
+    ];
+  } else if (pillar === 'listening') {
+    ordered = [
+      ...cardsFromListeningFields(lesson, title),
+      ...cardsFromVocabularyLikeFields(lesson, title),
+      ...cardsFromDeepGrammar(lesson, title),
+    ];
+  } else {
+    ordered = [
+      ...cardsFromVocabularyLikeFields(lesson, title),
+      ...cardsFromDeepGrammar(lesson, title),
+    ];
+  }
+
+  return dedupe(ordered).slice(0, 32);
 }
 
 export function hasLessonFlashcards(lesson = {}) {

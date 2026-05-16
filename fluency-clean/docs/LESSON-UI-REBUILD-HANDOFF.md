@@ -194,6 +194,77 @@ Os botões que usavam o Sistema B simplesmente não faziam nada visível — o e
 
 ---
 
+---
+
+## ✅ Bloco concluído: 7 correções pedagógicas e UX (2026-05-16)
+
+Branch: `main`
+
+### O que foi feito
+
+**1. LessonPhaseStepper — bloqueio de navegação avançada**
+- `useLessonFlowState.goTo(index)` agora bloqueia navegação para frente quando a fase atual obrigatória não foi completada
+- Mensagem: `activePhase.blockedMessage || 'Conclua a etapa atual antes de avançar.'`
+- Navegação para fases já visitadas (index ≤ activeIndex) sempre permitida
+- `LessonPhaseStepper` aceita `canGoForward` prop — botões futuros recebem classe `.blocked` (opacity reduzida) e `title` explicativo
+- `LessonFlowShell` passa `canGoForward={flow.canAdvance}` para o stepper
+
+**2. Persistência mid-lesson (localStorage, 24h)**
+- Novo `lessonFlowDraftStore.js`: `saveDraft(lessonId, state)`, `loadDraft(lessonId)`, `clearDraft(lessonId)`
+- Chave: `fluency:lesson-flow-draft:{lessonId}`, TTL 24 horas
+- `useLessonFlowState` aceita `options.lessonId`, inicializa `activeIndex` e `attempts` do rascunho salvo (lazy initializer)
+- Draft salvo em `goTo()` e `markAttempt()`; limpo ao concluir
+- `LessonFlowShell` extrai `lessonId` de `lesson.id || lesson.generationMeta.id`
+
+**3. iPhone footer/input**
+- `scroll-padding-bottom` adicionado a `.lesson-flow-shell` — garante que inputs ficam visíveis ao abrir teclado
+- `scroll-margin-bottom` adicionado a `.lesson-phase-input` e `.lesson-phase-textarea` em mobile — scroll automático acima do footer quando campo recebe foco
+- `font-size: 16px` já estava presente (previne zoom iOS); confirmado
+
+**4. Completion card CTAs**
+- Já conectados na sessão anterior; verificado: `onNavigate('cards')` para flashcards, `onNavigate('course')` para revisão de erros
+- `LessonFlowShell` passa `lesson` e `onNavigate` para `LessonCompletionCard`
+- Tab ID correto: `'cards'` (não `'flashcards'`)
+
+**5. TAG_RULES expandidas em reviewFromErrors.js**
+- 9 novas regras cobrindo: grammar (possessivos, plurais irregulares), reading (main-idea, inference), listening (key-words, numbers), speaking (pronunciation, fluency, structure), vocabulary (collocations, false-friends), writing (paragraph, connectors)
+- `inferFallbackLessons()` expandida para reconhecer todos os 6 pilares via `item.pillar`
+- Total: 23 regras (era 10)
+
+**6. Flashcards melhorados por pilar**
+- `isInstructionText()` filtra frases de instrução em português (Complete:, Escreva:, Troque:...) das fronts dos cards
+- `buildLessonFlashcards()` agora é pilar-aware:
+  - Speaking: prioriza modelPhrases + pronunciationChunks + repeatAfterMe
+  - Writing: prioriza usefulSentences + writingBlocks + connectors
+  - Listening: prioriza keyWordsToHear + shadowingPhrases
+  - Demais: vocabulário geral + gramática (comportamento anterior)
+- Novas funções: `cardsFromSpeakingFields`, `cardsFromWritingFields`, `cardsFromListeningFields`
+
+**7. Scoring gate**
+- `useLessonFlowState.next()` na última fase verifica: se existem fases obrigatórias (`requiresAttempt === true`) e TODAS estão sem tentativa (`!attempts[p.id]`), bloqueia com mensagem pedagógica
+- Gate é safety net — com o stepper blocking em vigor, essa situação só ocorre em edge cases
+
+### Arquivos alterados
+- `fluency-clean/src/lessons/flow/lessonFlowDraftStore.js` — NOVO
+- `fluency-clean/src/lessons/flow/useLessonFlowState.js` — draft + blocking + gate
+- `fluency-clean/src/lessons/flow/LessonPhaseStepper.jsx` — `canGoForward` + `.blocked`
+- `fluency-clean/src/lessons/flow/LessonFlowShell.jsx` — `lessonId` + `canGoForward`
+- `fluency-clean/src/lessons/flow/lesson-flow.css` — `.blocked` + `scroll-padding-bottom`
+- `fluency-clean/src/lessons/flow/lesson-phase.css` — `scroll-margin-bottom` mobile
+- `fluency-clean/src/services/reviewFromErrors.js` — 23 TAG_RULES + pillar fallbacks
+- `fluency-clean/src/services/lessonFlashcards.js` — pillar-aware + instruction filter
+
+### Build
+- `npm run build` passou: 2522 módulos, sem erros de compilação
+
+### O que ainda fica pendente
+- `CourseScreen` restructured in previous block; A1 panels now collapsible
+- Mastery por pillar visível na TodayScreen (dados existem mas não exibidos)
+- Revisão de erros de fases: tela dedicada para rever itens errados (atualmente no ErrorReviewPanel)
+- iPhone: testar em device real (safe-area e scroll-margin são difíceis de verificar sem hardware)
+
+---
+
 Data original: 2026-05-14
 Branch original: `rewrite-fluency-clean-lab`
 

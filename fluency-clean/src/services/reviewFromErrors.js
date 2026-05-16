@@ -7,16 +7,35 @@ function safeArray(value) { return Array.isArray(value) ? value : []; }
 function unique(values) { const seen = new Set(); return values.filter((value) => { const key = clean(value); if (!key || seen.has(key)) return false; seen.add(key); return true; }); }
 
 const TAG_RULES = [
+  // Grammar
   { tag: 'grammar:verb-to-be-agreement', patterns: [/\bi\s+is\b/i, /\bshe\s+are\b/i, /\bhe\s+are\b/i, /\bthey\s+is\b/i, /\byou\s+is\b/i, /\bam\s+you\b/i], reviewLessonIds: ['A1-GRAMMAR-002', 'A1-GRAMMAR-003', 'A1-GRAMMAR-004', 'A1-GRAMMAR-005'], reason: 'Concordância do verbo to be.' },
-  { tag: 'grammar:present-simple-third-person', patterns: [/\bhe\s+study\b/i, /\bshe\s+work\b/i, /\bdoes\s+he\s+studies\b/i, /\bhe\s+do\b/i], reviewLessonIds: ['A1-GRAMMAR-014', 'A1-GRAMMAR-015', 'A1-GRAMMAR-016', 'A1-GRAMMAR-017'], reason: 'Present simple com he/she/it.' },
-  { tag: 'grammar:can-base-verb', patterns: [/\bcan\s+to\b/i, /\bcan\s+\w+ing\b/i], reviewLessonIds: ['A1-GRAMMAR-021'], reason: 'Depois de can, use verbo base sem to.' },
-  { tag: 'grammar:articles', patterns: [/\ba\s+[aeiou]/i, /\ban\s+[^aeiou\s]/i, /\bapple\b/i, /\bbook\b/i], reviewLessonIds: ['A1-GRAMMAR-007'], reason: 'Uso de a/an.' },
+  { tag: 'grammar:present-simple-third-person', patterns: [/\bhe\s+study\b/i, /\bshe\s+work\b/i, /\bdoes\s+he\s+studies\b/i, /\bhe\s+do\b/i, /\bshe\s+go\b/i], reviewLessonIds: ['A1-GRAMMAR-014', 'A1-GRAMMAR-015', 'A1-GRAMMAR-016', 'A1-GRAMMAR-017'], reason: 'Present simple com he/she/it.' },
+  { tag: 'grammar:can-base-verb', patterns: [/\bcan\s+to\b/i, /\bcan\s+\w+ing\b/i, /\bcould\s+to\b/i], reviewLessonIds: ['A1-GRAMMAR-021'], reason: 'Depois de can, use verbo base sem to.' },
+  { tag: 'grammar:articles', patterns: [/\ba\s+[aeiou]/i, /\ban\s+[^aeiou\s]/i], reviewLessonIds: ['A1-GRAMMAR-007'], reason: 'Uso de a/an.' },
   { tag: 'grammar:there-is-there-are', patterns: [/\bthere\s+is\s+\w+s\b/i, /\bthere\s+are\s+a\b/i], reviewLessonIds: ['A1-GRAMMAR-010'], reason: 'There is/there are.' },
-  { tag: 'grammar:word-order', patterns: [/word order/i, /ordem/i, /missing verb/i, /frase completa/i], reviewLessonIds: ['A1-GRAMMAR-013', 'A1-WRITING-001'], reason: 'Ordem básica sujeito + verbo + complemento.' },
-  { tag: 'reading:evidence', patterns: [/evid[eê]ncia/i, /texto/i, /quote/i, /copie/i], reviewLessonIds: ['A1-READING-013', 'A1-READING-016', 'A1-READING-017', 'A1-READING-020'], reason: 'Responder Reading com evidência textual.' },
-  { tag: 'listening:dictation', patterns: [/dictation/i, /digite/i, /listen/i, /ouça/i], reviewLessonIds: ['A1-LISTENING-015', 'A1-LISTENING-017', 'A1-LISTENING-018'], reason: 'Dictation, números e escuta de detalhes.' },
-  { tag: 'writing:punctuation', patterns: [/capital/i, /mai[uú]scula/i, /ponto/i, /punctuation/i], reviewLessonIds: ['A1-WRITING-013', 'A1-WRITING-015'], reason: 'Pontuação, maiúsculas e revisão.' },
-  { tag: 'vocabulary:fragile', patterns: [/vocab/i, /word/i, /palavra/i, /meaning/i], reviewLessonIds: ['A1-VOCABULARY-020'], reason: 'Vocabulário frágil para revisar por tema.' },
+  { tag: 'grammar:word-order', patterns: [/word order/i, /ordem/i, /missing verb/i, /frase completa/i, /sujeito\s*\+\s*verbo/i], reviewLessonIds: ['A1-GRAMMAR-013', 'A1-WRITING-001'], reason: 'Ordem básica sujeito + verbo + complemento.' },
+  { tag: 'grammar:possessives', patterns: [/\bmy\s+name\s+is\b/i, /\byour\s+is\b/i, /\bpossess/i, /possessivo/i], reviewLessonIds: ['A1-GRAMMAR-008', 'A1-GRAMMAR-009'], reason: 'Possessivos e pronomes possessivos.' },
+  { tag: 'grammar:plurals', patterns: [/\bchilds\b/i, /\bpeoples\b/i, /\bmans\b/i, /\bwomans\b/i, /plural/i], reviewLessonIds: ['A1-GRAMMAR-011', 'A1-GRAMMAR-012'], reason: 'Plural irregular.' },
+  // Reading
+  { tag: 'reading:evidence', patterns: [/evid[eê]ncia/i, /quote/i, /copie/i, /trecho/i, /texto diz/i], reviewLessonIds: ['A1-READING-013', 'A1-READING-016', 'A1-READING-017', 'A1-READING-020'], reason: 'Responder Reading com evidência textual.' },
+  { tag: 'reading:main-idea', patterns: [/main idea/i, /ideia principal/i, /about what/i, /sobre o qu[eê]/i], reviewLessonIds: ['A1-READING-001', 'A1-READING-005', 'A1-READING-010'], reason: 'Identificar a ideia principal do texto.' },
+  { tag: 'reading:inference', patterns: [/infer/i, /conclusão/i, /implies/i, /sugere/i], reviewLessonIds: ['A1-READING-018', 'A1-READING-019'], reason: 'Inferência de sentido no texto.' },
+  // Listening
+  { tag: 'listening:dictation', patterns: [/dictation/i, /digit[ea]/i, /listen/i, /ou[çc]a/i, /escreva o que ouviu/i], reviewLessonIds: ['A1-LISTENING-015', 'A1-LISTENING-017', 'A1-LISTENING-018'], reason: 'Dictation, números e escuta de detalhes.' },
+  { tag: 'listening:key-words', patterns: [/key word/i, /palavra-chave/i, /heard/i, /ouviu/i, /entendeu/i], reviewLessonIds: ['A1-LISTENING-010', 'A1-LISTENING-012'], reason: 'Identificar palavras-chave na escuta.' },
+  { tag: 'listening:numbers', patterns: [/number/i, /n[uú]mero/i, /phone/i, /price/i, /how many/i, /quantos/i], reviewLessonIds: ['A1-LISTENING-005', 'A1-LISTENING-006'], reason: 'Números e informações específicas na escuta.' },
+  // Speaking
+  { tag: 'speaking:pronunciation', patterns: [/pronunci/i, /sound/i, /fonema/i, /acento/i, /sílaba/i, /rhythm/i, /ritmo/i], reviewLessonIds: ['A1-SPEAKING-003', 'A1-SPEAKING-007'], reason: 'Pronúncia e ritmo na fala.' },
+  { tag: 'speaking:fluency', patterns: [/fluenc/i, /hesit/i, /pausa/i, /connected speech/i, /liaison/i, /speak.*natural/i], reviewLessonIds: ['A1-SPEAKING-010', 'A1-SPEAKING-015'], reason: 'Fluência e fala contínua.' },
+  { tag: 'speaking:structure', patterns: [/frase completa/i, /complete sentence/i, /resposta curta/i, /short answer/i, /responda com/i], reviewLessonIds: ['A1-SPEAKING-001', 'A1-SPEAKING-002', 'A1-SPEAKING-005'], reason: 'Estrutura de frases na fala.' },
+  // Vocabulary
+  { tag: 'vocabulary:fragile', patterns: [/vocab/i, /word/i, /palavra/i, /meaning/i, /defini[çc]/i], reviewLessonIds: ['A1-VOCABULARY-020', 'A1-VOCABULARY-010'], reason: 'Vocabulário frágil para revisar por tema.' },
+  { tag: 'vocabulary:collocations', patterns: [/collocation/i, /combinação/i, /chunk/i, /make.*mistake/i, /do.*homework/i], reviewLessonIds: ['A1-VOCABULARY-015', 'A1-VOCABULARY-016'], reason: 'Collocations e combinações naturais.' },
+  { tag: 'vocabulary:false-friends', patterns: [/false friend/i, /parece/i, /actually/i, /embarrassed/i, /eventually/i], reviewLessonIds: ['A1-VOCABULARY-018', 'A1-VOCABULARY-019'], reason: 'Falsos cognatos e armadilhas de vocabulário.' },
+  // Writing
+  { tag: 'writing:punctuation', patterns: [/capital/i, /mai[uú]scula/i, /ponto/i, /punctuation/i, /comma/i, /v[íi]rgula/i], reviewLessonIds: ['A1-WRITING-013', 'A1-WRITING-015'], reason: 'Pontuação, maiúsculas e revisão.' },
+  { tag: 'writing:paragraph', patterns: [/paragraph/i, /parágrafo/i, /topic sentence/i, /introdução/i, /conclusão/i], reviewLessonIds: ['A1-WRITING-005', 'A1-WRITING-008'], reason: 'Estrutura de parágrafo.' },
+  { tag: 'writing:connectors', patterns: [/connector/i, /conectivo/i, /however/i, /furthermore/i, /therefore/i, /first.*then/i], reviewLessonIds: ['A1-WRITING-010', 'A1-WRITING-011'], reason: 'Conectivos e coerência no texto.' },
 ];
 
 function inferRuleFromItem(item) {
@@ -25,13 +44,14 @@ function inferRuleFromItem(item) {
 }
 
 function inferFallbackLessons(item) {
-  const pillar = lower(item?.type || item?.skill || '');
+  const pillar = lower(item?.type || item?.skill || item?.pillar || '');
   const title = lower(item?.lessonTitle || '');
-  if (title.includes('reading') || pillar.includes('choice')) return ['A1-READING-016', 'A1-READING-017'];
-  if (title.includes('listening') || pillar.includes('dictation')) return ['A1-LISTENING-017'];
-  if (title.includes('writing') || pillar.includes('write')) return ['A1-WRITING-015'];
-  if (title.includes('vocab')) return ['A1-VOCABULARY-020'];
-  return ['A1-GRAMMAR-013'];
+  if (pillar.includes('reading') || title.includes('reading') || pillar.includes('choice')) return ['A1-READING-016', 'A1-READING-017'];
+  if (pillar.includes('listening') || title.includes('listening') || pillar.includes('dictation')) return ['A1-LISTENING-017', 'A1-LISTENING-015'];
+  if (pillar.includes('speaking') || title.includes('speaking')) return ['A1-SPEAKING-005', 'A1-SPEAKING-010'];
+  if (pillar.includes('writing') || title.includes('writing') || pillar.includes('write')) return ['A1-WRITING-015', 'A1-WRITING-013'];
+  if (pillar.includes('vocabulary') || title.includes('vocab')) return ['A1-VOCABULARY-020', 'A1-VOCABULARY-015'];
+  return ['A1-GRAMMAR-013', 'A1-GRAMMAR-014'];
 }
 
 function lessonTitle(id) {

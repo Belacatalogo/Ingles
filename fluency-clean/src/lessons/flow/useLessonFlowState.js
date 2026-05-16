@@ -1,10 +1,19 @@
 import { useMemo, useState } from 'react';
 import { canAdvanceFromPhase, clampPhaseIndex, getLessonFlowPercent, getVisitedPhaseIds, safePhases } from './lessonFlowProgress.js';
+import { clearDraft, loadDraft, saveDraft } from './lessonFlowDraftStore.js';
 
 export function useLessonFlowState(phases = [], options = {}) {
   const phaseList = useMemo(() => safePhases(phases), [phases]);
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [attempts, setAttempts] = useState({});
+  const lessonId = options.lessonId || '';
+
+  const [activeIndex, setActiveIndex] = useState(() => {
+    const draft = loadDraft(lessonId);
+    return clampPhaseIndex(draft?.activeIndex ?? 0, safePhases(phases));
+  });
+  const [attempts, setAttempts] = useState(() => {
+    const draft = loadDraft(lessonId);
+    return draft?.attempts && typeof draft.attempts === 'object' ? draft.attempts : {};
+  });
   const [revealed, setRevealed] = useState({});
   const [message, setMessage] = useState('');
   const [completed, setCompleted] = useState(false);
@@ -18,11 +27,17 @@ export function useLessonFlowState(phases = [], options = {}) {
   const canAdvance = canAdvanceFromPhase(activePhase, attempts);
 
   function goTo(index) {
-    const nextIndex = clampPhaseIndex(index, phaseList);
-    setActiveIndex(nextIndex);
+    const target = clampPhaseIndex(index, phaseList);
+    // block forward skipping when the current required phase is incomplete
+    if (target > safeIndex && !canAdvance) {
+      setMessage(activePhase?.blockedMessage || 'Conclua a etapa atual antes de avançar.');
+      return;
+    }
+    setActiveIndex(target);
+    saveDraft(lessonId, { activeIndex: target, attempts });
     setCompleted(false);
     setMessage('');
-    options.onPhaseChange?.(phaseList[nextIndex], nextIndex);
+    options.onPhaseChange?.(phaseList[target], target);
   }
 
   function next() {
@@ -32,7 +47,14 @@ export function useLessonFlowState(phases = [], options = {}) {
       return;
     }
     if (isLast) {
+      // Scoring gate: at least one mandatory phase must have been attempted
+      const mandatory = phaseList.filter((p) => p.requiresAttempt === true);
+      if (mandatory.length > 0 && mandatory.every((p) => !attempts[p.id])) {
+        setMessage('Você precisa tentar ao menos uma etapa obrigatória antes de concluir.');
+        return;
+      }
       setCompleted(true);
+      clearDraft(lessonId);
       options.onComplete?.({ phases: phaseList, attempts });
     } else {
       goTo(safeIndex + 1);
@@ -45,7 +67,11 @@ export function useLessonFlowState(phases = [], options = {}) {
 
   function markAttempt(phaseId = activePhase?.id, payload = true) {
     if (!phaseId) return;
-    setAttempts((current) => ({ ...current, [phaseId]: payload }));
+    setAttempts((current) => {
+      const next = { ...current, [phaseId]: payload };
+      saveDraft(lessonId, { activeIndex: safeIndex, attempts: next });
+      return next;
+    });
     setMessage('Tentativa registrada.');
   }
 

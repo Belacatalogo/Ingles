@@ -45,7 +45,8 @@ export function LessonFlowShell({ lesson, phases = [], onPhaseChange, onComplete
     }
   }
 
-  const flow = useLessonFlowState(phases, { onPhaseChange, onComplete: handleComplete });
+  const lessonId = lesson?.id || lesson?.generationMeta?.id || '';
+  const flow = useLessonFlowState(phases, { onPhaseChange, onComplete: handleComplete, lessonId });
 
   if (!flow.phases.length) {
     return (
@@ -63,6 +64,7 @@ export function LessonFlowShell({ lesson, phases = [], onPhaseChange, onComplete
         phases={flow.phases}
         activeIndex={flow.activeIndex}
         visitedPhaseIds={flow.visitedPhaseIds}
+        canGoForward={flow.canAdvance}
         onSelect={flow.goTo}
       />
       {children ? children(flow) : <LessonPhaseCard phase={flow.activePhase} flow={flow} />}
