@@ -7,6 +7,7 @@ export function useLessonFlowState(phases = [], options = {}) {
   const [attempts, setAttempts] = useState({});
   const [revealed, setRevealed] = useState({});
   const [message, setMessage] = useState('');
+  const [completed, setCompleted] = useState(false);
 
   const safeIndex = clampPhaseIndex(activeIndex, phaseList);
   const activePhase = phaseList[safeIndex] || null;
@@ -19,6 +20,7 @@ export function useLessonFlowState(phases = [], options = {}) {
   function goTo(index) {
     const nextIndex = clampPhaseIndex(index, phaseList);
     setActiveIndex(nextIndex);
+    setCompleted(false);
     setMessage('');
     options.onPhaseChange?.(phaseList[nextIndex], nextIndex);
   }
@@ -29,7 +31,12 @@ export function useLessonFlowState(phases = [], options = {}) {
       setMessage(activePhase.blockedMessage || 'Faça a tentativa desta etapa antes de avançar.');
       return;
     }
-    if (!isLast) goTo(safeIndex + 1);
+    if (isLast) {
+      setCompleted(true);
+      options.onComplete?.({ phases: phaseList, attempts });
+    } else {
+      goTo(safeIndex + 1);
+    }
   }
 
   function previous() {
@@ -58,6 +65,7 @@ export function useLessonFlowState(phases = [], options = {}) {
     isFirst,
     isLast,
     canAdvance,
+    completed,
     message,
     setMessage,
     goTo,

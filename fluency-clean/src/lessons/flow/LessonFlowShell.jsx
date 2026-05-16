@@ -3,9 +3,10 @@ import { LessonActionFooter } from './LessonActionFooter.jsx';
 import { LessonFocusHeader } from './LessonFocusHeader.jsx';
 import { LessonPhaseCard } from './LessonPhaseCard.jsx';
 import { LessonPhaseStepper } from './LessonPhaseStepper.jsx';
+import { LessonCompletionCard } from './phases/LessonCompletionCard.jsx';
 import { useLessonFlowState } from './useLessonFlowState.js';
 
-export function LessonFlowShell({ lesson, phases = [], onPhaseChange, children }) {
+export function LessonFlowShell({ lesson, phases = [], onPhaseChange, onComplete, children }) {
   const flow = useLessonFlowState(phases, { onPhaseChange });
 
   if (!flow.phases.length) {
@@ -16,13 +17,27 @@ export function LessonFlowShell({ lesson, phases = [], onPhaseChange, children }
     );
   }
 
+  const showCompletion = flow.completed;
+
   return (
     <article className="lesson-flow-shell">
       <LessonFocusHeader lesson={lesson} phase={flow.activePhase} percent={flow.percent} />
       <div className="lesson-flow-progress-line"><span style={{ width: `${flow.percent}%` }} /></div>
-      <LessonPhaseStepper phases={flow.phases} activeIndex={flow.activeIndex} visitedPhaseIds={flow.visitedPhaseIds} onSelect={flow.goTo} />
+      <LessonPhaseStepper
+        phases={flow.phases}
+        activeIndex={flow.activeIndex}
+        visitedPhaseIds={flow.visitedPhaseIds}
+        onSelect={flow.goTo}
+      />
       {children ? children(flow) : <LessonPhaseCard phase={flow.activePhase} flow={flow} />}
-      <LessonActionFooter flow={flow} />
+      {showCompletion ? (
+        <LessonCompletionCard
+          phases={flow.phases}
+          attempts={flow.attempts}
+          onRestart={() => flow.goTo(0)}
+        />
+      ) : null}
+      <LessonActionFooter flow={flow} onComplete={onComplete} />
     </article>
   );
 }

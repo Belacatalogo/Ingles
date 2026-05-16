@@ -1,1 +1,471 @@
-.lesson-phase-shell{display:flex;flex-direction:column;gap:12px}.lesson-phase-eyebrow{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#5b6478}.lesson-phase-title{font-size:20px;font-weight:800;margin:0}.lesson-phase-instruction{color:#5b6478;margin:0;line-height:1.45}.lesson-phase-body-slot{display:flex;flex-direction:column;gap:10px}.lesson-phase-feedback-slot{margin-top:6px}.lesson-phase-list{padding-left:18px;margin:4px 0;line-height:1.55}.lesson-phase-examples,.lesson-phase-vocab-list,.lesson-phase-choice-list,.lesson-phase-checklist{list-style:none;padding:0;margin:0;display:grid;gap:8px}.lesson-phase-examples li,.lesson-phase-vocab-list li{padding:10px 12px;background:rgba(15,23,42,.04);border-radius:12px}.lesson-phase-examples small,.lesson-phase-vocab-list small{display:block;color:#5b6478;margin-top:2px}.lesson-phase-input,.lesson-phase-textarea{width:100%;padding:12px 14px;border-radius:12px;border:1px solid rgba(15,23,42,.16);font-size:16px;font-family:inherit;background:#fff;color:inherit;resize:vertical;min-height:44px}.lesson-phase-input:focus,.lesson-phase-textarea:focus{outline:2px solid #2563eb;outline-offset:1px}.lesson-phase-primary{align-self:flex-start;background:#111827;color:#fff;border:0;border-radius:999px;padding:10px 18px;font-weight:700;font-size:14px;cursor:pointer}.lesson-phase-primary:disabled{opacity:.45;cursor:not-allowed}.lesson-phase-link{background:transparent;border:0;color:#2563eb;font-weight:700;cursor:pointer;padding:4px 0;display:inline-flex;align-items:center;gap:4px}.lesson-phase-feedback{padding:10px 12px;border-radius:12px;font-size:14px}.lesson-phase-feedback.ok{background:rgba(16,185,129,.10);color:#065f46}.lesson-phase-feedback.warn{background:rgba(250,204,21,.12);color:#92400e}.lesson-phase-feedback p{margin:0;display:inline-flex;align-items:center;gap:6px}.lesson-phase-choice{width:100%;display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:14px;border:1px solid rgba(15,23,42,.16);background:#fff;font-size:15px;text-align:left;cursor:pointer}.lesson-phase-choice.correct{border-color:#10b981;background:rgba(16,185,129,.08)}.lesson-phase-choice.wrong{border-color:#ef4444;background:rgba(239,68,68,.08)}.lesson-phase-choice-bullet{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:999px;background:rgba(15,23,42,.06);font-weight:800;font-size:12px}.lesson-phase-checklist button{width:100%;display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:rgba(15,23,42,.04);border:1px solid transparent;font-size:14px;text-align:left;cursor:pointer;color:inherit}.lesson-phase-checklist button.on{background:rgba(16,185,129,.12);border-color:rgba(16,185,129,.4)}.lesson-phase-speak-wrap{display:flex;flex-direction:column;gap:8px}.lesson-phase-speak-hint,.lesson-phase-footnote{font-size:12px;color:#6b7280}.lesson-phase-reading-text,.lesson-phase-model-text{white-space:pre-wrap;word-wrap:break-word;background:rgba(15,23,42,.04);padding:14px 16px;border-radius:14px;font-family:inherit;font-size:15.5px;line-height:1.55;margin:0}.lesson-phase-sticky-text summary{cursor:pointer;font-size:13px;font-weight:700;color:#2563eb;padding:6px 0}
+/* ── PhaseShell ─────────────────────────────────────────── */
+.lesson-phase-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.lesson-phase-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 950;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: #7b8db8;
+}
+
+.lesson-phase-title {
+  margin: 0;
+  color: #f0f4ff;
+  font-size: clamp(18px, 5vw, 24px);
+  font-weight: 900;
+  line-height: 1.18;
+  letter-spacing: -.03em;
+}
+
+.lesson-phase-instruction {
+  margin: 0;
+  color: #8fa3cc;
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.lesson-phase-body-slot {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.lesson-phase-feedback-slot {
+  margin-top: 4px;
+}
+
+/* ── Reading / Model text ───────────────────────────────── */
+.lesson-phase-reading-text,
+.lesson-phase-model-text {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  padding: 16px 18px;
+  border: 1px solid rgba(147, 160, 213, .15);
+  border-radius: 18px;
+  background: rgba(10, 16, 36, .62);
+  font-family: inherit;
+  font-size: 16px;
+  line-height: 1.65;
+  color: #d9e6f7;
+  margin: 0;
+}
+
+/* ── Vocab / example list ───────────────────────────────── */
+.lesson-phase-examples,
+.lesson-phase-vocab-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.lesson-phase-examples li,
+.lesson-phase-vocab-list li {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 12px 14px;
+  border: 1px solid rgba(147, 160, 213, .14);
+  border-radius: 14px;
+  background: rgba(15, 23, 42, .48);
+}
+
+.lesson-phase-examples li b,
+.lesson-phase-vocab-list li b {
+  color: #e8f0ff;
+  font-size: 15px;
+  font-weight: 850;
+}
+
+.lesson-phase-examples li small,
+.lesson-phase-vocab-list li small {
+  display: block;
+  color: #7b8db8;
+  font-size: 13px;
+}
+
+.lesson-phase-list {
+  padding-left: 20px;
+  margin: 4px 0;
+  color: #b0bfdc;
+  line-height: 1.65;
+}
+
+/* ── Input / textarea ───────────────────────────────────── */
+.lesson-phase-attempt-row {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.lesson-phase-input,
+.lesson-phase-textarea {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid rgba(147, 160, 213, .22);
+  border-radius: 16px;
+  background: rgba(8, 14, 34, .72);
+  color: #e8f0ff;
+  font: inherit;
+  font-size: 16px;
+  resize: vertical;
+  min-height: 48px;
+  -webkit-appearance: none;
+}
+
+.lesson-phase-textarea {
+  min-height: 120px;
+  line-height: 1.55;
+}
+
+.lesson-phase-input::placeholder,
+.lesson-phase-textarea::placeholder {
+  color: #4a5a7a;
+}
+
+.lesson-phase-input:focus,
+.lesson-phase-textarea:focus {
+  outline: none;
+  border-color: rgba(91, 156, 246, .62);
+  box-shadow: 0 0 0 3px rgba(91, 156, 246, .12);
+}
+
+.lesson-phase-input:disabled,
+.lesson-phase-textarea:disabled {
+  opacity: .55;
+}
+
+.lesson-phase-word-count {
+  align-self: flex-end;
+  color: #4a5a7a;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.lesson-phase-word-count.ok {
+  color: #34d399;
+}
+
+/* ── Primary / link buttons ─────────────────────────────── */
+.lesson-phase-primary {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 14px;
+  color: #fff;
+  background: linear-gradient(135deg, #5b9cf6, #a78bfa);
+  font-size: 15px;
+  font-weight: 950;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(91, 156, 246, .22);
+}
+
+.lesson-phase-primary:disabled {
+  opacity: .4;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.lesson-phase-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 0;
+  border: 0;
+  background: transparent;
+  color: #7cb4ff;
+  font-size: 13px;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+/* ── Feedback ───────────────────────────────────────────── */
+.lesson-phase-feedback {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.lesson-phase-feedback.ok {
+  border: 1px solid rgba(52, 211, 153, .28);
+  background: rgba(52, 211, 153, .08);
+  color: #a7f3d0;
+}
+
+.lesson-phase-feedback.warn {
+  border: 1px solid rgba(251, 191, 36, .28);
+  background: rgba(251, 191, 36, .07);
+  color: #fde68a;
+}
+
+.lesson-phase-feedback p {
+  margin: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+}
+
+.lesson-phase-feedback p b {
+  font-weight: 900;
+}
+
+.lesson-phase-feedback-detail {
+  padding-left: 21px;
+  color: inherit;
+  opacity: .82;
+}
+
+.lesson-phase-model-answer {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  margin-top: 2px;
+  padding: 9px 12px;
+  border-radius: 11px;
+  background: rgba(255, 255, 255, .06);
+  color: #dbeafe;
+  font-size: 13px;
+}
+
+.lesson-phase-model-answer b {
+  color: #fff;
+  font-weight: 850;
+}
+
+/* ── Choice list ────────────────────────────────────────── */
+.lesson-phase-choice-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 9px;
+}
+
+.lesson-phase-choice {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 54px;
+  padding: 12px 14px;
+  border: 1px solid rgba(147, 160, 213, .18);
+  border-radius: 16px;
+  background: rgba(15, 23, 42, .52);
+  color: #d4dff5;
+  font-size: 15px;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color .12s, background .12s;
+}
+
+.lesson-phase-choice:not(:disabled):hover {
+  border-color: rgba(91, 156, 246, .38);
+  background: rgba(91, 156, 246, .10);
+}
+
+.lesson-phase-choice.picked {
+  border-color: rgba(91, 156, 246, .44);
+  background: rgba(91, 156, 246, .13);
+  color: #fff;
+}
+
+.lesson-phase-choice.correct {
+  border-color: rgba(52, 211, 153, .46);
+  background: rgba(52, 211, 153, .10);
+  color: #a7f3d0;
+}
+
+.lesson-phase-choice.wrong {
+  border-color: rgba(248, 113, 113, .44);
+  background: rgba(248, 113, 113, .09);
+  color: #fca5a5;
+}
+
+.lesson-phase-choice:disabled {
+  cursor: default;
+}
+
+.lesson-phase-choice-bullet {
+  flex: 0 0 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: rgba(147, 160, 213, .12);
+  color: #a0b0d0;
+  font-weight: 900;
+  font-size: 12px;
+}
+
+.lesson-phase-choice.correct .lesson-phase-choice-bullet {
+  background: rgba(52, 211, 153, .22);
+  color: #34d399;
+}
+
+.lesson-phase-choice.wrong .lesson-phase-choice-bullet {
+  background: rgba(248, 113, 113, .20);
+  color: #f87171;
+}
+
+/* ── Checklist ──────────────────────────────────────────── */
+.lesson-phase-checklist {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 9px;
+}
+
+.lesson-phase-checklist button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 50px;
+  padding: 12px 14px;
+  border: 1px solid rgba(147, 160, 213, .14);
+  border-radius: 15px;
+  background: rgba(15, 23, 42, .46);
+  color: #a0b0d0;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+  line-height: 1.35;
+}
+
+.lesson-phase-checklist button.on {
+  border-color: rgba(52, 211, 153, .36);
+  background: rgba(52, 211, 153, .08);
+  color: #a7f3d0;
+}
+
+/* ── Speaking ───────────────────────────────────────────── */
+.lesson-phase-speak-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.lesson-phase-speak-hint {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #5a6a8a;
+  font-size: 12px;
+  margin: 0;
+}
+
+.lesson-phase-footnote {
+  color: #5a6a8a;
+  font-size: 12px;
+  margin: 0;
+}
+
+/* ── Sticky transcript toggle ───────────────────────────── */
+.lesson-phase-sticky-text summary {
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 850;
+  color: #7cb4ff;
+  padding: 6px 0;
+}
+
+/* ── Vocab card variant ─────────────────────────────────── */
+.lesson-phase-vocab-cards {
+  display: grid;
+  gap: 10px;
+}
+
+.lesson-phase-vocab-card {
+  display: grid;
+  gap: 3px;
+  padding: 14px 16px;
+  border: 1px solid rgba(147, 160, 213, .16);
+  border-radius: 16px;
+  background: rgba(13, 19, 42, .68);
+}
+
+.lesson-phase-vocab-card strong {
+  color: #f0f4ff;
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: -.02em;
+}
+
+.lesson-phase-vocab-card em {
+  color: #93c5fd;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 700;
+}
+
+.lesson-phase-vocab-note {
+  display: block;
+  color: #7b8db8;
+  font-size: 13px;
+  line-height: 1.4;
+  margin-top: 2px;
+}
+
+.lesson-phase-vocab-example {
+  display: block;
+  color: #5a7aaa;
+  font-size: 13px;
+  font-style: italic;
+  margin-top: 4px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(147, 160, 213, .10);
+}
+
+/* ── iPhone / small screen ──────────────────────────────── */
+@media (max-width: 430px) {
+  .lesson-phase-reading-text,
+  .lesson-phase-model-text {
+    font-size: 15px;
+    padding: 14px;
+    border-radius: 14px;
+  }
+
+  .lesson-phase-choice {
+    min-height: 52px;
+    font-size: 14px;
+  }
+
+  .lesson-phase-checklist button {
+    min-height: 48px;
+    font-size: 13.5px;
+  }
+
+  .lesson-phase-primary {
+    width: 100%;
+    min-height: 52px;
+    font-size: 16px;
+    border-radius: 16px;
+  }
+
+  .lesson-phase-input,
+  .lesson-phase-textarea {
+    font-size: 16px; /* prevent iOS zoom */
+    border-radius: 14px;
+  }
+}
