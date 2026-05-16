@@ -21,7 +21,8 @@ export function ChecklistField({
   const okCount = Object.values(checked).filter(Boolean).length;
 
   useEffect(() => {
-    if (okCount >= need && !flow?.attempts?.[phase.id]) {
+    if (!list.length) return;
+    if (okCount >= need && okCount > 0 && !flow?.attempts?.[phase.id]) {
       flow.markAttempt(phase.id, { checked });
     }
   }, [okCount, need]); // eslint-disable-line react-hooks/exhaustive-deps
