@@ -1,12 +1,55 @@
+import { useState } from 'react';
+import { Loader2, Volume2 } from 'lucide-react';
 import { LessonFlowShell } from '../LessonFlowShell.jsx';
 import { PhaseShell } from '../phases/PhaseShell.jsx';
 import { SpeakField } from '../phases/SpeakField.jsx';
 import { ChecklistField } from '../phases/ChecklistField.jsx';
 import { ListPhase } from '../phases/ListPhase.jsx';
+import { generateGeminiAudioBlob } from '../../../services/geminiAudioService.js';
+import { playLearningAudio } from '../../../services/audioPlayback.js';
 import { clean, mergeLists, noteOf, textOf } from '../text/normalize.js';
 
+function AudioPlayButton({ text }) {
+  const [busy, setBusy] = useState(false);
+  if (!text) return null;
+  async function play() {
+    if (busy) return;
+    setBusy(true);
+    try {
+      const blob = await generateGeminiAudioBlob({ text, style: 'shadowing' });
+      const url = URL.createObjectURL(blob);
+      const audio = new Audio(url);
+      audio.onended = () => URL.revokeObjectURL(url);
+      await audio.play();
+    } catch {
+      await playLearningAudio({ text, label: 'modelo', allowBrowserFallback: true });
+    } finally {
+      setBusy(false);
+    }
+  }
+  return (
+    <button type="button" className="lesson-phase-model-audio-btn" onClick={play} disabled={busy} title="Ouvir modelo">
+      {busy ? <Loader2 size={14} className="spin" /> : <Volume2 size={14} />}
+    </button>
+  );
+}
+
 function ModelBody({ phase }) {
-  return <PhaseShell eyebrow="Modelo" title="Leia antes de falar" instruction="Use estes modelos para preparar sua fala."><ul className="lesson-phase-examples">{phase.items.map((item, index) => <li key={index}><b>{textOf(item)}</b>{noteOf(item) ? <small>{noteOf(item)}</small> : null}</li>)}</ul></PhaseShell>;
+  return (
+    <PhaseShell eyebrow="Modelo" title="Ouça e leia antes de falar" instruction="Toque no ícone de som para ouvir cada frase. Depois use-a como base para sua fala.">
+      <ul className="lesson-phase-examples">
+        {phase.items.map((item, index) => (
+          <li key={index} style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '8px' }}>
+              <b style={{ flex: 1 }}>{textOf(item)}</b>
+              <AudioPlayButton text={textOf(item)} />
+            </div>
+            {noteOf(item) ? <small>{noteOf(item)}</small> : null}
+          </li>
+        ))}
+      </ul>
+    </PhaseShell>
+  );
 }
 function TextBody({ phase }) { return <PhaseShell eyebrow={phase.eyebrow || 'Situação'} title={phase.bodyTitle || phase.title} instruction={phase.instruction}><pre className="lesson-phase-reading-text">{phase.text}</pre></PhaseShell>; }
 function ListBody({ phase }) { return <ListPhase phase={phase} />; }
