@@ -800,6 +800,53 @@ Objetivo:
 - Não compactar conteúdo pedagógico.
 - Não passar para A2 antes do A1 estar completo e validado.
 
+## AUDITORIA BLOCO — claude/improve-english-system-hu6gz (2026-05-16)
+
+Branch: `claude/improve-english-system-hu6gz-IuOMv`
+
+### Bugs corrigidos neste bloco
+
+| Bug | Arquivo | Correção |
+|---|---|---|
+| fallback-reading aparecia como aula real | `LessonScreen.jsx` | Substituído por `NoLessonState` — mensagem clara "Nenhuma aula aberta. Vá em Curso e toque em Começar aula." |
+| reviewFromErrors ignorava flowErrors das aulas | `reviewFromErrors.js` | Adicionado `getLessonFlowErrorQueue` que lê `lessonCompletions.flowErrors` e mescla com a fila de prática |
+| flowErrors salvos não tinham prompt/expected/level | `LessonFlowShell.jsx` + `progressStore.js` | `richFlowErrors` passados de `extractFlowErrors` agora salvos completos no completion |
+| scoring: catch-all sempre retornava 'ok' | `lessonFlowScore.js` | Catch-all agora retorna 'warn' ou 'missed'. Checklist exige item marcado true. SpeakField digitado exige 3+ palavras. Avaliação de expected/answer quando disponível. |
+| extractFlowErrors perdia fases 'missed' | `lessonFlowScore.js` | Agora captura missed (sem tentativa) além de warn |
+| Bloqueio por pilar sem explicação | `staticCourseLauncher.js` + `CourseScreen.jsx` | Mensagens explicam qual pilar é do dia e listam o cronograma completo |
+| DevTools sem validação por pilar | `LessonScreen.devTools.jsx` | Botões por pilar (Grammar/Vocabulary/Reading/Listening/Speaking/Writing) para preview sem afetar progresso |
+
+### Estado do build
+- `npm run build` → ✓ sucesso sem erros (apenas avisos de tamanho de chunk esperados)
+
+### Fluxo da aula — status pós-auditoria
+1. **UI puxa aula certa?** Sim — `FLOW_BY_PILLAR[pillar]` seleciona renderizador correto. Sem aula salva → empty state.
+2. **fallback-reading aparece para usuário?** Não — substituído por empty state claro.
+3. **Cada pilar usa renderizador certo?** Sim — mapeamento `FLOW_BY_PILLAR` correto.
+4. **Erros das aulas alimentam revisão?** Sim — `flowErrors` de `lessonCompletions` entram em `getReviewPlanFromErrors`.
+5. **Scoring menos superficial?** Sim — catch-all, checklist e speak corrigidos.
+6. **Conclusão salva progresso correto?** Sim — XP, streak, lessonId, curriculumId, flowScore, flowErrors ricos.
+7. **Bloqueio por pilar claro?** Sim — mensagem explica pilar/dia e cronograma semanal.
+
+### Arquivos alterados
+- `fluency-clean/src/screens/LessonScreen.jsx`
+- `fluency-clean/src/lessons/flow/LessonFlowShell.jsx`
+- `fluency-clean/src/lessons/flow/lessonFlowScore.js`
+- `fluency-clean/src/services/progressStore.js`
+- `fluency-clean/src/services/reviewFromErrors.js`
+- `fluency-clean/src/services/staticCourseLauncher.js`
+- `fluency-clean/src/screens/CourseScreen.jsx`
+- `fluency-clean/src/screens/LessonScreen.devTools.jsx`
+
+### Pendências para o próximo bloco
+- Auditoria visual por pilar no iPhone (renderizadores GrammarLessonFlow, VocabularyLessonFlow, etc.)
+- normalizeStaticLessonForDisplay — estender para outros pilares além de listening
+- TAG_RULES em reviewFromErrors — ampliar para cobrir erros de speaking/vocabulary/writing por flow
+- Mastery gate: verificar integração real com critérios de avanço A1 → A2
+- Speaking/Writing: scoring de produção livre via AI tutor (pendente autorização de API)
+
+---
+
 ## Como continuar em outro chat
 
-"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch obrigatória é `rewrite-fluency-clean-lab`. Não mexa em `main`, `rewrite-fluency-clean`, `bundle.js`, backend Azure privado, Firebase, Azure, sistema de gravação, `speakingFlow.js`, `SpeakingStepper.jsx` ou `SpeakingScreen.jsx`. A nova direção oficial é curso fixo premium A1 → C2 + Prática Profunda complementar derivada da aula fixa + IA apenas como tutora/corretora/revisora adaptativa. Não reativar geração dinâmica de aulas como fluxo principal. Execute os blocos STATIC na ordem do Handoff. A Prática Profunda deve ser alterada no `BLOCO-STATIC-07-PRACTICE-FROM-STATIC-LESSONS`, quando o schema fixo e as primeiras aulas fixas já existirem."
+"Continue a reconstrução do Fluency. Leia `REWRITE_HANDOFF.md` antes de qualquer alteração. A branch obrigatória é `claude/improve-english-system-hu6gz-IuOMv`. Não mexa em `main`, `bundle.js`, backend Azure privado, Firebase, Azure, sistema de gravação, `speakingFlow.js`, `SpeakingStepper.jsx` ou `SpeakingScreen.jsx`. A nova direção oficial é curso fixo premium A1 → C2 + Prática Profunda complementar derivada da aula fixa + IA apenas como tutora/corretora/revisora adaptativa. Não reativar geração dinâmica de aulas como fluxo principal. Execute os blocos STATIC na ordem do Handoff. A Prática Profunda deve ser alterada no `BLOCO-STATIC-07-PRACTICE-FROM-STATIC-LESSONS`, quando o schema fixo e as primeiras aulas fixas já existirem."
