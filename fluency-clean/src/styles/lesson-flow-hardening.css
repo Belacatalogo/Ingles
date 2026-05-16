@@ -1,0 +1,99 @@
+/* HOTFIX — Lesson Flow Hardening
+   Objetivo: reduzir rolagem longa na aba de aulas e impedir gabaritos/modelos visíveis antes da interação.
+   Mantém a correção modular em CSS, sem DOM injection, sem bundle patch e sem tocar em backend/Firebase/Azure. */
+
+.reading-lesson-v3 {
+  gap: 14px;
+  padding-bottom: max(120px, calc(96px + env(safe-area-inset-bottom, 0px)));
+}
+
+.reading-step-panel {
+  display: none !important;
+  scroll-margin-top: 96px;
+}
+
+.reading-step-panel[data-reading-step-active='true'] {
+  display: grid !important;
+}
+
+.reading-main-grid.reading-step-panel[data-reading-step-active='true'] {
+  display: grid !important;
+}
+
+.reading-study-steps {
+  display: none;
+}
+
+.reading-stepper-card {
+  position: sticky;
+  top: max(8px, env(safe-area-inset-top, 0px));
+  z-index: 8;
+  backdrop-filter: blur(14px);
+}
+
+.reading-stepper-flow {
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.reading-stepper-flow::-webkit-scrollbar {
+  display: none;
+}
+
+.reading-stepper-flow button {
+  flex: 0 0 auto;
+}
+
+/* Não mostrar resposta, modelo ou evidência esperada antes do aluno tentar. */
+.reading-mini-exercise > span,
+.reading-mini-exercise > small {
+  display: none !important;
+}
+
+/* Evita que áreas de escrita criem uma página enorme no iPhone. */
+.reading-mini-written-exercise textarea,
+.reading-production-card-v3 textarea {
+  max-height: 180px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 720px) {
+  .reading-lesson-v3 {
+    gap: 11px;
+  }
+
+  .reading-stepper-card {
+    margin-inline: -2px;
+    padding: 8px;
+    border-radius: 20px;
+  }
+
+  .reading-stepper-flow {
+    display: flex;
+    gap: 8px;
+  }
+
+  .reading-stepper-flow button {
+    min-height: 42px;
+    padding: 8px 10px;
+    border-radius: 14px;
+  }
+
+  .reading-step-panel {
+    scroll-margin-top: 108px;
+  }
+
+  .reading-main-grid.reading-step-panel[data-reading-step-active='true'] {
+    grid-template-columns: 1fr;
+  }
+
+  .reading-paper-body-v3 p,
+  .reading-section-intro,
+  .reading-mini-exercise p,
+  .reading-production-card-v3 label {
+    font-size: 15.5px;
+    line-height: 1.55;
+  }
+}
