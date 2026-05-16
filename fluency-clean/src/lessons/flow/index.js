@@ -22,6 +22,8 @@ export { AttemptField } from './phases/AttemptField.jsx';
 export { ChoiceField } from './phases/ChoiceField.jsx';
 export { SpeakField } from './phases/SpeakField.jsx';
 export { ChecklistField } from './phases/ChecklistField.jsx';
+export { ListPhase } from './phases/ListPhase.jsx';
+export { AudioListenField } from './phases/AudioListenField.jsx';
 
 export { GrammarLessonFlow } from './grammar/GrammarLessonFlow.jsx';
 export { VocabularyLessonFlow } from './vocabulary/VocabularyLessonFlow.jsx';
