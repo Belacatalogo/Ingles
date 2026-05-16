@@ -1,4 +1,4 @@
-.lesson-flow-shell { display: grid; gap: 14px; padding-bottom: 92px; }
+.lesson-flow-shell { display: grid; gap: 14px; padding-bottom: max(92px, calc(80px + env(safe-area-inset-bottom, 0px))); }
 .lesson-flow-shell.empty { padding: 18px; border: 1px dashed rgba(147,160,213,.24); border-radius: 24px; color: #cbd5e1; background: rgba(15,23,42,.48); }
 
 /* ── Completion card ─────────────────────────────────────── */
@@ -102,7 +102,15 @@
   opacity: .82;
 }
 
-.lesson-completion-retry {
+.lesson-completion-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+
+.lesson-completion-retry,
+.lesson-completion-cta {
   display: inline-flex;
   align-items: center;
   gap: 7px;
@@ -114,6 +122,18 @@
   font-size: 14px;
   font-weight: 850;
   cursor: pointer;
+}
+
+.lesson-completion-cta {
+  border-color: rgba(91, 156, 246, .28);
+  background: rgba(91, 156, 246, .10);
+  color: #93c5fd;
+}
+
+.lesson-completion-cta.warn {
+  border-color: rgba(251, 191, 36, .28);
+  background: rgba(251, 191, 36, .07);
+  color: #fde68a;
 }
 
 .lesson-flow-focus-header { display: grid; gap: 16px; padding: 18px; border: 1px solid rgba(147,160,213,.18); border-radius: 28px; background: radial-gradient(circle at 12% 0%, rgba(91,156,246,.20), transparent 34%), linear-gradient(180deg, rgba(13,19,42,.94), rgba(8,14,34,.88)); box-shadow: 0 22px 70px rgba(0,0,0,.26), inset 0 1px 0 rgba(255,255,255,.04); }
@@ -147,7 +167,7 @@
 .lesson-flow-phase-body { display: grid; gap: 13px; }
 .lesson-flow-muted { margin: 0; color: #9aa7c8; line-height: 1.5; }
 
-.lesson-flow-action-footer { position: sticky; bottom: 10px; z-index: 20; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 10px; border: 1px solid rgba(147,160,213,.20); border-radius: 22px; background: rgba(8,14,34,.88); backdrop-filter: blur(16px); box-shadow: 0 18px 46px rgba(0,0,0,.28); }
+.lesson-flow-action-footer { position: sticky; bottom: max(10px, env(safe-area-inset-bottom, 10px)); z-index: 20; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 10px; border: 1px solid rgba(147,160,213,.20); border-radius: 22px; background: rgba(8,14,34,.88); backdrop-filter: blur(16px); box-shadow: 0 18px 46px rgba(0,0,0,.28); }
 .lesson-flow-action-footer p { margin: 0; color: #9aa7c8; font-size: 13px; line-height: 1.35; }
 .lesson-flow-primary-action,
 .lesson-flow-secondary-action { min-height: 48px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 0 15px; border-radius: 16px; font-size: 15px; font-weight: 950; }
@@ -161,7 +181,7 @@
 .lesson-flow-writing .lesson-flow-current-goal { border-color: rgba(244,114,182,.24); background: rgba(244,114,182,.09); }
 
 @media (max-width: 720px) {
-  .lesson-flow-shell { gap: 12px; padding-bottom: 100px; }
+  .lesson-flow-shell { gap: 12px; padding-bottom: max(100px, calc(88px + env(safe-area-inset-bottom, 0px))); }
   .lesson-flow-focus-header { padding: 15px; border-radius: 24px; }
   .lesson-flow-title-area { grid-template-columns: 1fr; }
   .lesson-flow-current-goal { padding: 13px; border-radius: 19px; }
@@ -169,7 +189,7 @@
   .lesson-flow-phase-card { padding: 15px; border-radius: 24px; }
   .lesson-flow-phase-head { grid-template-columns: 1fr; }
   .lesson-flow-phase-status { justify-content: flex-start; width: fit-content; }
-  .lesson-flow-action-footer { grid-template-columns: 1fr 1fr; bottom: 8px; }
+  .lesson-flow-action-footer { grid-template-columns: 1fr 1fr; bottom: max(8px, env(safe-area-inset-bottom, 8px)); }
   .lesson-flow-action-footer div { grid-column: 1 / -1; order: -1; }
   .lesson-flow-primary-action,
   .lesson-flow-secondary-action { min-height: 50px; width: 100%; }

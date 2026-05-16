@@ -369,6 +369,34 @@
   color: #a7f3d0;
 }
 
+/* ── Model audio button ─────────────────────────────────── */
+.lesson-phase-model-audio-btn {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  border: 1px solid rgba(91, 156, 246, .28);
+  background: rgba(91, 156, 246, .10);
+  color: #7cb4ff;
+  cursor: pointer;
+}
+
+.lesson-phase-model-audio-btn:disabled {
+  opacity: .5;
+  cursor: default;
+}
+
+.lesson-phase-model-audio-btn .spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 /* ── Speaking ───────────────────────────────────────────── */
 .lesson-phase-speak-wrap {
   display: flex;
@@ -527,6 +555,70 @@
   color: #93c5fd;
   font-size: 13px;
   margin: 0;
+}
+
+/* ── Shadowing list ─────────────────────────────────────── */
+.listening-shadowing-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.listening-shadowing-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid rgba(147, 160, 213, .14);
+  border-radius: 14px;
+  background: rgba(15, 23, 42, .48);
+}
+
+.listening-shadowing-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+}
+
+.listening-shadowing-text b {
+  color: #e8f0ff;
+  font-size: 15px;
+  font-weight: 850;
+}
+
+.listening-shadowing-text small {
+  color: #7b8db8;
+  font-size: 13px;
+}
+
+.listening-shadowing-actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex: 0 0 auto;
+}
+
+.listening-shadowing-done-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 32px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(147, 160, 213, .20);
+  background: rgba(15, 23, 42, .50);
+  color: #7b8db8;
+  font-size: 12px;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.listening-shadowing-done-btn.done {
+  border-color: rgba(52, 211, 153, .36);
+  background: rgba(52, 211, 153, .08);
+  color: #34d399;
 }
 
 /* ── iPhone / small screen ──────────────────────────────── */
