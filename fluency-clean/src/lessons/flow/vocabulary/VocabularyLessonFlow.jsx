@@ -4,6 +4,9 @@ import { AttemptField } from '../phases/AttemptField.jsx';
 import { ChoiceField } from '../phases/ChoiceField.jsx';
 import { clean, mergeLists, noteOf, safeArray, textOf } from '../text/normalize.js';
 
+function ContextBody({ phase }) {
+  return <PhaseShell eyebrow="Contexto" title="Antes de usar" instruction={phase.instruction} />;
+}
 function ListBody({ phase }) {
   return (
     <PhaseShell eyebrow={phase.eyebrow} title={phase.title} instruction={phase.instruction}>
@@ -22,7 +25,7 @@ function buildPhases(lesson = {}) {
   const chunks = mergeLists(lesson.chunks, lesson.collocations, lesson.phrases).slice(0, 10);
   const quiz = mergeLists(lesson.recognitionTasks, lesson.matchingTasks, lesson.quiz).find((item) => Array.isArray(item?.options) && item.options.length);
   const usage = mergeLists(lesson.usageTasks, lesson.gapFillTasks, lesson.productionTask, lesson.productionTasks);
-  const phases = [{ id: 'vocab-context', title: 'Contexto', shortTitle: 'Contexto', description: 'Entenda onde usar as palavras.', requiresAttempt: false, component: PhaseShell, instruction: context }];
+  const phases = [{ id: 'vocab-context', title: 'Contexto', shortTitle: 'Contexto', description: 'Entenda onde usar as palavras.', requiresAttempt: false, component: ContextBody, instruction: context }];
   if (words.length) phases.push({ id: 'vocab-words', title: 'Palavras essenciais', shortTitle: 'Palavras', description: 'Estude antes da prática.', requiresAttempt: false, component: ListBody, eyebrow: 'Vocabulário', instruction: 'Leia as palavras e sentidos principais.', items: words });
   if (chunks.length) phases.push({ id: 'vocab-chunks', title: 'Chunks úteis', shortTitle: 'Chunks', description: 'Aprenda blocos prontos.', requiresAttempt: false, component: ListBody, eyebrow: 'Chunks', instruction: 'Use estes blocos como peças prontas.', items: chunks });
   if (quiz) phases.push({ id: 'vocab-quiz', title: 'Reconhecimento', shortTitle: 'Quiz', description: 'Escolha a opção correta.', requiresAttempt: true, blockedMessage: 'Escolha uma alternativa antes de avançar.', component: QuizBody, item: quiz });
