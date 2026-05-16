@@ -4,6 +4,7 @@ import { Card } from '../../components/ui/Card.jsx';
 import { AiTutorPanel } from '../../components/tutor/AiTutorPanel.jsx';
 import { SpeakExercise } from '../../practice/components/SpeakExercise.jsx';
 import { generateGeminiAudioBlob } from '../../services/geminiAudioService.js';
+import { playLearningAudio } from '../../services/audioPlayback.js';
 import { StaticCompletionGate } from './StaticCompletionGate.jsx';
 
 const TECHNICAL_KEYS = new Set(['schemaVersion', 'status', 'level', 'pillar', 'order', 'id', 'checkpoint', 'tags', 'estimatedMinutes', 'subject', 'expected', 'answer', 'expectedAnswer', 'correctAnswer', 'options']);
@@ -46,11 +47,16 @@ async function playGeminiPremiumAudio(text, style = 'shadowing') {
     activePremiumAudio.pause();
     activePremiumAudio.currentTime = 0;
   }
-  const blob = await generateGeminiAudioBlob({ text, style });
-  const url = URL.createObjectURL(blob);
-  activePremiumAudio = new Audio(url);
-  await activePremiumAudio.play();
-  return true;
+  try {
+    const blob = await generateGeminiAudioBlob({ text, style });
+    const url = URL.createObjectURL(blob);
+    activePremiumAudio = new Audio(url);
+    await activePremiumAudio.play();
+    return true;
+  } catch {
+    await playLearningAudio({ text, label: style, allowBrowserFallback: true });
+    return true;
+  }
 }
 
 function ObjectiveCard({ lesson }) {

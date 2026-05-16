@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Headphones, PauseCircle, PlayCircle } from 'lucide-react';
 import { generateGeminiAudioBlob } from '../../services/geminiAudioService.js';
+import { playLearningAudio } from '../../services/audioPlayback.js';
 import { Card } from '../ui/Card.jsx';
 
 function clean(value) {
@@ -60,8 +61,10 @@ export function ListeningTextPlayer({ lesson }) {
         return url;
       });
       setStatus('Áudio pronto. Toque no player para ouvir.');
-    } catch (error) {
-      setStatus(error?.message || 'Áudio natural ainda não configurado.');
+    } catch {
+      setStatus('Reproduzindo via navegador...');
+      const result = await playLearningAudio({ text, label: 'aula', allowBrowserFallback: true });
+      setStatus(result.ok ? 'Áudio reproduzido pelo navegador.' : 'Não foi possível reproduzir o áudio. Verifique as configurações de chave.');
     } finally {
       setLoading(false);
     }

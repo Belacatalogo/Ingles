@@ -5,6 +5,43 @@ Branch atual: `claude/improve-english-system-hu6gz`
 
 ---
 
+## ✅ Bloco concluído: Correção dos botões de áudio em todo o sistema (2026-05-16)
+
+### Problema raiz
+
+O sistema tinha dois mecanismos de áudio incompatíveis:
+
+| Sistema | Função | Chave | Fallback |
+|---|---|---|---|
+| A | `playLearningAudio` (audioPlayback.js) | `lesson.gemini.flashKeys` | Sim — browser TTS |
+| B | `generateGeminiAudioBlob` (geminiAudioService.js) | `ai.gemini.generalKeys` | **Não** — throw imediato |
+
+Os botões que usavam o Sistema B simplesmente não faziam nada visível — o erro aparecia só em texto de status (pequeno), sem áudio.
+
+### Componentes afetados e corrigidos
+
+| Componente | Problema | Fix |
+|---|---|---|
+| `AudioListenField.jsx` | Sem fallback — erro silencioso ao preparar áudio | Catch → `playLearningAudio` com browser TTS |
+| `ListeningTextPlayer.jsx` | Mesmo problema | Catch → `playLearningAudio` |
+| `ListeningShadowingPractice.jsx` | Mesmo problema | Catch → `playLearningAudio` |
+| `StaticLessonRenderer.jsx` (`playGeminiPremiumAudio`) | Sem try/catch — throw propagava | Try/catch → `playLearningAudio` como fallback |
+
+### Comportamento após o fix
+
+- **Com chave Gemini geral**: áudio premium via `generateGeminiAudioBlob` (como antes)
+- **Com chave Gemini de aulas**: `playLearningAudio` usa Gemini TTS via `getLessonFlashKeys`
+- **Sem nenhuma chave**: `playLearningAudio` cai no browser TTS (`window.speechSynthesis`) — áudio básico mas funcional
+- Status text informa o que está acontecendo em cada caso
+
+### Arquivos alterados
+- `fluency-clean/src/lessons/flow/phases/AudioListenField.jsx`
+- `fluency-clean/src/components/lesson/ListeningTextPlayer.jsx`
+- `fluency-clean/src/components/lesson/ListeningShadowingPractice.jsx`
+- `fluency-clean/src/lessons/static/StaticLessonRenderer.jsx`
+
+---
+
 ## ✅ Bloco concluído: Estrutura pedagógica real do sistema de aulas (2026-05-16)
 
 ### Auditoria — o que estava raso

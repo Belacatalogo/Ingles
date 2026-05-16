@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Headphones, PauseCircle, PlayCircle, RefreshCw } from 'lucide-react';
 import { generateGeminiAudioBlob } from '../../../services/geminiAudioService.js';
+import { playLearningAudio } from '../../../services/audioPlayback.js';
 import { PhaseShell } from './PhaseShell.jsx';
 import { clean } from '../text/normalize.js';
 
@@ -48,8 +49,15 @@ export function AudioListenField({ phase, flow }) {
         return url;
       });
       setStatus('');
-    } catch (error) {
-      setStatus(error?.message || 'Não foi possível preparar o áudio agora.');
+    } catch {
+      setStatus('Reproduzindo via navegador...');
+      const result = await playLearningAudio({ text, label: phase.title || 'escuta', allowBrowserFallback: true });
+      if (result.ok) {
+        markPlay();
+        setStatus('');
+      } else {
+        setStatus('Não foi possível reproduzir o áudio. Verifique as configurações de chave.');
+      }
     } finally {
       setLoading(false);
     }

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Headphones, PauseCircle, PlayCircle, SkipForward } from 'lucide-react';
 import { generateGeminiAudioBlob } from '../../services/geminiAudioService.js';
+import { playLearningAudio } from '../../services/audioPlayback.js';
 import { Card } from '../ui/Card.jsx';
 
 function clean(value) {
@@ -73,8 +74,10 @@ export function ListeningShadowingPractice({ lesson }) {
         return url;
       });
       setStatus('Frase pronta. Toque no player, escute e repita em voz alta.');
-    } catch (error) {
-      setStatus(error?.message || 'Não foi possível preparar esta frase agora.');
+    } catch {
+      setStatus('Reproduzindo via navegador...');
+      const result = await playLearningAudio({ text: phrase, label: 'frase', allowBrowserFallback: true });
+      setStatus(result.ok ? 'Frase reproduzida. Repita em voz alta.' : 'Não foi possível reproduzir o áudio. Verifique as configurações de chave.');
     } finally {
       setLoading(false);
     }
