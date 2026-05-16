@@ -431,3 +431,110 @@
   .course-lesson-state { grid-column: 2 / 4; width: fit-content; }
   .error-review-summary { grid-template-columns: 1fr; }
 }
+
+/* ── Weekly schedule strip ─────────────────────────────────── */
+.course-week-strip {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+}
+.course-week-strip::-webkit-scrollbar { display: none; }
+
+.course-week-day {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 10px;
+  min-width: 52px;
+  border-radius: 16px;
+  border: 1px solid rgba(147,160,213,.13);
+  background: rgba(15,23,42,.42);
+}
+.course-week-day span { color: #dbeafe; font-size: 12px; font-weight: 950; }
+.course-week-day small { color: #7b8db8; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .07em; }
+.course-week-day.today { border-color: rgba(91,156,246,.48); background: rgba(91,156,246,.14); }
+.course-week-day.today span { color: #93c5fd; }
+.course-week-day.today small { color: #bfdbfe; }
+.course-week-day.today[data-pillar="grammar"]    { border-color: rgba(91,156,246,.48);  background: rgba(91,156,246,.14);  }
+.course-week-day.today[data-pillar="vocabulary"] { border-color: rgba(167,139,250,.48); background: rgba(167,139,250,.14); }
+.course-week-day.today[data-pillar="reading"]    { border-color: rgba(52,211,153,.48);  background: rgba(52,211,153,.14);  }
+.course-week-day.today[data-pillar="listening"]  { border-color: rgba(56,189,248,.48);  background: rgba(56,189,248,.14);  }
+.course-week-day.today[data-pillar="speaking"]   { border-color: rgba(168,85,247,.48);  background: rgba(168,85,247,.14);  }
+.course-week-day.today[data-pillar="writing"]    { border-color: rgba(244,114,182,.48); background: rgba(244,114,182,.14); }
+.course-week-day.rest { opacity: .45; }
+
+/* ── Next lesson inline block (inside hero) ────────────────── */
+.course-next-inline {
+  display: grid;
+  gap: 4px;
+  padding: 12px 14px;
+  border-radius: 18px;
+  border: 1px solid rgba(91,156,246,.22);
+  background: rgba(91,156,246,.08);
+}
+.course-next-inline small {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #93c5fd;
+  font-size: 11px;
+  font-weight: 950;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+}
+.course-next-inline strong { color: #fff; font-size: 16px; line-height: 1.25; }
+.course-next-inline span   { color: #9aa7c8; font-size: 13px; }
+.course-next-inline p      { margin: 5px 0 0; color: #f87171; font-size: 13px; line-height: 1.4; }
+.course-next-inline.course-next-empty { border-color: rgba(147,160,213,.14); background: rgba(15,23,42,.32); }
+.course-next-inline.course-next-empty p { color: #9aa7c8; margin: 0; }
+
+/* ── Section title separator ───────────────────────────────── */
+.course-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #9ca8ca;
+  font-size: 11px;
+  font-weight: 950;
+  text-transform: uppercase;
+  letter-spacing: .14em;
+}
+
+/* ── Pillar color on lesson number badge ───────────────────── */
+.course-lesson-number.pillar-grammar    { background: rgba(91,156,246,.18);  color: #93c5fd; }
+.course-lesson-number.pillar-vocabulary { background: rgba(167,139,250,.18); color: #c4b5fd; }
+.course-lesson-number.pillar-reading    { background: rgba(52,211,153,.18);  color: #6ee7b7; }
+.course-lesson-number.pillar-listening  { background: rgba(56,189,248,.18);  color: #7dd3fc; }
+.course-lesson-number.pillar-speaking   { background: rgba(168,85,247,.18);  color: #d8b4fe; }
+.course-lesson-number.pillar-writing    { background: rgba(244,114,182,.18); color: #f9a8d4; }
+
+/* ── Collapsible wrapper (Checkpoints / Prova Final) ───────── */
+.course-collapsible {
+  border: 1px solid rgba(147,160,213,.16);
+  border-radius: 22px;
+  overflow: hidden;
+  background: rgba(7,13,31,.54);
+}
+.course-collapsible-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 16px 18px;
+  color: #dbeafe;
+  font-size: 15px;
+  font-weight: 950;
+  text-align: left;
+}
+.course-collapsible-toggle > svg:last-child { margin-left: auto; color: #7b8db8; }
+.course-collapsible-body { border-top: 1px solid rgba(147,160,213,.10); }
+
+@media (max-width: 720px) {
+  .course-week-day { min-width: 46px; padding: 7px 8px; }
+  .course-week-day small { font-size: 9px; }
+  .course-collapsible-toggle { padding: 14px 15px; font-size: 14px; }
+}
