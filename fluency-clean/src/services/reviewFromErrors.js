@@ -1,5 +1,5 @@
 import { CURRICULUM_PILLARS, findStaticLesson, getStaticLessons } from '../content/curriculum/index.js';
-import { getPracticeReviewQueue, getPracticeSessions } from './progressStore.js';
+import { getLessonCompletions, getPracticeReviewQueue, getPracticeSessions } from './progressStore.js';
 
 function clean(value) { return String(value ?? '').trim(); }
 function lower(value) { return clean(value).toLowerCase(); }
@@ -70,16 +70,57 @@ function groupByTag(items) {
   return [...map.values()].sort((a, b) => b.count - a.count);
 }
 
+function getLessonFlowErrorQueue(limit = 60) {
+  const seen = new Set();
+  const queue = [];
+  for (const completion of getLessonCompletions()) {
+    if (!Array.isArray(completion.flowErrors) || !completion.flowErrors.length) continue;
+    for (const err of completion.flowErrors) {
+      const key = `${completion.lessonId}:${err.phaseId || err.title}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      queue.push({
+        type: err.pillar || completion.pillar || 'general',
+        lessonId: err.lessonId || completion.lessonId || '',
+        lessonTitle: err.lessonTitle || completion.title || '',
+        level: err.level || completion.level || 'A1',
+        prompt: err.prompt || err.title || '',
+        answer: err.value || '',
+        expected: err.expected || '',
+        completedAt: completion.completedAt || '',
+        phaseId: err.phaseId || '',
+        status: err.status || 'warn',
+      });
+      if (queue.length >= limit) return queue;
+    }
+  }
+  return queue;
+}
+
 export function getReviewPlanFromErrors(options = {}) {
   const limit = Number(options.limit || 30);
-  const queue = getPracticeReviewQueue(limit);
-  const items = queue.map(buildReviewItem);
+  const practiceQueue = getPracticeReviewQueue(limit);
+  const flowQueue = getLessonFlowErrorQueue(limit);
+
+  // Mesclar, deduplicar e construir review items
+  const seen = new Set();
+  const allItems = [];
+  for (const item of [...practiceQueue, ...flowQueue]) {
+    const key = `${item.lessonId}:${item.phaseId || item.prompt}:${item.expected}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    allItems.push(item);
+    if (allItems.length >= limit * 2) break;
+  }
+
+  const items = allItems.map(buildReviewItem);
   const grouped = groupByTag(items);
   const sessions = getPracticeSessions();
   const lowAccuracySessions = sessions.filter((session) => Number(session.accuracy || 0) < 75).slice(0, 10);
+  const totalWeakItems = practiceQueue.length + flowQueue.length;
   return {
     generatedAt: new Date().toISOString(),
-    totalWeakItems: queue.length,
+    totalWeakItems,
     totalGroups: grouped.length,
     hasReview: grouped.length > 0,
     items,
