@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { CheckCircle2, Lock, PencilLine, RefreshCw, ShieldCheck } from 'lucide-react';
 import { Card } from '../../components/ui/Card.jsx';
 import { completeLesson, isLessonCompleted } from '../../services/progressStore.js';
+import { refreshA1LessonCompletionPercent } from '../../services/a1MasteryGateService.js';
 import { evaluateStaticLessonGate } from '../../services/masteryGate.js';
 import {
   getStaticLessonProductionText,
@@ -58,6 +59,7 @@ export function StaticCompletionGate({ lesson }) {
       return;
     }
     const result = completeLesson({ lesson, answers: { staticGate: report }, writtenAnswer: production });
+    if (!result.alreadyCompleted && lesson?.level === 'A1') refreshA1LessonCompletionPercent();
     setCompleted(true);
     setMessage(result.alreadyCompleted ? 'Esta aula já estava concluída. Progresso mantido.' : '+25 XP. Aula fixa concluída com critérios mínimos.');
   }

@@ -13,7 +13,9 @@ const TYPE_TO_PILLAR = {
 };
 
 function todayKey(date = new Date()) {
-  return date.toISOString().slice(0, 10);
+  const d = date instanceof Date ? date : new Date(date);
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
 function nextSaturdayKey(date = new Date()) {

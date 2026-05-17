@@ -1,6 +1,6 @@
 # Fluency Clean — Handoff Oficial
 
-Última atualização: 2026-05-17 (BLOCO-AUDIT-FIX-04)
+Última atualização: 2026-05-17 (BLOCO-AUDIT-FIX-05)
 
 ## Branch oficial atual
 
@@ -190,8 +190,34 @@ Executado após auditoria Playwright completa (30 problemas catalogados).
 **Testes:** Playwright sem browser executável no ambiente remoto (infraestrutura pré-existente); nenhuma lógica de componente alterada
 
 **Próximos blocos disponíveis:**
-- BLOCO-AUDIT-FIX-05 — Conteúdo pedagógico restante
+- BLOCO-AUDIT-FIX-05 — Progresso, mastery e checkpoints (próximo)
 - Retomar criação de B1 (após aprovação)
+
+---
+
+## ✅ BLOCO-AUDIT-FIX-05 — Progresso, Mastery, Checkpoints e Final Exam (2026-05-17)
+
+**Corrigido:**
+- BUG CRÍTICO: `updateA1LessonCompletion` nunca era chamada → o A1 Gate sempre mostrava 0% de aulas concluídas. Criada `refreshA1LessonCompletionPercent()` em `a1MasteryGateService.js`; chamada em `StaticCompletionGate.jsx` e `LessonFlowShell.jsx` após conclusão de aula A1
+- PROB-013: `vocabulary` ausente do `skillConfig` em `ProgressScreen.jsx` → adicionado pilar Vocabulary (tom indigo); pilares reordenados na sequência pedagógica
+- PROB-022: `masteryStore.todayKey` usava UTC (`toISOString()`) enquanto `progressStore.localDateKey` usava hora local → corrigido `todayKey` para usar `.getFullYear()/.getMonth()/.getDate()` (hora local)
+
+**Verificado e OK (não regressões):**
+- PROB-001: Score mastery correto (corrigido no FIX-01)
+- PROB-004: Gate bloqueia corretamente quando speaking/writing não revisados
+- PROB-017: Estado `done` dos flashcards tem botão "Revisar novamente" — comportamento intencional
+- XP sem duplicação, streak correto, persistência verificada
+- Checkpoint e Final Exam conectados ao gate
+
+**Pendências documentadas (decisão necessária):**
+- PROB-016: Elevar limiar mínimo de 75% para 80%? (impacta todos os alunos)
+
+**Build:** ✅ `npx vite build` — 2533 módulos sem erros  
+**Sistema seguro para iniciar B1:** Sim — gate funciona, bloqueios reais, sem bypass
+
+**Próximos blocos disponíveis:**
+- BLOCO-AUDIT-FIX-06 — Limpeza técnica e segurança (sessionStorage/API keys, SRI)
+- Retomar criação de B1 (após aprovação explícita)
 
 ---
 

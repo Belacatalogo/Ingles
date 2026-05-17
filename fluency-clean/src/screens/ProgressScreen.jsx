@@ -25,11 +25,12 @@ import { getErrorBankSummary } from '../services/errorBank.js';
 
 const cefrLevels = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 const skillConfig = [
+  { key: 'grammar', label: 'Grammar', tone: 'green' },
+  { key: 'vocabulary', label: 'Vocabulary', tone: 'indigo' },
   { key: 'reading', label: 'Reading', tone: 'blue' },
   { key: 'listening', label: 'Listening', tone: 'violet' },
-  { key: 'writing', label: 'Writing', tone: 'teal' },
   { key: 'speaking', label: 'Speaking', tone: 'amber' },
-  { key: 'grammar', label: 'Grammar', tone: 'green' },
+  { key: 'writing', label: 'Writing', tone: 'teal' },
 ];
 
 function safeArray(value) { return Array.isArray(value) ? value : []; }
