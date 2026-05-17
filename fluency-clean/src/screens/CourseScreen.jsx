@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useRef, useMemo, useState } from 'react';
 import { BookOpenCheck, CheckCircle2, ChevronDown, ChevronUp, ClipboardCheck, GraduationCap, Lock, Map, Play, ShieldCheck, Target } from 'lucide-react';
 import { ErrorReviewPanel } from '../components/review/ErrorReviewPanel.jsx';
 import { A1MasteryGatePanel } from '../components/course/A1MasteryGatePanel.jsx';
@@ -51,7 +51,7 @@ function buildLevelLessons(level, completedIds) {
     const available = ready && !isDone && !blocked;
     const status = isDone ? 'done' : available ? 'ready' : ready ? 'locked' : 'planned';
     return { ...lesson, status };
-  }).slice(0, 30);
+  });
 }
 
 function CollapsibleCard({ title, icon, children, defaultOpen = false }) {
@@ -71,6 +71,12 @@ function CollapsibleCard({ title, icon, children, defaultOpen = false }) {
 export function CourseScreen({ onNavigate }) {
   const [activeLevel, setActiveLevel] = useState('A1');
   const [message, setMessage] = useState('');
+  const msgTimer = useRef(null);
+  function showMessage(text, delay = 5000) {
+    if (msgTimer.current) clearTimeout(msgTimer.current);
+    setMessage(text);
+    if (text) msgTimer.current = setTimeout(() => setMessage(''), delay);
+  }
   const [a1RefreshKey, setA1RefreshKey] = useState(0);
   const completedIds = useMemo(() => getCompletedLessonIds(), [activeLevel, message]);
   const a1Gate = useMemo(() => getA1MasteryGateSummary(), [activeLevel, message, a1RefreshKey]);
@@ -90,12 +96,12 @@ export function CourseScreen({ onNavigate }) {
   function handleA1GateUpdated() {
     setA1RefreshKey((current) => current + 1);
     const updated = getA1MasteryGateSummary();
-    setMessage(updated.canUnlockA2 ? 'Todos os critérios do A1 cumpridos. O A2 está liberado!' : 'Critérios do A1 atualizados.');
+    showMessage(updated.canUnlockA2 ? 'Todos os critérios do A1 cumpridos. O A2 está liberado!' : 'Critérios do A1 atualizados.');
   }
 
   function handleA1CheckpointSaved() {
     setA1RefreshKey((current) => current + 1);
-    setMessage('Checkpoint salvo. Os critérios do A1 foram atualizados.');
+    showMessage('Checkpoint salvo. Os critérios do A1 foram atualizados.');
   }
 
   function handleLevel(level) {
@@ -107,41 +113,41 @@ export function CourseScreen({ onNavigate }) {
         !a1Gate.state?.writingReviewed && 'Writing',
       ].filter(Boolean);
       if (pending.length && a1Gate.requiredActions?.some((action) => action.includes('revisão'))) {
-        setMessage(`${level} bloqueado: revisão de ${pending.join(' e ')} pendente. Use o botão "Confirmar revisão" no painel abaixo.`);
+        showMessage(`${level} bloqueado: revisão de ${pending.join(' e ')} pendente. Use o botão "Confirmar revisão" no painel abaixo.`);
       } else {
-        setMessage(`${level} bloqueado. Conclua os critérios do A1 exibidos no painel abaixo antes de continuar.`);
+        showMessage(`${level} bloqueado. Conclua os critérios do A1 exibidos no painel abaixo antes de continuar.`);
       }
       return;
     }
     setActiveLevel(level);
-    setMessage('');
+    showMessage('');
     setStaticCurrentLevel(level);
   }
 
   function handleStartDailyLesson() {
     const result = openDailyStaticCourseLesson(activeLevel);
-    if (!result.ok) { setMessage(result.reason || 'Nenhuma aula liberada agora. Veja os critérios do nível.'); return; }
-    setMessage(`${result.state?.shouldResume ? 'Retomando' : 'Aula liberada'}: ${result.lesson?.title || 'aula do dia'}`);
+    if (!result.ok) { showMessage(result.reason || 'Nenhuma aula liberada agora. Veja os critérios do nível.'); return; }
+    showMessage(`${result.state?.shouldResume ? 'Retomando' : 'Aula liberada'}: ${result.lesson?.title || 'aula do dia'}`);
     onNavigate?.('lesson');
   }
 
   function handleReviewLesson(lesson) {
     if (!completedIds.has(lesson.id)) {
-      setMessage('Somente aulas concluídas aparecem para revisão. Use Começar aula para continuar.');
+      showMessage('Somente aulas concluídas aparecem para revisão. Use Começar aula para continuar.');
       return;
     }
     const result = openStaticCourseLesson(lesson);
-    if (!result.ok) { setMessage(result.reason || 'Não foi possível abrir esta revisão agora.'); return; }
-    setMessage(`Revisão aberta: ${lesson.title}`);
+    if (!result.ok) { showMessage(result.reason || 'Não foi possível abrir esta revisão agora.'); return; }
+    showMessage(`Revisão aberta: ${lesson.title}`);
     onNavigate?.('lesson');
   }
 
   function showFriendlyStatus() {
     if (!guidedAccess.approved) {
-      setMessage('A sequência do curso está em revisão. Use apenas o botão Começar aula.');
+      showMessage('A sequência do curso está em revisão. Use apenas o botão Começar aula.');
       return;
     }
-    setMessage(validation.approved ? 'Curso validado e sequência protegida.' : 'Sequência protegida. Conteúdo pedagógico ainda está em revisão interna.');
+    showMessage(validation.approved ? 'Curso validado e sequência protegida.' : 'Sequência protegida. Conteúdo pedagógico ainda está em revisão interna.');
   }
 
   return (

@@ -51,6 +51,9 @@ test('aba Ajustes: adicionar key geral altera contagem e persiste na navegação
   await page.goto('/');
   await clickTab(page, 'Ajustes');
 
+  // Navega para a seção de chaves de IA (padrão abre em "Conta e acesso")
+  await page.getByRole('button', { name: /chaves gerais de ia/i }).click();
+
   // Contagem inicial: 0/5
   await expect(page.getByText('0/5')).toBeVisible({ timeout: 8000 });
 
@@ -64,9 +67,12 @@ test('aba Ajustes: adicionar key geral altera contagem e persiste na navegação
   await expect(page.getByText('1/5')).toBeVisible({ timeout: 5000 });
   await page.screenshot({ path: 'test-results/settings-ai-keys-added.png' });
 
-  // Navega para outra aba e volta — verifica que a key permanece salva no localStorage
+  // Navega para outra aba e volta — verifica que a key permanece salva na sessão
   await clickTab(page, 'Hoje');
   await clickTab(page, 'Ajustes');
+
+  // Reabre a seção de chaves de IA
+  await page.getByRole('button', { name: /chaves gerais de ia/i }).click();
 
   // Key ainda salva — contagem continua 1/5
   await expect(page.getByText('1/5')).toBeVisible({ timeout: 8000 });

@@ -1,6 +1,6 @@
 # Fluency Clean — Handoff Oficial
 
-Última atualização: 2026-05-17 (BLOCO-AUDIT-FIX-02)
+Última atualização: 2026-05-17 (BLOCO-AUDIT-FIX-03)
 
 ## Branch oficial atual
 
@@ -153,9 +153,27 @@ Executado após auditoria Playwright completa (30 problemas catalogados).
 
 **Testes:** 164/164 passando.
 
+---
+
+## ✅ BLOCO-AUDIT-FIX-03 — UX, Mobile e Telas de Aula (2026-05-17)
+
+**Corrigido:**
+- PROB-009 (P2): SettingsScreen abria no grupo `'lessonKeys'` por padrão — corrigido para `'account'` (mais relevante ao abrir configurações).
+- PROB-011 (P2): Mensagens de status do CourseScreen não desapareciam — adicionado `showMessage()` com auto-clear em 5 segundos via `useRef`/`setTimeout`.
+- PROB-012 (P2): `buildLevelLessons()` limitava a lista a 30 aulas via `.slice(0, 30)` — limite removido, todas as aulas do nível são exibidas.
+- PROB-015 (P2): TodayScreen exibia `A1 → A2` fixo — substituído por nível dinâmico via `getStaticCourseState().currentLevel` e cálculo CEFR.
+- PROB-018 (P2): Heatmap de atividade em telas ≤430px tinha 15 colunas (células ~17px) — corrigido para 10 colunas em `@media (max-width: 430px)`.
+- PROB-019 (P2): Avatar no SettingsScreen era letra "F" fixa — substituído por inicial do `displayName` do usuário.
+- PROB-008 (P2): Regex de fallback no FlashcardsScreen não capturava aspas duplas — adicionado suporte a `"..."` e `"..."`.
+- BONUS: ProgressScreen exibia "ERROS: -0" quando penalidade era zero — corrigido para "0".
+- Teste E2E `settings-ai-keys-mobile.spec.js` atualizado para navegar até `'lessonKeys'` antes de verificar contagem (ajuste necessário após mudança do default group).
+- Arquivo temporário `fix03-investigate.spec.js` (criado durante investigação) removido do diretório `e2e/`.
+
+**Testes:** 164/164 passando.
+
 **Próximos blocos disponíveis:**
-- BLOCO-AUDIT-FIX-03 — UX/mobile (PROB-009 a PROB-020)
 - BLOCO-AUDIT-FIX-04 — Speaking/Writing polimento
+- BLOCO-AUDIT-FIX-05 — Conteúdo pedagógico
 - Retomar criação de B1 (após aprovação)
 
 ---

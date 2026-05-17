@@ -154,7 +154,7 @@ function CertificationCard({ certification }) {
       <div className="level-cert-metrics">
         <article><span>Curso</span><strong>{certification.completionScore}%</strong></article>
         <article><span>Speaking</span><strong>{certification.speakingScore}%</strong></article>
-        <article><span>Erros</span><strong>-{certification.errorPenalty}</strong></article>
+        <article><span>Erros</span><strong>{certification.errorPenalty ? `-${certification.errorPenalty}` : '0'}</strong></article>
         <article><span>Prontas</span><strong>{certification.total}</strong></article>
       </div>
       {certification.blockers.length ? (

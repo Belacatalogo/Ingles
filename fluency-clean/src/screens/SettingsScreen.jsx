@@ -67,7 +67,7 @@ function savePref(key, value) {
 }
 
 export function SettingsScreen() {
-  const [activeGroup, setActiveGroup] = useState('lessonKeys');
+  const [activeGroup, setActiveGroup] = useState('account');
   const [dailyReminder, setDailyReminder] = useState(() => Boolean(loadPrefs().dailyReminder));
   const [autoplayAudio, setAutoplayAudio] = useState(() => Boolean(loadPrefs().autoplayAudio));
   const [compactMode, setCompactMode] = useState(() => Boolean(loadPrefs().compactMode));
@@ -94,7 +94,7 @@ export function SettingsScreen() {
       />
 
       <section className="settings-profile-card">
-        <div className="settings-avatar">F</div>
+        <div className="settings-avatar">{displayName?.charAt(0)?.toUpperCase() || 'F'}</div>
         <div>
           <strong>Fluency</strong>
           <span>{progress.completedLessons || 0} aula(s) concluída(s) · {progress.xp || 0} XP</span>
