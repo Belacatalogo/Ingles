@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import './lesson-flow.css';
 import { LessonActionFooter } from './LessonActionFooter.jsx';
 import { LessonFocusHeader } from './LessonFocusHeader.jsx';
@@ -38,6 +38,7 @@ function stableLessonId(lesson) {
 export function LessonFlowShell({ lesson, phases = [], onPhaseChange, onComplete, onNavigate, children }) {
   const shellRef = useRef(null);
   const didMountRef = useRef(false);
+  const [completionMeta, setCompletionMeta] = useState(null);
 
   function handleComplete({ phases: phaseList, attempts, onSaveSuccess, onSaveError }) {
     try {
@@ -60,6 +61,10 @@ export function LessonFlowShell({ lesson, phases = [], onPhaseChange, onComplete
         // Data written but read-back check failed — lessonId may differ; log but don't block
         console.warn('[Fluency] handleComplete: salvo mas verificação falhou — lessonId pode divergir.');
       }
+      setCompletionMeta({
+        xp: result.completion?.xp || 0,
+        alreadyCompleted: Boolean(result.alreadyCompleted),
+      });
       window.dispatchEvent(new Event('fluency:lesson-updated'));
       onComplete?.({ phases: phaseList, attempts, scored, flowErrors });
       onSaveSuccess?.();
@@ -110,6 +115,7 @@ export function LessonFlowShell({ lesson, phases = [], onPhaseChange, onComplete
           phases={flow.phases}
           attempts={flow.attempts}
           lesson={lesson}
+          completionMeta={completionMeta}
           onRestart={flow.restart}
           onNavigate={onNavigate}
         />

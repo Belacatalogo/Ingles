@@ -3,6 +3,7 @@ import { BookOpenCheck, Clock, RefreshCw, ShieldCheck, Sparkles, Target } from '
 import { Card } from '../components/ui/Card.jsx';
 import { PracticeLauncher } from '../practice/PracticeLauncher.jsx';
 import { getCurrentLesson, getCurrentLessonFull } from '../services/lessonStore.js';
+import { isLessonCompleted } from '../services/progressStore.js';
 import { getLessonStats } from '../services/lessonStats.js';
 import { recordLessonAsCurrentCurriculumUnit } from '../services/curriculumPracticeAdapter.js';
 import { normalizeStaticLessonForDisplay } from '../services/staticLessonDisplayNormalizer.js';
@@ -101,14 +102,25 @@ function LessonRenderer({ lesson, onNavigate }) {
   );
 }
 
-function PracticeMount({ lesson }) {
+function PracticeMount({ lesson, lessonCompleted }) {
   const pillar = getLessonPillar(lesson);
   if (pillar === 'listening' || pillar === 'speaking') return null;
 
+  if (!lessonCompleted) {
+    return (
+      <section className="lesson-practice-mount lesson-practice-complement-mount lesson-practice-pending">
+        <div className="lesson-practice-pending-note">
+          <BookOpenCheck size={13} />
+          <span>Conclua a aula principal para acessar a prática extra.</span>
+        </div>
+      </section>
+    );
+  }
+
   return (
-    <section className="lesson-practice-mount lesson-practice-complement-mount">
-      <Card eyebrow="Reforço" title="Prática extra da aula">
-        <p>Use esta parte depois de concluir os exercícios principais da aula.</p>
+    <section className="lesson-practice-mount lesson-practice-complement-mount lesson-practice-unlocked">
+      <Card eyebrow="Reforço opcional" title="Prática extra">
+        <p>Aula concluída. Pratique para fixar o conteúdo.</p>
       </Card>
       <PracticeLauncher lesson={lesson} />
     </section>
@@ -172,6 +184,8 @@ export function LessonScreen({ lessonRevision = 0, onNavigate }) {
   const lessonStats = useMemo(() => getLessonStats(lesson), [lesson]);
   const staticLesson = isStaticLesson(lesson);
   const meta = lesson?.generationMeta || null;
+  // Re-evaluated on every render; pointerRevision increments after fluency:lesson-updated
+  const lessonCompleted = Boolean(lesson && isLessonCompleted(lesson));
 
   useEffect(() => {
     if (lesson) recordLessonAsCurrentCurriculumUnit(lesson);
@@ -218,7 +232,7 @@ export function LessonScreen({ lessonRevision = 0, onNavigate }) {
           </section>
 
           <LessonRenderer lesson={lesson} onNavigate={onNavigate} />
-          <PracticeMount lesson={lesson} />
+          <PracticeMount lesson={lesson} lessonCompleted={lessonCompleted} />
         </>
       )}
     </section>

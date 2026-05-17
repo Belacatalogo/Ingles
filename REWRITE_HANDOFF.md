@@ -183,6 +183,46 @@ Funções cobertas:
 
 ---
 
+## ✅ BLOCO COMPLETION-UX-1 — Tela de conclusão, progresso e prática extra (2026-05-17)
+
+Melhoria da experiência pós-conclusão de aula.
+
+Arquivos alterados:
+- `src/lessons/flow/LessonFlowShell.jsx` — captura `completionMeta` de `completeLesson()` e passa ao card
+- `src/lessons/flow/phases/LessonCompletionCard.jsx` — confirmação "Progresso salvo", badge XP, CTA "Ir ao Curso"
+- `src/screens/LessonScreen.jsx` — `isLessonCompleted` controla PracticeMount (locked/unlocked)
+- `src/lessons/flow/lesson-flow.css` — estilos `.lesson-completion-saved` e `.lesson-completion-xp`
+- `src/styles/lesson-polish.css` — estilos `.lesson-practice-pending-note` e `.lesson-practice-unlocked`
+
+Arquivo criado:
+- `docs/BLOCO-COMPLETION-UX-1-CONCLUIDO.md`
+
+Comportamento novo:
+- Card de conclusão mostra confirmação verde "Progresso salvo" + badge "+25 XP" na primeira vez
+- Card mostra "Aula já concluída anteriormente" em revisitas (sem XP extra)
+- CTA "Ir ao Curso" aparece quando não há erros
+- PracticeMount bloqueada (banner discreto) até conclusão; liberada com título em verde após conclusão
+- `PracticeLauncher` não renderizado antes da conclusão da aula
+
+Build: ✅ 2533 módulos, sem erros.
+
+Confirmação:
+```
+Branch: main
+Sem branch nova.
+Sem PR.
+Sem merge.
+Sem rebase.
+Sem force push.
+Sem alteração em completeLesson/progressStore internamente.
+Sem alteração em Azure/Gemini/Firebase/secrets.
+Sem reescrita de PracticeLauncher.
+```
+
+Próxima pendência: REVIEW-POLISH-1
+
+---
+
 ## ✅ BLOCO FLOW-STABILITY-1 — Stepper bloqueado + persistência mid-lesson (2026-05-17)
 
 Melhoria de estabilidade do fluxo de fases da aula.

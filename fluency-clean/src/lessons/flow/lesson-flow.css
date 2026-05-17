@@ -102,6 +102,28 @@
   opacity: .82;
 }
 
+.lesson-completion-saved {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 850;
+  color: #34d399;
+}
+
+.lesson-completion-xp {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: rgba(167, 139, 250, .18);
+  color: #a78bfa;
+  font-size: 12px;
+  font-weight: 950;
+  letter-spacing: .04em;
+}
+
 .lesson-completion-actions {
   display: flex;
   flex-wrap: wrap;
@@ -254,6 +276,8 @@
   .lesson-completion-card { padding: 20px 16px; gap: 12px; border-radius: 22px; }
   .lesson-completion-icon { width: 54px; height: 54px; border-radius: 18px; }
   .lesson-completion-title { font-size: 22px; letter-spacing: -.035em; }
+  .lesson-completion-saved { font-size: 12.5px; }
+  .lesson-completion-xp { font-size: 11.5px; padding: 2px 7px; }
   .lesson-completion-sub { font-size: 14px; }
   .lesson-completion-stats { gap: 10px; padding: 12px; border-radius: 14px; }
   .lesson-completion-stats strong { font-size: 22px; }

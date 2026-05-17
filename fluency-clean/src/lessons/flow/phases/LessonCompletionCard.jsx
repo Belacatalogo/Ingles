@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Award, BookOpen, CreditCard, Lightbulb, RotateCcw, Sparkles, ThumbsUp, TriangleAlert } from 'lucide-react';
+import { Award, BookOpen, BookOpenCheck, CheckCircle2, CreditCard, Lightbulb, RotateCcw, Sparkles, ThumbsUp, TriangleAlert } from 'lucide-react';
 import { computeFlowResults, extractFlowErrors } from '../lessonFlowScore.js';
 import { hasLessonFlashcards } from '../../../services/lessonFlashcards.js';
 import { buildAdaptiveReview } from '../../../services/adaptiveReview/index.js';
@@ -83,11 +83,13 @@ function AdaptiveReviewPanel({ lesson, phases, attempts }) {
   );
 }
 
-export function LessonCompletionCard({ phases = [], attempts = {}, lesson = null, onRestart, onNavigate }) {
+export function LessonCompletionCard({ phases = [], attempts = {}, lesson = null, completionMeta = null, onRestart, onNavigate }) {
   const { correct, warn, missed, totalAttempt, score, weakTitles } = computeFlowResults(phases, attempts);
   const isExcellent = score >= 80;
   const hasFlashcards = lesson ? hasLessonFlashcards(lesson) : false;
   const hasErrors = weakTitles.length > 0;
+  const xpGained = completionMeta?.xp || 0;
+  const alreadyCompleted = Boolean(completionMeta?.alreadyCompleted);
 
   return (
     <div className="lesson-completion-card">
@@ -98,6 +100,14 @@ export function LessonCompletionCard({ phases = [], attempts = {}, lesson = null
       <h3 className="lesson-completion-title">
         {isExcellent ? 'Aula concluída!' : 'Aula finalizada.'}
       </h3>
+
+      {completionMeta ? (
+        <div className="lesson-completion-saved">
+          <CheckCircle2 size={14} />
+          <span>{alreadyCompleted ? 'Aula já concluída anteriormente' : 'Progresso salvo'}</span>
+          {xpGained > 0 ? <span className="lesson-completion-xp">+{xpGained} XP</span> : null}
+        </div>
+      ) : null}
 
       <p className="lesson-completion-sub">
         {isExcellent
@@ -149,6 +159,11 @@ export function LessonCompletionCard({ phases = [], attempts = {}, lesson = null
         {hasErrors && onNavigate ? (
           <button type="button" className="lesson-completion-cta warn" onClick={() => onNavigate('course')}>
             <TriangleAlert size={15} /> Revisar erros
+          </button>
+        ) : null}
+        {!hasErrors && onNavigate ? (
+          <button type="button" className="lesson-completion-cta" onClick={() => onNavigate('course')}>
+            <BookOpenCheck size={15} /> Ir ao Curso
           </button>
         ) : null}
       </div>
