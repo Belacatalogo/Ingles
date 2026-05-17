@@ -14,8 +14,8 @@
 /* ── 2. Hero card — richer gradient + blue edge ──────────────────────── */
 .hero-card {
   background: linear-gradient(135deg, rgba(16,24,50,.97) 0%, rgba(26,36,66,.72) 100%);
-  border-color: rgba(91,156,246,.20);
-  box-shadow: 0 26px 90px rgba(0,0,0,.32), inset 0 1px 0 rgba(255,255,255,.04);
+  border-color: rgba(104,168,255,.20);
+  box-shadow: 0 22px 72px rgba(0,0,0,.30), inset 0 1px 0 rgba(255,255,255,.04);
 }
 
 /* ── 3. Primary button — glow + inner highlight shimmer ──────────────── */
@@ -52,16 +52,16 @@
 
 /* ── 7. Stat cards — stronger radial orb ────────────────────────────── */
 .stat-card::after {
-  background: radial-gradient(circle, rgba(91,156,246,.18) 0%, transparent 72%);
+  background: radial-gradient(circle, rgba(104,168,255,.18) 0%, transparent 72%);
   width: 108px;
   height: 108px;
 }
 
 /* ── 8. Level nodes — glow on active ────────────────────────────────── */
 .level-node.active {
-  background: linear-gradient(135deg, rgba(91,156,246,.22), rgba(167,139,250,.14));
-  border-color: rgba(91,156,246,.50);
-  box-shadow: 0 4px 18px rgba(91,156,246,.18);
+  background: linear-gradient(135deg, rgba(104,168,255,.22), rgba(162,123,255,.14));
+  border-color: rgba(104,168,255,.50);
+  box-shadow: 0 4px 16px rgba(104,168,255,.14);
 }
 
 /* ── 9. Option buttons — cleaner interactive states ─────────────────── */
@@ -86,8 +86,8 @@
 
 /* ── 12. Nav active — warmer blue-violet glow ───────────────────────── */
 .reference-bottom-nav .nav-item.active {
-  background: linear-gradient(135deg, rgba(91,156,246,.30), rgba(167,139,250,.20));
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 4px 16px rgba(91,156,246,.14);
+  background: linear-gradient(135deg, rgba(104,168,255,.30), rgba(162,123,255,.20));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 4px 16px rgba(104,168,255,.14);
 }
 
 /* ── 13. Progress bars — vivid gradient ─────────────────────────────── */
@@ -110,11 +110,11 @@
 
 /* ── 16. Input / textarea focus ring — tighter ──────────────────────── */
 input:focus {
-  box-shadow: 0 0 0 3px rgba(91,156,246,.12);
+  box-shadow: 0 0 0 3px rgba(104,168,255,.12);
 }
 
 textarea:focus {
-  box-shadow: 0 0 0 3px rgba(91,156,246,.12);
+  box-shadow: 0 0 0 3px rgba(104,168,255,.12);
 }
 
 /* ── 17. Status strip cells — consistent look ───────────────────────── */
