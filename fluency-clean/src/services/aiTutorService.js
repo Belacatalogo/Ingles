@@ -43,10 +43,10 @@ async function callGeminiTutor({ key, model, prompt, fetcher }) {
   return extractTextFromGemini(await response.json());
 }
 
-export async function askAiTutor({ lesson, action, studentInput = '', errors = [], fetcher = fetch } = {}) {
+export async function askAiTutor({ lesson, action, studentInput = '', errors = [], referenceText = '', prompt = '', mode = '', azureScores = null, fetcher = fetch } = {}) {
   assertAiTutorActionAllowed(action);
-  const context = buildAiTutorContext({ lesson, action, studentInput, errors });
-  const prompt = buildAiTutorPrompt(context);
+  const context = buildAiTutorContext({ lesson, action, studentInput, errors, referenceText, prompt, mode, azureScores });
+  const tutorPrompt = buildAiTutorPrompt(context);
   const keys = getGeneralAiKeys();
 
   if (!keys.length) {
@@ -62,7 +62,7 @@ export async function askAiTutor({ lesson, action, studentInput = '', errors = [
     for (const model of GEMINI_TUTOR_MODELS) {
       try {
         diagnostics.log(`IA Tutor: tentando ${model} com key ${maskApiKey(key)} para ${context.actionLabel}.`, 'info');
-        const text = clean(await callGeminiTutor({ key, model, prompt, fetcher }));
+        const text = clean(await callGeminiTutor({ key, model, prompt: tutorPrompt, fetcher }));
         if (text) {
           return { status: 'success', text, model, context };
         }
@@ -93,6 +93,6 @@ export async function buildSmallReinforcementWithTutor({ lesson, request = '', f
   return askAiTutor({ lesson, action: AI_TUTOR_ALLOWED_ACTIONS.smallReinforcement, studentInput: request, fetcher });
 }
 
-export async function evaluateSpeakingWithTutor({ lesson, spokenText = '', fetcher = fetch } = {}) {
-  return askAiTutor({ lesson, action: AI_TUTOR_ALLOWED_ACTIONS.evaluateSpeaking, studentInput: spokenText, fetcher });
+export async function evaluateSpeakingWithTutor({ lesson, spokenText = '', referenceText = '', prompt = '', mode = '', azureScores = null, fetcher = fetch } = {}) {
+  return askAiTutor({ lesson, action: AI_TUTOR_ALLOWED_ACTIONS.evaluateSpeaking, studentInput: spokenText, referenceText, prompt, mode, azureScores, fetcher });
 }

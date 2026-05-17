@@ -48,7 +48,7 @@ export function assertAiTutorActionAllowed(action) {
   return true;
 }
 
-export function buildAiTutorContext({ lesson, action, studentInput = '', errors = [] } = {}) {
+export function buildAiTutorContext({ lesson, action, studentInput = '', errors = [], referenceText = '', prompt = '', mode = '', azureScores = null } = {}) {
   assertAiTutorActionAllowed(action);
   return {
     action,
@@ -62,6 +62,10 @@ export function buildAiTutorContext({ lesson, action, studentInput = '', errors 
     studentInput: clean(studentInput).slice(0, 4000),
     errors: safeArray(errors).slice(0, 20),
     lessonText: getLessonText(lesson),
+    referenceText: clean(referenceText).slice(0, 500),
+    prompt: clean(prompt).slice(0, 500),
+    mode: clean(mode),
+    azureScores,
     guardrails: [
       'Não gerar aula completa.',
       'Não inventar conteúdo fora da aula fixa.',
@@ -75,6 +79,27 @@ export function buildAiTutorContext({ lesson, action, studentInput = '', errors 
 
 export function buildAiTutorPrompt(context) {
   assertAiTutorActionAllowed(context?.action);
+  const isSpeakingEval = context.action === AI_TUTOR_ALLOWED_ACTIONS.evaluateSpeaking;
+  const speakingLines = isSpeakingEval ? [
+    context.referenceText ? `Frase de referência: "${context.referenceText}"` : '',
+    context.prompt ? `Prompt da conversa: "${context.prompt}"` : '',
+    context.mode ? `Modo de prática: ${context.mode}` : '',
+    context.azureScores ? [
+      'Scores Azure (0–100):',
+      `  Pronúncia geral: ${context.azureScores.pronunciation ?? '—'}`,
+      `  Precisão: ${context.azureScores.accuracy ?? '—'}`,
+      `  Fluência: ${context.azureScores.fluency ?? '—'}`,
+      `  Completude: ${context.azureScores.completeness ?? '—'}`,
+      context.azureScores.weakestWords?.length ? `  Palavras mais fracas: ${context.azureScores.weakestWords.join(', ')}` : '',
+    ].filter(Boolean).join('\n') : '',
+    '',
+    'Baseado nesses dados, responda em português:',
+    '1. Avalie em 1 frase se a fala respondeu ao prompt.',
+    '2. Aponte 1 erro principal de inglês com explicação curta.',
+    '3. Sugira 1 micro-treino (máx. 2 frases) com exemplo em inglês.',
+    'Não crie nova aula. Não repita o conteúdo inteiro da aula.',
+  ].filter(Boolean) : [];
+
   return [
     'Você é a IA Tutor do Fluency. Você NÃO é gerador de aula.',
     `Ação permitida: ${context.actionLabel}.`,
@@ -86,10 +111,11 @@ export function buildAiTutorPrompt(context) {
     'Conteúdo da aula fixa:',
     context.lessonText || 'Sem conteúdo detalhado disponível.',
     '',
-    context.studentInput ? 'Entrada do aluno:' : '',
+    context.studentInput ? 'Entrada do aluno (fala/escrita):' : '',
     context.studentInput || '',
     context.errors?.length ? 'Erros recentes do aluno:' : '',
     context.errors?.length ? JSON.stringify(context.errors, null, 2) : '',
+    ...speakingLines,
     '',
     'Responda de forma curta, útil e prática. Não crie uma nova aula.',
   ].filter(Boolean).join('\n');

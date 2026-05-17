@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Award, ChevronRight, Headphones, Info, Mic, Play, RefreshCw, Sparkles, TrendingUp, Volume2 } from 'lucide-react';
+import { Award, ChevronRight, Headphones, Info, Lightbulb, Mic, Play, RefreshCw, Sparkles, TrendingUp, Volume2 } from 'lucide-react';
 import { analyzePronunciation, recognizeSpeech } from '../services/azurePronunciation.js';
+import { analyzeStudentAnswer } from '../services/studentAnswerAnalysis/index.js';
 import { playLearningAudio, stopLearningAudio } from '../services/audioPlayback.js';
 import { getCurrentLesson } from '../services/lessonStore.js';
 import { getSpeakingSessions, recordSpeakingSession } from '../services/progressStore.js';
@@ -102,6 +103,42 @@ function findTodaySpeakingSession(lesson, level) {
   return getSpeakingSessions().find((item) => item.lessonId === lessonId && item.level === level && item.mode === 'conversation' && String(item.completedAt || '').slice(0, 10) === today) || null;
 }
 
+function SpeakingAiPanel({ analysis, loading }) {
+  if (loading) {
+    return (
+      <div className="lesson-phase-ai-analysis">
+        <span style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: 'var(--text-secondary, #94a3b8)', padding: '8px 0' }}>
+          <Sparkles size={13} /> Analisando com IA...
+        </span>
+      </div>
+    );
+  }
+  if (!analysis || !analysis.feedbackPt) return null;
+  const isGemini = analysis.source === 'gemini' || analysis.source === 'hybrid';
+  const badgeLabel = analysis.source === 'hybrid' ? 'Híbrido' : isGemini ? 'Gemini' : 'Local';
+  return (
+    <div className={`lesson-phase-ai-result${isGemini ? ' gemini' : ''}`} style={{ marginTop: '12px' }}>
+      <div className="lesson-phase-ai-result-header">
+        <Sparkles size={13} />
+        <span>IA Tutor</span>
+        <span className={`lesson-phase-ai-badge${isGemini ? ' gemini' : ''}`}>{badgeLabel}</span>
+        {analysis.score !== null && analysis.score !== undefined ? (
+          <span className="lesson-phase-ai-score">{analysis.score}/100</span>
+        ) : null}
+      </div>
+      <p className="lesson-phase-ai-feedback">{analysis.feedbackPt}</p>
+      {analysis.issues?.length ? (
+        <ul className="lesson-phase-ai-list">
+          {analysis.issues.map((issue, i) => <li key={i}>{issue}</li>)}
+        </ul>
+      ) : null}
+      {analysis.nextDrill ? (
+        <p className="lesson-phase-ai-drill"><Lightbulb size={12} /> {analysis.nextDrill}</p>
+      ) : null}
+    </div>
+  );
+}
+
 function SpeakingHistoryCard({ summary }) {
   return (
     <section className="speaking-history-card">
@@ -149,6 +186,10 @@ export function SpeakingScreen() {
     { who: 'ai', text: conversation.prompts[0] },
     { who: 'ai', text: 'Fale livremente. Quando você parar de falar, eu paro a gravação e analiso automaticamente.' },
   ]);
+  const [convAiResult, setConvAiResult] = useState(null);
+  const [convAiLoading, setConvAiLoading] = useState(false);
+  const [pronAiResult, setPronAiResult] = useState(null);
+  const [pronAiLoading, setPronAiLoading] = useState(false);
   const scene = immersionScenes[activeScene];
   const pronunciationPrompt = pronunciationPrompts[pronunciationIndex % pronunciationPrompts.length];
   const pronunciationText = pronunciationPrompt.text;
@@ -172,6 +213,10 @@ export function SpeakingScreen() {
     if (recording || analyzing) return;
     setMode(nextMode);
     setActiveSpeakingStep(0);
+    setConvAiResult(null);
+    setConvAiLoading(false);
+    setPronAiResult(null);
+    setPronAiLoading(false);
     requestAnimationFrame(() => document.getElementById('speaking-mode-switch')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
   }
 
@@ -192,6 +237,8 @@ export function SpeakingScreen() {
     setPronunciationIndex(nextIndex);
     setActiveSpeakingStep(5);
     setResult(null);
+    setPronAiResult(null);
+    setPronAiLoading(false);
     setMessage('Próxima frase carregada.');
     await handleSpeak(pronunciationPrompts[nextIndex].text);
   }
@@ -253,6 +300,18 @@ export function SpeakingScreen() {
       { who: 'ai', text: nextAttempts.length >= 5 ? buildConversationReply(recognizedText, null) : buildConversationReply(recognizedText, nextPrompt) },
     ]);
     if (nextAttempts.length >= 5 || durationMs >= 180000) completeSpeaking(nextAttempts, durationMs);
+    setConvAiResult(null);
+    setConvAiLoading(true);
+    analyzeStudentAnswer({
+      lesson: currentLesson,
+      pillar: 'speaking',
+      skill: 'conversation',
+      studentText: recognizedText,
+      prompt: currentConversationPrompt,
+      referenceText: '',
+      azureResult: pronunciationResult,
+      allowAi: true,
+    }).then((r) => { setConvAiResult(r); setConvAiLoading(false); }).catch(() => { setConvAiLoading(false); });
   }
 
   async function analyzeFreeSpeech(stopped) {
@@ -306,6 +365,18 @@ export function SpeakingScreen() {
         setActiveSpeakingStep(mode === 'pronunciation' ? 3 : 5);
         recordSingleAttempt({ modeName: attemptMode, referenceText, pronunciationResult: analyzed.result, scenario: scenario || referenceText });
         setMessage('Análise concluída e registrada no histórico real.');
+        setPronAiResult(null);
+        setPronAiLoading(true);
+        analyzeStudentAnswer({
+          lesson: currentLesson,
+          pillar: 'speaking',
+          skill: attemptMode,
+          studentText: analyzed.result?.recognizedText || '',
+          prompt: attemptMode === 'immersion' ? scenario : 'Repita a frase',
+          referenceText,
+          azureResult: analyzed.result,
+          allowAi: true,
+        }).then((r) => { setPronAiResult(r); setPronAiLoading(false); }).catch(() => { setPronAiLoading(false); });
       },
     });
     if (!started.ok) { setMessage(started.error || 'Não foi possível iniciar gravação.'); return; }
@@ -328,9 +399,9 @@ export function SpeakingScreen() {
       </header>
       <SpeakingStepper mode={mode} activeStep={activeSpeakingStep} completed={sessionDone && mode === 'conversation'} onJump={jumpToSpeakingStep} />
       <div id="speaking-history-area"><SpeakingHistoryCard summary={historySummary} /></div>
-      {mode === 'conversation' ? <><section className="speaking-scenario-card" id="speaking-scenario-area"><div className="speaking-chip-row"><span className="speaking-chip teal"><Sparkles size={11} /> Cenário</span><span className="speaking-chip">{conversation.label}</span></div><strong>{conversation.title}</strong><p>{conversation.description}</p></section><div id="speaking-finish-area">{sessionDone ? <section className="speaking-session-complete"><Award size={22} /><span>Conversação concluída hoje</span><strong>{spokenCount} fala(s) registradas</strong><p>Média de pronúncia: {averageScore || 0}/100. Hoje agora pode contar Conversação como tarefa real.</p><button type="button" onClick={startNewSpeakingSession}>Nova sessão</button></section> : null}</div><section className="speaking-chat-list" id="speaking-chat-area" aria-label="Conversa guiada">{chatMessages.map((item, index) => <article className={`speaking-chat-row ${item.who}`} key={`${item.who}-${index}-${item.text}`}><div className="speaking-chat-bubble-wrap">{item.who === 'ai' ? <div className="speaking-ai-label"><span>F</span> Fluency</div> : null}<div className="speaking-chat-bubble">{item.text}</div>{item.who === 'ai' ? <button className="speaking-listen-link" type="button" onClick={() => handleSpeak(item.text)}><Volume2 size={11} /> Ouvir</button> : null}{item.score !== undefined && item.score !== null ? <div className="speaking-chat-feedback"><div><strong>Pronúncia: {item.score}%</strong><span>{item.errors?.length || 0} dica</span></div>{(item.errors || []).map((error) => <p key={`${error.word}-${error.note}`}><b>{error.word}</b> · {error.note}</p>)}{item.weakestWords?.length ? <small>Palavras para revisar: {item.weakestWords.map((word) => `${word.word} (${word.score})`).join(', ')}</small> : null}</div> : null}</div></article>)}</section><section className="speaking-mic-card" id="speaking-record-area"><button className={recording ? 'speaking-main-mic recording' : 'speaking-main-mic'} type="button" onClick={handleConversationRecord} disabled={analyzing || recording} aria-label="Começar gravação automática"><Mic size={32} /></button><strong>{recording ? 'Ouvindo…' : analyzing ? 'Analisando…' : sessionDone ? 'Sessão concluída' : 'Toque e fale livremente'}</strong>{recording ? <div className="speaking-wave"><span /><span /><span /><span /><span /></div> : null}<p>{sessionDone ? 'Use Nova sessão para praticar mais.' : `${attempts.length}/5 respostas para concluir`}</p><small>{message}</small></section></> : null}
-      {mode === 'pronunciation' ? <><section className="speaking-pronunciation-hero" id="speaking-pronunciation-model-area"><p>Repita a frase</p><h2>“{pronunciationText}”</h2><code>{pronunciationPrompt.ipa}</code><button className="speaking-small-button" type="button" onClick={() => handleSpeak(pronunciationText)}><Volume2 size={13} /> Ouvir modelo</button></section><section className="speaking-score-panel" id="speaking-score-area"><div className="speaking-score-header"><div><span>Sua tentativa</span><strong><b>{pronunciationScore ?? '—'}</b><em>/ 100</em></strong></div><button className="speaking-small-button ghost" type="button" onClick={stopLearningAudio}><Play size={12} /> Parar voz</button></div><div className="speaking-word-score-row">{analyzedWords.map((item) => <span className={scoreClass(item.score)} key={`${pronunciationText}-${item.word}-${item.score ?? 'pending'}`}>{item.word}</span>)}</div><div className="speaking-pronunciation-tip"><div><Info size={13} /><strong>{focusWord ? `Foco em “${focusWord.word}”` : 'Foco da próxima tentativa'}</strong></div><p>{focusWord ? buildWordTip(focusWord) : 'Grave sua frase para receber um foco real baseado na análise do Azure.'}</p></div></section><div className="speaking-pronunciation-actions" id="speaking-pronunciation-actions-area"><button className="speaking-action-secondary" type="button" onClick={() => handlePronunciationRecord(pronunciationText, 'pronunciation', pronunciationText)} disabled={recording || analyzing}><RefreshCw size={14} /> Tentar de novo</button><button className="speaking-action-primary" type="button" onClick={handleNextPronunciation} disabled={recording || analyzing}>Próxima <ChevronRight size={14} /></button></div><p className="speaking-status-line">{message}</p></> : null}
-      {mode === 'immersion' ? <><section className="speaking-immersion-hero" id="speaking-immersion-hero-area"><div className="speaking-chip-row"><span className="speaking-chip teal"><Headphones size={11} /> Imersão</span></div><strong>Treine inglês como se estivesse lá</strong><p>Escolha um cenário A1, escute a frase natural e responda falando em inglês.</p></section><section className="speaking-immersion-scenes" id="speaking-immersion-scenes-area" aria-label="Cenários de imersão">{immersionScenes.map((item, index) => <button className={`speaking-immersion-scene ${activeScene === index ? 'active' : ''}`} key={item.title} type="button" onClick={() => { setActiveScene(index); setActiveSpeakingStep(3); }}><span>{item.label}</span><div><strong>{item.title}</strong><small>{item.level}</small></div></button>)}</section><section className="speaking-immersion-card" id="speaking-immersion-model-area"><div className="speaking-immersion-card-top"><span>{scene.level}</span><button type="button" onClick={() => handleSpeak(scene.line)}><Volume2 size={13} /> Ouvir</button></div><h2>“{scene.line}”</h2><p>{scene.tip}</p></section><section className="speaking-mic-card immersion" id="speaking-record-area"><button className={recording ? 'speaking-main-mic recording' : 'speaking-main-mic'} type="button" onClick={() => handlePronunciationRecord(scene.line, 'immersion', scene.title)} disabled={recording || analyzing} aria-label="Começar gravação automática"><Mic size={32} /></button><strong>{recording ? 'Ouvindo…' : analyzing ? 'Analisando…' : 'Responder no cenário'}</strong>{recording ? <div className="speaking-wave"><span /><span /><span /><span /><span /></div> : null}<p>Fale como se estivesse na situação real.</p><small>{message}</small></section></> : null}
+      {mode === 'conversation' ? <><section className="speaking-scenario-card" id="speaking-scenario-area"><div className="speaking-chip-row"><span className="speaking-chip teal"><Sparkles size={11} /> Cenário</span><span className="speaking-chip">{conversation.label}</span></div><strong>{conversation.title}</strong><p>{conversation.description}</p></section><div id="speaking-finish-area">{sessionDone ? <section className="speaking-session-complete"><Award size={22} /><span>Conversação concluída hoje</span><strong>{spokenCount} fala(s) registradas</strong><p>Média de pronúncia: {averageScore || 0}/100. Hoje agora pode contar Conversação como tarefa real.</p><button type="button" onClick={startNewSpeakingSession}>Nova sessão</button></section> : null}</div><section className="speaking-chat-list" id="speaking-chat-area" aria-label="Conversa guiada">{chatMessages.map((item, index) => <article className={`speaking-chat-row ${item.who}`} key={`${item.who}-${index}-${item.text}`}><div className="speaking-chat-bubble-wrap">{item.who === 'ai' ? <div className="speaking-ai-label"><span>F</span> Fluency</div> : null}<div className="speaking-chat-bubble">{item.text}</div>{item.who === 'ai' ? <button className="speaking-listen-link" type="button" onClick={() => handleSpeak(item.text)}><Volume2 size={11} /> Ouvir</button> : null}{item.score !== undefined && item.score !== null ? <div className="speaking-chat-feedback"><div><strong>Pronúncia: {item.score}%</strong><span>{item.errors?.length || 0} dica</span></div>{(item.errors || []).map((error) => <p key={`${error.word}-${error.note}`}><b>{error.word}</b> · {error.note}</p>)}{item.weakestWords?.length ? <small>Palavras para revisar: {item.weakestWords.map((word) => `${word.word} (${word.score})`).join(', ')}</small> : null}</div> : null}</div></article>)}</section><SpeakingAiPanel analysis={convAiResult} loading={convAiLoading} /><section className="speaking-mic-card" id="speaking-record-area"><button className={recording ? 'speaking-main-mic recording' : 'speaking-main-mic'} type="button" onClick={handleConversationRecord} disabled={analyzing || recording} aria-label="Começar gravação automática"><Mic size={32} /></button><strong>{recording ? 'Ouvindo…' : analyzing ? 'Analisando…' : sessionDone ? 'Sessão concluída' : 'Toque e fale livremente'}</strong>{recording ? <div className="speaking-wave"><span /><span /><span /><span /><span /></div> : null}<p>{sessionDone ? 'Use Nova sessão para praticar mais.' : `${attempts.length}/5 respostas para concluir`}</p><small>{message}</small></section></> : null}
+      {mode === 'pronunciation' ? <><section className="speaking-pronunciation-hero" id="speaking-pronunciation-model-area"><p>Repita a frase</p><h2>“{pronunciationText}”</h2><code>{pronunciationPrompt.ipa}</code><button className="speaking-small-button" type="button" onClick={() => handleSpeak(pronunciationText)}><Volume2 size={13} /> Ouvir modelo</button></section><section className="speaking-score-panel" id="speaking-score-area"><div className="speaking-score-header"><div><span>Sua tentativa</span><strong><b>{pronunciationScore ?? '—'}</b><em>/ 100</em></strong></div><button className="speaking-small-button ghost" type="button" onClick={stopLearningAudio}><Play size={12} /> Parar voz</button></div><div className="speaking-word-score-row">{analyzedWords.map((item) => <span className={scoreClass(item.score)} key={`${pronunciationText}-${item.word}-${item.score ?? 'pending'}`}>{item.word}</span>)}</div><div className="speaking-pronunciation-tip"><div><Info size={13} /><strong>{focusWord ? `Foco em “${focusWord.word}”` : 'Foco da próxima tentativa'}</strong></div><p>{focusWord ? buildWordTip(focusWord) : 'Grave sua frase para receber um foco real baseado na análise do Azure.'}</p></div></section><SpeakingAiPanel analysis={pronAiResult} loading={pronAiLoading} /><div className="speaking-pronunciation-actions" id="speaking-pronunciation-actions-area"><button className="speaking-action-secondary" type="button" onClick={() => handlePronunciationRecord(pronunciationText, 'pronunciation', pronunciationText)} disabled={recording || analyzing}><RefreshCw size={14} /> Tentar de novo</button><button className="speaking-action-primary" type="button" onClick={handleNextPronunciation} disabled={recording || analyzing}>Próxima <ChevronRight size={14} /></button></div><p className="speaking-status-line">{message}</p></> : null}
+      {mode === 'immersion' ? <><section className="speaking-immersion-hero" id="speaking-immersion-hero-area"><div className="speaking-chip-row"><span className="speaking-chip teal"><Headphones size={11} /> Imersão</span></div><strong>Treine inglês como se estivesse lá</strong><p>Escolha um cenário A1, escute a frase natural e responda falando em inglês.</p></section><section className="speaking-immersion-scenes" id="speaking-immersion-scenes-area" aria-label="Cenários de imersão">{immersionScenes.map((item, index) => <button className={`speaking-immersion-scene ${activeScene === index ? 'active' : ''}`} key={item.title} type="button" onClick={() => { setActiveScene(index); setActiveSpeakingStep(3); }}><span>{item.label}</span><div><strong>{item.title}</strong><small>{item.level}</small></div></button>)}</section><section className="speaking-immersion-card" id="speaking-immersion-model-area"><div className="speaking-immersion-card-top"><span>{scene.level}</span><button type="button" onClick={() => handleSpeak(scene.line)}><Volume2 size={13} /> Ouvir</button></div><h2>“{scene.line}”</h2><p>{scene.tip}</p></section><SpeakingAiPanel analysis={pronAiResult} loading={pronAiLoading} /><section className="speaking-mic-card immersion" id="speaking-record-area"><button className={recording ? 'speaking-main-mic recording' : 'speaking-main-mic'} type="button" onClick={() => handlePronunciationRecord(scene.line, 'immersion', scene.title)} disabled={recording || analyzing} aria-label="Começar gravação automática"><Mic size={32} /></button><strong>{recording ? 'Ouvindo…' : analyzing ? 'Analisando…' : 'Responder no cenário'}</strong>{recording ? <div className="speaking-wave"><span /><span /><span /><span /><span /></div> : null}<p>Fale como se estivesse na situação real.</p><small>{message}</small></section></> : null}
     </section>
   );
 }

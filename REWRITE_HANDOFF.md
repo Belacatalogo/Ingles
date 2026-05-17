@@ -336,24 +336,34 @@ Build: ✅ 2528 módulos, sem erros.
 
 ---
 
-## ⏳ Próximo: BLOCO IA-3B — SpeakingScreen híbrido Azure + IA Tutor
+## ✅ BLOCO IA-3B — SpeakingScreen híbrido Azure + IA Tutor (2026-05-17)
 
-Objetivo: conectar IA Tutor à tela `SpeakingScreen.jsx`, que já usa Azure real.
+IA Tutor conectada à tela `SpeakingScreen.jsx` de forma híbrida com Azure.
 
-Pontos de integração:
-- `analyzeFreeSpeech()` / `appendFreeSpeechAnalysis()` — modo conversa
-- `handlePronunciationRecord()` / `recordSingleAttempt()` — modos pronúncia e imersão
+Arquivos alterados:
+- `src/services/aiTutorPolicy.js` — `buildAiTutorContext` e `buildAiTutorPrompt` aceitam `referenceText`, `prompt`, `mode`, `azureScores`; prompt de speaking enriquecido com scores Azure
+- `src/services/aiTutorService.js` — `askAiTutor` e `evaluateSpeakingWithTutor` repassam todos os novos parâmetros; variável local renomeada de `prompt` para `tutorPrompt`
+- `src/services/studentAnswerAnalysis/studentAnswerAnalysisService.js` — extração de `azureScores` de `azureResult`; `source: 'hybrid'` quando Azure + Gemini
+- `src/screens/SpeakingScreen.jsx` — novo componente `SpeakingAiPanel`; 4 novos estados; integração não-bloqueante em `appendFreeSpeechAnalysis` e `handlePronunciationRecord.onAutoStop`; painel inserido em conversa, pronúncia e imersão
 
-Dados a enviar para IA: lesson, prompt original, recognizedText, referenceText, azureScores (pronunciationScore, accuracyScore, fluencyScore, completenessScore, weakestWords).
+Comportamento:
+- Azure continua inalterado para transcrição e análise de pronúncia.
+- Após Azure, `analyzeStudentAnswer` dispara em background com `azureResult` + `recognizedText`.
+- Gemini recebe azureScores, palavras fracas, frase de referência e prompt.
+- Fallback local garantido quando Gemini falha ou não há chave.
+- Gravação, histórico e conclusão de sessão não bloqueados.
+- Badge mostra: Híbrido (Azure+Gemini), Gemini, ou Local.
 
-Regra: Azure permanece como base de pronúncia/transcrição. IA apenas adiciona camada pedagógica. Fallback obrigatório se IA falhar.
+Build: ✅ 2528 módulos, sem erros.
+Documento completo: `fluency-clean/docs/BLOCO-IA-3B-SPEAKINGSCREEN-HYBRID-CONCLUIDO.md`
 
-Plano completo: `fluency-clean/docs/BLOCO-IA-3B-SPEAKINGSCREEN-HYBRID-PLAN.md`
+---
 
-Blocos IA seguintes (após IA-3B):
-- `BLOCO IA-4` — Reading/Listening respostas abertas
-- `BLOCO IA-5` — Revisão adaptativa real com flowErrors
-- `BLOCO IA-6` — StudentAnswerFeedbackCard componente unificado
+## Próximos blocos IA
+
+- `BLOCO IA-4` — ⏳ Reading/Listening respostas abertas
+- `BLOCO IA-5` — ⏳ Revisão adaptativa real com flowErrors
+- `BLOCO IA-6` — ⏳ StudentAnswerFeedbackCard componente unificado
 
 ---
 
@@ -382,7 +392,7 @@ Integração mínima: botão **"Analisar com IA"** adicionado em `AttemptField.j
 Blocos de IA subsequentes:
 - `BLOCO IA-2` — ✅ Writing integração completa (concluído — commit 6662a06)
 - `BLOCO IA-3` — ✅ Speaking híbrido em SpeakField (concluído — commit 57e0a3e)
-- `BLOCO IA-3B` — ⏳ SpeakingScreen híbrido Azure + IA Tutor (pendente)
+- `BLOCO IA-3B` — ✅ SpeakingScreen híbrido Azure + IA Tutor (concluído)
 - `BLOCO IA-4` — ⏳ Reading/Listening respostas abertas
 - `BLOCO IA-5` — ⏳ Revisão adaptativa real com flowErrors
 - `BLOCO IA-6` — ⏳ StudentAnswerFeedbackCard componente unificado

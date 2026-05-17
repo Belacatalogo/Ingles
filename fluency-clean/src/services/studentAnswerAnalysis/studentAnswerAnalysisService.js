@@ -98,19 +98,37 @@ export async function analyzeStudentAnswer({
     return localResult;
   }
 
-  // Speaking: use evaluateSpeakingWithTutor for AI layer
+  // Speaking: use evaluateSpeakingWithTutor for AI layer (Azure scores enrich the prompt)
   if (pillar === 'speaking') {
     try {
+      const azureScores = azureResult ? {
+        pronunciation: azureResult.pronunciationScore ?? null,
+        accuracy: azureResult.accuracyScore ?? null,
+        fluency: azureResult.fluencyScore ?? null,
+        completeness: azureResult.completenessScore ?? null,
+        weakestWords: Array.isArray(azureResult.words)
+          ? azureResult.words
+              .filter((w) => (w.accuracyScore ?? 100) < 70)
+              .sort((a, b) => (a.accuracyScore ?? 0) - (b.accuracyScore ?? 0))
+              .slice(0, 5)
+              .map((w) => w.word)
+          : [],
+      } : null;
       const tutorResult = await evaluateSpeakingWithTutor({
         lesson: lesson || { title: skill || 'Fala livre', pillar: 'speaking', level },
         spokenText: studentText,
+        referenceText,
+        prompt,
+        mode: skill,
+        azureScores,
       });
       if (tutorResult?.status === 'success' && tutorResult.text) {
+        const hybridSource = azureResult ? ANALYSIS_SOURCE.hybrid : ANALYSIS_SOURCE.gemini;
         return {
           ...localResult,
           status: ANALYSIS_STATUS.success,
           feedbackPt: tutorResult.text,
-          source: ANALYSIS_SOURCE.gemini,
+          source: hybridSource,
         };
       }
     } catch {
