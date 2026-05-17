@@ -1,4 +1,6 @@
 fluency-clean/dist/
 fluency-clean/node_modules/
 fluency-clean/package-lock.json
+fluency-clean/playwright-report/
+fluency-clean/test-results/
 preview-clean/assets/*.map

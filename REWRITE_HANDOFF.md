@@ -269,6 +269,57 @@ Gate inicial é recomendação/controlado.
 
 ---
 
+## ✅ HOTFIX-MASTERY-NULL — Crash no CourseScreen: null guard em normalizeProfile (2026-05-17)
+
+Crash iPhone ao clicar em aba "Curso": `null is not an object (evaluating 'e.recentErrors')`.
+
+Causa: `storage.get()` retorna JS `null` quando localStorage armazena a string `"null"`. O parâmetro
+default `= {}` em JavaScript não se aplica a `null` explícito — `null.recentErrors` lançava TypeError.
+
+Arquivos alterados:
+- `src/services/masteryStore.js` — `normalizeProfile`: retorna `emptyProfile()` se `value` não for objeto plain
+- `src/services/a1MasteryGateService.js` — `normalizeState`: sanitiza `raw` para `{}` se vier nulo/inválido
+
+Build: ✅ 2534 módulos, sem erros.
+Playwright (aba Curso): ✅ 8/8.
+
+---
+
+## ✅ BLOCO SETTINGS-AI-KEYS-CLEANUP-1 — Limpeza de Chaves na Tela de Ajustes (2026-05-17)
+
+Regra oficial: IA não gera aulas principais. Curso é fixo premium. "Chaves de aulas" foi removido
+da UI; apenas "Chaves gerais de IA" (tutor, correção, speaking, revisão adaptativa) permanece.
+
+Arquivos alterados:
+- `src/screens/SettingsScreen.jsx` — removeu `LessonKeysPanel`, renomeou grupo, simplificou Card
+- `src/components/settings/GeneralAiKeysPanel.jsx` — textos atualizados; aviso de sincronização futura adicionado
+- `e2e/settings-ai-keys-mobile.spec.js` — 4 testes × 2 viewports = 8 instâncias (novo)
+- `.gitignore` — adicionou `playwright-report/` e `test-results/`
+
+O que permanece como legado (não ativo na UI):
+- `src/components/settings/LessonKeysPanel.jsx` — arquivo mantido
+- `src/services/lessonKeys.js` — usado internamente por `geminiTts.js` e `geminiAudioService.js`
+- `src/services/externalLessonProviders.js` — legado
+
+Build: ✅ 2534 módulos, sem erros.
+Playwright: ✅ 36/36 (14 smoke + 6 flashcards + 8 masteryGate + 8 settings).
+
+Confirmação:
+```
+Branch: main.
+Sem branch nova.
+Sem PR.
+Não gerou aulas novas.
+Não alterou conteúdo A1.
+Não ativou Firebase/Azure/Gemini.
+Não quebrou AI Tutor, Speaking ou Revisão adaptativa.
+lessonKeys.js mantido como legado (não removido).
+```
+
+Documento completo: `fluency-clean/docs/BLOCO-SETTINGS-AI-KEYS-CLEANUP-1-CONCLUIDO.md`
+
+---
+
 ## ✅ BLOCO COMPLETION-UX-1 — Tela de conclusão, progresso e prática extra (2026-05-17)
 
 Melhoria da experiência pós-conclusão de aula.

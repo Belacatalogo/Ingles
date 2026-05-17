@@ -17,7 +17,6 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { GeneralAiKeysPanel } from '../components/settings/GeneralAiKeysPanel.jsx';
-import { LessonKeysPanel } from '../components/settings/LessonKeysPanel.jsx';
 import { Card } from '../components/ui/Card.jsx';
 import { SectionHeader } from '../components/ui/SectionHeader.jsx';
 import { getCurrentLesson } from '../services/lessonStore.js';
@@ -26,7 +25,7 @@ import { getCurrentWeekStats, getProgressSummary, getUserDisplayName, setUserDis
 const groups = [
   { id: 'account', title: 'Conta e acesso', detail: 'login, código de acesso e perfil', icon: Shield },
   { id: 'study', title: 'Plano de estudos', detail: 'meta diária, nível e foco semanal', icon: Target },
-  { id: 'lessonKeys', title: 'Chaves de aulas', detail: 'aulas e IA geral separadas', icon: KeyRound },
+  { id: 'lessonKeys', title: 'Chaves gerais de IA', detail: 'tutor, correção, speaking e revisão', icon: KeyRound },
   { id: 'audio', title: 'Áudio', detail: 'TTS, iOS unlock e Azure Pronunciation', icon: Volume2 },
   { id: 'appearance', title: 'Aparência', detail: 'tema, cards, navegação e densidade', icon: Palette },
   { id: 'data', title: 'Dados', detail: 'histórico, cache e diagnóstico', icon: Database },
@@ -58,7 +57,6 @@ function SettingsToggle({ icon: Icon, label, value, onChange }) {
 
 export function SettingsScreen() {
   const [activeGroup, setActiveGroup] = useState('lessonKeys');
-  const [activeKeyTab, setActiveKeyTab] = useState('lesson');
   const [dailyReminder, setDailyReminder] = useState(false);
   const [autoplayAudio, setAutoplayAudio] = useState(false);
   const [compactMode, setCompactMode] = useState(false);
@@ -159,27 +157,8 @@ export function SettingsScreen() {
       ) : null}
 
       {activeGroup === 'lessonKeys' ? (
-        <Card eyebrow="Chaves" title="IA separada por função">
-          <div className="settings-key-tabs" aria-label="Tipo de chave">
-            <button
-              className={activeKeyTab === 'lesson' ? 'active' : ''}
-              type="button"
-              onClick={() => setActiveKeyTab('lesson')}
-            >
-              Chaves de aulas
-            </button>
-            <button
-              className={activeKeyTab === 'general' ? 'active' : ''}
-              type="button"
-              onClick={() => setActiveKeyTab('general')}
-            >
-              IA geral
-            </button>
-          </div>
-
-          <div className="settings-key-panel-wrap">
-            {activeKeyTab === 'lesson' ? <LessonKeysPanel /> : <GeneralAiKeysPanel />}
-          </div>
+        <Card eyebrow="Chaves" title="Chaves gerais de IA">
+          <GeneralAiKeysPanel />
         </Card>
       ) : null}
 

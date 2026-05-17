@@ -23,12 +23,12 @@ export function GeneralAiKeysPanel() {
         <Bot size={18} />
         <div>
           <strong>Chaves gerais de IA</strong>
-          <span>Speaking, Imersão e outras áreas inteligentes</span>
+          <span>Correção, tutor, speaking, revisão adaptativa e recursos inteligentes</span>
         </div>
       </div>
 
       <p>
-        Use esta área para keys Gemini que poderão alimentar recursos de IA fora da geração de aulas. As chaves de aulas continuam isoladas abaixo.
+        Use estas keys para correção, tutor, speaking, revisão adaptativa e recursos inteligentes. As aulas principais continuam fixas e não são geradas por IA.
       </p>
 
       <div className="settings-key-status">
@@ -69,6 +69,10 @@ export function GeneralAiKeysPanel() {
           </div>
         )) : <p className="empty-note">Nenhuma key geral de IA configurada.</p>}
       </div>
+
+      <p>
+        As keys ficam salvas neste aparelho. A sincronização por conta será ativada em uma etapa futura.
+      </p>
     </section>
   );
 }
