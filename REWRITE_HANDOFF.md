@@ -1413,3 +1413,23 @@ Documento: `fluency-clean/docs/BLOCO-26A-B1-7-MEDIA-TECHNOLOGY-PARTE-1-CONCLUIDO
 
 Próximo: BLOCO 26B — Validação B1.7 Part 1
 Após validação: BLOCO 26C — B1.7 Part 2 (Reading-007, Listening-007, Vocabulary-014)
+
+## ✅ BLOCO 26C — B1.7 Media, Technology and Society Part 2 (2026-05-17)
+
+✅ APROVADO. 3 lições criadas e conectadas.
+
+Arquivo: `fluency-clean/src/content/curriculum/levels/B1/deepB1MediaTechnologyPart2.js`
+
+Aulas:
+- `B1-READING-007` — The attention economy (artigo 6 parágrafos + inferência + comprehension + produção argumentativa)
+- `B1-LISTENING-007` — Should we use less technology? (debate podcast 13 turnos, Nadia vs Marcus + shadowing + oral production)
+- `B1-VOCABULARY-014` — Society and community (12 palavras: inequality, diversity, privilege, stereotype, prejudice...)
+
+B1 agora tem **60 aulas**: grammar(18), vocabulary(14), reading(7), listening(7), speaking(7), writing(7).
+
+Build: ✅ 2547 módulos, sem erros.
+
+Documento: `fluency-clean/docs/BLOCO-26C-B1-7-MEDIA-TECHNOLOGY-PARTE-2-CONCLUIDO.md`
+
+Próximo: BLOCO 26D — Validação B1.7 Part 2
+Após validação: BLOCO 27A — B1.8 Reviews and Checkpoints Part 1 (Grammar-019, Grammar-020, Vocabulary-015, Speaking-008, Writing-008)
