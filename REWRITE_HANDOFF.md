@@ -1,6 +1,6 @@
 # Fluency Clean — Handoff Oficial
 
-Última atualização: 2026-05-16
+Última atualização: 2026-05-17
 
 ## Branch oficial atual
 
@@ -200,8 +200,10 @@ Funções cobertas:
 4. **TAG_RULES / revisão inteligente**
    - Ampliar `reviewFromErrors.js` para cobrir mais erros de speaking, vocabulary e writing.
 
-5. **Speaking/Writing com IA Tutor**
-   - Scoring de produção livre ainda depende de autorização de API.
+5. **Speaking/Writing com IA Tutor — parcialmente concluído**
+   - Writing: IA Tutor integrado em `AttemptField` (multiline) — BLOCO IA-2 concluído.
+   - Speaking (aulas guiadas): IA Tutor integrado em `SpeakField` — BLOCO IA-3 concluído.
+   - Speaking (tela livre): `SpeakingScreen.jsx` ainda sem IA Tutor — pendência BLOCO IA-3B.
    - Não ativar chamadas reais sem autorização.
 
 6. **Flashcards da aula**
@@ -272,6 +274,89 @@ Backup da main antiga preservado.
 
 ---
 
+## ✅ BLOCO IA-2 — Writing AI integração completa (2026-05-17)
+
+Commit: `6662a06`
+
+Integração completa do IA Tutor na escrita das aulas profundas:
+
+- Prop `lesson` adicionada ao pipeline `LessonFlowShell → LessonPhaseCard → Body → AttemptField`.
+- Todos os 5 pilares com `AttemptBody`/`DraftBody` atualizados para repassar `lesson`.
+- `extractCorrectedText()` adicionado ao `studentAnswerAnalysisService.js` — extrai versão corrigida do texto livre da IA via regex.
+- UI do painel de análise melhorada:
+  - Badge source (Local cinza / Gemini violeta).
+  - Card `correctedText` (verde) quando disponível.
+  - Lista `issues` (âmbar) em bullets.
+  - `nextDrill` com ícone Lightbulb.
+  - Botão "Nova análise".
+
+Arquivos alterados:
+- `src/lessons/flow/LessonFlowShell.jsx`
+- `src/lessons/flow/LessonPhaseCard.jsx`
+- `src/lessons/flow/grammar/GrammarLessonFlow.jsx`
+- `src/lessons/flow/vocabulary/VocabularyLessonFlow.jsx`
+- `src/lessons/flow/reading/ReadingLessonFlowV2.jsx`
+- `src/lessons/flow/listening/ListeningLessonFlow.jsx`
+- `src/lessons/flow/writing/WritingLessonFlow.jsx`
+- `src/services/studentAnswerAnalysis/studentAnswerAnalysisService.js`
+- `src/lessons/flow/phases/AttemptField.jsx`
+- `src/lessons/flow/lesson-phase.css`
+
+Build: ✅ 2528 módulos, sem erros.
+
+---
+
+## ✅ BLOCO IA-3 — Speaking AI Tutor em SpeakField (2026-05-17)
+
+Commit: `57e0a3e`
+
+IA Tutor conectado ao `SpeakField` das aulas guiadas de Speaking:
+
+- `evaluateSpeakingWithTutor()` adicionado a `aiTutorService.js`.
+- Camada de IA para `pillar: 'speaking'` adicionada a `studentAnswerAnalysisService.js`.
+- Prop `lesson` repassada via `SpeakingLessonFlow.SpeakBody → SpeakField`.
+- Botão "Analisar com IA" em `SpeakField` após tentativa registrada.
+- Painel de análise: badge Local/Gemini, score, feedbackPt, issues, nextDrill, "Nova análise".
+- Fallback local garantido quando Gemini falha ou não há chave.
+- Nenhum bloqueio de avanço — análise é opcional.
+
+Limitações conhecidas:
+- `azureResult` não está disponível em `SpeakField` (SpeakExercise não o expõe). Quando o aluno usa voz, `studentText` chega vazio à IA.
+- `SpeakingScreen.jsx` (tela de prática livre) não foi alterado — pendência IA-3B.
+
+Arquivos alterados:
+- `src/services/aiTutorService.js`
+- `src/services/studentAnswerAnalysis/studentAnswerAnalysisService.js`
+- `src/lessons/flow/speaking/SpeakingLessonFlow.jsx`
+- `src/lessons/flow/phases/SpeakField.jsx`
+
+Documento completo: `fluency-clean/docs/BLOCO-IA-3-SPEAKING-AI-TUTOR-CONCLUIDO.md`
+
+Build: ✅ 2528 módulos, sem erros.
+
+---
+
+## ⏳ Próximo: BLOCO IA-3B — SpeakingScreen híbrido Azure + IA Tutor
+
+Objetivo: conectar IA Tutor à tela `SpeakingScreen.jsx`, que já usa Azure real.
+
+Pontos de integração:
+- `analyzeFreeSpeech()` / `appendFreeSpeechAnalysis()` — modo conversa
+- `handlePronunciationRecord()` / `recordSingleAttempt()` — modos pronúncia e imersão
+
+Dados a enviar para IA: lesson, prompt original, recognizedText, referenceText, azureScores (pronunciationScore, accuracyScore, fluencyScore, completenessScore, weakestWords).
+
+Regra: Azure permanece como base de pronúncia/transcrição. IA apenas adiciona camada pedagógica. Fallback obrigatório se IA falhar.
+
+Plano completo: `fluency-clean/docs/BLOCO-IA-3B-SPEAKINGSCREEN-HYBRID-PLAN.md`
+
+Blocos IA seguintes (após IA-3B):
+- `BLOCO IA-4` — Reading/Listening respostas abertas
+- `BLOCO IA-5` — Revisão adaptativa real com flowErrors
+- `BLOCO IA-6` — StudentAnswerFeedbackCard componente unificado
+
+---
+
 ## ✅ BLOCO IA-1 — Student Answer Analysis Service (2026-05-17)
 
 Camada central de análise de respostas do aluno implementada em:
@@ -294,12 +379,13 @@ Regras respeitadas:
 
 Integração mínima: botão **"Analisar com IA"** adicionado em `AttemptField.jsx` somente para campos `multiline` (writing), após tentativa registrada.
 
-Próximos blocos de IA:
-- `BLOCO IA-2` — Writing integração completa (passar lesson, mostrar correctedText)
-- `BLOCO IA-3` — Speaking híbrido Azure + IA Tutor
-- `BLOCO IA-4` — Reading/Listening respostas abertas
-- `BLOCO IA-5` — Revisão adaptativa real com flowErrors
-- `BLOCO IA-6` — StudentAnswerFeedbackCard componente unificado
+Blocos de IA subsequentes:
+- `BLOCO IA-2` — ✅ Writing integração completa (concluído — commit 6662a06)
+- `BLOCO IA-3` — ✅ Speaking híbrido em SpeakField (concluído — commit 57e0a3e)
+- `BLOCO IA-3B` — ⏳ SpeakingScreen híbrido Azure + IA Tutor (pendente)
+- `BLOCO IA-4` — ⏳ Reading/Listening respostas abertas
+- `BLOCO IA-5` — ⏳ Revisão adaptativa real com flowErrors
+- `BLOCO IA-6` — ⏳ StudentAnswerFeedbackCard componente unificado
 
 Documento completo: `fluency-clean/docs/BLOCO-IA-1-STUDENT-ANSWER-ANALYSIS-CONCLUIDO.md`
 Plano original: `fluency-clean/docs/PLANO-IA-ANALISE-RESPOSTAS-UTIL-LAB.md`
