@@ -894,3 +894,36 @@ Sem force push.
 Conclusão de aula sempre persistida antes de mostrar card de conclusão.
 Falha de storage visível para o aluno (mensagem de erro no footer).
 ```
+
+---
+
+## ✅ BLOCO 20A — B1.0 Plano e Arquitetura do B1 Profundo (2026-05-17)
+
+Arquitetura completa do currículo B1 criada antes de qualquer aula.
+
+Arquivos criados:
+- `fluency-clean/src/content/curriculum/b1Map.js` — mapa completo do B1 com 8 pacotes e 6 pilares
+- `fluency-clean/src/content/curriculum/levels/B1/` — diretório criado para aulas profundas
+- `fluency-clean/docs/BLOCO-20A-B1-0-PLANO-ARQUITETURA-CONCLUIDO.md`
+
+Estrutura B1:
+- 8 pacotes: bridge, pastExperiences, opinions, problems, workStudy, travel, media, reviewsCheckpoints
+- Grammar: 26 | Vocabulary: 22 | Reading: 20 | Listening: 18 | Speaking: 19 | Writing: 18
+- **Total planejado: 123 aulas**
+- B1 NÃO conectado como ready ainda — apenas mapa arquitetural
+
+Próximo bloco obrigatório:
+- BLOCO 20B — B1.1 Bridge from A2 — Parte 1 (4-6 primeiras aulas profundas)
+
+Confirmação:
+```
+Branch: main
+Sem branch nova.
+Sem PR.
+Sem merge.
+Sem rebase.
+Sem force push.
+Não conectou B1 como ready.
+Não criou aulas completas.
+Apenas arquitetura e mapa.
+```
