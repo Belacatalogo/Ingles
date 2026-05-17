@@ -105,12 +105,12 @@ export const A2_DEEP_BRIDGE = Object.freeze([
     readingPurpose: 'Entender uma história curta no passado com sequência simples.',
     preReadingVocabulary: [vocab('yesterday', 'ontem'), vocab('first', 'primeiro'), vocab('then', 'então/depois'), vocab('after that', 'depois disso'), vocab('tired', 'cansado')],
     readingStrategy: [task('Leia o começo para achar quando.'), task('Use first/then/after that para ordem.'), task('Volte ao texto para evidência.'), task('Não chute ação fora do texto.')],
-    mainText: `Yesterday was a busy day. First, I worked in the morning. Then, I had lunch with my mother. After that, I went to English class at night. The class was interesting, but I was tired. I liked the class because I learned new words about travel and dates.`,
-    firstReadTask: task('Qual é o assunto geral do texto?', 'Um dia ocupado no passado.'),
-    secondReadTasks: [task('Quando aconteceu?', 'yesterday'), task('O que aconteceu primeiro?', 'worked in the morning'), task('Com quem a pessoa almoçou?', 'with my mother'), task('Quando foi a aula de inglês?', 'at night')],
-    evidenceQuestions: [q('When was the busy day?', 'yesterday', 'Yesterday was a busy day.', '', ['yesterday','last week','today']), q('What did the person do first?', 'worked in the morning', 'First, I worked in the morning.', '', ['worked','studied','traveled']), q('Who did the person have lunch with?', 'my mother', 'I had lunch with my mother.', '', ['my mother','my teacher','my friend']), q('How was the class?', 'interesting', 'The class was interesting...', '', ['interesting','boring','short']), q('Why did the person like the class?', 'because I learned new words about travel and dates', 'I liked the class because I learned new words about travel and dates.', '', ['learned new words','met a friend','finished early'])],
-    contextVocabularyTasks: [task('Busy significa cheio/ocupado pelo contexto.'), task('Learned indica algo aprendido no passado.'), task('Travel and dates prepara vocabulário A2.')],
-    guidedSummary: task('Complete: Yesterday, the person worked, had lunch with ___ and went to English class at ___.', '', 'mother / night'),
+    mainText: `Yesterday was a busy day for Marco. He woke up early and worked at the coffee shop in the morning. Then he had lunch with his mother, Dona Lúcia, at her house. After lunch, Marco took the bus to his English class downtown. The class was interesting, but Marco was very tired. He liked the lesson because he learned new words about travel and dates.`,
+    firstReadTask: task('Qual é o assunto geral do texto?', 'Marco conta seu dia ocupado de ontem.', "Marco's busy day"),
+    secondReadTasks: [task('Quando aconteceu?', 'yesterday'), task('Onde Marco trabalhou de manhã?', 'at the coffee shop'), task('Com quem Marco almoçou?', 'with his mother, Dona Lúcia'), task('Como Marco foi para a aula?', 'took the bus')],
+    evidenceQuestions: [q("When was Marco's busy day?", 'yesterday', 'Yesterday was a busy day for Marco.', '', ['yesterday','last week','today']), q('Where did Marco work in the morning?', 'at the coffee shop', 'He worked at the coffee shop in the morning.', '', ['at the coffee shop','at school','downtown']), q('Who did Marco have lunch with?', 'his mother, Dona Lúcia', 'he had lunch with his mother, Dona Lúcia', '', ['his mother','his teacher','his friend']), q('How was the class?', 'interesting', 'The class was interesting, but Marco was very tired.', '', ['interesting','boring','short']), q('Why did Marco like the lesson?', 'because he learned new words about travel and dates', 'He liked the lesson because he learned new words about travel and dates.', '', ['learned new words about travel and dates','met a friend','finished early'])],
+    contextVocabularyTasks: [task('Busy significa cheio/ocupado pelo contexto.', 'Yesterday was a busy day for Marco.'), task('Learned indica algo aprendido no passado.', 'He learned new words.'), task('Travel and dates prepara vocabulário A2.')],
+    guidedSummary: task('Complete: Yesterday, Marco worked at the ___, had lunch with ___ and went to English class by ___.', '', 'coffee shop / his mother Dona Lúcia / bus'),
     connectedProduction: task('Escreva 3 frases sobre seu dia de ontem usando first, then e after that.'),
     selfAssessment: [task('Consigo achar sequência?'), task('Consigo responder com evidência?'), task('Consigo reconhecer yesterday/then/after that?')],
     lessonRecap: ['Reading A2 começa com histórias curtas.', 'Sequence words mostram ordem.', 'Evidência continua obrigatória.', 'Passado pode ser entendido por contexto.'],
@@ -134,16 +134,20 @@ export const A2_DEEP_BRIDGE = Object.freeze([
     guidedBeforeQuiz: [task('Primeira escuta: sobre o quê falam?'), task('Segunda escuta: quais atividades aparecem?')],
     listeningPreparation: [task('Não leia transcript antes da primeira escuta.'), task('Prepare: last weekend, visited, watched, studied, tired.'), task('Objetivo: tempo + atividade.')],
     keyWordsToHear: [vocab('last weekend','fim de semana passado'), vocab('visited','visitei'), vocab('watched','assisti'), vocab('studied','estudei'), vocab('tired','cansado')],
-    audioScript: `A: What did you do last weekend?
-B: I visited my family on Saturday. Then I watched a movie at night.
-A: Nice. Did you study English?
-B: Yes, I studied on Sunday morning. I was tired, but the class was good.`,
-    firstListenTasks: [task('Sem transcript: a conversa é sobre fim de semana, trabalho ou comida?', 'fim de semana'), task('Sem transcript: a pessoa estudou inglês?', 'yes')],
-    secondListenTasks: [task('Quando a pessoa visitou a família?', 'on Saturday'), task('O que ela fez à noite?', 'watched a movie'), task('Quando estudou inglês?', 'on Sunday morning')],
-    transcript: `A: What did you do last weekend?
-B: I visited my family on Saturday. Then I watched a movie at night.
-A: Nice. Did you study English?
-B: Yes, I studied on Sunday morning. I was tired, but the class was good.`,
+    audioScript: `A: Hey! What did you do last weekend?
+B: It was great, actually. I visited my family on Saturday. We had a big lunch — my grandmother cooked everything.
+A: Nice! Did you go out at night?
+B: Yes, we watched a movie. It was in English, which was a bit difficult!
+A: Ha! Did you study English on Sunday too?
+B: Yes, I did. I studied on Sunday morning. I was tired, but the class was really good.`,
+    firstListenTasks: [task('Sem transcript: a conversa é sobre fim de semana, trabalho ou viagem?', 'fim de semana'), task('Sem transcript: a pessoa assistiu a um filme?', 'yes'), task('Sem transcript: a pessoa estudou inglês?', 'yes')],
+    secondListenTasks: [task('Quando a pessoa visitou a família?', 'on Saturday'), task('O que a avó fez?', 'cooked everything'), task('Por que o filme foi difícil?', 'it was in English'), task('Quando estudou inglês?', 'on Sunday morning')],
+    transcript: `A: Hey! What did you do last weekend?
+B: It was great, actually. I visited my family on Saturday. We had a big lunch — my grandmother cooked everything.
+A: Nice! Did you go out at night?
+B: Yes, we watched a movie. It was in English, which was a bit difficult!
+A: Ha! Did you study English on Sunday too?
+B: Yes, I did. I studied on Sunday morning. I was tired, but the class was really good.`,
     vocabulary: [vocab('what did you do?', 'o que você fez?'), vocab('visited', 'visitou/visitei'), vocab('watched', 'assistiu/assisti'), vocab('studied', 'estudou/estudei')],
     shadowing: [task('What did you do last weekend?'), task('I visited my family on Saturday.'), task('Then I watched a movie at night.'), task('Did you study English?'), task('I was tired, but the class was good.')],
     dictationTasks: [task('Digite: What did you do last weekend?', 'What did you do last weekend?'), task('Digite: I visited my family on Saturday.', 'I visited my family on Saturday.'), task('Digite: I was tired, but the class was good.', 'I was tired, but the class was good.')],

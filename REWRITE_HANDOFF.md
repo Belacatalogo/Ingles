@@ -1,6 +1,6 @@
 # Fluency Clean — Handoff Oficial
 
-Última atualização: 2026-05-17 (BLOCO-AUDIT-FIX-03)
+Última atualização: 2026-05-17 (BLOCO-AUDIT-FIX-04)
 
 ## Branch oficial atual
 
@@ -171,9 +171,26 @@ Executado após auditoria Playwright completa (30 problemas catalogados).
 
 **Testes:** 164/164 passando.
 
+---
+
+## ✅ BLOCO-AUDIT-FIX-04 — Qualidade de Aulas e Exercícios (2026-05-17)
+
+**Corrigido:**
+- PROB-025: A1-READING-001 mainText sem conexão narrativa — texto reescrito com conector ("I have a friend in my class. His name is Luis.")
+- PROB-026: A1 Listening sem predição ativa — listeningPreparation expandido com tarefa de predição, pergunta de situação e nota sobre áudio TTS
+- PROB-027: A1 Speaking freeSpeaking sem modelo completo — nota com sequência obrigatória e exemplo preenchido adicionados a A1-SPEAKING-001 e 002
+- PROB-028: A1 Writing checklist superficial — checklist expandido de 6 para 8 itens incluindo verificação de conteúdo; revisionChecklist expandido para cobrir completude
+- PROB-029: A2 Reading texto genérico — A2-READING-001 reescrito com personagem Marco e detalhes concretos (coffee shop, Dona Lúcia, ônibus)
+- PROB-030: Distractors absurdos em múltipla escolha — A1-READING-001 e 002 com distractors plausíveis e semanticamente coerentes
+- PROB-031: Já estava correto — nenhuma intervenção necessária
+- PROB-032: A2 Listening diálogos artificiais — A2-LISTENING-001 com detalhes naturais (avó cozinhou, filme em inglês difícil); A2-LISTENING-003 com complicação realista (quarto não pronto, espera no lobby)
+- Correções técnicas de sintaxe: normalização de aspas curvas Unicode em deepReadingFoundations.js; apostrofes dentro de strings corrigidos para aspas duplas em deepReadingFoundations.js e deepA2Bridge.js
+
+**Build:** ✅ `npx vite build` — 2533 módulos sem erros  
+**Testes:** Playwright sem browser executável no ambiente remoto (infraestrutura pré-existente); nenhuma lógica de componente alterada
+
 **Próximos blocos disponíveis:**
-- BLOCO-AUDIT-FIX-04 — Speaking/Writing polimento
-- BLOCO-AUDIT-FIX-05 — Conteúdo pedagógico
+- BLOCO-AUDIT-FIX-05 — Conteúdo pedagógico restante
 - Retomar criação de B1 (após aprovação)
 
 ---
