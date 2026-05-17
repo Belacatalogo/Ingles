@@ -402,11 +402,74 @@ Fallback local garantido.
 
 ---
 
-## Próximos blocos IA
+## ✅ BLOCO IA-5 — Revisão adaptativa real com erros do aluno (2026-05-17)
 
-- `BLOCO IA-4` — ✅ Reading/Listening respostas abertas (concluído — 2026-05-17)
-- `BLOCO IA-5` — ⏳ Revisão adaptativa real com flowErrors
-- `BLOCO IA-6` — ⏳ StudentAnswerFeedbackCard componente unificado
+Serviço modular de revisão adaptativa baseado em erros reais das aulas.
+
+Arquivos criados:
+- `src/services/adaptiveReview/adaptiveReviewTypes.js` — constantes ADAPTIVE_REVIEW_STATUS, ADAPTIVE_REVIEW_SOURCE, ADAPTIVE_REVIEW_STORAGE_KEY
+- `src/services/adaptiveReview/localAdaptiveReview.js` — `buildLocalAdaptiveReview()`: fallback local por pillar (grammar/writing/reading/listening/speaking/vocabulary)
+- `src/services/adaptiveReview/adaptiveReviewService.js` — `buildAdaptiveReview()`: orquestra local + cache + Gemini
+- `src/services/adaptiveReview/index.js` — re-exports
+
+Arquivos alterados:
+- `src/services/aiTutorPolicy.js` — prompt block para `adaptiveReview` action (estruturado, max 250 palavras, 3 micro-exercícios)
+- `src/services/aiTutorService.js` — `buildAdaptiveReviewWithTutor({ lesson, errors, level, fetcher })`
+- `src/lessons/flow/phases/LessonCompletionCard.jsx` — componente interno `AdaptiveReviewPanel` com botão "Revisão adaptativa da aula"
+- `src/lessons/flow/lesson-flow.css` — `.lesson-completion-adaptive` e `.lesson-completion-adaptive-btn`
+
+Comportamento:
+- Botão "Revisão adaptativa da aula" aparece ao final de toda aula no LessonCompletionCard.
+- `flowErrors` extraídos de `extractFlowErrors(phases, attempts, lesson)` — erros reais da sessão.
+- Local: agrupa por pillar, cria microDrills de banco fixo, retorna imediatamente.
+- IA: usa `adaptiveReview` action com erros serializados como contexto — max 250 palavras.
+- Cache: `fluency.clean.adaptive-reviews:v1` por `lessonId-data`.
+- Sem bloqueio de conclusão de aula. Sem secrets expostos. Fallback local garantido.
+
+Build: ✅ 2533 módulos, sem erros.
+Documento completo: `fluency-clean/docs/BLOCO-IA-5-ADAPTIVE-REVIEW-CONCLUIDO.md`
+
+---
+
+## ✅ BLOCO IA-6 — UI unificada de feedback de IA (2026-05-17)
+
+Componente único `StudentAnswerFeedbackCard` substitui painel duplicado em 3 locais.
+
+Arquivo criado:
+- `src/components/ai/StudentAnswerFeedbackCard.jsx` — props: `result`, `loading`, `title`, `onRetry`, `compact`
+
+Props suportadas no result:
+- `status`, `source`, `score`, `feedbackPt`, `correctedText`, `issues`, `strengths`, `nextDrill`
+
+Locais substituídos:
+- `src/lessons/flow/phases/AttemptField.jsx` — inline `aiAnalysisNode` substituído
+- `src/lessons/flow/phases/SpeakField.jsx` — inline `aiAnalysisNode` substituído; imports `Lightbulb`/`RotateCcw` removidos
+- `src/screens/SpeakingScreen.jsx` — `SpeakingAiPanel` reduzido a 1-line wrapper de `StudentAnswerFeedbackCard`
+
+CSS: reutiliza `lesson-phase.css` existente. Nenhum arquivo CSS novo criado.
+Badge automático: `Local` / `Gemini` / `Híbrido` baseado em `result.source`.
+
+Build: ✅ 2533 módulos, sem erros.
+Documento completo: `fluency-clean/docs/BLOCO-IA-6-STUDENT-FEEDBACK-UI-CONCLUIDO.md`
+
+---
+
+## Blocos IA — estado final
+
+- `BLOCO IA-1` — ✅ Student Answer Analysis Service
+- `BLOCO IA-2` — ✅ Writing integração completa
+- `BLOCO IA-3` — ✅ Speaking AI Tutor em SpeakField
+- `BLOCO IA-3B` — ✅ SpeakingScreen híbrido Azure + IA Tutor
+- `BLOCO IA-4` — ✅ Reading/Listening respostas abertas
+- `BLOCO IA-5` — ✅ Revisão adaptativa real com flowErrors (concluído — 2026-05-17)
+- `BLOCO IA-6` — ✅ StudentAnswerFeedbackCard componente unificado (concluído — 2026-05-17)
+
+Pendências reais restantes (não são blocos de IA):
+- Melhorar qualidade dos prompts de revisão adaptativa com mais contexto de nível.
+- Conectar Firebase real futuramente com autorização explícita.
+- Melhorar analytics/mastery gate A1→A2.
+- Testar UX real em iPhone (safe-area, textarea oculto).
+- Ampliar TAG_RULES em reviewFromErrors.js para cobrir erros de speaking e writing.
 
 ---
 
@@ -437,8 +500,8 @@ Blocos de IA subsequentes:
 - `BLOCO IA-3` — ✅ Speaking híbrido em SpeakField (concluído — commit 57e0a3e)
 - `BLOCO IA-3B` — ✅ SpeakingScreen híbrido Azure + IA Tutor (concluído)
 - `BLOCO IA-4` — ✅ Reading/Listening respostas abertas (concluído)
-- `BLOCO IA-5` — ⏳ Revisão adaptativa real com flowErrors
-- `BLOCO IA-6` — ⏳ StudentAnswerFeedbackCard componente unificado
+- `BLOCO IA-5` — ✅ Revisão adaptativa real com flowErrors (concluído)
+- `BLOCO IA-6` — ✅ StudentAnswerFeedbackCard componente unificado (concluído)
 
 Documento completo: `fluency-clean/docs/BLOCO-IA-1-STUDENT-ANSWER-ANALYSIS-CONCLUIDO.md`
 Plano original: `fluency-clean/docs/PLANO-IA-ANALISE-RESPOSTAS-UTIL-LAB.md`

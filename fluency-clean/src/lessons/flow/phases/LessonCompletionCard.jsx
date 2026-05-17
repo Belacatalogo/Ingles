@@ -1,6 +1,87 @@
-import { Award, BookOpen, CreditCard, RotateCcw, ThumbsUp, TriangleAlert } from 'lucide-react';
-import { computeFlowResults } from '../lessonFlowScore.js';
+import { useState } from 'react';
+import { Award, BookOpen, CreditCard, Lightbulb, RotateCcw, Sparkles, ThumbsUp, TriangleAlert } from 'lucide-react';
+import { computeFlowResults, extractFlowErrors } from '../lessonFlowScore.js';
 import { hasLessonFlashcards } from '../../../services/lessonFlashcards.js';
+import { buildAdaptiveReview } from '../../../services/adaptiveReview/index.js';
+
+function AdaptiveReviewPanel({ lesson, phases, attempts }) {
+  const [review, setReview] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  async function handleGenerate() {
+    if (loading) return;
+    setLoading(true);
+    try {
+      const flowErrors = extractFlowErrors(phases, attempts, lesson || {});
+      const result = await buildAdaptiveReview({ lesson, flowErrors, allowAi: true });
+      setReview(result);
+    } catch {
+      setReview({
+        focusSummary: 'Não foi possível gerar a revisão agora. Revise os pontos marcados manualmente.',
+        errorGroups: [],
+        reviewPlan: [],
+        nextLessonAdvice: '',
+        source: 'local',
+      });
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const isGemini = review?.source === 'gemini';
+
+  return (
+    <div className="lesson-completion-adaptive">
+      {!review ? (
+        <button
+          type="button"
+          className="lesson-completion-adaptive-btn"
+          onClick={handleGenerate}
+          disabled={loading}
+        >
+          <Sparkles size={13} />
+          {loading ? 'Gerando revisão...' : 'Revisão adaptativa da aula'}
+        </button>
+      ) : (
+        <div className={`lesson-phase-ai-result${isGemini ? ' gemini' : ''}`}>
+          <div className="lesson-phase-ai-result-header">
+            <Sparkles size={13} />
+            <span>Revisão adaptativa</span>
+            <span className={`lesson-phase-ai-badge${isGemini ? ' gemini' : ''}`}>
+              {isGemini ? 'Gemini' : 'Local'}
+            </span>
+          </div>
+          <p className="lesson-phase-ai-feedback">{review.focusSummary}</p>
+          {review.aiText && isGemini ? (
+            <p className="lesson-phase-ai-feedback" style={{ whiteSpace: 'pre-wrap', marginTop: '6px' }}>
+              {review.aiText}
+            </p>
+          ) : null}
+          {!isGemini && review.errorGroups?.length ? review.errorGroups.map((group) => (
+            <div key={group.pillar} style={{ marginTop: '8px' }}>
+              <p style={{ fontSize: '11px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '.08em', color: '#7b8db8', margin: '0 0 4px' }}>
+                {group.title}
+              </p>
+              {group.microDrills?.length ? (
+                <ul className="lesson-phase-ai-list">
+                  {group.microDrills.map((drill, i) => <li key={i}>{drill}</li>)}
+                </ul>
+              ) : null}
+            </div>
+          )) : null}
+          {review.nextLessonAdvice ? (
+            <p className="lesson-phase-ai-drill">
+              <Lightbulb size={12} /> {review.nextLessonAdvice}
+            </p>
+          ) : null}
+          <button type="button" className="lesson-phase-link" onClick={() => setReview(null)}>
+            <RotateCcw size={11} /> Gerar novamente
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export function LessonCompletionCard({ phases = [], attempts = {}, lesson = null, onRestart, onNavigate }) {
   const { correct, warn, missed, totalAttempt, score, weakTitles } = computeFlowResults(phases, attempts);
@@ -51,6 +132,8 @@ export function LessonCompletionCard({ phases = [], attempts = {}, lesson = null
           </ul>
         </div>
       ) : null}
+
+      <AdaptiveReviewPanel lesson={lesson} phases={phases} attempts={attempts} />
 
       <div className="lesson-completion-actions">
         {onRestart ? (

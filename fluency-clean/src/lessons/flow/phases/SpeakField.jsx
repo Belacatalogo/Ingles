@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { Check, CheckCircle2, Lightbulb, Loader2, Mic, RotateCcw, Sparkles, Volume2 } from 'lucide-react';
+import { Check, CheckCircle2, Loader2, Mic, Sparkles, Volume2 } from 'lucide-react';
 import { PhaseShell } from './PhaseShell.jsx';
 import { SpeakExercise } from '../../../practice/components/SpeakExercise.jsx';
 import { generateGeminiAudioBlob } from '../../../services/geminiAudioService.js';
 import { playLearningAudio } from '../../../services/audioPlayback.js';
 import { analyzeStudentAnswer } from '../../../services/studentAnswerAnalysis/index.js';
 import { clean, expectedOf } from '../text/normalize.js';
+import { StudentAnswerFeedbackCard } from '../../../components/ai/StudentAnswerFeedbackCard.jsx';
 
 function ModelAudioButton({ text }) {
   const [status, setStatus] = useState('');
@@ -88,7 +89,6 @@ export function SpeakField({ phase, flow, item = {}, eyebrow = 'Sua vez de falar
     </div>
   ) : null;
 
-  const isGemini = aiAnalysis?.source === 'gemini';
   const aiAnalysisNode = attempted ? (
     <div className="lesson-phase-ai-analysis">
       {!aiAnalysis ? (
@@ -96,32 +96,11 @@ export function SpeakField({ phase, flow, item = {}, eyebrow = 'Sua vez de falar
           <Sparkles size={13} /> {aiLoading ? 'Analisando...' : 'Analisar com IA'}
         </button>
       ) : (
-        <div className={`lesson-phase-ai-result${isGemini ? ' gemini' : ''}`}>
-          <div className="lesson-phase-ai-result-header">
-            <Sparkles size={13} />
-            <span>IA Tutor</span>
-            <span className={`lesson-phase-ai-badge${isGemini ? ' gemini' : ''}`}>
-              {isGemini ? 'Gemini' : 'Local'}
-            </span>
-            {aiAnalysis.score !== null ? (
-              <span className="lesson-phase-ai-score">{aiAnalysis.score}/100</span>
-            ) : null}
-          </div>
-          <p className="lesson-phase-ai-feedback">{aiAnalysis.feedbackPt}</p>
-          {aiAnalysis.issues?.length ? (
-            <ul className="lesson-phase-ai-list">
-              {aiAnalysis.issues.map((issue, index) => <li key={index}>{issue}</li>)}
-            </ul>
-          ) : null}
-          {aiAnalysis.nextDrill ? (
-            <p className="lesson-phase-ai-drill">
-              <Lightbulb size={12} /> {aiAnalysis.nextDrill}
-            </p>
-          ) : null}
-          <button type="button" className="lesson-phase-link" onClick={() => setAiAnalysis(null)}>
-            <RotateCcw size={11} /> Nova análise
-          </button>
-        </div>
+        <StudentAnswerFeedbackCard
+          result={aiAnalysis}
+          loading={false}
+          onRetry={() => setAiAnalysis(null)}
+        />
       )}
     </div>
   ) : null;

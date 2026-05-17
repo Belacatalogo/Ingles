@@ -86,6 +86,7 @@ export function buildAiTutorPrompt(context) {
   const isSpeakingEval = context.action === AI_TUTOR_ALLOWED_ACTIONS.evaluateSpeaking;
   const isReadingEval = context.action === AI_TUTOR_ALLOWED_ACTIONS.evaluateReadingAnswer;
   const isListeningEval = context.action === AI_TUTOR_ALLOWED_ACTIONS.evaluateListeningAnswer;
+  const isAdaptiveReview = context.action === AI_TUTOR_ALLOWED_ACTIONS.adaptiveReview;
 
   const readingLines = isReadingEval ? [
     context.referenceText ? `Texto de referência (base da avaliação):\n${context.referenceText}` : '',
@@ -110,6 +111,18 @@ export function buildAiTutorPrompt(context) {
     '4. Sugira 1 micro-treino de escuta curto.',
     'Não revele o transcript completo como resposta. Não invente informação.',
   ].filter(Boolean) : [];
+
+  const adaptiveReviewLines = isAdaptiveReview ? [
+    '',
+    'Os erros reais do aluno estão listados acima (campo "Erros recentes do aluno").',
+    'Crie uma revisão adaptativa curta em português com exatamente esta estrutura:',
+    '1. Uma frase de diagnóstico: qual é o foco principal desta revisão.',
+    '2. Os erros mais frequentes agrupados por área (grammar, writing, speaking, reading, listening, vocabulary).',
+    '3. Para cada área: 1 exemplo do erro e como corrigir (máx. 2 frases por área).',
+    '4. Exatamente 3 micro-exercícios práticos, 1 frase cada.',
+    '5. Uma frase de conselho para a próxima aula.',
+    'Máximo 250 palavras. Não crie nova aula. Não invente erros inexistentes. Baseie-se apenas nos erros listados.',
+  ] : [];
 
   const speakingLines = isSpeakingEval ? [
     context.referenceText ? `Frase de referência: "${context.referenceText}"` : '',
@@ -149,6 +162,7 @@ export function buildAiTutorPrompt(context) {
     ...speakingLines,
     ...readingLines,
     ...listeningLines,
+    ...adaptiveReviewLines,
     '',
     'Responda de forma curta, útil e prática. Não crie uma nova aula.',
   ].filter(Boolean).join('\n');

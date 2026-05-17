@@ -8,6 +8,7 @@ import { getSpeakingSessions, recordSpeakingSession } from '../services/progress
 import { getSpeakingHistorySummary } from '../services/speakingHistory.js';
 import { startRecording } from '../services/recorder.js';
 import { SpeakingStepper } from '../speaking/SpeakingStepper.jsx';
+import { StudentAnswerFeedbackCard } from '../components/ai/StudentAnswerFeedbackCard.jsx';
 
 const MIN_RECOGNIZED_WORDS = 2;
 
@@ -104,39 +105,7 @@ function findTodaySpeakingSession(lesson, level) {
 }
 
 function SpeakingAiPanel({ analysis, loading }) {
-  if (loading) {
-    return (
-      <div className="lesson-phase-ai-analysis">
-        <span style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: 'var(--text-secondary, #94a3b8)', padding: '8px 0' }}>
-          <Sparkles size={13} /> Analisando com IA...
-        </span>
-      </div>
-    );
-  }
-  if (!analysis || !analysis.feedbackPt) return null;
-  const isGemini = analysis.source === 'gemini' || analysis.source === 'hybrid';
-  const badgeLabel = analysis.source === 'hybrid' ? 'Híbrido' : isGemini ? 'Gemini' : 'Local';
-  return (
-    <div className={`lesson-phase-ai-result${isGemini ? ' gemini' : ''}`} style={{ marginTop: '12px' }}>
-      <div className="lesson-phase-ai-result-header">
-        <Sparkles size={13} />
-        <span>IA Tutor</span>
-        <span className={`lesson-phase-ai-badge${isGemini ? ' gemini' : ''}`}>{badgeLabel}</span>
-        {analysis.score !== null && analysis.score !== undefined ? (
-          <span className="lesson-phase-ai-score">{analysis.score}/100</span>
-        ) : null}
-      </div>
-      <p className="lesson-phase-ai-feedback">{analysis.feedbackPt}</p>
-      {analysis.issues?.length ? (
-        <ul className="lesson-phase-ai-list">
-          {analysis.issues.map((issue, i) => <li key={i}>{issue}</li>)}
-        </ul>
-      ) : null}
-      {analysis.nextDrill ? (
-        <p className="lesson-phase-ai-drill"><Lightbulb size={12} /> {analysis.nextDrill}</p>
-      ) : null}
-    </div>
-  );
+  return <StudentAnswerFeedbackCard result={analysis} loading={loading} compact />;
 }
 
 function SpeakingHistoryCard({ summary }) {

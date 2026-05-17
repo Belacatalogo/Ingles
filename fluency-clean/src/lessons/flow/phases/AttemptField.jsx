@@ -3,6 +3,7 @@ import { AlertTriangle, Check, Eye, Lightbulb, RotateCcw, Sparkles } from 'lucid
 import { PhaseShell } from './PhaseShell.jsx';
 import { clean, expectedOf, isCorrect, wordCount } from '../text/normalize.js';
 import { analyzeStudentAnswer } from '../../../services/studentAnswerAnalysis/index.js';
+import { StudentAnswerFeedbackCard } from '../../../components/ai/StudentAnswerFeedbackCard.jsx';
 
 const VAGUE_PATTERNS = [
   /^sim$/i, /^não$/i, /^yes$/i, /^no$/i, /^ok$/i,
@@ -188,7 +189,6 @@ export function AttemptField({
     </div>
   ) : null;
 
-  const isGemini = aiAnalysis?.source === 'gemini';
   const aiAnalysisNode = multiline && attempted ? (
     <div className="lesson-phase-ai-analysis">
       {!aiAnalysis ? (
@@ -196,38 +196,11 @@ export function AttemptField({
           <Sparkles size={13} /> {aiLoading ? 'Analisando...' : 'Analisar com IA'}
         </button>
       ) : (
-        <div className={`lesson-phase-ai-result${isGemini ? ' gemini' : ''}`}>
-          <div className="lesson-phase-ai-result-header">
-            <Sparkles size={13} />
-            <span>IA Tutor</span>
-            <span className={`lesson-phase-ai-badge${isGemini ? ' gemini' : ''}`}>
-              {isGemini ? 'Gemini' : 'Local'}
-            </span>
-            {aiAnalysis.score !== null ? (
-              <span className="lesson-phase-ai-score">{aiAnalysis.score}/100</span>
-            ) : null}
-          </div>
-          <p className="lesson-phase-ai-feedback">{aiAnalysis.feedbackPt}</p>
-          {aiAnalysis.correctedText ? (
-            <div className="lesson-phase-ai-corrected">
-              <span>Versão sugerida</span>
-              <p>{aiAnalysis.correctedText}</p>
-            </div>
-          ) : null}
-          {aiAnalysis.issues?.length ? (
-            <ul className="lesson-phase-ai-list">
-              {aiAnalysis.issues.map((issue, index) => <li key={index}>{issue}</li>)}
-            </ul>
-          ) : null}
-          {aiAnalysis.nextDrill ? (
-            <p className="lesson-phase-ai-drill">
-              <Lightbulb size={12} /> {aiAnalysis.nextDrill}
-            </p>
-          ) : null}
-          <button type="button" className="lesson-phase-link" onClick={() => setAiAnalysis(null)}>
-            <RotateCcw size={11} /> Nova análise
-          </button>
-        </div>
+        <StudentAnswerFeedbackCard
+          result={aiAnalysis}
+          loading={false}
+          onRetry={() => setAiAnalysis(null)}
+        />
       )}
     </div>
   ) : null;

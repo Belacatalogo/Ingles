@@ -122,3 +122,13 @@ export async function evaluateListeningWithTutor({ lesson, studentText = '', pro
     fetcher,
   });
 }
+
+export async function buildAdaptiveReviewWithTutor({ lesson, errors = [], level = 'A1', fetcher = fetch } = {}) {
+  const lessonObj = lesson || { title: 'Revisão', pillar: 'general', level };
+  return askAiTutor({
+    lesson: lessonObj,
+    action: AI_TUTOR_ALLOWED_ACTIONS.adaptiveReview,
+    errors,
+    fetcher,
+  });
+}
