@@ -21,7 +21,7 @@ export function useLessonFlowState(phases = [], options = {}) {
   const safeIndex = clampPhaseIndex(activeIndex, phaseList);
   const activePhase = phaseList[safeIndex] || null;
   const visitedPhaseIds = getVisitedPhaseIds(safeIndex, phaseList);
-  const percent = getLessonFlowPercent(safeIndex, phaseList);
+  const percent = completed ? 100 : getLessonFlowPercent(safeIndex, phaseList);
   const isFirst = safeIndex <= 0;
   const isLast = safeIndex >= phaseList.length - 1;
   const canAdvance = canAdvanceFromPhase(activePhase, attempts);
@@ -35,9 +35,15 @@ export function useLessonFlowState(phases = [], options = {}) {
     }
     setActiveIndex(target);
     saveDraft(lessonId, { activeIndex: target, attempts });
-    setCompleted(false);
+    // Note: does NOT reset completed — only restart() resets it
     setMessage('');
     options.onPhaseChange?.(phaseList[target], target);
+  }
+
+  function restart() {
+    setCompleted(false);
+    setActiveIndex(0);
+    setMessage('');
   }
 
   function next() {
@@ -95,6 +101,7 @@ export function useLessonFlowState(phases = [], options = {}) {
     message,
     setMessage,
     goTo,
+    restart,
     next,
     previous,
     markAttempt,

@@ -3,7 +3,7 @@ import { PhaseShell } from '../phases/PhaseShell.jsx';
 import { AttemptField } from '../phases/AttemptField.jsx';
 import { ChecklistField } from '../phases/ChecklistField.jsx';
 import { ListPhase } from '../phases/ListPhase.jsx';
-import { clean, mergeLists, noteOf, textOf } from '../text/normalize.js';
+import { clean, mergeLists, textOf } from '../text/normalize.js';
 
 function TextBody({ phase }) {
   return <PhaseShell eyebrow={phase.eyebrow || 'Texto'} title={phase.bodyTitle || phase.title} instruction={phase.instruction}><pre className="lesson-phase-model-text">{phase.text}</pre></PhaseShell>;
@@ -34,7 +34,6 @@ function buildPhases(lesson = {}) {
   const draft = lesson.draftTask || mergeLists(lesson.draftTasks)[0] || { prompt: 'Escreva seu rascunho.' };
   const checklist = mergeLists(lesson.revisionChecklist, lesson.writingChecklist, lesson.checklist, lesson.criteria, lesson.evaluationCriteria);
   const finalTask = lesson.finalVersionTask || lesson.revisionTask || mergeLists(lesson.finalTasks)[0] || { prompt: 'Reescreva sua versão melhorada.' };
-  const feedback = mergeLists(lesson.feedbackPreparation);
   const phases = [];
 
   pushText(phases, 'writing-model', 'Modelo', 'Modelo', model, 'Leia o modelo antes de escrever.', 'Modelo');
@@ -46,7 +45,7 @@ function buildPhases(lesson = {}) {
   pushDraft(phases, 'writing-draft', 'Rascunho', 'Rascunho', draft, 20, 'Escreva seu rascunho.');
   phases.push({ id: 'writing-checklist', title: 'Checklist de revisão', shortTitle: 'Checklist', description: 'Revise antes da versão final.', requiresAttempt: true, blockedMessage: 'Marque os critérios antes de avançar.', component: ChecklistBody, items: checklist.length ? checklist : ['Tem começo, meio e fim.', 'Usei estruturas da aula.', 'Usei palavras novas.', 'Reli procurando erros.'] });
   pushDraft(phases, 'writing-final', 'Versão final', 'Final', finalTask, 20, 'Reescreva sua versão melhorada.');
-  pushList(phases, 'writing-feedback-prep', 'Preparação para feedback', 'Feedback', feedback, 'Use estes critérios para avaliar sua versão final.', 'Feedback');
+  // "Preparação para feedback" removida: fase passiva substituída pela revisão adaptativa no LessonCompletionCard
   return phases;
 }
 

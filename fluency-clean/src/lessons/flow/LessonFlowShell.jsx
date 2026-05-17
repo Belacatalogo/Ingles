@@ -25,6 +25,13 @@ function buildAnswerMap(attempts) {
   return answers;
 }
 
+function stableLessonId(lesson) {
+  return lesson?.id
+    || lesson?.generationMeta?.id
+    || (lesson?.title ? `${lesson.type || 'lesson'}-${lesson.title}-${lesson.level || 'A1'}` : '')
+    || '';
+}
+
 export function LessonFlowShell({ lesson, phases = [], onPhaseChange, onComplete, onNavigate, children }) {
   const shellRef = useRef(null);
   const didMountRef = useRef(false);
@@ -43,28 +50,34 @@ export function LessonFlowShell({ lesson, phases = [], onPhaseChange, onComplete
       });
       window.dispatchEvent(new Event('fluency:lesson-updated'));
       onComplete?.({ phases: phaseList, attempts, scored, flowErrors });
-    } catch {
+    } catch (err) {
+      console.warn('[Fluency] handleComplete falhou:', err);
       // fail-safe: nunca bloquear conclusão de aula
       onComplete?.({ phases: phaseList, attempts });
     }
   }
 
-  const lessonId = lesson?.id || lesson?.generationMeta?.id || '';
+  const lessonId = stableLessonId(lesson);
   const flow = useLessonFlowState(phases, { onPhaseChange, onComplete: handleComplete, lessonId });
 
+  // Scroll to top of shell when advancing to a new phase
   useEffect(() => {
     if (!didMountRef.current) {
       didMountRef.current = true;
       return;
     }
     window.requestAnimationFrame(() => {
-      shellRef.current?.querySelector('.lesson-flow-phase-card')?.scrollIntoView({
-        block: 'start',
-        inline: 'nearest',
-        behavior: 'auto',
-      });
+      shellRef.current?.scrollIntoView({ block: 'start', inline: 'nearest', behavior: 'auto' });
     });
   }, [flow.activeIndex]);
+
+  // Scroll to top of shell when lesson completes so the card is immediately visible
+  useEffect(() => {
+    if (!flow.completed) return;
+    window.requestAnimationFrame(() => {
+      shellRef.current?.scrollIntoView({ block: 'start', inline: 'nearest', behavior: 'smooth' });
+    });
+  }, [flow.completed]);
 
   if (!flow.phases.length) {
     return (
@@ -78,23 +91,29 @@ export function LessonFlowShell({ lesson, phases = [], onPhaseChange, onComplete
     <article className="lesson-flow-shell" ref={shellRef}>
       <LessonFocusHeader lesson={lesson} phase={flow.activePhase} percent={flow.percent} />
       <div className="lesson-flow-progress-line"><span style={{ width: `${flow.percent}%` }} /></div>
-      <LessonPhaseStepper
-        phases={flow.phases}
-        activeIndex={flow.activeIndex}
-        visitedPhaseIds={flow.visitedPhaseIds}
-        canGoForward={flow.canAdvance}
-        onSelect={flow.goTo}
-      />
-      {children ? children(flow) : <LessonPhaseCard phase={flow.activePhase} flow={flow} lesson={lesson} />}
+
       {flow.completed ? (
+        // On completion: show only the completion card; stepper and phase card are hidden
         <LessonCompletionCard
           phases={flow.phases}
           attempts={flow.attempts}
           lesson={lesson}
-          onRestart={() => flow.goTo(0)}
+          onRestart={flow.restart}
           onNavigate={onNavigate}
         />
-      ) : null}
+      ) : (
+        <>
+          <LessonPhaseStepper
+            phases={flow.phases}
+            activeIndex={flow.activeIndex}
+            visitedPhaseIds={flow.visitedPhaseIds}
+            canGoForward={flow.canAdvance}
+            onSelect={flow.goTo}
+          />
+          {children ? children(flow) : <LessonPhaseCard phase={flow.activePhase} flow={flow} lesson={lesson} />}
+        </>
+      )}
+
       <LessonActionFooter flow={flow} />
     </article>
   );

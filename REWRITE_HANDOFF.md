@@ -402,6 +402,24 @@ Fallback local garantido.
 
 ---
 
+## HOTFIX — Conclusão de aula pós IA-5/IA-6 (2026-05-17)
+
+Bug: No iPhone, após concluir a aula, a UI parecia voltar ao começo e não registrar a conclusão.
+Causa 1: `goTo()` chamava `setCompleted(false)` — clicar no stepper após conclusão resetava o card de conclusão.
+Causa 2: `LessonCompletionCard` era renderizado abaixo da última fase, fora da viewport no mobile.
+Causa 3: `WritingLessonFlow` tinha fase passiva "Preparação para feedback" como última etapa.
+
+Fixes:
+- `useLessonFlowState.js`: `goTo` não reseta mais `completed`; nova função `restart()` explícita; `percent = 100` quando completed
+- `LessonFlowShell.jsx`: exibição exclusiva (completion card substitui stepper+fase); scroll automático ao completar; `stableLessonId`; logging em handleComplete
+- `WritingLessonFlow.jsx`: `writing-feedback-prep` removido do flow
+
+Arquivos: `useLessonFlowState.js`, `LessonFlowShell.jsx`, `WritingLessonFlow.jsx`
+Documento: `fluency-clean/docs/HOTFIX-IA-5-6-LESSON-COMPLETION-FEEDBACK-FLOW.md`
+Build: ✅ 2533 módulos, sem erros.
+
+---
+
 ## ✅ BLOCO IA-5 — Revisão adaptativa real com erros do aluno (2026-05-17)
 
 Serviço modular de revisão adaptativa baseado em erros reais das aulas.
