@@ -52,11 +52,19 @@ function containsKeyword(value = '', keyword = '') {
   });
 }
 
-function buildFeedback({ value, minWords, expected, requiredKeywords }) {
+function isGuidedSubstitution(item = {}) {
+  const instruction = normalize(`${item.instruction || ''} ${item.prompt || ''} ${item.question || ''} ${item.title || ''}`);
+  return /\b(troque|substitua|mude|replace|change)\b/.test(instruction);
+}
+
+function buildFeedback({ value, minWords, expected, requiredKeywords, item }) {
   const words = wordCount(value);
-  const missingKeywords = requiredKeywords.filter((kw) => !containsKeyword(value, kw));
-  const looksVague = words < Math.max(minWords + 1, 5)
-    || VAGUE_PATTERNS.some((p) => p.test(clean(value)));
+  const guidedSubstitution = isGuidedSubstitution(item);
+  const missingKeywords = guidedSubstitution ? [] : requiredKeywords.filter((kw) => !containsKeyword(value, kw));
+  const looksVague = !guidedSubstitution && (
+    words < Math.max(minWords + 1, 5)
+    || VAGUE_PATTERNS.some((p) => p.test(clean(value)))
+  );
 
   if (expected && isCorrect(value, expected)) {
     return { status: 'ok', title: 'Resposta correta!', detail: 'Sua resposta bate com o modelo esperado.' };
@@ -105,7 +113,7 @@ export function AttemptField({
   const attempted = Boolean(currentAttempt);
   const words = wordCount(value);
   const enoughWords = words >= minWords;
-  const liveFeedback = buildFeedback({ value, minWords, expected, requiredKeywords });
+  const liveFeedback = buildFeedback({ value, minWords, expected, requiredKeywords, item });
   const feedback = attempted && currentAttempt && typeof currentAttempt === 'object' && currentAttempt.feedback
     ? currentAttempt.feedback
     : liveFeedback;
