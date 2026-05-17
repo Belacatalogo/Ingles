@@ -357,6 +357,40 @@ Documento completo: `fluency-clean/docs/BLOCO-FIGMA-UI-PREMIUM-POLISH-1-CONCLUID
 
 ---
 
+## ✅ BLOCO FIGMA-POLISH-SAFE-1 — Tokens Figma-inspired aplicados (2026-05-17)
+
+CSS-only. Figma MCP não disponível — tokens aplicados diretamente do prompt do usuário.
+
+Tokens atualizados em `src/styles/index.css` `:root`:
+- `--bg`: `#060d1f` → `#050913`
+- `--panel`: `rgba(15,23,42,0.74)` → `rgba(12,20,40,0.84)`
+- `--line`: `rgba(148,163,184,0.18)` → `rgba(34,48,79,0.85)` (stroke navy)
+- `--muted`: `#9fb0c8` → `#A4AFCA`
+- `--text`: `#e8eff8` → `#F5F7FF`
+- `--blue`: `#5b9cf6` → `#68A8FF`
+- `--violet`: `#a78bfa` → `#A27BFF`
+- `--green`: `#34d399` → `#62DFA5`
+- `--amber`: `#fbbf24` → `#F7C66B`
+- Glows reduzidos: `--shadow-btn` e `--shadow-glow`
+
+Body gradient: base atualizada para `#050913`; glows reduzidos de .22 → .14.
+Input/textarea focus ring: rgba atualizada para novo azul (104,168,255).
+`premium-polish.css`: todos os rgba do azul e violeta atualizados; glows reduzidos.
+
+Build: ✅ 2533 módulos, sem erros.
+Playwright: ✅ 54/54.
+
+Confirmação:
+```
+Branch: main. Sem branch nova. Sem PR.
+Não alterou lógica. Não gerou aulas novas.
+Não ativou Firebase/Azure/Gemini. Apenas CSS.
+```
+
+Documento completo: `fluency-clean/docs/BLOCO-FIGMA-POLISH-SAFE-1-CONCLUIDO.md`
+
+---
+
 ## ✅ BLOCO COMPLETION-UX-1 — Tela de conclusão, progresso e prática extra (2026-05-17)
 
 Melhoria da experiência pós-conclusão de aula.
