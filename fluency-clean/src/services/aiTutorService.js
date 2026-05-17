@@ -96,3 +96,29 @@ export async function buildSmallReinforcementWithTutor({ lesson, request = '', f
 export async function evaluateSpeakingWithTutor({ lesson, spokenText = '', referenceText = '', prompt = '', mode = '', azureScores = null, fetcher = fetch } = {}) {
   return askAiTutor({ lesson, action: AI_TUTOR_ALLOWED_ACTIONS.evaluateSpeaking, studentInput: spokenText, referenceText, prompt, mode, azureScores, fetcher });
 }
+
+export async function evaluateReadingWithTutor({ lesson, studentText = '', prompt = '', referenceText = '', expectedAnswer = '', fetcher = fetch } = {}) {
+  const sourceText = referenceText
+    || clean(lesson?.mainText || lesson?.text || lesson?.readingText || lesson?.article?.text || '');
+  return askAiTutor({
+    lesson,
+    action: AI_TUTOR_ALLOWED_ACTIONS.evaluateReadingAnswer,
+    studentInput: studentText,
+    prompt,
+    referenceText: sourceText.slice(0, 2000),
+    fetcher,
+  });
+}
+
+export async function evaluateListeningWithTutor({ lesson, studentText = '', prompt = '', referenceText = '', expectedAnswer = '', fetcher = fetch } = {}) {
+  const sourceTranscript = referenceText
+    || clean(lesson?.transcript || lesson?.audioScript || lesson?.script || '');
+  return askAiTutor({
+    lesson,
+    action: AI_TUTOR_ALLOWED_ACTIONS.evaluateListeningAnswer,
+    studentInput: studentText,
+    prompt,
+    referenceText: sourceTranscript.slice(0, 2000),
+    fetcher,
+  });
+}

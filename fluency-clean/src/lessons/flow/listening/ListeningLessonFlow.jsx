@@ -17,7 +17,7 @@ function TextBody({ phase }) {
   return <PhaseShell eyebrow={phase.eyebrow || 'Texto'} title={phase.bodyTitle || phase.title} instruction={phase.instruction}><pre className="lesson-phase-reading-text">{phase.text}</pre></PhaseShell>;
 }
 function QuizBody({ phase, flow }) { return <ChoiceField phase={phase} flow={flow} item={phase.item} />; }
-function AttemptBody({ phase, flow, lesson }) { return <AttemptField phase={phase} flow={flow} item={phase.item} multiline minWords={phase.minWords || 3} lesson={lesson} />; }
+function AttemptBody({ phase, flow, lesson }) { return <AttemptField phase={phase} flow={flow} item={phase.item} multiline minWords={phase.minWords || 3} lesson={lesson} pillar="listening" />; }
 function ListBody({ phase }) { return <ListPhase phase={phase} />; }
 function AudioBody({ phase, flow }) { return <AudioListenField phase={phase} flow={flow} />; }
 

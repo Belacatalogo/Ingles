@@ -8,7 +8,7 @@ import { clean, mergeLists, noteOf, safeArray, textOf } from '../text/normalize.
 function ObjectiveBody({ phase }) { return <PhaseShell eyebrow="Objetivo" title="Antes de ler" instruction={phase.instruction} />; }
 function ListBody({ phase }) { return <ListPhase phase={phase} />; }
 function TextBody({ phase }) { return <PhaseShell eyebrow={phase.eyebrow || 'Texto principal'} title={phase.bodyTitle || phase.title} instruction={phase.instruction}><pre className="lesson-phase-reading-text">{phase.text}</pre></PhaseShell>; }
-function AttemptBody({ phase, flow, lesson }) { return <AttemptField phase={phase} flow={flow} item={phase.item} multiline minWords={phase.minWords || 3} lesson={lesson} />; }
+function AttemptBody({ phase, flow, lesson }) { return <AttemptField phase={phase} flow={flow} item={phase.item} multiline minWords={phase.minWords || 3} lesson={lesson} pillar="reading" />; }
 function QuizBody({ phase, flow }) { return <ChoiceField phase={phase} flow={flow} item={phase.item} />; }
 function ReviewBody({ phase }) { return <ListPhase phase={phase} />; }
 

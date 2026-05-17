@@ -2,6 +2,8 @@ export const AI_TUTOR_ALLOWED_ACTIONS = Object.freeze({
   explainCurrentLesson: 'explain-current-lesson',
   correctWriting: 'correct-writing',
   evaluateSpeaking: 'evaluate-speaking',
+  evaluateReadingAnswer: 'evaluate-reading-answer',
+  evaluateListeningAnswer: 'evaluate-listening-answer',
   smallReinforcement: 'small-reinforcement',
   adaptiveReview: 'adaptive-review',
 });
@@ -17,6 +19,8 @@ const ACTION_LABELS = Object.freeze({
   [AI_TUTOR_ALLOWED_ACTIONS.explainCurrentLesson]: 'Explicar dúvida da aula atual',
   [AI_TUTOR_ALLOWED_ACTIONS.correctWriting]: 'Corrigir Writing',
   [AI_TUTOR_ALLOWED_ACTIONS.evaluateSpeaking]: 'Avaliar Speaking',
+  [AI_TUTOR_ALLOWED_ACTIONS.evaluateReadingAnswer]: 'Avaliar resposta de Reading',
+  [AI_TUTOR_ALLOWED_ACTIONS.evaluateListeningAnswer]: 'Avaliar resposta de Listening',
   [AI_TUTOR_ALLOWED_ACTIONS.smallReinforcement]: 'Gerar reforço pequeno da aula atual',
   [AI_TUTOR_ALLOWED_ACTIONS.adaptiveReview]: 'Criar revisão adaptativa por erros',
 });
@@ -80,6 +84,33 @@ export function buildAiTutorContext({ lesson, action, studentInput = '', errors 
 export function buildAiTutorPrompt(context) {
   assertAiTutorActionAllowed(context?.action);
   const isSpeakingEval = context.action === AI_TUTOR_ALLOWED_ACTIONS.evaluateSpeaking;
+  const isReadingEval = context.action === AI_TUTOR_ALLOWED_ACTIONS.evaluateReadingAnswer;
+  const isListeningEval = context.action === AI_TUTOR_ALLOWED_ACTIONS.evaluateListeningAnswer;
+
+  const readingLines = isReadingEval ? [
+    context.referenceText ? `Texto de referência (base da avaliação):\n${context.referenceText}` : '',
+    context.prompt ? `Pergunta feita ao aluno: "${context.prompt}"` : '',
+    '',
+    'Avalie a resposta do aluno em português:',
+    '1. A resposta está baseada no texto? (1 frase direta).',
+    '2. O que está incorreto ou incompleto? (1 frase com evidência do texto).',
+    '3. Mostre como seria uma resposta melhor (cite o texto, não invente).',
+    '4. Sugira 1 micro-treino de leitura curto.',
+    'Não revele o texto inteiro como resposta. Não invente informação fora do texto.',
+  ].filter(Boolean) : [];
+
+  const listeningLines = isListeningEval ? [
+    context.referenceText ? `Transcript/contexto do áudio:\n${context.referenceText}` : '',
+    context.prompt ? `Pergunta feita ao aluno: "${context.prompt}"` : '',
+    '',
+    'Avalie a resposta do aluno em português:',
+    '1. O aluno entendeu o áudio corretamente? (1 frase direta).',
+    '2. O que está errado ou incompleto? (com referência ao áudio).',
+    '3. Mostre como seria uma resposta correta (cite o áudio, não invente).',
+    '4. Sugira 1 micro-treino de escuta curto.',
+    'Não revele o transcript completo como resposta. Não invente informação.',
+  ].filter(Boolean) : [];
+
   const speakingLines = isSpeakingEval ? [
     context.referenceText ? `Frase de referência: "${context.referenceText}"` : '',
     context.prompt ? `Prompt da conversa: "${context.prompt}"` : '',
@@ -116,6 +147,8 @@ export function buildAiTutorPrompt(context) {
     context.errors?.length ? 'Erros recentes do aluno:' : '',
     context.errors?.length ? JSON.stringify(context.errors, null, 2) : '',
     ...speakingLines,
+    ...readingLines,
+    ...listeningLines,
     '',
     'Responda de forma curta, útil e prática. Não crie uma nova aula.',
   ].filter(Boolean).join('\n');

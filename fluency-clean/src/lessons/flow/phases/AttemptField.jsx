@@ -104,7 +104,7 @@ function getAttemptValue(attempt) {
 
 export function AttemptField({
   phase, flow, item = {}, multiline = false, minWords = 1,
-  placeholder = 'Sua resposta...', instruction, eyebrow, lesson = null,
+  placeholder = 'Sua resposta...', instruction, eyebrow, lesson = null, pillar = 'writing',
 }) {
   const currentAttempt = flow?.attempts?.[phase.id];
   const [value, setValue] = useState(() => getAttemptValue(currentAttempt));
@@ -145,9 +145,10 @@ export function AttemptField({
     try {
       const result = await analyzeStudentAnswer({
         lesson,
-        pillar: 'writing',
-        skill: clean(item.title || item.prompt || item.question || 'escrita'),
+        pillar,
+        skill: clean(item.title || item.prompt || item.question || pillar),
         studentText: value,
+        prompt: clean(item.prompt || item.question || item.title || ''),
         expectedAnswer: expected,
         allowAi: true,
       });

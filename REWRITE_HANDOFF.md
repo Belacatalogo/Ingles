@@ -359,9 +359,52 @@ Documento completo: `fluency-clean/docs/BLOCO-IA-3B-SPEAKINGSCREEN-HYBRID-CONCLU
 
 ---
 
+## ✅ BLOCO IA-4 — Reading/Listening AI feedback em respostas abertas (2026-05-17)
+
+IA Tutor conectado às fases de resposta aberta de Reading e Listening.
+
+Descoberta-chave: o botão "Analisar com IA" já existia (implementado em IA-2 via `AttemptField` multiline), mas roteava como `pillar: 'writing'` (hardcoded) e o serviço não tinha camada de IA para reading/listening.
+
+Correções aplicadas:
+- `pillar` estava hardcoded como `'writing'` em `handleAiAnalyze` — corrigido para usar a prop `pillar`.
+- Prop `pillar = 'writing'` adicionada a `AttemptField` (default preserva todos os callers existentes).
+- Campo `prompt` (pergunta da questão) agora enviado para `analyzeStudentAnswer`.
+- Camadas de IA para `pillar: 'reading'` e `pillar: 'listening'` adicionadas ao serviço.
+- `evaluateReadingWithTutor` usa `lesson.mainText` como base de avaliação.
+- `evaluateListeningWithTutor` usa `lesson.transcript` como base de avaliação.
+- Transcript não exposto antes da tentativa — botão só aparece após `attempted === true`.
+- Fallback local garantido quando Gemini falha ou não há chave.
+
+Arquivos alterados:
+- `src/services/aiTutorPolicy.js` — 2 novas actions (`evaluateReadingAnswer`, `evaluateListeningAnswer`), labels e blocos de prompt
+- `src/services/aiTutorService.js` — `evaluateReadingWithTutor()`, `evaluateListeningWithTutor()`
+- `src/services/studentAnswerAnalysis/studentAnswerAnalysisService.js` — camadas de IA para reading e listening, import atualizado
+- `src/lessons/flow/phases/AttemptField.jsx` — prop `pillar`, `handleAiAnalyze` corrigido, `prompt` enviado
+- `src/lessons/flow/reading/ReadingLessonFlowV2.jsx` — `pillar="reading"` em `AttemptBody`
+- `src/lessons/flow/listening/ListeningLessonFlow.jsx` — `pillar="listening"` em `AttemptBody`
+- `fluency-clean/docs/BLOCO-IA-4-READING-LISTENING-AI-CONCLUIDO.md` — documentação completa
+
+Build: ✅ 2528 módulos, sem erros.
+Documento completo: `fluency-clean/docs/BLOCO-IA-4-READING-LISTENING-AI-CONCLUIDO.md`
+
+Confirmação:
+```
+Branch: main
+Sem branch nova.
+Sem PR.
+Sem merge.
+Sem rebase.
+Sem force push.
+Transcript não exposto antes da tentativa.
+Gabarito não revelado antes da tentativa.
+Fallback local garantido.
+```
+
+---
+
 ## Próximos blocos IA
 
-- `BLOCO IA-4` — ⏳ Reading/Listening respostas abertas
+- `BLOCO IA-4` — ✅ Reading/Listening respostas abertas (concluído — 2026-05-17)
 - `BLOCO IA-5` — ⏳ Revisão adaptativa real com flowErrors
 - `BLOCO IA-6` — ⏳ StudentAnswerFeedbackCard componente unificado
 
@@ -393,7 +436,7 @@ Blocos de IA subsequentes:
 - `BLOCO IA-2` — ✅ Writing integração completa (concluído — commit 6662a06)
 - `BLOCO IA-3` — ✅ Speaking híbrido em SpeakField (concluído — commit 57e0a3e)
 - `BLOCO IA-3B` — ✅ SpeakingScreen híbrido Azure + IA Tutor (concluído)
-- `BLOCO IA-4` — ⏳ Reading/Listening respostas abertas
+- `BLOCO IA-4` — ✅ Reading/Listening respostas abertas (concluído)
 - `BLOCO IA-5` — ⏳ Revisão adaptativa real com flowErrors
 - `BLOCO IA-6` — ⏳ StudentAnswerFeedbackCard componente unificado
 

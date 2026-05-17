@@ -1,4 +1,4 @@
-import { correctWritingWithTutor, evaluateSpeakingWithTutor } from '../aiTutorService.js';
+import { correctWritingWithTutor, evaluateSpeakingWithTutor, evaluateReadingWithTutor, evaluateListeningWithTutor } from '../aiTutorService.js';
 import { getGeneralAiKeys } from '../aiKeys.js';
 import { ANALYSIS_STATUS, ANALYSIS_SOURCE } from './studentAnswerAnalysisTypes.js';
 import {
@@ -137,6 +137,54 @@ export async function analyzeStudentAnswer({
     return localResult;
   }
 
-  // Reading/Listening/Grammar/Vocabulary: IA-4 (future) will add AI layer.
+  // Reading: evaluate if answer is grounded in the lesson text
+  if (pillar === 'reading') {
+    try {
+      const tutorResult = await evaluateReadingWithTutor({
+        lesson: lesson || { title: skill || 'Leitura', pillar: 'reading', level },
+        studentText,
+        prompt,
+        referenceText,
+        expectedAnswer,
+      });
+      if (tutorResult?.status === 'success' && tutorResult.text) {
+        return {
+          ...localResult,
+          status: ANALYSIS_STATUS.success,
+          feedbackPt: tutorResult.text,
+          source: ANALYSIS_SOURCE.gemini,
+        };
+      }
+    } catch {
+      // AI failed — fall through to local result
+    }
+    return localResult;
+  }
+
+  // Listening: evaluate if answer reflects what was heard
+  if (pillar === 'listening') {
+    try {
+      const tutorResult = await evaluateListeningWithTutor({
+        lesson: lesson || { title: skill || 'Escuta', pillar: 'listening', level },
+        studentText,
+        prompt,
+        referenceText,
+        expectedAnswer,
+      });
+      if (tutorResult?.status === 'success' && tutorResult.text) {
+        return {
+          ...localResult,
+          status: ANALYSIS_STATUS.success,
+          feedbackPt: tutorResult.text,
+          source: ANALYSIS_SOURCE.gemini,
+        };
+      }
+    } catch {
+      // AI failed — fall through to local result
+    }
+    return localResult;
+  }
+
+  // Grammar/Vocabulary: IA-5 (future) will add AI layer.
   return localResult;
 }
