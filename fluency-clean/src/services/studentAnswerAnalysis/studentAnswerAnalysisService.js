@@ -7,6 +7,23 @@ import {
   evaluateGenericLocally,
 } from './localAnswerRubrics.js';
 
+const CORRECTED_TEXT_MARKERS = [
+  /\*{0,2}vers[aã]o\s+corrigida\s*\*{0,2}\s*[:：]\s*(.+)/im,
+  /\*{0,2}texto\s+corrigido\s*\*{0,2}\s*[:：]\s*(.+)/im,
+  /\*{0,2}corre[cç][aã]o\s*\*{0,2}\s*[:：]\s*(.+)/im,
+  /\*{0,2}vers[aã]o\s+melhorada\s*\*{0,2}\s*[:：]\s*(.+)/im,
+  /\*{0,2}frase\s+corrigida\s*\*{0,2}\s*[:：]\s*(.+)/im,
+  /\*{0,2}sugest[aã]o\s+de\s+texto\s*\*{0,2}\s*[:：]\s*(.+)/im,
+];
+
+function extractCorrectedText(rawText = '') {
+  for (const pattern of CORRECTED_TEXT_MARKERS) {
+    const match = String(rawText).match(pattern);
+    if (match) return match[1].replace(/\*+/g, '').replace(/`/g, '').trim();
+  }
+  return '';
+}
+
 /**
  * Central entry point for analysing a student's answer.
  *
@@ -71,6 +88,7 @@ export async function analyzeStudentAnswer({
           ...localResult,
           status: ANALYSIS_STATUS.success,
           feedbackPt: tutorResult.text,
+          correctedText: extractCorrectedText(tutorResult.text),
           source: ANALYSIS_SOURCE.gemini,
         };
       }

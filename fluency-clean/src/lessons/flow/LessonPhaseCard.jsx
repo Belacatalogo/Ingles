@@ -1,4 +1,4 @@
-export function LessonPhaseCard({ phase, flow }) {
+export function LessonPhaseCard({ phase, flow, lesson }) {
   if (!phase) return null;
   const Body = phase.component || null;
   const isDone = Boolean(flow && flow.attempts && flow.attempts[phase.id]);
@@ -17,7 +17,7 @@ export function LessonPhaseCard({ phase, flow }) {
         </div>
       </div>
       <div className="lesson-flow-phase-body">
-        {Body ? <Body phase={phase} flow={flow} /> : <p className="lesson-flow-muted">Esta etapa ainda não tem conteúdo conectado.</p>}
+        {Body ? <Body phase={phase} flow={flow} lesson={lesson} /> : <p className="lesson-flow-muted">Esta etapa ainda não tem conteúdo conectado.</p>}
       </div>
     </section>
   );

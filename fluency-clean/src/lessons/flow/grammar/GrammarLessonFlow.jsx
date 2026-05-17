@@ -18,7 +18,7 @@ function ExamplesBody({ phase }) {
     </PhaseShell>
   );
 }
-function AttemptBody({ phase, flow }) { return <AttemptField phase={phase} flow={flow} item={phase.item} multiline={phase.multiline} minWords={phase.minWords || 1} />; }
+function AttemptBody({ phase, flow, lesson }) { return <AttemptField phase={phase} flow={flow} item={phase.item} multiline={phase.multiline} minWords={phase.minWords || 1} lesson={lesson} />; }
 function QuizBody({ phase, flow }) { return <ChoiceField phase={phase} flow={flow} item={phase.item} />; }
 
 function pushList(phases, id, title, shortTitle, items, instruction, eyebrow = 'Estudo') {

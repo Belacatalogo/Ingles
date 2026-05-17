@@ -9,7 +9,7 @@ function TextBody({ phase }) {
   return <PhaseShell eyebrow={phase.eyebrow || 'Texto'} title={phase.bodyTitle || phase.title} instruction={phase.instruction}><pre className="lesson-phase-model-text">{phase.text}</pre></PhaseShell>;
 }
 function ListBody({ phase }) { return <ListPhase phase={phase} />; }
-function DraftBody({ phase, flow }) { return <AttemptField phase={phase} flow={flow} item={phase.item} multiline minWords={phase.minWords || 20} placeholder="Escreva aqui..." />; }
+function DraftBody({ phase, flow, lesson }) { return <AttemptField phase={phase} flow={flow} item={phase.item} multiline minWords={phase.minWords || 20} placeholder="Escreva aqui..." lesson={lesson} />; }
 function ChecklistBody({ phase, flow }) { return <ChecklistField phase={phase} flow={flow} items={phase.items} />; }
 
 function pushText(phases, id, title, shortTitle, text, instruction, eyebrow = 'Modelo') {
