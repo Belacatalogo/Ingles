@@ -1022,3 +1022,28 @@ Próximo: BLOCO 20E — Validação B1.1 Parte 2
 | **Total** | **9** |
 
 Próximo: BLOCO 21A — B1.2 Past experiences and storytelling — Parte 1
+
+---
+
+## ✅ BLOCO 21A — B1.2 Past Experiences — Parte 1 (2026-05-17)
+
+Arquivo criado: `fluency-clean/src/content/curriculum/levels/B1/deepB1PastExperiencesPart1.js`
+Arquivo alterado: `fluency-clean/src/content/curriculum/staticLessonContent.js`
+
+Aulas criadas:
+- `B1-GRAMMAR-003` — Past Continuous (was/were+-ing, background, when/while)
+- `B1-GRAMMAR-004` — Past Simple vs Past Continuous (timeline, interrupted action)
+- `B1-READING-002` — A longer personal experience story (~400 palavras, "The day I got lost in Tokyo")
+- `B1-SPEAKING-002` — Tell a story with sequence and background (90-120s recording)
+
+Total B1 após este bloco: **13 aulas**
+Build: ✅ 2536 módulos, sem erros.
+
+Confirmação:
+```
+Branch: main. Sem branch nova. Sem PR. Sem merge. Sem rebase. Sem force push.
+```
+
+Documento: `fluency-clean/docs/BLOCO-21A-B1-2-PAST-EXPERIENCES-PARTE-1-CONCLUIDO.md`
+
+Próximo: BLOCO 21B — Validação B1.2 Past Experiences Parte 1
