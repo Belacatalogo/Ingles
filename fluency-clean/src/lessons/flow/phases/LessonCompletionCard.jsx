@@ -17,7 +17,7 @@ function AdaptiveReviewPanel({ lesson, phases, attempts }) {
       setReview(result);
     } catch {
       setReview({
-        focusSummary: 'Não foi possível gerar a revisão agora. Revise os pontos marcados manualmente.',
+        focusSummary: 'Não foi possível gerar a revisão. Revise os pontos marcados manualmente.',
         errorGroups: [],
         reviewPlan: [],
         nextLessonAdvice: '',
@@ -28,11 +28,9 @@ function AdaptiveReviewPanel({ lesson, phases, attempts }) {
     }
   }
 
-  const isGemini = review?.source === 'gemini';
-
-  return (
-    <div className="lesson-completion-adaptive">
-      {!review ? (
+  if (!review) {
+    return (
+      <div className="lesson-completion-adaptive">
         <button
           type="button"
           className="lesson-completion-adaptive-btn"
@@ -42,43 +40,73 @@ function AdaptiveReviewPanel({ lesson, phases, attempts }) {
           <Sparkles size={13} />
           {loading ? 'Gerando revisão...' : 'Revisão adaptativa da aula'}
         </button>
-      ) : (
-        <div className={`lesson-phase-ai-result${isGemini ? ' gemini' : ''}`}>
-          <div className="lesson-phase-ai-result-header">
-            <Sparkles size={13} />
-            <span>Revisão adaptativa</span>
-            <span className={`lesson-phase-ai-badge${isGemini ? ' gemini' : ''}`}>
-              {isGemini ? 'Gemini' : 'Local'}
-            </span>
-          </div>
-          <p className="lesson-phase-ai-feedback">{review.focusSummary}</p>
-          {review.aiText && isGemini ? (
-            <p className="lesson-phase-ai-feedback" style={{ whiteSpace: 'pre-wrap', marginTop: '6px' }}>
-              {review.aiText}
-            </p>
-          ) : null}
-          {!isGemini && review.errorGroups?.length ? review.errorGroups.map((group) => (
-            <div key={group.pillar} style={{ marginTop: '8px' }}>
-              <p style={{ fontSize: '11px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '.08em', color: '#7b8db8', margin: '0 0 4px' }}>
-                {group.title}
-              </p>
-              {group.microDrills?.length ? (
-                <ul className="lesson-phase-ai-list">
-                  {group.microDrills.map((drill, i) => <li key={i}>{drill}</li>)}
-                </ul>
-              ) : null}
-            </div>
-          )) : null}
-          {review.nextLessonAdvice ? (
-            <p className="lesson-phase-ai-drill">
-              <Lightbulb size={12} /> {review.nextLessonAdvice}
-            </p>
-          ) : null}
-          <button type="button" className="lesson-phase-link" onClick={() => setReview(null)}>
-            <RotateCcw size={11} /> Gerar novamente
-          </button>
+      </div>
+    );
+  }
+
+  const isGemini = review.source === 'gemini';
+  const isHybrid = isGemini && review.errorGroups?.length > 0;
+  const badgeLabel = isHybrid ? 'Híbrido' : (isGemini ? 'Gemini' : 'Local');
+  const badgeClass = isHybrid ? ' hybrid' : (isGemini ? ' gemini' : '');
+
+  const quickDrills = (
+    review.reviewPlan?.flatMap((p) => p.items || []) ||
+    review.errorGroups?.flatMap((g) => g.microDrills || []) ||
+    []
+  ).slice(0, 3);
+
+  return (
+    <div className="lesson-completion-adaptive">
+      <div className={`lesson-review-panel${isGemini ? ' gemini' : ''}`}>
+        <div className="lesson-review-panel-header">
+          <Sparkles size={13} />
+          <span>Revisão adaptativa</span>
+          <span className={`lesson-phase-ai-badge${badgeClass}`}>{badgeLabel}</span>
         </div>
-      )}
+
+        <div className="lesson-review-section">
+          <p className="lesson-review-section-title">Foco principal</p>
+          <p className="lesson-review-focus">{review.focusSummary}</p>
+        </div>
+
+        {review.errorGroups?.length > 0 ? (
+          <div className="lesson-review-section">
+            <p className="lesson-review-section-title">Erros encontrados</p>
+            <ul className="lesson-review-error-list">
+              {review.errorGroups.map((g) => (
+                <li key={g.pillar}>
+                  <span className="lesson-review-error-pillar">{g.title}</span>
+                  {g.issues[0] ? <span className="lesson-review-error-detail"> — {g.issues[0]}</span> : null}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+
+        {isGemini && review.aiText ? (
+          <div className="lesson-review-section">
+            <p className="lesson-review-section-title">Análise</p>
+            <p className="lesson-review-ai-text">{review.aiText}</p>
+          </div>
+        ) : quickDrills.length > 0 ? (
+          <div className="lesson-review-section">
+            <p className="lesson-review-section-title">Treino rápido</p>
+            <ol className="lesson-review-drill-list">
+              {quickDrills.map((drill, i) => <li key={i}>{drill}</li>)}
+            </ol>
+          </div>
+        ) : null}
+
+        {review.nextLessonAdvice && !isGemini ? (
+          <p className="lesson-review-advice">
+            <Lightbulb size={12} /> {review.nextLessonAdvice}
+          </p>
+        ) : null}
+
+        <button type="button" className="lesson-phase-link" onClick={() => setReview(null)}>
+          <RotateCcw size={11} /> Gerar novamente
+        </button>
+      </div>
     </div>
   );
 }

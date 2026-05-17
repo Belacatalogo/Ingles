@@ -27,6 +27,16 @@ const ACTION_LABELS = Object.freeze({
 
 function clean(value) { return String(value ?? '').trim(); }
 function safeArray(value) { return Array.isArray(value) ? value : []; }
+
+function formatErrorsForPrompt(errors) {
+  return errors.slice(0, 10).map((err, i) => {
+    const pillar = clean(err.pillar || err.type || 'geral');
+    const prompt = clean(err.prompt || err.title || '').slice(0, 100);
+    const answer = clean(err.value || err.answer || '').slice(0, 80);
+    const status = err.status === 'missed' ? 'não respondeu' : 'resposta incorreta';
+    return `${i + 1}. [${pillar}]${prompt ? ` "${prompt}"` : ''}${answer ? ` — resposta: "${answer}"` : ''} (${status})`;
+  }).join('\n');
+}
 function getLessonText(lesson) {
   return [
     lesson?.title,
@@ -114,14 +124,16 @@ export function buildAiTutorPrompt(context) {
 
   const adaptiveReviewLines = isAdaptiveReview ? [
     '',
-    'Os erros reais do aluno estão listados acima (campo "Erros recentes do aluno").',
-    'Crie uma revisão adaptativa curta em português com exatamente esta estrutura:',
-    '1. Uma frase de diagnóstico: qual é o foco principal desta revisão.',
-    '2. Os erros mais frequentes agrupados por área (grammar, writing, speaking, reading, listening, vocabulary).',
-    '3. Para cada área: 1 exemplo do erro e como corrigir (máx. 2 frases por área).',
-    '4. Exatamente 3 micro-exercícios práticos, 1 frase cada.',
-    '5. Uma frase de conselho para a próxima aula.',
-    'Máximo 250 palavras. Não crie nova aula. Não invente erros inexistentes. Baseie-se apenas nos erros listados.',
+    'Com base nos erros reais acima, crie uma revisão adaptativa em português com esta estrutura exata:',
+    'Diagnóstico: [1 frase sobre o principal ponto a melhorar]',
+    'Erros por área:',
+    '- [área]: [erro principal] → [como corrigir em 1 frase]',
+    'Treino rápido:',
+    '1. [micro-exercício diretamente ligado a um erro real]',
+    '2. [micro-exercício diretamente ligado a um erro real]',
+    '3. [micro-exercício diretamente ligado a um erro real]',
+    'Próxima aula: [1 frase de conselho]',
+    'Máximo 200 palavras. Não crie nova aula. Baseie-se apenas nos erros listados acima.',
   ] : [];
 
   const speakingLines = isSpeakingEval ? [
@@ -157,8 +169,8 @@ export function buildAiTutorPrompt(context) {
     '',
     context.studentInput ? 'Entrada do aluno (fala/escrita):' : '',
     context.studentInput || '',
-    context.errors?.length ? 'Erros recentes do aluno:' : '',
-    context.errors?.length ? JSON.stringify(context.errors, null, 2) : '',
+    context.errors?.length ? 'Erros reais do aluno nesta aula:' : '',
+    context.errors?.length ? formatErrorsForPrompt(context.errors) : '',
     ...speakingLines,
     ...readingLines,
     ...listeningLines,

@@ -45,6 +45,20 @@ const PILLAR_DRILLS = {
 function clean(value) { return String(value ?? '').trim(); }
 function safeArray(value) { return Array.isArray(value) ? value : []; }
 
+function buildTargetedDrills(group) {
+  const pool = PILLAR_DRILLS[group.pillar] || PILLAR_DRILLS.grammar;
+  const drills = [];
+  if (group.issues[0]) {
+    const topic = group.issues[0].slice(0, 80).replace(/"/g, "'");
+    drills.push(`Revise: "${topic}" — tente uma nova resposta focando na regra que causou o erro.`);
+  } else {
+    drills.push(pool[0]);
+  }
+  drills.push(pool[1] || pool[0]);
+  drills.push(pool[2] || pool[0]);
+  return drills;
+}
+
 function normalizePillar(raw) {
   const p = clean(raw).toLowerCase();
   if (PILLAR_LABELS[p]) return p;
@@ -98,7 +112,7 @@ export function buildLocalAdaptiveReview({ lesson, flowErrors = [], level = 'A1'
       title: PILLAR_LABELS[g.pillar] || g.pillar,
       issues: g.issues,
       examples: g.examples,
-      microDrills: drillPool.slice(0, 2),
+      microDrills: buildTargetedDrills(g),
     };
   });
 
@@ -111,7 +125,7 @@ export function buildLocalAdaptiveReview({ lesson, flowErrors = [], level = 'A1'
   const reviewPlan = groups.slice(0, 3).map((g) => ({
     title: `Revisão — ${PILLAR_LABELS[g.pillar] || g.pillar}`,
     instruction: `${g.count} erro(s) nesta área. Pratique os exercícios abaixo.`,
-    items: (PILLAR_DRILLS[g.pillar] || PILLAR_DRILLS.grammar).slice(0, 2),
+    items: buildTargetedDrills(g).slice(0, 2),
   }));
 
   return {

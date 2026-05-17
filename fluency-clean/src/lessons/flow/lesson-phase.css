@@ -761,6 +761,12 @@
   color: #a78bfa;
 }
 
+.lesson-phase-ai-badge.hybrid {
+  background: linear-gradient(135deg, rgba(91, 156, 246, .18) 0%, rgba(167, 139, 250, .18) 100%);
+  color: #93c5fd;
+  border: 1px solid rgba(167, 139, 250, .22);
+}
+
 .lesson-phase-ai-score {
   margin-left: auto;
   font-size: 11px;

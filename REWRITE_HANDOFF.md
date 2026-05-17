@@ -183,6 +183,23 @@ Funções cobertas:
 
 ---
 
+## ✅ BLOCO REVIEW-POLISH-1 — Revisão adaptativa mais útil e clara (2026-05-17)
+
+Polish da revisão adaptativa pós-aula: erros reais referenciados nos treinos, prompt IA melhorado, UI com seções estruturadas.
+
+Arquivos alterados:
+- `src/services/adaptiveReview/localAdaptiveReview.js` — `buildTargetedDrills` referencia exercício real do erro; 3 drills por grupo
+- `src/services/aiTutorPolicy.js` — `formatErrorsForPrompt` formata erros como bullet legível; `adaptiveReviewLines` com estrutura Diagnóstico/Erros/Treino/Próxima aula
+- `src/lessons/flow/phases/LessonCompletionCard.jsx` — `AdaptiveReviewPanel` reconstruído com seções "Foco principal", "Erros encontrados", "Treino rápido" / "Análise" (Gemini), badge Híbrido
+- `src/lessons/flow/lesson-flow.css` — estilos `.lesson-review-panel`, `.lesson-review-section`, `.lesson-review-error-list`, `.lesson-review-drill-list`, `.lesson-review-ai-text`, ajustes 430px
+- `src/lessons/flow/lesson-phase.css` — badge `.lesson-phase-ai-badge.hybrid`
+
+Build: ✅ 2533 módulos, sem erros.
+
+Documento completo: `fluency-clean/docs/BLOCO-REVIEW-POLISH-1-CONCLUIDO.md`
+
+---
+
 ## ✅ BLOCO COMPLETION-UX-1 — Tela de conclusão, progresso e prática extra (2026-05-17)
 
 Melhoria da experiência pós-conclusão de aula.
