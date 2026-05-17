@@ -13,6 +13,18 @@
   --violet: #a78bfa;
   --green: #34d399;
   --danger: #f87171;
+  --amber: #fbbf24;
+  --teal: #5eead4;
+  --pink: #f472b6;
+  --indigo: #818cf8;
+  --r-xs: 12px;
+  --r-sm: 16px;
+  --r-md: 22px;
+  --r-lg: 26px;
+  --r-pill: 999px;
+  --shadow-card: 0 14px 48px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.04);
+  --shadow-btn: 0 8px 28px rgba(91,156,246,.26), 0 2px 6px rgba(0,0,0,.18);
+  --shadow-glow: 0 0 28px rgba(91,156,246,.22);
 }
 * { box-sizing: border-box; }
 html, body, #root { min-height: 100%; margin: 0; }

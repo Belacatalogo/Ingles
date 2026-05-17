@@ -320,6 +320,43 @@ Documento completo: `fluency-clean/docs/BLOCO-SETTINGS-AI-KEYS-CLEANUP-1-CONCLUI
 
 ---
 
+## ✅ BLOCO FIGMA-UI-PREMIUM-POLISH-1 — Polimento visual premium app-wide (2026-05-17)
+
+CSS-only polish em todas as abas. Novos tokens globais, melhor glass effect nos cards,
+glow nos botões primários, navegação mais vibrante, mobile 430px otimizado.
+
+Arquivos alterados:
+- `src/styles/index.css` — adicionou 10 tokens ao `:root` (--amber, --teal, --pink, --indigo, --r-*, --shadow-*)
+- `src/styles/screens.css` — adicionou import do `premium-polish.css`
+- `src/styles/premium-polish.css` — novo (22 blocos de polish + @media 430px)
+- `e2e/ui-premium-polish-mobile.spec.js` — 9 testes × 2 viewports = 18 instâncias (novo)
+
+Melhorias principais:
+- Cards: gradiente de fundo + inner top highlight
+- Botão primário: sombra glow + inner shimmer
+- Nav ativa: gradiente azul-violeta mais vibrante
+- Progress bars: gradiente azul → violeta
+- Eyebrow: `#7eb8ff` (mais contraste)
+- Mobile 430px: cards 17px padding, botões 50px, h2 adaptativo
+
+Build: ✅ 2534 módulos, sem erros.
+Playwright: ✅ 54/54 (14 smoke + 6 flashcards + 8 masteryGate + 8 settings + 18 polish).
+
+Confirmação:
+```
+Branch: main.
+Sem branch nova.
+Sem PR.
+Não alterou lógica.
+Não gerou aulas novas.
+Não ativou Firebase/Azure/Gemini.
+Apenas CSS.
+```
+
+Documento completo: `fluency-clean/docs/BLOCO-FIGMA-UI-PREMIUM-POLISH-1-CONCLUIDO.md`
+
+---
+
 ## ✅ BLOCO COMPLETION-UX-1 — Tela de conclusão, progresso e prática extra (2026-05-17)
 
 Melhoria da experiência pós-conclusão de aula.

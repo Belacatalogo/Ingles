@@ -1,0 +1,231 @@
+/* ═══ BLOCO FIGMA-UI-PREMIUM-POLISH-1 ══════════════════════════════════
+   App-wide premium visual polish.
+   CSS-only — no JSX/logic changes.
+   Design reference: premium dark mobile app design principles.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── 1. Cards — richer glass + inner top highlight ───────────────────── */
+.card {
+  background: linear-gradient(160deg, rgba(18,26,52,.84) 0%, rgba(11,17,38,.74) 100%);
+  border-color: rgba(147,160,213,.15);
+  box-shadow: var(--shadow-card);
+}
+
+/* ── 2. Hero card — richer gradient + blue edge ──────────────────────── */
+.hero-card {
+  background: linear-gradient(135deg, rgba(16,24,50,.97) 0%, rgba(26,36,66,.72) 100%);
+  border-color: rgba(91,156,246,.20);
+  box-shadow: 0 26px 90px rgba(0,0,0,.32), inset 0 1px 0 rgba(255,255,255,.04);
+}
+
+/* ── 3. Primary button — glow + inner highlight shimmer ──────────────── */
+.primary-button {
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-btn);
+  letter-spacing: -0.015em;
+}
+
+.primary-button::after {
+  content: '';
+  position: absolute;
+  inset: 1px;
+  border-radius: inherit;
+  background: linear-gradient(180deg, rgba(255,255,255,.14), transparent 55%);
+  pointer-events: none;
+}
+
+/* ── 4. Secondary button — cleaner border ───────────────────────────── */
+.secondary-button {
+  border-color: rgba(147,160,213,.20);
+}
+
+/* ── 5. Section header — consistent spacing ─────────────────────────── */
+.section-header {
+  margin: 8px 0 4px;
+}
+
+/* ── 6. Eyebrow — better blue-white contrast ─────────────────────────── */
+.eyebrow {
+  color: #7eb8ff;
+}
+
+/* ── 7. Stat cards — stronger radial orb ────────────────────────────── */
+.stat-card::after {
+  background: radial-gradient(circle, rgba(91,156,246,.18) 0%, transparent 72%);
+  width: 108px;
+  height: 108px;
+}
+
+/* ── 8. Level nodes — glow on active ────────────────────────────────── */
+.level-node.active {
+  background: linear-gradient(135deg, rgba(91,156,246,.22), rgba(167,139,250,.14));
+  border-color: rgba(91,156,246,.50);
+  box-shadow: 0 4px 18px rgba(91,156,246,.18);
+}
+
+/* ── 9. Option buttons — cleaner interactive states ─────────────────── */
+.option-button {
+  border-radius: var(--r-sm);
+  transition: border-color .15s ease, background .15s ease;
+}
+
+/* ── 10. Routine / settings rows — subtle depth ─────────────────────── */
+.routine-item,
+.settings-row,
+.flashcard-row {
+  background: rgba(4,8,26,.30);
+  border-color: rgba(147,160,213,.12);
+}
+
+/* ── 11. Metric grid cells — deeper ─────────────────────────────────── */
+.metric-grid > div {
+  background: rgba(4,8,26,.36);
+  border-color: rgba(147,160,213,.12);
+}
+
+/* ── 12. Nav active — warmer blue-violet glow ───────────────────────── */
+.reference-bottom-nav .nav-item.active {
+  background: linear-gradient(135deg, rgba(91,156,246,.30), rgba(167,139,250,.20));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 4px 16px rgba(91,156,246,.14);
+}
+
+/* ── 13. Progress bars — vivid gradient ─────────────────────────────── */
+.progress-line span,
+.progress-pill-track span {
+  background: linear-gradient(90deg, var(--blue), var(--violet));
+}
+
+/* ── 14. Ghost pill — topbar badges ─────────────────────────────────── */
+.ghost-pill {
+  border-color: rgba(147,160,213,.15);
+  background: rgba(10,16,38,.68);
+}
+
+/* ── 15. Completion rows — more polished ────────────────────────────── */
+.completion-row {
+  border-color: rgba(147,160,213,.12);
+  background: rgba(3,7,22,.28);
+}
+
+/* ── 16. Input / textarea focus ring — tighter ──────────────────────── */
+input:focus {
+  box-shadow: 0 0 0 3px rgba(91,156,246,.12);
+}
+
+textarea:focus {
+  box-shadow: 0 0 0 3px rgba(91,156,246,.12);
+}
+
+/* ── 17. Status strip cells — consistent look ───────────────────────── */
+.status-strip > div {
+  background: rgba(8,14,34,.38);
+  border-color: rgba(147,160,213,.13);
+}
+
+/* ── 18. Empty state — centered + padded ────────────────────────────── */
+.empty-state {
+  display: grid;
+  place-items: center;
+  gap: 8px;
+  padding: 24px 16px;
+  text-align: center;
+}
+
+.empty-state p {
+  margin: 0;
+  font-size: 14px;
+}
+
+/* ── 19. Study steps — more breathing room ──────────────────────────── */
+.study-step {
+  border-color: rgba(147,160,213,.13);
+  background: rgba(9,15,38,.50);
+}
+
+/* ── 20. Card heading h2 — tighter tracking ─────────────────────────── */
+.card-heading h2 {
+  letter-spacing: -0.04em;
+  line-height: 1.1;
+}
+
+/* ── 21. Safe-area: screens that need extra bottom space ────────────── */
+.course-screen,
+.today-reference-screen,
+.progress-screen,
+.settings-screen,
+.speaking-reference-screen,
+.cards-screen,
+.lesson-screen {
+  padding-bottom: max(120px, calc(110px + env(safe-area-inset-bottom)));
+}
+
+/* ── 22. iPhone 390–430 px improvements ─────────────────────────────── */
+@media (max-width: 430px) {
+  .screen-stack {
+    gap: 12px;
+  }
+
+  .card {
+    padding: 17px;
+    border-radius: 22px;
+  }
+
+  .card-body {
+    margin-top: 10px;
+  }
+
+  .hero-card {
+    padding: 17px;
+    border-radius: 24px;
+  }
+
+  .hero-orb {
+    width: 50px;
+    height: 50px;
+    border-radius: 17px;
+  }
+
+  .primary-button,
+  .secondary-button,
+  .record-button {
+    min-height: 50px;
+    border-radius: 15px;
+    font-size: 15px;
+  }
+
+  .stat-card strong {
+    font-size: 20px;
+  }
+
+  h2 {
+    font-size: 20px;
+  }
+
+  .section-header h2 {
+    font-size: clamp(20px, 6vw, 24px);
+  }
+
+  .eyebrow {
+    font-size: 10.5px;
+  }
+
+  .metric-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .status-strip,
+  .stats-grid {
+    gap: 10px;
+  }
+
+  .study-step {
+    padding: 12px;
+  }
+
+  .option-button {
+    min-height: 44px;
+    padding: 10px 11px;
+    font-size: 15px;
+  }
+}
