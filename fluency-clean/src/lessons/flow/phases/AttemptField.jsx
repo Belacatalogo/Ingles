@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
-import { AlertTriangle, Check, Eye, Lightbulb, RotateCcw } from 'lucide-react';
+import { AlertTriangle, Check, Eye, Lightbulb, RotateCcw, Sparkles } from 'lucide-react';
 import { PhaseShell } from './PhaseShell.jsx';
 import { clean, expectedOf, isCorrect, wordCount } from '../text/normalize.js';
+import { analyzeStudentAnswer } from '../../../services/studentAnswerAnalysis/index.js';
 
 const VAGUE_PATTERNS = [
   /^sim$/i, /^não$/i, /^yes$/i, /^no$/i, /^ok$/i,
@@ -103,10 +104,12 @@ function getAttemptValue(attempt) {
 
 export function AttemptField({
   phase, flow, item = {}, multiline = false, minWords = 1,
-  placeholder = 'Sua resposta...', instruction, eyebrow,
+  placeholder = 'Sua resposta...', instruction, eyebrow, lesson = null,
 }) {
   const currentAttempt = flow?.attempts?.[phase.id];
   const [value, setValue] = useState(() => getAttemptValue(currentAttempt));
+  const [aiAnalysis, setAiAnalysis] = useState(null);
+  const [aiLoading, setAiLoading] = useState(false);
   const expected = getModelAnswer(item);
   const hint = getHint(item);
   const requiredKeywords = useMemo(() => getRequiredKeywords(item), [item]);
@@ -131,7 +134,29 @@ export function AttemptField({
 
   function handleRetry() {
     setValue('');
+    setAiAnalysis(null);
     flow.setMessage?.('Tente novamente antes de avançar.');
+  }
+
+  async function handleAiAnalyze() {
+    if (aiLoading || !value.trim()) return;
+    setAiLoading(true);
+    setAiAnalysis(null);
+    try {
+      const result = await analyzeStudentAnswer({
+        lesson,
+        pillar: 'writing',
+        skill: clean(item.title || item.prompt || item.question || 'escrita'),
+        studentText: value,
+        expectedAnswer: expected,
+        allowAi: true,
+      });
+      setAiAnalysis(result);
+    } catch {
+      setAiAnalysis({ feedbackPt: 'Não foi possível analisar agora. Continue pela aula.', score: null, source: 'local' });
+    } finally {
+      setAiLoading(false);
+    }
   }
 
   const Field = multiline ? 'textarea' : 'input';
@@ -159,6 +184,27 @@ export function AttemptField({
           <RotateCcw size={13} /> Melhorar resposta
         </button>
       ) : null}
+    </div>
+  ) : null;
+
+  const aiAnalysisNode = multiline && attempted ? (
+    <div className="lesson-phase-ai-analysis">
+      {!aiAnalysis ? (
+        <button type="button" className="lesson-phase-link" onClick={handleAiAnalyze} disabled={aiLoading}>
+          <Sparkles size={13} /> {aiLoading ? 'Analisando...' : 'Analisar com IA'}
+        </button>
+      ) : (
+        <div className="lesson-phase-ai-result">
+          <p className="lesson-phase-ai-result-header">
+            <Sparkles size={13} /> IA Tutor
+            {aiAnalysis.score !== null ? <span className="lesson-phase-ai-score"> · {aiAnalysis.score}/100</span> : null}
+          </p>
+          <p>{aiAnalysis.feedbackPt}</p>
+          <button type="button" className="lesson-phase-link" onClick={() => setAiAnalysis(null)}>
+            <RotateCcw size={11} /> Nova análise
+          </button>
+        </div>
+      )}
     </div>
   ) : null;
 
@@ -198,6 +244,7 @@ export function AttemptField({
           </button>
         ) : null}
       </div>
+      {aiAnalysisNode}
     </PhaseShell>
   );
 }

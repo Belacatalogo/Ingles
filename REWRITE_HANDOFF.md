@@ -269,3 +269,37 @@ Sem rebase.
 Sem force push.
 Backup da main antiga preservado.
 ```
+
+---
+
+## ✅ BLOCO IA-1 — Student Answer Analysis Service (2026-05-17)
+
+Camada central de análise de respostas do aluno implementada em:
+
+```
+src/services/studentAnswerAnalysis/
+  studentAnswerAnalysisTypes.js   — constantes e contrato de saída
+  localAnswerRubrics.js           — avaliadores locais por pilar
+  studentAnswerAnalysisService.js — função principal analyzeStudentAnswer()
+  index.js                        — re-exports
+```
+
+Regras respeitadas:
+- Fallback local garantido mesmo sem chave de IA.
+- IA (Gemini) é camada opcional via `allowAi: true`.
+- Não substitui o curso fixo.
+- Não gera aula.
+- Usa `correctWritingWithTutor()` do `aiTutorService.js` quando allowAi=true.
+- Resposta do serviço sempre segue o contrato `AnalysisResult`.
+
+Integração mínima: botão **"Analisar com IA"** adicionado em `AttemptField.jsx` somente para campos `multiline` (writing), após tentativa registrada.
+
+Próximos blocos de IA:
+- `BLOCO IA-2` — Writing integração completa (passar lesson, mostrar correctedText)
+- `BLOCO IA-3` — Speaking híbrido Azure + IA Tutor
+- `BLOCO IA-4` — Reading/Listening respostas abertas
+- `BLOCO IA-5` — Revisão adaptativa real com flowErrors
+- `BLOCO IA-6` — StudentAnswerFeedbackCard componente unificado
+
+Documento completo: `fluency-clean/docs/BLOCO-IA-1-STUDENT-ANSWER-ANALYSIS-CONCLUIDO.md`
+Plano original: `fluency-clean/docs/PLANO-IA-ANALISE-RESPOSTAS-UTIL-LAB.md`

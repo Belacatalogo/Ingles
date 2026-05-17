@@ -679,3 +679,44 @@
     scroll-margin-bottom: max(100px, calc(88px + env(safe-area-inset-bottom, 0px)));
   }
 }
+
+/* ── AI Tutor analysis panel ────────────────────────────── */
+.lesson-phase-ai-analysis {
+  margin-top: 6px;
+}
+
+.lesson-phase-ai-result {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 14px;
+  border: 1px solid rgba(167, 139, 250, .22);
+  border-radius: 14px;
+  background: rgba(167, 139, 250, .06);
+  font-size: 14px;
+  line-height: 1.5;
+  color: #c4b5fd;
+}
+
+.lesson-phase-ai-result p {
+  margin: 0;
+  color: #ddd6fe;
+}
+
+.lesson-phase-ai-result-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: .08em;
+  color: #a78bfa;
+  text-transform: uppercase;
+}
+
+.lesson-phase-ai-score {
+  font-weight: 700;
+  color: #c4b5fd;
+  letter-spacing: 0;
+  text-transform: none;
+}
