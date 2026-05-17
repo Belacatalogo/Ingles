@@ -965,3 +965,23 @@ Sem force push.
 5 aulas B1 criadas com padrão profundo premium.
 B1 conectado ao currículo com mergeB1PillarLessons.
 ```
+
+---
+
+## ✅ BLOCO 20C — Validação B1.1 Bridge Parte 1 (2026-05-17)
+
+Validação pedagógica e estrutural aprovada.
+
+Resultado: ✅ APROVADO — todos os checks passaram
+- IDs únicos, level B1, status ready, pillar válido
+- teacherOpening, whyItMatters, lessonRecap, nextLessonBridge em todas
+- Grammar: grammarTable, commonBrazilianMistakes, productionTasks
+- Vocabulary: 17 palavras, 5 chunks
+- Reading: texto 250+ palavras, 5 perguntas com evidência + inferência
+- Listening: transcript 15+ linhas, comprehension, shadowing, dictation
+- Speaking: modelo A2→B1, substitutionDrills, recordingTask
+
+Documento: `fluency-clean/docs/BLOCO-20C-VALIDACAO-B1-1-BRIDGE-PARTE-1-CONCLUIDO.md`
+
+Próximo bloco:
+- BLOCO 20D — B1.1 Bridge from A2 — Parte 2 (4-6 aulas: Grammar-002, Vocabulary-002, Writing-001, +)
