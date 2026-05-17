@@ -1241,3 +1241,22 @@ Documento: `fluency-clean/docs/BLOCO-22A-B1-3-OPINIONS-PARTE-1-CONCLUIDO.md`
 ✅ APROVADO. 5 lições: Grammar-005, 006, 007, Vocabulary-006, Speaking-003.
 
 Próximo: BLOCO 22C — B1.3 Opinions Part 2 (Linkers, Reading, Listening, Writing)
+
+## ✅ BLOCO 22C — B1.3 Opinions Part 2 (2026-05-17)
+
+✅ APROVADO. 4 lições: Grammar-008, Reading-003, Listening-003, Writing-003. Build verde.
+
+Arquivo: `fluency-clean/src/content/curriculum/levels/B1/deepB1OpinionsPart2.js`
+
+B1 agora tem 26 aulas: grammar(8), vocabulary(6), reading(3), listening(3), speaking(3), writing(3).
+
+## ✅ BLOCO 22D — Validação B1.3 Opinions Part 2 (2026-05-17)
+
+✅ APROVADO. Sem duplicatas. Build verde. 4 aulas profundas confirmadas.
+
+Próximo: BLOCO 23A — B1.4 Problems, Advice and Decisions — Parte 1
+- B1-GRAMMAR-009: Second Conditional
+- B1-GRAMMAR-010: Modal verbs for advice (should, ought to, had better)
+- B1-VOCABULARY-007: Problem and solution vocabulary
+- B1-SPEAKING-004: Describe a problem and ask for advice
+- B1-WRITING-004: Give written advice
