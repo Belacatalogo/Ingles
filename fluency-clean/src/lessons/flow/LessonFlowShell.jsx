@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import './lesson-flow.css';
 import { LessonActionFooter } from './LessonActionFooter.jsx';
 import { LessonFocusHeader } from './LessonFocusHeader.jsx';
@@ -25,6 +26,9 @@ function buildAnswerMap(attempts) {
 }
 
 export function LessonFlowShell({ lesson, phases = [], onPhaseChange, onComplete, onNavigate, children }) {
+  const shellRef = useRef(null);
+  const didMountRef = useRef(false);
+
   function handleComplete({ phases: phaseList, attempts }) {
     try {
       const scored = computeFlowResults(phaseList, attempts);
@@ -48,6 +52,20 @@ export function LessonFlowShell({ lesson, phases = [], onPhaseChange, onComplete
   const lessonId = lesson?.id || lesson?.generationMeta?.id || '';
   const flow = useLessonFlowState(phases, { onPhaseChange, onComplete: handleComplete, lessonId });
 
+  useEffect(() => {
+    if (!didMountRef.current) {
+      didMountRef.current = true;
+      return;
+    }
+    window.requestAnimationFrame(() => {
+      shellRef.current?.querySelector('.lesson-flow-phase-card')?.scrollIntoView({
+        block: 'start',
+        inline: 'nearest',
+        behavior: 'auto',
+      });
+    });
+  }, [flow.activeIndex]);
+
   if (!flow.phases.length) {
     return (
       <section className="lesson-flow-shell empty">
@@ -57,7 +75,7 @@ export function LessonFlowShell({ lesson, phases = [], onPhaseChange, onComplete
   }
 
   return (
-    <article className="lesson-flow-shell">
+    <article className="lesson-flow-shell" ref={shellRef}>
       <LessonFocusHeader lesson={lesson} phase={flow.activePhase} percent={flow.percent} />
       <div className="lesson-flow-progress-line"><span style={{ width: `${flow.percent}%` }} /></div>
       <LessonPhaseStepper
