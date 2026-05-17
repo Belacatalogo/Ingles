@@ -1455,3 +1455,25 @@ Documento: `fluency-clean/docs/BLOCO-27A-B1-8-REVIEWS-CHECKPOINTS-PARTE-1-CONCLU
 
 Próximo: BLOCO 27B — Validação B1.8 Part 1
 Após validação: BLOCO 27C — B1.8 Reviews and Checkpoints Part 2 (Reading-008, Listening-008, Vocabulary-016)
+
+## ✅ BLOCO 27C — B1.8 Reviews and Checkpoints Part 2 (2026-05-17)
+
+✅ APROVADO. 3 lições criadas e conectadas.
+
+Arquivo: `fluency-clean/src/content/curriculum/levels/B1/deepB1ReviewsCheckpointsPart2.js`
+
+Aulas:
+- `B1-READING-008` — Can we learn to be happier? (psicologia positiva, Harvard study, 5 perguntas evidenciais, produção integrada)
+- `B1-LISTENING-008` — Life goals and fulfilment (Elena vs Marcus, 13 turnos, mixed conditional analysis, PPC shadowing)
+- `B1-VOCABULARY-016` — Academic/formal vocabulary (significant, evidence, whereas, nevertheless, argue… + 6 chunks acadêmicos)
+
+B1 agora tem **68 aulas**: grammar(20), vocabulary(16), reading(8), listening(8), speaking(8), writing(8).
+
+Build: ✅ sem erros.
+
+Documento: `fluency-clean/docs/BLOCO-27C-B1-8-REVIEWS-CHECKPOINTS-PARTE-2-CONCLUIDO.md`
+
+Estado B1: SUBSTANCIALMENTE COMPLETO — 68 aulas profundas cobrindo as 8 unidades B1 completas.
+
+Próximo: BLOCO 27D — Validação B1.8 Part 2
+Após validação: Avaliar se adicionar BLOCO 27E (B1 final checkpoint / capstone) ou iniciar planejamento B2.
