@@ -1334,3 +1334,28 @@ Próximo: BLOCO 25A — B1.6 Travel and Culture — Parte 1
 - B1-VOCABULARY-011: Travel and transport vocabulary
 - B1-SPEAKING-006: Describe a trip or travel experience
 - B1-WRITING-006: Write a travel blog post or email about a trip
+
+## ✅ BLOCO 25A — B1.6 Travel and Culture Part 1 (2026-05-17)
+
+✅ APROVADO. 5 lições profundas criadas e conectadas ao currículo.
+
+Arquivo: `fluency-clean/src/content/curriculum/levels/B1/deepB1TravelCulturePart1.js`
+
+Aulas:
+- `B1-GRAMMAR-015` — Comparatives and superlatives: review and advanced use (double comparatives, as...as, fewer/less)
+- `B1-GRAMMAR-016` — Future continuous and future perfect (will be + -ing / will have + pp, by the time)
+- `B1-VOCABULARY-011` — Travel and transport vocabulary (12 palavras, 6 chunks, 3 dangerousConfusions, mini-diálogo)
+- `B1-SPEAKING-006` — Describe a trip or travel experience (narrativa B1 real, 12 modelPhrases, 3 guidedSpeaking, recordingTask 90-120s)
+- `B1-WRITING-006` — Write a travel blog post (modelo "Three Days in Porto", double comparative, past continuous, 8 revisionChecklist)
+
+B1 agora tem **49 aulas**: grammar(16), vocabulary(11), reading(5), listening(5), speaking(6), writing(6).
+
+Build: ✅ 2544 módulos, sem erros.
+
+Documento: `fluency-clean/docs/BLOCO-25A-B1-6-TRAVEL-CULTURE-PARTE-1-CONCLUIDO.md`
+
+Próximo: BLOCO 25B — Validação B1.6 Travel and Culture Part 1
+Após validação: BLOCO 25C — B1.6 Travel and Culture Part 2
+- B1-READING-006: A travel or cultural article (~400 palavras)
+- B1-LISTENING-006: A travel conversation or podcast excerpt
+- B1-VOCABULARY-012: Cultural differences and social customs
