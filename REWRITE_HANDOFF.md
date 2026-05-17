@@ -1433,3 +1433,25 @@ Documento: `fluency-clean/docs/BLOCO-26C-B1-7-MEDIA-TECHNOLOGY-PARTE-2-CONCLUIDO
 
 Próximo: BLOCO 26D — Validação B1.7 Part 2
 Após validação: BLOCO 27A — B1.8 Reviews and Checkpoints Part 1 (Grammar-019, Grammar-020, Vocabulary-015, Speaking-008, Writing-008)
+
+## ✅ BLOCO 27A — B1.8 Reviews and Checkpoints Part 1 (2026-05-17)
+
+✅ APROVADO. 5 lições criadas e conectadas.
+
+Arquivo: `fluency-clean/src/content/curriculum/levels/B1/deepB1ReviewsCheckpoints.js`
+
+Aulas:
+- `B1-GRAMMAR-019` — Mixed conditionals (past→present e present→past, tabela comparativa, 4 mistakes brasileiros)
+- `B1-GRAMMAR-020` — Present Perfect Continuous (have/has been +-ing, stative verbs, contraste com Simple)
+- `B1-VOCABULARY-015` — B1 vocabulary review (12 palavras integradoras, 6 chunks, affect/effect/raise/rise/despite)
+- `B1-SPEAKING-008` — B1 speaking checkpoint (2-minute structured response, modelo 165 palavras, 12 modelPhrases, checklist 7 itens)
+- `B1-WRITING-008` — B1 writing checkpoint (4-paragraph essay modelo, 8 breakdowns, 4 blocks, checklist 10 itens)
+
+B1 agora tem **65 aulas**: grammar(20), vocabulary(15), reading(7), listening(7), speaking(8), writing(8).
+
+Build: ✅ sem erros.
+
+Documento: `fluency-clean/docs/BLOCO-27A-B1-8-REVIEWS-CHECKPOINTS-PARTE-1-CONCLUIDO.md`
+
+Próximo: BLOCO 27B — Validação B1.8 Part 1
+Após validação: BLOCO 27C — B1.8 Reviews and Checkpoints Part 2 (Reading-008, Listening-008, Vocabulary-016)
