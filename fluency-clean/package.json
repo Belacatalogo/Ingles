@@ -10,16 +10,20 @@
     "dev": "vite --host 0.0.0.0",
     "build": "vite build",
     "preview": "vite preview --host 0.0.0.0",
-    "check": "npm run build"
+    "check": "npm run build",
+    "test:e2e": "playwright test",
+    "test:e2e:report": "playwright show-report"
   },
   "dependencies": {
     "@vitejs/plugin-react": "4.3.4",
-    "vite": "5.4.19",
-    "react": "18.3.1",
-    "react-dom": "18.3.1",
     "firebase": "10.14.1",
     "lucide-react": "0.468.0",
-    "microsoft-cognitiveservices-speech-sdk": "1.42.0"
+    "microsoft-cognitiveservices-speech-sdk": "1.42.0",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "vite": "5.4.19"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "@playwright/test": "^1.56.1"
+  }
 }
