@@ -1359,3 +1359,16 @@ Após validação: BLOCO 25C — B1.6 Travel and Culture Part 2
 - B1-READING-006: A travel or cultural article (~400 palavras)
 - B1-LISTENING-006: A travel conversation or podcast excerpt
 - B1-VOCABULARY-012: Cultural differences and social customs
+
+## ✅ BLOCO 25B — Validação B1.6 Travel and Culture Part 1 (2026-05-17)
+
+✅ APROVADO. 5 lições: Grammar-015, Grammar-016, Vocabulary-011, Speaking-006, Writing-006.
+
+IDs únicos confirmados. level=B1, status=ready, pillar correto em todas.
+Schema behavior verificado: idêntico aos blocos anteriores.
+Build: ✅ 2544 módulos. Total B1: 49 aulas.
+
+Próximo: BLOCO 25C — B1.6 Travel and Culture Part 2
+- B1-READING-006: A travel or cultural article (~400 palavras)
+- B1-LISTENING-006: A travel conversation or podcast excerpt
+- B1-VOCABULARY-012: Cultural differences and social customs vocabulary
