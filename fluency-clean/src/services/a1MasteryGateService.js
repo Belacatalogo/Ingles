@@ -37,17 +37,18 @@ function normalizePillarScores(scores = {}) {
 }
 
 function normalizeState(raw = {}) {
+  const safeRaw = (raw && typeof raw === 'object' && !Array.isArray(raw)) ? raw : {};
   const now = new Date().toISOString();
   return {
     version: 1,
     level: 'A1',
-    lessonCompletionPercent: clampPercent(raw.lessonCompletionPercent),
-    checkpointScores: normalizeCheckpointScores(raw.checkpointScores),
-    finalExamPillarScores: normalizePillarScores(raw.finalExamPillarScores),
-    speakingReviewed: Boolean(raw.speakingReviewed),
-    writingReviewed: Boolean(raw.writingReviewed),
-    finalExamSubmittedAt: raw.finalExamSubmittedAt || null,
-    updatedAt: raw.updatedAt || now,
+    lessonCompletionPercent: clampPercent(safeRaw.lessonCompletionPercent),
+    checkpointScores: normalizeCheckpointScores(safeRaw.checkpointScores),
+    finalExamPillarScores: normalizePillarScores(safeRaw.finalExamPillarScores),
+    speakingReviewed: Boolean(safeRaw.speakingReviewed),
+    writingReviewed: Boolean(safeRaw.writingReviewed),
+    finalExamSubmittedAt: safeRaw.finalExamSubmittedAt || null,
+    updatedAt: safeRaw.updatedAt || now,
   };
 }
 
