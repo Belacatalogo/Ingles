@@ -927,3 +927,41 @@ Não conectou B1 como ready.
 Não criou aulas completas.
 Apenas arquitetura e mapa.
 ```
+
+---
+
+## ✅ BLOCO 20B — B1.1 Bridge from A2 — Parte 1 (2026-05-17)
+
+Primeiras 5 aulas profundas do B1 criadas e conectadas ao currículo.
+
+Arquivo criado:
+- `fluency-clean/src/content/curriculum/levels/B1/deepB1BridgePart1.js`
+
+Arquivo alterado:
+- `fluency-clean/src/content/curriculum/staticLessonContent.js`
+
+Aulas criadas:
+- `B1-GRAMMAR-001` — A2 repair and B1 fluency bridge (because, so, but, although — resposta conectada)
+- `B1-VOCABULARY-001` — Life events and milestones (verbos específicos, preposições, erros comuns)
+- `B1-READING-001` — A personal letter: bridging A2 and B1 (texto 250 palavras, evidência, inferência)
+- `B1-LISTENING-001` — A longer weekend conversation (15+ linhas, sequência, shadowing, dictation)
+- `B1-SPEAKING-001` — Talk about a past experience with more detail (modelo A2→B1, gravação 60-90s)
+
+B1 conectado como READY: 5 aulas em `STATIC_READY_LESSONS_BY_LEVEL.B1`.
+
+Build: ✅ 2533+ módulos, sem erros.
+
+Próximo bloco obrigatório:
+- BLOCO 20C — Validar B1.1 Bridge from A2 — Parte 1
+
+Confirmação:
+```
+Branch: main
+Sem branch nova.
+Sem PR.
+Sem merge.
+Sem rebase.
+Sem force push.
+5 aulas B1 criadas com padrão profundo premium.
+B1 conectado ao currículo com mergeB1PillarLessons.
+```
