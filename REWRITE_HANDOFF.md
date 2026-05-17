@@ -1004,3 +1004,21 @@ Aulas:
 Build: ✅ 2533+ módulos.
 
 Próximo: BLOCO 20E — Validação B1.1 Parte 2
+
+---
+
+## ✅ BLOCO 20E — Validação B1.1 Bridge Parte 2 (2026-05-17)
+
+✅ APROVADO. B1.1 completo com 9 aulas profundas premium.
+
+| Pilar | Aulas |
+|---|---|
+| Grammar | 2 |
+| Vocabulary | 3 |
+| Reading | 1 |
+| Listening | 1 |
+| Speaking | 1 |
+| Writing | 1 |
+| **Total** | **9** |
+
+Próximo: BLOCO 21A — B1.2 Past experiences and storytelling — Parte 1
