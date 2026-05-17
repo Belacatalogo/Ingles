@@ -105,7 +105,6 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-  scroll-margin-bottom: 190px;
 }
 
 .lesson-phase-input,
@@ -121,7 +120,6 @@
   resize: vertical;
   min-height: 48px;
   -webkit-appearance: none;
-  scroll-margin-bottom: 190px;
 }
 
 .lesson-phase-textarea {
@@ -360,4 +358,299 @@
   background: rgba(15, 23, 42, .46);
   color: #a0b0d0;
   font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+  line-height: 1.35;
+}
+
+.lesson-phase-checklist button.on {
+  border-color: rgba(52, 211, 153, .36);
+  background: rgba(52, 211, 153, .08);
+  color: #a7f3d0;
+}
+
+/* ── Model audio button ─────────────────────────────────── */
+.lesson-phase-model-audio-btn {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  border: 1px solid rgba(91, 156, 246, .28);
+  background: rgba(91, 156, 246, .10);
+  color: #7cb4ff;
+  cursor: pointer;
+}
+
+.lesson-phase-model-audio-btn:disabled {
+  opacity: .5;
+  cursor: default;
+}
+
+.lesson-phase-model-audio-btn .spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Speaking ───────────────────────────────────────────── */
+.lesson-phase-speak-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.lesson-phase-speak-hint {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #5a6a8a;
+  font-size: 12px;
+  margin: 0;
+}
+
+.lesson-phase-footnote {
+  color: #5a6a8a;
+  font-size: 12px;
+  margin: 0;
+}
+
+/* ── Sticky transcript toggle ───────────────────────────── */
+.lesson-phase-sticky-text summary {
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 850;
+  color: #7cb4ff;
+  padding: 6px 0;
+}
+
+/* ── Vocab card variant ─────────────────────────────────── */
+.lesson-phase-vocab-cards {
+  display: grid;
+  gap: 10px;
+}
+
+.lesson-phase-vocab-card {
+  display: grid;
+  gap: 3px;
+  padding: 14px 16px;
+  border: 1px solid rgba(147, 160, 213, .16);
+  border-radius: 16px;
+  background: rgba(13, 19, 42, .68);
+}
+
+.lesson-phase-vocab-card strong {
+  color: #f0f4ff;
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: -.02em;
+}
+
+.lesson-phase-vocab-card em {
+  color: #93c5fd;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 700;
+}
+
+.lesson-phase-vocab-note {
+  display: block;
+  color: #7b8db8;
+  font-size: 13px;
+  line-height: 1.4;
+  margin-top: 2px;
+}
+
+.lesson-phase-vocab-example {
+  display: block;
+  color: #5a7aaa;
+  font-size: 13px;
+  font-style: italic;
+  margin-top: 4px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(147, 160, 213, .10);
+}
+
+/* ── Audio listen (AudioListenField) ────────────────────── */
+.answer-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.lesson-phase-play {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 14px;
+  color: #fff;
+  background: linear-gradient(135deg, #0ea5e9, #5b9cf6);
+  font-size: 15px;
+  font-weight: 950;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(14, 165, 233, .20);
+}
+
+.lesson-phase-play:disabled {
+  opacity: .4;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.listening-natural-audio-player {
+  width: 100%;
+  height: 44px;
+  border-radius: 12px;
+  accent-color: #5b9cf6;
+}
+
+.lesson-phase-audio-ready {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid rgba(52, 211, 153, .26);
+  border-radius: 999px;
+  background: rgba(52, 211, 153, .08);
+  color: #34d399;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.lesson-phase-audio-ready::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #34d399;
+  box-shadow: 0 0 0 3px rgba(52, 211, 153, .22);
+}
+
+.lesson-phase-play-count {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #5a6a8a;
+  font-size: 12px;
+  margin: 0;
+}
+
+.generator-message,
+.completion-message {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 13px;
+  border: 1px solid rgba(91, 156, 246, .18);
+  border-radius: 13px;
+  background: rgba(91, 156, 246, .07);
+  color: #93c5fd;
+  font-size: 13px;
+  margin: 0;
+}
+
+/* ── Shadowing list ─────────────────────────────────────── */
+.listening-shadowing-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.listening-shadowing-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid rgba(147, 160, 213, .14);
+  border-radius: 14px;
+  background: rgba(15, 23, 42, .48);
+}
+
+.listening-shadowing-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+}
+
+.listening-shadowing-text b {
+  color: #e8f0ff;
+  font-size: 15px;
+  font-weight: 850;
+}
+
+.listening-shadowing-text small {
+  color: #7b8db8;
+  font-size: 13px;
+}
+
+.listening-shadowing-actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex: 0 0 auto;
+}
+
+.listening-shadowing-done-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 32px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(147, 160, 213, .20);
+  background: rgba(15, 23, 42, .50);
+  color: #7b8db8;
+  font-size: 12px;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.listening-shadowing-done-btn.done {
+  border-color: rgba(52, 211, 153, .36);
+  background: rgba(52, 211, 153, .08);
+  color: #34d399;
+}
+
+/* ── iPhone / small screen ──────────────────────────────── */
+@media (max-width: 430px) {
+  .lesson-phase-reading-text,
+  .lesson-phase-model-text {
+    font-size: 15px;
+    padding: 14px;
+    border-radius: 14px;
+  }
+
+  .lesson-phase-choice {
+    min-height: 52px;
+    font-size: 14px;
+  }
+
+  .lesson-phase-checklist button {
+    min-height: 48px;
+    font-size: 13.5px;
+  }
+
+  .lesson-phase-primary {
+    width: 100%;
+    min-height: 52px;
+    font-size: 16px;
+    border-radius: 16px;
+  }
+
+  .lesson-phase-input,
+  .lesson-phase-textarea {
+    font-size: 16px; /* prevent iOS zoom */
+    border-radius: 14px;
+    scroll-margin-bottom: max(100px, calc(88px + env(safe-area-inset-bottom, 0px)));
+  }
 }
