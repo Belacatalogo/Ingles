@@ -1391,3 +1391,25 @@ Build: ✅ 2554 módulos, sem erros.
 Documento: `fluency-clean/docs/BLOCO-25C-B1-6-TRAVEL-CULTURE-PARTE-2-CONCLUIDO.md`
 
 Próximo: BLOCO 25D — Validação B1.6 Travel and Culture Part 2
+
+## ✅ BLOCO 26A — B1.7 Media, Technology and Society Part 1 (2026-05-17)
+
+✅ APROVADO. 5 lições criadas e conectadas.
+
+Arquivo: `fluency-clean/src/content/curriculum/levels/B1/deepB1MediaTechnologyPart1.js`
+
+Aulas:
+- `B1-GRAMMAR-017` — Modal verbs for deduction and speculation (must/can't/might/could be + certeza gradual)
+- `B1-GRAMMAR-018` — Gerunds and infinitives (preposição + -ing, verbos fixos, stop/remember/try contraste)
+- `B1-VOCABULARY-013` — Media and technology (12 palavras: algorithm, clickbait, misinformation, echo chamber...)
+- `B1-SPEAKING-007` — Give an opinion about technology (posição estruturada, both sides, 90-120s)
+- `B1-WRITING-007` — Write an opinion paragraph (modelo "Is social media doing more harm than good?")
+
+B1 agora tem **57 aulas**: grammar(18), vocabulary(13), reading(6), listening(6), speaking(7), writing(7).
+
+Build: ✅ 2566 módulos, sem erros.
+
+Documento: `fluency-clean/docs/BLOCO-26A-B1-7-MEDIA-TECHNOLOGY-PARTE-1-CONCLUIDO.md`
+
+Próximo: BLOCO 26B — Validação B1.7 Part 1
+Após validação: BLOCO 26C — B1.7 Part 2 (Reading-007, Listening-007, Vocabulary-014)
