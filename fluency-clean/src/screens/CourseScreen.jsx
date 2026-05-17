@@ -89,7 +89,8 @@ export function CourseScreen({ onNavigate }) {
 
   function handleA1GateUpdated() {
     setA1RefreshKey((current) => current + 1);
-    setMessage('Critérios do A1 atualizados. Speaking e Writing ainda precisam de revisão.');
+    const updated = getA1MasteryGateSummary();
+    setMessage(updated.canUnlockA2 ? 'Todos os critérios do A1 cumpridos. O A2 está liberado!' : 'Critérios do A1 atualizados.');
   }
 
   function handleA1CheckpointSaved() {
@@ -101,7 +102,15 @@ export function CourseScreen({ onNavigate }) {
     if (isLevelBlocked(level)) {
       setActiveLevel('A1');
       setStaticCurrentLevel('A1');
-      setMessage('Esse nível ainda está bloqueado. Continue pelo nível atual.');
+      const pending = [
+        !a1Gate.state?.speakingReviewed && 'Speaking',
+        !a1Gate.state?.writingReviewed && 'Writing',
+      ].filter(Boolean);
+      if (pending.length && a1Gate.requiredActions?.some((action) => action.includes('revisão'))) {
+        setMessage(`${level} bloqueado: revisão de ${pending.join(' e ')} pendente. Use o botão "Confirmar revisão" no painel abaixo.`);
+      } else {
+        setMessage(`${level} bloqueado. Conclua os critérios do A1 exibidos no painel abaixo antes de continuar.`);
+      }
       return;
     }
     setActiveLevel(level);
@@ -265,7 +274,7 @@ export function CourseScreen({ onNavigate }) {
       {/* ── 5 — Avaliações A1 ─────────────────────────────────── */}
       {activeLevel === 'A1' ? (
         <>
-          <A1MasteryGatePanel key={a1RefreshKey} />
+          <A1MasteryGatePanel key={a1RefreshKey} onReviewUpdated={handleA1GateUpdated} />
           <CollapsibleCard title="Checkpoints do A1" icon={<ClipboardCheck size={17} />}>
             <A1CheckpointShell onCheckpointSaved={handleA1CheckpointSaved} />
           </CollapsibleCard>

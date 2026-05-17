@@ -1,6 +1,6 @@
 # Fluency Clean — Handoff Oficial
 
-Última atualização: 2026-05-17 (BLOCO-AUDIT-FIX-01)
+Última atualização: 2026-05-17 (BLOCO-AUDIT-FIX-02)
 
 ## Branch oficial atual
 
@@ -139,13 +139,23 @@ Executado após auditoria Playwright completa (30 problemas catalogados).
 
 **Testes:** 164/164 passando (2 falhas anteriores corrigidas).
 
-**Pendentes (decisão necessária antes de corrigir):**
-- PROB-004 (P1): Mastery gate — review obrigatório não bloqueia avanço
-- PROB-005 (P1): API keys em localStorage
+**Pendentes (resolvidos no FIX-02):**
+- PROB-004 (P1): ✅ Resolvido — botões de confirmação de revisão no gate panel
+- PROB-005 (P1): ✅ Resolvido — keys movidas para sessionStorage
+
+---
+
+## ✅ BLOCO-AUDIT-FIX-02 — Gate e Segurança de Keys (2026-05-17)
+
+**Corrigido:**
+- PROB-004 (P1): Mastery gate nunca tinha como ser desbloqueado — `markA1ProductiveSkillReviewed` nunca era chamado. Adicionados botões "Confirmar revisão Speaking/Writing" no `A1MasteryGatePanel`. Mensagem de bloqueio no `CourseScreen` agora específica sobre qual revisão está pendente.
+- PROB-005 (P1): Keys de API (Gemini, Groq, Cerebras, DeepSeek) estavam em `localStorage` de forma permanente. Migradas para `sessionStorage` (limpas ao fechar o browser). Migração automática de valores existentes. UI avisa que keys são somente da sessão.
+
+**Testes:** 164/164 passando.
 
 **Próximos blocos disponíveis:**
-- BLOCO-AUDIT-FIX-02 — avaliação de respostas
-- BLOCO-AUDIT-FIX-03 — UX/mobile
+- BLOCO-AUDIT-FIX-03 — UX/mobile (PROB-009 a PROB-020)
+- BLOCO-AUDIT-FIX-04 — Speaking/Writing polimento
 - Retomar criação de B1 (após aprovação)
 
 ---
