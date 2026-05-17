@@ -183,6 +183,53 @@ Funções cobertas:
 
 ---
 
+## ✅ BLOCO UX-POLISH-1 — iPhone Lesson Flow Polish (2026-05-17)
+
+Polimento visual e mobile da aba Aula para iPhone (~390–430px). Foco exclusivo em CSS.
+
+Arquivos alterados:
+- `src/lessons/flow/lesson-flow.css` — bloco `@media (max-width: 430px)` adicionado
+- `src/lessons/flow/lesson-phase.css` — cores de contraste corrigidas; 430px expandido
+- `src/styles/lesson-polish.css` — bloco 430px para hero da aula
+- `src/styles/deep-lesson-mobile.css` — separador visual do PracticeMount
+
+Arquivo criado:
+- `docs/BLOCO-UX-POLISH-1-IPHONE-LESSON-FLOW-CONCLUIDO.md`
+
+Principais melhorias:
+- Hero compacto no iPhone (padding 14px, h1 ≤ 26px, generation-proof menor)
+- FocusHeader com h1 reduzido (`clamp(24px, 7vw, 30px)`)
+- Stepper com padding lateral — chips não cortados lateralmente
+- PhaseCard h2 ≤ 26px; padding 13px
+- Contraste melhorado: word-count, speak-hint e footnote de `#4–5a5a7a` → `#6275a0`
+- CompletionCard mais compacto (ícone 54px, stats 22px, padding 20px 16px)
+- ActionFooter: botões 46px, hint 12px
+- PracticeMount com separação visual e safe-area inferior
+
+Build: ✅ 2533 módulos, sem erros.
+
+Confirmação:
+```
+Branch: main
+Sem branch nova.
+Sem PR.
+Sem merge.
+Sem rebase.
+Sem force push.
+Sem alteração em progressStore/completeLesson.
+Sem alteração em Azure/Gemini/Firebase/secrets.
+Sem alteração em lógica de fases, ordem ou mastery.
+```
+
+Próximas pendências:
+- FLOW-STABILITY-1 — bloqueio de navegação para fase futura obrigatória
+- COMPLETION-UX-1 — desbloqueio/bloqueio visual de PracticeMount pós-conclusão
+- REVIEW-POLISH-1 — polish da revisão adaptativa
+- FLASHCARDS-QUALITY-1 — qualidade de flashcards por pilar
+- MASTERY-GATE-1 — integração real do mastery gate A1→A2
+
+---
+
 ## Pendências principais
 
 1. **LessonPhaseStepper**

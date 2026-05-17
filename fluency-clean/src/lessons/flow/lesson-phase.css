@@ -146,7 +146,7 @@
 
 .lesson-phase-word-count {
   align-self: flex-end;
-  color: #4a5a7a;
+  color: #6275a0;
   font-size: 12px;
   font-weight: 750;
 }
@@ -433,13 +433,13 @@
   display: flex;
   align-items: center;
   gap: 5px;
-  color: #5a6a8a;
+  color: #6275a0;
   font-size: 12px;
   margin: 0;
 }
 
 .lesson-phase-footnote {
-  color: #5a6a8a;
+  color: #6275a0;
   font-size: 12px;
   margin: 0;
 }
@@ -648,21 +648,39 @@
 
 /* ── iPhone / small screen ──────────────────────────────── */
 @media (max-width: 430px) {
+  .lesson-phase-shell { gap: 11px; }
+  .lesson-phase-title { font-size: clamp(16px, 4.5vw, 20px); }
+  .lesson-phase-instruction { font-size: 14px; line-height: 1.5; }
+
   .lesson-phase-reading-text,
   .lesson-phase-model-text {
     font-size: 15px;
-    padding: 14px;
+    padding: 13px;
     border-radius: 14px;
+    line-height: 1.6;
   }
+
+  .lesson-phase-examples li,
+  .lesson-phase-vocab-list li {
+    padding: 10px 12px;
+    border-radius: 12px;
+  }
+
+  .lesson-phase-vocab-card { padding: 12px 14px; border-radius: 14px; }
+  .lesson-phase-vocab-card strong { font-size: 16px; }
 
   .lesson-phase-choice {
     min-height: 52px;
     font-size: 14px;
+    padding: 10px 12px;
+    border-radius: 14px;
   }
 
   .lesson-phase-checklist button {
     min-height: 48px;
     font-size: 13.5px;
+    padding: 10px 12px;
+    border-radius: 13px;
   }
 
   .lesson-phase-primary {
@@ -678,6 +696,13 @@
     border-radius: 14px;
     scroll-margin-bottom: max(100px, calc(88px + env(safe-area-inset-bottom, 0px)));
   }
+
+  .lesson-phase-feedback { padding: 10px 12px; font-size: 13.5px; border-radius: 14px; }
+  .lesson-phase-model-answer { font-size: 13px; padding: 8px 11px; }
+  .lesson-phase-word-count { font-size: 11.5px; }
+
+  .listening-shadowing-item { padding: 10px 12px; border-radius: 12px; }
+  .listening-shadowing-text b { font-size: 14.5px; }
 }
 
 /* ── AI Tutor analysis panel ────────────────────────────── */

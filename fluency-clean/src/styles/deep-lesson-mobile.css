@@ -308,6 +308,12 @@
   }
 }
 
+/* ── Practice complement mount ───────────────────────────── */
+.lesson-practice-complement-mount {
+  margin-top: 6px;
+  padding-bottom: max(16px, env(safe-area-inset-bottom, 16px));
+}
+
 @media (max-width: 390px) {
   .lesson-reference-screen {
     padding-inline: 10px;
