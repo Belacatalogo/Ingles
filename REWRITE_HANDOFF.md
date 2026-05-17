@@ -985,3 +985,22 @@ Documento: `fluency-clean/docs/BLOCO-20C-VALIDACAO-B1-1-BRIDGE-PARTE-1-CONCLUIDO
 
 Próximo bloco:
 - BLOCO 20D — B1.1 Bridge from A2 — Parte 2 (4-6 aulas: Grammar-002, Vocabulary-002, Writing-001, +)
+
+---
+
+## ✅ BLOCO 20D — B1.1 Bridge Parte 2 (2026-05-17)
+
+4 novas aulas profundas criadas. B1 agora tem 9 aulas no currículo.
+
+Arquivo criado:
+- `fluency-clean/src/content/curriculum/levels/B1/deepB1BridgePart2.js`
+
+Aulas:
+- `B1-GRAMMAR-002` — Relative clauses + comment clauses ("which was", "which I found")
+- `B1-VOCABULARY-002` — Feelings, attitudes and reactions (16 adjetivos B1 + compostos)
+- `B1-VOCABULARY-003` — Discourse chunks (14 expresões: Having said that, On the other hand...)
+- `B1-WRITING-001` — Parágrafo conectado 80-100 palavras (modelo + breakdown + rascunho + revisão)
+
+Build: ✅ 2533+ módulos.
+
+Próximo: BLOCO 20E — Validação B1.1 Parte 2
