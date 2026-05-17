@@ -1297,3 +1297,21 @@ Próximo: BLOCO 24A — B1.5 Work and Study — Parte 1
 - B1-VOCABULARY-009: Work and professional vocabulary
 - B1-SPEAKING-005: Describe your job or studies
 - B1-WRITING-005: Write a professional email
+
+## ✅ BLOCO 24A — B1.5 Work and Study Part 1 (2026-05-17)
+
+✅ APROVADO. 5 lições: Grammar-012, Grammar-013, Vocabulary-009, Speaking-005, Writing-005. Build verde.
+
+Arquivo: `fluency-clean/src/content/curriculum/levels/B1/deepB1WorkStudyPart1.js`
+
+B1 agora tem 40 aulas: grammar(13), vocabulary(9), reading(4), listening(4), speaking(5), writing(5).
+
+## ✅ BLOCO 24B — Validação B1.5 Work and Study Part 1 (2026-05-17)
+
+✅ APROVADO. Sem duplicatas. Build verde. 5 aulas profundas confirmadas.
+
+Próximo: BLOCO 24C — B1.5 Work and Study — Parte 2
+- B1-GRAMMAR-014: Reported speech (questions and requests)
+- B1-READING-005: A work or study article
+- B1-LISTENING-005: A work-related conversation
+- B1-VOCABULARY-010: Study and academic vocabulary
