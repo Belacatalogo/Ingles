@@ -1372,3 +1372,22 @@ Próximo: BLOCO 25C — B1.6 Travel and Culture Part 2
 - B1-READING-006: A travel or cultural article (~400 palavras)
 - B1-LISTENING-006: A travel conversation or podcast excerpt
 - B1-VOCABULARY-012: Cultural differences and social customs vocabulary
+
+## ✅ BLOCO 25C — B1.6 Travel and Culture Part 2 (2026-05-17)
+
+✅ APROVADO. 3 lições profundas criadas e conectadas.
+
+Arquivo: `fluency-clean/src/content/curriculum/levels/B1/deepB1TravelCulturePart2.js`
+
+Aulas:
+- `B1-READING-006` — The case for slow travel (artigo de opinião, 6 parágrafos, 5 comprehensionQ, guidedSummary)
+- `B1-LISTENING-006` — A trip to Marrakech (13 turnos, future perfect / past continuous em uso real, 3 shadowing)
+- `B1-VOCABULARY-012` — Cultural differences and social customs (12 palavras, 6 chunks, etiquette/taboo/cause offence)
+
+B1 agora tem **52 aulas**: grammar(16), vocabulary(12), reading(6), listening(6), speaking(6), writing(6).
+
+Build: ✅ 2554 módulos, sem erros.
+
+Documento: `fluency-clean/docs/BLOCO-25C-B1-6-TRAVEL-CULTURE-PARTE-2-CONCLUIDO.md`
+
+Próximo: BLOCO 25D — Validação B1.6 Travel and Culture Part 2
