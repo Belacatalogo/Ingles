@@ -59,9 +59,18 @@ export function useLessonFlowState(phases = [], options = {}) {
         setMessage('Você precisa tentar ao menos uma etapa obrigatória antes de concluir.');
         return;
       }
-      setCompleted(true);
-      clearDraft(lessonId);
-      options.onComplete?.({ phases: phaseList, attempts });
+      // Completion card is shown only after the shell confirms the save succeeded
+      options.onComplete?.({
+        phases: phaseList,
+        attempts,
+        onSaveSuccess: () => {
+          setCompleted(true);
+          clearDraft(lessonId);
+        },
+        onSaveError: (errorMsg) => {
+          setMessage(errorMsg || 'Não foi possível registrar o progresso. Tente concluir novamente.');
+        },
+      });
     } else {
       goTo(safeIndex + 1);
     }

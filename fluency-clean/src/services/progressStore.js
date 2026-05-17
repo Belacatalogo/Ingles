@@ -39,7 +39,14 @@ function isYesterday(dateA, dateB) {
   const b = new Date(`${dateB}T00:00:00`);
   return Math.round((b - a) / 86400000) === 1;
 }
-function getCompletionId(lesson) { return lesson?.id || `${lesson?.type || 'lesson'}-${lesson?.title || 'untitled'}`; }
+function getCompletionId(lesson) {
+  return lesson?.id
+    || lesson?.lessonId
+    || lesson?.generationMeta?.id
+    || lesson?.curriculumId
+    || lesson?.raw?.curriculumId
+    || `${lesson?.level || 'A1'}-${lesson?.type || lesson?.pillar || 'lesson'}-${lesson?.title || 'untitled'}`;
+}
 function clampNumber(value, min = 0, max = 100) { return Math.max(min, Math.min(max, Number(value || 0))); }
 function compactPracticeResult(result) {
   return {
@@ -249,8 +256,13 @@ export function completeLesson({ lesson, answers = {}, writtenAnswer = '', flowR
   else if (progress.lastStudyDate === date) nextStreak = progress.streakDays || 1;
   else if (isYesterday(progress.lastStudyDate, date)) nextStreak = (progress.streakDays || 0) + 1;
   else nextStreak = 1;
-  const fragileVocabulary = registerReadingVocabularyMistakes({ lesson, answers });
-  const masteryProfile = recordLessonMastery({ lesson, answers, writtenAnswer, flowResults, preComputedScore });
+  // Helpers wrapped in try/catch — failures must not block the main save
+  let fragileVocabulary = [];
+  try { fragileVocabulary = registerReadingVocabularyMistakes({ lesson, answers }); } catch (e) { console.warn('[Fluency] registerReadingVocabularyMistakes falhou:', e); }
+
+  let masteryProfile = null;
+  try { masteryProfile = recordLessonMastery({ lesson, answers, writtenAnswer, flowResults, preComputedScore }); } catch (e) { console.warn('[Fluency] recordLessonMastery falhou:', e); }
+
   const lessonPillar = String(lesson?.pillar || lesson?.type || 'reading').toLowerCase();
   const masteryScore = masteryProfile?.pillars?.[lessonPillar]?.score || 0;
   // flowErrors: prefere dados ricos (richFlowErrors) com prompt/expected; fallback para flowResults simples
@@ -286,14 +298,26 @@ export function completeLesson({ lesson, answers = {}, writtenAnswer = '', flowR
   };
   const nextCompletions = alreadyCompleted ? completions.map((item) => item.lessonId === lessonId ? { ...item, ...completion, xp: item.xp || 0 } : item) : [completion, ...completions];
   const nextProgress = normalizeProgress({ ...progress, xp: progress.xp + xpGain, completedLessons: alreadyCompleted ? progress.completedLessons : progress.completedLessons + 1, streakDays: nextStreak, lastStudyDate: date, weekly: { ...progress.weekly, [currentWeek]: { completed: alreadyCompleted ? previousWeekly.completed : previousWeekly.completed + 1, xp: previousWeekly.xp + xpGain } } });
-  storage.set(LESSON_COMPLETIONS_KEY, nextCompletions);
-  storage.set(PROGRESS_KEY, nextProgress);
-  saveLessonDraft({ lesson, answer: writtenAnswer });
-  if (!alreadyCompleted && lesson?.checkpoint !== 'saturday-adaptive-review') markCurriculumLessonComplete(lesson);
-  diagnostics.setPhase('aula concluída', 'success');
+
+  // MAIN SAVE — must execute before any secondary operations
+  const saved = storage.set(LESSON_COMPLETIONS_KEY, nextCompletions) && storage.set(PROGRESS_KEY, nextProgress);
+  if (!saved) console.warn('[Fluency] completeLesson: storage.set falhou — localStorage indisponível ou cheio.');
+
+  // Secondary operations — each isolated so a failure cannot undo the main save
+  try { saveLessonDraft({ lesson, answer: writtenAnswer }); } catch (e) { console.warn('[Fluency] saveLessonDraft falhou:', e); }
+  if (!alreadyCompleted && lesson?.checkpoint !== 'saturday-adaptive-review') {
+    try { markCurriculumLessonComplete(lesson); } catch (e) { console.warn('[Fluency] markCurriculumLessonComplete falhou:', e); }
+  }
+
+  diagnostics.setPhase('aula concluída', saved ? 'success' : 'error');
   diagnostics.log(`${alreadyCompleted ? 'Aula já estava concluída' : 'Aula concluída'}: ${completion.title}`, 'info');
   diagnostics.log(`Domínio (${lessonPillar}): ${masteryScore}/100. Erros de fase: ${flowErrors.length}.`, 'info');
-  return { completion, progress: nextProgress, alreadyCompleted };
+
+  // Post-save validation: re-read from storage to confirm data was persisted
+  const verified = isLessonCompleted(lesson);
+  if (saved && !verified) console.warn('[Fluency] completeLesson: salvo mas isLessonCompleted=false — lessonId divergindo?', lessonId);
+
+  return { completion, progress: nextProgress, alreadyCompleted, saved, verified };
 }
 
 export function isLessonCompleted(lesson) { return getLessonCompletions().some((item) => item.lessonId === getCompletionId(lesson)); }

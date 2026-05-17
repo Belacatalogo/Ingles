@@ -27,8 +27,11 @@ function buildAnswerMap(attempts) {
 
 function stableLessonId(lesson) {
   return lesson?.id
+    || lesson?.lessonId
     || lesson?.generationMeta?.id
-    || (lesson?.title ? `${lesson.type || 'lesson'}-${lesson.title}-${lesson.level || 'A1'}` : '')
+    || lesson?.curriculumId
+    || lesson?.raw?.curriculumId
+    || (lesson?.title ? `${lesson?.level || 'A1'}-${lesson?.type || lesson?.pillar || 'lesson'}-${lesson.title}` : '')
     || '';
 }
 
@@ -36,11 +39,11 @@ export function LessonFlowShell({ lesson, phases = [], onPhaseChange, onComplete
   const shellRef = useRef(null);
   const didMountRef = useRef(false);
 
-  function handleComplete({ phases: phaseList, attempts }) {
+  function handleComplete({ phases: phaseList, attempts, onSaveSuccess, onSaveError }) {
     try {
       const scored = computeFlowResults(phaseList, attempts);
       const flowErrors = extractFlowErrors(phaseList, attempts, lesson || {});
-      completeLesson({
+      const result = completeLesson({
         lesson,
         answers: buildAnswerMap(attempts),
         writtenAnswer: getLongestWritten(attempts),
@@ -48,12 +51,21 @@ export function LessonFlowShell({ lesson, phases = [], onPhaseChange, onComplete
         preComputedScore: { totalAttempt: scored.totalAttempt, correct: scored.correct, score: scored.score },
         richFlowErrors: flowErrors,
       });
+      if (!result.saved) {
+        console.warn('[Fluency] handleComplete: storage.set falhou — progresso não persistido.');
+        onSaveError?.('Não foi possível salvar o progresso. Verifique o espaço disponível e tente novamente.');
+        return;
+      }
+      if (!result.verified) {
+        // Data written but read-back check failed — lessonId may differ; log but don't block
+        console.warn('[Fluency] handleComplete: salvo mas verificação falhou — lessonId pode divergir.');
+      }
       window.dispatchEvent(new Event('fluency:lesson-updated'));
       onComplete?.({ phases: phaseList, attempts, scored, flowErrors });
+      onSaveSuccess?.();
     } catch (err) {
       console.warn('[Fluency] handleComplete falhou:', err);
-      // fail-safe: nunca bloquear conclusão de aula
-      onComplete?.({ phases: phaseList, attempts });
+      onSaveError?.('Erro inesperado ao salvar progresso. Tente concluir novamente.');
     }
   }
 

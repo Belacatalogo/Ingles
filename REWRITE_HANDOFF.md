@@ -523,3 +523,39 @@ Blocos de IA subsequentes:
 
 Documento completo: `fluency-clean/docs/BLOCO-IA-1-STUDENT-ANSWER-ANALYSIS-CONCLUIDO.md`
 Plano original: `fluency-clean/docs/PLANO-IA-ANALISE-RESPOSTAS-UTIL-LAB.md`
+
+---
+
+## HOTFIX CRÍTICO — Persistência de conclusão de aula (2026-05-17)
+
+Bug: iPhone mostra "Aula concluída!" com 100%, mas ao sair e voltar o progresso não está salvo.
+
+Causas:
+1. `registerReadingVocabularyMistakes` e `recordLessonMastery` eram chamados **antes** de `storage.set()` em `completeLesson()`. Se qualquer um lançasse exceção, o save principal nunca executava.
+2. Em `useLessonFlowState.next()`, `setCompleted(true)` e `clearDraft()` disparavam **antes** de `onComplete()` ser chamado — a UI mostrava conclusão mesmo quando o save falhava em seguida.
+3. `stableLessonId` no shell e `getCompletionId` no progressStore geravam IDs diferentes para aulas sem `id` direto — `isLessonCompleted` não encontrava o dado salvo.
+
+Fixes:
+- `progressStore.js`: `getCompletionId` unificado com fallback de 5 campos; helpers em try/catch isolados; `storage.set` executa **primeiro**; operações secundárias isoladas; retorna `{ ..., saved, verified }`.
+- `useLessonFlowState.js`: `next()` passa `onSaveSuccess` e `onSaveError` para o shell em vez de chamar `setCompleted`/`clearDraft` diretamente.
+- `LessonFlowShell.jsx`: `handleComplete` desestrutura `onSaveSuccess`/`onSaveError`; verifica `result.saved`; chama `onSaveError` se save falhou (card de conclusão NÃO aparece); `stableLessonId` sincronizado com `getCompletionId`.
+
+Arquivos alterados:
+- `src/services/progressStore.js`
+- `src/lessons/flow/useLessonFlowState.js`
+- `src/lessons/flow/LessonFlowShell.jsx`
+
+Documento: `fluency-clean/docs/HOTFIX-LESSON-COMPLETION-PERSISTENCE.md`
+Build: ✅ 2533 módulos, sem erros.
+
+Confirmação:
+```
+Branch: main
+Sem branch nova.
+Sem PR.
+Sem merge.
+Sem rebase.
+Sem force push.
+Conclusão de aula sempre persistida antes de mostrar card de conclusão.
+Falha de storage visível para o aluno (mensagem de erro no footer).
+```
