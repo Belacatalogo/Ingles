@@ -21,6 +21,7 @@ import { Card } from '../components/ui/Card.jsx';
 import { SectionHeader } from '../components/ui/SectionHeader.jsx';
 import { getCurrentLesson } from '../services/lessonStore.js';
 import { getCurrentWeekStats, getProgressSummary, getUserDisplayName, setUserDisplayName } from '../services/progressStore.js';
+import { storage } from '../services/storage.js';
 
 const groups = [
   { id: 'account', title: 'Conta e acesso', detail: 'login, código de acesso e perfil', icon: Shield },
@@ -55,11 +56,21 @@ function SettingsToggle({ icon: Icon, label, value, onChange }) {
   );
 }
 
+const PREFS_KEY = 'settings.preferences';
+
+function loadPrefs() {
+  return storage.get(PREFS_KEY, {});
+}
+
+function savePref(key, value) {
+  storage.set(PREFS_KEY, { ...loadPrefs(), [key]: value });
+}
+
 export function SettingsScreen() {
-  const [activeGroup, setActiveGroup] = useState('lessonKeys');
-  const [dailyReminder, setDailyReminder] = useState(false);
-  const [autoplayAudio, setAutoplayAudio] = useState(false);
-  const [compactMode, setCompactMode] = useState(false);
+  const [activeGroup, setActiveGroup] = useState('account');
+  const [dailyReminder, setDailyReminder] = useState(() => Boolean(loadPrefs().dailyReminder));
+  const [autoplayAudio, setAutoplayAudio] = useState(() => Boolean(loadPrefs().autoplayAudio));
+  const [compactMode, setCompactMode] = useState(() => Boolean(loadPrefs().compactMode));
   const [displayName, setDisplayName] = useState(() => getUserDisplayName());
   const [nameSaved, setNameSaved] = useState(false);
   const progress = getProgressSummary();
@@ -83,7 +94,7 @@ export function SettingsScreen() {
       />
 
       <section className="settings-profile-card">
-        <div className="settings-avatar">F</div>
+        <div className="settings-avatar">{displayName?.charAt(0)?.toUpperCase() || 'F'}</div>
         <div>
           <strong>Fluency</strong>
           <span>{progress.completedLessons || 0} aula(s) concluída(s) · {progress.xp || 0} XP</span>
@@ -167,7 +178,7 @@ export function SettingsScreen() {
           <div className="settings-info-card">
             <SettingsRow icon={Volume2} label="Voz padrão" value="Gemini natural quando disponível" tone="blue" />
             <SettingsRow icon={Bot} label="Pronúncia" value="Azure Speech real" tone="green" />
-            <SettingsToggle icon={Play} label="Autoplay de áudio" value={autoplayAudio} onChange={setAutoplayAudio} />
+            <SettingsToggle icon={Play} label="Autoplay de áudio" value={autoplayAudio} onChange={(v) => { setAutoplayAudio(v); savePref('autoplayAudio', v); }} />
           </div>
         </Card>
       ) : null}
@@ -177,7 +188,7 @@ export function SettingsScreen() {
           <div className="settings-info-card">
             <SettingsRow icon={Palette} label="Tema" value="escuro" tone="violet" />
             <SettingsRow icon={Info} label="Navegação" value="barra inferior" />
-            <SettingsToggle icon={Zap} label="Modo compacto" value={compactMode} onChange={setCompactMode} />
+            <SettingsToggle icon={Zap} label="Modo compacto" value={compactMode} onChange={(v) => { setCompactMode(v); savePref('compactMode', v); }} />
           </div>
         </Card>
       ) : null}
@@ -185,7 +196,7 @@ export function SettingsScreen() {
       {activeGroup === 'data' ? (
         <Card eyebrow="Sistema" title="Dados e diagnóstico">
           <div className="settings-info-card">
-            <SettingsToggle icon={Bell} label="Lembretes diários" value={dailyReminder} onChange={setDailyReminder} />
+            <SettingsToggle icon={Bell} label="Lembretes diários" value={dailyReminder} onChange={(v) => { setDailyReminder(v); savePref('dailyReminder', v); }} />
             <SettingsRow icon={Database} label="Histórico" value={`${progress.completedLessons || 0} aula(s) local/sync`} tone="blue" />
             <SettingsRow icon={Info} label="Diagnóstico" value="botão lateral" />
           </div>

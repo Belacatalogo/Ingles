@@ -71,7 +71,7 @@ export function GeneralAiKeysPanel() {
       </div>
 
       <p>
-        As keys ficam salvas neste aparelho. A sincronização por conta será ativada em uma etapa futura.
+        As chaves são armazenadas apenas nesta sessão e serão apagadas ao fechar o navegador. Nunca salvas permanentemente neste dispositivo.
       </p>
     </section>
   );

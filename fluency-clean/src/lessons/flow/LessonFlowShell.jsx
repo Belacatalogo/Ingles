@@ -8,6 +8,7 @@ import { LessonCompletionCard } from './phases/LessonCompletionCard.jsx';
 import { computeFlowResults, extractFlowErrors } from './lessonFlowScore.js';
 import { useLessonFlowState } from './useLessonFlowState.js';
 import { completeLesson } from '../../services/progressStore.js';
+import { refreshA1LessonCompletionPercent } from '../../services/a1MasteryGateService.js';
 
 function getLongestWritten(attempts) {
   return Object.values(attempts).reduce((best, data) => {
@@ -61,6 +62,7 @@ export function LessonFlowShell({ lesson, phases = [], onPhaseChange, onComplete
         // Data written but read-back check failed — lessonId may differ; log but don't block
         console.warn('[Fluency] handleComplete: salvo mas verificação falhou — lessonId pode divergir.');
       }
+      if (!result.alreadyCompleted && lesson?.level === 'A1') refreshA1LessonCompletionPercent();
       setCompletionMeta({
         xp: result.completion?.xp || 0,
         alreadyCompleted: Boolean(result.alreadyCompleted),

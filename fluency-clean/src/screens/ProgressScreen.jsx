@@ -25,11 +25,12 @@ import { getErrorBankSummary } from '../services/errorBank.js';
 
 const cefrLevels = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 const skillConfig = [
+  { key: 'grammar', label: 'Grammar', tone: 'green' },
+  { key: 'vocabulary', label: 'Vocabulary', tone: 'indigo' },
   { key: 'reading', label: 'Reading', tone: 'blue' },
   { key: 'listening', label: 'Listening', tone: 'violet' },
-  { key: 'writing', label: 'Writing', tone: 'teal' },
   { key: 'speaking', label: 'Speaking', tone: 'amber' },
-  { key: 'grammar', label: 'Grammar', tone: 'green' },
+  { key: 'writing', label: 'Writing', tone: 'teal' },
 ];
 
 function safeArray(value) { return Array.isArray(value) ? value : []; }
@@ -154,7 +155,7 @@ function CertificationCard({ certification }) {
       <div className="level-cert-metrics">
         <article><span>Curso</span><strong>{certification.completionScore}%</strong></article>
         <article><span>Speaking</span><strong>{certification.speakingScore}%</strong></article>
-        <article><span>Erros</span><strong>-{certification.errorPenalty}</strong></article>
+        <article><span>Erros</span><strong>{certification.errorPenalty ? `-${certification.errorPenalty}` : '0'}</strong></article>
         <article><span>Prontas</span><strong>{certification.total}</strong></article>
       </div>
       {certification.blockers.length ? (

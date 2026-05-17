@@ -1,6 +1,6 @@
 # MASTER — Continuidade dos blocos do curso Fluency
 
-Branch obrigatória: `rewrite-fluency-clean-lab`
+Branch obrigatória: `main`
 
 Este documento consolida os blocos concluídos, as regras obrigatórias e os próximos blocos do curso fixo premium A1 → C2.
 
@@ -28,8 +28,8 @@ Antes de iniciar qualquer bloco, a IA deve obrigatoriamente:
 2. Ler `REWRITE_HANDOFF.md`, quando disponível.
 3. Ler `fluency-clean/docs/ROADMAP-STATIC-DEEP-LESSONS-FOCO.md`, quando disponível.
 4. Ler o último documento de bloco concluído.
-5. Conferir a branch atual: `rewrite-fluency-clean-lab`.
-6. Não mexer em `main`.
+5. Confirmar branch atual: `main`.
+6. Não criar branch nova sem autorização explícita.
 7. Não mexer em `rewrite-fluency-clean`.
 8. Não mexer em `bundle.js`.
 9. Não usar DOM injection.
@@ -398,26 +398,24 @@ Para liberar próximo nível, precisa:
 
 ### A1
 
-Status atual:
+Status atual (pós-auditoria AUDIT-FIX-01…06):
 
 - Foundations profundas criadas e validadas;
 - A1.2 Personal Life criada e validada;
-- Gate A1 criado;
-- UI inicial do Gate A1 criada;
-- Home sincronizada com Gate A1.
+- Gate A1 criado — gate service com `refreshA1LessonCompletionPercent` corrigido;
+- UI do Gate A1 criada e funcional;
+- Home sincronizada com Gate A1;
+- Série de 6 blocos de auditoria concluída — sistema limpo e auditado;
+- P0/P1 críticos corrigidos (score mastery, persistência de conclusão, UTC vs local, etc.).
 
-Faltam para A1:
+Faltam para A1 (antes de liberar A2):
 
-1. validar visual da Home pós-sync;
-2. validar visual do A1 Mastery Gate no CourseScreen;
-3. conectar bloqueio funcional do A2;
-4. criar tela real do A1 Final Exam;
-5. criar lançamento/correção de notas por pilar;
-6. criar checkpoints reais renderizáveis;
-7. continuar unidades A1.3+;
-8. criar revisão acumulativa A1;
-9. validar A1 inteiro;
-10. só então liberar A2.
+1. checkpoints reais renderizáveis (`A1-CHECKPOINT-FOUNDATIONS`, `A1-CHECKPOINT-PERSONAL-LIFE`);
+2. tela real do A1 Final Exam;
+3. continuar unidades A1.3+ (Daily Routine etc.);
+4. criar revisão acumulativa A1;
+5. validar A1 inteiro end-to-end;
+6. só então liberar A2.
 
 ### A2
 
@@ -526,14 +524,15 @@ Objetivo:
 ## 10. Prompt fixo para próximos chats
 
 ```txt
-Continue na branch rewrite-fluency-clean-lab.
+Continue na branch main.
 Antes de qualquer alteração, leia:
 1. REWRITE_HANDOFF.md
 2. fluency-clean/docs/MASTER-CONTINUIDADE-BLOCOS-CURSO-ATE-C1-C2.md
 3. o último documento de bloco concluído.
 
 Regras obrigatórias:
-- não mexer em main;
+- trabalhar na main;
+- não criar branch sem autorização;
 - não mexer em rewrite-fluency-clean;
 - não mexer em bundle.js;
 - não usar DOM injection;
@@ -544,15 +543,17 @@ Regras obrigatórias:
 - antes de iniciar cada bloco, analisar o objetivo e a melhor forma de implementar;
 - ao final, criar/atualizar um MD de conclusão do bloco.
 
-Estado atual:
+Estado atual (após BLOCO-AUDIT-FIX-06, 2026-05-17):
 - A1 Foundations profundas criadas/validadas;
 - A1.2 Personal Life criada/validada;
 - CEFR Level Gates criados;
 - A1 Checkpoints/Final Exam Framework criado;
-- A1 Mastery Gate Service criado;
+- A1 Mastery Gate Service criado (com refreshA1LessonCompletionPercent corrigido);
 - A1 Mastery Gate UI criada;
-- Home sincronizada com Gate A1.
+- Home sincronizada com Gate A1;
+- Série AUDIT-FIX-01 a 06 concluída — sistema auditado, bugfixes aplicados, limpeza técnica feita;
+- B1: skeleton de lesson plans em advancedMaps.js, sem conteúdo de aula ainda.
 
-Próximo bloco recomendado:
-Validação visual pós-sync da Home, depois validar A1 Gate UI, depois bloqueio funcional do A2.
+Próximo bloco recomendado (quando B1 for autorizado):
+BLOCO-B1-GRAMMAR-001 — criar primeira aula de Grammar B1 (Present Perfect — experience) no padrão profundo premium.
 ```

@@ -142,22 +142,26 @@ Message: Ana booked the room yesterday. She called the hotel because she had hea
     guidedBeforeQuiz: [task('Primeira escuta: qual é a situação?'), task('Segunda escuta: qual é o número do quarto?')],
     listeningPreparation: [task('Não leia o transcript antes da primeira escuta.'), task('Prepare: reservation, passport, room, key, breakfast.'), task('Objetivo: entender o fluxo do check-in.')],
     keyWordsToHear: [vocab('reservation','reserva'), vocab('passport','passaporte'), vocab('room','quarto'), vocab('key','chave'), vocab('breakfast','café da manhã')],
-    audioScript: `Receptionist: Good evening. How can I help you?
+    audioScript: `Receptionist: Good evening. Welcome to Hotel Central. How can I help you?
 Guest: Hi. I have a reservation. My name is Ana Souza.
-Receptionist: One moment, please. Yes, a single room for two nights. Can I see your passport?
+Receptionist: One moment, please. Souza... Ana Souza. Yes, a single room for two nights. Can I see your ID or passport?
 Guest: Sure. Here it is.
-Receptionist: Thank you. Your room is 204. Here is your key. Breakfast is at seven.
-Guest: Thank you. Is the room quiet?
-Receptionist: Yes, it is near the elevator, but it is quiet.`,
-    firstListenTasks: [task('Sem transcript: onde acontece a conversa?', 'hotel/reception'), task('Sem transcript: a hóspede tem reserva?', 'yes')],
-    secondListenTasks: [task('Qual é o nome da hóspede?', 'Ana Souza'), task('Qual tipo de quarto?', 'single room'), task('Quantas noites?', 'two nights'), task('Qual é o número do quarto?', '204'), task('Que horas é o café da manhã?', 'at seven')],
-    transcript: `Receptionist: Good evening. How can I help you?
+Receptionist: Thank you. I'm sorry, but your room is not ready yet. It will be ready in about fifteen minutes. Can you wait in the lobby?
+Guest: Oh, okay. No problem.
+Receptionist: Thank you for your patience. Your room is 204. Here is your key card. Breakfast is at seven in the morning.
+Guest: Great. Is the room quiet? I need to sleep early.
+Receptionist: Yes, it is on the second floor, away from the main street. Very quiet.`,
+    firstListenTasks: [task('Sem transcript: onde acontece a conversa?', 'hotel/reception'), task('Sem transcript: a hóspede tem reserva?', 'yes'), task('Sem transcript: ocorreu algum pequeno problema?', 'yes — room not ready yet')],
+    secondListenTasks: [task('Qual é o nome da hóspede?', 'Ana Souza'), task('Qual tipo de quarto?', 'single room'), task('Quantas noites?', 'two nights'), task('Qual é o número do quarto?', '204'), task('Por que a hóspede esperou?', 'room not ready yet'), task('Que horas é o café da manhã?', 'at seven')],
+    transcript: `Receptionist: Good evening. Welcome to Hotel Central. How can I help you?
 Guest: Hi. I have a reservation. My name is Ana Souza.
-Receptionist: One moment, please. Yes, a single room for two nights. Can I see your passport?
+Receptionist: One moment, please. Souza... Ana Souza. Yes, a single room for two nights. Can I see your ID or passport?
 Guest: Sure. Here it is.
-Receptionist: Thank you. Your room is 204. Here is your key. Breakfast is at seven.
-Guest: Thank you. Is the room quiet?
-Receptionist: Yes, it is near the elevator, but it is quiet.`,
+Receptionist: Thank you. I'm sorry, but your room is not ready yet. It will be ready in about fifteen minutes. Can you wait in the lobby?
+Guest: Oh, okay. No problem.
+Receptionist: Thank you for your patience. Your room is 204. Here is your key card. Breakfast is at seven in the morning.
+Guest: Great. Is the room quiet? I need to sleep early.
+Receptionist: Yes, it is on the second floor, away from the main street. Very quiet.`,
     vocabulary: [vocab('receptionist', 'recepcionista'), vocab('guest', 'hóspede'), vocab('one moment', 'um momento'), vocab('single room', 'quarto individual'), vocab('elevator', 'elevador')],
     shadowing: [task('I have a reservation.'), task('My name is Ana Souza.'), task('Can I see your passport?'), task('Here it is.'), task('Your room is 204.'), task('Breakfast is at seven.')],
     dictationTasks: [task('Digite: I have a reservation.', 'I have a reservation.'), task('Digite: Can I see your passport?', 'Can I see your passport?'), task('Digite: Breakfast is at seven.', 'Breakfast is at seven.')],

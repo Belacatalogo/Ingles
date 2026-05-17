@@ -1,5 +1,5 @@
 import { AlertTriangle, CheckCircle2, GraduationCap, Lock, ShieldCheck, Sparkles, Target } from 'lucide-react';
-import { getA1MasteryGateSummary } from '../../services/a1MasteryGateService.js';
+import { getA1MasteryGateSummary, markA1ProductiveSkillReviewed } from '../../services/a1MasteryGateService.js';
 
 const pillarLabels = {
   grammar: 'Grammar',
@@ -32,9 +32,14 @@ function ProgressLine({ label, value, target = 100 }) {
   );
 }
 
-export function A1MasteryGatePanel() {
+export function A1MasteryGatePanel({ onReviewUpdated }) {
   const summary = getA1MasteryGateSummary();
   const { state, readiness, gate } = summary;
+
+  function handleMarkReviewed(skill) {
+    markA1ProductiveSkillReviewed(skill, true);
+    onReviewUpdated?.();
+  }
   const Icon = summary.canUnlockA2 ? CheckCircle2 : summary.canTakeFinalExam ? Target : Lock;
 
   return (
@@ -80,8 +85,22 @@ export function A1MasteryGatePanel() {
       </div>
 
       <div className="a1-gate-review-row">
-        <span className={state.speakingReviewed ? 'ok' : 'warn'}><ShieldCheck size={14} /> Speaking {state.speakingReviewed ? 'revisado' : 'aguardando revisão'}</span>
-        <span className={state.writingReviewed ? 'ok' : 'warn'}><ShieldCheck size={14} /> Writing {state.writingReviewed ? 'revisado' : 'aguardando revisão'}</span>
+        <span className={state.speakingReviewed ? 'ok' : 'warn'}>
+          <ShieldCheck size={14} /> Speaking {state.speakingReviewed ? 'revisado' : 'aguardando revisão'}
+        </span>
+        {!state.speakingReviewed && (
+          <button type="button" className="a1-gate-review-btn" onClick={() => handleMarkReviewed('speaking')}>
+            Confirmar revisão Speaking
+          </button>
+        )}
+        <span className={state.writingReviewed ? 'ok' : 'warn'}>
+          <ShieldCheck size={14} /> Writing {state.writingReviewed ? 'revisado' : 'aguardando revisão'}
+        </span>
+        {!state.writingReviewed && (
+          <button type="button" className="a1-gate-review-btn" onClick={() => handleMarkReviewed('writing')}>
+            Confirmar revisão Writing
+          </button>
+        )}
       </div>
 
       {safeArray(summary.requiredActions).length ? (

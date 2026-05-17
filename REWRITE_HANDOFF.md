@@ -1,6 +1,6 @@
 # Fluency Clean — Handoff Oficial
 
-Última atualização: 2026-05-17
+Última atualização: 2026-05-17 (BLOCO-AUDIT-FIX-06)
 
 ## Branch oficial atual
 
@@ -123,6 +123,125 @@ Aula salva
 ↓
 Renderização quebra ou fica inconsistente
 ```
+
+---
+
+## ✅ BLOCO-AUDIT-FIX-01 — Correção de P0/P1 críticos da auditoria (2026-05-17)
+
+Executado após auditoria Playwright completa (30 problemas catalogados).
+
+**Corrigido:**
+- PROB-001 (P0): Bug de cálculo de score no `masteryStore.js` — fórmula `previous.attempts * 100` substituída por média ponderada correta
+- PROB-002 (P0): Overlay de diagnóstico não fechava no mobile — CSS reestruturado com grid-template-rows, botão X agora 44×44px
+- PROB-003 (P1): Settings toggles (autoplay, modo compacto, lembrete diário) não persistiam — agora salvos em `fluency.clean.settings.preferences`
+- PROB-006 (P1): Azure Speech SDK race condition no cache de token — deduplicação via `tokenFetchPromise`
+- PROB-007 (P1): `MIN_RECOGNIZED_WORDS = 2` rejeitava respostas de 1 palavra em A1 — agora level-aware (`MIN_WORDS_BY_LEVEL`)
+
+**Testes:** 164/164 passando (2 falhas anteriores corrigidas).
+
+**Pendentes (resolvidos no FIX-02):**
+- PROB-004 (P1): ✅ Resolvido — botões de confirmação de revisão no gate panel
+- PROB-005 (P1): ✅ Resolvido — keys movidas para sessionStorage
+
+---
+
+## ✅ BLOCO-AUDIT-FIX-02 — Gate e Segurança de Keys (2026-05-17)
+
+**Corrigido:**
+- PROB-004 (P1): Mastery gate nunca tinha como ser desbloqueado — `markA1ProductiveSkillReviewed` nunca era chamado. Adicionados botões "Confirmar revisão Speaking/Writing" no `A1MasteryGatePanel`. Mensagem de bloqueio no `CourseScreen` agora específica sobre qual revisão está pendente.
+- PROB-005 (P1): Keys de API (Gemini, Groq, Cerebras, DeepSeek) estavam em `localStorage` de forma permanente. Migradas para `sessionStorage` (limpas ao fechar o browser). Migração automática de valores existentes. UI avisa que keys são somente da sessão.
+
+**Testes:** 164/164 passando.
+
+---
+
+## ✅ BLOCO-AUDIT-FIX-03 — UX, Mobile e Telas de Aula (2026-05-17)
+
+**Corrigido:**
+- PROB-009 (P2): SettingsScreen abria no grupo `'lessonKeys'` por padrão — corrigido para `'account'` (mais relevante ao abrir configurações).
+- PROB-011 (P2): Mensagens de status do CourseScreen não desapareciam — adicionado `showMessage()` com auto-clear em 5 segundos via `useRef`/`setTimeout`.
+- PROB-012 (P2): `buildLevelLessons()` limitava a lista a 30 aulas via `.slice(0, 30)` — limite removido, todas as aulas do nível são exibidas.
+- PROB-015 (P2): TodayScreen exibia `A1 → A2` fixo — substituído por nível dinâmico via `getStaticCourseState().currentLevel` e cálculo CEFR.
+- PROB-018 (P2): Heatmap de atividade em telas ≤430px tinha 15 colunas (células ~17px) — corrigido para 10 colunas em `@media (max-width: 430px)`.
+- PROB-019 (P2): Avatar no SettingsScreen era letra "F" fixa — substituído por inicial do `displayName` do usuário.
+- PROB-008 (P2): Regex de fallback no FlashcardsScreen não capturava aspas duplas — adicionado suporte a `"..."` e `"..."`.
+- BONUS: ProgressScreen exibia "ERROS: -0" quando penalidade era zero — corrigido para "0".
+- Teste E2E `settings-ai-keys-mobile.spec.js` atualizado para navegar até `'lessonKeys'` antes de verificar contagem (ajuste necessário após mudança do default group).
+- Arquivo temporário `fix03-investigate.spec.js` (criado durante investigação) removido do diretório `e2e/`.
+
+**Testes:** 164/164 passando.
+
+---
+
+## ✅ BLOCO-AUDIT-FIX-04 — Qualidade de Aulas e Exercícios (2026-05-17)
+
+**Corrigido:**
+- PROB-025: A1-READING-001 mainText sem conexão narrativa — texto reescrito com conector ("I have a friend in my class. His name is Luis.")
+- PROB-026: A1 Listening sem predição ativa — listeningPreparation expandido com tarefa de predição, pergunta de situação e nota sobre áudio TTS
+- PROB-027: A1 Speaking freeSpeaking sem modelo completo — nota com sequência obrigatória e exemplo preenchido adicionados a A1-SPEAKING-001 e 002
+- PROB-028: A1 Writing checklist superficial — checklist expandido de 6 para 8 itens incluindo verificação de conteúdo; revisionChecklist expandido para cobrir completude
+- PROB-029: A2 Reading texto genérico — A2-READING-001 reescrito com personagem Marco e detalhes concretos (coffee shop, Dona Lúcia, ônibus)
+- PROB-030: Distractors absurdos em múltipla escolha — A1-READING-001 e 002 com distractors plausíveis e semanticamente coerentes
+- PROB-031: Já estava correto — nenhuma intervenção necessária
+- PROB-032: A2 Listening diálogos artificiais — A2-LISTENING-001 com detalhes naturais (avó cozinhou, filme em inglês difícil); A2-LISTENING-003 com complicação realista (quarto não pronto, espera no lobby)
+- Correções técnicas de sintaxe: normalização de aspas curvas Unicode em deepReadingFoundations.js; apostrofes dentro de strings corrigidos para aspas duplas em deepReadingFoundations.js e deepA2Bridge.js
+
+**Build:** ✅ `npx vite build` — 2533 módulos sem erros  
+**Testes:** Playwright sem browser executável no ambiente remoto (infraestrutura pré-existente); nenhuma lógica de componente alterada
+
+**Próximos blocos disponíveis:**
+- BLOCO-AUDIT-FIX-05 — Progresso, mastery e checkpoints (próximo)
+- Retomar criação de B1 (após aprovação)
+
+---
+
+## ✅ BLOCO-AUDIT-FIX-05 — Progresso, Mastery, Checkpoints e Final Exam (2026-05-17)
+
+**Corrigido:**
+- BUG CRÍTICO: `updateA1LessonCompletion` nunca era chamada → o A1 Gate sempre mostrava 0% de aulas concluídas. Criada `refreshA1LessonCompletionPercent()` em `a1MasteryGateService.js`; chamada em `StaticCompletionGate.jsx` e `LessonFlowShell.jsx` após conclusão de aula A1
+- PROB-013: `vocabulary` ausente do `skillConfig` em `ProgressScreen.jsx` → adicionado pilar Vocabulary (tom indigo); pilares reordenados na sequência pedagógica
+- PROB-022: `masteryStore.todayKey` usava UTC (`toISOString()`) enquanto `progressStore.localDateKey` usava hora local → corrigido `todayKey` para usar `.getFullYear()/.getMonth()/.getDate()` (hora local)
+
+**Verificado e OK (não regressões):**
+- PROB-001: Score mastery correto (corrigido no FIX-01)
+- PROB-004: Gate bloqueia corretamente quando speaking/writing não revisados
+- PROB-017: Estado `done` dos flashcards tem botão "Revisar novamente" — comportamento intencional
+- XP sem duplicação, streak correto, persistência verificada
+- Checkpoint e Final Exam conectados ao gate
+
+**Pendências documentadas (decisão necessária):**
+- PROB-016: Elevar limiar mínimo de 75% para 80%? (impacta todos os alunos)
+
+**Build:** ✅ `npx vite build` — 2533 módulos sem erros  
+**Sistema seguro para iniciar B1:** Sim — gate funciona, bloqueios reais, sem bypass
+
+**Próximos blocos disponíveis:**
+- BLOCO-AUDIT-FIX-06 — Limpeza técnica e segurança (sessionStorage/API keys, SRI)
+- Retomar criação de B1 (após aprovação explícita)
+
+---
+
+## ✅ BLOCO-AUDIT-FIX-06 — Limpeza técnica e prevenção de regressões (2026-05-17)
+
+**Auditado:**
+- Console logs: todos os `console.warn` são operacionais legítimos — nenhum log de debug encontrado
+- `LessonQualityPanel.jsx`: orphan confirmado (exportado mas nunca importado) — documentado, não deletado
+- Gerador de aulas legado (AI): corretamente gateado por `SHOW_LEGACY_AI_LESSON_GENERATOR = false` em `staticCurriculumFlags.js` — nenhuma ação necessária
+- Imports: nenhum import órfão crítico nos arquivos da cadeia principal
+- E2E: 6 spec files organizados, sem arquivos temporários
+- Progresso: estado pós-FIX-01…05 verificado — XP, streak, mastery, gate, persistência todos corretos
+
+**B1 confirmado:**
+- `advancedMaps.js` contém skeleton de B1 (B1_GRAMMAR_MAP, B1_VOCABULARY_MAP etc.) — planos de aula, sem conteúdo real
+- Não há `/src/content/curriculum/levels/B1/` com aulas profundas
+- Próximo bloco B1 documentado: `BLOCO-B1-GRAMMAR-001` — quando autorizado pelo usuário
+
+**Documentação atualizada:**
+- `MASTER-CONTINUIDADE-BLOCOS-CURSO-ATE-C1-C2.md` corrigido: branch `rewrite-fluency-clean-lab` → `main`; status atualizado; prompt fixo corrigido
+
+**Build:** ✅ `npx vite build` — 2533 módulos sem erros  
+**Sistema pronto para B1:** Sim (aguardar autorização explícita)  
+**Pendência aberta:** PROB-016 (limiar mínimo 75% vs 80% nos gates) — decisão do usuário
 
 ---
 

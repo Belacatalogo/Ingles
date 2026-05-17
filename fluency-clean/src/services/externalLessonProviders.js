@@ -11,9 +11,62 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 function text(value) { return String(value ?? '').trim(); }
 function readRawLocalStorage(name) { try { return text(window.localStorage.getItem(name) || ''); } catch { return ''; } }
 function writeRawLocalStorage(name, value) { try { if (!value) window.localStorage.removeItem(name); else window.localStorage.setItem(name, value); } catch {} }
-function readLocalText(name) { const appValue = text(storage.getText(name, '')); return appValue || readRawLocalStorage(name); }
-function saveLocalText(name, value) { const normalized = text(value); if (!normalized) { storage.remove(name); writeRawLocalStorage(name, ''); return ''; } storage.setText(name, normalized); writeRawLocalStorage(name, normalized); return normalized; }
-function clearLocalText(name) { storage.remove(name); writeRawLocalStorage(name, ''); }
+
+// API keys (paths ending in .key) are stored in sessionStorage only — never persisted to localStorage
+const LS_PREFIX = 'fluency.clean.';
+const KEY_STORAGE_PATHS = ['lesson.groq.key', 'lesson.cerebras.key', 'lesson.deepseek.key'];
+function isKeyPath(name) { return String(name).endsWith('.key'); }
+
+let _keysMigrated = false;
+function ensureKeysMigrated() {
+  if (_keysMigrated || typeof sessionStorage === 'undefined') return;
+  _keysMigrated = true;
+  for (const path of KEY_STORAGE_PATHS) {
+    const prefixed = LS_PREFIX + path;
+    try {
+      if (!sessionStorage.getItem(prefixed)) {
+        const v = window.localStorage.getItem(prefixed) || readRawLocalStorage(path);
+        if (v) sessionStorage.setItem(prefixed, v);
+      }
+      window.localStorage.removeItem(prefixed);
+      window.localStorage.removeItem(path);
+    } catch {}
+  }
+}
+
+function readKeyFromSession(name) {
+  ensureKeysMigrated();
+  try { return text(sessionStorage.getItem(LS_PREFIX + name) || ''); } catch { return ''; }
+}
+
+function saveKeyToSession(name, value) {
+  try {
+    const prefixed = LS_PREFIX + name;
+    if (value) sessionStorage.setItem(prefixed, value);
+    else sessionStorage.removeItem(prefixed);
+    try { window.localStorage.removeItem(prefixed); } catch {}
+    try { window.localStorage.removeItem(name); } catch {}
+  } catch {}
+}
+
+function readLocalText(name) {
+  if (isKeyPath(name)) return readKeyFromSession(name);
+  const appValue = text(storage.getText(name, ''));
+  return appValue || readRawLocalStorage(name);
+}
+function saveLocalText(name, value) {
+  const normalized = text(value);
+  if (isKeyPath(name)) { saveKeyToSession(name, normalized); return normalized; }
+  if (!normalized) { storage.remove(name); writeRawLocalStorage(name, ''); return ''; }
+  storage.setText(name, normalized);
+  writeRawLocalStorage(name, normalized);
+  return normalized;
+}
+function clearLocalText(name) {
+  if (isKeyPath(name)) { saveKeyToSession(name, ''); return; }
+  storage.remove(name);
+  writeRawLocalStorage(name, '');
+}
 function normalizeForcedProvider(value) { const provider = text(value).toLowerCase(); return provider === 'groq' || provider === 'cerebras' ? provider : ''; }
 
 function stripCodeFence(value) { return text(value).replace(/^```(?:json)?\s*/i, '').replace(/```$/i, '').trim(); }

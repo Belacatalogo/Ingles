@@ -24,7 +24,7 @@ function cardFrom(item, index) {
 }
 function fallbackCardsFromLesson(lesson) {
   const source = [lesson?.title, lesson?.focus, lesson?.objective, ...(Array.isArray(lesson?.sections) ? lesson.sections.map((section) => `${section?.title || ''} ${section?.content || ''}`) : [])].join(' ');
-  const quoted = [...source.matchAll(/'([^']{2,32})'|`([^`]{2,32})`/g)].map((match) => clean(match[1] || match[2])).filter(Boolean);
+  const quoted = [...source.matchAll(/'([^']{2,32})'|`([^`]{2,32})`|"([^"]{2,32})"|"([^"]{2,32})"/g)].map((match) => clean(match[1] || match[2] || match[3] || match[4])).filter(Boolean);
   const important = ['to be', 'to have', 'Present Simple', 'I am', 'you are', 'he is', 'she has', 'have', 'has'].filter((term) => source.toLowerCase().includes(term.toLowerCase()));
   return [...new Set([...important, ...quoted])].slice(0, 12).map((word, index) => cardFrom({ word, meaning: 'Item importante da aula atual.', example: '' }, index));
 }

@@ -10,7 +10,8 @@ import { startRecording } from '../services/recorder.js';
 import { SpeakingStepper } from '../speaking/SpeakingStepper.jsx';
 import { StudentAnswerFeedbackCard } from '../components/ai/StudentAnswerFeedbackCard.jsx';
 
-const MIN_RECOGNIZED_WORDS = 2;
+// Mínimo por nível: A1 aceita resposta de 1 palavra (ex: "Hello", "Yes", "No")
+const MIN_WORDS_BY_LEVEL = { A1: 1, A2: 2, B1: 2, B2: 3, C1: 3, C2: 3 };
 
 const levelConversations = {
   A1: {
@@ -240,7 +241,8 @@ export function SpeakingScreen() {
   }
 
   function appendFreeSpeechAnalysis(recognizedText, pronunciationResult = null) {
-    if (countWords(recognizedText) < MIN_RECOGNIZED_WORDS) {
+    const minWords = MIN_WORDS_BY_LEVEL[level] ?? 2;
+    if (countWords(recognizedText) < minWords) {
       setMessage('Ouvi só um pedaço da frase. Tente de novo falando de forma natural até terminar.');
       setChatMessages((current) => [...current, { who: 'ai', text: `Ouvi muito pouco: “${recognizedText || 'áudio curto'}”. Toque no microfone e responda de novo do seu jeito.` }]);
       return;

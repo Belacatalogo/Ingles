@@ -13,7 +13,9 @@ const TYPE_TO_PILLAR = {
 };
 
 function todayKey(date = new Date()) {
-  return date.toISOString().slice(0, 10);
+  const d = date instanceof Date ? date : new Date(date);
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
 function nextSaturdayKey(date = new Date()) {
@@ -153,8 +155,8 @@ export function recordLessonMastery({ lesson, answers = {}, writtenAnswer = '', 
   const weak = result.score < 85;
   const attempts = previous.attempts + 1;
   const correct = previous.correct + result.correct;
-  const totalAttempts = previous.attempts * 100 + result.score;
-  const score = Math.round(totalAttempts / attempts);
+  const totalScore = previous.score * previous.attempts + result.score;
+  const score = Math.round(totalScore / attempts);
 
   const nextPillar = {
     ...previous,

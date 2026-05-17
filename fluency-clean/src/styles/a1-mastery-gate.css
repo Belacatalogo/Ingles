@@ -180,6 +180,23 @@
   border: 1px solid rgba(249, 115, 22, 0.18);
 }
 
+.a1-gate-review-btn {
+  border-radius: 999px;
+  padding: 7px 13px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #bfdbfe;
+  background: rgba(96, 165, 250, 0.14);
+  border: 1px solid rgba(96, 165, 250, 0.28);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.a1-gate-review-btn:hover {
+  background: rgba(96, 165, 250, 0.26);
+  border-color: rgba(96, 165, 250, 0.46);
+}
+
 .a1-gate-pillar-grid {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));

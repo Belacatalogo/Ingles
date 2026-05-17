@@ -10,6 +10,7 @@ import { getErrorBankSummary } from '../services/errorBank.js';
 import { getFlashcardSessions, getLessonCompletions, getProgressSummary, getUserDisplayName, hasFlashcardSessionToday, hasSpeakingSessionToday, localDateKey } from '../services/progressStore.js';
 import { getVocabularySrsSummary } from '../services/vocabularySrs.js';
 import { getWordOfTheDay } from '../services/wordOfTheDay.js';
+import { getStaticCourseState } from '../services/curriculumEngine.js';
 
 const DAILY_QUOTES = [
   { en: '"The best way to predict the future is to invent it."', pt: '"A melhor forma de prever o futuro é inventá-lo."', author: 'Alan Kay' },
@@ -165,6 +166,9 @@ export function TodayScreen({ onLessonGenerated, onNavigate }) {
   const percent = Math.max(0, Math.min(100, Math.round((completed / totalTasks) * 100)));
   const streak = progress.streakDays || 0;
   const levelPercent = Math.min(Math.max(progress.xp || 0, 0), 100);
+  const CEFR_ORDER = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
+  const currentLevel = getStaticCourseState().currentLevel || 'A1';
+  const nextLevel = CEFR_ORDER[CEFR_ORDER.indexOf(currentLevel) + 1] || null;
   const cardsAvailable = Array.isArray(currentLesson?.vocabulary) ? currentLesson.vocabulary.length : 0;
   const quote = useMemo(() => getDailyQuote(), []);
 
@@ -241,7 +245,7 @@ export function TodayScreen({ onLessonGenerated, onNavigate }) {
         </article>
         <article className="today-summary-card">
           <div className="today-card-heading"><span>Nível</span><Target size={15} /></div>
-          <strong>A1 <small>→ A2</small></strong>
+          <strong>{currentLevel}{nextLevel ? <small> → {nextLevel}</small> : null}</strong>
           <div className="today-level-track"><i style={{ width: `${levelPercent}%` }} /></div>
           <p>{levelPercent}% registrado em XP real</p>
         </article>

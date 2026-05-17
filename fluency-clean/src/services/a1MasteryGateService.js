@@ -1,5 +1,7 @@
 import { A1_CHECKPOINTS, A1_FINAL_EXAM, evaluateA1FinalGate, getA1FinalExamReadiness } from '../content/curriculum/levels/A1/a1MasteryAssessments.js';
 import { LEVEL_MASTERY_PILLARS, LEVEL_PASSING_RULES } from '../content/curriculum/levelMasteryFramework.js';
+import { getStaticLessons } from '../content/curriculum/index.js';
+import { getCompletedLessonIds, isStaticLessonReady } from './lessonProgression.js';
 
 const STORAGE_KEY = 'fluency:a1-mastery-gate:v1';
 
@@ -66,6 +68,20 @@ export function saveA1MasteryGateState(nextState = {}) {
 
 export function updateA1LessonCompletion(lessonCompletionPercent = 0) {
   return saveA1MasteryGateState({ lessonCompletionPercent: clampPercent(lessonCompletionPercent) });
+}
+
+export function refreshA1LessonCompletionPercent() {
+  try {
+    const lessons = getStaticLessons('A1');
+    const readyLessons = Array.isArray(lessons) ? lessons.filter(isStaticLessonReady) : [];
+    if (!readyLessons.length) return getA1MasteryGateState();
+    const completedIds = getCompletedLessonIds();
+    const completed = readyLessons.filter((lesson) => completedIds.has(lesson.id)).length;
+    const percent = Math.round((completed / readyLessons.length) * 100);
+    return updateA1LessonCompletion(percent);
+  } catch {
+    return getA1MasteryGateState();
+  }
 }
 
 export function recordA1CheckpointScore(checkpointId, score) {
