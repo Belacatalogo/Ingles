@@ -48,6 +48,7 @@ function emptyProfile() {
 }
 
 function normalizeProfile(value = {}) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return emptyProfile();
   const base = emptyProfile();
   const pillars = { ...base.pillars };
   for (const pillar of PILLARS) {
