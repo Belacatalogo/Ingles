@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { canAdvanceFromPhase, clampPhaseIndex, getLessonFlowPercent, getVisitedPhaseIds, safePhases } from './lessonFlowProgress.js';
+import { canAccessPhaseIndex, canAdvanceFromPhase, clampPhaseIndex, getLessonFlowPercent, getVisitedPhaseIds, safePhases } from './lessonFlowProgress.js';
 import { clearDraft, loadDraft, saveDraft } from './lessonFlowDraftStore.js';
 
 export function useLessonFlowState(phases = [], options = {}) {
@@ -28,9 +28,9 @@ export function useLessonFlowState(phases = [], options = {}) {
 
   function goTo(index) {
     const target = clampPhaseIndex(index, phaseList);
-    // block forward skipping when the current required phase is incomplete
-    if (target > safeIndex && !canAdvance) {
-      setMessage(activePhase?.blockedMessage || 'Conclua a etapa atual antes de avançar.');
+    // Block if any mandatory phase between current and target is incomplete
+    if (!canAccessPhaseIndex({ targetIndex: target, activeIndex: safeIndex, phases: phaseList, attempts, completed })) {
+      setMessage(activePhase?.blockedMessage || 'Conclua as etapas anteriores antes de avançar.');
       return;
     }
     setActiveIndex(target);
@@ -38,6 +38,10 @@ export function useLessonFlowState(phases = [], options = {}) {
     // Note: does NOT reset completed — only restart() resets it
     setMessage('');
     options.onPhaseChange?.(phaseList[target], target);
+  }
+
+  function canGoToIndex(index) {
+    return canAccessPhaseIndex({ targetIndex: index, activeIndex: safeIndex, phases: phaseList, attempts, completed });
   }
 
   function restart() {
@@ -110,6 +114,7 @@ export function useLessonFlowState(phases = [], options = {}) {
     message,
     setMessage,
     goTo,
+    canGoToIndex,
     restart,
     next,
     previous,

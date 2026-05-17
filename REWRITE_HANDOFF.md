@@ -183,6 +183,46 @@ Funções cobertas:
 
 ---
 
+## ✅ BLOCO FLOW-STABILITY-1 — Stepper bloqueado + persistência mid-lesson (2026-05-17)
+
+Melhoria de estabilidade do fluxo de fases da aula.
+
+Arquivos alterados:
+- `src/lessons/flow/lessonFlowProgress.js` — nova função `canAccessPhaseIndex`
+- `src/lessons/flow/useLessonFlowState.js` — `goTo` corrigido; `canGoToIndex` exposto
+- `src/lessons/flow/LessonPhaseStepper.jsx` — acesso por fase com `canGoToIndex`; ícone Lock; `aria-disabled`
+- `src/lessons/flow/LessonFlowShell.jsx` — passa `canGoToIndex` ao stepper
+
+Arquivo criado:
+- `docs/BLOCO-FLOW-STABILITY-1-STEPPER-DRAFT-CONCLUIDO.md`
+
+Comportamento novo:
+- Não é mais possível pular fase obrigatória intermediária via stepper ou `goTo`
+- Voltar para etapas já visitadas: sempre permitido
+- Fases bloqueadas: ícone de cadeado + `aria-disabled` + mensagem no footer ao clicar
+- Persistência mid-lesson: draft já funcionava (24h TTL); confirmado correto
+- `completed` não é resetado por navegação (já correto desde hotfix)
+- Draft limpo somente após conclusão confirmada (já correto desde hotfix)
+
+Build: ✅ 2533 módulos, sem erros.
+
+Confirmação:
+```
+Branch: main
+Sem branch nova.
+Sem PR.
+Sem merge.
+Sem rebase.
+Sem force push.
+Sem alteração em progressStore/completeLesson.
+Sem alteração em Azure/Gemini/Firebase/secrets.
+Sem alteração em IA Tutor, adaptiveReview ou mastery.
+```
+
+Próxima pendência: COMPLETION-UX-1
+
+---
+
 ## ✅ BLOCO UX-POLISH-1 — iPhone Lesson Flow Polish (2026-05-17)
 
 Polimento visual e mobile da aba Aula para iPhone (~390–430px). Foco exclusivo em CSS.

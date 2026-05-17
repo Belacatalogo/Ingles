@@ -119,7 +119,7 @@ export function LessonFlowShell({ lesson, phases = [], onPhaseChange, onComplete
             phases={flow.phases}
             activeIndex={flow.activeIndex}
             visitedPhaseIds={flow.visitedPhaseIds}
-            canGoForward={flow.canAdvance}
+            canGoToIndex={flow.canGoToIndex}
             onSelect={flow.goTo}
           />
           {children ? children(flow) : <LessonPhaseCard phase={flow.activePhase} flow={flow} lesson={lesson} />}

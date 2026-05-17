@@ -42,3 +42,22 @@ export function buildInitialFlowState(phases = []) {
     percent: getLessonFlowPercent(0, list),
   };
 }
+
+/**
+ * Can the student navigate to targetIndex via the stepper?
+ * - backward (target <= current): always yes
+ * - forward: only if every phase between current (inclusive) and target (exclusive)
+ *   satisfies canAdvanceFromPhase — i.e., no mandatory gap is skipped
+ * - completed lesson: always yes (review mode)
+ */
+export function canAccessPhaseIndex({ targetIndex, activeIndex, phases, attempts, completed = false }) {
+  if (completed) return true;
+  const list = safePhases(phases);
+  const target = clampPhaseIndex(targetIndex, list);
+  const current = clampPhaseIndex(activeIndex, list);
+  if (target <= current) return true;
+  for (let i = current; i < target; i++) {
+    if (!canAdvanceFromPhase(list[i], attempts)) return false;
+  }
+  return true;
+}
