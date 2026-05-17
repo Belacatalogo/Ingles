@@ -1180,3 +1180,40 @@ Build: ✅ 2536 módulos. Total B1: 13 aulas.
 Documento: `fluency-clean/docs/BLOCO-21B-VALIDACAO-B1-2-PAST-EXPERIENCES-PARTE-1-CONCLUIDO.md`
 
 Próximo: BLOCO 21C — B1.2 Past Experiences Parte 2 (Vocabulary-004, Vocabulary-005, Listening-002, Writing-002)
+
+---
+
+## ✅ BLOCO 21C — B1.2 Past Experiences Parte 2 (2026-05-17)
+
+Arquivo criado: `fluency-clean/src/content/curriculum/levels/B1/deepB1PastExperiencesPart2.js`
+Arquivo alterado: `fluency-clean/src/content/curriculum/staticLessonContent.js`
+
+Aulas criadas:
+- `B1-VOCABULARY-004` — Narrative vocabulary (at first, gradually, it turned out, believe it or not, 16 words)
+- `B1-VOCABULARY-005` — Talking about the past: used to, would, back then (14 words)
+- `B1-LISTENING-002` — Personal story: Maya's confidence journey in London (276w transcript, 5 q, 3 shadowing)
+- `B1-WRITING-002` — Short personal narrative 120-150 words (model, breakdown, checklist)
+
+Fix: campos não-schema remapeados para dangerousConfusions, miniDialogues, shadowing, vocabulary, oralProduction.
+
+Total B1 após este bloco: **17 aulas**. Build: ✅ 2537+ módulos.
+
+Confirmação:
+```
+Branch: main. Sem branch nova. Sem PR. Sem merge. Sem rebase. Sem force push.
+Audit FIX-01 a FIX-06 preservados (merge automático limpo).
+```
+
+Documento: `fluency-clean/docs/BLOCO-21C-B1-2-PAST-EXPERIENCES-PARTE-2-CONCLUIDO.md`
+
+---
+
+## ✅ BLOCO 21D — Validação B1.2 Past Experiences Parte 2 (2026-05-17)
+
+✅ APROVADO. 4 lições: B1-VOCABULARY-004, B1-VOCABULARY-005, B1-LISTENING-002, B1-WRITING-002.
+
+Total B1: **17 aulas**. Build: ✅ 2537+ módulos.
+
+Documento: `fluency-clean/docs/BLOCO-21D-VALIDACAO-B1-2-PAST-EXPERIENCES-PARTE-2-CONCLUIDO.md`
+
+Próximo: BLOCO 22A — B1.3 Opinions and Discussion — Parte 1
