@@ -134,3 +134,50 @@ export function getLevelReadinessReport(level = 'A1') {
 export function canAdvanceFromLevel(level = 'A1', options = {}) {
   return evaluateStaticLevelGate(level, options).passed;
 }
+
+export function getMasteryGateStatus(level = 'A1', options = {}) {
+  const completedIds = options.completedIds || getCompletedLessonIds();
+  const completions = getLessonCompletions().filter(
+    (c) => String(c.level || '').toUpperCase() === String(level).toUpperCase(),
+  );
+
+  if (!completions.length) {
+    return { status: 'needs_more_data', label: 'Dados insuficientes', message: 'Complete aulas para avaliar seu domínio.', weakPillars: [], recommendation: 'Comece pelas primeiras aulas do nível para gerar dados de domínio.' };
+  }
+
+  const gate = evaluateStaticLevelGate(level, { completedIds });
+
+  if (gate.passed) {
+    return { status: 'ready', label: 'Pronto para avançar', message: gate.message, weakPillars: [], recommendation: 'Domínio suficiente. Avance para o próximo nível quando quiser.' };
+  }
+
+  const weakPillars = Object.entries(gate.pillars)
+    .filter(([, p]) => p.total > 0 && !p.passed)
+    .map(([pillar, p]) => ({ pillar, percent: p.percent, averageMastery: p.averageMastery, requiredPercent: p.requiredPercent }));
+
+  if (!weakPillars.length) {
+    return { status: 'needs_more_data', label: 'Mais aulas necessárias', message: 'Continue estudando para avaliar seu domínio por pilar.', weakPillars: [], recommendation: 'Faça mais aulas e complete a prática após cada uma.' };
+  }
+
+  const allZeroMastery = weakPillars.every((w) => w.averageMastery === 0);
+  if (allZeroMastery) {
+    return { status: 'needs_more_data', label: 'Dados insuficientes', message: 'Continue estudando para gerar dados de domínio.', weakPillars, recommendation: 'Faça a prática após cada aula para gerar dados de domínio.' };
+  }
+
+  const hasLowCompletion = weakPillars.some((w) => w.percent < 30);
+  if (hasLowCompletion) {
+    const focusPillars = weakPillars.slice(0, 2).map((w) => w.pillar).join(' e ');
+    return { status: 'needs_more_lessons', label: 'Mais aulas necessárias', message: `Complete mais aulas antes de avançar. Foque em: ${focusPillars}.`, weakPillars, recommendation: `Continue as aulas de ${focusPillars} para avançar.` };
+  }
+
+  const pillarNames = weakPillars.slice(0, 3).map((w) => w.pillar).join(', ');
+  return { status: 'needs_review', label: 'Revisão recomendada', message: `Revise antes de avançar: ${pillarNames}.`, weakPillars, recommendation: `Antes do próximo nível, revise: ${pillarNames}.` };
+}
+
+export function canAdvanceToNextLevel(level = 'A1', options = {}) {
+  return getMasteryGateStatus(level, options).status === 'ready';
+}
+
+export function getNextRecommendedAction({ level = 'A1', ...options } = {}) {
+  return getMasteryGateStatus(level, options).recommendation;
+}

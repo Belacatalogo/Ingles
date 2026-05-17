@@ -221,6 +221,54 @@ Documento completo: `fluency-clean/docs/BLOCO-FLASHCARDS-QUALITY-1-CONCLUIDO.md`
 
 ---
 
+## ✅ BLOCO MASTERY-AUDIT-1 + MASTERY-GATE-1 — Auditoria e gate controlado (2026-05-17)
+
+Auditoria completa do sistema de progresso/domínio + gate de recomendação automática por pilar.
+
+Arquivos alterados/criados:
+- `src/services/masteryGate.js` — +3 funções: `getMasteryGateStatus`, `canAdvanceToNextLevel`, `getNextRecommendedAction`
+- `src/components/course/MasteryRecommendationPanel.jsx` — painel automático de domínio por pilar (novo)
+- `src/screens/CourseScreen.jsx` — import + render do painel de recomendação
+- `src/styles/course-screen.css` — CSS do painel de domínio
+- `e2e/masteryGate.spec.js` — 4 testes e2e com mastery data injetada
+
+Auditoria documentada em:
+- `fluency-clean/docs/BLOCO-MASTERY-AUDIT-1-CONCLUIDO.md`
+
+Gate documentado em:
+- `fluency-clean/docs/BLOCO-MASTERY-GATE-1-CONCLUIDO.md`
+
+Principais achados da auditoria:
+- Duas métricas de domínio: `masteryStore.js` (score histórico) e `evaluateStaticLevelGate()` (completion+prática)
+- Gate A1→A2 é manual (checkpoints + prova) — gate automático é apenas recomendação
+- `evaluateStaticLessonGate()` existe mas não é enforced em `completeLesson()`
+- Sistema estático e sistema IA são paralelos — sem colisão
+
+Gate implementado:
+- Modo recomendação (não bloqueio) para todos os níveis
+- `MasteryRecommendationPanel` apenas aparece quando há dados (≥1 pillar com attempts > 0)
+- Não bloqueia navegação nem botões principais
+- 5 estados: `ready | needs_review | needs_more_lessons | needs_more_data | blocked_no_progress`
+
+Build: ✅ 2533 módulos, sem erros.
+Playwright: ✅ 28/28 (14 smoke + 6 flashcards + 8 masteryGate).
+
+Confirmação:
+```
+Branch: main.
+Sem branch nova.
+Sem PR.
+Sem merge.
+Sem rebase.
+Sem force push.
+Não gerou aulas novas.
+Não alterou conteúdo A1.
+Não ativou Firebase/Azure/Gemini.
+Gate inicial é recomendação/controlado.
+```
+
+---
+
 ## ✅ BLOCO COMPLETION-UX-1 — Tela de conclusão, progresso e prática extra (2026-05-17)
 
 Melhoria da experiência pós-conclusão de aula.

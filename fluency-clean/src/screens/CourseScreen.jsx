@@ -4,6 +4,7 @@ import { ErrorReviewPanel } from '../components/review/ErrorReviewPanel.jsx';
 import { A1MasteryGatePanel } from '../components/course/A1MasteryGatePanel.jsx';
 import { A1CheckpointShell } from '../components/course/A1CheckpointShell.jsx';
 import { A1FinalExamShell } from '../components/course/A1FinalExamShell.jsx';
+import { MasteryRecommendationPanel } from '../components/course/MasteryRecommendationPanel.jsx';
 import { CURRICULUM_LEVELS, getStaticLevel, getStaticLessons } from '../content/curriculum/index.js';
 import { getStaticCurriculumValidationStatus, validateGuidedCourseAccess } from '../content/validators/index.js';
 import { getStaticCourseSummary, setStaticCurrentLevel } from '../services/curriculumEngine.js';
@@ -258,7 +259,10 @@ export function CourseScreen({ onNavigate }) {
       {/* ── 3 — Revisão de erros ───────────────────────────────── */}
       <ErrorReviewPanel onNavigate={onNavigate} compact />
 
-      {/* ── 4 — Avaliações A1 ─────────────────────────────────── */}
+      {/* ── 4 — Domínio por pilar (recomendação automática) ──── */}
+      <MasteryRecommendationPanel level={activeLevel} />
+
+      {/* ── 5 — Avaliações A1 ─────────────────────────────────── */}
       {activeLevel === 'A1' ? (
         <>
           <A1MasteryGatePanel key={a1RefreshKey} />
