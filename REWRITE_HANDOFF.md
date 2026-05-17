@@ -1260,3 +1260,21 @@ Próximo: BLOCO 23A — B1.4 Problems, Advice and Decisions — Parte 1
 - B1-VOCABULARY-007: Problem and solution vocabulary
 - B1-SPEAKING-004: Describe a problem and ask for advice
 - B1-WRITING-004: Give written advice
+
+## ✅ BLOCO 23A — B1.4 Problems Part 1 (2026-05-17)
+
+✅ APROVADO. 5 lições: Grammar-009, Grammar-010, Vocabulary-007, Speaking-004, Writing-004. Build verde.
+
+Arquivo: `fluency-clean/src/content/curriculum/levels/B1/deepB1ProblemsPart1.js`
+
+B1 agora tem 31 aulas: grammar(10), vocabulary(7), reading(3), listening(3), speaking(4), writing(4).
+
+## ✅ BLOCO 23B — Validação B1.4 Problems Part 1 (2026-05-17)
+
+✅ APROVADO. Sem duplicatas. Build verde. 5 aulas profundas confirmadas.
+
+Próximo: BLOCO 23C — B1.4 Problems, Advice and Decisions — Parte 2
+- B1-GRAMMAR-011: Third Conditional (unreal past)
+- B1-READING-004: A dilemma/problem text
+- B1-LISTENING-004: A problem-solving conversation
+- B1-VOCABULARY-008: Decision-making vocabulary
