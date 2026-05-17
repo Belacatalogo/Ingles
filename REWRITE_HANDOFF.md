@@ -1315,3 +1315,22 @@ Próximo: BLOCO 24C — B1.5 Work and Study — Parte 2
 - B1-READING-005: A work or study article
 - B1-LISTENING-005: A work-related conversation
 - B1-VOCABULARY-010: Study and academic vocabulary
+
+## ✅ BLOCO 24C — B1.5 Work and Study Part 2 (2026-05-17)
+
+✅ APROVADO. 4 lições: Grammar-014, Reading-005, Listening-005, Vocabulary-010. Build verde.
+
+Arquivo: `fluency-clean/src/content/curriculum/levels/B1/deepB1WorkStudyPart2.js`
+
+B1 agora tem 44 aulas: grammar(14), vocabulary(10), reading(5), listening(5), speaking(5), writing(5).
+
+## ✅ BLOCO 24D — Validação B1.5 Work and Study Part 2 (2026-05-17)
+
+✅ APROVADO. Sem duplicatas. Build verde. 4 aulas profundas confirmadas.
+
+Próximo: BLOCO 25A — B1.6 Travel and Culture — Parte 1
+- B1-GRAMMAR-015: Comparatives and superlatives (review + advanced)
+- B1-GRAMMAR-016: Future continuous and future perfect
+- B1-VOCABULARY-011: Travel and transport vocabulary
+- B1-SPEAKING-006: Describe a trip or travel experience
+- B1-WRITING-006: Write a travel blog post or email about a trip
