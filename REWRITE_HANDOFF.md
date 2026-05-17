@@ -1217,3 +1217,27 @@ Total B1: **17 aulas**. Build: ✅ 2537+ módulos.
 Documento: `fluency-clean/docs/BLOCO-21D-VALIDACAO-B1-2-PAST-EXPERIENCES-PARTE-2-CONCLUIDO.md`
 
 Próximo: BLOCO 22A — B1.3 Opinions and Discussion — Parte 1
+
+---
+
+## ✅ BLOCO 22A — B1.3 Opinions Part 1 (2026-05-17)
+
+Arquivo criado: `fluency-clean/src/content/curriculum/levels/B1/deepB1OpinionsPart1.js`
+Arquivo alterado: `fluency-clean/src/content/curriculum/staticLessonContent.js`
+
+Aulas criadas:
+- `B1-GRAMMAR-005` — First Conditional (if + present simple / will)
+- `B1-GRAMMAR-006` — Zero vs First Conditional (facts vs possibilities)
+- `B1-GRAMMAR-007` — Expressing opinions phrases (I think, I believe, In my view, grades)
+- `B1-VOCABULARY-006` — Opinion/discussion vocabulary (16 words, debate chunks)
+- `B1-SPEAKING-003` — Express and defend an opinion (90-120s recording)
+
+Total B1: **22 aulas**. Build: ✅ 2537+ módulos.
+
+Documento: `fluency-clean/docs/BLOCO-22A-B1-3-OPINIONS-PARTE-1-CONCLUIDO.md`
+
+## ✅ BLOCO 22B — Validação B1.3 Opinions Part 1 (2026-05-17)
+
+✅ APROVADO. 5 lições: Grammar-005, 006, 007, Vocabulary-006, Speaking-003.
+
+Próximo: BLOCO 22C — B1.3 Opinions Part 2 (Linkers, Reading, Listening, Writing)
