@@ -1477,3 +1477,29 @@ Estado B1: SUBSTANCIALMENTE COMPLETO — 68 aulas profundas cobrindo as 8 unidad
 
 Próximo: BLOCO 27D — Validação B1.8 Part 2
 Após validação: Avaliar se adicionar BLOCO 27E (B1 final checkpoint / capstone) ou iniciar planejamento B2.
+
+## ✅ BLOCO 28A — B1.8 Reviews and Checkpoints Part 3 — NÍVEL B1 COMPLETO (2026-05-17)
+
+✅ APROVADO. 5 lições criadas e conectadas. NÍVEL B1 CONCLUÍDO.
+
+Arquivo: `fluency-clean/src/content/curriculum/levels/B1/deepB1ReviewsCheckpointsPart3.js`
+
+Aulas:
+- `B1-GRAMMAR-021` — Relative clauses (defining: who/which/that/where/whose vs non-defining: vírgulas, sem that)
+- `B1-GRAMMAR-022` — Question tags (positive→negative, auxiliary) + indirect questions (word order)
+- `B1-VOCABULARY-017` — Word-building (un-/dis-/re-/over-/mis-/pre- + -ful/-less/-ness/-tion/-ment/-er)
+- `B1-SPEAKING-009` — B1 completion speaking (narrativa 2-3 min, relative clause + mixed conditional integrados)
+- `B1-WRITING-009` — B1 completion writing (formal letter/email, Dear Sir/Madam, faithfully/sincerely, indirect questions)
+
+B1 agora tem **73 aulas**: grammar(22), vocabulary(17), reading(8), listening(8), speaking(9), writing(9).
+
+Build: ✅ sem erros.
+
+Documento: `fluency-clean/docs/BLOCO-28A-B1-8-REVIEWS-CHECKPOINTS-PARTE-3-CONCLUIDO.md`
+
+## 🎓 NÍVEL B1 COMPLETADO — 73 aulas profundas
+
+8 unidades temáticas completas: Bridge → Past Experiences → Opinions → Problems → Work/Study → Travel/Culture → Media/Technology → Reviews/Checkpoints
+
+Próximo passo: BLOCO 28B — Validação final B1
+Após validação: Planejamento do Nível B2 (8 unidades previstas: Bridge, Complex Narratives, Abstract Discussion, Professional English, Culture/Arts, Global Issues, Academic English, Reviews)
