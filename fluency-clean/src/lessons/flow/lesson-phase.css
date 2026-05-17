@@ -338,6 +338,31 @@
 }
 
 /* ── Checklist ──────────────────────────────────────────── */
+.lesson-phase-review-text {
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+  border: 1px solid rgba(91, 156, 246, .22);
+  border-radius: 16px;
+  background: rgba(91, 156, 246, .07);
+}
+
+.lesson-phase-review-text span {
+  color: #93c5fd;
+  font-size: 12px;
+  font-weight: 950;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.lesson-phase-review-text p {
+  margin: 0;
+  color: #e8f0ff;
+  font-size: 15px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
 .lesson-phase-checklist {
   list-style: none;
   padding: 0;
