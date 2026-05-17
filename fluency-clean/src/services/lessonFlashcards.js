@@ -17,28 +17,57 @@ function looksEnglish(value = '') {
 }
 
 function isInstructionText(value = '') {
-  // Portuguese/mixed instruction starters — should not appear on flashcard fronts
   return /^(complete|troque|escreva|leia|observe|revise|use\s|repita|ouça|fale|substitua|anote|monte|responda|identifique|marque|escolha|assinale|copie|forme|transforme|reescreva|coloque|organize)\b/i.test(clean(value));
 }
 
-function isTooLongFront(value = '') {
+// opts.longFront allows speaking/shadowing phrases up to 70 chars / 12 words
+function isTooLongFront(value = '', opts = {}) {
   const text = clean(value);
-  return text.length > 54 || text.split(' ').length > 9;
+  const maxLen = opts.longFront ? 70 : 54;
+  const maxWords = opts.longFront ? 12 : 9;
+  return text.length > maxLen || text.split(' ').length > maxWords;
 }
 
-function makeCard(raw = {}, index = 0, source = 'Aula atual') {
+// Generic placeholder strings that carry no real study value
+const GENERIC_BACKS = new Set([
+  'item importante da aula atual',
+  'frase útil da aula',
+  'frase útil para escrita',
+  'padrão gramatical da aula',
+  'palavra-chave na escuta',
+  'pronunciar com atenção',
+  'conectivo de texto',
+  'bloco de construção de texto',
+  'combinação natural da aula',
+  'frase modelo de fala',
+  'frase de diálogo da aula',
+  'correção importante da aula',
+]);
+
+// A back side has useful content if it is non-empty and not a known generic placeholder
+function hasUsefulContent(value = '') {
+  const text = clean(value).toLowerCase().replace(/\.$/, '').trim();
+  return Boolean(text) && !GENERIC_BACKS.has(text);
+}
+
+// opts forwarded from fromArray to allow pillar-specific overrides (e.g. longFront)
+function makeCard(raw = {}, index = 0, source = 'Aula atual', opts = {}) {
   const word = clean(raw.word || raw.term || raw.expression || raw.chunk || raw.text || raw.english || raw.question || raw.prompt || raw.title || raw.pattern || raw.label);
-  if (!word || isTooLongFront(word) || !looksEnglish(word) || isInstructionText(word)) return null;
+  if (!word || isTooLongFront(word, opts) || !looksEnglish(word) || isInstructionText(word)) return null;
 
   const translation = clean(raw.translation || raw.pt || raw.portuguese || raw.meaning || raw.answer || raw.definition || raw.expected || raw.right);
   const example = clean(raw.example || raw.sentence || raw.context || raw.why || raw.note || raw.explanation || raw.warning || raw.howToAvoid);
+
+  // Both sides must have real content — no generic placeholders, no empty backs
+  if (!hasUsefulContent(translation) && !hasUsefulContent(example)) return null;
+
   const deck = clean(raw.deck || raw.category || raw.source || source) || 'Aula atual';
 
   return {
     id: raw.id || `${slug(deck)}-${slug(word)}-${index}`,
     word,
     translation,
-    definition: clean(raw.definition || raw.meaning || translation || 'Item importante da aula atual.'),
+    definition: clean(raw.definition || raw.meaning || translation) || translation,
     example,
     deck,
   };
@@ -47,14 +76,15 @@ function makeCard(raw = {}, index = 0, source = 'Aula atual') {
 function fromString(value, index, source) {
   const word = clean(value);
   if (!word) return null;
-  return makeCard({ word, meaning: 'Item importante da aula atual.' }, index, source);
+  // Plain strings have no back content; makeCard quality gate will return null
+  return makeCard({ word }, index, source);
 }
 
-function fromArray(items, source, mapItem = (item) => item) {
+function fromArray(items, source, mapItem = (item) => item, opts = {}) {
   if (!Array.isArray(items)) return [];
   return items.map((item, index) => {
     if (typeof item === 'string') return fromString(item, index, source);
-    return makeCard(mapItem(item, index) || item, index, source);
+    return makeCard(mapItem(item, index) || item, index, source, opts);
   }).filter(Boolean);
 }
 
@@ -91,7 +121,7 @@ function cardsFromDeepGrammar(lesson, title) {
     const front = item?.example && looksEnglish(item.example) ? item.example : item?.pattern;
     return {
       word: front,
-      meaning: item?.note || item?.translation || 'Padrão gramatical da aula.',
+      meaning: item?.note || item?.translation,
       example: item?.pattern && item?.example !== item?.pattern ? item.pattern : '',
       deck: `${title} · padrões`,
     };
@@ -100,13 +130,13 @@ function cardsFromDeepGrammar(lesson, title) {
   cards.push(...fromArray(lesson?.teacherExamples, `${title} · exemplos`, (item) => ({
     word: item?.english || item?.text || item?.sentence,
     meaning: item?.translation || item?.meaning,
-    example: item?.why || item?.warning,
+    example: item?.why || item?.warning || item?.note,
     deck: `${title} · exemplos`,
   })));
 
   cards.push(...fromArray(lesson?.commonBrazilianMistakes, `${title} · correções`, (item) => ({
     word: item?.right || item?.correct || item?.answer,
-    meaning: item?.why || item?.howToAvoid || 'Correção importante da aula.',
+    meaning: item?.why || item?.howToAvoid,
     example: item?.wrong ? `Evite: ${item.wrong}` : item?.miniPractice,
     deck: `${title} · correções`,
   })));
@@ -144,20 +174,27 @@ function cardsFromVocabularyLikeFields(lesson, title) {
     note: item?.warning,
     deck: `${title} · chunks`,
   })));
+  // modelPhrases with longFront to allow complete spoken sentences
   cards.push(...fromArray(lesson?.modelPhrases, `${title} · fala`, (item) => ({
     word: item?.text,
     meaning: item?.translation,
     example: item?.note,
     deck: `${title} · fala`,
-  })));
-  cards.push(...fromArray((lesson?.usefulSentences || []).filter((s) => typeof s !== 'string' || looksEnglish(s)), `${title} · escrita`, (item) => ({
-    word: item,
-    meaning: 'Frase útil da aula.',
-    deck: `${title} · escrita`,
-  })));
+  }), { longFront: true }));
+  // usefulSentences: only object items with actual translation/note pass quality gate
+  cards.push(...fromArray(
+    (lesson?.usefulSentences || []).filter((s) => typeof s !== 'string' || looksEnglish(s)),
+    `${title} · escrita`,
+    (item) => ({
+      word: typeof item === 'string' ? item : (item?.text || item?.english || item),
+      meaning: typeof item === 'object' ? (item?.translation || item?.note) : undefined,
+      example: typeof item === 'object' ? item?.example : undefined,
+      deck: `${title} · escrita`,
+    }),
+  ));
   cards.push(...fromArray(lesson?.collocations, `${title} · collocations`, (item) => ({
-    word: item?.instruction || item?.text || item?.word || item?.chunk,
-    meaning: item?.note || item?.meaning || 'Combinação natural da aula.',
+    word: item?.chunk || item?.text || item?.word || item?.instruction,
+    meaning: item?.note || item?.meaning,
     example: item?.expected || item?.example,
     deck: `${title} · collocations`,
   })));
@@ -170,7 +207,7 @@ function cardsFromVocabularyLikeFields(lesson, title) {
         if (isTooLongFront(text)) return;
         const card = makeCard({
           word: text,
-          meaning: dialogue?.focus || 'Frase de diálogo da aula.',
+          meaning: dialogue?.focus,
           example: dialogue?.title,
           deck: `${title} · diálogo`,
         }, dialogueIndex * 20 + lineIndex, `${title} · diálogo`);
@@ -182,17 +219,18 @@ function cardsFromVocabularyLikeFields(lesson, title) {
   return cards.slice(0, 32);
 }
 
+// Speaking: longFront on modelPhrases allows full phrases up to 70 chars
 function cardsFromSpeakingFields(lesson, title) {
   const cards = [];
   cards.push(...fromArray(lesson?.modelPhrases, `${title} · fala`, (item) => ({
     word: item?.text || item?.english,
-    meaning: item?.translation || item?.meaning || 'Frase modelo de fala.',
-    example: item?.note || item?.context,
+    meaning: item?.translation || item?.meaning,
+    example: item?.note || item?.context || item?.pronunciation,
     deck: `${title} · fala`,
-  })));
+  }), { longFront: true }));
   cards.push(...fromArray(lesson?.pronunciationChunks, `${title} · pronúncia`, (item) => ({
     word: item?.chunk || item?.text || item,
-    meaning: item?.note || item?.tip || 'Pronunciar com atenção.',
+    meaning: item?.note || item?.tip,
     deck: `${title} · pronúncia`,
   })));
   cards.push(...fromArray(lesson?.repeatAfterMe, `${title} · repetição`));
@@ -203,32 +241,41 @@ function cardsFromWritingFields(lesson, title) {
   const cards = [];
   const filtered = (lesson?.usefulSentences || []).filter((s) => typeof s !== 'string' || looksEnglish(s));
   cards.push(...fromArray(filtered, `${title} · escrita`, (item) => ({
-    word: item?.text || item?.english || item,
-    meaning: item?.translation || item?.note || 'Frase útil para escrita.',
+    word: typeof item === 'string' ? item : (item?.text || item?.english || item),
+    meaning: typeof item === 'object' ? (item?.translation || item?.note) : undefined,
+    example: typeof item === 'object' ? item?.example : undefined,
     deck: `${title} · escrita`,
   })));
   cards.push(...fromArray(lesson?.writingBlocks, `${title} · blocos`, (item) => ({
     word: item?.chunk || item?.block || item?.text || item,
-    meaning: item?.note || item?.tip || 'Bloco de construção de texto.',
+    meaning: item?.note || item?.tip,
+    example: item?.example,
     deck: `${title} · blocos`,
   })));
   cards.push(...fromArray(lesson?.connectors, `${title} · conectivos`, (item) => ({
     word: item?.connector || item?.text || item,
-    meaning: item?.use || item?.note || 'Conectivo de texto.',
+    meaning: item?.use || item?.note,
+    example: item?.example,
     deck: `${title} · conectivos`,
   })));
   return cards;
 }
 
+// Listening: longFront for shadowingPhrases (full spoken sentences)
 function cardsFromListeningFields(lesson, title) {
   const cards = [];
   cards.push(...fromArray(lesson?.keyWordsToHear, `${title} · escuta`, (item) => ({
     word: item?.word || item?.text || item,
-    meaning: item?.meaning || item?.translation || 'Palavra-chave na escuta.',
+    meaning: item?.meaning || item?.translation,
     example: item?.example || item?.context,
     deck: `${title} · escuta`,
   })));
-  cards.push(...fromArray(lesson?.shadowingPhrases, `${title} · shadowing`));
+  cards.push(...fromArray(lesson?.shadowingPhrases, `${title} · shadowing`, (item) => ({
+    word: item?.text || item?.phrase || item,
+    meaning: item?.meaning || item?.translation,
+    example: item?.note,
+    deck: `${title} · shadowing`,
+  }), { longFront: true }));
   return cards;
 }
 
@@ -265,6 +312,7 @@ export function buildLessonFlashcards(lesson = {}) {
   return dedupe(ordered).slice(0, 32);
 }
 
+// Requires at least 2 quality cards before showing the flashcard button
 export function hasLessonFlashcards(lesson = {}) {
-  return buildLessonFlashcards(lesson).length > 0;
+  return buildLessonFlashcards(lesson).length >= 2;
 }

@@ -200,6 +200,27 @@ Documento completo: `fluency-clean/docs/BLOCO-REVIEW-POLISH-1-CONCLUIDO.md`
 
 ---
 
+## ✅ BLOCO FLASHCARDS-QUALITY-1 — Qualidade dos Flashcards por Pilar + Playwright (2026-05-17)
+
+Filtros de qualidade no extrator de flashcards e testes Playwright e2e com mock de aula.
+
+Arquivos alterados:
+- `src/services/lessonFlashcards.js` — `GENERIC_BACKS` Set, `hasUsefulContent()`, `isTooLongFront` com `opts.longFront`, `makeCard` rejeita verso genérico, `hasLessonFlashcards` exige ≥ 2 cards
+- `e2e/flashcards.spec.js` — 3 testes: hero da aula injetada, botão flashcards, modo de estudo
+
+Principais melhorias:
+- Nenhum card gerado com verso genérico placeholder
+- Speaking/Listening: `longFront: true` permite frases completas (≤ 70 chars / 12 palavras)
+- `hasLessonFlashcards` requer ≥ 2 cards de qualidade (era > 0)
+- Testes e2e cobrem iPhone 13 e iPhone SE — 20/20 passando
+
+Build: ✅ 2533 módulos, sem erros.
+Testes: ✅ 20/20 (14 smoke + 6 flashcards).
+
+Documento completo: `fluency-clean/docs/BLOCO-FLASHCARDS-QUALITY-1-CONCLUIDO.md`
+
+---
+
 ## ✅ BLOCO COMPLETION-UX-1 — Tela de conclusão, progresso e prática extra (2026-05-17)
 
 Melhoria da experiência pós-conclusão de aula.
@@ -321,8 +342,8 @@ Sem alteração em lógica de fases, ordem ou mastery.
 Próximas pendências:
 - FLOW-STABILITY-1 — bloqueio de navegação para fase futura obrigatória
 - COMPLETION-UX-1 — desbloqueio/bloqueio visual de PracticeMount pós-conclusão
-- REVIEW-POLISH-1 — polish da revisão adaptativa
-- FLASHCARDS-QUALITY-1 — qualidade de flashcards por pilar
+- ~~REVIEW-POLISH-1~~ ✅ concluído
+- ~~FLASHCARDS-QUALITY-1~~ ✅ concluído
 - MASTERY-GATE-1 — integração real do mastery gate A1→A2
 
 ---
