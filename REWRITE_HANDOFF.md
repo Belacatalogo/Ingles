@@ -1,6 +1,6 @@
 # Fluency Clean — Handoff Oficial
 
-Última atualização: 2026-05-17 (BLOCO-AUDIT-FIX-05)
+Última atualização: 2026-05-17 (BLOCO-AUDIT-FIX-06)
 
 ## Branch oficial atual
 
@@ -218,6 +218,30 @@ Executado após auditoria Playwright completa (30 problemas catalogados).
 **Próximos blocos disponíveis:**
 - BLOCO-AUDIT-FIX-06 — Limpeza técnica e segurança (sessionStorage/API keys, SRI)
 - Retomar criação de B1 (após aprovação explícita)
+
+---
+
+## ✅ BLOCO-AUDIT-FIX-06 — Limpeza técnica e prevenção de regressões (2026-05-17)
+
+**Auditado:**
+- Console logs: todos os `console.warn` são operacionais legítimos — nenhum log de debug encontrado
+- `LessonQualityPanel.jsx`: orphan confirmado (exportado mas nunca importado) — documentado, não deletado
+- Gerador de aulas legado (AI): corretamente gateado por `SHOW_LEGACY_AI_LESSON_GENERATOR = false` em `staticCurriculumFlags.js` — nenhuma ação necessária
+- Imports: nenhum import órfão crítico nos arquivos da cadeia principal
+- E2E: 6 spec files organizados, sem arquivos temporários
+- Progresso: estado pós-FIX-01…05 verificado — XP, streak, mastery, gate, persistência todos corretos
+
+**B1 confirmado:**
+- `advancedMaps.js` contém skeleton de B1 (B1_GRAMMAR_MAP, B1_VOCABULARY_MAP etc.) — planos de aula, sem conteúdo real
+- Não há `/src/content/curriculum/levels/B1/` com aulas profundas
+- Próximo bloco B1 documentado: `BLOCO-B1-GRAMMAR-001` — quando autorizado pelo usuário
+
+**Documentação atualizada:**
+- `MASTER-CONTINUIDADE-BLOCOS-CURSO-ATE-C1-C2.md` corrigido: branch `rewrite-fluency-clean-lab` → `main`; status atualizado; prompt fixo corrigido
+
+**Build:** ✅ `npx vite build` — 2533 módulos sem erros  
+**Sistema pronto para B1:** Sim (aguardar autorização explícita)  
+**Pendência aberta:** PROB-016 (limiar mínimo 75% vs 80% nos gates) — decisão do usuário
 
 ---
 
