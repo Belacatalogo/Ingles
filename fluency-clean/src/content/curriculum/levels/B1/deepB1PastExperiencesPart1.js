@@ -377,18 +377,16 @@ She walked me all the way to my hotel, which took about fifteen minutes. We talk
     teacherOpening: 'Contar histórias é uma das habilidades mais humanas — e mais difíceis em outra língua. Esta aula treina a estrutura de uma boa história em inglês: contexto, conflito, desenvolvimento e resolução. Com esses blocos, qualquer experiência sua pode virar uma história B1 interessante.',
     whyItMatters: 'A habilidade de contar histórias aparece em entrevistas de emprego ("Tell me about a time when..."), em conversas sociais e em todos os textos B1+. É o coração da comunicação B1.',
     differenceFromA2: 'No A2, você listava eventos: "I went, I saw, it was good." No B1, você constrói: contexto (onde estava, o que estava fazendo) → problema/evento → reação → resolução → reflexão.',
-    speakingModel: {
-      prompt: 'Tell me about a time something didn\'t go as planned.',
-      a2Response: 'I went to the airport. My flight was delayed. I waited. It was very boring.',
-      b1Response: 'I was on my way to a work conference in Madrid — I was really excited about it. When I arrived at the airport, everything seemed fine. I checked in, went through security and was waiting at the gate when they announced a three-hour delay. At first I was quite frustrated, but after a while I started chatting with a woman sitting next to me. It turned out we worked in the same industry! By the time we boarded, we had exchanged contacts. Looking back, it was one of those situations where the delay actually led to something good.',
-      analysis: [
-        '"I was on my way" — Past Continuous background.',
-        '"when they announced" — event interrupting background.',
-        '"At first... but after a while" — emotional arc.',
-        '"It turned out" — revealing surprising fact.',
-        '"Looking back" — reflection at the end.',
-      ],
-    },
+    speakingSituation: 'Tell me about a time something didn\'t go as planned. (B1 model: "I was on my way to a conference when my flight was delayed. At first I was frustrated, but after a while I started chatting with someone and it turned out we worked in the same industry. Looking back, it was one of those situations where something good came from something bad.")',
+    modelPhrases: [
+      phrase('I was [activity] when suddenly...', '', 'Opens with Past Continuous background + event.'),
+      phrase('At first I was [emotion], but then...', '', 'Emotional arc — contrast of feelings.'),
+      phrase('After a while / Eventually...', '', 'Shows time passing naturally.'),
+      phrase('It turned out that...', '', 'Reveals a surprising fact.'),
+      phrase('By the time [time], I had [result].', '', 'Shows completion before a point.'),
+      phrase('Looking back, I think...', '', 'Reflection at the end.'),
+      phrase('It was one of those moments when...', '', 'Final evaluation.'),
+    ],
     substitutionDrills: [
       {
         base: 'I was [doing X] when [something happened].',
@@ -399,44 +397,30 @@ She walked me all the way to my hotel, which took about fifteen minutes. We talk
         substitutions: ['worried / I realized it wasn\'t so bad', 'frustrated / I started to see the funny side', 'exhausted / I got my second wind'],
       },
     ],
-    preparationQuestions: [
-      task('Where were you and what were you doing before the event?'),
-      task('What happened? (the event, the "when")'),
-      task('How did you react immediately?'),
-      task('What happened next? (2-3 steps)'),
-      task('How did it end?'),
-      task('What did you think about it afterwards?'),
+    guidedSpeaking: [
+      task('Responda em voz alta: "Tell me about a time you had to wait longer than expected." — 5-6 frases com background (Past Continuous), evento (Past Simple) e reação emocional.'),
+      task('Responda: "Tell me about a time something surprised you." — inclua "It turned out..." e "Looking back..."'),
+      task('Planeje sua história: onde estava, o que estava fazendo, o que aconteceu, como reagiu, como terminou.'),
     ],
-    languageToolkit: [
-      phrase('I was [activity] when suddenly...', '', 'Opens with background + event.'),
-      phrase('At first I was [emotion], but then...', '', 'Emotional arc.'),
-      phrase('After a while / Eventually...', '', 'Time passing.'),
-      phrase('It turned out that...', '', 'Revealing surprise.'),
-      phrase('By the time [time], I had [result].', '', 'Completion before a point.'),
-      phrase('Looking back, I think...', '', 'Reflection.'),
-      phrase('It was one of those moments when...', '', 'Evaluation.'),
-    ],
-    guidedPractice: [
-      task('Responda em voz alta: "Tell me about a time you had to wait longer than expected." — 5-6 frases com background, evento e reação.'),
-      task('Responda: "Tell me about a time something surprised you." — use "It turned out..." e "Looking back..."'),
-    ],
-    speakingPrompts: [
-      'Tell me about a time you got lost or had trouble finding your way.',
-      'Tell me about an experience that taught you something unexpected.',
-      'Tell me about a time you met someone interesting by chance.',
-    ],
-    checklistBeforeRecording: [
-      task('Tenho background (Past Continuous)?'),
+    speakingChecklist: [
+      task('Tenho background (Past Continuous: I was [doing X])?'),
       task('Tenho o evento principal (Past Simple + when)?'),
       task('Tenho a reação emocional ("At first...but then")?'),
       task('Tenho a conclusão ou reflexão ("Looking back...?")?'),
       task('Usei pelo menos 3 marcadores de sequência?'),
     ],
-    recordingTask: task(
-      'Grave 90-120 segundos respondendo: "Tell me about a time something unexpected happened to you."',
-      'Use: Past Continuous background, Past Simple event, emotional arc, "It turned out", "Looking back."'
-    ),
-    selfEvaluation: [
+    recordingTasks: [
+      task(
+        'Grave 90-120 segundos respondendo: "Tell me about a time something unexpected happened to you."',
+        'Use: Past Continuous background, Past Simple event, emotional arc ("At first...but after a while..."), "It turned out", "Looking back."'
+      ),
+    ],
+    freeSpeaking: [
+      task('Tell me about a time you got lost or had trouble finding your way.'),
+      task('Tell me about an experience that taught you something unexpected.'),
+      task('Tell me about a time you met someone interesting by chance.'),
+    ],
+    selfAssessment: [
       task('Produzi resposta de 90+ segundos?'),
       task('Minha história tem começo, meio e fim?'),
       task('Usei Past Continuous e Past Simple com distinção clara?'),

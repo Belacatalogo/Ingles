@@ -1047,3 +1047,17 @@ Branch: main. Sem branch nova. Sem PR. Sem merge. Sem rebase. Sem force push.
 Documento: `fluency-clean/docs/BLOCO-21A-B1-2-PAST-EXPERIENCES-PARTE-1-CONCLUIDO.md`
 
 Próximo: BLOCO 21B — Validação B1.2 Past Experiences Parte 1
+
+---
+
+## ✅ BLOCO 21B — Validação B1.2 Past Experiences Parte 1 (2026-05-17)
+
+✅ APROVADO. 4 lições: B1-GRAMMAR-003, B1-GRAMMAR-004, B1-READING-002, B1-SPEAKING-002.
+
+Fix: Speaking-002 usava campos fora do schema. Remapeado para modelPhrases, guidedSpeaking, recordingTasks, speakingChecklist, freeSpeaking, speakingSituation.
+
+Build: ✅ 2536 módulos. Total B1: 13 aulas.
+
+Documento: `fluency-clean/docs/BLOCO-21B-VALIDACAO-B1-2-PAST-EXPERIENCES-PARTE-1-CONCLUIDO.md`
+
+Próximo: BLOCO 21C — B1.2 Past Experiences Parte 2 (Vocabulary-004, Vocabulary-005, Listening-002, Writing-002)
