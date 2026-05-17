@@ -1,3 +1,4 @@
+dist/
 fluency-clean/dist/
 fluency-clean/node_modules/
 fluency-clean/package-lock.json
