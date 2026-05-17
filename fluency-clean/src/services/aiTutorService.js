@@ -92,3 +92,7 @@ export async function explainLessonDoubtWithTutor({ lesson, question, fetcher = 
 export async function buildSmallReinforcementWithTutor({ lesson, request = '', fetcher = fetch } = {}) {
   return askAiTutor({ lesson, action: AI_TUTOR_ALLOWED_ACTIONS.smallReinforcement, studentInput: request, fetcher });
 }
+
+export async function evaluateSpeakingWithTutor({ lesson, spokenText = '', fetcher = fetch } = {}) {
+  return askAiTutor({ lesson, action: AI_TUTOR_ALLOWED_ACTIONS.evaluateSpeaking, studentInput: spokenText, fetcher });
+}

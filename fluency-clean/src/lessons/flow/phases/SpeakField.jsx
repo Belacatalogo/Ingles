@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { Check, CheckCircle2, Loader2, Mic, Volume2 } from 'lucide-react';
+import { Check, CheckCircle2, Lightbulb, Loader2, Mic, RotateCcw, Sparkles, Volume2 } from 'lucide-react';
 import { PhaseShell } from './PhaseShell.jsx';
 import { SpeakExercise } from '../../../practice/components/SpeakExercise.jsx';
 import { generateGeminiAudioBlob } from '../../../services/geminiAudioService.js';
 import { playLearningAudio } from '../../../services/audioPlayback.js';
+import { analyzeStudentAnswer } from '../../../services/studentAnswerAnalysis/index.js';
 import { clean, expectedOf } from '../text/normalize.js';
 
 function ModelAudioButton({ text }) {
@@ -30,9 +31,11 @@ function ModelAudioButton({ text }) {
   );
 }
 
-export function SpeakField({ phase, flow, item = {}, eyebrow = 'Sua vez de falar', instruction }) {
+export function SpeakField({ phase, flow, item = {}, eyebrow = 'Sua vez de falar', instruction, lesson = null }) {
   const [value, setValue] = useState('');
   const [feedback, setFeedback] = useState(null);
+  const [aiAnalysis, setAiAnalysis] = useState(null);
+  const [aiLoading, setAiLoading] = useState(false);
   const attempted = Boolean(flow?.attempts?.[phase.id]);
   const prompt = clean(item.prompt || item.text || item.title);
   const expected = expectedOf(item);
@@ -50,6 +53,27 @@ export function SpeakField({ phase, flow, item = {}, eyebrow = 'Sua vez de falar
     }
   }
 
+  async function handleAiAnalyze() {
+    if (aiLoading) return;
+    setAiLoading(true);
+    setAiAnalysis(null);
+    try {
+      const result = await analyzeStudentAnswer({
+        lesson,
+        pillar: 'speaking',
+        skill: clean(item.title || item.prompt || item.question || 'fala'),
+        studentText: value.trim(),
+        expectedAnswer: expected,
+        allowAi: true,
+      });
+      setAiAnalysis(result);
+    } catch {
+      setAiAnalysis({ feedbackPt: 'Não foi possível analisar agora. Continue pela aula.', score: null, source: 'local' });
+    } finally {
+      setAiLoading(false);
+    }
+  }
+
   const feedbackNode = attempted ? (
     <div className="lesson-phase-feedback ok">
       <p><CheckCircle2 size={14} /> <b>Tentativa registrada. Você pode avançar.</b></p>
@@ -61,6 +85,44 @@ export function SpeakField({ phase, flow, item = {}, eyebrow = 'Sua vez de falar
           <ModelAudioButton text={expected} />
         </div>
       ) : null}
+    </div>
+  ) : null;
+
+  const isGemini = aiAnalysis?.source === 'gemini';
+  const aiAnalysisNode = attempted ? (
+    <div className="lesson-phase-ai-analysis">
+      {!aiAnalysis ? (
+        <button type="button" className="lesson-phase-link" onClick={handleAiAnalyze} disabled={aiLoading}>
+          <Sparkles size={13} /> {aiLoading ? 'Analisando...' : 'Analisar com IA'}
+        </button>
+      ) : (
+        <div className={`lesson-phase-ai-result${isGemini ? ' gemini' : ''}`}>
+          <div className="lesson-phase-ai-result-header">
+            <Sparkles size={13} />
+            <span>IA Tutor</span>
+            <span className={`lesson-phase-ai-badge${isGemini ? ' gemini' : ''}`}>
+              {isGemini ? 'Gemini' : 'Local'}
+            </span>
+            {aiAnalysis.score !== null ? (
+              <span className="lesson-phase-ai-score">{aiAnalysis.score}/100</span>
+            ) : null}
+          </div>
+          <p className="lesson-phase-ai-feedback">{aiAnalysis.feedbackPt}</p>
+          {aiAnalysis.issues?.length ? (
+            <ul className="lesson-phase-ai-list">
+              {aiAnalysis.issues.map((issue, index) => <li key={index}>{issue}</li>)}
+            </ul>
+          ) : null}
+          {aiAnalysis.nextDrill ? (
+            <p className="lesson-phase-ai-drill">
+              <Lightbulb size={12} /> {aiAnalysis.nextDrill}
+            </p>
+          ) : null}
+          <button type="button" className="lesson-phase-link" onClick={() => setAiAnalysis(null)}>
+            <RotateCcw size={11} /> Nova análise
+          </button>
+        </div>
+      )}
     </div>
   ) : null;
 
@@ -76,6 +138,7 @@ export function SpeakField({ phase, flow, item = {}, eyebrow = 'Sua vez de falar
         <SpeakExercise value={value} feedback={feedback} onSpeak={handleSpeak} onChange={handleChange} />
         <p className="lesson-phase-speak-hint"><Mic size={12} /> Toque em "Falar agora" ou escreva o que falaria (mínimo 2 palavras).</p>
       </div>
+      {aiAnalysisNode}
     </PhaseShell>
   );
 }

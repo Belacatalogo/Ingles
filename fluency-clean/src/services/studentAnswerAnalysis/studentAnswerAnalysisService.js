@@ -1,4 +1,4 @@
-import { correctWritingWithTutor } from '../aiTutorService.js';
+import { correctWritingWithTutor, evaluateSpeakingWithTutor } from '../aiTutorService.js';
 import { getGeneralAiKeys } from '../aiKeys.js';
 import { ANALYSIS_STATUS, ANALYSIS_SOURCE } from './studentAnswerAnalysisTypes.js';
 import {
@@ -98,7 +98,27 @@ export async function analyzeStudentAnswer({
     return localResult;
   }
 
-  // Speaking: Azure already in azureResult; IA-3 (future) will add AI layer.
+  // Speaking: use evaluateSpeakingWithTutor for AI layer
+  if (pillar === 'speaking') {
+    try {
+      const tutorResult = await evaluateSpeakingWithTutor({
+        lesson: lesson || { title: skill || 'Fala livre', pillar: 'speaking', level },
+        spokenText: studentText,
+      });
+      if (tutorResult?.status === 'success' && tutorResult.text) {
+        return {
+          ...localResult,
+          status: ANALYSIS_STATUS.success,
+          feedbackPt: tutorResult.text,
+          source: ANALYSIS_SOURCE.gemini,
+        };
+      }
+    } catch {
+      // AI failed — fall through to local result
+    }
+    return localResult;
+  }
+
   // Reading/Listening/Grammar/Vocabulary: IA-4 (future) will add AI layer.
   return localResult;
 }

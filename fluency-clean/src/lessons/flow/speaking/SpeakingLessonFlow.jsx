@@ -53,7 +53,7 @@ function ModelBody({ phase }) {
 }
 function TextBody({ phase }) { return <PhaseShell eyebrow={phase.eyebrow || 'Situação'} title={phase.bodyTitle || phase.title} instruction={phase.instruction}><pre className="lesson-phase-reading-text">{phase.text}</pre></PhaseShell>; }
 function ListBody({ phase }) { return <ListPhase phase={phase} />; }
-function SpeakBody({ phase, flow }) { return <SpeakField phase={phase} flow={flow} item={phase.item} instruction={phase.instruction} />; }
+function SpeakBody({ phase, flow, lesson }) { return <SpeakField phase={phase} flow={flow} item={phase.item} instruction={phase.instruction} lesson={lesson} />; }
 function ChecklistBody({ phase, flow }) { return <ChecklistField phase={phase} flow={flow} items={phase.items} />; }
 
 function pushList(phases, id, title, shortTitle, items, instruction, eyebrow = 'Estudo') {
