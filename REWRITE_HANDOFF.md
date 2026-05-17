@@ -1278,3 +1278,22 @@ Próximo: BLOCO 23C — B1.4 Problems, Advice and Decisions — Parte 2
 - B1-READING-004: A dilemma/problem text
 - B1-LISTENING-004: A problem-solving conversation
 - B1-VOCABULARY-008: Decision-making vocabulary
+
+## ✅ BLOCO 23C — B1.4 Problems Part 2 (2026-05-17)
+
+✅ APROVADO. 4 lições: Grammar-011, Reading-004, Listening-004, Vocabulary-008. Build verde.
+
+Arquivo: `fluency-clean/src/content/curriculum/levels/B1/deepB1ProblemsPart2.js`
+
+B1 agora tem 35 aulas: grammar(11), vocabulary(8), reading(4), listening(4), speaking(4), writing(4).
+
+## ✅ BLOCO 23D — Validação B1.4 Problems Part 2 (2026-05-17)
+
+✅ APROVADO. Sem duplicatas. Build verde. 4 aulas profundas confirmadas.
+
+Próximo: BLOCO 24A — B1.5 Work and Study — Parte 1
+- B1-GRAMMAR-012: Passive voice (present and past simple)
+- B1-GRAMMAR-013: Reported speech (statements)
+- B1-VOCABULARY-009: Work and professional vocabulary
+- B1-SPEAKING-005: Describe your job or studies
+- B1-WRITING-005: Write a professional email
