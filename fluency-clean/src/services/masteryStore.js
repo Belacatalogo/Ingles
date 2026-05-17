@@ -153,8 +153,8 @@ export function recordLessonMastery({ lesson, answers = {}, writtenAnswer = '', 
   const weak = result.score < 85;
   const attempts = previous.attempts + 1;
   const correct = previous.correct + result.correct;
-  const totalAttempts = previous.attempts * 100 + result.score;
-  const score = Math.round(totalAttempts / attempts);
+  const totalScore = previous.score * previous.attempts + result.score;
+  const score = Math.round(totalScore / attempts);
 
   const nextPillar = {
     ...previous,

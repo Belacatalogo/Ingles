@@ -15,6 +15,7 @@ const TOKEN_TTL_MS = 9 * 60 * 1000;
 
 let sdkPromise = null;
 let tokenCache = null;
+let tokenFetchPromise = null;
 
 function getTokenUrl() {
   return import.meta.env.VITE_AZURE_TOKEN_URL || import.meta.env.VITE_AZURE_PRONUNCIATION_ENDPOINT || DEFAULT_TOKEN_URL;
@@ -62,14 +63,20 @@ async function getAzureToken(fetcher = fetch) {
     diagnostics.log('Azure token reutilizado do cache.', 'info');
     return tokenCache;
   }
-  const tokenUrl = getTokenUrl();
-  const response = await fetcher(tokenUrl, { method: 'GET' });
-  if (!response.ok) throw new Error(`Token HTTP ${response.status}`);
-  const data = await response.json();
-  if (!data?.token || !data?.region) throw new Error('Resposta de token Azure inválida.');
-  tokenCache = { token: data.token, region: data.region, keyIndex: data.keyIndex || data.activeKeyIndex || 1, resourceCount: data.resourceCount || 1, expiresAt: now + TOKEN_TTL_MS, raw: data };
-  diagnostics.log(`Azure token recebido: key ${tokenCache.keyIndex}/${tokenCache.resourceCount}.`, 'info');
-  return tokenCache;
+  // Deduplicação: se já há um fetch em andamento, aguarda o mesmo promise
+  if (tokenFetchPromise) return tokenFetchPromise;
+  tokenFetchPromise = (async () => {
+    const tokenUrl = getTokenUrl();
+    const response = await fetcher(tokenUrl, { method: 'GET' });
+    if (!response.ok) throw new Error(`Token HTTP ${response.status}`);
+    const data = await response.json();
+    if (!data?.token || !data?.region) throw new Error('Resposta de token Azure inválida.');
+    const freshAt = Date.now();
+    tokenCache = { token: data.token, region: data.region, keyIndex: data.keyIndex || data.activeKeyIndex || 1, resourceCount: data.resourceCount || 1, expiresAt: freshAt + TOKEN_TTL_MS, raw: data };
+    diagnostics.log(`Azure token recebido: key ${tokenCache.keyIndex}/${tokenCache.resourceCount}.`, 'info');
+    return tokenCache;
+  })().finally(() => { tokenFetchPromise = null; });
+  return tokenFetchPromise;
 }
 
 async function decodeAudioBlobToPCM16k(audioBlob) {

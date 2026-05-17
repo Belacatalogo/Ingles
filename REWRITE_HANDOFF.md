@@ -1,6 +1,6 @@
 # Fluency Clean — Handoff Oficial
 
-Última atualização: 2026-05-17
+Última atualização: 2026-05-17 (BLOCO-AUDIT-FIX-01)
 
 ## Branch oficial atual
 
@@ -123,6 +123,30 @@ Aula salva
 ↓
 Renderização quebra ou fica inconsistente
 ```
+
+---
+
+## ✅ BLOCO-AUDIT-FIX-01 — Correção de P0/P1 críticos da auditoria (2026-05-17)
+
+Executado após auditoria Playwright completa (30 problemas catalogados).
+
+**Corrigido:**
+- PROB-001 (P0): Bug de cálculo de score no `masteryStore.js` — fórmula `previous.attempts * 100` substituída por média ponderada correta
+- PROB-002 (P0): Overlay de diagnóstico não fechava no mobile — CSS reestruturado com grid-template-rows, botão X agora 44×44px
+- PROB-003 (P1): Settings toggles (autoplay, modo compacto, lembrete diário) não persistiam — agora salvos em `fluency.clean.settings.preferences`
+- PROB-006 (P1): Azure Speech SDK race condition no cache de token — deduplicação via `tokenFetchPromise`
+- PROB-007 (P1): `MIN_RECOGNIZED_WORDS = 2` rejeitava respostas de 1 palavra em A1 — agora level-aware (`MIN_WORDS_BY_LEVEL`)
+
+**Testes:** 164/164 passando (2 falhas anteriores corrigidas).
+
+**Pendentes (decisão necessária antes de corrigir):**
+- PROB-004 (P1): Mastery gate — review obrigatório não bloqueia avanço
+- PROB-005 (P1): API keys em localStorage
+
+**Próximos blocos disponíveis:**
+- BLOCO-AUDIT-FIX-02 — avaliação de respostas
+- BLOCO-AUDIT-FIX-03 — UX/mobile
+- Retomar criação de B1 (após aprovação)
 
 ---
 
