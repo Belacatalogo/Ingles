@@ -1,8 +1,8 @@
 const AREA_RULES = [
   { key: 'navigation', label: 'Navegação e estabilidade', patterns: [/navigation|navega|aba|scroll|runtime/i] },
   { key: 'studentJourney', label: 'Jornada real do aluno', patterns: [/student-journey|jornada|fase|lesson flow|continuar|concluir/i] },
-  { key: 'lessons', label: 'Aulas e pedagogia', patterns: [/lesson-quality|pillar-quality|aula|pilar|grammar|vocabulary|reading|listening|speaking|writing/i] },
   { key: 'exercises', label: 'Exercícios e alternativas', patterns: [/exercise-quality|exercício|alternativa|distrator|feedback|resposta correta/i] },
+  { key: 'lessons', label: 'Aulas e pedagogia', patterns: [/lesson-quality|pillar-quality|aula|pilar|grammar|vocabulary|reading|listening|speaking|writing/i] },
   { key: 'visualMobile', label: 'Visual e mobile', patterns: [/visual-mobile|screenshot|bottom nav|viewport|overflow|card|mobile/i] },
   { key: 'progressMastery', label: 'Progresso, XP e mastery', patterns: [/progress-mastery|progress|mastery|xp|streak|gate|weak/i] },
   { key: 'emptySecurity', label: 'Estados vazios e segurança visual', patterns: [/empty-states|security|token|secret|api key|localStorage|json inválido|stack trace/i] },
@@ -11,20 +11,47 @@ const AREA_RULES = [
 ];
 
 const AREA_ORDER = AREA_RULES.map((item) => item.key);
+const VIEWPORT_PROJECTS = new Set(['iphone 13', 'iphone se', 'iphone 14', 'iphone 15', 'mobile chromium']);
 
 function severityRank(severity) {
   return { P0: 0, P1: 1, P2: 2, P3: 3 }[severity] ?? 4;
 }
 
+function issueIdentity(issue) {
+  return [
+    issue.report || '',
+    issue.area || '',
+    issue.title || '',
+    String(issue.evidence || '').replace(/iphone\s?(13|se|14|15)|viewport=\{[^}]+\}|box=\{[^}]+\}/gi, '').slice(0, 260),
+  ].join('::').toLowerCase().replace(/\s+/g, ' ').trim();
+}
+
+function dedupeIssues(issues) {
+  const byId = new Map();
+  issues.forEach((issue) => {
+    const id = issueIdentity(issue);
+    const current = byId.get(id);
+    if (!current || severityRank(issue.severity) < severityRank(current.severity)) {
+      byId.set(id, { ...issue, occurrences: 1, projects: [issue.projectName].filter(Boolean) });
+    } else {
+      current.occurrences = (current.occurrences || 1) + 1;
+      if (issue.projectName && !current.projects.includes(issue.projectName)) current.projects.push(issue.projectName);
+    }
+  });
+  return [...byId.values()];
+}
+
 function scorePenalty(issue) {
-  if (issue.severity === 'P0') return 24;
-  if (issue.severity === 'P1') return 12;
-  if (issue.severity === 'P2') return 6;
-  return 2;
+  const occurrences = Math.max(1, issue.occurrences || 1);
+  const duplicatePenalty = Math.min(3, Math.log2(occurrences));
+  if (issue.severity === 'P0') return 18 + duplicatePenalty;
+  if (issue.severity === 'P1') return 5 + duplicatePenalty;
+  if (issue.severity === 'P2') return 1.2 + duplicatePenalty * 0.4;
+  return 0.4;
 }
 
 function scoreFromIssues(issues) {
-  return Math.max(0, 100 - issues.reduce((sum, issue) => sum + scorePenalty(issue), 0));
+  return Math.max(0, Math.round(100 - issues.reduce((sum, issue) => sum + scorePenalty(issue), 0)));
 }
 
 function classifyArea(issue) {
@@ -70,6 +97,8 @@ function recommendationFromIssue(issue) {
     recommendation: rec,
     report: issue.report || '',
     fileHint: issue.fileHint || '',
+    occurrences: issue.occurrences || 1,
+    projects: issue.projects || [],
   };
 }
 
@@ -81,7 +110,7 @@ function buildActionPlan(issues) {
 
   if (p0.length) {
     return {
-      headline: 'Corrigir P0 antes de continuar evolução visual/pedagógica.',
+      headline: 'Corrigir P0 confirmados antes de continuar evolução visual/pedagógica.',
       immediate: p0,
       next: p1,
       later: p2,
@@ -106,13 +135,15 @@ function buildActionPlan(issues) {
 }
 
 function compactReport(report) {
-  const issues = report.issues || [];
+  const rawIssues = report.issues || [];
+  const issues = dedupeIssues(rawIssues.map((issue) => ({ ...issue, report: report.name, projectName: report.projectName })));
   return {
     name: report.name,
     projectName: report.projectName,
-    score: report.score,
+    score: scoreFromIssues(issues),
     checks: report.checks?.length || report.summary?.checks || 0,
     issues: issues.length,
+    rawIssues: rawIssues.length,
     p0: countSeverity(issues, 'P0'),
     p1: countSeverity(issues, 'P1'),
     p2: countSeverity(issues, 'P2'),
@@ -120,13 +151,18 @@ function compactReport(report) {
   };
 }
 
+function isViewportProject(projectName = '') {
+  return VIEWPORT_PROJECTS.has(String(projectName).toLowerCase());
+}
+
 export function buildExecutiveSummary(reports) {
-  const issues = reports.flatMap((report) => (report.issues || []).map((issue) => ({
+  const rawIssues = reports.flatMap((report) => (report.issues || []).map((issue) => ({
     report: report.name,
     projectName: report.projectName,
     ...issue,
     areaKey: classifyArea({ report: report.name, projectName: report.projectName, ...issue }),
   })));
+  const issues = dedupeIssues(rawIssues);
   const checks = reports.flatMap((report) => (report.checks || []).map((check) => ({ report: report.name, ...check })));
   const issuesByArea = groupBy(issues, (issue) => issue.areaKey || 'other');
   const areas = [...AREA_ORDER, 'other']
@@ -156,6 +192,9 @@ export function buildExecutiveSummary(reports) {
     reports: reports.length,
     checks: checks.length,
     issues: issues.length,
+    rawIssues: rawIssues.length,
+    dedupedIssues: issues.length,
+    duplicateReduction: Math.max(0, rawIssues.length - issues.length),
     p0: countSeverity(issues, 'P0'),
     p1: countSeverity(issues, 'P1'),
     p2: countSeverity(issues, 'P2'),
@@ -164,6 +203,10 @@ export function buildExecutiveSummary(reports) {
     reportSummaries: reports.map(compactReport),
     topIssues: sortedIssues.slice(0, 40),
     actionPlan: buildActionPlan(sortedIssues),
+    meta: {
+      scoring: 'Deduplicated issue scoring v2: P0=18+, P1=5+, P2=1.2+, P3=0.4. Viewport duplicates are grouped.',
+      viewportReports: reports.filter((report) => isViewportProject(report.projectName)).length,
+    },
     reportsRaw: reports,
   };
 }
@@ -175,7 +218,8 @@ function mdEscape(value) {
 function issueLine(issue, index) {
   return `${index + 1}. **${issue.severity || 'P3'} · ${issue.area || 'App'} — ${issue.title || 'Problema'}**\n` +
     `   - Área executiva: ${areaLabel(issue.areaKey || 'other')}\n` +
-    `   - Relatório: ${issue.report || 'n/a'} / ${issue.projectName || 'n/a'}\n` +
+    `   - Relatório: ${issue.report || 'n/a'} / ${(issue.projects || [issue.projectName]).filter(Boolean).join(', ') || 'n/a'}\n` +
+    `   - Ocorrências agrupadas: ${issue.occurrences || 1}\n` +
     `   - Impacto: ${issue.impact || 'Pode afetar a qualidade percebida pelo aluno.'}\n` +
     `${issue.evidence ? `   - Evidência: ${issue.evidence}\n` : ''}` +
     `${issue.fileHint ? `   - Arquivo provável: ${issue.fileHint}\n` : ''}` +
@@ -185,6 +229,7 @@ function issueLine(issue, index) {
 function actionLine(item, index) {
   return `${index + 1}. **${item.severity} · ${item.area} — ${item.title}**\n` +
     `${item.fileHint ? `   - Arquivo provável: ${item.fileHint}\n` : ''}` +
+    `${item.occurrences > 1 ? `   - Ocorrências agrupadas: ${item.occurrences}\n` : ''}` +
     `   - Ação: ${item.recommendation}`;
 }
 
@@ -199,9 +244,9 @@ export function executiveSummaryToMarkdown(summary) {
 
   const reportsTable = summary.reportSummaries.length
     ? [
-        '| Relatório | Projeto | Nota | Checks | Issues | P0 | P1 | P2 | P3 |',
-        '|---|---|---:|---:|---:|---:|---:|---:|---:|',
-        ...summary.reportSummaries.map((report) => `| ${mdEscape(report.name)} | ${mdEscape(report.projectName)} | ${report.score ?? '-'} | ${report.checks} | ${report.issues} | ${report.p0} | ${report.p1} | ${report.p2} | ${report.p3} |`),
+        '| Relatório | Projeto | Nota | Checks | Issues únicas | Issues brutas | P0 | P1 | P2 | P3 |',
+        '|---|---|---:|---:|---:|---:|---:|---:|---:|---:|',
+        ...summary.reportSummaries.map((report) => `| ${mdEscape(report.name)} | ${mdEscape(report.projectName)} | ${report.score ?? '-'} | ${report.checks} | ${report.issues} | ${report.rawIssues} | ${report.p0} | ${report.p1} | ${report.p2} | ${report.p3} |`),
       ].join('\n')
     : 'Nenhum relatório encontrado.';
 
@@ -225,7 +270,9 @@ export function executiveSummaryToMarkdown(summary) {
     `## Resumo geral\n\n` +
     `- Relatórios consolidados: ${summary.reports}\n` +
     `- Checks executados: ${summary.checks}\n` +
-    `- Problemas encontrados: ${summary.issues}\n` +
+    `- Problemas únicos: ${summary.issues}\n` +
+    `- Problemas brutos antes de deduplicar: ${summary.rawIssues}\n` +
+    `- Duplicatas agrupadas: ${summary.duplicateReduction}\n` +
     `- P0: ${summary.p0}\n` +
     `- P1: ${summary.p1}\n` +
     `- P2: ${summary.p2}\n` +
@@ -238,7 +285,7 @@ export function executiveSummaryToMarkdown(summary) {
     `### Próximas ações\n\n${next}\n\n` +
     `## Principais problemas\n\n${topIssues}\n\n` +
     `## Como usar este relatório\n\n` +
-    `1. Corrigir P0 antes de qualquer evolução nova.\n` +
+    `1. Corrigir P0 confirmados antes de qualquer evolução nova.\n` +
     `2. Corrigir P1 antes de confiar o uso contínuo ao aluno.\n` +
     `3. Transformar grupos de P2 em blocos de polimento.\n` +
     `4. Registrar correções no Notion e rodar novamente o Quality Director.\n`;
@@ -250,7 +297,8 @@ export function executiveSummaryToNotionText(summary) {
     `Nota geral: ${summary.score}/100`,
     `Relatórios: ${summary.reports}`,
     `Checks: ${summary.checks}`,
-    `Issues: ${summary.issues} (P0=${summary.p0}, P1=${summary.p1}, P2=${summary.p2}, P3=${summary.p3})`,
+    `Issues únicas: ${summary.issues} (brutas=${summary.rawIssues}, agrupadas=${summary.duplicateReduction})`,
+    `Severidade: P0=${summary.p0}, P1=${summary.p1}, P2=${summary.p2}, P3=${summary.p3}`,
     `Direção: ${summary.actionPlan.headline}`,
     `Top issues: ${summary.topIssues.slice(0, 5).map((issue) => `${issue.severity} ${issue.area} — ${issue.title}`).join(' | ') || 'nenhuma'}`,
   ].join('\n');
