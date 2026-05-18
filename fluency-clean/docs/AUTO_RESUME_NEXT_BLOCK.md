@@ -1,14 +1,15 @@
 # Auto Resume — Próximo Bloco
 
 ## Estado atual
-- branch atual: main
-- último bloco concluído: FASE 4 — B1/B2 Pedagogical Closing (commit 44bfcab)
-- C1: COMPLETO (73 aulas + C1-CHECKPOINT-001)
-- C2: COMPLETO (42 aulas + C2-CHECKPOINT-001)
+- branch atual: claude/validate-b1-plan-b2-rLc3b (merge com main concluído)
+- último bloco concluído: BLOCO-STUDY-READY-AUDIT-A1-C2 (2026-05-18)
+- C1: COMPLETO (73 aulas + C1-CHECKPOINT-001 — schemaVersion corrigido ✅)
+- C2: COMPLETO (42 aulas + C2-CHECKPOINT-001 — schemaVersion corrigido ✅)
 - FASE 4: COMPLETO (b1MasteryAssessments.js + b2MasteryAssessments.js + audit doc)
-- último push: 44bfcab → origin/main
+- BLOCO-STUDY-READY-AUDIT: COMPLETO — 4 docs criados, 2 bugs corrigidos
 - build status: ✅ limpo (verificado 2026-05-18)
 - zero duplicatas: ✅
+- zero lições sem schemaVersion: ✅ (corrigido neste bloco)
 
 ## Contagem atual (verificada 2026-05-18)
 - A1: 139 (staticContent) / 132 UI-visíveis (7 checkpoints no mastery system — correto)
@@ -49,22 +50,37 @@
 - B2-READING-012 e B2-READING-013 não existem no sistema (salto de R011 → R014).
   Documentado em LESSON_PREMIUM_AUDIT_B1_B2.md. Não corrigir sem análise de impacto.
 
+## BLOCO CONCLUÍDO: STUDY-READY-AUDIT-A1-C2
+
+| Item | Status |
+|------|--------|
+| PEDAGOGICAL_DEEP_AUDIT_A1_C2.md | CRIADO ✅ |
+| PILLAR_SPECIFIC_AUDIT_A1_C2.md | CRIADO ✅ |
+| STUDENT_JOURNEY_AUDIT_A1_C2.md | CRIADO ✅ |
+| CURRICULUM_STUDY_READY_CERTIFICATION.md | CRIADO ✅ |
+| C1-CHECKPOINT-001 schemaVersion | CORRIGIDO ✅ |
+| C2-CHECKPOINT-001 schemaVersion | CORRIGIDO ✅ |
+| Veredicto | ✅ STUDY READY |
+
 ## FASE 5 — REGISTRAR APENAS, NÃO EXECUTAR
 
 | Sub-fase | Tema | Status |
 |----------|------|--------|
-| 5.1 | A1 finalization (aulas incompletas/pendentes) | REGISTRADO — não executar |
-| 5.2 | SRS (Spaced Repetition System) integração avançada | REGISTRADO — não executar |
-| 5.3 | Gamification (XP, badges, streaks) | REGISTRADO — não executar |
-| 5.4 | UI (melhorias de interface e navegação) | REGISTRADO — não executar |
+| 5.1 | Mastery gate A2 (sem gate formal) | REGISTRADO — não executar |
+| 5.2 | masteryCriteria vazio nas 31 lições B2.1 | REGISTRADO — não executar |
+| 5.3 | Tags ausentes nas ~80 lições A1 | REGISTRADO — não executar |
+| 5.4 | SRS (Spaced Repetition System) integração avançada | REGISTRADO — não executar |
+| 5.5 | Gamification (XP, badges, streaks) | REGISTRADO — não executar |
+| 5.6 | UI (melhorias de interface e navegação) | REGISTRADO — não executar |
 
 ## Instrução de retomada
 Ao retomar:
 1. Ler este arquivo AUTO_RESUME_NEXT_BLOCK.md.
-2. Ler fluency-clean/docs/CURRICULUM_LESSONS_GITHUB_REGISTRY.md.
-3. Ler fluency-clean/docs/LESSON_PREMIUM_AUDIT_B1_B2.md.
-4. Confirmar branch: git branch --show-current → deve ser "main".
+2. Ler fluency-clean/docs/CURRICULUM_STUDY_READY_CERTIFICATION.md (veredicto final).
+3. Ler fluency-clean/docs/CURRICULUM_LESSONS_GITHUB_REGISTRY.md.
+4. Confirmar branch: git branch --show-current → deve ser "claude/validate-b1-plan-b2-rLc3b".
 5. Confirmar estado: git log --oneline -5.
 6. Verificar contagem: deve ser A1:139, A2:122, B1:73, B2:83, C1:73, C2:42 = 532 total.
 7. Verificar zero duplicatas antes de qualquer novo trabalho.
-8. FASE 5: aguardar autorização explícita antes de iniciar qualquer sub-fase.
+8. Verificar zero lições sem schemaVersion.
+9. FASE 5: aguardar autorização explícita antes de iniciar qualquer sub-fase.
