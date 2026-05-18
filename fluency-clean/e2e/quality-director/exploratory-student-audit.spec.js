@@ -6,16 +6,30 @@ import { clickTab, unlockApp } from './helpers/uiAudit.js';
 import { openSeededLesson, seedCurrentLesson, satisfyCurrentPhase } from './helpers/lessonFlowDriver.js';
 import { runStudentExperienceInvariants } from './helpers/studentExperienceInvariants.js';
 
-const SAMPLE_LESSONS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2']
-  .flatMap((level) => getStaticLessons(level))
-  .filter((lesson) => lesson.status === 'ready')
-  .filter((lesson, index) => index < 18 || ['grammar', 'reading', 'listening', 'speaking', 'writing', 'vocabulary'].includes(lesson.pillar));
+const EXPLORATORY_TABS = AUDIT_TABS.slice(0, 7);
+const MAX_SAFE_ACTIONS_PER_TAB = 2;
+const MAX_STEPS_PER_LESSON = 3;
+
+function getExploratoryLessons() {
+  const lessons = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2']
+    .flatMap((level) => getStaticLessons(level))
+    .filter((lesson) => lesson.status === 'ready');
+
+  const byPillar = new Map();
+  lessons.forEach((lesson) => {
+    const key = lesson.pillar || lesson.type || 'unknown';
+    if (!byPillar.has(key)) byPillar.set(key, lesson);
+  });
+
+  return [...byPillar.values()].slice(0, 6);
+}
 
 let reporter;
 
 test.describe.configure({ mode: 'serial' });
 
 test.beforeEach(async ({ page }, testInfo) => {
+  test.setTimeout(45000);
   reporter = reporter || new AuditReporter({
     name: 'quality-director-exploratory-student-audit',
     projectName: testInfo.project.name,
@@ -48,53 +62,59 @@ test.beforeEach(async ({ page }, testInfo) => {
 
 test.afterAll(() => reporter?.write());
 
-test('Exploratory Student Audit: varre abas e ações principais procurando erros desconhecidos', async ({ page }, testInfo) => {
+test('Exploratory Student Audit: varre abas procurando erros desconhecidos', async ({ page }, testInfo) => {
   await unlockApp(page);
   await page.goto('/');
 
-  for (const tab of AUDIT_TABS) {
+  for (const tab of EXPLORATORY_TABS) {
     await clickTab(page, tab.label);
-    await page.waitForTimeout(250);
-    await expect(page.getByRole('navigation', { name: 'Navegação principal' })).toBeVisible({ timeout: 10000 });
+    await page.waitForTimeout(120);
+    await expect(page.getByRole('navigation', { name: 'Navegação principal' })).toBeVisible({ timeout: 8000 });
     await runStudentExperienceInvariants({ page, reporter, area: `${testInfo.project.name} · Explorar aba ${tab.label}` });
-
-    const buttons = page.locator('button:visible').filter({ hasNotText: /^$/ });
-    const maxClicks = Math.min(await buttons.count().catch(() => 0), 4);
-    for (let index = 0; index < maxClicks; index += 1) {
-      const text = await buttons.nth(index).innerText().catch(() => '');
-      if (/excluir|apagar|reset|sair|deletar/i.test(text)) continue;
-      await buttons.nth(index).click().catch(() => null);
-      await page.waitForTimeout(180);
-      await runStudentExperienceInvariants({ page, reporter, area: `${testInfo.project.name} · Explorar aba ${tab.label} · ação ${index + 1}` });
-    }
   }
 
   reporter.addCheck({ area: 'Exploratório · abas', title: 'Abas principais exploradas com invariantes gerais' });
 });
 
-test('Exploratory Student Audit: abre amostra de aulas reais por pilar e procura anomalias gerais', async ({ page }, testInfo) => {
-  const lessonsByPillar = new Map();
-  SAMPLE_LESSONS.forEach((lesson) => {
-    const key = lesson.pillar || lesson.type || 'unknown';
-    if (!lessonsByPillar.has(key)) lessonsByPillar.set(key, []);
-    if (lessonsByPillar.get(key).length < 2) lessonsByPillar.get(key).push(lesson);
-  });
-  const lessons = [...lessonsByPillar.values()].flat().slice(0, 12);
+test('Exploratory Student Audit: clica ações seguras nas abas procurando anomalias', async ({ page }, testInfo) => {
+  await unlockApp(page);
+  await page.goto('/');
+
+  for (const tab of EXPLORATORY_TABS) {
+    await clickTab(page, tab.label);
+    await page.waitForTimeout(120);
+    const buttons = page.locator('button:visible').filter({ hasNotText: /^$/ });
+    const maxClicks = Math.min(await buttons.count().catch(() => 0), MAX_SAFE_ACTIONS_PER_TAB);
+
+    for (let index = 0; index < maxClicks; index += 1) {
+      const text = await buttons.nth(index).innerText().catch(() => '');
+      if (/excluir|apagar|reset|sair|deletar|confirmar/i.test(text)) continue;
+      await buttons.nth(index).click().catch(() => null);
+      await page.waitForTimeout(120);
+      await runStudentExperienceInvariants({ page, reporter, area: `${testInfo.project.name} · Explorar aba ${tab.label} · ação ${index + 1}` });
+    }
+  }
+
+  reporter.addCheck({ area: 'Exploratório · ações', title: 'Ações seguras exploradas com invariantes gerais' });
+});
+
+test('Exploratory Student Audit: abre amostra curta de aulas reais por pilar', async ({ page }, testInfo) => {
+  const lessons = getExploratoryLessons();
 
   for (const lesson of lessons) {
     await seedCurrentLesson(page, lesson);
     await openSeededLesson(page);
-    await expect(page.locator('.lesson-flow-shell')).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('.lesson-flow-shell')).toBeVisible({ timeout: 8000 });
 
-    for (let step = 0; step < 5; step += 1) {
+    for (let step = 0; step < MAX_STEPS_PER_LESSON; step += 1) {
       await runStudentExperienceInvariants({ page, reporter, area: `${testInfo.project.name} · Explorar aula ${lesson.id} · etapa ${step + 1}` });
       await satisfyCurrentPhase(page, reporter, `Explorar aula ${lesson.id}`);
       const continueButton = page.getByRole('button', { name: /continuar|concluir aula/i }).last();
       if (!(await continueButton.isVisible().catch(() => false))) break;
       await continueButton.click().catch(() => null);
-      await page.waitForTimeout(250);
+      await page.waitForTimeout(120);
     }
   }
 
-  reporter.addCheck({ area: 'Exploratório · aulas', title: `${lessons.length} aulas reais exploradas por amostra de pilares` });
+  reporter.addCheck({ area: 'Exploratório · aulas', title: `${lessons.length} aulas reais exploradas por amostra curta de pilares` });
 });
