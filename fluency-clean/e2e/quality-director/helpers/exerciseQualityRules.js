@@ -9,10 +9,6 @@ const GENERIC_OPTION_PATTERNS = [
   /^answer\s*[a-d]?$/i,
   /^correct answer$/i,
   /^wrong answer$/i,
-  /^true$/i,
-  /^false$/i,
-  /^yes$/i,
-  /^no$/i,
   /^n\/a$/i,
 ];
 
@@ -35,9 +31,39 @@ const GENERIC_FEEDBACK_PATTERNS = [
 ];
 
 const STOPWORDS = new Set([
-  'the', 'a', 'an', 'and', 'or', 'to', 'of', 'in', 'on', 'is', 'are', 'am', 'i', 'you', 'he', 'she', 'it', 'we', 'they',
+  'the', 'a', 'an', 'and', 'or', 'to', 'of', 'in', 'on', 'at', 'for', 'with', 'from', 'by', 'as', 'than',
+  'is', 'are', 'am', 'was', 'were', 'be', 'been', 'being', 'do', 'does', 'did', 'have', 'has', 'had',
+  'i', 'you', 'he', 'she', 'it', 'we', 'they', 'his', 'her', 'their', 'my', 'your', 'our',
   'what', 'where', 'who', 'when', 'why', 'how', 'which', 'choose', 'correct', 'answer', 'resposta', 'correta', 'qual',
+  'because', 'if', 'then', 'so', 'very', 'more', 'most', 'only', 'just', 'again',
   'o', 'a', 'os', 'as', 'de', 'do', 'da', 'em', 'para', 'com', 'um', 'uma', 'e', 'ou', 'que', 'como', 'onde', 'quem',
+]);
+
+const SYNONYMS = new Map([
+  ['comfortable', 'comfort'],
+  ['comfy', 'comfort'],
+  ['modern', 'modern'],
+  ['useful', 'useful'],
+  ['working', 'work'],
+  ['works', 'work'],
+  ['worked', 'work'],
+  ['restarted', 'restart'],
+  ['checked', 'check'],
+  ['updating', 'update'],
+  ['updated', 'update'],
+  ['bottles', 'bottle'],
+  ['prices', 'price'],
+  ['shoes', 'shoe'],
+  ['luggage', 'luggage'],
+  ['elevator', 'elevator'],
+  ['fever', 'fever'],
+  ['worse', 'worse'],
+  ['dark', 'dark'],
+  ['leaking', 'leak'],
+  ['clean', 'clean'],
+  ['kitchen', 'kitchen'],
+  ['visit', 'visit'],
+  ['park', 'park'],
 ]);
 
 function clean(value) {
@@ -58,8 +84,21 @@ function normalize(value) {
     .trim();
 }
 
+function stem(word) {
+  const direct = SYNONYMS.get(word);
+  if (direct) return direct;
+  if (word.length > 5 && word.endsWith('ing')) return word.slice(0, -3);
+  if (word.length > 4 && word.endsWith('ed')) return word.slice(0, -2);
+  if (word.length > 4 && word.endsWith('es')) return word.slice(0, -2);
+  if (word.length > 3 && word.endsWith('s')) return word.slice(0, -1);
+  return word;
+}
+
 function words(value) {
-  return normalize(value).split(/\s+/).filter((word) => word && !STOPWORDS.has(word) && word.length > 2);
+  return normalize(value)
+    .split(/\s+/)
+    .map(stem)
+    .filter((word) => word && !STOPWORDS.has(word) && word.length > 2);
 }
 
 function firstValue(object, keys) {
@@ -119,22 +158,45 @@ function addIssue(issues, issue) {
   issues.push({ severity: 'P2', ...issue });
 }
 
-function optionMatchesAnswer(option, answer) {
-  const optionNorm = normalize(option);
-  const answerNorm = normalize(answer);
-  if (!optionNorm || !answerNorm) return false;
-  return optionNorm === answerNorm || optionNorm.includes(answerNorm) || answerNorm.includes(optionNorm);
+function tokenSet(value) {
+  return new Set(words(value));
 }
 
 function lexicalOverlap(a, b) {
-  const aWords = new Set(words(a));
-  const bWords = new Set(words(b));
+  const aWords = tokenSet(a);
+  const bWords = tokenSet(b);
   if (!aWords.size || !bWords.size) return 0;
   let hits = 0;
   aWords.forEach((word) => {
     if (bWords.has(word)) hits += 1;
   });
   return hits / Math.min(aWords.size, bWords.size);
+}
+
+function optionMatchesAnswer(option, answer) {
+  const optionNorm = normalize(option);
+  const answerNorm = normalize(answer);
+  if (!optionNorm || !answerNorm) return false;
+  if (optionNorm === answerNorm || optionNorm.includes(answerNorm) || answerNorm.includes(optionNorm)) return true;
+
+  const answerTokens = tokenSet(answer);
+  const optionTokens = tokenSet(option);
+  if (!answerTokens.size || !optionTokens.size) return false;
+
+  let matched = 0;
+  answerTokens.forEach((word) => {
+    if (optionTokens.has(word)) matched += 1;
+  });
+
+  const coverage = matched / answerTokens.size;
+  const reverseCoverage = matched / optionTokens.size;
+  const answerShort = answerTokens.size <= 3;
+
+  if (answerShort && coverage >= 0.67) return true;
+  if (coverage >= 0.72 && reverseCoverage >= 0.45) return true;
+  if (matched >= 2 && coverage >= 0.6 && reverseCoverage >= 0.6) return true;
+
+  return false;
 }
 
 function hasAnswerLeak(question, answer) {
