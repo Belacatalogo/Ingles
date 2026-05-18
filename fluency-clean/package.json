@@ -14,6 +14,7 @@
     "test:e2e": "playwright test",
     "test:e2e:report": "playwright show-report",
     "test:quality-director": "playwright test e2e/quality-director",
+    "test:quality-director:smart": "node scripts/quality-director/select-suites.mjs",
     "quality-director:publish-latest": "node scripts/publish-quality-director-latest.mjs"
   },
   "dependencies": {
