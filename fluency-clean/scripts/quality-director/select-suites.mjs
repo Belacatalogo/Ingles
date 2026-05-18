@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import { execSync } from 'node:child_process';
 
+const ALL_LESSONS_DEEP_AUDIT = 'e2e/quality-director/all-lessons-deep.audit.spec.js';
 const EXPLORATORY_STUDENT_AUDIT = 'e2e/quality-director/exploratory-student-audit.spec.js';
 const REAL_STUDENT_REGRESSION = 'e2e/quality-director/real-student-regression.audit.spec.js';
 
@@ -17,6 +18,10 @@ const FULL_SUITES = [
   'e2e/quality-director/empty-states-security.audit.spec.js',
   'e2e/quality-director/curriculum-consistency.audit.spec.js',
   'e2e/quality-director/a11y-performance.audit.spec.js',
+];
+
+const ALL_LESSONS_SUITES = [
+  ALL_LESSONS_DEEP_AUDIT,
 ];
 
 const ALWAYS_SMOKE = [
@@ -145,13 +150,23 @@ function unique(items) {
 }
 
 function routeChangedFiles(files, mode) {
+  if (mode === 'all_lessons') {
+    return {
+      mode: 'all_lessons',
+      files,
+      suites: ALL_LESSONS_SUITES,
+      matchedRoutes: ['manual-all-lessons-deep-audit'],
+      reasons: ['Execução manual all_lessons: audita todas as aulas ready em modo profundo.'],
+    };
+  }
+
   if (mode === 'full' || process.env.GITHUB_EVENT_NAME === 'workflow_dispatch') {
     return {
       mode: 'full',
       files,
       suites: FULL_SUITES,
       matchedRoutes: ['manual-full-audit'],
-      reasons: ['Execução manual ou modo full: roda auditoria completa.'],
+      reasons: ['Execução manual ou modo full: roda auditoria completa padrão.'],
     };
   }
 
@@ -189,7 +204,8 @@ function routeChangedFiles(files, mode) {
   };
 }
 
-const mode = process.argv.includes('--full') ? 'full' : 'smart';
+const argMode = process.argv.includes('--all-lessons') ? 'all_lessons' : process.argv.includes('--full') ? 'full' : 'smart';
+const mode = process.env.QUALITY_DIRECTOR_MODE || argMode;
 const files = getChangedFiles();
 const selection = routeChangedFiles(files, mode);
 const outputDir = 'audit-results';
