@@ -1,7 +1,11 @@
 const OPTION_KEYS = ['options', 'choices', 'alternatives', 'answers'];
-const ANSWER_KEYS = ['answer', 'expected', 'expectedAnswer', 'correct', 'answerKey', 'correctOption', 'correctChoice', 'modelAnswer', 'sampleAnswer'];
+// 'note' is appended last so it only activates for task()-format objects
+// where note holds the expected answer and no other answer field is present.
+const ANSWER_KEYS = ['answer', 'expected', 'expectedAnswer', 'correct', 'answerKey', 'correctOption', 'correctChoice', 'modelAnswer', 'sampleAnswer', 'note'];
 const QUESTION_KEYS = ['question', 'prompt', 'instruction', 'title'];
-const FEEDBACK_KEYS = ['explanation', 'feedback', 'hint', 'tip', 'why', 'rationale', 'note'];
+// 'note' removed: in task()-format objects it IS the answer, not feedback —
+// treating it as feedback would trigger false "generic feedback" P2s.
+const FEEDBACK_KEYS = ['explanation', 'feedback', 'hint', 'tip', 'why', 'rationale'];
 
 const GENERIC_OPTION_PATTERNS = [
   /^option\s*[a-d]?$/i,
@@ -362,7 +366,12 @@ function auditExerciseObject({ lesson, item, path }) {
     });
   }
 
-  if (lessonContext && question && lexicalOverlap(question, lessonContext) === 0 && options.length >= 2) {
+  // Only flag lexical disconnect when the question has enough meaningful tokens to make
+  // the check reliable. Short grammar exercises (2-3 word fill-ins, "Corrija: X", etc.)
+  // are almost always bilingual content: English question against Portuguese lesson context —
+  // zero overlap is expected, not a sign of an off-topic exercise.
+  const questionTokenCount = tokenSet(question).size;
+  if (lessonContext && question && questionTokenCount >= 3 && lexicalOverlap(question, lessonContext) === 0 && options.length >= 2) {
     addIssue(issues, {
       severity: 'P2',
       area,

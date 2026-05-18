@@ -144,7 +144,9 @@ export function auditLessonObject(lesson) {
       });
     }
 
-    const shortOptions = options.filter((option) => option.length <= 2);
+    // 2-character words (am, is, do, an, in, on, at, be…) are valid grammar options;
+    // only single-character entries (<2) are genuinely too short to test comprehension.
+    const shortOptions = options.filter((option) => option.length < 2);
     if (shortOptions.length >= 2) {
       addIssue(issues, {
         severity: 'P2',
