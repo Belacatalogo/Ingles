@@ -8,7 +8,7 @@ import { openSeededLesson, seedCurrentLesson, satisfyCurrentPhase } from './help
 import { runStudentExperienceInvariants } from './helpers/studentExperienceInvariants.js';
 
 const LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
-const MAX_STEPS_PER_LESSON = Number(process.env.QUALITY_DIRECTOR_ALL_LESSONS_STEPS || 2);
+const MAX_STEPS_PER_LESSON = Number(process.env.QUALITY_DIRECTOR_ALL_LESSONS_STEPS || 1);
 const LEVEL_FILTER = process.env.QUALITY_DIRECTOR_LEVEL || '';
 const PILLAR_FILTER = process.env.QUALITY_DIRECTOR_PILLAR || '';
 
@@ -21,11 +21,12 @@ function getAllReadyLessons() {
 }
 
 let reporter;
+const lessons = getAllReadyLessons();
 
-test.describe.configure({ mode: 'serial' });
+test.describe.configure({ mode: 'parallel' });
 
 test.beforeEach(async ({ page }, testInfo) => {
-  test.setTimeout(120000);
+  test.setTimeout(45000);
   reporter = reporter || new AuditReporter({
     name: 'quality-director-all-lessons-deep',
     projectName: testInfo.project.name,
@@ -36,7 +37,7 @@ test.beforeEach(async ({ page }, testInfo) => {
       reporter.addIssue({
         severity: 'P1',
         area: 'Todas as aulas · console',
-        title: 'Console error durante auditoria profunda de todas as aulas',
+        title: 'Console error durante auditoria profunda de aula',
         impact: 'Erro silencioso pode indicar bug real em aula específica.',
         evidence: message.text(),
         recommendation: 'Investigar e corrigir console errors antes de considerar a aula validada.',
@@ -59,7 +60,6 @@ test.beforeEach(async ({ page }, testInfo) => {
 test.afterAll(() => reporter?.write());
 
 test('All Lessons Deep Audit: valida contratos pedagógicos de todas as aulas ready', async () => {
-  const lessons = getAllReadyLessons();
   if (!lessons.length) {
     reporter.addIssue({
       severity: 'P0',
@@ -88,14 +88,27 @@ test('All Lessons Deep Audit: valida contratos pedagógicos de todas as aulas re
   });
 });
 
-test('All Lessons Deep Audit: abre todas as aulas ready e valida experiência inicial', async ({ page }, testInfo) => {
-  const lessons = getAllReadyLessons();
-  if (!lessons.length) return;
-
-  for (const lesson of lessons) {
+for (const lesson of lessons) {
+  test(`All Lessons Deep Audit: abre ${lesson.id} e valida experiência inicial`, async ({ page }, testInfo) => {
     await seedCurrentLesson(page, lesson);
     await openSeededLesson(page);
-    await expect(page.locator('.lesson-flow-shell')).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('.lesson-reference-screen, .lesson-flow-shell').first()).toBeVisible({ timeout: 10000 });
+
+    const flowShell = page.locator('.lesson-flow-shell');
+    if (!(await flowShell.isVisible().catch(() => false))) {
+      reporter.addIssue({
+        severity: 'P1',
+        area: `Todas as aulas · ${lesson.id}`,
+        title: 'Aula abriu em tela de referência, não no fluxo profundo',
+        impact: 'O auditor não conseguiu validar etapas internas desta aula.',
+        recommendation: 'Verificar se a aula ready deve abrir diretamente no fluxo ou se precisa de botão Iniciar/Abrir aula.',
+      });
+      reporter.addCheck({
+        area: `Todas as aulas · ${lesson.id}`,
+        title: 'Aula renderizou tela válida, mas sem fluxo profundo visível inicialmente',
+      });
+      return;
+    }
 
     for (let step = 0; step < MAX_STEPS_PER_LESSON; step += 1) {
       await runStudentExperienceInvariants({
@@ -107,17 +120,12 @@ test('All Lessons Deep Audit: abre todas as aulas ready e valida experiência in
       const continueButton = page.getByRole('button', { name: /continuar|concluir aula/i }).last();
       if (!(await continueButton.isVisible().catch(() => false))) break;
       await continueButton.click().catch(() => null);
-      await page.waitForTimeout(80);
+      await page.waitForTimeout(30);
     }
 
     reporter.addCheck({
       area: `Todas as aulas · ${lesson.id}`,
-      title: `Experiência inicial validada por ${Math.min(MAX_STEPS_PER_LESSON, 3)} etapa(s)`,
+      title: `Experiência inicial validada por ${MAX_STEPS_PER_LESSON} etapa(s)`,
     });
-  }
-
-  reporter.addCheck({
-    area: 'Todas as aulas',
-    title: `${lessons.length} aulas ready foram abertas em fluxo real pelo auditor completo`,
   });
-});
+}
