@@ -1,6 +1,6 @@
 # Fluency Quality Director — Relatório Executivo Latest
 
-Gerado em: 2026-05-18T21:10:53.949Z
+Gerado em: 2026-05-18T21:59:35.464Z
 
 ## Veredito
 
