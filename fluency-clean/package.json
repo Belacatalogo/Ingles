@@ -12,7 +12,8 @@
     "preview": "vite preview --host 0.0.0.0",
     "check": "npm run build",
     "test:e2e": "playwright test",
-    "test:e2e:report": "playwright show-report"
+    "test:e2e:report": "playwright show-report",
+    "test:quality-director": "playwright test e2e/quality-director"
   },
   "dependencies": {
     "@vitejs/plugin-react": "4.3.4",
