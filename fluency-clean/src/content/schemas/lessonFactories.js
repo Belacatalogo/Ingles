@@ -81,7 +81,8 @@ export function createVocabularyLesson(input = {}) {
   return {
     ...createStaticLessonBase({ ...input, pillar: 'vocabulary' }),
     topicContext: clean(input.topicContext),
-    essentialWords: safeArray(input.essentialWords),
+    // C1/C2 lessons use 'words' field; normalize to essentialWords for adapter compatibility
+    essentialWords: safeArray(input.essentialWords?.length ? input.essentialWords : input.words),
     chunks: safeArray(input.chunks),
     pronunciationFocus: input.pronunciationFocus || null,
     dangerousConfusions: safeArray(input.dangerousConfusions),
@@ -99,7 +100,8 @@ export function createVocabularyLesson(input = {}) {
 }
 
 export function createReadingLesson(input = {}) {
-  const mainText = clean(input.mainText);
+  // C1/C2 use 'passage'; B2+ use 'readingText.body' — all normalize to mainText
+  const mainText = clean(input.mainText || input.passage || input.readingText?.body || '');
   return {
     ...createStaticLessonBase({ ...input, pillar: 'reading' }),
     readingPurpose: clean(input.readingPurpose),
@@ -115,6 +117,8 @@ export function createReadingLesson(input = {}) {
     mainText,
     vocabulary: safeArray(input.vocabulary),
     comprehensionQuestions: safeArray(input.comprehensionQuestions),
+    // C1/C2 use 'tasks' for comprehension exercises
+    tasks: safeArray(input.tasks),
     evidenceTasks: safeArray(input.evidenceTasks),
     shortResponse: safeArray(input.shortResponse),
     productionTask: input.productionTask || null,
@@ -162,7 +166,7 @@ export function createSpeakingLesson(input = {}) {
 export function createWritingLesson(input = {}) {
   return {
     ...createStaticLessonBase({ ...input, pillar: 'writing' }),
-    modelText: clean(input.modelText),
+    modelText: clean(input.modelText || input.modelParagraph || ''),
     modelTextBreakdown: safeArray(input.modelTextBreakdown),
     writingBlocks: safeArray(input.writingBlocks),
     grammarForWriting: safeArray(input.grammarForWriting),
@@ -175,6 +179,8 @@ export function createWritingLesson(input = {}) {
     checklist: safeArray(input.checklist),
     draftTask: input.draftTask || null,
     revisionTask: input.revisionTask || null,
+    // C1/C2 writing lessons use 'tasks' for structured exercises
+    tasks: safeArray(input.tasks),
   };
 }
 

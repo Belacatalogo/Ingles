@@ -49,7 +49,13 @@ function withMeta(items, lesson, quality = {}) {
   }));
 }
 function choiceFromQuestion(lesson, item, title = 'Reconhecimento') {
-  return makeBase(lesson, 'choice', title, item.question || item.prompt || item.instruction, item.answer || item.expectedAnswer || item.correctAnswer, { options: item.options, explanation: item.explanation });
+  const answer = clean(item.answer || item.expectedAnswer || item.correctAnswer || '');
+  const rawOptions = safeArray(item.options).map(clean).filter(Boolean);
+  const hasAnswer = rawOptions.some((o) => o.toLowerCase() === answer.toLowerCase());
+  const options = rawOptions.length < 2
+    ? buildDistractors(answer, rawOptions)
+    : hasAnswer ? rawOptions : [answer, ...rawOptions.filter((o) => o.toLowerCase() !== answer.toLowerCase())].slice(0, 4);
+  return makeBase(lesson, 'choice', title, item.question || item.prompt || item.instruction, answer, { options, explanation: item.explanation });
 }
 function buildDistractors(answer, options = []) {
   const base = [answer, ...safeArray(options), 'I am', 'You are', 'She is', 'They are', 'My name is'].map(clean).filter(Boolean);
@@ -62,11 +68,15 @@ function buildGrammarPractice(lesson) {
   safeArray(lesson.guidedPractice).forEach((item) => items.push(choiceFromQuestion(lesson, item, 'Grammar · reconhecimento')));
   safeArray(lesson.transformationPractice).forEach((item) => items.push(choiceFromQuestion(lesson, item, 'Grammar · transformação')));
   safeArray(lesson.commonMistakes).forEach((item) => {
-    if (item?.wrong && item?.right) items.push(makeBase(lesson, 'correction', 'Grammar · corrija o erro', `Corrija a frase: ${item.wrong}`, item.right, { explanation: item.why }));
+    const wrong = item?.wrong || item?.mistake;
+    const right = item?.right || item?.correction;
+    if (wrong && right) items.push(makeBase(lesson, 'correction', 'Grammar · corrija o erro', `Corrija a frase: ${wrong}`, right, { explanation: clean(item.why || item.explanation || '') }));
   });
-  // C1/C2 lessons store correction-style exercises in commonBrazilianMistakes or practiceExercises
+  // B1/C1/C2 lessons store correction-style exercises in commonBrazilianMistakes with {mistake, correction} or {wrong, right}
   safeArray(lesson.commonBrazilianMistakes).forEach((item) => {
-    if (item?.wrong && item?.right) items.push(makeBase(lesson, 'correction', 'Grammar · corrija o erro', `Corrija a frase: ${item.wrong}`, item.right, { explanation: item.note || item.why }));
+    const wrong = item?.wrong || item?.mistake;
+    const right = item?.right || item?.correction;
+    if (wrong && right) items.push(makeBase(lesson, 'correction', 'Grammar · corrija o erro', `Corrija a frase: ${wrong}`, right, { explanation: clean(item.note || item.explanation || item.why || '') }));
   });
   // C1/C2 practiceExercises: transformation items have original + hint
   safeArray(lesson.practiceExercises).forEach((exercise) => {
@@ -79,9 +89,42 @@ function buildGrammarPractice(lesson) {
       });
     }
   });
+  // B1+ controlledPractice: {instruction, items:[{prompt/sentences, answer},...]} or C2 format: {instruction, note, expected}
+  safeArray(lesson.controlledPractice).forEach((group) => {
+    if (!group || typeof group !== 'object') return;
+    if (Array.isArray(group.items)) {
+      safeArray(group.items).forEach((item) => {
+        const sentences = safeArray(item.sentences).join(' ');
+        const prompt = clean(item.prompt || sentences || item.sentence || item.instruction || '');
+        const answer = clean(item.answer || item.correct || '');
+        if (prompt && answer) items.push(makeBase(lesson, 'write', 'Grammar · prática controlada', prompt, answer));
+      });
+    } else if (group.expected) {
+      const prompt = clean(group.instruction || '');
+      const raw = clean(group.expected || '');
+      const answer = raw.split(/(?<=[.!?])\s+/)[0] || raw.slice(0, 120) || '';
+      if (prompt && answer) items.push(makeBase(lesson, 'write', 'Grammar · prática controlada', prompt, answer));
+    }
+  });
+  // B1+ errorCorrectionPractice: {instruction, sentences:[], answers:[]} — parallel arrays
+  safeArray(lesson.errorCorrectionPractice).forEach((group) => {
+    const sentences = safeArray(group?.sentences);
+    const answers = safeArray(group?.answers);
+    sentences.forEach((sentence, i) => {
+      const prompt = clean(sentence);
+      const answer = clean(answers[i] || '');
+      if (prompt && answer) items.push(makeBase(lesson, 'correction', 'Grammar · corrija o erro', `Corrija: ${prompt}`, answer));
+    });
+  });
+  // B1+ translationPractice: {portuguese, english, note}
+  safeArray(lesson.translationPractice).forEach((item) => {
+    const portuguese = clean(item?.portuguese || '');
+    const english = clean(item?.english || '');
+    if (portuguese && english) items.push(makeBase(lesson, 'write', 'Grammar · tradução', `Traduza para inglês: "${portuguese}"`, english, { explanation: clean(item?.note || '') }));
+  });
   safeArray(lesson.professorExamples).slice(0, 8).forEach((example) => {
-    // professorExamples can be plain strings (C1/C2) or objects (A1/B1)
-    const english = typeof example === 'string' ? clean(example) : clean(example.english || example.text);
+    // professorExamples can be plain strings (C1/C2) or objects (A1/B1 {english/text} or B1 {context, example, breakdown})
+    const english = typeof example === 'string' ? clean(example) : clean(example.english || example.text || example.example || '');
     if (!english) return;
     const words = english.split(/\s+/);
     if (words.length >= 3) {
@@ -98,10 +141,34 @@ function buildGrammarPractice(lesson) {
 function buildVocabularyPractice(lesson) {
   const items = [];
   safeArray(lesson.recognitionPractice).forEach((item) => items.push(choiceFromQuestion(lesson, item, 'Vocabulary · reconhecimento')));
+  // usagePractice uses the same q() format as recognitionPractice
+  safeArray(lesson.usagePractice).forEach((item) => items.push(choiceFromQuestion(lesson, item, 'Vocabulary · uso')));
   safeArray(lesson.lexicalSets).forEach((set) => safeArray(set.items).forEach((word) => {
     items.push(makeBase(lesson, 'choice', 'Vocabulary · associação', `Qual palavra pertence ao tema “${set.title || lesson.theme}”?`, word, { options: buildDistractors(word, safeArray(set.items).filter((item) => item !== word)) }));
     items.push(makeBase(lesson, 'write', 'Vocabulary · escrita controlada', `Digite a palavra em inglês: ${word}`, word));
   }));
+  // B1+ lessons use essentialWords: [{word, definition, example, brazilianNote}]
+  const essWords = safeArray(lesson.essentialWords);
+  if (essWords.length) {
+    const wordList = essWords.map((w) => clean(w.word || '')).filter(Boolean);
+    essWords.forEach((entry) => {
+      const wordText = clean(entry.word || '');
+      const defText = clean(entry.definition || entry.meaning || '').split(' / ')[0].split('/')[0].trim();
+      const exampleText = clean(entry.example || '');
+      if (!wordText || !defText) return;
+      items.push(makeBase(lesson, 'choice', 'Vocabulary · reconhecimento', `Qual palavra em inglês significa “${defText}”?`, wordText, { options: buildDistractors(wordText, wordList.filter((w) => w !== wordText)), explanation: clean(entry.brazilianNote || '') }));
+      if (exampleText && exampleText.length <= 100) {
+        const blankPrompt = exampleText.replace(new RegExp(`\\b${wordText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i'), '___');
+        if (blankPrompt !== exampleText) items.push(makeBase(lesson, 'fillBlank', 'Vocabulary · uso em contexto', blankPrompt, wordText, { options: buildDistractors(wordText, wordList.filter((w) => w !== wordText)) }));
+      }
+    });
+  }
+  // B1+ lessons use chunks: [{chunk, meaning, example}]
+  safeArray(lesson.chunks).forEach((entry) => {
+    const chunkText = clean(entry.chunk || entry.text || '');
+    const meaning = clean(entry.meaning || entry.translation || '');
+    if (chunkText && meaning && chunkText.length <= 60) items.push(makeBase(lesson, 'write', 'Vocabulary · chunk', `Escreva em inglês: “${meaning}”`, chunkText));
+  });
   safeArray(lesson.examples).forEach((example) => {
     const text = clean(example.text || example.english);
     if (text) items.push(makeBase(lesson, 'write', 'Vocabulary · frase modelo', `Copie a frase modelo: ${text}`, text));
@@ -111,18 +178,62 @@ function buildVocabularyPractice(lesson) {
 
 function buildReadingPractice(lesson) {
   const items = [];
-  safeArray(lesson.comprehensionQuestions).forEach((item) => items.push(choiceFromQuestion(lesson, item, 'Reading · compreensão')));
-  safeArray(lesson.vocabulary).forEach((vocab) => {
-    if (vocab?.word && vocab?.meaning) items.push(makeBase(lesson, 'choice', 'Reading · vocabulário no contexto', `No texto, qual palavra é ligada a “${vocab.meaning}”?`, vocab.word, { options: buildDistractors(vocab.word, safeArray(lesson.vocabulary).map((item) => item.word)) }));
+  const mainText = clean(lesson.mainText || lesson.passage || '');
+  const vocabSource = safeArray(lesson.preReadingVocabulary).length ? lesson.preReadingVocabulary : safeArray(lesson.vocabulary);
+
+  function answerFromTextOrRaw(prompt, rawAnswer) {
+    if (rawAnswer) return rawAnswer.split(/(?<=[.!?])\s+/)[0] || rawAnswer.slice(0, 120) || '';
+    if (!mainText || !prompt) return '';
+    const quotedMatch = prompt.match(/"([^"]{5,60})"/);
+    const searchTerm = quotedMatch ? quotedMatch[1] : prompt.split(/\s+/).slice(0, 5).join(' ');
+    const found = firstSentenceContaining(mainText, searchTerm);
+    return found && found.split(/\s+/).length <= 30 ? found.slice(0, 150) : '';
+  }
+
+  // evidenceQuestions: A1/A2 have options (→ choice), B1+ are open-ended (→ write)
+  safeArray(lesson.evidenceQuestions).forEach((item) => {
+    if (safeArray(item.options).length >= 2) {
+      items.push(choiceFromQuestion(lesson, item, 'Reading · compreensão'));
+    } else {
+      const prompt = clean(item.question || item.prompt || item.instruction || '');
+      const raw = clean(item.evidence || item.answer || item.expectedAnswer || '');
+      const answer = answerFromTextOrRaw(prompt, raw);
+      if (prompt && answer) items.push(makeBase(lesson, 'write', 'Reading · compreensão', prompt, answer, { explanation: clean(item.explanation || '') }));
+    }
   });
-  safeArray(lesson.evidenceTasks).forEach((task) => {
-    const text = clean(task.instruction || task.prompt || task);
-    const keyword = text.match(/\b(name|Brazil|student|family|friend|teacher|English|city)\b/i)?.[1] || '';
-    const evidence = firstSentenceContaining(lesson.mainText, keyword) || clean(lesson.mainText).split(/(?<=[.!?])\s+/)[0] || '';
-    if (evidence) items.push(makeBase(lesson, 'write', 'Reading · evidência textual', text, evidence));
+
+  // B1+ format: comprehensionQuestions — may or may not have options
+  safeArray(lesson.comprehensionQuestions).forEach((item) => {
+    if (safeArray(item.options).length >= 2) {
+      items.push(choiceFromQuestion(lesson, item, 'Reading · compreensão'));
+    } else {
+      const prompt = clean(item.question || item.prompt || item.instruction || '');
+      const raw = clean(item.evidence || item.answer || item.expectedAnswer || '');
+      const answer = answerFromTextOrRaw(prompt, raw);
+      if (prompt && answer) items.push(makeBase(lesson, 'write', 'Reading · compreensão', prompt, answer, { explanation: clean(item.explanation || '') }));
+    }
   });
-  const firstSentence = clean(lesson.mainText).split(/(?<=[.!?])\s+/)[0] || '';
-  if (firstSentence) items.push(makeBase(lesson, 'dictation', 'Reading · frase-chave', 'Copie a primeira frase do texto.', firstSentence));
+
+  // C1/C2 format: tasks — {instruction, note, expected}
+  safeArray(lesson.tasks).slice(0, 6).forEach((item) => {
+    const prompt = clean(item.instruction || item.prompt || '');
+    const raw = clean(item.expected || item.answer || item.note || '');
+    const answer = raw.split(/(?<=[.!?])\s+/)[0] || raw.slice(0, 120) || '';
+    if (prompt && answer) items.push(makeBase(lesson, 'write', 'Reading · análise', prompt, answer));
+  });
+
+  // Vocabulary in context from preReadingVocabulary or vocabulary
+  safeArray(vocabSource).forEach((vocab) => {
+    const word = clean(vocab?.word || '');
+    const meaning = clean(vocab?.meaning || vocab?.definition || '');
+    if (word && meaning) items.push(makeBase(lesson, 'choice', 'Reading · vocabulário no contexto', `No texto, qual palavra é ligada a “${meaning}”?`, word, { options: buildDistractors(word, safeArray(vocabSource).map((v) => clean(v.word || '')).filter(Boolean)) }));
+  });
+
+  // Dictation: find any sentence ≤18 words (prefer first, fall back to any)
+  const allSentences = mainText ? mainText.split(/(?<=[.!?])\s+/) : [];
+  const dictSentence = allSentences.find((s) => s.split(/\s+/).length <= 18) || '';
+  if (dictSentence) items.push(makeBase(lesson, 'dictation', 'Reading · frase-chave', 'Copie esta frase do texto.', dictSentence));
+
   return withMeta(items, lesson, { staticDerived: true, targetMinimum: 12, pillar: 'reading', evidenceBased: true }).slice(0, 28);
 }
 
@@ -165,18 +276,37 @@ function buildSpeakingPractice(lesson) {
 
 function buildWritingPractice(lesson) {
   const items = [];
-  const sentences = clean(lesson.modelText).split(/(?<=[.!?])\s+/).filter(Boolean);
+  const modelText = clean(lesson.modelText || lesson.modelParagraph || '');
+  const sentences = modelText.split(/(?<=[.!?])\s+/).filter(Boolean);
   sentences.slice(0, 8).forEach((sentence) => items.push(makeBase(lesson, 'write', 'Writing · copiar modelo', `Copie a frase modelo: ${sentence}`, sentence)));
   safeArray(lesson.writingBlocks).forEach((block) => {
-    const text = clean(block);
-    if (text) items.push(makeBase(lesson, 'fillBlank', 'Writing · bloco útil', `Complete o bloco: ${stripFinalPunctuation(text).replace(/\.\.\.|…/g, '___')}`, text, { options: buildDistractors(text, safeArray(lesson.writingBlocks)) }));
+    // blocks can be objects {label, text, purpose} or plain strings
+    const text = clean(block?.text || block?.label || block);
+    if (!text || text === '[object Object]') return;
+    items.push(makeBase(lesson, 'fillBlank', 'Writing · bloco útil', `Complete o bloco: ${stripFinalPunctuation(text).replace(/\.\.\.|…/g, '___')}`, text, { options: buildDistractors(text, safeArray(lesson.writingBlocks).map((b) => clean(b?.text || b?.label || b)).filter(Boolean)) }));
   });
   safeArray(lesson.guidedSubstitution).forEach((task) => {
-    const text = clean(task.instruction || task);
+    const text = clean(task?.instruction || task);
     const answer = text.includes('→') ? clean(text.split('→').pop()) : text;
     if (answer) items.push(makeBase(lesson, 'write', 'Writing · substituição guiada', text, answer));
   });
-  safeArray(lesson.grammarForWriting).forEach((rule) => items.push(makeBase(lesson, 'choice', 'Writing · revisão', clean(rule), 'Entendi', { options: ['Entendi', 'Não entendi'] })));
+  safeArray(lesson.grammarForWriting).forEach((rule) => {
+    // rules can be objects {instruction, note, expected} or plain strings
+    const prompt = clean(rule?.instruction || rule);
+    if (!prompt || prompt === '[object Object]') return;
+    items.push(makeBase(lesson, 'choice', 'Writing · revisão', prompt, 'Entendi', { options: ['Entendi', 'Não entendi'] }));
+  });
+  // C1/C2 writing lessons use 'tasks' for structured writing exercises
+  safeArray(lesson.tasks).slice(0, 4).forEach((item) => {
+    const prompt = clean(item?.instruction || item?.writingTask || item);
+    const answer = clean(item?.expected || item?.modelAnswer || item?.note || prompt);
+    if (prompt && prompt.length <= 200) items.push(makeBase(lesson, 'write', 'Writing · produção', prompt, answer));
+  });
+  // B1+ writing lessons use productionTasks
+  safeArray(lesson.productionTasks).slice(0, 3).forEach((task) => {
+    const prompt = clean(task?.instruction || task);
+    if (prompt && prompt.length <= 150) items.push(makeBase(lesson, 'write', 'Writing · tarefa', prompt, prompt));
+  });
   return withMeta(items, lesson, { staticDerived: true, targetMinimum: 14, pillar: 'writing' }).slice(0, 28);
 }
 

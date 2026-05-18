@@ -1,8 +1,8 @@
 # Auto Resume — Próximo Bloco
 
 ## Estado actual
-- branch actual: main ✅
-- último bloco concluído: BLOCO-DEEP-PRACTICE-PLAYWRIGHT-AUDIT-FIX (2026-05-18)
+- branch actual: claude/deep-practice-playwright-audit-8Jep7
+- último bloco concluído: BLOCO-DEEP-PRACTICE-PLAYWRIGHT-AUDIT-FIX + Auditoria Complementar (2026-05-18)
 - bloco anterior: FASE 5.4 — SRS Advanced Integration (2026-05-18)
 - C1: COMPLETO (73 aulas + C1-CHECKPOINT-001 — schemaVersion corrigido ✅)
 - C2: COMPLETO (42 aulas + C2-CHECKPOINT-001 — schemaVersion corrigido ✅)
@@ -141,7 +141,10 @@
 - Sem UI de revisão SRS por ora — apenas camada de serviço (sem componentes .jsx modificados).
 - Decay automático não implementado nesta fase.
 
-## BLOCO-DEEP-PRACTICE-PLAYWRIGHT-AUDIT-FIX — Concluído (2026-05-18)
+## BLOCO-DEEP-PRACTICE-PLAYWRIGHT-AUDIT-FIX + Auditoria Complementar — Concluído (2026-05-18)
+
+### Veredicto
+**DEEP PRACTICE PARTIALLY READY** — A1/A2 FULLY READY; B1-C2 PARTIALLY READY (stubs de conteúdo)
 
 ### Bugs corrigidos
 
@@ -150,27 +153,40 @@
 | `loseLife: true` hardcoded — vidas perdidas em acertos | `src/practice/PracticePlanAdapter.js` | P0 |
 | C1/C2 Grammar gerando 0 exercícios | `src/practice/staticPracticeAdapter.js` | P1 |
 | `recognition.onerror` usando React state stale | `src/practice/PracticeFullscreen.jsx` | P2 |
+| B1 Grammar (019–022) gerando 0 exercícios — controlledPractice/errorCorrection/translation | `src/practice/staticPracticeAdapter.js` | P1 |
+| C2 Grammar (001–009) gerando 0 exercícios — controlledPractice formato C2 | `src/practice/staticPracticeAdapter.js` | P1 |
+| B2/C1 Reading (7 lições) gerando 0 exercícios — evidenceQuestions sem answer | `src/practice/staticPracticeAdapter.js` | P1 |
+| choiceFromQuestion — answer fora das options / options < 2 | `src/practice/staticPracticeAdapter.js` | P1 |
+| Ditado limitado à 1ª frase (>18 palavras em B2/C1) | `src/practice/staticPracticeAdapter.js` | P2 |
 
 ### Arquivos novos
 - `e2e/deepPractice.spec.js` — 31 testes de auditoria deep practice
-- `docs/DEEP_PRACTICE_PLAYWRIGHT_AUDIT_REPORT.md` — relatório completo
+- `e2e/validateExerciseQuality.mjs` — validador de qualidade: nível×pilar×lessonId
+- `docs/DEEP_PRACTICE_PLAYWRIGHT_AUDIT_REPORT.md` — relatório completo atualizado
 
 ### Resultado Playwright
-- **31/31 testes passando** no viewport iPhone SE (375×667)
+- **62/62 testes passando** nos viewports iPhone SE (375×667) e iPhone 13 (390×844)
 - 0 erros de console
-- Níveis A1, A2, B1, B2, C1 todos geram questões renderizáveis
-- Fluxo completo (choice → feedback → continuar → progresso) funcional
+- Níveis A1, A2, B1, B2, C1, C2 todos testados
+
+### Resultado Validador
+- 306/395 lições (77.5%) geram ≥5 exercícios
+- 58/395 lições (14.7%) são stubs sem conteúdo — não é bug do adapter
+- CRITICAL issues: 78 → 58 (20 corrigidos, 58 restantes são stubs)
 
 ### Pendência conhecida
-- `runPracticeRounds` (40 iterações) não detecta a tela Done após última questão — o app funciona corretamente mas o helper de teste esgota o loop antes do render React completar. Não é blocker.
+- 58 stubs de currículo (B1/B2/C1/C2 reading/writing/vocab) — precisam de conteúdo pedagógico
+- `runPracticeRounds` (40 iterações) não detecta tela Done — não é blocker
 
 ## Instrução de retomada
 Ao retomar:
 1. Ler este arquivo AUTO_RESUME_NEXT_BLOCK.md.
-2. Ler `docs/DEEP_PRACTICE_PLAYWRIGHT_AUDIT_REPORT.md` (bloco atual concluído).
+2. Ler `docs/DEEP_PRACTICE_PLAYWRIGHT_AUDIT_REPORT.md` (veredicto: DEEP PRACTICE PARTIALLY READY).
 3. Ler `docs/CURRICULUM_STUDY_READY_CERTIFICATION.md` (veredicto: ✅ STUDY READY).
-4. Confirmar branch: git branch --show-current → deve ser "main".
+4. Confirmar branch: git branch --show-current → deve ser "claude/deep-practice-playwright-audit-8Jep7".
 5. Confirmar estado: git log --oneline -5.
 6. Verificar contagem: deve ser A1:139, A2:122, B1:73, B2:83, C1:73, C2:42 = 532 total.
 7. Verificar zero duplicatas antes de qualquer novo trabalho.
 8. FASE 5.5 — Gamification: aguardar autorização explícita antes de iniciar.
+9. 58 lições stub (sem conteúdo) identificadas — ver relatório. Não corrigir sem bloco dedicado.
+10. Rodar `node e2e/validateExerciseQuality.mjs` para verificar estado do validador (58 CRITICAL restantes = stubs).
