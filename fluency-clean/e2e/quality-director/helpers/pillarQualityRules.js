@@ -1,0 +1,333 @@
+function clean(value) {
+  if (value === null || value === undefined) return '';
+  if (typeof value === 'string' || typeof value === 'number') return String(value).trim().replace(/\s+/g, ' ');
+  if (Array.isArray(value)) return value.map(clean).filter(Boolean).join(' ');
+  if (typeof value === 'object') {
+    return clean(Object.values(value).filter((item) => typeof item !== 'function'));
+  }
+  return '';
+}
+
+function hasAnyField(lesson, fields) {
+  return fields.some((field) => {
+    const value = lesson?.[field];
+    if (Array.isArray(value)) return value.length > 0;
+    return Boolean(clean(value));
+  });
+}
+
+function countAnyField(lesson, fields) {
+  return fields.reduce((sum, field) => {
+    const value = lesson?.[field];
+    if (Array.isArray(value)) return sum + value.length;
+    return sum + (clean(value) ? 1 : 0);
+  }, 0);
+}
+
+function textIncludesAny(text, patterns) {
+  return patterns.some((pattern) => pattern.test(text));
+}
+
+function addIssue(issues, issue) {
+  issues.push({ severity: 'P2', ...issue });
+}
+
+function lessonArea(lesson) {
+  return `Pilar ${String(lesson?.pillar || lesson?.type || 'unknown').toUpperCase()} · ${lesson?.id || 'unknown-lesson'}`;
+}
+
+function requireField({ issues, lesson, fields, title, impact, recommendation, severity = 'P1' }) {
+  if (!hasAnyField(lesson, fields)) {
+    addIssue(issues, {
+      severity,
+      area: lessonArea(lesson),
+      title,
+      impact,
+      evidence: `Campos esperados ausentes/vazios: ${fields.join(', ')}`,
+      recommendation,
+    });
+  }
+}
+
+function requireMinimumList({ issues, lesson, fields, min, title, impact, recommendation, severity = 'P2' }) {
+  const count = countAnyField(lesson, fields);
+  if (count < min) {
+    addIssue(issues, {
+      severity,
+      area: lessonArea(lesson),
+      title,
+      impact,
+      evidence: `Encontrado ${count}; mínimo esperado ${min}. Campos: ${fields.join(', ')}`,
+      recommendation,
+    });
+  }
+}
+
+function auditGrammar(lesson) {
+  const issues = [];
+  const text = clean(lesson).toLowerCase();
+
+  requireField({
+    issues,
+    lesson,
+    fields: ['conceptExplanation', 'teacherOpening', 'grammarExplanation', 'ruleExplanation'],
+    title: 'Grammar sem explicação conceitual clara',
+    impact: 'O aluno pode praticar sem entender a regra gramatical.',
+    recommendation: 'Adicionar explicação da regra, quando usar e como formar a estrutura.',
+  });
+
+  requireMinimumList({
+    issues,
+    lesson,
+    fields: ['examples', 'positiveExamples', 'negativeExamples', 'stepByStep', 'guidedDiscovery'],
+    min: 3,
+    title: 'Grammar com poucos exemplos ou passos guiados',
+    impact: 'A aula pode ficar abstrata e difícil de aplicar.',
+    recommendation: 'Adicionar exemplos positivos, negativos e prática guiada.',
+  });
+
+  requireField({
+    issues,
+    lesson,
+    fields: ['portugueseContrast', 'commonMistakes', 'contrast'],
+    title: 'Grammar sem contraste português/inglês ou erros comuns',
+    impact: 'O aluno brasileiro pode repetir transferências erradas do português.',
+    recommendation: 'Adicionar contraste direto com português e erros comuns.',
+    severity: 'P2',
+  });
+
+  if (!textIncludesAny(text, [/practice|prática|guided|exerc/i])) {
+    addIssue(issues, {
+      severity: 'P1',
+      area: lessonArea(lesson),
+      title: 'Grammar sem sinal claro de prática ativa',
+      impact: 'A aula pode virar teoria sem verificação de domínio.',
+      recommendation: 'Adicionar exercícios de aplicação da regra em contexto.',
+    });
+  }
+
+  return issues;
+}
+
+function auditVocabulary(lesson) {
+  const issues = [];
+  requireMinimumList({
+    issues,
+    lesson,
+    fields: ['essentialWords', 'vocabulary', 'keyVocabulary', 'preReadingVocabulary'],
+    min: 5,
+    title: 'Vocabulary com poucas palavras úteis',
+    impact: 'A aula pode não entregar volume suficiente de vocabulário para fixação.',
+    recommendation: 'Adicionar lista de palavras/frases com significado e exemplo.',
+    severity: 'P1',
+  });
+
+  requireField({
+    issues,
+    lesson,
+    fields: ['realLifeUseCases', 'contextExamples', 'exampleSentences', 'contextVocabularyTasks'],
+    title: 'Vocabulary sem contexto real de uso',
+    impact: 'O aluno pode memorizar palavra solta sem saber usar em frase.',
+    recommendation: 'Adicionar exemplos contextualizados e situações reais.',
+  });
+
+  const vocabText = clean([lesson?.essentialWords, lesson?.vocabulary, lesson?.keyVocabulary]);
+  if (vocabText && !/example|exemplo|frase|sentence/i.test(vocabText)) {
+    addIssue(issues, {
+      severity: 'P2',
+      area: lessonArea(lesson),
+      title: 'Vocabulary sem exemplos de frase aparentes',
+      impact: 'Palavras soltas reduzem transferência para speaking/writing.',
+      recommendation: 'Cada palavra importante deve ter exemplo curto e natural.',
+    });
+  }
+
+  return issues;
+}
+
+function auditReading(lesson) {
+  const issues = [];
+  const mainText = clean(lesson?.mainText || lesson?.text || lesson?.readingText);
+
+  if (mainText.length < 180) {
+    addIssue(issues, {
+      severity: 'P1',
+      area: lessonArea(lesson),
+      title: 'Reading com texto principal curto demais',
+      impact: 'O aluno pode responder sem treinar leitura real.',
+      evidence: `${mainText.length} caracteres no texto principal.`,
+      recommendation: 'Adicionar texto com contexto, personagem/situação e detalhes suficientes.',
+    });
+  }
+
+  requireField({
+    issues,
+    lesson,
+    fields: ['readingStrategy', 'strategy', 'guidedBeforeQuiz'],
+    title: 'Reading sem estratégia de leitura clara',
+    impact: 'O aluno pode tentar traduzir tudo palavra por palavra.',
+    recommendation: 'Adicionar estratégia: gist, scanning, detalhe e evidência.',
+  });
+
+  requireMinimumList({
+    issues,
+    lesson,
+    fields: ['evidenceQuestions', 'comprehensionQuestions', 'questions'],
+    min: 3,
+    title: 'Reading com poucas perguntas de compreensão/evidência',
+    impact: 'A aula pode não verificar compreensão do texto.',
+    recommendation: 'Adicionar perguntas com evidência textual e distratores plausíveis.',
+    severity: 'P1',
+  });
+
+  if (!/evidence|evidência|texto|frase|prova/i.test(clean(lesson))) {
+    addIssue(issues, {
+      severity: 'P1',
+      area: lessonArea(lesson),
+      title: 'Reading sem linguagem de evidência textual',
+      impact: 'O aluno pode responder por chute ou memória, não pelo texto.',
+      recommendation: 'Incluir instruções e perguntas que exijam evidência no texto.',
+    });
+  }
+
+  return issues;
+}
+
+function auditListening(lesson) {
+  const issues = [];
+  requireField({
+    issues,
+    lesson,
+    fields: ['listeningPreparation', 'preListening', 'predictionTask', 'guidedBeforeListening'],
+    title: 'Listening sem preparação/predição antes do áudio',
+    impact: 'O aluno escuta passivamente e perde estratégia de compreensão.',
+    recommendation: 'Adicionar predição, palavras-chave e objetivo antes do áudio.',
+  });
+
+  requireField({
+    issues,
+    lesson,
+    fields: ['listeningScript', 'audioScript', 'dialogue', 'transcript'],
+    title: 'Listening sem script/transcript pedagógico no conteúdo',
+    impact: 'O renderizador pode não ter base para áudio, shadowing ou revisão.',
+    recommendation: 'Adicionar script do áudio com controle de quando mostrar transcript.',
+    severity: 'P1',
+  });
+
+  requireMinimumList({
+    issues,
+    lesson,
+    fields: ['listeningQuestions', 'comprehensionQuestions', 'detailQuestions', 'shadowingTasks'],
+    min: 2,
+    title: 'Listening com poucas tarefas após o áudio',
+    impact: 'O aluno pode ouvir sem verificar compreensão real.',
+    recommendation: 'Adicionar perguntas de gist, detalhe e shadowing/repetição.',
+  });
+
+  return issues;
+}
+
+function auditSpeaking(lesson) {
+  const issues = [];
+  requireField({
+    issues,
+    lesson,
+    fields: ['modelPhrases', 'speakingModel', 'modelAnswer', 'exampleDialogue', 'guidedModel'],
+    title: 'Speaking sem modelo de fala suficiente',
+    impact: 'O aluno pode ser forçado a produzir sem base linguística.',
+    recommendation: 'Adicionar frases-modelo, mini diálogo ou resposta exemplar antes da produção.',
+    severity: 'P1',
+  });
+
+  requireField({
+    issues,
+    lesson,
+    fields: ['pronunciationTips', 'pronunciationFocus', 'shadowingTasks', 'repeatTasks'],
+    title: 'Speaking sem foco de pronúncia/shadowing',
+    impact: 'A aula pode virar apenas escrita lida em voz alta.',
+    recommendation: 'Adicionar foco de pronúncia e repetição guiada.',
+  });
+
+  requireField({
+    issues,
+    lesson,
+    fields: ['freeSpeaking', 'speakingTask', 'productionTask', 'connectedProduction'],
+    title: 'Speaking sem tarefa produtiva final',
+    impact: 'O aluno pode praticar frases soltas sem produção própria.',
+    recommendation: 'Adicionar tarefa final de fala com critérios mínimos.',
+    severity: 'P1',
+  });
+
+  return issues;
+}
+
+function auditWriting(lesson) {
+  const issues = [];
+  requireField({
+    issues,
+    lesson,
+    fields: ['writingPrompt', 'prompt', 'connectedProduction', 'productionTask'],
+    title: 'Writing sem prompt claro de produção',
+    impact: 'O aluno pode não saber exatamente o que escrever.',
+    recommendation: 'Adicionar prompt com tarefa, formato, tamanho e foco linguístico.',
+    severity: 'P1',
+  });
+
+  requireMinimumList({
+    issues,
+    lesson,
+    fields: ['checklist', 'revisionChecklist', 'selfAssessment'],
+    min: 4,
+    title: 'Writing com checklist/revisão fraco',
+    impact: 'O aluno pode escrever sem critérios de qualidade.',
+    recommendation: 'Adicionar checklist de conteúdo, gramática, vocabulário, clareza e revisão.',
+    severity: 'P1',
+  });
+
+  requireField({
+    issues,
+    lesson,
+    fields: ['modelAnswer', 'sampleAnswer', 'exampleText', 'guidedModel'],
+    title: 'Writing sem modelo/exemplo pedagógico',
+    impact: 'O aluno pode não entender o padrão esperado do texto.',
+    recommendation: 'Adicionar modelo ou exemplo controlado, com cuidado para não aparecer cedo demais em exercício de descoberta.',
+  });
+
+  return issues;
+}
+
+function auditUnknown(lesson) {
+  const issues = [];
+  addIssue(issues, {
+    severity: 'P1',
+    area: lessonArea(lesson),
+    title: 'Pilar desconhecido para auditoria pedagógica',
+    impact: 'O Quality Director não sabe qual rubrica aplicar a esta aula.',
+    evidence: `pillar=${lesson?.pillar || ''}; type=${lesson?.type || ''}`,
+    recommendation: 'Definir pillar/type como grammar, vocabulary, reading, listening, speaking ou writing.',
+  });
+  return issues;
+}
+
+const AUDITORS = {
+  grammar: auditGrammar,
+  vocabulary: auditVocabulary,
+  reading: auditReading,
+  listening: auditListening,
+  speaking: auditSpeaking,
+  writing: auditWriting,
+};
+
+export function auditLessonByPillar(lesson) {
+  const pillar = String(lesson?.pillar || lesson?.type || '').toLowerCase();
+  const auditor = AUDITORS[pillar] || auditUnknown;
+  return auditor(lesson);
+}
+
+export function getPillarAuditSummary(lessons = []) {
+  return lessons.reduce((summary, lesson) => {
+    const pillar = String(lesson?.pillar || lesson?.type || 'unknown').toLowerCase();
+    summary[pillar] = (summary[pillar] || 0) + 1;
+    return summary;
+  }, {});
+}
