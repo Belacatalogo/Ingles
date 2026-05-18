@@ -13,7 +13,8 @@
     "check": "npm run build",
     "test:e2e": "playwright test",
     "test:e2e:report": "playwright show-report",
-    "test:quality-director": "playwright test e2e/quality-director"
+    "test:quality-director": "playwright test e2e/quality-director",
+    "quality-director:publish-latest": "node scripts/publish-quality-director-latest.mjs"
   },
   "dependencies": {
     "@vitejs/plugin-react": "4.3.4",
