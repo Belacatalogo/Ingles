@@ -11,7 +11,7 @@
 - zero duplicatas: ✅
 
 ## Contagem atual (verificada 2026-05-18)
-- A1: 139
+- A1: 139 (staticContent) / 132 UI-visíveis (7 checkpoints no mastery system — correto)
 - A2: 122
 - B1: 73 (COMPLETO — mastery gate adicionado)
 - B2: 83 (COMPLETO — mastery gate adicionado)

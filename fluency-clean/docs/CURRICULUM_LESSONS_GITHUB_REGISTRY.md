@@ -1,7 +1,7 @@
 # CURRICULUM LESSONS GITHUB REGISTRY
 # Fluency Clean — Registro Oficial de Aulas no GitHub
 
-Última atualização: 2026-05-18
+Última atualização: 2026-05-18 (A1 map corrigido: 119→132 visíveis)
 Branch: main
 
 ---
@@ -10,7 +10,7 @@ Branch: main
 
 | Nível | Total | Grammar | Vocabulary | Reading | Listening | Speaking | Writing | Checkpoint |
 |-------|------:|--------:|-----------:|--------:|----------:|--------:|--------:|----------:|
-| A1    |   139 |      29 |         21 |      22 |        21 |      21 |      18 |         7 |
+| A1    |   139 |      29 |         21 |      22 |        21 |      21 |      18 |         7 | ← UI mostra 132 (7 checkpoints no mastery system) |
 | A2    |   122 |      28 |         20 |      20 |        18 |      18 |      18 |         0 |
 | B1    |    73 |      22 |         17 |       8 |         8 |       9 |       9 |         0 |
 | B2    |    83 |      22 |         17 |      12 |         8 |      11 |      13 |         0 |
