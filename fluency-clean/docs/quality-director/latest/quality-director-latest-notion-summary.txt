@@ -1,8 +1,8 @@
-Status: Revisar antes de confiar
+Status: Crítico
 Nota geral: 0/100
 Relatórios: 3
-Checks: 1163
-Issues únicas: 2542 (brutas=4438, agrupadas=1896)
-Severidade: P0=0, P1=1408, P2=1134, P3=0
-Direção: Corrigir P1 antes de considerar o sistema confiável para estudo contínuo.
-Top issues: P1 Exercício · A1-GRAMMAR-001 — Mais de uma alternativa parece correta | P1 Exercício · A1-GRAMMAR-001 — Mais de uma alternativa parece correta | P1 Exercício · A1-GRAMMAR-001 — Mais de uma alternativa parece correta | P1 Exercício · A1-GRAMMAR-001 — Mais de uma alternativa parece correta | P1 Exercício · A1-GRAMMAR-001 — Mais de uma alternativa parece correta
+Checks: 1001
+Issues únicas: 3891 (brutas=3959, agrupadas=68)
+Severidade: P0=4, P1=2076, P2=1811, P3=0
+Direção: Corrigir P0 confirmados antes de continuar evolução visual/pedagógica.
+Top issues: P0 iPhone SE · Todas as aulas · B1-SPEAKING-004 · etapa 1 — Objeto bruto apareceu para o aluno | P0 iPhone SE · Todas as aulas · B1-SPEAKING-005 · etapa 1 — Objeto bruto apareceu para o aluno | P0 iPhone SE · Todas as aulas · B1-SPEAKING-006 · etapa 1 — Objeto bruto apareceu para o aluno | P0 iPhone SE · Todas as aulas · B1-SPEAKING-007 · etapa 1 — Objeto bruto apareceu para o aluno | P1 Exercício · A1-GRAMMAR-001 — Mais de uma alternativa parece correta
