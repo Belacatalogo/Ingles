@@ -31,10 +31,10 @@ jobs:
         with:
           node-version: 20
           cache: npm
-          cache-dependency-path: fluency-clean/package-lock.json
+          cache-dependency-path: fluency-clean/package.json
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
@@ -54,4 +54,5 @@ jobs:
             fluency-clean/audit-results/
             fluency-clean/playwright-report/
             fluency-clean/test-results/
+          if-no-files-found: warn
           retention-days: 14
