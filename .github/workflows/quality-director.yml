@@ -63,7 +63,7 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add fluency-clean/docs/quality-director/latest/quality-director-latest.md fluency-clean/docs/quality-director/latest/quality-director-latest.json
+          git add fluency-clean/docs/quality-director/latest/quality-director-latest.md fluency-clean/docs/quality-director/latest/quality-director-latest.json fluency-clean/docs/quality-director/latest/quality-director-latest-notion-summary.txt
           if git diff --cached --quiet; then
             echo "No Quality Director latest report changes to commit."
           else
