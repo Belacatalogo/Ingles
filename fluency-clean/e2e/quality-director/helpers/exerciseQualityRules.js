@@ -33,9 +33,9 @@ const GENERIC_FEEDBACK_PATTERNS = [
 const STOPWORDS = new Set([
   'the', 'a', 'an', 'and', 'or', 'to', 'of', 'in', 'on', 'at', 'for', 'with', 'from', 'by', 'as', 'than',
   'is', 'are', 'am', 'was', 'were', 'be', 'been', 'being', 'do', 'does', 'did', 'have', 'has', 'had',
-  'i', 'you', 'he', 'she', 'it', 'we', 'they', 'his', 'her', 'their', 'my', 'your', 'our',
+  'i', 'you', 'he', 'she', 'it', 'we', 'they', 'his', 'her', 'their', 'my', 'your', 'our', 'everyone',
   'what', 'where', 'who', 'when', 'why', 'how', 'which', 'choose', 'correct', 'answer', 'resposta', 'correta', 'qual',
-  'because', 'if', 'then', 'so', 'very', 'more', 'most', 'only', 'just', 'again',
+  'because', 'if', 'then', 'so', 'very', 'more', 'most', 'only', 'just', 'again', 'tomorrow', 'first',
   'o', 'a', 'os', 'as', 'de', 'do', 'da', 'em', 'para', 'com', 'um', 'uma', 'e', 'ou', 'que', 'como', 'onde', 'quem',
 ]);
 
@@ -49,6 +49,7 @@ const SYNONYMS = new Map([
   ['worked', 'work'],
   ['restarted', 'restart'],
   ['checked', 'check'],
+  ['checking', 'check'],
   ['updating', 'update'],
   ['updated', 'update'],
   ['bottles', 'bottle'],
@@ -64,6 +65,7 @@ const SYNONYMS = new Map([
   ['kitchen', 'kitchen'],
   ['visit', 'visit'],
   ['park', 'park'],
+  ['ids', 'id'],
 ]);
 
 function clean(value) {
@@ -98,7 +100,7 @@ function words(value) {
   return normalize(value)
     .split(/\s+/)
     .map(stem)
-    .filter((word) => word && !STOPWORDS.has(word) && word.length > 2);
+    .filter((word) => word && !STOPWORDS.has(word) && word.length > 1);
 }
 
 function firstValue(object, keys) {
@@ -191,8 +193,10 @@ function optionMatchesAnswer(option, answer) {
   const coverage = matched / answerTokens.size;
   const reverseCoverage = matched / optionTokens.size;
   const answerShort = answerTokens.size <= 3;
+  const optionIsConciseSummary = optionTokens.size <= 4 && reverseCoverage >= 0.99 && matched >= Math.min(2, optionTokens.size);
 
-  if (answerShort && coverage >= 0.67) return true;
+  if (optionIsConciseSummary) return true;
+  if (answerShort && coverage >= 0.66) return true;
   if (coverage >= 0.72 && reverseCoverage >= 0.45) return true;
   if (matched >= 2 && coverage >= 0.6 && reverseCoverage >= 0.6) return true;
 
