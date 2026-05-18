@@ -120,15 +120,18 @@
 | `src/content/curriculum/srsTagMaps/b2Tags.js` | CRIADO — 83 tag maps B2 |
 | `src/content/curriculum/srsTagMaps/c1Tags.js` | CRIADO — 73 tag maps C1 |
 | `src/content/curriculum/srsTagMaps/c2Tags.js` | CRIADO — 42 tag maps C2 |
+| `src/content/curriculum/srsTagMaps/assessmentTags.js` | CRIADO — 20 tag maps (A1 checkpoints + A2/B1/B2 mastery gates) |
 | `src/content/curriculum/srsTagMaps/index.js` | CRIADO — exports `getSrsTagsForLesson` + `hasPedagogicalTags` |
 | `src/services/lessonSrsAdvanced.js` | MODIFICADO — import + fallback para tag maps em `registerLessonTagsInSrs` |
-| `docs/SRS_TAGS_COVERAGE_EXPANSION_REPORT.md` | CRIADO — documentação desta fase |
+| `docs/SRS_TAGS_COVERAGE_EXPANSION_REPORT.md` | CRIADO + ATUALIZADO — documentação desta fase |
 | `docs/AUTO_RESUME_NEXT_BLOCK.md` | ATUALIZADO — este ficheiro |
 
-## Pendências conhecidas (FASE 5.4B)
+## Validação FASE 5.4B (2026-05-18)
 
-- Cobertura SRS agora é 100% (532/532 lições com tags pedagógicas úteis).
-- Tags A2→C2 são provenientes de tag maps externos (não dentro dos ficheiros de lição).
+- Cross-check automático: 545 IDs únicos no código-fonte, ZERO sem cobertura SRS.
+- Cobertura 532/532 lições do currículo principal confirmada.
+- 9 mastery gate lessons (A2/B1/B2) também cobertas (extra além das 532).
+- Build Vite limpo após todas as adições.
 - Zero ficheiros de lição modificados nesta fase.
 
 ## Pendências conhecidas (FASE 5.4)

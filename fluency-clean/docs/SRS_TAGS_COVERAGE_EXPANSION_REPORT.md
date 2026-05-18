@@ -46,14 +46,34 @@ Criada a diretoria `src/content/curriculum/srsTagMaps/` com mapas externos de ta
 
 ## Cobertura
 
-| Nível | Lições no currículo | Entradas no tag map | Cobertura |
-|-------|--------------------:|--------------------:|-----------|
-| A2    | 122                 | 122                 | 100% ✅    |
-| B1    | 73                  | 73                  | 100% ✅    |
-| B2    | 83                  | 83                  | 100% ✅    |
-| C1    | 73                  | 73                  | 100% ✅    |
-| C2    | 42                  | 42                  | 100% ✅    |
-| **Total** | **393**         | **393**             | **100% ✅** |
+### Lições principais (532 no currículo)
+
+| Nível | Lições no currículo | Mecanismo | Cobertura |
+|-------|--------------------:|-----------|-----------|
+| A1 (não-checkpoint) | 132               | `lesson.tags` directo (FASE 5.3) | 100% ✅ |
+| A1 checkpoints     | 7 + 2 exames       | `assessmentTags.js` | 100% ✅ |
+| A2    | 122                 | `a2Tags.js` | 100% ✅ |
+| B1    | 73                  | `b1Tags.js` | 100% ✅ |
+| B2    | 83                  | `b2Tags.js` | 100% ✅ |
+| C1    | 73                  | `c1Tags.js` | 100% ✅ |
+| C2    | 42                  | `c2Tags.js` | 100% ✅ |
+| **Total currículo** | **532**     |           | **100% ✅** |
+
+### Lições extra-currículo (mastery gates A2/B1/B2 — além das 532)
+
+| ID | Título | Ficheiro |
+|----|--------|---------|
+| A2-CHECKPOINT-NARRATIVE | A2 Checkpoint — Narrative & Daily Life | `assessmentTags.js` |
+| A2-CHECKPOINT-COMMUNICATION | A2 Checkpoint — Comparisons & Communication | `assessmentTags.js` |
+| A2-FINAL-EXAM | A2 Final Exam — Ready for B1 Gate | `assessmentTags.js` |
+| B1-CHECKPOINT-MID | B1 Checkpoint — Mid-course | `assessmentTags.js` |
+| B1-CHECKPOINT-FINAL | B1 Checkpoint — Final | `assessmentTags.js` |
+| B1-FINAL-EXAM | B1 Final Exam — Ready for B2 Gate | `assessmentTags.js` |
+| B2-CHECKPOINT-MID | B2 Checkpoint — Mid-course | `assessmentTags.js` |
+| B2-CHECKPOINT-FINAL | B2 Checkpoint — Final | `assessmentTags.js` |
+| B2-FINAL-EXAM | B2 Final Exam — Ready for C1 Gate | `assessmentTags.js` |
+
+**Nota:** Estas 9 lições estão em ficheiros de mastery gate (a2/b1/b2MasteryAssessments.js) e não são contadas nas 532, mas são completadas pelos alunos. Têm agora entradas no tag map.
 
 ---
 
@@ -66,6 +86,7 @@ Criada a diretoria `src/content/curriculum/srsTagMaps/` com mapas externos de ta
 | `src/content/curriculum/srsTagMaps/b2Tags.js` | 83 lesson tags B2 |
 | `src/content/curriculum/srsTagMaps/c1Tags.js` | 73 lesson tags C1 |
 | `src/content/curriculum/srsTagMaps/c2Tags.js` | 42 lesson tags C2 |
+| `src/content/curriculum/srsTagMaps/assessmentTags.js` | 20 checkpoint + exam entries (A1 checkpoints + A2/B1/B2 mastery gates) |
 | `src/content/curriculum/srsTagMaps/index.js` | Exports `getSrsTagsForLesson` + `hasPedagogicalTags` |
 | `docs/SRS_TAGS_COVERAGE_EXPANSION_REPORT.md` | Este documento |
 
@@ -119,13 +140,27 @@ getSrsTagsForLesson('ID-INEXISTENTE');  // → []  (nunca throws)
 
 ## Estado pós-execução
 
-| Métrica | Antes (FASE 5.4) | Depois (FASE 5.4B) |
-|---------|------------------|--------------------|
-| Lições com tags SRS úteis | 139 (A1 only) | 532 (A1→C2) |
-| Tag maps externos | 0 | 5 ficheiros + index |
+| Métrica | Antes (FASE 5.4) | Depois (FASE 5.4B + validação) |
+|---------|------------------|-------------------------------|
+| Lições com tags SRS úteis | 139 (A1 only) | 532/532 + 9 mastery gates |
+| Tag maps externos | 0 | 7 ficheiros + index |
 | Ficheiros de lição modificados | 0 | 0 (zero) |
 | Build | ✅ | ✅ |
-| Cobertura SRS | 26% | 100% |
+| Cobertura SRS (currículo principal) | 26% | 100% |
+| Cobertura SRS (incl. mastery gates) | ~23% | 100% |
+| IDs sem cobertura | ~393 | 0 |
+
+### Resumo de tag map entries
+
+| Ficheiro | Entradas |
+|---------|---------|
+| a2Tags.js | 122 |
+| b1Tags.js | 73 |
+| b2Tags.js | 83 |
+| c1Tags.js | 73 |
+| c2Tags.js | 42 |
+| assessmentTags.js | 20 (11 A1 + 9 extra mastery) |
+| **Total** | **413** |
 
 ---
 

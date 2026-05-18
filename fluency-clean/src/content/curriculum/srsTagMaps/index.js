@@ -3,6 +3,7 @@ import { B1_SRS_TAGS } from './b1Tags.js';
 import { B2_SRS_TAGS } from './b2Tags.js';
 import { C1_SRS_TAGS } from './c1Tags.js';
 import { C2_SRS_TAGS } from './c2Tags.js';
+import { ASSESSMENT_SRS_TAGS } from './assessmentTags.js';
 
 const ALL_SRS_TAGS = {
   ...A2_SRS_TAGS,
@@ -10,6 +11,7 @@ const ALL_SRS_TAGS = {
   ...B2_SRS_TAGS,
   ...C1_SRS_TAGS,
   ...C2_SRS_TAGS,
+  ...ASSESSMENT_SRS_TAGS,
 };
 
 const KNOWN_PILLARS = new Set([
