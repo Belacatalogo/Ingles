@@ -1,6 +1,6 @@
 # Fluency Quality Director — Relatório Executivo Latest
 
-Gerado em: 2026-05-18T19:57:51.590Z
+Gerado em: 2026-05-18T20:20:12.590Z
 
 ## Veredito
 
@@ -11,13 +11,13 @@ Gerado em: 2026-05-18T19:57:51.590Z
 ## Resumo geral
 
 - Relatórios consolidados: 3
-- Checks executados: 1117
-- Problemas únicos: 2350
-- Problemas brutos antes de deduplicar: 4225
-- Duplicatas agrupadas: 1875
+- Checks executados: 1163
+- Problemas únicos: 2542
+- Problemas brutos antes de deduplicar: 4438
+- Duplicatas agrupadas: 1896
 - P0: 0
-- P1: 1310
-- P2: 1040
+- P1: 1408
+- P2: 1134
 - P3: 0
 
 ## Notas por área
@@ -27,7 +27,7 @@ Gerado em: 2026-05-18T19:57:51.590Z
 | Navegação e estabilidade | 100 | Saudável | 0 | 0 | 0 | 0 |
 | Jornada real do aluno | 100 | Saudável | 0 | 0 | 0 | 0 |
 | Exercícios e alternativas | 0 | Revisar antes de confiar | 0 | 452 | 609 | 0 |
-| Aulas e pedagogia | 0 | Revisar antes de confiar | 0 | 858 | 431 | 0 |
+| Aulas e pedagogia | 0 | Revisar antes de confiar | 0 | 956 | 525 | 0 |
 | Visual e mobile | 100 | Saudável | 0 | 0 | 0 | 0 |
 | Progresso, XP e mastery | 100 | Saudável | 0 | 0 | 0 | 0 |
 | Estados vazios e segurança visual | 100 | Saudável | 0 | 0 | 0 | 0 |
@@ -38,8 +38,8 @@ Gerado em: 2026-05-18T19:57:51.590Z
 
 | Relatório | Projeto | Nota | Checks | Issues únicas | Issues brutas | P0 | P1 | P2 | P3 |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---:|
-| quality-director-all-lessons-deep | iPhone 13 | 0 | 582 | 2214 | 2214 | 0 | 1242 | 972 | 0 |
-| quality-director-all-lessons-deep | iPhone SE | 0 | 535 | 2011 | 2011 | 0 | 1132 | 879 | 0 |
+| quality-director-all-lessons-deep | iPhone 13 | 0 | 563 | 2123 | 2123 | 0 | 1188 | 935 | 0 |
+| quality-director-all-lessons-deep | iPhone SE | 0 | 600 | 2294 | 2315 | 0 | 1284 | 1010 | 0 |
 |  |  | 100 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
 
 ## Plano de ação
