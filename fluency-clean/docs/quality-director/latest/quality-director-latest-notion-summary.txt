@@ -1,0 +1,7 @@
+Status: Crítico
+Nota geral: 0/100
+Relatórios: 21
+Checks: 3256
+Issues: 4995 (P0=32, P1=1990, P2=2973, P3=0)
+Direção: Corrigir P0 antes de continuar evolução visual/pedagógica.
+Top issues: P0 Exercício · A1-READING-010 — Resposta correta não aparece nas alternativas | P0 Exercício · A2-READING-003 — Resposta correta não aparece nas alternativas | P0 Exercício · A2-READING-006 — Resposta correta não aparece nas alternativas | P0 Exercício · A2-READING-010 — Resposta correta não aparece nas alternativas | P0 Exercício · A2-READING-011 — Resposta correta não aparece nas alternativas
