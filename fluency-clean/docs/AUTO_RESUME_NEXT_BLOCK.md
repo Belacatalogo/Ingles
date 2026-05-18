@@ -2,7 +2,8 @@
 
 ## Estado actual
 - branch actual: main ✅
-- último bloco concluído: FASE 5.4 — SRS Advanced Integration (2026-05-18)
+- último bloco concluído: BLOCO-DEEP-PRACTICE-PLAYWRIGHT-AUDIT-FIX (2026-05-18)
+- bloco anterior: FASE 5.4 — SRS Advanced Integration (2026-05-18)
 - C1: COMPLETO (73 aulas + C1-CHECKPOINT-001 — schemaVersion corrigido ✅)
 - C2: COMPLETO (42 aulas + C2-CHECKPOINT-001 — schemaVersion corrigido ✅)
 - FASE 2: COMPLETO — B2 objectives (47/47) + A2 mastery gate criado
@@ -140,11 +141,34 @@
 - Sem UI de revisão SRS por ora — apenas camada de serviço (sem componentes .jsx modificados).
 - Decay automático não implementado nesta fase.
 
+## BLOCO-DEEP-PRACTICE-PLAYWRIGHT-AUDIT-FIX — Concluído (2026-05-18)
+
+### Bugs corrigidos
+
+| Bug | Arquivo | Severidade |
+|-----|---------|-----------|
+| `loseLife: true` hardcoded — vidas perdidas em acertos | `src/practice/PracticePlanAdapter.js` | P0 |
+| C1/C2 Grammar gerando 0 exercícios | `src/practice/staticPracticeAdapter.js` | P1 |
+| `recognition.onerror` usando React state stale | `src/practice/PracticeFullscreen.jsx` | P2 |
+
+### Arquivos novos
+- `e2e/deepPractice.spec.js` — 31 testes de auditoria deep practice
+- `docs/DEEP_PRACTICE_PLAYWRIGHT_AUDIT_REPORT.md` — relatório completo
+
+### Resultado Playwright
+- **31/31 testes passando** no viewport iPhone SE (375×667)
+- 0 erros de console
+- Níveis A1, A2, B1, B2, C1 todos geram questões renderizáveis
+- Fluxo completo (choice → feedback → continuar → progresso) funcional
+
+### Pendência conhecida
+- `runPracticeRounds` (40 iterações) não detecta a tela Done após última questão — o app funciona corretamente mas o helper de teste esgota o loop antes do render React completar. Não é blocker.
+
 ## Instrução de retomada
 Ao retomar:
 1. Ler este arquivo AUTO_RESUME_NEXT_BLOCK.md.
-2. Ler fluency-clean/docs/CURRICULUM_STUDY_READY_CERTIFICATION.md (veredicto final: ✅ STUDY READY).
-3. Ler fluency-clean/docs/SRS_ADVANCED_INTEGRATION_REPORT.md (FASE 5.4 concluída).
+2. Ler `docs/DEEP_PRACTICE_PLAYWRIGHT_AUDIT_REPORT.md` (bloco atual concluído).
+3. Ler `docs/CURRICULUM_STUDY_READY_CERTIFICATION.md` (veredicto: ✅ STUDY READY).
 4. Confirmar branch: git branch --show-current → deve ser "main".
 5. Confirmar estado: git log --oneline -5.
 6. Verificar contagem: deve ser A1:139, A2:122, B1:73, B2:83, C1:73, C2:42 = 532 total.

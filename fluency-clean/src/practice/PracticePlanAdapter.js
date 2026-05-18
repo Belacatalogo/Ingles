@@ -96,7 +96,8 @@ export function evaluatePracticeAnswer(item, value) {
   }
   const user = normalizePracticeText(Array.isArray(value) ? value.join(' ') : value);
   const expected = normalizePracticeText(item?.answer);
-  return { correct: Boolean(user && expected && user === expected), retryable: false, empty: !user, hintWord: '', loseLife: true, expected: item?.answer || '', touchedMasteryTags: item?.transferTags?.map((tag) => ({ tag, mastery: 0 })) || [] };
+  const correct = Boolean(user && expected && user === expected);
+  return { correct, retryable: false, empty: !user, hintWord: '', loseLife: !correct, expected: item?.answer || '', touchedMasteryTags: item?.transferTags?.map((tag) => ({ tag, mastery: 0 })) || [] };
 }
 
 export function getPracticeEngineName(item) { return item?.sourceEngine || 'core'; }

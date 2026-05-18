@@ -64,8 +64,24 @@ function buildGrammarPractice(lesson) {
   safeArray(lesson.commonMistakes).forEach((item) => {
     if (item?.wrong && item?.right) items.push(makeBase(lesson, 'correction', 'Grammar · corrija o erro', `Corrija a frase: ${item.wrong}`, item.right, { explanation: item.why }));
   });
+  // C1/C2 lessons store correction-style exercises in commonBrazilianMistakes or practiceExercises
+  safeArray(lesson.commonBrazilianMistakes).forEach((item) => {
+    if (item?.wrong && item?.right) items.push(makeBase(lesson, 'correction', 'Grammar · corrija o erro', `Corrija a frase: ${item.wrong}`, item.right, { explanation: item.note || item.why }));
+  });
+  // C1/C2 practiceExercises: transformation items have original + hint
+  safeArray(lesson.practiceExercises).forEach((exercise) => {
+    if (exercise?.type === 'transformation' && Array.isArray(exercise.items)) {
+      safeArray(exercise.items).forEach((item) => {
+        const answer = clean(item.hint || item.target || item.suggested || '');
+        if (item?.original && answer) {
+          items.push(makeBase(lesson, 'correction', 'Grammar · formalização', `Reformule formalmente: ${item.original}`, answer));
+        }
+      });
+    }
+  });
   safeArray(lesson.professorExamples).slice(0, 8).forEach((example) => {
-    const english = clean(example.english || example.text);
+    // professorExamples can be plain strings (C1/C2) or objects (A1/B1)
+    const english = typeof example === 'string' ? clean(example) : clean(example.english || example.text);
     if (!english) return;
     const words = english.split(/\s+/);
     if (words.length >= 3) {
@@ -73,7 +89,8 @@ function buildGrammarPractice(lesson) {
       const prompt = english.replace(answer, '___');
       items.push(makeBase(lesson, 'fillBlank', 'Grammar · complete', prompt, answer, { options: buildDistractors(answer, ['am', 'is', 'are', 'not']) }));
     }
-    items.push(makeBase(lesson, 'write', 'Grammar · produção controlada', `Escreva exatamente este modelo em inglês: “${example.translation || english}”`, english));
+    const translation = typeof example === 'object' ? (example.translation || '') : '';
+    items.push(makeBase(lesson, 'write', 'Grammar · produção controlada', `Escreva exatamente este modelo em inglês: “${translation || english}”`, english));
   });
   return withMeta(items, lesson, { staticDerived: true, targetMinimum: 20, pillar: 'grammar' }).slice(0, 32);
 }

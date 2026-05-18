@@ -320,7 +320,8 @@ export function PracticeFullscreen({ lesson, open, onClose, onComplete }) {
       };
       recognition.onerror = () => {
         setFeedback({ correct: false, empty: true, message: 'Digite o que você falou.', lifeLost: false });
-        if (state === PRACTICE_STATES.ANSWERING) {
+        // use can() (machine ref) instead of state (stale React closure)
+        if (can(PRACTICE_EVENTS.USER_SUBMITTED)) {
           dispatch(PRACTICE_EVENTS.USER_SUBMITTED, { fallback: 'speech_error' });
           dispatch(PRACTICE_EVENTS.CHECK_DONE, { fallback: 'speech_error' });
         }
@@ -328,7 +329,7 @@ export function PracticeFullscreen({ lesson, open, onClose, onComplete }) {
       recognition.start();
     } catch {
       setFeedback({ correct: false, empty: true, message: 'Digite o que você falou.', lifeLost: false });
-      if (state === PRACTICE_STATES.ANSWERING) {
+      if (can(PRACTICE_EVENTS.USER_SUBMITTED)) {
         dispatch(PRACTICE_EVENTS.USER_SUBMITTED, { fallback: 'speech_unavailable' });
         dispatch(PRACTICE_EVENTS.CHECK_DONE, { fallback: 'speech_unavailable' });
       }
