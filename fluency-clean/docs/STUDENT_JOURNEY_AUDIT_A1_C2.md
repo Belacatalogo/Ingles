@@ -1,8 +1,8 @@
 # STUDENT JOURNEY AUDIT — A1 → C2
 # BLOCO-STUDY-READY-AUDIT-A1-C2
 
-**Data:** 2026-05-18
-**Branch:** claude/validate-b1-plan-b2-rLc3b
+**Data:** 2026-05-18 (actualizado 2026-05-18 — FASE 2+3 concluídas)
+**Branch:** main
 **Método:** Simulação da jornada real do aluno — do primeiro acesso à certificação C2
 
 ---
@@ -97,8 +97,9 @@
 ### A2 (122 lições, 122h)
 - A2-GRAMMAR-001: "A1 repair and A2 fluency bridge" — aluno não sente ruptura ✅
 - Todas as 122 lições são ready e têm schemaVersion válido ✅
-- Sem checkpoints separados para A2 (mastery gate A2 não está no sistema atual — FASE 5 item)
-- **Risco conhecido:** sem mastery gate A2 → aluno pode avançar para B1 sem verificação formal. Documentado para FASE 5.
+- Mastery gate A2 criado neste bloco (`a2MasteryAssessments.js`) ✅ **FASE 2 CONCLUÍDA**
+- A2-CHECKPOINT-NARRATIVE (após Bridge + Past + Plans) e A2-CHECKPOINT-COMMUNICATION (após Comparisons + Communication) disponíveis ✅
+- A2_FINAL_EXAM cobre os 6 pilares com `LEVEL_PASSING_RULES` ✅
 
 ### B1 (73 lições, 69h)
 - B1-GRAMMAR-001: "A2 repair and B1 fluency bridge" ✅
@@ -153,11 +154,11 @@
 
 | Ponto | Descrição | Risco para aluno | Ação |
 |-------|-----------|-----------------|------|
-| A1: tags ausentes em ~80 lições | Tags de metadados ausentes | Zero — tags são para filtros/busca | Documentado, FASE 5 |
-| A2: sem mastery gate formal | Aluno avança para B1 sem avaliação A2 | Baixo — A2 tem revisão embutida nas aulas | FASE 5 |
+| A1: 146 lições sem tags | Tags de metadados ausentes — afeta SRS concept tracking | Zero para estudo — tags são para SRS/filtros | FASE 5 |
+| ~~A2: sem mastery gate formal~~ | ~~Aluno avança para B1 sem avaliação A2~~ | ~~Baixo~~ | ✅ **CORRIGIDO FASE 2** — a2MasteryAssessments.js |
 | B1: 35 lições planned visíveis | Aluno vê locks na tela de curso | Baixo — fluxo guiado não expõe planned | Documentado |
 | B2: 16 lições planned visíveis | Mesma situação | Baixo | Documentado |
-| B2: masteryCriteria vazio (31 lições) | Critérios de mastery ausentes | Zero para estudo — afeta só avaliação interna | Documentado, FASE 5 |
+| ~~B2: objectives vazio (47 lições)~~ | ~~Objectives ausentes nas lições B2.1~~ | ~~Zero para estudo~~ | ✅ **CORRIGIDO FASE 2** — 47/47 com objectives |
 | C1/C2: checkpoints sem schemaVersion | Checkpoints não poderiam ser abertos | CRÍTICO → **CORRIGIDO neste bloco** | ✅ |
 | C2: 15 lições planned no mapa | Similar a B1/B2 | Baixo | Documentado |
 

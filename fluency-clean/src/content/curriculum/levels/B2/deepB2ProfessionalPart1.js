@@ -222,6 +222,12 @@ export const B2_DEEP_PROFESSIONAL_PART1 = Object.freeze([
     id: 'B2-VOCABULARY-009',
     order: 9,
     title: 'Meetings and negotiations: agenda, action points, facilitate, defer',
+    objectives: [
+      'Usar vocabulário de reuniões profissionais: agenda, action points, facilitate, defer, escalate.',
+      'Usar frases funcionais para conduzir e participar em reuniões B2.',
+      'Distinguir "defer" (adiar decisão) de "postpone" (adiar evento) e "table" (colocar em agenda).',
+      'Produzir contribuição de reunião estruturada (60-80 palavras) com vocabulário profissional.',
+    ],
     topicContext: 'Professional meetings and negotiations have their own vocabulary. At B2, you need not just the words but the functional phrases that allow you to lead, participate, interrupt, clarify and close meetings effectively.',
     essentialWords: [
       { word: 'agenda', phonetics: '/əˈdʒendə/', definition: 'list of items to be discussed in a meeting', example: 'Could you circulate the agenda before tomorrow\'s meeting?' },
@@ -278,6 +284,12 @@ export const B2_DEEP_PROFESSIONAL_PART1 = Object.freeze([
     id: 'B2-VOCABULARY-010',
     order: 10,
     title: 'Professional email phrases: register, openings, closings and transitions',
+    objectives: [
+      'Usar aberturas, fechamentos e frases de transição em emails profissionais B2.',
+      'Distinguir registo formal, semi-formal e informal em email — e quando usar cada um.',
+      'Evitar erros comuns de registo (Dear Sir/Madam em contexto semi-formal, etc.).',
+      'Redigir email profissional de 70-100 palavras com abertura, corpo, fecho e assinatura corretos.',
+    ],
     topicContext: 'Professional emails in English follow specific conventions. At B2, you need to command both formal and semi-formal registers — and know which phrases belong to which. This includes openings, closings, reference phrases, apology phrases, and call-to-action phrases.',
     essentialWords: [
       { word: 'further to', phonetics: '', definition: 'following on from (formal reference)', example: 'Further to our conversation this morning, I am writing to confirm the details.' },
@@ -322,6 +334,12 @@ export const B2_DEEP_PROFESSIONAL_PART1 = Object.freeze([
     id: 'B2-SPEAKING-004',
     order: 4,
     title: 'Lead and participate in a business meeting: chairing, clarifying, summarising',
+    objectives: [
+      'Conduzir e participar em reunião de negócios usando linguagem de chairing e facilitation.',
+      'Usar frases de clarificação (Could you elaborate on...? What do you mean by...?) em contexto real.',
+      'Resumir pontos de discussão e definir acções (action points) oralmente.',
+      'Praticar role-play de reunião com chairing, interruções profissionais e encerramento.',
+    ],
     speakingSituation: 'You are participating in or leading a team meeting in English. Topics include: project updates, decisions, action points and next steps. You need to facilitate the discussion, interrupt politely, clarify, and summarise.',
     modelPhrases: [
       'Right, let\'s get started. The first item on the agenda is...',

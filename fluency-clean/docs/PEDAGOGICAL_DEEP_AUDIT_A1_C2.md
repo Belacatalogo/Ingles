@@ -1,8 +1,8 @@
 # PEDAGOGICAL DEEP AUDIT — A1 → C2
 # BLOCO-STUDY-READY-AUDIT-A1-C2
 
-**Data:** 2026-05-18
-**Branch:** claude/validate-b1-plan-b2-rLc3b
+**Data:** 2026-05-18 (actualizado 2026-05-18 — FASE 2+3 concluídas)
+**Branch:** main
 **Auditor:** Automated + structural analysis
 **Status:** COMPLETO ✅
 
@@ -12,10 +12,10 @@
 
 | Nível | Lições Ready | Horas Estudo | CEFR OK | Conteúdo OK | Problemas Críticos | Problemas Menores |
 |-------|-------------|-------------|---------|-------------|-------------------|-------------------|
-| A1    | 139         | 108.5h      | ✅      | ✅          | 0                 | 1 (tags ausentes em ~80 lições) |
+| A1    | 139         | 108.5h      | ✅      | ✅          | 0                 | 1 (tags ausentes em 146 lições — FASE 5) |
 | A2    | 122         | 122.0h      | ✅      | ✅          | 0                 | 0 |
 | B1    | 73          | 69.4h       | ✅      | ✅          | 0                 | 0 |
-| B2    | 83          | 90.8h       | ✅      | ✅          | 0                 | 1 (masteryCriteria vazio em 31 lições de B2.1) |
+| B2    | 83          | 90.8h       | ✅      | ✅          | 0                 | 0 (objectives corrigidos — FASE 2) |
 | C1    | 73          | 85.8h       | ✅      | ✅          | 0 (corrigido)     | 0 |
 | C2    | 42          | 53.3h       | ✅      | ✅          | 0 (corrigido)     | 0 |
 | **TOTAL** | **532** | **529.8h** | ✅  | ✅          | **0**             | 2 |
@@ -50,7 +50,7 @@
 ### Problemas A1
 | Categoria | Severidade | Descrição | Ação |
 |-----------|-----------|-----------|------|
-| Tags ausentes | Baixa | ~80 lições A1 geradas por `simple()` não têm `tags`. Tags são usadas para filtros/busca, não para renderização. | Documentado — não bloqueia estudo |
+| Tags ausentes | Baixa | 146 lições A1 (de 195 únicas) sem `tags`. Tags alimentam `transferTags → touchedMasteryTags` no SRS. Não bloqueia fluxo de estudo primário. | FASE 5 — não bloqueia estudo |
 | Gap staticContent vs UI | Esperado | 139 staticContent vs 132 UI (7 checkpoints no sistema de mastery) | Correto por design |
 
 ---
@@ -74,6 +74,13 @@
 - 31 campos de conteúdo por lição — mesma estrutura de A1 (mesma factory function)
 - Conteúdo verificado em A2-GRAMMAR-001: `teacherOpening` substantivo, `conceptExplanation` detalhada, `portugueseContrast` presente
 - Estimativa de 60min por lição é consistente e adequada para A2
+
+### Mastery Gate A2
+- `a2MasteryAssessments.js` criado neste bloco com 2 checkpoints + final exam ✅
+- A2-CHECKPOINT-NARRATIVE (após Bridge + Past Stories + Plans): Past Simple, Present Continuous, Future Plans
+- A2-CHECKPOINT-COMMUNICATION (após Comparisons + Communication Tasks): Comparativos, Necessidades, Email Social
+- A2_FINAL_EXAM cobre todos os 6 pilares com `passingRules = LEVEL_PASSING_RULES` ✅
+- Funções: `getA2Checkpoint`, `getA2CheckpointAverage`, `evaluateA2FinalGate`, `getA2FinalExamReadiness` ✅
 
 ### Problemas A2
 Nenhum problema encontrado. ✅
@@ -146,11 +153,15 @@ Nenhum problema crítico. 35 lições planejadas visíveis no mapa (não bloquei
 ### Mastery Gate B2
 - `b2MasteryAssessments.js`: B2_CHECKPOINTS, B2_FINAL_EXAM, `evaluateB2FinalGate`, `getB2FinalExamReadiness` ✅
 
+### Correção FASE 2 — B2 Objectives
+- Todas as 47 lições B2 não-checkpoint têm agora `objectives` preenchidos ✅
+- Arquivos corrigidos: deepB2BridgePart1.js, deepB2BridgePart2.js, deepB2NarrativesPart1.js, deepB2AbstractDiscussionPart1.js, deepB2ProfessionalPart1.js, deepB2ProfessionalPart2.js, deepB2CultureMediaPart1.js
+
 ### Problemas B2
 | Categoria | Severidade | Descrição | Ação |
 |-----------|-----------|-----------|------|
-| masteryCriteria vazio | Baixa | B2-VOCABULARY-001..012, B2-READING-001..005, B2-LISTENING-001..004, B2-SPEAKING-001..006, B2-WRITING-001..005 têm `objectives: []` e `masteryCriteria: {}` | Não bloqueia — mastery gate B2 tem critérios próprios. Documentado. |
-| ID gap reading | Baixa | R012/R013 ausentes | Ver LESSON_PREMIUM_AUDIT_B1_B2.md |
+| ~~objectives vazio~~ | ~~Baixa~~ | ~~47 lições sem objectives~~ | ✅ **CORRIGIDO FASE 2** — todos os 47 lessons têm objectives |
+| ID gap reading | Baixa | R012/R013 ausentes | Ver LESSON_PREMIUM_AUDIT_B1_B2.md — sem ação |
 
 ---
 

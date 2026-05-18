@@ -225,6 +225,13 @@ export const B2_DEEP_BRIDGE_PART1 = Object.freeze([
     id: 'B2-VOCABULARY-001',
     order: 1,
     title: 'Academic discourse verbs: argue, demonstrate, evaluate, imply',
+    objectives: [
+      'Usar "argue", "demonstrate", "evaluate" e "imply" em contextos académicos e profissionais.',
+      'Distinguir "argue" (tomar posição) de "discuss" (explorar múltiplos ângulos).',
+      'Diferenciar "imply" (falante sugere) de "infer" (ouvinte conclui).',
+      'Usar "refute" (provar errado com evidência) vs "deny" (rejeitar sem evidência).',
+      'Produzir 3 frases usando verbos de discurso académico em contexto real.',
+    ],
     topicContext: 'These verbs are the building blocks of academic and professional argumentation. They allow you to summarise other people\'s positions, build your own case and signal your analytical stance.',
     essentialWords: [
       { word: 'argue', phonetics: '/ˈɑːɡjuː/', definition: 'put forward a reasoned case or claim', example: 'The author argues that automation benefits workers in the long run.' },
@@ -281,6 +288,13 @@ export const B2_DEEP_BRIDGE_PART1 = Object.freeze([
     id: 'B2-VOCABULARY-002',
     order: 2,
     title: 'Abstract nouns B2: implication, consequence, assumption, evidence',
+    objectives: [
+      'Usar "implication", "consequence", "assumption" e "evidence" em argumentação B2.',
+      'Distinguir "consequence" (resultado que acontece) de "implication" (significado/efeito sugerido).',
+      'Distinguir "evidence" (suporta uma afirmação) de "proof" (definitivo).',
+      'Usar "correlation", "tendency" e "perspective" em análises formais.',
+      'Produzir análise de 50-60 palavras com pelo menos 3 substantivos abstractos B2.',
+    ],
     topicContext: 'Abstract nouns are the nouns of analysis, argument and formal communication. At B2, you need not just the words themselves but also how to use them in collocations and argument structures.',
     essentialWords: [
       { word: 'implication', phonetics: '/ˌɪmplɪˈkeɪʃn/', definition: 'a likely consequence or suggested meaning', example: 'The implications of this decision are significant for the whole team.' },
@@ -329,6 +343,13 @@ export const B2_DEEP_BRIDGE_PART1 = Object.freeze([
     id: 'B2-VOCABULARY-003',
     order: 3,
     title: 'Formal synonyms: obtain, require, significant, sufficient and register',
+    objectives: [
+      'Usar "obtain", "require", "significant", "sufficient", "commence" e "ensure" em inglês formal.',
+      'Distinguir "significant" (importa para uma conclusão) de "considerable" (quantidade grande).',
+      'Distinguir "sufficient" (bastante em quantidade) de "satisfactory" (aceitável em qualidade).',
+      'Transformar frases casuais em inglês formal usando os sinónimos aprendidos.',
+      'Escrever email profissional curto de 50-70 palavras em registo formal.',
+    ],
     topicContext: 'B2 English requires you to shift between informal and formal registers. This lesson maps common casual words to their formal equivalents — essential for professional emails, reports and academic writing.',
     essentialWords: [
       { word: 'obtain', phonetics: '/əbˈteɪn/', definition: 'get or acquire (formal)', example: 'Participants can obtain a copy of the report from the website.' },
@@ -380,6 +401,13 @@ export const B2_DEEP_BRIDGE_PART1 = Object.freeze([
     id: 'B2-SPEAKING-001',
     order: 1,
     title: 'Give a structured opinion: B2 discourse markers in action',
+    objectives: [
+      'Apresentar opinião estruturada com position → evidence → concession → conclusion.',
+      'Usar "nevertheless", "albeit", "in contrast" e "not only...but also" em fala espontânea.',
+      'Reconhecer e responder ao ponto de vista oposto sem perder a posição original.',
+      'Gravar opinião estruturada de 2 minutos com marcadores discursivos B2.',
+      'Usar pelo menos uma estrutura cleft ou inversion em produção oral.',
+    ],
     speakingSituation: 'You are presenting your view on a complex topic — technology, work, society or education — in a professional or academic context. You need to be clear, structured and nuanced, using B2 discourse markers to link ideas.',
     modelPhrases: [
       'From my perspective, the most important factor is...',

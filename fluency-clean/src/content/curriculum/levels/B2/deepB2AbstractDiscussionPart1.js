@@ -199,6 +199,12 @@ export const B2_DEEP_ABSTRACT_DISCUSSION_PART1 = Object.freeze([
     id: 'B2-VOCABULARY-007',
     order: 7,
     title: 'Qualification language: tend to, appear to, somewhat, arguably',
+    objectives: [
+      'Usar "tend to", "appear to", "somewhat" e "arguably" para qualificar afirmações B2.',
+      'Distinguir afirmações absolutas de afirmações qualificadas — e quando usar cada uma.',
+      'Identificar e corrigir generalizações excessivas substituindo por linguagem qualificada.',
+      'Integrar qualification language em fala e escrita académica/profissional.',
+    ],
     topicContext: 'At B2, strong claims need qualification. Qualification language signals that you are thinking carefully — not making unsupported generalisations. It is the difference between "people prefer X" (claim) and "people tend to prefer X under these conditions" (qualified claim).',
     essentialWords: [
       { word: 'arguably', phonetics: '/ˈɑːɡjuəbli/', definition: 'it could be argued that this is true — but it is open to debate', example: 'Arguably, the most significant barrier to progress is a lack of clear communication.' },
@@ -243,6 +249,12 @@ export const B2_DEEP_ABSTRACT_DISCUSSION_PART1 = Object.freeze([
     id: 'B2-VOCABULARY-008',
     order: 8,
     title: 'Abstract verbs B2: acknowledge, challenge, constitute, undermine',
+    objectives: [
+      'Usar "acknowledge", "challenge", "constitute" e "undermine" em argumentação e análise.',
+      'Entender como verbos abstractos descrevem relações entre ideias, afirmações e evidências.',
+      'Substituir "say" e "think" por verbos abstractos B2 mais precisos em contexto formal.',
+      'Produzir análise de uma decisão ou situação usando pelo menos 4 verbos abstractos B2.',
+    ],
     topicContext: 'Abstract verbs operate at the level of ideas and arguments, not physical actions. At B2, these verbs allow you to describe how claims, evidence and positions interact — essential for academic writing, analysis and debate.',
     essentialWords: [
       { word: 'acknowledge', phonetics: '/əkˈnɒlɪdʒ/', definition: 'accept the truth or existence of something', example: 'We must acknowledge the limitations of this study.' },
@@ -288,6 +300,12 @@ export const B2_DEEP_ABSTRACT_DISCUSSION_PART1 = Object.freeze([
     id: 'B2-READING-003',
     order: 3,
     title: 'The Price of Progress — An argumentative article on technology and society',
+    objectives: [
+      'Identificar posição do autor, evidências e concessões em artigo argumentativo sobre tecnologia.',
+      'Reconhecer linguagem de qualificação e verbos abstractos B2 em texto autêntico.',
+      'Responder perguntas de análise crítica com evidência textual.',
+      'Avaliar a força do argumento do autor e identificar possíveis lacunas ou contra-argumentos.',
+    ],
     readingPurpose: 'Read an argumentative article for the author\'s position, concession strategy, use of evidence, and discourse structure. At B2, reading for argument architecture is as important as reading for content.',
     preReadingVocabulary: [
       { word: 'automation', definition: 'use of technology to perform tasks with minimal human involvement' },
@@ -329,6 +347,12 @@ The price of progress, in other words, should not be paid disproportionately by 
     id: 'B2-LISTENING-003',
     order: 3,
     title: 'Panel discussion: the housing crisis in cities — three perspectives',
+    objectives: [
+      'Identificar posição, argumento e ponto de concessão de cada participante em painel de discussão.',
+      'Distinguir perspectivas diferentes sobre um mesmo problema (crise habitacional).',
+      'Reconhecer como falantes usam qualification language em debate real.',
+      'Sintetizar as três perspectivas em resposta escrita ou oral de 80-100 palavras.',
+    ],
     listeningPreparation: [
       'You will hear a panel with three speakers: HOST (Priya), DR CHEN (economist), SARA (urban planner), and JAMES (housing advocate).',
       'Topic: why housing in major cities has become unaffordable, and what should be done.',
@@ -376,6 +400,12 @@ SARA: Despite our differences, all three of us appear to acknowledge that the st
     id: 'B2-SPEAKING-003',
     order: 3,
     title: 'Defend a nuanced position: acknowledge both sides, hold your ground',
+    objectives: [
+      'Defender posição nuançada reconhecendo o lado oposto sem abandonar a posição original.',
+      'Usar "I would argue", "arguably", "the evidence suggests" e "one cannot deny" em fala.',
+      'Responder a contra-argumento usando concession + rebuttal estruturado.',
+      'Gravar discussão estruturada de 2-3 minutos sobre tema controverso.',
+    ],
     speakingSituation: 'You are in a seminar, interview or debate. You need to defend a nuanced position on a complex issue — not simply agreeing or disagreeing, but acknowledging the complexity while maintaining your argument.',
     modelPhrases: [
       'From my perspective, the most important factor is...',
@@ -424,6 +454,12 @@ SARA: Despite our differences, all three of us appear to acknowledge that the st
     id: 'B2-WRITING-003',
     order: 3,
     title: 'Write a discursive paragraph: concession, qualification and abstract verbs',
+    objectives: [
+      'Escrever parágrafo discursivo com concessão, qualificação e verbos abstractos B2.',
+      'Estruturar: claim → concession (albeit, nevertheless) → qualification (arguably, tend to) → conclusion.',
+      'Usar verbos abstractos (acknowledge, constitute, undermine) em vez de "say" ou "think".',
+      'Produzir parágrafo final de 90-110 palavras com todos os elementos estruturais.',
+    ],
     modelText: `The question of whether artificial intelligence constitutes a threat to employment is one that tends to generate more heat than light. Proponents of automation argue, with some justification, that technology has historically created more jobs than it destroys. That being said, it would be somewhat misleading to apply historical precedent without qualification. Whereas previous technological revolutions displaced primarily physical labour, AI appears to challenge cognitive roles — a distinction that arguably undermines the reassurance offered by historical comparisons. To acknowledge this is not to reject technological progress; it is, however, to challenge the assumption that the benefits will be equitably distributed. What the evidence suggests, broadly speaking, is that proactive policy intervention — not passive optimism — constitutes the most responsible approach.`,
     modelTextBreakdown: [
       { label: 'Opening with abstract verb', quote: 'The question of whether AI constitutes a threat', note: '"Constitute" elevates "is" — signals analytical precision from the start.' },

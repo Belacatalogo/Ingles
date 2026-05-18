@@ -209,6 +209,12 @@ export const B2_DEEP_NARRATIVES_PART1 = Object.freeze([
     id: 'B2-VOCABULARY-004',
     order: 4,
     title: 'Narrative verbs: unfold, emerge, escalate, deteriorate, trigger',
+    objectives: [
+      'Usar "unfold", "emerge", "escalate", "deteriorate" e "trigger" para narrar eventos com nuance.',
+      'Distinguir verbos de processo (unfold/escalate) de verbos de causa (trigger/provoke).',
+      'Usar estes verbos em contexto de narrativa pessoal e profissional.',
+      'Substituir "happen" e "start" por verbos narrativos mais precisos.',
+    ],
     topicContext: 'At B2, narratives need verbs that carry implicit meaning about how events developed — not just "happen" or "start" but words that signal momentum, direction and cause.',
     essentialWords: [
       { word: 'unfold', phonetics: '/ʌnˈfəʊld/', definition: 'develop or become known gradually', example: 'Events unfolded rapidly after the announcement.' },
@@ -255,6 +261,12 @@ export const B2_DEEP_NARRATIVES_PART1 = Object.freeze([
     id: 'B2-VOCABULARY-005',
     order: 5,
     title: 'Storytelling chunks: it turned out, as it happened, looking back',
+    objectives: [
+      'Usar "it turned out", "as it happened" e "looking back" para sinalizar perspectiva temporal.',
+      'Usar chunks de retrospectiva para organizar narrativa pessoal ou profissional.',
+      'Distinguir chunks de revelação ("it turned out") de chunks de reflexão ("in hindsight").',
+      'Produzir narrativa de 60-80 palavras com pelo menos 3 storytelling chunks.',
+    ],
     topicContext: 'Fluent B2 storytelling uses chunks that signal perspective, time shift and reflection. These phrases act as narrative signposts — they guide the listener and signal when the speaker is reflecting, revealing or shifting.',
     essentialWords: [
       { word: 'it turned out (that)', phonetics: '', definition: 'the actual result was unexpected', example: 'It turned out that the data had been incorrectly entered from the start.' },
@@ -296,6 +308,12 @@ export const B2_DEEP_NARRATIVES_PART1 = Object.freeze([
     id: 'B2-VOCABULARY-006',
     order: 6,
     title: 'Adjectives and adverbs for narrative impact: devastating, ironic, inevitably',
+    objectives: [
+      'Usar adjectivos avaliativos (devastating, ironic, subtle) para colorir narrativas B2.',
+      'Usar advérbios de avaliação (inevitably, understandably, remarkably) para expressar perspectiva.',
+      'Distinguir adjectivos que descrevem factos de adjectivos que expressam interpretação.',
+      'Integrar linguagem avaliativa em produção narrativa oral e escrita.',
+    ],
     topicContext: 'Strong narratives use adjectives and adverbs that evaluate and colour events — not just describing what happened, but signalling the speaker\'s interpretation. These are the evaluative tools of B2 storytelling.',
     essentialWords: [
       { word: 'devastating', phonetics: '/ˈdevəsteɪtɪŋ/', definition: 'causing severe shock, damage or grief', example: 'The announcement had a devastating effect on the team\'s morale.' },
@@ -331,6 +349,13 @@ export const B2_DEEP_NARRATIVES_PART1 = Object.freeze([
     id: 'B2-READING-002',
     order: 2,
     title: 'A Photograph Found in a Drawer — A narrative text for inference',
+    objectives: [
+      'Fazer inferências sobre atitude, motivação e significado implícito em texto narrativo.',
+      'Identificar técnicas narrativas: perspective shift, implicit tension, ambiguity.',
+      'Responder perguntas de inferência com evidência textual específica.',
+      'Identificar linguagem avaliativa e storytelling chunks em contexto.',
+      'Produzir resposta pessoal de 50-70 palavras conectando tema do texto a experiência própria.',
+    ],
     readingPurpose: 'Read a narrative text for inference, attitude, implicit meaning and narrative technique. At B2, reading includes understanding what is NOT stated explicitly.',
     preReadingVocabulary: [
       { word: 'faded', definition: 'having lost colour or brightness over time' },
@@ -387,6 +412,12 @@ Elena looked at the photograph again — the golden light, the white building, h
     id: 'B2-LISTENING-002',
     order: 2,
     title: 'A Turning Point — Interview about a personal or professional shift',
+    objectives: [
+      'Identificar turning point, causa e consequência numa entrevista sobre experiência pessoal/profissional.',
+      'Reconhecer past perfect, verbos narrativos e chunks de retrospectiva em fala natural.',
+      'Responder perguntas de detalhe e inferência após escuta sem transcript.',
+      'Praticar shadowing com frases narrativas de alta densidade informacional.',
+    ],
     listeningPreparation: [
       'You will hear a podcast interview with Marcus, who describes a turning point in his career.',
       'Key vocabulary: realised, acknowledged, culminated, shifted, inevitably, reporting verbs.',
@@ -436,6 +467,12 @@ MARCUS: I\'d say: the warning signs are always there before they become undeniab
     id: 'B2-SPEAKING-002',
     order: 2,
     title: 'Tell a complex personal narrative: past perfect, reporting verbs, and reflection',
+    objectives: [
+      'Contar narrativa pessoal complexa com past perfect, verbos de reporte e reflexão.',
+      'Estruturar narrativa: context → complication → resolution → reflection.',
+      'Usar storytelling chunks (it turned out, looking back, inevitably) em fala espontânea.',
+      'Gravar narrativa de 2 minutos com past perfect e reporting verbs em contexto natural.',
+    ],
     speakingSituation: 'You are in a job interview, a networking event or a presentation. Someone asks you to describe a significant challenge, failure, success or turning point. You need to tell the story with depth — not just what happened, but what it meant.',
     modelPhrases: [
       'At the time, I had been working on the project for [X period].',
@@ -486,6 +523,12 @@ MARCUS: I\'d say: the warning signs are always there before they become undeniab
     id: 'B2-WRITING-002',
     order: 2,
     title: 'Write a narrative paragraph with depth: past perfect, reporting verbs, reflection',
+    objectives: [
+      'Escrever parágrafo narrativo com past perfect e past perfect continuous para profundidade temporal.',
+      'Usar reporting verbs (claimed, acknowledged, insisted) para reportar falas e pensamentos.',
+      'Incluir reflexão avaliativa ao final da narrativa (in hindsight, what it taught me).',
+      'Produzir parágrafo final de 100-120 palavras após rascunho e revisão.',
+    ],
     modelText: `The project had been progressing well for several months when the first signs of trouble emerged. I had been managing a team of six, and at the time I genuinely believed we were on track. Looking back, I should have noticed that two key team members had been quietly struggling with the scope. It turned out that they had been managing an additional workload that nobody had been informed about. When the issue finally surfaced, it had already affected the entire timeline. The experience was, in hindsight, inevitable — subtle signals had been there for weeks. What it taught me was that regular one-to-one conversations matter not just for progress updates, but for understanding what is actually happening beneath the surface.`,
     modelTextBreakdown: [
       { label: 'Past perfect continuous for context', quote: 'The project had been progressing... I had been managing', note: 'Sets the background — ongoing actions before the turning point.' },

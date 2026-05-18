@@ -202,6 +202,12 @@ export const B2_DEEP_CULTURE_MEDIA_PART1 = Object.freeze([
     id: 'B2-VOCABULARY-011',
     order: 11,
     title: 'Media and society: bias, agenda, algorithm, representation, viral',
+    objectives: [
+      'Usar "bias", "agenda", "algorithm" e "representation" em discussões sobre media B2.',
+      'Distinguir "bias" (tendência sistemática) de "opinion" (ponto de vista).',
+      'Usar "viral", "clickbait" e "echo chamber" em análise crítica de media digital.',
+      'Produzir análise de 60-80 palavras sobre um fenómeno mediático usando vocabulário B2.',
+    ],
     topicContext: 'Discussing media, technology and society at B2 requires specific vocabulary that allows you to analyse, evaluate and argue about how information is produced, distributed and consumed.',
     essentialWords: [
       { word: 'bias', phonetics: '/ˈbaɪəs/', definition: 'an inclination towards a particular perspective or opinion, often unfairly', example: 'Every news outlet has some degree of editorial bias.' },
@@ -248,6 +254,12 @@ export const B2_DEEP_CULTURE_MEDIA_PART1 = Object.freeze([
     id: 'B2-VOCABULARY-012',
     order: 12,
     title: 'Cultural language: heritage, identity, representation, assimilation',
+    objectives: [
+      'Usar "heritage", "identity", "representation" e "assimilation" em discussões culturais B2.',
+      'Distinguir "identity" (quem somos) de "heritage" (de onde viemos) e "culture" (práticas partilhadas).',
+      'Usar linguagem cultural sensitiva e precisa em discussões sobre diversidade e sociedade.',
+      'Produzir opinião estruturada de 60-80 palavras sobre um tema cultural com vocabulário B2.',
+    ],
     topicContext: 'Discussing culture, identity and diversity requires precise vocabulary. At B2, you need to be able to talk about cultural dynamics — not just describe, but analyse and evaluate.',
     essentialWords: [
       { word: 'heritage', phonetics: '/ˈherɪtɪdʒ/', definition: 'traditions, culture and history passed down from earlier generations', example: 'The festival celebrates the region\'s musical heritage.' },
@@ -285,6 +297,12 @@ export const B2_DEEP_CULTURE_MEDIA_PART1 = Object.freeze([
     id: 'B2-SPEAKING-006',
     order: 6,
     title: 'Discuss a current affairs or media topic: opinion, evidence, nuance',
+    objectives: [
+      'Discutir tópico de actualidade ou media com opinião estruturada, evidência e nuance.',
+      'Usar qualification language e verbos abstractos B2 em discussão espontânea.',
+      'Equilibrar perspectivas múltiplas sem perder posição pessoal clara.',
+      'Gravar discussão de 2 minutos sobre tema de media/actualidade com estrutura B2.',
+    ],
     speakingSituation: 'You are in a seminar, podcast-style discussion or interview. The topic is media, culture or society. You need to give a nuanced, evidence-based opinion while responding to different perspectives.',
     modelPhrases: [
       'The issue of [media bias] is arguably more complex than it appears on the surface.',

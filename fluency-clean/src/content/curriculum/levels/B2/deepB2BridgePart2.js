@@ -14,6 +14,13 @@ export const B2_DEEP_BRIDGE_PART2 = Object.freeze([
     id: 'B2-READING-001',
     order: 1,
     title: 'Should cities ban private cars? An opinion article',
+    objectives: [
+      'Identificar argumento principal, evidências, concessões e posição do autor em artigo de opinião.',
+      'Ler para análise argumentativa — como o argumento é construído, não só o que diz.',
+      'Reconhecer estrutura argumentativa: claim → evidence → concession → rebuttal → conclusion.',
+      'Identificar e analisar recursos discursivos B2 em texto autêntico (cleft, inversion, discourse markers).',
+      'Produzir resposta escrita de 80-100 palavras usando nevertheless, albeit e perspectiva pessoal.',
+    ],
     readingPurpose: 'Read a formal opinion article for main argument, supporting evidence, concession structure and the author\'s stance. At B2, you read for how arguments are built, not just what they say.',
     preReadingVocabulary: [
       { word: 'congestion', definition: 'excessive traffic causing delays' },
@@ -61,6 +68,13 @@ What the evidence ultimately demonstrates is that the question is not whether ci
     id: 'B2-LISTENING-001',
     order: 1,
     title: 'Is remote work really working? — A podcast debate',
+    objectives: [
+      'Identificar posição, argumento central e concessões de cada falante em debate de podcast.',
+      'Reconhecer marcadores discursivos B2 em fala natural (nevertheless, albeit, not only...but also).',
+      'Distinguir onde um falante concede um ponto vs onde mantém a sua posição.',
+      'Responder perguntas de inferência e detalhe após escuta sem transcript.',
+      'Praticar shadowing com frases de alta densidade informacional em inglês formal.',
+    ],
     listeningPreparation: [
       'You will hear a podcast with three speakers: HOST (Maya), ADAM (pro-office), and JOANNA (pro-remote).',
       'Before listening: What do you think are the strongest arguments FOR and AGAINST remote work?',
@@ -108,6 +122,13 @@ HOST: A nuanced debate. The evidence suggests neither approach is universally su
     id: 'B2-WRITING-001',
     order: 1,
     title: 'Write a formal opinion paragraph with hedging and evidence',
+    objectives: [
+      'Escrever parágrafo de opinião formal com hedging (tend to, appear to, it is argued that).',
+      'Usar marcadores discursivos B2 (nevertheless, albeit, in contrast) na escrita.',
+      'Estruturar parágrafo com position → evidence → concession → restatement.',
+      'Aplicar registo formal e consistente: sem contrações, com vocabulary B2.',
+      'Produzir versão final de 80-100 palavras após revisão com checklist.',
+    ],
     modelText: `The increasing reliance on digital communication tools has significantly altered workplace dynamics. From one perspective, platforms such as video conferencing software and collaborative project management systems have made remote collaboration more efficient than many initially assumed. The evidence demonstrates that teams spread across multiple time zones can, with the right tools, maintain both productivity and cohesion. Nevertheless, it would be overly optimistic to ignore the challenges. Not all tasks are suited to asynchronous communication, and the absence of informal interaction can, over time, erode team trust. What is required, therefore, is not a blanket endorsement of digital communication, but a nuanced approach that matches the tool to the task.`,
     modelTextBreakdown: [
       { label: 'Opening sentence', quote: 'The increasing reliance on...', note: 'Introduces topic with formal noun phrase — no "I think" or "In my opinion" at the start.' },

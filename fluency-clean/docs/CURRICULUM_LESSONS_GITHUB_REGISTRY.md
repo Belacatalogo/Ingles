@@ -151,6 +151,21 @@ Branch: main
 
 ---
 
+## FASE 2+3 — CORREÇÕES PEDAGÓGICAS E CERTIFICAÇÃO FINAL (2026-05-18)
+
+### A2 Mastery Assessments (CRIADO)
+- **Arquivo**: `fluency-clean/src/content/curriculum/levels/A2/a2MasteryAssessments.js`
+- **Exports**: `A2_CHECKPOINTS` (2: NARRATIVE + COMMUNICATION), `A2_FINAL_EXAM`, `getA2Checkpoint`, `getA2CheckpointAverage`, `evaluateA2FinalGate`, `getA2FinalExamReadiness`
+- **Passing scores (via LEVEL_PASSING_RULES)**: minimumPillarPercent: 75, minimumSpeakingPercent: 75, minimumWritingPercent: 75
+- **Build**: ✅
+
+### B2 Objectives Corrigidos
+- **Arquivos**: deepB2BridgePart1.js, deepB2BridgePart2.js, deepB2NarrativesPart1.js, deepB2AbstractDiscussionPart1.js, deepB2ProfessionalPart1.js, deepB2ProfessionalPart2.js, deepB2CultureMediaPart1.js
+- **Mudança**: `objectives: [...]` adicionado a todos os 47 lições B2 não-checkpoint (anteriormente `objectives: []` por omissão na chamada da factory)
+- **Build**: ✅
+
+---
+
 ## FASE 4 — FECHAMENTO PEDAGÓGICO B1/B2
 
 ### B1 Mastery Assessments

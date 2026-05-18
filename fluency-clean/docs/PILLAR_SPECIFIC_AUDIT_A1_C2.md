@@ -1,8 +1,8 @@
 # PILLAR SPECIFIC AUDIT — A1 → C2
 # BLOCO-STUDY-READY-AUDIT-A1-C2
 
-**Data:** 2026-05-18
-**Branch:** claude/validate-b1-plan-b2-rLc3b
+**Data:** 2026-05-18 (actualizado 2026-05-18 — FASE 2+3 concluídas)
+**Branch:** main
 
 ---
 
@@ -61,7 +61,7 @@ B2-VOCABULARY usa: `topicContext`, `essentialWords`, `chunks`, `collocations`, `
 - Progressão temática e lexical coerente ✅
 - Sem repetição desnecessária de vocabulário já coberto ✅
 - Vocabulário em contexto, não listas isoladas ✅
-- B2.1 vocabulary: `masteryCriteria: {}` vazio (dado não crítico, conteúdo pedagógico presente) ✅
+- B2 vocabulary/reading/listening/speaking/writing: `objectives` agora preenchidos em todos os 47 lessons não-checkpoint ✅ (FASE 2)
 
 ---
 

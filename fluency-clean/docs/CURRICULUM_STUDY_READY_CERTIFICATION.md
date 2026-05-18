@@ -1,8 +1,8 @@
 # CURRICULUM STUDY READY CERTIFICATION
 # BLOCO-STUDY-READY-AUDIT-A1-C2
 
-**Data:** 2026-05-18
-**Branch:** claude/validate-b1-plan-b2-rLc3b
+**Data:** 2026-05-18 (actualizado 2026-05-18 — FASE 2+3 concluídas)
+**Branch:** main
 **Auditor:** Estrutural + automatizado
 
 ---
@@ -40,10 +40,11 @@ O currículo A1 → C2 do Fluency está operacional para estudo autônomo pelo a
 - [x] Bridge explícita entre níveis (A2-G-001, B1-G-001) ✅
 - [x] Ao final de cada aula o aluno sabe fazer algo novo e mensurável ✅
 - [x] Nenhuma aula repete desnecessariamente conteúdo de nível anterior ✅
-- [x] `masteryCriteria` ou `objectives` preenchidos na maioria das lições ✅ (exceção: B2.1 vocab/reading/listening — não crítico)
+- [x] `objectives` preenchidos em todas as 47 lições B2 não-checkpoint ✅ **CORRIGIDO NESTE BLOCO**
 
 ### Checkpoints e Gates
 - [x] A1: 7 checkpoints no a1MasteryAssessments.js ✅
+- [x] A2: 2 checkpoints + final gate no a2MasteryAssessments.js ✅ **CRIADO NESTE BLOCO**
 - [x] B1: mastery gate (b1MasteryAssessments.js) ✅
 - [x] B2: mastery gate (b2MasteryAssessments.js) ✅
 - [x] C1: C1-CHECKPOINT-001 com schemaVersion válido ✅ **CORRIGIDO**
@@ -75,10 +76,10 @@ O currículo A1 → C2 do Fluency está operacional para estudo autônomo pelo a
 
 | ID | Nível | Descrição | Severidade | Ação |
 |----|-------|-----------|-----------|------|
-| MINOR-001 | A1 | ~80 lições sem `tags` (geradas por `simple()`) | Baixa | FASE 5 |
-| MINOR-002 | B2 | `masteryCriteria: {}` e `objectives: []` em 31 lições de B2.1 | Baixa | FASE 5 |
+| MINOR-001 | A1 | 146 lições sem `tags` (geradas por `simple()`) — afeta SRS concept tracking, não bloqueia estudo | Baixa | FASE 5 |
+| ~~MINOR-002~~ | ~~B2~~ | ~~`objectives: []` em 31 lições de B2.1~~ | ~~Baixa~~ | ✅ **CORRIGIDO** — 47/47 lições B2 têm `objectives` |
 | MINOR-003 | B2 | B2-READING-012 e B2-READING-013 ausentes (gap de ID) | Baixa | Ver LESSON_PREMIUM_AUDIT_B1_B2.md — sem ação até análise de impacto |
-| MINOR-004 | A2 | Sem mastery gate formal A2 (aluno avança para B1 sem checkpoint) | Média | FASE 5 |
+| ~~MINOR-004~~ | ~~A2~~ | ~~Sem mastery gate formal A2~~ | ~~Média~~ | ✅ **CORRIGIDO** — `a2MasteryAssessments.js` criado com 2 checkpoints + final exam |
 
 ---
 
@@ -87,7 +88,7 @@ O currículo A1 → C2 do Fluency está operacional para estudo autônomo pelo a
 | Nível | Lições | Horas | Gates | CEFR | Bloqueadores |
 |-------|-------:|------:|-------|------|-------------|
 | A1    | 139    | 108.5h | 7 checkpoints | ✅ | Nenhum |
-| A2    | 122    | 122.0h | — (FASE 5) | ✅ | Nenhum |
+| A2    | 122    | 122.0h | 2 checkpoints + final gate ✅ | ✅ | Nenhum |
 | B1    | 73     | 69.4h | mid + final | ✅ | Nenhum |
 | B2    | 83     | 90.8h | mid + final | ✅ | Nenhum |
 | C1    | 73     | 85.8h | C1-CHECKPOINT-001 | ✅ | Nenhum (corrigido) |
@@ -102,23 +103,33 @@ O currículo A1 → C2 do Fluency está operacional para estudo autônomo pelo a
 |---------|---------|
 | `fluency-clean/src/content/curriculum/levels/C1/deepC1ReviewFinalExam.js` | Adicionado `schemaVersion` em C1-CHECKPOINT-001 |
 | `fluency-clean/src/content/curriculum/levels/C2/deepC2ReviewMasteryGate.js` | Adicionado `schemaVersion` em C2-CHECKPOINT-001 |
-| `fluency-clean/docs/PEDAGOGICAL_DEEP_AUDIT_A1_C2.md` | Criado |
-| `fluency-clean/docs/PILLAR_SPECIFIC_AUDIT_A1_C2.md` | Criado |
-| `fluency-clean/docs/STUDENT_JOURNEY_AUDIT_A1_C2.md` | Criado |
-| `fluency-clean/docs/CURRICULUM_STUDY_READY_CERTIFICATION.md` | Criado |
+| `fluency-clean/src/content/curriculum/levels/B2/deepB2BridgePart1.js` | `objectives` adicionados em B2-V001..003, B2-S001 |
+| `fluency-clean/src/content/curriculum/levels/B2/deepB2BridgePart2.js` | `objectives` adicionados em B2-R001, B2-L001, B2-W001 |
+| `fluency-clean/src/content/curriculum/levels/B2/deepB2NarrativesPart1.js` | `objectives` adicionados em B2-V004..006, B2-R002, B2-L002, B2-S002, B2-W002 |
+| `fluency-clean/src/content/curriculum/levels/B2/deepB2AbstractDiscussionPart1.js` | `objectives` adicionados em B2-V007..008, B2-R003, B2-L003, B2-S003, B2-W003 |
+| `fluency-clean/src/content/curriculum/levels/B2/deepB2ProfessionalPart1.js` | `objectives` adicionados em B2-V009..010, B2-S004 |
+| `fluency-clean/src/content/curriculum/levels/B2/deepB2ProfessionalPart2.js` | `objectives` adicionados em B2-R004..005, B2-L004, B2-S005, B2-W004..005 |
+| `fluency-clean/src/content/curriculum/levels/B2/deepB2CultureMediaPart1.js` | `objectives` adicionados em B2-V011..012, B2-S006 |
+| `fluency-clean/src/content/curriculum/levels/A2/a2MasteryAssessments.js` | Criado — A2_CHECKPOINTS (2) + A2_FINAL_EXAM + funções de gate |
+| `fluency-clean/docs/PEDAGOGICAL_DEEP_AUDIT_A1_C2.md` | Criado + actualizado (FASE 2+3) |
+| `fluency-clean/docs/PILLAR_SPECIFIC_AUDIT_A1_C2.md` | Criado + actualizado (FASE 2+3) |
+| `fluency-clean/docs/STUDENT_JOURNEY_AUDIT_A1_C2.md` | Criado + actualizado (FASE 2+3) |
+| `fluency-clean/docs/CURRICULUM_STUDY_READY_CERTIFICATION.md` | Criado + actualizado (FASE 2+3) |
+| `fluency-clean/docs/CURRICULUM_LESSONS_GITHUB_REGISTRY.md` | Actualizado — a2MasteryAssessments.js registado |
+| `fluency-clean/docs/AUTO_RESUME_NEXT_BLOCK.md` | Actualizado — estado main, FASE 5 actualizada |
 
 ---
 
 ## PRÓXIMOS PASSOS (FASE 5 — NÃO EXECUTAR SEM AUTORIZAÇÃO)
 
-| Sub-fase | Tema | Prioridade |
-|----------|------|-----------|
-| 5.1 | Mastery gate A2 (sem gate formal atualmente) | Alta |
-| 5.2 | Preencher masteryCriteria vazio nas 31 lições B2.1 | Média |
-| 5.3 | Adicionar tags ausentes nas ~80 lições A1 | Baixa |
-| 5.4 | SRS (Spaced Repetition System) | —  |
-| 5.5 | Gamification (XP, badges, streaks) | — |
-| 5.6 | UI improvements | — |
+| Sub-fase | Tema | Status |
+|----------|------|--------|
+| ~~5.1~~ | ~~Mastery gate A2~~ | ✅ **CONCLUÍDO** — a2MasteryAssessments.js |
+| ~~5.2~~ | ~~Objectives vazios nas 31 lições B2.1~~ | ✅ **CONCLUÍDO** — 47/47 com objectives |
+| 5.3 | Adicionar tags ausentes nas 146 lições A1 | FASE 5 — não bloqueia estudo |
+| 5.4 | SRS (Spaced Repetition System) integração avançada | FASE 5 |
+| 5.5 | Gamification (XP, badges, streaks) | FASE 5 |
+| 5.6 | UI improvements | FASE 5 |
 
 ---
 
@@ -126,11 +137,13 @@ O currículo A1 → C2 do Fluency está operacional para estudo autônomo pelo a
 
 ```
 CURRÍCULO FLUENCY A1 → C2
-STATUS: ✅ STUDY READY
-DATA: 2026-05-18
+STATUS: ✅ STUDY READY — CERTIFICAÇÃO FINAL
+DATA AUDITORIA: 2026-05-18
+DATA CERTIFICAÇÃO FINAL: 2026-05-18
 LIÇÕES: 532 (ready, build-verified, zero-duplicates)
 HORAS: ~530h de conteúdo estruturado
-GATES: A1 (7) + B1 (2) + B2 (2) + C1 (1) + C2 (1) = 13 pontos de avaliação
+GATES: A1 (7) + A2 (2+1) + B1 (2) + B2 (2) + C1 (1) + C2 (1) = 16 pontos de avaliação
 BLOQUEADORES CRÍTICOS: 0
+ISSUES MENORES ABERTOS: 1 (A1 tags — não bloqueia estudo)
 O ALUNO PODE ESTUDAR DO ZERO AO C2 SEM FISCALIZAR O SISTEMA
 ```

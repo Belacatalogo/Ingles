@@ -14,6 +14,12 @@ export const B2_DEEP_PROFESSIONAL_PART2 = Object.freeze([
     id: 'B2-READING-004',
     order: 4,
     title: 'Reading a professional email chain: tone, register and decision-making',
+    objectives: [
+      'Identificar tom, registo e processo de tomada de decisão em cadeia de emails profissionais.',
+      'Inferir relação hierárquica e nível de urgência a partir de escolhas linguísticas.',
+      'Reconhecer quando o registo muda ao longo da cadeia e porquê.',
+      'Produzir email de resposta adequado ao tom e registo da cadeia.',
+    ],
     readingPurpose: 'Read a professional email chain for tone, register shifts, implicit meaning, requests and the decision-making process. At B2, professional reading includes understanding what is politely stated vs directly stated.',
     preReadingVocabulary: [
       { word: 'escalate (a problem)', definition: 'bring an issue to a higher level of authority' },
@@ -98,6 +104,12 @@ David`,
     id: 'B2-READING-005',
     order: 5,
     title: 'Reading a workplace report: key findings and recommendations',
+    objectives: [
+      'Navegar um relatório profissional para identificar principais conclusões e recomendações.',
+      'Usar estrutura do relatório (executive summary, findings, recommendations) para leitura eficiente.',
+      'Distinguir factos observados de recomendações e opiniões no relatório.',
+      'Resumir as 3 principais conclusões e 2 recomendações em 80-100 palavras.',
+    ],
     readingPurpose: 'Read a short workplace report for structure, key findings, evidence, and formal recommendation language. Reports are a key text type in B2 professional English.',
     preReadingVocabulary: [
       { word: 'retention', definition: 'the ability to keep employees or customers' },
@@ -153,6 +165,12 @@ The findings constitute a significant risk to organisational performance if unad
     id: 'B2-LISTENING-004',
     order: 4,
     title: 'A business meeting: agenda, interruptions, clarification and action points',
+    objectives: [
+      'Compreender reunião de negócios completa com agenda, interrupções, pedidos de clarificação.',
+      'Identificar action points, quem é responsável e prazos a partir da escuta.',
+      'Reconhecer estratégias de interrupção educada e clarificação em inglês profissional.',
+      'Produzir notas de reunião (meeting notes) após a escuta.',
+    ],
     listeningPreparation: [
       'You will hear a team meeting with four speakers: CHAIR (Ana), MARCUS (Operations), HELEN (Finance), and DAVID (Client Relations).',
       'Meeting agenda: (1) Q2 performance review (2) Budget approval (3) Client escalations (4) Action points.',
@@ -205,6 +223,12 @@ ANA: Understood. To summarise what we\'ve agreed: Marcus will prepare the provis
     id: 'B2-SPEAKING-005',
     order: 5,
     title: 'Deliver a professional opinion: feedback, proposal, recommendation',
+    objectives: [
+      'Dar feedback profissional estruturado usando linguagem de diplomacia e assertividade.',
+      'Fazer proposta ou recomendação formal com justificação e antecipação de objecções.',
+      'Usar softening language (I would suggest, it might be worth considering) sem perder clareza.',
+      'Gravar entrega de opinião profissional de 90-120 segundos com estrutura completa.',
+    ],
     speakingSituation: 'You are in a professional context: a team discussion, a one-to-one with your manager, or presenting a recommendation to a group. You need to express your professional view — giving feedback, making a proposal, or defending a recommendation — with clarity, respect and conviction.',
     modelPhrases: [
       'I would like to propose that we...',
@@ -256,6 +280,12 @@ ANA: Understood. To summarise what we\'ve agreed: Marcus will prepare the provis
     id: 'B2-WRITING-004',
     order: 4,
     title: 'Write professional meeting notes: structure, action items, formal language',
+    objectives: [
+      'Escrever notas de reunião profissional com estrutura: attendees, discussion points, action items.',
+      'Usar linguagem impessoal e formal (It was agreed that / Action: X to Y by Z).',
+      'Distinguir notas de reunião (factual) de minutos formais (mais detalhados e oficiais).',
+      'Produzir notas de reunião completas de uma reunião simulada de 15 minutos.',
+    ],
     modelText: `MEETING NOTES
 Project: Project Delta
 Date: 14 May 2026 | Time: 10:00–10:45
@@ -318,6 +348,12 @@ Next steps: Follow-up call scheduled for 21 May at 10 a.m.`,
     id: 'B2-WRITING-005',
     order: 5,
     title: 'Write a formal email: request, complaint, and proposal',
+    objectives: [
+      'Escrever email formal de pedido, reclamação ou proposta com registo adequado.',
+      'Usar estrutura: abertura formal → contexto → pedido/proposta/reclamação → fecho.',
+      'Calibrar tom: assertivo sem ser agressivo, cortês sem ser subserviente.',
+      'Produzir email final de 100-150 palavras para um dos três tipos (pedido, reclamação, proposta).',
+    ],
     modelText: `Dear Ms Carvalho,
 
 Further to our conversation on 10 May, I am writing to formally propose extending the current service contract for an additional twelve months, commencing 1 July 2026.
