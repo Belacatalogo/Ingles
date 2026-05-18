@@ -98,6 +98,7 @@
 | ~~5.2~~ | ~~Objectives vazios nas lições B2.1~~ | ✅ **CONCLUÍDO FASE 2** |
 | ~~5.3~~ | ~~Tags ausentes nas 146 lições A1~~ | ✅ **CONCLUÍDO** — 139/139 lições A1 com tags |
 | ~~5.4~~ | ~~SRS (Spaced Repetition System) integração avançada~~ | ✅ **CONCLUÍDO** — `lessonSrsAdvanced.js` criado, integrado em `completeLesson()` |
+| ~~5.4B~~ | ~~SRS tags coverage expansion (A2→C2)~~ | ✅ **CONCLUÍDO** — 393 tag maps externos, 100% cobertura A1→C2 |
 | 5.5 | Gamification (XP, badges, streaks) | FASE 5 — próximo bloco autorizado |
 | 5.6 | UI (melhorias de interface e navegação) | FASE 5 |
 
@@ -109,6 +110,26 @@
 | `src/services/progressStore.js` | MODIFICADO — import + call `registerLessonTagsInSrs()` em `completeLesson()` |
 | `docs/SRS_ADVANCED_INTEGRATION_REPORT.md` | CRIADO — documentação completa da fase |
 | `docs/AUTO_RESUME_NEXT_BLOCK.md` | ATUALIZADO — este ficheiro |
+
+## FASE 5.4B — Arquivos alterados (2026-05-18)
+
+| Arquivo | Mudança |
+|---------|---------|
+| `src/content/curriculum/srsTagMaps/a2Tags.js` | CRIADO — 122 tag maps A2 |
+| `src/content/curriculum/srsTagMaps/b1Tags.js` | CRIADO — 73 tag maps B1 |
+| `src/content/curriculum/srsTagMaps/b2Tags.js` | CRIADO — 83 tag maps B2 |
+| `src/content/curriculum/srsTagMaps/c1Tags.js` | CRIADO — 73 tag maps C1 |
+| `src/content/curriculum/srsTagMaps/c2Tags.js` | CRIADO — 42 tag maps C2 |
+| `src/content/curriculum/srsTagMaps/index.js` | CRIADO — exports `getSrsTagsForLesson` + `hasPedagogicalTags` |
+| `src/services/lessonSrsAdvanced.js` | MODIFICADO — import + fallback para tag maps em `registerLessonTagsInSrs` |
+| `docs/SRS_TAGS_COVERAGE_EXPANSION_REPORT.md` | CRIADO — documentação desta fase |
+| `docs/AUTO_RESUME_NEXT_BLOCK.md` | ATUALIZADO — este ficheiro |
+
+## Pendências conhecidas (FASE 5.4B)
+
+- Cobertura SRS agora é 100% (532/532 lições com tags pedagógicas úteis).
+- Tags A2→C2 são provenientes de tag maps externos (não dentro dos ficheiros de lição).
+- Zero ficheiros de lição modificados nesta fase.
 
 ## Pendências conhecidas (FASE 5.4)
 

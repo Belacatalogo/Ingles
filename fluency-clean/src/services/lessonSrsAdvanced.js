@@ -1,5 +1,6 @@
 import { getDuePracticeSrsItems, getPracticeSrsSummary } from './practiceSrsExtended.js';
 import { getVocabularySrsSummary } from './vocabularySrs.js';
+import { getSrsTagsForLesson, hasPedagogicalTags } from '../content/curriculum/srsTagMaps/index.js';
 
 const STORAGE_KEY = 'fluency.clean.lessonSrsAdvanced.v1';
 
@@ -172,13 +173,17 @@ export function registerLessonTagsInSrs({ lesson, flowErrors = [], flowScore = n
       .map(inferPillarFromFlowError)
   );
 
+  // Use external tag map when lesson.tags lacks a pedagogical pillar at index 1 (A2→C2 pattern).
+  const rawTags = Array.isArray(lesson?.tags) ? lesson.tags : [];
+  const tags = hasPedagogicalTags(rawTags) ? rawTags : (getSrsTagsForLesson(lessonId) || rawTags);
+  const effectivePillar = extractPillarFromTags(tags) || basePillar;
+
   // Register lesson tags (skip index 0 which is the level like 'a1')
-  const tags = Array.isArray(lesson?.tags) ? lesson.tags : [];
   tags.slice(1).forEach((tag) => {
     const content = clean(tag);
     if (!content) return;
     const key = makeKey(LESSON_SRS_TYPES.LESSON_CONCEPT_TAG, content);
-    const pillar = basePillar || content;
+    const pillar = effectivePillar || content;
     const hasError = errorPillars.has(pillar) || errorPillars.has(content);
     const forcedStatus = hasError ? LESSON_SRS_STATUS.WEAK : LESSON_SRS_STATUS.LEARNING;
     items[key] = upsertItem(items, key, {
@@ -231,7 +236,7 @@ export function registerLessonTagsInSrs({ lesson, flowErrors = [], flowScore = n
       type: LESSON_SRS_TYPES.LESSON_OBJECTIVE,
       content: `${lessonId}::${text}`,
       label: text.slice(0, 100),
-      pillar: basePillar,
+      pillar: effectivePillar,
       level,
       correct: !hasError,
       forcedStatus: hasError ? LESSON_SRS_STATUS.WEAK : LESSON_SRS_STATUS.LEARNING,
