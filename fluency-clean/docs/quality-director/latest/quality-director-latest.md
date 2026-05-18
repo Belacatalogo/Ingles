@@ -1,6 +1,6 @@
 # Fluency Quality Director — Relatório Executivo Latest
 
-Gerado em: 2026-05-18T19:32:59.597Z
+Gerado em: 2026-05-18T19:45:27.771Z
 
 ## Veredito
 
@@ -11,23 +11,23 @@ Gerado em: 2026-05-18T19:32:59.597Z
 ## Resumo geral
 
 - Relatórios consolidados: 25
-- Checks executados: 3264
-- Problemas únicos: 3043
-- Problemas brutos antes de deduplicar: 5565
-- Duplicatas agrupadas: 2522
+- Checks executados: 3268
+- Problemas únicos: 2854
+- Problemas brutos antes de deduplicar: 5365
+- Duplicatas agrupadas: 2511
 - P0: 3
-- P1: 1323
-- P2: 1717
+- P1: 1226
+- P2: 1625
 - P3: 0
 
 ## Notas por área
 
 | Área | Nota | Status | P0 | P1 | P2 | P3 |
 |---|---:|---|---:|---:|---:|---:|
-| Navegação e estabilidade | 0 | Revisar antes de confiar | 0 | 97 | 182 | 0 |
+| Navegação e estabilidade | 0 | Revisar antes de confiar | 0 | 67 | 154 | 0 |
 | Jornada real do aluno | 17 | Revisar antes de confiar | 0 | 3 | 57 | 0 |
 | Exercícios e alternativas | 0 | Crítico | 3 | 477 | 730 | 0 |
-| Aulas e pedagogia | 0 | Revisar antes de confiar | 0 | 746 | 744 | 0 |
+| Aulas e pedagogia | 0 | Revisar antes de confiar | 0 | 679 | 680 | 0 |
 | Visual e mobile | 100 | Saudável | 0 | 0 | 0 | 0 |
 | Progresso, XP e mastery | 100 | Saudável | 0 | 0 | 0 | 0 |
 | Estados vazios e segurança visual | 100 | Saudável | 0 | 0 | 0 | 0 |
@@ -46,8 +46,8 @@ Gerado em: 2026-05-18T19:32:59.597Z
 | quality-director-empty-states-security | iPhone SE | 0 | 56 | 76 | 80 | 0 | 16 | 60 | 0 |
 | quality-director-exercise-quality | iPhone 13 | 0 | 501 | 1092 | 1092 | 3 | 449 | 640 | 0 |
 | quality-director-exercise-quality | iPhone SE | 0 | 501 | 1092 | 1092 | 3 | 449 | 640 | 0 |
-| quality-director-exploratory-student-audit | iPhone 13 | 0 | 1 | 152 | 156 | 0 | 87 | 65 | 0 |
-| quality-director-exploratory-student-audit | iPhone SE | 0 | 1 | 152 | 156 | 0 | 87 | 65 | 0 |
+| quality-director-exploratory-student-audit | iPhone 13 | 0 | 3 | 56 | 56 | 0 | 37 | 19 | 0 |
+| quality-director-exploratory-student-audit | iPhone SE | 0 | 3 | 56 | 56 | 0 | 37 | 19 | 0 |
 | quality-director-lesson-quality | iPhone 13 | 0 | 500 | 137 | 137 | 0 | 47 | 90 | 0 |
 | quality-director-lesson-quality | iPhone SE | 0 | 500 | 137 | 137 | 0 | 47 | 90 | 0 |
 | quality-director-navigation | iPhone 13 | 100 | 13 | 0 | 0 | 0 | 0 | 0 | 0 |
