@@ -48,7 +48,7 @@ export function StaticNextLessonPanel({ onNavigate }) {
           {canOpen ? <Sparkles size={16} /> : <Lock size={16} />}
           <span>
             {dailyState.statusLabel}: <b>{lesson.level}</b> · {pillarLabel(lesson.pillar)} · {canOpen ? lesson.title : 'continue pelo caminho guiado'}
-            {dailyState.helperText ? <small>{dailyState.helperText}</small> : null}
+            {dailyState.helperText ? <><br /><small>{dailyState.helperText}</small></> : null}
           </span>
         </div>
       ) : (

@@ -30,7 +30,7 @@ const packageMapByLevel = { A1: A1_PACKAGES, A2: A2_PACKAGES, B1: B1_PACKAGES, B
 const pillarMapByLevel = { A1: A1_PILLAR_MAPS, A2: A2_PILLAR_MAPS, B1: B1_PILLAR_MAPS, B2: B2_PILLAR_MAPS, C1: C1_PILLAR_MAPS, C2: C2_PILLAR_MAPS };
 
 function lesson(level, pillar, order, mapItem, options = {}) {
-  const id = `${level}-${pillar.toUpperCase()}-${String(order).padStart(3, '0')}`;
+  const id = mapItem.id || `${level}-${pillar.toUpperCase()}-${String(order).padStart(3, '0')}`;
   const previousId = order > 1 ? `${level}-${pillar.toUpperCase()}-${String(order - 1).padStart(3, '0')}` : '';
   const packages = packageMapByLevel[level] || {};
   const base = {

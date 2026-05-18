@@ -2,278 +2,154 @@ import { createReadingLesson, createListeningLesson, createWritingLesson } from 
 
 const level = 'B2';
 const status = 'ready';
-const common = { level, status, estimatedMinutes: 70, tags: ['b2-1', 'bridge', 'b1-to-b2', 'deep-approved-target'] };
+const common = { level, status, estimatedMinutes: 65, tags: ['b2-1', 'bridge', 'precision', 'argument', 'deep-approved-target'] };
 
 function task(instruction, note = '', expected = '') { return { instruction, note, expected }; }
-function vocab(word, meaning, example = '', note = '') { return { word, meaning, example, note }; }
-function q(question, answer, evidence = '', explanation = '', options = []) { return { question, answer, evidence, explanation, options }; }
 
 export const B2_DEEP_BRIDGE_PART2 = Object.freeze([
 
-  // ─── READING ────────────────────────────────────────────────────────────────
-
+  // ─── READING-001: Should Cities Ban Private Cars? ─────────────────────────────
   createReadingLesson({
     ...common,
     id: 'B2-READING-001',
     order: 1,
-    title: 'Opinion article: Should cities ban private cars?',
-    objectives: [
-      'Ler e compreender um artigo de opinião de ~500 palavras com vocabulário B2.',
-      'Identificar a posição do autor, os argumentos principais e as concessões.',
-      'Inferir significado implícito e intenção argumentativa.',
-      'Responder a perguntas de evidência e inferência com frases completas.',
-      'Produzir uma resposta escrita breve baseada no texto.',
-    ],
-    readingPurpose: 'Você vai ler um artigo de opinião sobre política urbana. Preste atenção não apenas ao argumento principal, mas também a como o autor estrutura concessões, refutações e hedging — você vai usar essas mesmas estratégias nas suas produções B2.',
+    title: 'Should cities ban private cars? An opinion article',
+    readingPurpose: 'Read a formal opinion article for main argument, supporting evidence, concession structure and the author\'s stance. At B2, you read for how arguments are built, not just what they say.',
     preReadingVocabulary: [
-      vocab('congestion', 'congestionamento de tráfego', 'Traffic congestion in major cities costs billions every year.', 'Diferente de "pollution" (poluição) — congestion é o bloqueio de trânsito'),
-      vocab('pedestrianise', 'tornar uma área exclusiva para pedestres', 'Many European cities have pedestrianised their historic centres.', 'Verbo britânico; americano: "pedestrianize"'),
-      vocab('commute', 'deslocamento diário para trabalho/escola', 'Her daily commute takes over an hour each way.', 'Substantivo e verbo: "commute to work"; "her commute"'),
-      vocab('feasible', 'viável, praticável', 'A complete ban on cars may not be feasible in suburban areas.', '"Feasible" = can be done practically; stronger than "possible"'),
-      vocab('infrastructure', 'infraestrutura', 'Without proper infrastructure, public transport cannot replace cars.', 'Incontável em inglês; "an infrastructure" está errado'),
-      vocab('emission', 'emissão (de carbono, poluição)', 'Transport emissions account for nearly a quarter of global CO2.', 'Quase sempre plural: "emissions". "Emission" singular em contexto técnico'),
+      { word: 'congestion', definition: 'excessive traffic causing delays' },
+      { word: 'pedestrianise', definition: 'convert a road into a pedestrian-only zone' },
+      { word: 'emission', definition: 'gas or pollutant released into the atmosphere' },
+      { word: 'infrastructure', definition: 'basic systems (roads, transport, buildings) supporting a city' },
+      { word: 'viable', definition: 'capable of working or being used successfully' },
     ],
     readingStrategy: [
-      task('Leia o título e o primeiro parágrafo. Qual é a posição do autor? Ele é a favor ou contra a proibição de carros?', 'Não leia o artigo inteiro ainda.'),
-      task('Identifique as palavras de sinalização (discourse markers) à medida que lê: However, Nevertheless, Whilst, Albeit, Furthermore.'),
+      'First read: identify the author\'s main claim and where it appears.',
+      'Second read: identify the structure — claim, evidence, concession, rebuttal, conclusion.',
+      'Look for discourse markers that signal argument turns: nevertheless, albeit, in contrast, not only.',
     ],
-    mainText: `Should Cities Ban Private Cars?
+    mainText: `The Case for Car-Free City Centres
 
-The idea of banning private cars from city centres might once have sounded utopian. Today, however, it is a policy that an increasing number of European cities are actively pursuing — and for compelling reasons. Yet whilst the environmental and health benefits are significant, the practical challenges of such a transition are considerable and should not be dismissed.
+The suggestion that cities should ban private cars from their centres is no longer the preserve of radical environmentalists. It has become a mainstream policy debate in dozens of cities worldwide — and for good reason.
 
-The case for car-free city centres rests on a powerful body of evidence. Urban air pollution, much of it caused by vehicle emissions, is estimated to cause over 7 million premature deaths worldwide each year. In cities such as Oslo and Amsterdam, pedestrianisation schemes have led to measurable improvements in air quality, reduced noise levels and, perhaps most surprisingly, a boost to local economies. Retailers initially feared that removing cars would harm trade; the evidence suggests the opposite. When people walk, they tend to spend more time — and more money — in local businesses.
+The environmental argument is, by now, well established. Private vehicles account for a disproportionate share of urban carbon emissions and particulate pollution. In major European cities, transport accounts for roughly a quarter of total greenhouse gas output, with private cars representing the largest single contributor. The evidence, in other words, is not ambiguous: reducing car use reduces pollution.
 
-Furthermore, the social case for reclaiming urban space is compelling. Streets designed for cars leave little room for parks, cycle lanes, cafés or community spaces. Cities that have reduced car access, such as Pontevedra in Spain, report dramatic drops in road accidents and a stronger sense of community among residents. The quality of life, in short, improves significantly when urban space is no longer dominated by the private vehicle.
+What is less often discussed, however, is the economic case. Car-free streets, it turns out, are frequently more profitable than car-dominated ones. Studies from Oslo, New York and Barcelona consistently demonstrate that pedestrianised streets generate significantly higher retail turnover per square metre than streets with heavy traffic. It was not the loss of parking spaces that damaged trade — it was the assumption that it would.
 
-That said, a blanket ban on private cars is not without its problems. For many people — particularly those in outer suburbs, those with disabilities, or those whose work requires transporting goods or equipment — cars remain not a luxury but a necessity. Notwithstanding the environmental benefits, forcing a car-dependent population to abandon their vehicles overnight would cause genuine hardship. Any serious policy must account for this reality.
+Nevertheless, the opposition to car bans is understandable, albeit often overstated. For residents of city suburbs or rural areas without access to adequate public transport, the car is not a luxury — it is a lifeline. Any viable policy must therefore be accompanied by investment in affordable, frequent and accessible alternatives.
 
-The answer, arguably, lies not in an overnight ban but in a carefully managed transition: expanding and improving public transport, investing in cycling infrastructure, introducing congestion charges and creating car-free zones gradually. Oslo has demonstrated that a phased approach can work. The city reduced private car journeys in its centre by 19% in just three years through a combination of better cycle lanes, improved tram services and targeted restrictions — not an outright ban.
+Not only does this require financial commitment from governments, but it also demands a fundamental shift in urban planning philosophy. The city of the future should be designed for people, not vehicles. Several cities have already demonstrated that this is achievable: Oslo reported zero pedestrian fatalities in 2019 following its car reduction programme. Madrid\'s central zone saw air quality improve by 25% within two years of restricting access.
 
-In conclusion, the question is not whether cities should reduce their dependence on private cars — the evidence is overwhelming that they should — but how to do so fairly and effectively. The goal is not to punish drivers, but to create cities that work better for everyone. And on that, at least, most people can agree.`,
-    vocabulary: [
-      vocab('utopian', 'utópico, irrealista', 'The proposal seemed utopian, but it worked.', ''),
-      vocab('compelling', 'convincente, persuasivo', 'The evidence is compelling.', '"compelling reasons/case/evidence" — colocação frequente'),
-      vocab('pedestrianisation', 'pedestrianização', 'The pedestrianisation of the square transformed the area.', ''),
-      vocab('blanket ban', 'proibição total/abrangente', 'A blanket ban on all vehicles would be unrealistic.', '"blanket" = que cobre tudo sem exceção'),
-      vocab('phased approach', 'abordagem gradual/por fases', 'A phased approach is more practical than sudden change.', '"phased" = planejado em etapas'),
-      vocab('outright', 'total, completo, sem condições', 'An outright ban would be very difficult to implement.', '"outright ban/victory/refusal" — colocações fixas'),
-    ],
-    comprehensionQuestions: [
-      q('What is the author\'s main position on banning private cars from city centres?', 'The author supports reducing car dependence, but favours a gradual, managed transition rather than an outright ban.', 'Paragraph 5: "The answer, arguably, lies not in an overnight ban but in a carefully managed transition."', 'The author is balanced — not fully against cars, but strongly in favour of reducing them.'),
-      q('According to paragraph 3, what happened to local businesses in areas that reduced car access?', 'Retailers initially feared losing trade, but evidence shows the opposite — people who walk spend more time and money locally.', 'Paragraph 2: "When people walk, they tend to spend more time — and more money — in local businesses."', 'This is a common argument used to oppose the anti-car view — the author refutes it.'),
-      q('What example does the author use in paragraph 5 to argue for a phased approach?', 'Oslo reduced private car journeys in its centre by 19% in three years through a combination of better cycle lanes, improved tram services and targeted restrictions.', 'Paragraph 5: "Oslo has demonstrated that a phased approach can work."', 'The author uses a real example to make the argument credible.'),
-    ],
+What the evidence ultimately demonstrates is that the question is not whether cities should reduce private car use, but how quickly and equitably they can do so.`,
+    firstReadTask: task('Read and answer: What is the author\'s main argument? What is the main concession made to opponents?'),
     evidenceQuestions: [
-      q('Find evidence in the text that car-free zones can benefit local economies. Quote directly.', '"When people walk, they tend to spend more time — and more money — in local businesses."', 'Paragraph 2', '"The evidence suggests the opposite" — note the hedging before the claim.'),
-      q('The author acknowledges that banning cars would cause problems. Who would be most affected?', 'People in outer suburbs, those with disabilities, and those whose work requires transporting goods or equipment.', 'Paragraph 4: "For many people... cars remain not a luxury but a necessity."', 'This is an important concession — the author is not dismissing real-life limitations.'),
-      q('What does "blanket ban" mean in context? Why does the author use this phrase?', '"Blanket ban" means a complete, across-the-board prohibition with no exceptions. The author uses it to signal that such an extreme measure is impractical.', 'Paragraph 4: "a blanket ban on private cars is not without its problems"', 'The word "blanket" implies criticism of oversimplification.'),
-    ],
-    shortResponse: [
-      task('In your own words (40-60 words), summarise the author\'s conclusion about banning cars from cities.', 'Do not copy directly from the text. Use your own words.', 'The author concludes that cities should reduce their dependence on private cars, but through a gradual, fair transition — better public transport, cycling infrastructure and congestion charges — rather than an abrupt, total ban that would harm many people.'),
-    ],
-    guidedSummary: task(
-      'Write a 2-sentence summary of the article using these stems: "The article argues that... Nevertheless, the author acknowledges that..."',
-      'Use the discourse markers from this unit (nevertheless, albeit, notwithstanding) in your summary.',
-      'The article argues that reducing private car use in city centres brings clear environmental, health and social benefits, as demonstrated by cities such as Oslo and Amsterdam. Nevertheless, the author acknowledges that an outright ban would cause hardship for many and that a phased approach — combining better public transport, cycle infrastructure and targeted restrictions — is the most practical path forward.',
-    ),
-    connectedProduction: task(
-      'Write 80-100 words responding to this question: "Do you think your city should reduce private car use? Why or why not?" Use at least 2 discourse markers from this unit.',
-      'Use: nevertheless, albeit, notwithstanding, in contrast, on balance.',
-      'Think about: Who would be affected? What alternatives exist? What are the realistic steps?',
-    ),
-    firstReadTask: task('Read the article once quickly. Decide: Is the author (a) strongly for banning cars, (b) against banning cars, or (c) in favour of a balanced approach?', 'Skim — do not stop at every word.'),
-    secondReadTasks: [
-      task('Read again carefully. Find and underline all discourse markers (However, That said, Notwithstanding, Furthermore, Albeit, In conclusion, Arguably).'),
-      task('For each paragraph, write one sentence summarising the main point.'),
+      task('What evidence does the author give for the economic argument?', 'Find specific cities and data.', 'Studies from Oslo, New York and Barcelona; pedestrianised streets generate higher retail turnover.'),
+      task('What does the author acknowledge as a limitation of car bans?', '', 'People in suburbs/rural areas depend on cars; public transport investment is needed.'),
+      task('How does the author use Oslo and Madrid as evidence?', '', 'Oslo: zero pedestrian fatalities in 2019. Madrid: 25% air quality improvement.'),
+      task('Find the cleft sentence in the article and explain what element is being emphasised.', '', '"It was not the loss of parking spaces that damaged trade — it was the assumption that it would."'),
     ],
     contextVocabularyTasks: [
-      task('Find the word "compelling" in paragraph 1. What does it tell you about the evidence for banning cars?', '', '"Compelling" means the evidence is persuasive and hard to dismiss. It signals the author believes it strongly.'),
-      task('Find "phased approach" in paragraph 5. What is the opposite of a phased approach?', '', 'An overnight/sudden/immediate ban — the opposite of gradual.'),
+      task('Find the word that means "disputing an argument or claim" in paragraph 4.', '', 'overstated'),
+      task('What does "the preserve of" mean in context (paragraph 1)?', '', 'something belonging exclusively to a group — "the preserve of radical environmentalists" = only they held this view before.'),
     ],
+    guidedSummary: task('Write a 3-sentence summary: main claim, main evidence, and main concession.', 'Use: argues that / demonstrates / nevertheless'),
+    connectedProduction: task('Do you agree that cities should restrict private cars? Write 80-100 words using: nevertheless, albeit, the evidence demonstrates, from my perspective.'),
   }),
 
-  // ─── LISTENING ──────────────────────────────────────────────────────────────
-
+  // ─── LISTENING-001: Is remote work really working? ────────────────────────────
   createListeningLesson({
     ...common,
     id: 'B2-LISTENING-001',
     order: 1,
-    title: 'Podcast excerpt: Is remote work really working?',
-    objectives: [
-      'Compreender fala natural com velocidade, redução e fillers reais.',
-      'Identificar posições, argumentos e concessões em uma discussão informal entre especialistas.',
-      'Inferir a opinião de cada falante sem que ele a expresse explicitamente.',
-      'Reconhecer hedging language e marcadores de discurso na fala natural.',
-      'Fazer shadowing de fragmentos com entonação e ritmo naturais.',
-    ],
+    title: 'Is remote work really working? — A podcast debate',
     listeningPreparation: [
-      task('Antes de ouvir, responda: você trabalha/estudou de forma remota? O que foi bom? O que foi difícil?'),
-      task('Predição: você vai ouvir dois profissionais discutindo trabalho remoto. Que argumentos você espera ouvir a favor e contra?'),
-      task('Palavras-chave para reconhecer: remote work, productivity, isolation, collaboration, flexibility, trust, output.'),
+      'You will hear a podcast with three speakers: HOST (Maya), ADAM (pro-office), and JOANNA (pro-remote).',
+      'Before listening: What do you think are the strongest arguments FOR and AGAINST remote work?',
+      'Key vocabulary to listen for: productivity, isolation, collaboration, flexibility, boundaries, micromanagement.',
     ],
-    keyWordsToHear: [
-      vocab('output', 'produção, resultado', '"Managers need to focus on output, not hours."', 'Output = resultado do trabalho, não o processo'),
-      vocab('isolation', 'isolamento', '"One of the biggest drawbacks is social isolation."', 'Diferente de "solitude" (solidão escolhida)'),
-      vocab('synchronous', 'síncrono (ao mesmo tempo)', '"We still need synchronous communication for complex decisions."', 'Antônimo: "asynchronous"'),
-      vocab('presenteeism', 'presenteísmo (estar fisicamente mas improdutivo)', '"We\'ve replaced presenteeism with a new form of it online."', 'Importante conceito de gestão B2/C1'),
-      vocab('drawback', 'desvantagem, ponto negativo', '"What are the main drawbacks of full remote?"', '"Drawback" = mais formal que "problem"; menos negativo que "flaw"'),
-    ],
-    transcript: `HOST (Priya): Welcome back to Work Forward. I\'m Priya, and today I have two guests who have very different views on remote work. Adam, you\'re a productivity consultant, and you\'ve been saying for a while now that the data on remote work is more complicated than people think. And then we have Joanna, who is the COO of a fully remote tech company. So Adam, let\'s start with you. What does the data actually say?
+    keyWordsToHear: ['contends', 'demonstrates', 'acknowledge', 'nevertheless', 'significant', 'implication'],
+    transcript: `HOST (Maya): Welcome back to WorkSmart. Today we are debating one of the biggest questions in modern work culture: is remote work actually working? I have two guests with very different perspectives. Adam, you argue that the return to office is necessary. Joanna, you contend that remote work is the future. Adam, start us off.
 
-ADAM: Well, I think what gets lost in this conversation is the difference between individual productivity and collective productivity. So... if you ask someone working from home, "Are you getting more done?" they will often say yes. And they\'re not lying. But what they\'re measuring is their own output. What they\'re not measuring is what happens to the team as a whole. The spontaneous conversations, the accidental collaboration, the mentoring of junior employees — those things don\'t show up in any productivity metric.
+ADAM: Thank you, Maya. Look, I acknowledge that remote work has clear advantages for individual flexibility. Nevertheless, the data I have seen demonstrates that collaborative innovation suffers significantly when teams are not physically co-located. Not only does this affect daily problem-solving, but it also has long-term implications for organisational culture and mentoring.
 
-PRIYA: Joanna, I imagine you\'d push back on that.
+HOST: Joanna, your response?
 
-JOANNA: I would, yeah. I think Adam is describing a problem with office culture, not with remote work. The idea that you need to be in the same building for collaboration to happen — I\'d argue that\'s a very 20th-century assumption. Our teams collaborate constantly. We use asynchronous tools, we have structured check-ins, and our output — by any measurable standard — is higher than it was when we had an office.
+JOANNA: I would argue that Adam is making an assumption that office presence equals collaboration. The evidence from companies like Spotify, GitLab and Dropbox — all fully remote or hybrid — actually demonstrates the opposite. It was not the office that built their culture; it was intentional communication practices.
 
-ADAM: But that\'s a tech company, Joanna. You\'re working with people who are, by definition, comfortable with digital tools, who have home offices, who probably have fast internet and quiet spaces. What about the junior employee in a shared flat? What about the person who needs to see a mentor to learn? Remote work works incredibly well for some people and some industries, and it works terribly for others.
+ADAM: That is a fair point, albeit a selective one. Those are tech companies with high-skilled workforces and significant investment in digital infrastructure. The implication that this model works for all sectors is, I contend, unproven.
 
-JOANNA: That\'s... that\'s actually a fair point. I\'ll concede that. Equity in remote work is a real issue. Not everyone has the same setup. But I\'d argue the solution isn\'t to go back to the office — it\'s to invest in making remote work accessible. Provide equipment, co-working space stipends, better broadband.
+HOST: So you both acknowledge sector and role matter. What about wellbeing, Joanna?
 
-PRIYA: So you\'re both sort of agreeing, then, that it\'s not black and white?
+JOANNA: This is where I feel the evidence is clearest. Remote workers report, on average, significantly lower commute stress and better work-life balance. The tendency to conflate office presence with productivity is, I would argue, a cultural bias rather than a data-driven conclusion.
 
-ADAM: I suppose we are. My concern is that companies are treating remote work as a one-size-fits-all solution when it isn\'t. A hybrid model, done thoughtfully, probably gets you the best of both worlds. But "hybrid" is too often used as an excuse to do neither well.
+ADAM: I partially concede that point. What concerns me, nevertheless, is the consequence for early-career workers. The implications for mentoring and professional socialisation are, in my view, significant and largely underestimated.
 
-JOANNA: On that, we\'re completely aligned. Hybrid that\'s just "come in on Wednesdays and Fridays for no clear reason" is worse than either extreme. If you\'re going to do hybrid, be intentional about it.
-
-PRIYA: Alright, I\'ll give you both the last word — in one sentence, what\'s your take?
-
-ADAM: Remote work has real benefits, albeit limited ones for certain roles and demographics, and companies need to stop pretending it\'s a universal solution.
-
-JOANNA: Remote work, when done thoughtfully and equitably, is not just viable — it\'s better. The challenge is the "thoughtfully and equitably" part.`,
+HOST: A nuanced debate. The evidence suggests neither approach is universally superior. What both of you seem to agree on is that intention and investment matter more than location. Thanks to Adam and Joanna.`,
     firstListenTasks: [
-      task('Ouça uma vez. Responda: Adam é mais a favor ou contra o trabalho remoto? E Joanna?', '', 'Adam: mais cético — aponta limitações e riscos para colaboração. Joanna: mais favorável — defende que funciona bem quando bem implementado.'),
-      task('Qual ponto Joanna concede para Adam? Ela muda de posição completamente?', '', 'Ela concede que equidade é um problema real — nem todos têm setup adequado. Mas ela não muda de posição: propõe investir em acesso, não voltar ao escritório.'),
-    ],
-    secondListenTasks: [
-      task('Identifique pelo menos 3 expressões de hedging/softening que Adam ou Joanna usam.', '', '"I\'d argue that...", "I suppose we are", "probably gets you...", "too often used as", "albeit limited ones"'),
-      task('Adam usa "albeit" em sua frase final. Reescreva a frase em inglês mais simples, sem "albeit".', '', '"Remote work has real benefits, but they are limited for certain roles and demographics."'),
-      task('Encontre 2 lugares onde um falante concede o argumento do outro. Anote o que foi dito.', '', '1. Joanna: "That\'s... that\'s actually a fair point. I\'ll concede that." (sobre equidade)\n2. Adam: "I suppose we are [agreeing]." (sobre não ser preto no branco)'),
+      task('What is Adam\'s main concern about remote work?'),
+      task('What is Joanna\'s main argument in favour of remote work?'),
     ],
     listeningComprehension: [
-      q('What does Adam say is missing from individual productivity data?', 'The collective impact on the team — including spontaneous conversations, accidental collaboration and mentoring of junior employees.', 'Adam: "What they\'re not measuring is what happens to the team as a whole."', 'This is his core argument: individual data ≠ collective outcome.'),
-      q('What is Joanna\'s response to Adam\'s criticism about collaboration?', 'She argues that needing to be in the same building for collaboration is a "20th-century assumption" and that her remote teams collaborate constantly using asynchronous tools.', 'Joanna: "The idea that you need to be in the same building... I\'d argue that\'s a very 20th-century assumption."', ''),
-      q('What equity concern does Adam raise, and how does Joanna respond?', 'Adam says not everyone has the same remote work setup — junior employees in shared flats, people without home offices or mentors. Joanna concedes the point but argues the solution is to invest in access, not return to offices.', 'Adam: "What about the junior employee in a shared flat?" / Joanna: "I\'ll concede that. But I\'d argue the solution isn\'t to go back to the office."', 'This is a key exchange — pay attention to how Joanna agrees partially but maintains her position.'),
+      task('What companies does Joanna cite as evidence? Why does Adam challenge this example?', '', 'Spotify, GitLab, Dropbox. Adam says they are tech companies — selective evidence, not applicable to all sectors.'),
+      task('What does Adam partially concede?', '', 'That remote work reduces commute stress and improves work-life balance.'),
+      task('What does Adam say is the implication for early-career workers?', '', 'Mentoring and professional socialisation suffer — underestimated consequence.'),
+      task('Find TWO discourse markers from B2 Grammar lessons used in the podcast.', 'Listen for: nevertheless, albeit, not only...but also, implication', ''),
     ],
     shadowing: [
-      {
-        line: 'Remote work has real benefits, albeit limited ones for certain roles and demographics, and companies need to stop pretending it\'s a universal solution.',
-        focus: 'Rhythm and linking: "real benefits" — "albeit limited ones" — "and companies need to". Note how "albeit" connects the concession without pausing too long.',
-        tip: 'Say it as one flowing unit, not word by word. "albeit" sounds like "all-bite" — stress the contrast.',
-      },
-      {
-        line: 'The spontaneous conversations, the accidental collaboration, the mentoring of junior employees — those things don\'t show up in any productivity metric.',
-        focus: 'Listing intonation: each item slightly higher than the last, then pause at the dash, then fall on the conclusion.',
-        tip: 'The dash (—) is a natural dramatic pause. Use it to breathe and then deliver "those things" as the payoff.',
-      },
-      {
-        line: 'Hybrid that\'s just "come in on Wednesdays and Fridays for no clear reason" is worse than either extreme.',
-        focus: 'Sarcastic intonation on the quoted speech. Natural British rhythm on "for no clear reason".',
-        tip: 'The quote marks are implied by slight rise in voice + slight pause before and after. This is how native speakers signal irony.',
-      },
+      'Nevertheless, the data I have seen demonstrates that collaborative innovation suffers significantly when teams are not physically co-located.',
+      'The tendency to conflate office presence with productivity is, I would argue, a cultural bias rather than a data-driven conclusion.',
+      'It was not the office that built their culture; it was intentional communication practices.',
     ],
-    dictationTasks: [
-      task('Ouça este trecho e escreva palavra por palavra: "If you\'re going to do hybrid, be intentional about it."', 'Atenção: "intentional" é uma palavra B2 — não "intended" nem "with intention".', '"If you\'re going to do hybrid, be intentional about it."'),
-      task('Ouça e escreva: Adam\'s final sentence. Preste atenção em "albeit" e "demographics".', '', '"Remote work has real benefits, albeit limited ones for certain roles and demographics, and companies need to stop pretending it\'s a universal solution."'),
-    ],
-    oralProduction: task(
-      'After listening, respond in 60-90 seconds: "Whose view do you find more convincing — Adam\'s or Joanna\'s? Why?" Use at least 2 discourse markers.',
-      'Structure: state your position → give 1 reason → acknowledge the other side → conclude.',
-      'Start with: "I find [Adam/Joanna\'s] view more convincing because..." or "On balance, I would side with... nevertheless..."',
-    ),
-    vocabulary: [
-      vocab('presenteeism', 'presenteísmo', '"We\'ve replaced office presenteeism with online presenteeism."', 'Pessoa está "presente" mas não produtiva — problema de gestão'),
-      vocab('stipend', 'subsídio, ajuda de custo', '"Co-working space stipends for remote workers."', '"Stipend" = pagamento regular para cobrir custos específicos'),
-      vocab('equitable', 'equitativo, justo', '"Remote work needs to be done equitably."', 'Mais formal que "fair"; implica consideração de desigualdades estruturais'),
-    ],
+    oralProduction: task('Record 60-90 seconds: Do you agree with Adam, Joanna, or neither? Use at least two of the lesson\'s discourse markers in your response.'),
   }),
 
-  // ─── WRITING ────────────────────────────────────────────────────────────────
-
+  // ─── WRITING-001: Formal opinion paragraph ────────────────────────────────────
   createWritingLesson({
     ...common,
     id: 'B2-WRITING-001',
     order: 1,
-    title: 'Formal opinion paragraph with hedging and discourse markers',
-    objectives: [
-      'Escrever um parágrafo de opinião formal de 100-130 palavras com estrutura clara.',
-      'Usar hedging language para expressar posições com a certeza adequada.',
-      'Integrar discourse markers B2 (nevertheless, albeit, notwithstanding, in contrast).',
-      'Incluir evidência ou exemplo concreto para suportar o argumento.',
-      'Fazer uma concessão genuína sem abandonar a posição central.',
-    ],
-    modelText: `In my view, remote work represents a significant improvement in quality of life for many professionals, albeit one that brings genuine challenges that should not be ignored. The evidence suggests that flexible working arrangements increase individual productivity and reduce commuting stress — benefits that are difficult to dismiss. Nevertheless, the social dimension of office work — informal mentoring, spontaneous collaboration, team cohesion — is not easily replicated online. Notwithstanding these limitations, I would argue that the solution is not a return to full-time office work, but rather a thoughtful hybrid model that balances individual flexibility with collective needs. On balance, the benefits of remote work outweigh the drawbacks, provided it is implemented with care and equity.`,
+    title: 'Write a formal opinion paragraph with hedging and evidence',
+    modelText: `The increasing reliance on digital communication tools has significantly altered workplace dynamics. From one perspective, platforms such as video conferencing software and collaborative project management systems have made remote collaboration more efficient than many initially assumed. The evidence demonstrates that teams spread across multiple time zones can, with the right tools, maintain both productivity and cohesion. Nevertheless, it would be overly optimistic to ignore the challenges. Not all tasks are suited to asynchronous communication, and the absence of informal interaction can, over time, erode team trust. What is required, therefore, is not a blanket endorsement of digital communication, but a nuanced approach that matches the tool to the task.`,
     modelTextBreakdown: [
-      { part: 'Position opener', text: '"In my view, remote work represents a significant improvement in quality of life for many professionals"', note: '"In my view" is more formal than "I think". The position is clear and direct from the start.' },
-      { part: 'Concession with albeit', text: '"albeit one that brings genuine challenges that should not be ignored"', note: '"Albeit one that..." = even though it is one that. Compact, formal concession immediately after the position.' },
-      { part: 'Evidence with hedging', text: '"The evidence suggests that flexible working arrangements increase individual productivity..."', note: '"The evidence suggests" = hedging. Not "proves" — the author is measured, not absolute.' },
-      { part: 'Contrast with nevertheless', text: '"Nevertheless, the social dimension of office work... is not easily replicated online."', note: '"Nevertheless" signals the counter-argument. "Not easily replicated" is hedged — not "cannot be replicated".' },
-      { part: 'Position with notwithstanding', text: '"Notwithstanding these limitations, I would argue that..."', note: '"Notwithstanding" acknowledges the limitations but moves past them. "I would argue" is more tentative than "I believe".' },
-      { part: 'Balanced conclusion', text: '"On balance, the benefits of remote work outweigh the drawbacks, provided it is implemented with care and equity."', note: '"On balance" = after considering everything. "Provided" = conditional — the conclusion is not unconditional.' },
+      { label: 'Opening sentence', quote: 'The increasing reliance on...', note: 'Introduces topic with formal noun phrase — no "I think" or "In my opinion" at the start.' },
+      { label: 'Perspective + evidence', quote: 'From one perspective...The evidence demonstrates...', note: '"From one perspective" signals this is one side. "The evidence demonstrates" anchors the claim.' },
+      { label: 'Concession', quote: 'Nevertheless, it would be overly optimistic to ignore...', note: '"Nevertheless" + hedging "it would be overly optimistic" — acknowledges limits without ceding ground.' },
+      { label: 'Cleft for conclusion', quote: 'What is required, therefore, is not... but a nuanced approach...', note: 'Wh-cleft used to reframe the conclusion. "Not X but Y" structure creates argumentative precision.' },
     ],
     writingBlocks: [
-      { step: 1, name: 'Position opener', instruction: 'State your opinion on the topic clearly. Use: "In my view", "I would argue that", or "From my perspective".' },
-      { step: 2, name: 'Concession (albeit)', instruction: 'Add an immediate concession using "albeit" + noun phrase or adjective. Do NOT use albeit + subject + verb.' },
-      { step: 3, name: 'Evidence', instruction: 'Support your position with a specific example or piece of evidence. Use: "The evidence suggests that...", "Research indicates that...", "Studies show that...".' },
-      { step: 4, name: 'Counter-argument (nevertheless)', instruction: 'Acknowledge the main objection to your view. Use: "Nevertheless," or "That said," or "Whilst I acknowledge that...".' },
-      { step: 5, name: 'Your response to the counter', instruction: 'Refute or qualify the counter-argument. Use: "Notwithstanding", "I would argue that", "The solution is not X but rather Y".' },
-      { step: 6, name: 'Conclusion', instruction: 'End with a balanced conclusion. Use: "On balance,", "In conclusion,", "Ultimately,".' },
+      { block: 'Topic sentence', instruction: 'State the topic clearly using a formal noun phrase. Avoid "I think" or "In my opinion" in the opening sentence.' },
+      { block: 'Position + evidence', instruction: 'Signal your perspective ("From my perspective / The evidence demonstrates / I would argue that...") and provide a specific example or data point.' },
+      { block: 'Concession', instruction: 'Use "Nevertheless / However / That said" + acknowledge a limitation or counter-argument without abandoning your position.' },
+      { block: 'Conclusion + cleft or inversion', instruction: 'Restate your conclusion using a cleft ("What the evidence suggests is...") or a formal connective ("All things considered...").' },
     ],
     grammarForWriting: [
-      { structure: 'Hedging with suggest/appear', example: '"The evidence suggests that..." / "It would appear that..."', note: 'Use hedging when you\'re presenting data or claims that are probable but not absolute.' },
-      { structure: 'Conditional conclusion', example: '"...provided it is implemented carefully." / "...as long as..."', note: 'A conditional shows maturity — you\'re not making unconditional claims.' },
-      { structure: 'Passive for objectivity', example: '"It is widely argued that..." / "Remote work is often cited as..."', note: 'Impersonal passive creates academic distance.' },
-      { structure: 'Concessive adverbials', example: '"Notwithstanding the challenges..." / "Despite the limitations..."', note: 'Both introduce a concession — notwithstanding is more formal.' },
+      'Hedging: "it would be overly optimistic to..." / "it is difficult to argue that..." / "one cannot ignore..."',
+      'Evidence: "The evidence demonstrates / suggests / indicates that..."',
+      'Concession: "Nevertheless, / That said, / This notwithstanding,"',
+      'Wh-cleft conclusion: "What is required is..." / "What the data suggests is..."',
     ],
     usefulSentences: [
-      'In my view, [topic] represents [position], albeit [concession].',
-      'The evidence suggests that [claim], a benefit that is difficult to dismiss.',
-      'Nevertheless, [counter-argument] should not be overlooked.',
-      'Notwithstanding [limitation], I would argue that [your response].',
-      'On balance, [conclusion], provided [condition].',
-      'Whilst I acknowledge that [concession], I maintain that [position].',
-      'It is worth noting that [important point], which [implication].',
+      'The evidence clearly demonstrates that [claim].',
+      'From a [professional / practical / ethical] perspective, [argument].',
+      'Nevertheless, it would be inaccurate to suggest that [concession].',
+      'What the available evidence ultimately indicates is that [conclusion].',
     ],
-    draftTask: task(
-      'Write your opinion paragraph (100-130 words) on ONE of the following topics. Follow the 6-step structure above.',
-      'Choose: (A) "Should university education be free for everyone?", (B) "Is technology making us less creative?", or (C) "Should social media companies be regulated by governments?"',
-      'Your paragraph must include: a clear position, an albeit concession, evidence or example, nevertheless + counter-argument, notwithstanding or "that said" + response, and on balance + conclusion.',
-    ),
-    revisionTask: task(
-      'Review your paragraph using the checklist below. Then revise it once before submitting.',
-      'Minimum revision: fix any discourse marker errors and check word count (100-130).',
-    ),
     revisionChecklist: [
-      'My paragraph states a clear position in the first sentence.',
-      '"Albeit" is followed by a noun phrase or adjective — NOT by a full clause (subject + verb).',
-      '"Nevertheless" or "that said" introduces a genuine counter-argument, not just repetition.',
-      '"Notwithstanding" acknowledges the limitation and moves the argument forward.',
-      'I used at least one form of hedging (the evidence suggests, I would argue, arguably, it would appear).',
-      'I gave at least one specific example or piece of evidence.',
-      'My conclusion uses "On balance" or equivalent and summarises my position.',
-      'I avoided starting sentences with "And" or "But" in formal writing.',
-      'Word count is between 100 and 130 words.',
-      'There are no direct copies from the model text — the ideas and examples are my own.',
+      'Topic sentence introduces the topic without "I think" or "In my opinion".',
+      'Position clearly stated and supported with evidence or example.',
+      'At least one advanced discourse marker used (nevertheless, albeit, notwithstanding, in contrast).',
+      'A concession is acknowledged without abandoning the main argument.',
+      'A cleft or formal connective used in the conclusion.',
+      'No contracted forms (it\'s → it is, can\'t → cannot).',
+      'No informal vocabulary (big → significant, get → obtain, need → require).',
+      'Paragraph is 100-130 words.',
     ],
-    commonWritingMistakes: [
-      { mistake: '"Albeit it is expensive..."', correction: '"...albeit an expensive one" / "...albeit expensive"', explanation: 'Albeit is followed directly by an adjective, noun or noun phrase — not by a full clause.' },
-      { mistake: '"On the contrary, remote work has benefits."', correction: '"In contrast, remote work offers significant benefits." / "On balance, remote work..."', explanation: '"On the contrary" corrects a false premise. "On balance" and "in contrast" are for weighing views.' },
-      { mistake: '"I think that maybe remote work could perhaps be..."', correction: '"I would argue that remote work is..."', explanation: 'Stacked hedging sounds unconfident. One form of hedging is sufficient ("I would argue", "the evidence suggests").' },
-      { mistake: '"The evidences show..."', correction: '"The evidence shows..." / "Studies indicate..."', explanation: '"Evidence" is uncountable in English. Never use "evidences" or "an evidence".' },
-    ],
-    feedbackPreparation: [
-      task('After writing your draft, read it aloud once. Does each sentence connect smoothly to the next?', 'Check: no abrupt jumps between ideas. Each discourse marker should signal the relationship clearly.'),
-      task('Count the discourse markers you used. Did you use at least 3 (albeit, nevertheless, notwithstanding or equivalent)?'),
-    ],
+    finalVersionTask: task('Write a formal opinion paragraph (100-130 words) on one of these topics:', 'Topics: (1) The impact of social media on public discourse. (2) Whether universities should make attendance compulsory. (3) Whether working from home reduces career progression. Use the model structure.'),
   }),
 
 ]);
 
 export const B2_DEEP_BRIDGE_PART2_BY_PILLAR = Object.freeze({
-  grammar: Object.freeze([]),
-  vocabulary: Object.freeze([]),
-  reading: Object.freeze(B2_DEEP_BRIDGE_PART2.filter(l => l.pillar === 'reading')),
-  listening: Object.freeze(B2_DEEP_BRIDGE_PART2.filter(l => l.pillar === 'listening')),
-  speaking: Object.freeze([]),
-  writing: Object.freeze(B2_DEEP_BRIDGE_PART2.filter(l => l.pillar === 'writing')),
+  reading: B2_DEEP_BRIDGE_PART2.filter(l => l.pillar === 'reading'),
+  listening: B2_DEEP_BRIDGE_PART2.filter(l => l.pillar === 'listening'),
+  writing: B2_DEEP_BRIDGE_PART2.filter(l => l.pillar === 'writing'),
 });
