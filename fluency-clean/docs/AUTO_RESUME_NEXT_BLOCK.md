@@ -2,7 +2,7 @@
 
 ## Estado actual
 - branch actual: main ✅
-- último bloco concluído: BLOCO-STUDY-READY-AUDIT-A1-C2 + FASE 2+3 (2026-05-18)
+- último bloco concluído: BLOCO-A1-TAGS-COMPLETION (2026-05-18)
 - C1: COMPLETO (73 aulas + C1-CHECKPOINT-001 — schemaVersion corrigido ✅)
 - C2: COMPLETO (42 aulas + C2-CHECKPOINT-001 — schemaVersion corrigido ✅)
 - FASE 2: COMPLETO — B2 objectives (47/47) + A2 mastery gate criado
@@ -96,7 +96,7 @@
 |----------|------|--------|
 | ~~5.1~~ | ~~Mastery gate A2~~ | ✅ **CONCLUÍDO FASE 2** |
 | ~~5.2~~ | ~~Objectives vazios nas lições B2.1~~ | ✅ **CONCLUÍDO FASE 2** |
-| 5.3 | Tags ausentes nas 146 lições A1 | FASE 5 — não bloqueia estudo |
+| ~~5.3~~ | ~~Tags ausentes nas 146 lições A1~~ | ✅ **CONCLUÍDO** — 139/139 lições A1 com tags |
 | 5.4 | SRS (Spaced Repetition System) integração avançada | FASE 5 |
 | 5.5 | Gamification (XP, badges, streaks) | FASE 5 |
 | 5.6 | UI (melhorias de interface e navegação) | FASE 5 |

@@ -76,7 +76,7 @@ O currículo A1 → C2 do Fluency está operacional para estudo autônomo pelo a
 
 | ID | Nível | Descrição | Severidade | Ação |
 |----|-------|-----------|-----------|------|
-| MINOR-001 | A1 | 146 lições sem `tags` (geradas por `simple()`) — afeta SRS concept tracking, não bloqueia estudo | Baixa | FASE 5 |
+| ~~MINOR-001~~ | ~~A1~~ | ~~146 lições sem `tags`~~ | ~~Baixa~~ | ✅ **CORRIGIDO** — 139/139 lições A1 têm `tags` (BLOCO-A1-TAGS-COMPLETION 2026-05-18) |
 | ~~MINOR-002~~ | ~~B2~~ | ~~`objectives: []` em 31 lições de B2.1~~ | ~~Baixa~~ | ✅ **CORRIGIDO** — 47/47 lições B2 têm `objectives` |
 | MINOR-003 | B2 | B2-READING-012 e B2-READING-013 ausentes (gap de ID) | Baixa | Ver LESSON_PREMIUM_AUDIT_B1_B2.md — sem ação até análise de impacto |
 | ~~MINOR-004~~ | ~~A2~~ | ~~Sem mastery gate formal A2~~ | ~~Média~~ | ✅ **CORRIGIDO** — `a2MasteryAssessments.js` criado com 2 checkpoints + final exam |
@@ -126,7 +126,7 @@ O currículo A1 → C2 do Fluency está operacional para estudo autônomo pelo a
 |----------|------|--------|
 | ~~5.1~~ | ~~Mastery gate A2~~ | ✅ **CONCLUÍDO** — a2MasteryAssessments.js |
 | ~~5.2~~ | ~~Objectives vazios nas 31 lições B2.1~~ | ✅ **CONCLUÍDO** — 47/47 com objectives |
-| 5.3 | Adicionar tags ausentes nas 146 lições A1 | FASE 5 — não bloqueia estudo |
+| ~~5.3~~ | ~~Adicionar tags ausentes nas 146 lições A1~~ | ✅ **CONCLUÍDO** — 139/139 lições A1 com tags |
 | 5.4 | SRS (Spaced Repetition System) integração avançada | FASE 5 |
 | 5.5 | Gamification (XP, badges, streaks) | FASE 5 |
 | 5.6 | UI improvements | FASE 5 |
@@ -144,6 +144,6 @@ LIÇÕES: 532 (ready, build-verified, zero-duplicates)
 HORAS: ~530h de conteúdo estruturado
 GATES: A1 (7) + A2 (2+1) + B1 (2) + B2 (2) + C1 (1) + C2 (1) = 16 pontos de avaliação
 BLOQUEADORES CRÍTICOS: 0
-ISSUES MENORES ABERTOS: 1 (A1 tags — não bloqueia estudo)
+ISSUES MENORES ABERTOS: 1 (B2 ID gap R012/R013 — não bloqueia estudo)
 O ALUNO PODE ESTUDAR DO ZERO AO C2 SEM FISCALIZAR O SISTEMA
 ```

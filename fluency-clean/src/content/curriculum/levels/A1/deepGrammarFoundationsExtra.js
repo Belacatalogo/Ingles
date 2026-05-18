@@ -72,9 +72,10 @@ function commonToBeExamples(kind) {
   return [];
 }
 
-function makeToBeLesson({ id, order, title, kind, pattern, goal, opening, why, concept, bridge, useCases, formation, whenUse, whenNot, guidedBeforeQuiz, mistakes, guided, errors, transforms, translations, production, recap }) {
+function makeToBeLesson({ id, order, title, kind, tags, pattern, goal, opening, why, concept, bridge, useCases, formation, whenUse, whenNot, guidedBeforeQuiz, mistakes, guided, errors, transforms, translations, production, recap }) {
   return createGrammarLesson({
     id, level, order, title, status, estimatedMinutes: 60,
+    tags: tags || ['a1', 'grammar', 'be-verb', kind, 'beginner-foundation'],
     objectives: [
       `Entender a lógica de ${title}.`,
       'Aplicar a regra em frases A1 sem traduzir palavra por palavra.',
@@ -138,7 +139,7 @@ function makeToBeLesson({ id, order, title, kind, pattern, goal, opening, why, c
 
 export const A1_DEEP_GRAMMAR_EXTRA = Object.freeze([
   makeToBeLesson({
-    id: 'A1-GRAMMAR-002', order: 2, title: 'Verb to be — affirmative', kind: 'affirmative', pattern: 'subject + am/is/are + information',
+    id: 'A1-GRAMMAR-002', order: 2, title: 'Verb to be — affirmative', kind: 'affirmative', tags: ['a1', 'grammar', 'be-verb', 'affirmative', 'is-am-are', 'beginner-foundation'], pattern: 'subject + am/is/are + information',
     goal: 'Formar frases afirmativas com verb to be para dizer quem a pessoa é, como ela está, de onde ela é, onde algo está ou como algo é.',
     opening: 'Agora que você já sabe escolher o sujeito com I, you, he, she, it, we e they, chegou a hora de entender o primeiro verbo essencial do inglês: o verb to be. Ele aparece como am, is ou are. Essa aula não é para decorar três palavrinhas soltas. É para entender que o to be liga o sujeito a uma informação. Quando você diz “I am a student”, você está ligando I à informação a student. Quando diz “She is happy”, liga she ao estado happy. Essa lógica é a base para descrição, apresentação, origem, profissão e localização no A1.',
     why: 'Sem o verb to be afirmativo, você não consegue montar as frases mais básicas de apresentação e descrição. Ele responde perguntas como: quem sou eu, quem é essa pessoa, de onde ela é, onde algo está e como algo é. Brasileiros erram porque tentam traduzir “sou”, “é” e “estão” como se o inglês funcionasse igual ao português. Em inglês, você precisa escolher a forma certa de acordo com o sujeito: I am, he/she/it is, you/we/they are. A regra existe para mostrar concordância entre sujeito e verbo.',
@@ -158,7 +159,7 @@ export const A1_DEEP_GRAMMAR_EXTRA = Object.freeze([
     bridge: 'Agora que você sabe afirmar com am/is/are, a próxima aula mostra como negar sem usar don’t: I am not, she is not, they are not.',
   }),
   makeToBeLesson({
-    id: 'A1-GRAMMAR-003', order: 3, title: 'Verb to be — negative', kind: 'negative', pattern: 'subject + am/is/are + not + information',
+    id: 'A1-GRAMMAR-003', order: 3, title: 'Verb to be — negative', kind: 'negative', tags: ['a1', 'grammar', 'be-verb', 'negative', 'is-not-am-not', 'beginner-foundation'], pattern: 'subject + am/is/are + not + information',
     goal: 'Negar frases com verb to be colocando not depois de am, is ou are.',
     opening: 'Negar em inglês não é apenas jogar “not” em qualquer lugar. Com o verb to be, existe uma ordem muito segura: sujeito, am/is/are, not e depois a informação. Em português dizemos “eu não estou cansado” e o “não” aparece antes do verbo. Em inglês com to be, a lógica é diferente: primeiro você monta a ligação com am/is/are e depois nega essa ligação com not. Por isso a frase correta é “I am not tired”, não “I not am tired”.',
     why: 'Essa regra importa porque o aluno brasileiro costuma misturar a lógica do português com a do inglês. Também é comum tentar usar don’t em frases com to be, como “I don’t am tired”, mas isso não funciona. A negativa com to be é essencial para dizer que você não é algo, não está em algum lugar, não está em determinado estado ou que uma coisa não tem uma característica. Ela prepara você para respostas curtas e conversas básicas.',
@@ -178,7 +179,7 @@ export const A1_DEEP_GRAMMAR_EXTRA = Object.freeze([
     bridge: 'Agora que você sabe afirmar e negar, a próxima aula muda a ordem para perguntar: Are you ready? Is she here?',
   }),
   makeToBeLesson({
-    id: 'A1-GRAMMAR-004', order: 4, title: 'Verb to be — questions', kind: 'questions', pattern: 'am/is/are + subject + information?',
+    id: 'A1-GRAMMAR-004', order: 4, title: 'Verb to be — questions', kind: 'questions', tags: ['a1', 'grammar', 'be-verb', 'questions', 'are-you-is-she', 'beginner-foundation'], pattern: 'am/is/are + subject + information?',
     goal: 'Transformar frases com verb to be em perguntas mudando a posição de am, is ou are.',
     opening: 'Em português, muitas perguntas podem ser feitas só com entonação: “Você está pronto?” parece parecido com “Você está pronto.” Na escrita, mudamos o ponto por interrogação. Em inglês com verb to be, a estrutura muda de verdade. A frase “You are ready” vira “Are you ready?” porque o to be vai para antes do sujeito. Essa é uma das primeiras vezes em que você percebe que inglês depende muito da ordem das palavras.',
     why: 'Entender perguntas com to be é essencial para conversas simples: perguntar nome, origem, estado, localização, profissão e descrição. Brasileiros erram muito dizendo “Do you are...?” porque tentam usar do como marcador de pergunta em qualquer situação. Mas com to be, você não precisa de do. A própria forma am/is/are vai para o começo e cria a pergunta.',
@@ -198,7 +199,7 @@ export const A1_DEEP_GRAMMAR_EXTRA = Object.freeze([
     bridge: 'Agora que você sabe perguntar, a próxima aula ensina como responder sem repetir a frase inteira: Yes, I am. No, she is not.',
   }),
   makeToBeLesson({
-    id: 'A1-GRAMMAR-005', order: 5, title: 'Short answers with to be', kind: 'shortAnswers', pattern: 'Yes/No + subject + am/is/are',
+    id: 'A1-GRAMMAR-005', order: 5, title: 'Short answers with to be', kind: 'shortAnswers', tags: ['a1', 'grammar', 'be-verb', 'short-answers', 'yes-no-responses', 'beginner-foundation'], pattern: 'Yes/No + subject + am/is/are',
     goal: 'Responder perguntas com to be usando respostas curtas corretas e naturais.',
     opening: 'Em inglês, responder apenas “yes” ou “no” pode funcionar em algumas conversas, mas no estudo A1 isso não treina a estrutura completa. Short answers ajudam você a confirmar ou negar usando o pronome e a forma correta do verb to be. Quando alguém pergunta “Are you ready?”, a resposta completa curta é “Yes, I am” ou “No, I am not”. Você não repete tudo, mas também não responde de forma solta. Isso treina concordância e evita respostas como “Yes, I do” em perguntas com to be.',
     why: 'Short answers importam porque aparecem o tempo todo em conversas reais e consolidam três coisas de uma vez: o sujeito da resposta, a forma correta de am/is/are e a lógica da pergunta. Brasileiros erram porque decoram yes/no e esquecem que a resposta curta precisa combinar com a pergunta. Se a pergunta usa to be, a resposta também usa to be; se pergunta sobre you, muitas vezes a resposta vira I; se pergunta sobre your parents, a resposta vira they.',
@@ -219,6 +220,7 @@ export const A1_DEEP_GRAMMAR_EXTRA = Object.freeze([
   }),
   createGrammarLesson({
     id: 'A1-GRAMMAR-006', level, order: 6, title: 'Possessive adjectives: my, your, his, her', status, estimatedMinutes: 60,
+    tags: ['a1', 'grammar', 'possessive-adjectives', 'my-your-his-her', 'possession', 'beginner-foundation'],
     objectives: ['Entender a diferença entre sujeito e posse.', 'Usar my, your, his e her antes de substantivos.', 'Evitar traduções como “I name” e “she book”.', 'Produzir frases sobre nome, família e objetos pessoais.'],
     teacherOpening: 'Nesta aula você vai aprender uma diferença que parece pequena, mas muda muitas frases: I não é a mesma coisa que my, he não é a mesma coisa que his, e she não é a mesma coisa que her. Em português, dizemos “meu nome”, “seu celular”, “o livro dela”. Em inglês, essas ideias usam possessive adjectives, palavras que aparecem antes de um substantivo para mostrar posse, relação ou pertencimento. O ponto principal é: subject pronoun faz o papel de sujeito; possessive adjective acompanha um nome.',
     whyItMatters: 'Possessive adjectives são essenciais porque você usa isso para se apresentar, falar da família, dos objetos, do celular, da cidade, dos amigos e da rotina. Se você diz “I name is Luis”, o inglês fica errado porque I é sujeito, não posse. A lógica correta é “My name is Luis”: my acompanha name. Entender essa diferença evita muitos erros de brasileiro e prepara você para escrever apresentações e diálogos simples.',

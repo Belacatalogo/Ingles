@@ -16,6 +16,7 @@ export const A1_DEEP_GRAMMAR_FOUNDATIONS = Object.freeze([
     title: 'Subject pronouns',
     status,
     estimatedMinutes: 55,
+    tags: ['a1', 'grammar', 'subject-pronouns', 'i-you-he-she-it', 'sentence-building', 'beginner-foundation'],
     objectives: [
       'Entender por que o inglês precisa de sujeito claro na frase.',
       'Escolher corretamente I, you, he, she, it, we e they.',

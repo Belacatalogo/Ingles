@@ -12,13 +12,13 @@
 
 | Nível | Lições Ready | Horas Estudo | CEFR OK | Conteúdo OK | Problemas Críticos | Problemas Menores |
 |-------|-------------|-------------|---------|-------------|-------------------|-------------------|
-| A1    | 139         | 108.5h      | ✅      | ✅          | 0                 | 1 (tags ausentes em 146 lições — FASE 5) |
+| A1    | 139         | 108.5h      | ✅      | ✅          | 0                 | 0 (tags adicionadas — BLOCO-A1-TAGS-COMPLETION ✅) |
 | A2    | 122         | 122.0h      | ✅      | ✅          | 0                 | 0 |
 | B1    | 73          | 69.4h       | ✅      | ✅          | 0                 | 0 |
 | B2    | 83          | 90.8h       | ✅      | ✅          | 0                 | 0 (objectives corrigidos — FASE 2) |
 | C1    | 73          | 85.8h       | ✅      | ✅          | 0 (corrigido)     | 0 |
 | C2    | 42          | 53.3h       | ✅      | ✅          | 0 (corrigido)     | 0 |
-| **TOTAL** | **532** | **529.8h** | ✅  | ✅          | **0**             | 2 |
+| **TOTAL** | **532** | **529.8h** | ✅  | ✅          | **0**             | 1 (B2 ID gap R012/R013) |
 
 **Problemas críticos encontrados e corrigidos neste bloco:**
 - C1-CHECKPOINT-001: `schemaVersion` ausente → adicionado `'static-lesson-schema-v2-deep'` ✅ CORRIGIDO
@@ -50,7 +50,7 @@
 ### Problemas A1
 | Categoria | Severidade | Descrição | Ação |
 |-----------|-----------|-----------|------|
-| Tags ausentes | Baixa | 146 lições A1 (de 195 únicas) sem `tags`. Tags alimentam `transferTags → touchedMasteryTags` no SRS. Não bloqueia fluxo de estudo primário. | FASE 5 — não bloqueia estudo |
+| ~~Tags ausentes~~ | ~~Baixa~~ | ~~146 lições A1 sem `tags`~~ | ✅ **CORRIGIDO** — 139/139 lições A1 com tags (2026-05-18) |
 | Gap staticContent vs UI | Esperado | 139 staticContent vs 132 UI (7 checkpoints no sistema de mastery) | Correto por design |
 
 ---

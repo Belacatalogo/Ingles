@@ -43,10 +43,28 @@ const GRAMMAR_TOPICS = [
   [27, 'Grammar Checkpoint A1', 'complete A1 grammar review', ['checkpoint'], ['I am from Brazil.', 'She studies English.', 'There are books on the table.', 'Can you repeat, please?']],
 ];
 
+const GRAMMAR_TAGS = {
+  7:  ['a1', 'grammar', 'articles', 'a-an', 'noun-phrase', 'beginner-foundation'],
+  8:  ['a1', 'grammar', 'plural-nouns', 'regular-plurals', 'singular-plural', 'beginner-foundation'],
+  9:  ['a1', 'grammar', 'demonstratives', 'this-that', 'near-far', 'beginner-foundation'],
+  10: ['a1', 'grammar', 'existential-there', 'there-is-are', 'describing-place', 'beginner-foundation'],
+  11: ['a1', 'grammar', 'have-has', 'possession', 'third-person-s', 'beginner-foundation'],
+  12: ['a1', 'grammar', 'adjectives', 'descriptive', 'be-adjective', 'beginner-foundation'],
+  13: ['a1', 'grammar', 'word-order', 'svo-pattern', 'sentence-structure', 'beginner-foundation'],
+  15: ['a1', 'grammar', 'present-simple', 'third-person-s', 'he-she-it', 'beginner-foundation'],
+  16: ['a1', 'grammar', 'present-simple', 'negatives', 'do-not-does-not', 'beginner-foundation'],
+  17: ['a1', 'grammar', 'present-simple', 'questions', 'do-does', 'beginner-foundation'],
+  18: ['a1', 'grammar', 'adverbs-frequency', 'always-sometimes-never', 'routine-description', 'beginner-foundation'],
+  19: ['a1', 'grammar', 'prepositions-place', 'in-on-under', 'location', 'beginner-foundation'],
+  20: ['a1', 'grammar', 'prepositions-time', 'at-on-in', 'time-expressions', 'beginner-foundation'],
+  27: ['a1', 'grammar', 'checkpoint', 'review', 'gate-prep', 'beginner-foundation'],
+};
+
 function grammarLesson([n, title, pattern, chunks, examples]) {
   const baseExamples = examples.concat(chunks.map((chunk) => `Use ${chunk} in a simple sentence.`));
   return createGrammarLesson({
     id: id('GRAMMAR', n), level, order: n, title, status, estimatedMinutes: n >= 25 ? 55 : 45,
+    tags: GRAMMAR_TAGS[n],
     prerequisites: prereq('GRAMMAR', n), objectives: [`Entender ${title}.`, 'Usar a estrutura em frases A1 reais.', 'Corrigir erros comuns antes de produzir sozinho.'],
     explanationSections: [
       section('Abertura do professor', `Nesta aula vamos estudar ${title}. O objetivo é transformar a regra em uso prático: reconhecer, completar, corrigir e depois escrever frases próprias.`),
@@ -109,9 +127,21 @@ const VOCAB_TOPICS = [
   [19, 'Common verbs', ['be', 'have', 'do', 'go', 'come', 'want', 'need', 'like', 'know', 'think', 'say', 'ask', 'help', 'study', 'work']],
   [20, 'Review Vocabulary A1', ['name', 'country', 'family', 'job', 'object', 'color', 'day', 'time', 'routine', 'food', 'place', 'house', 'clothes', 'weather', 'feeling']],
 ];
+const VOCAB_TAGS = {
+  6:  ['a1', 'vocabulary', 'jobs', 'occupations', 'personal-information', 'beginner-foundation'],
+  7:  ['a1', 'vocabulary', 'classroom', 'objects', 'school-context', 'beginner-foundation'],
+  8:  ['a1', 'vocabulary', 'adjectives', 'descriptive', 'feelings-descriptions', 'beginner-foundation'],
+  9:  ['a1', 'vocabulary', 'colors', 'descriptive', 'adjective-use', 'beginner-foundation'],
+  10: ['a1', 'vocabulary', 'days-months', 'time-expressions', 'calendar', 'beginner-foundation'],
+  11: ['a1', 'vocabulary', 'time', 'expressions', 'daily-routine', 'beginner-foundation'],
+  17: ['a1', 'vocabulary', 'weather', 'descriptions', 'daily-context', 'beginner-foundation'],
+  18: ['a1', 'vocabulary', 'feelings', 'emotions', 'personal-state', 'beginner-foundation'],
+};
+
 function vocabularyLesson([n, title, words]) {
   return createVocabularyLesson({
     id: id('VOCABULARY', n), level, order: n, title, status, estimatedMinutes: n === 20 ? 45 : 30, prerequisites: prereq('VOCABULARY', n), objectives: [`Aprender vocabulário de ${title}.`, 'Reconhecer palavra, significado e uso em frase.', 'Criar frases próprias com palavras úteis.'], theme: title,
+    tags: VOCAB_TAGS[n],
     lexicalSets: [{ title: `${title} essencial`, items: words.slice(0, 10) }, { title: `${title} extra útil`, items: words.slice(10) }],
     pronunciationNotes: ['Repita cada palavra devagar.', 'Use a palavra dentro de uma frase curta.', 'Não memorize lista solta: associe palavra + exemplo.'],
     examples: words.slice(0, 12).map((word) => ({ text: `I use ${word} in a simple A1 sentence.`, translation: `Exemplo com ${word}.` })),
@@ -148,9 +178,24 @@ const READING_TOPICS = [
   [19, 'Reading Review A1', 'This review text has many A1 ideas. My name is Nina. I am from Brazil. I have a small family. I work in the morning and study at night. My house is near a market. I can speak slowly, read simple messages and write short sentences.'],
   [20, 'Reading Checkpoint A1', 'Welcome to the A1 reading checkpoint. Read carefully. Pedro is a student and a worker. He lives in Brazil with his family. On Monday, he studies grammar. On Tuesday, he practices listening. He likes English because it helps him at work and with new friends.'],
 ];
+const READING_TAGS = {
+  4:  ['a1', 'reading', 'classroom', 'description', 'scanning', 'beginner-comprehension'],
+  6:  ['a1', 'reading', 'message', 'informal-writing', 'social-context', 'beginner-comprehension'],
+  7:  ['a1', 'reading', 'email', 'formal-context', 'scanning', 'beginner-comprehension'],
+  9:  ['a1', 'reading', 'timetable', 'schedule', 'numbers-days', 'beginner-comprehension'],
+  11: ['a1', 'reading', 'profile', 'work-context', 'third-person', 'beginner-comprehension'],
+  12: ['a1', 'reading', 'weekend', 'plans', 'future-intentions', 'beginner-comprehension'],
+  13: ['a1', 'reading', 'names-numbers', 'scanning', 'specific-details', 'beginner-comprehension'],
+  16: ['a1', 'reading', 'main-idea', 'gist', 'strategy', 'reading-skills'],
+  17: ['a1', 'reading', 'detail', 'scanning', 'evidence', 'reading-skills'],
+  18: ['a1', 'reading', 'vocabulary-in-context', 'inference', 'meaning-clues', 'reading-skills'],
+  20: ['a1', 'reading', 'checkpoint', 'review', 'gate-prep', 'reading-skills'],
+};
+
 function readingLesson([n, title, text]) {
   return createReadingLesson({
     id: id('READING', n), level, order: n, title, status, estimatedMinutes: n >= 19 ? 45 : 35, prerequisites: prereq('READING', n), objectives: ['Ler pela ideia geral.', 'Encontrar detalhes explícitos.', 'Responder com evidência textual.'],
+    tags: READING_TAGS[n],
     preReading: ['Veja título, nomes e números.', 'Leia uma vez sem parar.', 'Depois procure evidências para responder.'], mainText: text,
     vocabulary: ['name', 'student', 'work', 'study', 'home', 'family', 'city', 'time', 'friend', 'English'].map((word) => ({ word, meaning: 'palavra útil do texto', example: `Find ${word} or a related idea in the text.` })),
     comprehensionQuestions: [q('Qual é a ideia geral do texto?', ['informação simples A1', 'história policial', 'texto técnico'], 'informação simples A1'), q('O texto tem nomes ou pessoas?', ['Sim', 'Não'], 'Sim'), q('O texto tem ações ou descrição?', ['Sim', 'Não'], 'Sim'), q('Há informação que pode ser provada no texto?', ['Sim', 'Não'], 'Sim'), q('O texto é adequado para iniciante?', ['Sim', 'Não'], 'Sim'), q('Você deve responder com evidência?', ['Sim', 'Não'], 'Sim')],
@@ -176,9 +221,22 @@ const LISTENING_TOPICS = [
   [17, 'Listening Review A1', 'This is a review. I am from Brazil. I study English every day. My family is small. I can speak slowly.'],
   [18, 'Listening Checkpoint A1', 'Checkpoint audio. Listen carefully. Ana works in the morning, studies at night and visits her family on Sunday.'],
 ];
+const LISTENING_TAGS = {
+  5:  ['a1', 'listening', 'instructions', 'classroom', 'imperative-commands', 'beginner-comprehension'],
+  6:  ['a1', 'listening', 'family', 'introductions', 'personal-information', 'beginner-comprehension'],
+  8:  ['a1', 'listening', 'time', 'schedules', 'numbers-time', 'beginner-comprehension'],
+  11: ['a1', 'listening', 'directions', 'places', 'spatial-language', 'beginner-comprehension'],
+  13: ['a1', 'listening', 'conversations', 'greetings', 'social-interaction', 'beginner-comprehension'],
+  14: ['a1', 'listening', 'names', 'identification', 'specific-information', 'listening-skills'],
+  15: ['a1', 'listening', 'numbers', 'phone-numbers', 'specific-information', 'listening-skills'],
+  16: ['a1', 'listening', 'places', 'location', 'specific-information', 'listening-skills'],
+  18: ['a1', 'listening', 'checkpoint', 'review', 'gate-prep', 'listening-skills'],
+};
+
 function listeningLesson([n, title, script]) {
   return createListeningLesson({
     id: id('LISTENING', n), level, order: n, title, status, estimatedMinutes: n >= 17 ? 45 : 30, prerequisites: prereq('LISTENING', n), objectives: ['Ouvir primeiro sem texto.', 'Identificar palavras-chave.', 'Repetir frases curtas com clareza.'],
+    tags: LISTENING_TAGS[n],
     audioScript: script, transcript: script,
     firstListenTasks: ['Ouça sem ler e identifique o tema.', 'Anote uma palavra conhecida.'].map((instruction) => ({ instruction })),
     secondListenTasks: ['Identifique pessoa, lugar ou ação.', 'Ouça de novo e confirme detalhes.', 'Compare com o transcript depois.'].map((instruction) => ({ instruction })),
@@ -205,9 +263,22 @@ const SPEAKING_TOPICS = [
   [17, 'Speaking Review A1', ['Hello, my name is Luis.', 'I am from Brazil.', 'I study English every day.', 'Nice to meet you.']],
   [18, 'Speaking Checkpoint A1', ['I can introduce myself.', 'I can ask simple questions.', 'I can talk about routine.', 'I can speak slowly.']],
 ];
+const SPEAKING_TAGS = {
+  5:  ['a1', 'speaking', 'family', 'descriptions', 'controlled-production', 'beginner-output'],
+  6:  ['a1', 'speaking', 'job-study', 'personal-information', 'self-description', 'beginner-output'],
+  7:  ['a1', 'speaking', 'self-description', 'adjectives', 'personal-information', 'beginner-output'],
+  8:  ['a1', 'speaking', 'preferences', 'like-dislike', 'personal-expression', 'beginner-output'],
+  9:  ['a1', 'speaking', 'questions', 'interaction', 'social-communication', 'beginner-output'],
+  10: ['a1', 'speaking', 'short-answers', 'yes-no-responses', 'social-communication', 'beginner-output'],
+  12: ['a1', 'speaking', 'time', 'schedules', 'routine-description', 'beginner-output'],
+  16: ['a1', 'speaking', 'fluency', 'self-introduction', 'spontaneous-production', 'beginner-output'],
+  18: ['a1', 'speaking', 'checkpoint', 'review', 'gate-prep', 'beginner-output'],
+};
+
 function speakingLesson([n, title, phrases]) {
   return createSpeakingLesson({
     id: id('SPEAKING', n), level, order: n, title, status, estimatedMinutes: n >= 17 ? 45 : 30, prerequisites: prereq('SPEAKING', n), objectives: ['Falar frases A1 com clareza.', 'Usar modelo antes da fala livre.', 'Gravar uma resposta curta.'],
+    tags: SPEAKING_TAGS[n],
     modelPhrases: phrases,
     substitutionDrills: phrases.map((phrase) => ({ instruction: `${phrase} → troque uma informação e repita.` })),
     pronunciationFocus: { title: 'Clareza antes de velocidade', tips: ['Fale devagar.', 'Pausa entre frases.', 'Repita o modelo 3 vezes.', 'Não traduza enquanto fala.'] },
@@ -233,9 +304,19 @@ const WRITING_TOPICS = [
   [15, 'Writing Review A1', 'My name is Luis. I am from Brazil. I work in the morning and study at night. I like English because it is useful.'],
   [16, 'Writing Checkpoint A1', 'Hello. My name is Luis. I am from Brazil. I have a small family. I work and study. I can write simple sentences in English.'],
 ];
+const WRITING_TAGS = {
+  5:  ['a1', 'writing', 'job-study', 'personal-information', 'sentence-writing', 'beginner-output'],
+  7:  ['a1', 'writing', 'preferences', 'like-dislike', 'personal-expression', 'beginner-output'],
+  9:  ['a1', 'writing', 'email', 'formal-context', 'guided-writing', 'beginner-output'],
+  11: ['a1', 'writing', 'weekend', 'plans', 'guided-writing', 'beginner-output'],
+  13: ['a1', 'writing', 'punctuation', 'capitalization', 'accuracy', 'writing-skills'],
+  16: ['a1', 'writing', 'checkpoint', 'review', 'gate-prep', 'writing-skills'],
+};
+
 function writingLesson([n, title, model]) {
   return createWritingLesson({
     id: id('WRITING', n), level, order: n, title, status, estimatedMinutes: n >= 15 ? 45 : 35, prerequisites: prereq('WRITING', n), objectives: ['Usar modelo antes de escrever sozinho.', 'Escrever frases curtas com ordem correta.', 'Revisar pontuação, maiúsculas e estrutura.'],
+    tags: WRITING_TAGS[n],
     modelText: model,
     writingBlocks: ['My name is...', 'I am from...', 'I live in...', 'I have...', 'I like...', 'I work...', 'I study...', 'because it is useful.', 'Thank you.', 'See you soon.'],
     guidedSubstitution: ['Luis → Ana', 'Brazil → Canada', 'student → worker', 'morning → evening', 'small → big', 'English → Spanish'].map((instruction) => ({ instruction })),
