@@ -11,6 +11,7 @@ on:
         options:
           - full
           - smart
+          - all_lessons
   push:
     branches:
       - main
@@ -32,7 +33,7 @@ jobs:
   quality-director:
     name: Quality Director Audit
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.audit_mode == 'all_lessons' && 90 || 20 }}
 
     defaults:
       run:
@@ -64,7 +65,9 @@ jobs:
       - name: Select Quality Director suites
         id: select_suites
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ github.event.inputs.audit_mode }}" = "full" ]; then
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ github.event.inputs.audit_mode }}" = "all_lessons" ]; then
+            node scripts/quality-director/select-suites.mjs --all-lessons
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ github.event.inputs.audit_mode }}" = "full" ]; then
             node scripts/quality-director/select-suites.mjs --full
           else
             node scripts/quality-director/select-suites.mjs
@@ -77,6 +80,8 @@ jobs:
           cat audit-results/quality-director-suite-selection.txt
 
       - name: Run Quality Director
+        env:
+          QUALITY_DIRECTOR_ALL_LESSONS_STEPS: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.audit_mode == 'all_lessons' && '2' || '' }}
         run: npx playwright test ${{ steps.select_suites.outputs.suites }}
 
       - name: Publish latest Quality Director report
