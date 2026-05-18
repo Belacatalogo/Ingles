@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { AccessGate } from './components/auth/AccessGate.jsx';
 import { BottomNav } from './components/layout/BottomNav.jsx';
 import { DiagnosticPanel } from './components/system/DiagnosticPanel.jsx';
+import { useScrollToTopOnChange } from './hooks/useScrollToTopOnChange.js';
 import { TodayScreen } from './screens/TodayScreen.jsx';
 import { CourseScreen } from './screens/CourseScreen.jsx';
 import { LessonScreen } from './screens/LessonScreen.jsx';
@@ -29,6 +30,8 @@ function AppContent() {
   const current = useMemo(() => tabs.find((tab) => tab.id === activeTab) ?? tabs[0], [activeTab]);
   const progress = useMemo(() => getProgressSummary(), [lessonRevision, activeTab]);
   const Screen = current.component;
+
+  useScrollToTopOnChange(activeTab);
 
   useEffect(() => {
     function handleLessonUpdated() {
