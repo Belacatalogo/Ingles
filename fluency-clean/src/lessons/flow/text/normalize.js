@@ -1,5 +1,5 @@
 // Normalização endurecida para o renderizador por pilar.
-// Regras (BLOCO 20A):
+// Regras:
 // - nunca exibir chaves técnicas (subject, expected, answer, schemaVersion, etc.);
 // - nunca exibir [object Object];
 // - expectedOf nunca aparece antes da tentativa — quem decide isso é a fase, não este módulo.
@@ -16,7 +16,11 @@ const TECHNICAL_WORDS = new Set([
 ]);
 
 export function clean(value) {
-  return String(value ?? '').trim();
+  if (value === null || value === undefined) return '';
+  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') return String(value).trim();
+  if (Array.isArray(value)) return value.map(textOf).filter(Boolean).join('\n');
+  if (typeof value === 'object') return textOf(value) || noteOf(value) || '';
+  return String(value).trim();
 }
 
 export function isTechnicalText(value) {
@@ -46,12 +50,13 @@ function objectFallback(value) {
 
 export function textOf(value) {
   if (typeof value === 'string' || typeof value === 'number') {
-    return hasText(value) ? clean(value) : '';
+    return hasText(value) ? String(value).trim() : '';
   }
   if (!value || typeof value !== 'object') return '';
   return firstUseful(
     value.instruction, value.question, value.prompt, value.text, value.content,
-    value.chunk, value.word, value.phrase, value.example, value.english,
+    value.summary, value.description, value.chunk, value.word, value.phrase,
+    value.example, value.english, value.sentence, value.line, value.value,
     value.pattern, value.title, value.label,
     objectFallback(value),
   );
