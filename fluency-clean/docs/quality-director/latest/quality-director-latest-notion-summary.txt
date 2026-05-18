@@ -1,8 +1,8 @@
-Status: Crítico
-Nota geral: 0/100
-Relatórios: 3
-Checks: 1001
-Issues únicas: 3891 (brutas=3959, agrupadas=68)
-Severidade: P0=4, P1=2076, P2=1811, P3=0
-Direção: Corrigir P0 confirmados antes de continuar evolução visual/pedagógica.
-Top issues: P0 iPhone SE · Todas as aulas · B1-SPEAKING-004 · etapa 1 — Objeto bruto apareceu para o aluno | P0 iPhone SE · Todas as aulas · B1-SPEAKING-005 · etapa 1 — Objeto bruto apareceu para o aluno | P0 iPhone SE · Todas as aulas · B1-SPEAKING-006 · etapa 1 — Objeto bruto apareceu para o aluno | P0 iPhone SE · Todas as aulas · B1-SPEAKING-007 · etapa 1 — Objeto bruto apareceu para o aluno | P1 Exercício · A1-GRAMMAR-001 — Mais de uma alternativa parece correta
+Status: Saudável
+Nota geral: 100/100
+Relatórios: 1
+Checks: 0
+Issues únicas: 0 (brutas=0, agrupadas=0)
+Severidade: P0=0, P1=0, P2=0, P3=0
+Direção: Sem P0/P1 no relatório atual. Foco em P2/P3 e evolução do próximo bloco.
+Top issues: nenhuma
