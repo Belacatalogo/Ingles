@@ -8,9 +8,16 @@ on:
     paths:
       - 'fluency-clean/src/**'
       - 'fluency-clean/e2e/quality-director/**'
+      - 'fluency-clean/scripts/**'
       - 'fluency-clean/playwright.config.js'
       - 'fluency-clean/package.json'
       - 'fluency-clean/package-lock.json'
+
+permissions:
+  contents: write
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   quality-director:
@@ -25,6 +32,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          persist-credentials: true
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -45,6 +54,24 @@ jobs:
       - name: Run Quality Director
         run: npm run test:quality-director
 
+      - name: Publish latest Quality Director report
+        if: always()
+        run: npm run quality-director:publish-latest
+
+      - name: Commit latest Quality Director report
+        if: always() && github.event_name != 'push'
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add fluency-clean/docs/quality-director/latest/quality-director-latest.md fluency-clean/docs/quality-director/latest/quality-director-latest.json
+          if git diff --cached --quiet; then
+            echo "No Quality Director latest report changes to commit."
+          else
+            git commit -m "test: update quality director latest report [skip actions]"
+            git push
+          fi
+        working-directory: .
+
       - name: Upload Quality Director artifacts
         if: always()
         uses: actions/upload-artifact@v4
@@ -54,5 +81,6 @@ jobs:
             fluency-clean/audit-results/
             fluency-clean/playwright-report/
             fluency-clean/test-results/
+            fluency-clean/docs/quality-director/latest/
           if-no-files-found: warn
           retention-days: 14
