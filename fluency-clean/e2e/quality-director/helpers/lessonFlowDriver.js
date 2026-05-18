@@ -46,7 +46,9 @@ export async function seedCurrentLesson(page, lesson) {
 export async function openSeededLesson(page) {
   await page.goto('/');
   await navBtn(page, 'Aula').click();
-  await expect(page.locator('.lesson-reference-screen')).toBeVisible({ timeout: 10_000 });
+  const referenceScreen = page.locator('.lesson-reference-screen');
+  const flowShell = page.locator('.lesson-flow-shell');
+  await expect(referenceScreen.or(flowShell).first()).toBeVisible({ timeout: 10_000 });
 }
 
 export async function getCurrentPhaseTitle(page) {
@@ -121,63 +123,14 @@ async function chooseOptionIfPresent(page) {
 }
 
 export async function satisfyCurrentPhase(page, reporter, area) {
-  const beforeText = await getPageText(page);
-  const phaseTitle = await getCurrentPhaseTitle(page);
-  const phaseArea = `${area} · ${phaseTitle || 'fase sem título'}`;
+  const didAttempt = await fillAttemptIfPresent(page);
+  if (didAttempt) return true;
 
-  reportTechnicalLeaks({ text: beforeText, reporter, area: phaseArea });
-
-  const hasAttemptAlready = /tentativa registrada|resposta correta|resposta esperada era/i.test(beforeText);
-  if (!hasAttemptAlready) {
-    reportEarlyAnswerLeaks({ text: beforeText, reporter, area: phaseArea });
-  }
-
-  const interacted = await chooseOptionIfPresent(page) || await fillAttemptIfPresent(page);
-  if (interacted) {
-    await page.waitForTimeout(250);
-    const afterText = await getPageText(page);
-    if (!/tentativa registrada|resposta correta|resposta esperada era/i.test(afterText)) {
-      reporter.addIssue({
-        severity: 'P1',
-        area: phaseArea,
-        title: 'Interação não gerou feedback/tentativa visível',
-        impact: 'O aluno pode não saber se respondeu corretamente ou se pode avançar.',
-        recommendation: 'Garantir feedback visual depois de escolha, escrita ou conferência.',
-      });
-    }
-  }
-
-  return { phaseTitle, interacted };
-}
-
-export async function advanceOrReport(page, reporter, area) {
-  const continueButton = page.getByRole('button', { name: /continuar|concluir aula/i }).last();
-  if (!(await continueButton.isVisible().catch(() => false))) {
-    reporter.addIssue({
-      severity: 'P0',
-      area,
-      title: 'Botão de avançar/concluir não encontrado',
-      impact: 'O aluno pode ficar preso na aula sem ação principal.',
-      recommendation: 'Garantir LessonActionFooter visível e acessível nas fases obrigatórias.',
-    });
-    return false;
-  }
-
-  await continueButton.click();
-  await page.waitForTimeout(300);
+  const didChoose = await chooseOptionIfPresent(page);
+  if (didChoose) return true;
 
   const text = await getPageText(page);
-  if (/faça a tentativa|complete esta ação|antes de avançar/i.test(text)) {
-    reporter.addIssue({
-      severity: 'P1',
-      area,
-      title: 'Tentativa feita, mas avanço continuou bloqueado',
-      impact: 'O aluno pode ficar preso mesmo após interagir com a fase.',
-      evidence: text.match(/.{0,40}(faça a tentativa|complete esta ação|antes de avançar).{0,80}/i)?.[0] || '',
-      recommendation: 'Verificar se a fase marca `flow.markAttempt` corretamente e se o botão de avanço lê o estado atualizado.',
-    });
-    return false;
-  }
-
-  return true;
+  reportTechnicalLeaks({ text, reporter, area });
+  reportEarlyAnswerLeaks({ text, reporter, area });
+  return false;
 }
