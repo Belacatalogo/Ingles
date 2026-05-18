@@ -1,11 +1,15 @@
 import fs from 'node:fs';
 import { execSync } from 'node:child_process';
 
+const EXPLORATORY_STUDENT_AUDIT = 'e2e/quality-director/exploratory-student-audit.spec.js';
+const REAL_STUDENT_REGRESSION = 'e2e/quality-director/real-student-regression.audit.spec.js';
+
 const FULL_SUITES = [
   'e2e/quality-director/navigation.audit.spec.js',
+  EXPLORATORY_STUDENT_AUDIT,
   'e2e/quality-director/lesson-quality.audit.spec.js',
   'e2e/quality-director/student-journey.audit.spec.js',
-  'e2e/quality-director/real-student-regression.audit.spec.js',
+  REAL_STUDENT_REGRESSION,
   'e2e/quality-director/exercise-quality.audit.spec.js',
   'e2e/quality-director/pillar-quality.audit.spec.js',
   'e2e/quality-director/visual-mobile.audit.spec.js',
@@ -17,9 +21,8 @@ const FULL_SUITES = [
 
 const ALWAYS_SMOKE = [
   'e2e/quality-director/navigation.audit.spec.js',
+  EXPLORATORY_STUDENT_AUDIT,
 ];
-
-const REAL_STUDENT_REGRESSION = 'e2e/quality-director/real-student-regression.audit.spec.js';
 
 const ROUTES = [
   {
@@ -32,6 +35,7 @@ const ROUTES = [
     label: 'curriculum-content',
     match: [/^fluency-clean\/src\/content\/curriculum\//],
     suites: [
+      EXPLORATORY_STUDENT_AUDIT,
       'e2e/quality-director/lesson-quality.audit.spec.js',
       'e2e/quality-director/exercise-quality.audit.spec.js',
       'e2e/quality-director/pillar-quality.audit.spec.js',
@@ -39,51 +43,55 @@ const ROUTES = [
       'e2e/quality-director/student-journey.audit.spec.js',
       REAL_STUDENT_REGRESSION,
     ],
-    reason: 'Mudança em conteúdo/currículo: audita aulas, exercícios, pilares, CEFR, jornada e regressão real do aluno.',
+    reason: 'Mudança em conteúdo/currículo: audita exploratório, aulas, exercícios, pilares, CEFR, jornada e regressão real do aluno.',
   },
   {
     label: 'lesson-flow',
     match: [/^fluency-clean\/src\/lessons\/flow\//, /^fluency-clean\/src\/screens\/LessonScreen\.jsx$/],
     suites: [
+      EXPLORATORY_STUDENT_AUDIT,
       'e2e/quality-director/student-journey.audit.spec.js',
       REAL_STUDENT_REGRESSION,
       'e2e/quality-director/exercise-quality.audit.spec.js',
       'e2e/quality-director/visual-mobile.audit.spec.js',
       'e2e/quality-director/a11y-performance.audit.spec.js',
     ],
-    reason: 'Mudança no fluxo de aula: audita jornada, regressão real, exercícios, visual e acessibilidade.',
+    reason: 'Mudança no fluxo de aula: audita exploratório, jornada, regressão real, exercícios, visual e acessibilidade.',
   },
   {
     label: 'progress-mastery',
     match: [/^fluency-clean\/src\/services\/(progressStore|masteryStore|masteryGate|lessonProgression|staticLessonProgress|curriculumPlan)\.js$/],
     suites: [
+      EXPLORATORY_STUDENT_AUDIT,
       'e2e/quality-director/progress-mastery.audit.spec.js',
       'e2e/quality-director/student-journey.audit.spec.js',
       REAL_STUDENT_REGRESSION,
     ],
-    reason: 'Mudança em progresso/mastery/gates: audita persistência, jornada e regressão real.',
+    reason: 'Mudança em progresso/mastery/gates: audita exploratório, persistência, jornada e regressão real.',
   },
   {
     label: 'storage-empty-states',
     match: [/^fluency-clean\/src\/services\/(storage|diagnostics|firebase|auth).*\.js$/],
     suites: [
+      EXPLORATORY_STUDENT_AUDIT,
       'e2e/quality-director/empty-states-security.audit.spec.js',
       'e2e/quality-director/navigation.audit.spec.js',
       REAL_STUDENT_REGRESSION,
     ],
-    reason: 'Mudança em storage/infra cliente: audita estados vazios, navegação e regressão real.',
+    reason: 'Mudança em storage/infra cliente: audita exploratório, estados vazios, navegação e regressão real.',
   },
   {
     label: 'styles-ui',
     match: [/^fluency-clean\/src\/styles\//, /^fluency-clean\/src\/.*\.css$/, /^fluency-clean\/src\/components\/layout\//, /^fluency-clean\/src\/components\//, /^fluency-clean\/src\/screens\//],
     suites: [
       'e2e/quality-director/navigation.audit.spec.js',
+      EXPLORATORY_STUDENT_AUDIT,
       REAL_STUDENT_REGRESSION,
       'e2e/quality-director/visual-mobile.audit.spec.js',
       'e2e/quality-director/a11y-performance.audit.spec.js',
       'e2e/quality-director/empty-states-security.audit.spec.js',
     ],
-    reason: 'Mudança visual/UI: audita navegação, regressão real, visual mobile, acessibilidade e estados vazios.',
+    reason: 'Mudança visual/UI: audita navegação, exploratório, regressão real, visual mobile, acessibilidade e estados vazios.',
   },
   {
     label: 'package-config',
@@ -168,8 +176,8 @@ function routeChangedFiles(files, mode) {
   }
 
   if (matchedRoutes.length === 0) {
-    reasons.push('Nenhuma rota específica encontrada: roda smoke de navegação.');
-    matchedRoutes.push('smoke-only');
+    reasons.push('Nenhuma rota específica encontrada: roda smoke + exploratório de experiência do aluno.');
+    matchedRoutes.push('smoke-exploratory');
   }
 
   return {
