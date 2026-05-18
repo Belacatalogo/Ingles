@@ -1,6 +1,6 @@
 # Fluency Quality Director — Relatório Executivo Latest
 
-Gerado em: 2026-05-18T18:56:31.221Z
+Gerado em: 2026-05-18T19:07:42.834Z
 
 ## Veredito
 
@@ -12,386 +12,430 @@ Gerado em: 2026-05-18T18:56:31.221Z
 
 - Relatórios consolidados: 21
 - Checks executados: 3256
-- Problemas encontrados: 4995
-- P0: 32
-- P1: 1990
-- P2: 2973
+- Problemas únicos: 2748
+- Problemas brutos antes de deduplicar: 5259
+- Duplicatas agrupadas: 2511
+- P0: 3
+- P1: 1158
+- P2: 1587
 - P3: 0
 
 ## Notas por área
 
 | Área | Nota | Status | P0 | P1 | P2 | P3 |
 |---|---:|---|---:|---:|---:|---:|
-| Navegação e estabilidade | 0 | Revisar antes de confiar | 0 | 35 | 162 | 0 |
-| Jornada real do aluno | 0 | Revisar antes de confiar | 0 | 9 | 57 | 0 |
-| Aulas e pedagogia | 0 | Crítico | 32 | 1946 | 2746 | 0 |
-| Exercícios e alternativas | 100 | Saudável | 0 | 0 | 0 | 0 |
+| Navegação e estabilidade | 0 | Revisar antes de confiar | 0 | 35 | 152 | 0 |
+| Jornada real do aluno | 0 | Revisar antes de confiar | 0 | 6 | 57 | 0 |
+| Exercícios e alternativas | 0 | Crítico | 3 | 477 | 730 | 0 |
+| Aulas e pedagogia | 0 | Revisar antes de confiar | 0 | 640 | 644 | 0 |
 | Visual e mobile | 100 | Saudável | 0 | 0 | 0 | 0 |
 | Progresso, XP e mastery | 100 | Saudável | 0 | 0 | 0 | 0 |
 | Estados vazios e segurança visual | 100 | Saudável | 0 | 0 | 0 | 0 |
-| Currículo e CEFR | 52 | Precisa revisão | 0 | 0 | 8 | 0 |
+| Currículo e CEFR | 94 | Saudável | 0 | 0 | 4 | 0 |
 | Acessibilidade e performance | 100 | Saudável | 0 | 0 | 0 | 0 |
 
 ## Relatórios consolidados
 
-| Relatório | Projeto | Nota | Checks | Issues | P0 | P1 | P2 | P3 |
-|---|---|---:|---:|---:|---:|---:|---:|---:|
-| quality-director-a11y-performance | iPhone 13 | 94 | 27 | 1 | 0 | 0 | 1 | 0 |
-| quality-director-a11y-performance | iPhone SE | 94 | 27 | 1 | 0 | 0 | 1 | 0 |
-| quality-director-curriculum-consistency | iPhone 13 | 0 | 7 | 456 | 0 | 9 | 447 | 0 |
-| quality-director-curriculum-consistency | iPhone SE | 0 | 7 | 456 | 0 | 9 | 447 | 0 |
-| quality-director-empty-states-security | iPhone 13 | 0 | 56 | 76 | 0 | 12 | 64 | 0 |
-| quality-director-empty-states-security | iPhone SE | 0 | 56 | 80 | 0 | 16 | 64 | 0 |
-| quality-director-exercise-quality | iPhone 13 | 0 | 501 | 960 | 16 | 305 | 639 | 0 |
-| quality-director-exercise-quality | iPhone SE | 0 | 501 | 960 | 16 | 305 | 639 | 0 |
-| quality-director-lesson-quality | iPhone 13 | 0 | 500 | 137 | 0 | 47 | 90 | 0 |
-| quality-director-lesson-quality | iPhone SE | 0 | 500 | 137 | 0 | 47 | 90 | 0 |
-| quality-director-navigation | iPhone 13 | 100 | 13 | 0 | 0 | 0 | 0 | 0 |
-| quality-director-navigation | iPhone SE | 100 | 13 | 0 | 0 | 0 | 0 | 0 |
-| quality-director-pillar-quality | iPhone 13 | 0 | 506 | 813 | 0 | 612 | 201 | 0 |
-| quality-director-pillar-quality | iPhone SE | 0 | 506 | 813 | 0 | 612 | 201 | 0 |
-| quality-director-progress-mastery | iPhone 13 | 100 | 1 | 0 | 0 | 0 | 0 | 0 |
-| quality-director-progress-mastery | iPhone SE | 100 | 1 | 0 | 0 | 0 | 0 | 0 |
-| quality-director-student-journey | iPhone 13 | 76 | 6 | 2 | 0 | 2 | 0 | 0 |
-| quality-director-student-journey | iPhone SE | 76 | 6 | 2 | 0 | 2 | 0 | 0 |
-|  |  | - | 0 | 0 | 0 | 0 | 0 | 0 |
-| quality-director-visual-mobile | iPhone 13 | 0 | 11 | 49 | 0 | 5 | 44 | 0 |
-| quality-director-visual-mobile | iPhone SE | 0 | 11 | 52 | 0 | 7 | 45 | 0 |
+| Relatório | Projeto | Nota | Checks | Issues únicas | Issues brutas | P0 | P1 | P2 | P3 |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| quality-director-a11y-performance | iPhone 13 | 99 | 27 | 1 | 1 | 0 | 0 | 1 | 0 |
+| quality-director-a11y-performance | iPhone SE | 99 | 27 | 1 | 1 | 0 | 0 | 1 | 0 |
+| quality-director-curriculum-consistency | iPhone 13 | 0 | 7 | 456 | 456 | 0 | 9 | 447 | 0 |
+| quality-director-curriculum-consistency | iPhone SE | 0 | 7 | 456 | 456 | 0 | 9 | 447 | 0 |
+| quality-director-empty-states-security | iPhone 13 | 0 | 56 | 72 | 76 | 0 | 12 | 60 | 0 |
+| quality-director-empty-states-security | iPhone SE | 0 | 56 | 76 | 80 | 0 | 16 | 60 | 0 |
+| quality-director-exercise-quality | iPhone 13 | 0 | 501 | 1092 | 1092 | 3 | 449 | 640 | 0 |
+| quality-director-exercise-quality | iPhone SE | 0 | 501 | 1092 | 1092 | 3 | 449 | 640 | 0 |
+| quality-director-lesson-quality | iPhone 13 | 0 | 500 | 137 | 137 | 0 | 47 | 90 | 0 |
+| quality-director-lesson-quality | iPhone SE | 0 | 500 | 137 | 137 | 0 | 47 | 90 | 0 |
+| quality-director-navigation | iPhone 13 | 100 | 13 | 0 | 0 | 0 | 0 | 0 | 0 |
+| quality-director-navigation | iPhone SE | 100 | 13 | 0 | 0 | 0 | 0 | 0 | 0 |
+| quality-director-pillar-quality | iPhone 13 | 0 | 506 | 813 | 813 | 0 | 612 | 201 | 0 |
+| quality-director-pillar-quality | iPhone SE | 0 | 506 | 813 | 813 | 0 | 612 | 201 | 0 |
+| quality-director-progress-mastery | iPhone 13 | 100 | 1 | 0 | 0 | 0 | 0 | 0 | 0 |
+| quality-director-progress-mastery | iPhone SE | 100 | 1 | 0 | 0 | 0 | 0 | 0 | 0 |
+| quality-director-student-journey | iPhone 13 | 90 | 6 | 2 | 2 | 0 | 2 | 0 | 0 |
+| quality-director-student-journey | iPhone SE | 90 | 6 | 2 | 2 | 0 | 2 | 0 | 0 |
+|  |  | 100 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| quality-director-visual-mobile | iPhone 13 | 23 | 11 | 48 | 49 | 0 | 5 | 43 | 0 |
+| quality-director-visual-mobile | iPhone SE | 12 | 11 | 51 | 52 | 0 | 7 | 44 | 0 |
 
 ## Plano de ação
 
-**Direção:** Corrigir P0 antes de continuar evolução visual/pedagógica.
+**Direção:** Corrigir P0 confirmados antes de continuar evolução visual/pedagógica.
 
 ### Ações imediatas
 
-1. **P0 · Exercício · A1-READING-010 — Resposta correta não aparece nas alternativas**
+1. **P0 · Exercício · A2-READING-006 — Resposta correta não aparece nas alternativas**
+   - Ocorrências agrupadas: 2
    - Ação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-2. **P0 · Exercício · A2-READING-003 — Resposta correta não aparece nas alternativas**
+2. **P0 · Exercício · A2-READING-020 — Resposta correta não aparece nas alternativas**
+   - Ocorrências agrupadas: 2
    - Ação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-3. **P0 · Exercício · A2-READING-006 — Resposta correta não aparece nas alternativas**
-   - Ação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-4. **P0 · Exercício · A2-READING-010 — Resposta correta não aparece nas alternativas**
-   - Ação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-5. **P0 · Exercício · A2-READING-011 — Resposta correta não aparece nas alternativas**
-   - Ação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-6. **P0 · Exercício · A2-READING-012 — Resposta correta não aparece nas alternativas**
-   - Ação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-7. **P0 · Exercício · A2-READING-014 — Resposta correta não aparece nas alternativas**
-   - Ação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-8. **P0 · Exercício · A2-READING-014 — Resposta correta não aparece nas alternativas**
+3. **P0 · Exercício · A2-LISTENING-015 — Resposta correta não aparece nas alternativas**
+   - Ocorrências agrupadas: 2
    - Ação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
 
 ### Próximas ações
 
 1. **P1 · Pilar grammar · A1 — Ordens duplicadas no pilar**
+   - Ocorrências agrupadas: 2
    - Ação: Garantir order único e crescente por pilar.
 2. **P1 · Currículo · A1 · grammar · A1-PERSONAL-GRAMMAR-001 — ID da aula não segue padrão esperado do pilar**
+   - Ocorrências agrupadas: 2
    - Ação: Padronizar IDs como LEVEL-PILLAR-001.
 3. **P1 · Currículo · A1 · vocabulary · A1-VOCABULARY-006 — Aula sem título forte**
+   - Ocorrências agrupadas: 2
    - Ação: Adicionar título claro e específico.
 4. **P1 · Currículo · A1 · vocabulary · A1-VOCABULARY-011 — Aula sem título forte**
+   - Ocorrências agrupadas: 2
    - Ação: Adicionar título claro e específico.
 5. **P1 · Currículo · A1 · vocabulary · A1-PERSONAL-VOCABULARY-001 — ID da aula não segue padrão esperado do pilar**
+   - Ocorrências agrupadas: 2
    - Ação: Padronizar IDs como LEVEL-PILLAR-001.
 6. **P1 · Currículo · A1 · reading · A1-PERSONAL-READING-001 — ID da aula não segue padrão esperado do pilar**
+   - Ocorrências agrupadas: 2
    - Ação: Padronizar IDs como LEVEL-PILLAR-001.
 7. **P1 · Currículo · A1 · listening · A1-PERSONAL-LISTENING-001 — ID da aula não segue padrão esperado do pilar**
+   - Ocorrências agrupadas: 2
    - Ação: Padronizar IDs como LEVEL-PILLAR-001.
 8. **P1 · Currículo · A1 · speaking · A1-PERSONAL-SPEAKING-001 — ID da aula não segue padrão esperado do pilar**
+   - Ocorrências agrupadas: 2
    - Ação: Padronizar IDs como LEVEL-PILLAR-001.
 9. **P1 · Currículo · A1 · writing · A1-PERSONAL-WRITING-001 — ID da aula não segue padrão esperado do pilar**
+   - Ocorrências agrupadas: 2
    - Ação: Padronizar IDs como LEVEL-PILLAR-001.
-10. **P1 · Pilar grammar · A1 — Ordens duplicadas no pilar**
-   - Ação: Garantir order único e crescente por pilar.
-11. **P1 · Currículo · A1 · grammar · A1-PERSONAL-GRAMMAR-001 — ID da aula não segue padrão esperado do pilar**
-   - Ação: Padronizar IDs como LEVEL-PILLAR-001.
-12. **P1 · Currículo · A1 · vocabulary · A1-VOCABULARY-006 — Aula sem título forte**
-   - Ação: Adicionar título claro e específico.
+10. **P1 · iPhone 13 · Instalação limpa sem dados · Aba Hoje — Elemento interativo sobreposto pela bottom nav**
+   - Ação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável.
+11. **P1 · iPhone 13 · Instalação limpa sem dados · Aba Cartas — Elemento interativo sobreposto pela bottom nav**
+   - Ação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável.
+12. **P1 · iPhone 13 · Instalação limpa sem dados · Aba Ajustes — Elemento interativo sobreposto pela bottom nav**
+   - Ação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável.
 
 ## Principais problemas
 
-1. **P0 · Exercício · A1-READING-010 — Resposta correta não aparece nas alternativas**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-exercise-quality / iPhone 13
-   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
-   - Evidência: lesson.evidenceQuestions[2]: resposta=a bed, a desk, and a small lamp; opções=a bed, a desk, and a lamp | a sofa and chairs | a TV and table
-   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-
-2. **P0 · Exercício · A2-READING-003 — Resposta correta não aparece nas alternativas**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-exercise-quality / iPhone 13
-   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
-   - Evidência: lesson.evidenceQuestions[4]: resposta=because she had heavy luggage and wanted a room near the elevator; opções=heavy luggage and room near elevator | lost ticket | late train
-   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-
-3. **P0 · Exercício · A2-READING-006 — Resposta correta não aparece nas alternativas**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-exercise-quality / iPhone 13
+1. **P0 · Exercício · A2-READING-006 — Resposta correta não aparece nas alternativas**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
    - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
    - Evidência: lesson.evidenceQuestions[4]: resposta=if they have a fever or feel worse tomorrow; opções=if fever or worse | if hungry | if better
    - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
 
-4. **P0 · Exercício · A2-READING-010 — Resposta correta não aparece nas alternativas**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-exercise-quality / iPhone 13
-   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
-   - Evidência: lesson.evidenceQuestions[3]: resposta=restarted the phone and checked internet; opções=restarted and checked internet | updated app | changed password
-   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-
-5. **P0 · Exercício · A2-READING-011 — Resposta correta não aparece nas alternativas**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-exercise-quality / iPhone 13
-   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
-   - Evidência: lesson.evidenceQuestions[4]: resposta=the sky is very dark; opções=sky is dark | battery is low | sink is leaking
-   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-
-6. **P0 · Exercício · A2-READING-012 — Resposta correta não aparece nas alternativas**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-exercise-quality / iPhone 13
-   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
-   - Evidência: lesson.evidenceQuestions[4]: resposta=it is the better choice for work; opções=better for work | cheaper | medium size
-   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-
-7. **P0 · Exercício · A2-READING-014 — Resposta correta não aparece nas alternativas**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-exercise-quality / iPhone 13
-   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
-   - Evidência: lesson.evidenceQuestions[0]: resposta=the phone app is not working well; opções=app not working well | jacket too tight | store far
-   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-
-8. **P0 · Exercício · A2-READING-014 — Resposta correta não aparece nas alternativas**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-exercise-quality / iPhone 13
-   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
-   - Evidência: lesson.evidenceQuestions[2]: resposta=more modern and more useful; opções=more modern and useful | cheaper only | older
-   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-
-9. **P0 · Exercício · A2-READING-016 — Resposta correta não aparece nas alternativas**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-exercise-quality / iPhone 13
-   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
-   - Evidência: lesson.evidenceQuestions[3]: resposta=better prices and more comfortable shoes; opções=better prices and comfort | closer | older
-   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-
-10. **P0 · Exercício · A2-READING-016 — Resposta correta não aparece nas alternativas**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-exercise-quality / iPhone 13
-   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
-   - Evidência: lesson.evidenceQuestions[4]: resposta=best option for budget; opções=best for budget | closest | has no shoes
-   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-
-11. **P0 · Exercício · A2-READING-020 — Resposta correta não aparece nas alternativas**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-exercise-quality / iPhone 13
+2. **P0 · Exercício · A2-READING-020 — Resposta correta não aparece nas alternativas**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
    - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
    - Evidência: lesson.evidenceQuestions[1]: resposta=to check everyone’s ID; opções=to check ID | to buy lunch | to bring laptops
    - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
 
-12. **P0 · Exercício · A2-LISTENING-010 — Resposta correta não aparece nas alternativas**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-exercise-quality / iPhone 13
-   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
-   - Evidência: lesson.listeningComprehension[3]: resposta=update the app and try again; opções=update app | buy new phone | change charger
-   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-
-13. **P0 · Exercício · A2-LISTENING-011 — Resposta correta não aparece nas alternativas**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-exercise-quality / iPhone 13
-   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
-   - Evidência: lesson.listeningComprehension[0]: resposta=clean the kitchen; opções=clean kitchen | visit park | study English
-   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-
-14. **P0 · Exercício · A2-LISTENING-011 — Resposta correta não aparece nas alternativas**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-exercise-quality / iPhone 13
-   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
-   - Evidência: lesson.listeningComprehension[1]: resposta=the sink is leaking; opções=sink leaking | phone broken | door broken
-   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-
-15. **P0 · Exercício · A2-LISTENING-011 — Resposta correta não aparece nas alternativas**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-exercise-quality / iPhone 13
-   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
-   - Evidência: lesson.listeningComprehension[2]: resposta=visit the park; opções=visit park | call technician | clean kitchen
-   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-
-16. **P0 · Exercício · A2-LISTENING-015 — Resposta correta não aparece nas alternativas**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-exercise-quality / iPhone 13
+3. **P0 · Exercício · A2-LISTENING-015 — Resposta correta não aparece nas alternativas**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
    - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
    - Evidência: lesson.listeningComprehension[0]: resposta=a bag of rice and two bottles of water; opções=rice and water | milk only | cereal first
    - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
 
-17. **P0 · Exercício · A1-READING-010 — Resposta correta não aparece nas alternativas**
+4. **P1 · Pilar grammar · A1 — Ordens duplicadas no pilar**
    - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-exercise-quality / iPhone SE
-   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
-   - Evidência: lesson.evidenceQuestions[2]: resposta=a bed, a desk, and a small lamp; opções=a bed, a desk, and a lamp | a sofa and chairs | a TV and table
-   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-
-18. **P0 · Exercício · A2-READING-003 — Resposta correta não aparece nas alternativas**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-exercise-quality / iPhone SE
-   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
-   - Evidência: lesson.evidenceQuestions[4]: resposta=because she had heavy luggage and wanted a room near the elevator; opções=heavy luggage and room near elevator | lost ticket | late train
-   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-
-19. **P0 · Exercício · A2-READING-006 — Resposta correta não aparece nas alternativas**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-exercise-quality / iPhone SE
-   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
-   - Evidência: lesson.evidenceQuestions[4]: resposta=if they have a fever or feel worse tomorrow; opções=if fever or worse | if hungry | if better
-   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-
-20. **P0 · Exercício · A2-READING-010 — Resposta correta não aparece nas alternativas**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-exercise-quality / iPhone SE
-   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
-   - Evidência: lesson.evidenceQuestions[3]: resposta=restarted the phone and checked internet; opções=restarted and checked internet | updated app | changed password
-   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-
-21. **P0 · Exercício · A2-READING-011 — Resposta correta não aparece nas alternativas**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-exercise-quality / iPhone SE
-   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
-   - Evidência: lesson.evidenceQuestions[4]: resposta=the sky is very dark; opções=sky is dark | battery is low | sink is leaking
-   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-
-22. **P0 · Exercício · A2-READING-012 — Resposta correta não aparece nas alternativas**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-exercise-quality / iPhone SE
-   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
-   - Evidência: lesson.evidenceQuestions[4]: resposta=it is the better choice for work; opções=better for work | cheaper | medium size
-   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-
-23. **P0 · Exercício · A2-READING-014 — Resposta correta não aparece nas alternativas**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-exercise-quality / iPhone SE
-   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
-   - Evidência: lesson.evidenceQuestions[0]: resposta=the phone app is not working well; opções=app not working well | jacket too tight | store far
-   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-
-24. **P0 · Exercício · A2-READING-014 — Resposta correta não aparece nas alternativas**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-exercise-quality / iPhone SE
-   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
-   - Evidência: lesson.evidenceQuestions[2]: resposta=more modern and more useful; opções=more modern and useful | cheaper only | older
-   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-
-25. **P0 · Exercício · A2-READING-016 — Resposta correta não aparece nas alternativas**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-exercise-quality / iPhone SE
-   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
-   - Evidência: lesson.evidenceQuestions[3]: resposta=better prices and more comfortable shoes; opções=better prices and comfort | closer | older
-   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-
-26. **P0 · Exercício · A2-READING-016 — Resposta correta não aparece nas alternativas**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-exercise-quality / iPhone SE
-   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
-   - Evidência: lesson.evidenceQuestions[4]: resposta=best option for budget; opções=best for budget | closest | has no shoes
-   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-
-27. **P0 · Exercício · A2-READING-020 — Resposta correta não aparece nas alternativas**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-exercise-quality / iPhone SE
-   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
-   - Evidência: lesson.evidenceQuestions[1]: resposta=to check everyone’s ID; opções=to check ID | to buy lunch | to bring laptops
-   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-
-28. **P0 · Exercício · A2-LISTENING-010 — Resposta correta não aparece nas alternativas**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-exercise-quality / iPhone SE
-   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
-   - Evidência: lesson.listeningComprehension[3]: resposta=update the app and try again; opções=update app | buy new phone | change charger
-   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-
-29. **P0 · Exercício · A2-LISTENING-011 — Resposta correta não aparece nas alternativas**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-exercise-quality / iPhone SE
-   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
-   - Evidência: lesson.listeningComprehension[0]: resposta=clean the kitchen; opções=clean kitchen | visit park | study English
-   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-
-30. **P0 · Exercício · A2-LISTENING-011 — Resposta correta não aparece nas alternativas**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-exercise-quality / iPhone SE
-   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
-   - Evidência: lesson.listeningComprehension[1]: resposta=the sink is leaking; opções=sink leaking | phone broken | door broken
-   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-
-31. **P0 · Exercício · A2-LISTENING-011 — Resposta correta não aparece nas alternativas**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-exercise-quality / iPhone SE
-   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
-   - Evidência: lesson.listeningComprehension[2]: resposta=visit the park; opções=visit park | call technician | clean kitchen
-   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-
-32. **P0 · Exercício · A2-LISTENING-015 — Resposta correta não aparece nas alternativas**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-exercise-quality / iPhone SE
-   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
-   - Evidência: lesson.listeningComprehension[0]: resposta=a bag of rice and two bottles of water; opções=rice and water | milk only | cereal first
-   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-
-33. **P1 · Pilar grammar · A1 — Ordens duplicadas no pilar**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-curriculum-consistency / iPhone 13
+   - Relatório: quality-director-curriculum-consistency / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
    - Impacto: A sequência do curso pode ficar ambígua.
    - Evidência: 21
    - Recomendação: Garantir order único e crescente por pilar.
 
-34. **P1 · Currículo · A1 · grammar · A1-PERSONAL-GRAMMAR-001 — ID da aula não segue padrão esperado do pilar**
+5. **P1 · Currículo · A1 · grammar · A1-PERSONAL-GRAMMAR-001 — ID da aula não segue padrão esperado do pilar**
    - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-curriculum-consistency / iPhone 13
+   - Relatório: quality-director-curriculum-consistency / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
    - Impacto: Pode quebrar busca, pré-requisitos, progresso e renderizadores.
    - Evidência: id=A1-PERSONAL-GRAMMAR-001; prefixo esperado=A1-GRAMMAR-
    - Recomendação: Padronizar IDs como LEVEL-PILLAR-001.
 
-35. **P1 · Currículo · A1 · vocabulary · A1-VOCABULARY-006 — Aula sem título forte**
+6. **P1 · Currículo · A1 · vocabulary · A1-VOCABULARY-006 — Aula sem título forte**
    - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-curriculum-consistency / iPhone 13
+   - Relatório: quality-director-curriculum-consistency / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
    - Impacto: A trilha parece inacabada ou genérica.
    - Recomendação: Adicionar título claro e específico.
 
-36. **P1 · Currículo · A1 · vocabulary · A1-VOCABULARY-011 — Aula sem título forte**
+7. **P1 · Currículo · A1 · vocabulary · A1-VOCABULARY-011 — Aula sem título forte**
    - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-curriculum-consistency / iPhone 13
+   - Relatório: quality-director-curriculum-consistency / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
    - Impacto: A trilha parece inacabada ou genérica.
    - Recomendação: Adicionar título claro e específico.
 
-37. **P1 · Currículo · A1 · vocabulary · A1-PERSONAL-VOCABULARY-001 — ID da aula não segue padrão esperado do pilar**
+8. **P1 · Currículo · A1 · vocabulary · A1-PERSONAL-VOCABULARY-001 — ID da aula não segue padrão esperado do pilar**
    - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-curriculum-consistency / iPhone 13
+   - Relatório: quality-director-curriculum-consistency / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
    - Impacto: Pode quebrar busca, pré-requisitos, progresso e renderizadores.
    - Evidência: id=A1-PERSONAL-VOCABULARY-001; prefixo esperado=A1-VOCABULARY-
    - Recomendação: Padronizar IDs como LEVEL-PILLAR-001.
 
-38. **P1 · Currículo · A1 · reading · A1-PERSONAL-READING-001 — ID da aula não segue padrão esperado do pilar**
+9. **P1 · Currículo · A1 · reading · A1-PERSONAL-READING-001 — ID da aula não segue padrão esperado do pilar**
    - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-curriculum-consistency / iPhone 13
+   - Relatório: quality-director-curriculum-consistency / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
    - Impacto: Pode quebrar busca, pré-requisitos, progresso e renderizadores.
    - Evidência: id=A1-PERSONAL-READING-001; prefixo esperado=A1-READING-
    - Recomendação: Padronizar IDs como LEVEL-PILLAR-001.
 
-39. **P1 · Currículo · A1 · listening · A1-PERSONAL-LISTENING-001 — ID da aula não segue padrão esperado do pilar**
+10. **P1 · Currículo · A1 · listening · A1-PERSONAL-LISTENING-001 — ID da aula não segue padrão esperado do pilar**
    - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-curriculum-consistency / iPhone 13
+   - Relatório: quality-director-curriculum-consistency / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
    - Impacto: Pode quebrar busca, pré-requisitos, progresso e renderizadores.
    - Evidência: id=A1-PERSONAL-LISTENING-001; prefixo esperado=A1-LISTENING-
    - Recomendação: Padronizar IDs como LEVEL-PILLAR-001.
 
-40. **P1 · Currículo · A1 · speaking · A1-PERSONAL-SPEAKING-001 — ID da aula não segue padrão esperado do pilar**
+11. **P1 · Currículo · A1 · speaking · A1-PERSONAL-SPEAKING-001 — ID da aula não segue padrão esperado do pilar**
    - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-curriculum-consistency / iPhone 13
+   - Relatório: quality-director-curriculum-consistency / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
    - Impacto: Pode quebrar busca, pré-requisitos, progresso e renderizadores.
    - Evidência: id=A1-PERSONAL-SPEAKING-001; prefixo esperado=A1-SPEAKING-
    - Recomendação: Padronizar IDs como LEVEL-PILLAR-001.
 
+12. **P1 · Currículo · A1 · writing · A1-PERSONAL-WRITING-001 — ID da aula não segue padrão esperado do pilar**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-curriculum-consistency / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: Pode quebrar busca, pré-requisitos, progresso e renderizadores.
+   - Evidência: id=A1-PERSONAL-WRITING-001; prefixo esperado=A1-WRITING-
+   - Recomendação: Padronizar IDs como LEVEL-PILLAR-001.
+
+13. **P1 · iPhone 13 · Instalação limpa sem dados · Aba Hoje — Elemento interativo sobreposto pela bottom nav**
+   - Área executiva: Navegação e estabilidade
+   - Relatório: quality-director-empty-states-security / iPhone 13
+   - Ocorrências agrupadas: 1
+   - Impacto: O aluno pode não conseguir tocar em botões ou campos próximos do rodapé.
+   - Evidência: audit-results/screenshots/iphone-13-instala-o-limpa-sem-dados-aba-hoje.png
+   - Recomendação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável.
+
+14. **P1 · iPhone 13 · Instalação limpa sem dados · Aba Cartas — Elemento interativo sobreposto pela bottom nav**
+   - Área executiva: Navegação e estabilidade
+   - Relatório: quality-director-empty-states-security / iPhone 13
+   - Ocorrências agrupadas: 1
+   - Impacto: O aluno pode não conseguir tocar em botões ou campos próximos do rodapé.
+   - Evidência: audit-results/screenshots/iphone-13-instala-o-limpa-sem-dados-aba-cartas.png
+   - Recomendação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável.
+
+15. **P1 · iPhone 13 · Instalação limpa sem dados · Aba Ajustes — Elemento interativo sobreposto pela bottom nav**
+   - Área executiva: Navegação e estabilidade
+   - Relatório: quality-director-empty-states-security / iPhone 13
+   - Ocorrências agrupadas: 1
+   - Impacto: O aluno pode não conseguir tocar em botões ou campos próximos do rodapé.
+   - Evidência: audit-results/screenshots/iphone-13-instala-o-limpa-sem-dados-aba-ajustes.png
+   - Recomendação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável.
+
+16. **P1 · iPhone 13 · Estados principais como null · Aba Hoje — Elemento interativo sobreposto pela bottom nav**
+   - Área executiva: Navegação e estabilidade
+   - Relatório: quality-director-empty-states-security / iPhone 13
+   - Ocorrências agrupadas: 1
+   - Impacto: O aluno pode não conseguir tocar em botões ou campos próximos do rodapé.
+   - Evidência: audit-results/screenshots/iphone-13-estados-principais-como-null-aba-hoje.png
+   - Recomendação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável.
+
+17. **P1 · iPhone 13 · Estados principais como null · Aba Cartas — Elemento interativo sobreposto pela bottom nav**
+   - Área executiva: Navegação e estabilidade
+   - Relatório: quality-director-empty-states-security / iPhone 13
+   - Ocorrências agrupadas: 1
+   - Impacto: O aluno pode não conseguir tocar em botões ou campos próximos do rodapé.
+   - Evidência: audit-results/screenshots/iphone-13-estados-principais-como-null-aba-cartas.png
+   - Recomendação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável.
+
+18. **P1 · iPhone 13 · Estados principais como null · Aba Ajustes — Elemento interativo sobreposto pela bottom nav**
+   - Área executiva: Navegação e estabilidade
+   - Relatório: quality-director-empty-states-security / iPhone 13
+   - Ocorrências agrupadas: 1
+   - Impacto: O aluno pode não conseguir tocar em botões ou campos próximos do rodapé.
+   - Evidência: audit-results/screenshots/iphone-13-estados-principais-como-null-aba-ajustes.png
+   - Recomendação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável.
+
+19. **P1 · iPhone 13 · Estados principais com JSON inválido · Aba Hoje — Elemento interativo sobreposto pela bottom nav**
+   - Área executiva: Navegação e estabilidade
+   - Relatório: quality-director-empty-states-security / iPhone 13
+   - Ocorrências agrupadas: 1
+   - Impacto: O aluno pode não conseguir tocar em botões ou campos próximos do rodapé.
+   - Evidência: audit-results/screenshots/iphone-13-estados-principais-com-json-inv-lido-aba-hoje.png
+   - Recomendação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável.
+
+20. **P1 · iPhone 13 · Estados principais com JSON inválido · Aba Cartas — Elemento interativo sobreposto pela bottom nav**
+   - Área executiva: Navegação e estabilidade
+   - Relatório: quality-director-empty-states-security / iPhone 13
+   - Ocorrências agrupadas: 1
+   - Impacto: O aluno pode não conseguir tocar em botões ou campos próximos do rodapé.
+   - Evidência: audit-results/screenshots/iphone-13-estados-principais-com-json-inv-lido-aba-cartas.png
+   - Recomendação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável.
+
+21. **P1 · iPhone 13 · Estados principais com JSON inválido · Aba Ajustes — Elemento interativo sobreposto pela bottom nav**
+   - Área executiva: Navegação e estabilidade
+   - Relatório: quality-director-empty-states-security / iPhone 13
+   - Ocorrências agrupadas: 1
+   - Impacto: O aluno pode não conseguir tocar em botões ou campos próximos do rodapé.
+   - Evidência: audit-results/screenshots/iphone-13-estados-principais-com-json-inv-lido-aba-ajustes.png
+   - Recomendação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável.
+
+22. **P1 · iPhone 13 · Sem aula atual mas com configurações básicas · Aba Hoje — Elemento interativo sobreposto pela bottom nav**
+   - Área executiva: Navegação e estabilidade
+   - Relatório: quality-director-empty-states-security / iPhone 13
+   - Ocorrências agrupadas: 1
+   - Impacto: O aluno pode não conseguir tocar em botões ou campos próximos do rodapé.
+   - Evidência: audit-results/screenshots/iphone-13-sem-aula-atual-mas-com-configura-es-b-sicas-aba-hoje.png
+   - Recomendação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável.
+
+23. **P1 · iPhone 13 · Sem aula atual mas com configurações básicas · Aba Cartas — Elemento interativo sobreposto pela bottom nav**
+   - Área executiva: Navegação e estabilidade
+   - Relatório: quality-director-empty-states-security / iPhone 13
+   - Ocorrências agrupadas: 1
+   - Impacto: O aluno pode não conseguir tocar em botões ou campos próximos do rodapé.
+   - Evidência: audit-results/screenshots/iphone-13-sem-aula-atual-mas-com-configura-es-b-sicas-aba-cartas.png
+   - Recomendação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável.
+
+24. **P1 · iPhone 13 · Sem aula atual mas com configurações básicas · Aba Ajustes — Elemento interativo sobreposto pela bottom nav**
+   - Área executiva: Navegação e estabilidade
+   - Relatório: quality-director-empty-states-security / iPhone 13
+   - Ocorrências agrupadas: 1
+   - Impacto: O aluno pode não conseguir tocar em botões ou campos próximos do rodapé.
+   - Evidência: audit-results/screenshots/iphone-13-sem-aula-atual-mas-com-configura-es-b-sicas-aba-ajustes.png
+   - Recomendação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável.
+
+25. **P1 · iPhone SE · Instalação limpa sem dados · Aba Hoje — Elemento interativo sobreposto pela bottom nav**
+   - Área executiva: Navegação e estabilidade
+   - Relatório: quality-director-empty-states-security / iPhone SE
+   - Ocorrências agrupadas: 1
+   - Impacto: O aluno pode não conseguir tocar em botões ou campos próximos do rodapé.
+   - Evidência: audit-results/screenshots/iphone-se-instala-o-limpa-sem-dados-aba-hoje.png
+   - Recomendação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável.
+
+26. **P1 · iPhone SE · Instalação limpa sem dados · Aba Curso — Elemento interativo sobreposto pela bottom nav**
+   - Área executiva: Navegação e estabilidade
+   - Relatório: quality-director-empty-states-security / iPhone SE
+   - Ocorrências agrupadas: 1
+   - Impacto: O aluno pode não conseguir tocar em botões ou campos próximos do rodapé.
+   - Evidência: audit-results/screenshots/iphone-se-instala-o-limpa-sem-dados-aba-curso.png
+   - Recomendação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável.
+
+27. **P1 · iPhone SE · Instalação limpa sem dados · Aba Cartas — Elemento interativo sobreposto pela bottom nav**
+   - Área executiva: Navegação e estabilidade
+   - Relatório: quality-director-empty-states-security / iPhone SE
+   - Ocorrências agrupadas: 1
+   - Impacto: O aluno pode não conseguir tocar em botões ou campos próximos do rodapé.
+   - Evidência: audit-results/screenshots/iphone-se-instala-o-limpa-sem-dados-aba-cartas.png
+   - Recomendação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável.
+
+28. **P1 · iPhone SE · Instalação limpa sem dados · Aba Ajustes — Elemento interativo sobreposto pela bottom nav**
+   - Área executiva: Navegação e estabilidade
+   - Relatório: quality-director-empty-states-security / iPhone SE
+   - Ocorrências agrupadas: 1
+   - Impacto: O aluno pode não conseguir tocar em botões ou campos próximos do rodapé.
+   - Evidência: audit-results/screenshots/iphone-se-instala-o-limpa-sem-dados-aba-ajustes.png
+   - Recomendação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável.
+
+29. **P1 · iPhone SE · Estados principais como null · Aba Hoje — Elemento interativo sobreposto pela bottom nav**
+   - Área executiva: Navegação e estabilidade
+   - Relatório: quality-director-empty-states-security / iPhone SE
+   - Ocorrências agrupadas: 1
+   - Impacto: O aluno pode não conseguir tocar em botões ou campos próximos do rodapé.
+   - Evidência: audit-results/screenshots/iphone-se-estados-principais-como-null-aba-hoje.png
+   - Recomendação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável.
+
+30. **P1 · iPhone SE · Estados principais como null · Aba Curso — Elemento interativo sobreposto pela bottom nav**
+   - Área executiva: Navegação e estabilidade
+   - Relatório: quality-director-empty-states-security / iPhone SE
+   - Ocorrências agrupadas: 1
+   - Impacto: O aluno pode não conseguir tocar em botões ou campos próximos do rodapé.
+   - Evidência: audit-results/screenshots/iphone-se-estados-principais-como-null-aba-curso.png
+   - Recomendação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável.
+
+31. **P1 · iPhone SE · Estados principais como null · Aba Cartas — Elemento interativo sobreposto pela bottom nav**
+   - Área executiva: Navegação e estabilidade
+   - Relatório: quality-director-empty-states-security / iPhone SE
+   - Ocorrências agrupadas: 1
+   - Impacto: O aluno pode não conseguir tocar em botões ou campos próximos do rodapé.
+   - Evidência: audit-results/screenshots/iphone-se-estados-principais-como-null-aba-cartas.png
+   - Recomendação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável.
+
+32. **P1 · iPhone SE · Estados principais como null · Aba Ajustes — Elemento interativo sobreposto pela bottom nav**
+   - Área executiva: Navegação e estabilidade
+   - Relatório: quality-director-empty-states-security / iPhone SE
+   - Ocorrências agrupadas: 1
+   - Impacto: O aluno pode não conseguir tocar em botões ou campos próximos do rodapé.
+   - Evidência: audit-results/screenshots/iphone-se-estados-principais-como-null-aba-ajustes.png
+   - Recomendação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável.
+
+33. **P1 · iPhone SE · Estados principais com JSON inválido · Aba Hoje — Elemento interativo sobreposto pela bottom nav**
+   - Área executiva: Navegação e estabilidade
+   - Relatório: quality-director-empty-states-security / iPhone SE
+   - Ocorrências agrupadas: 1
+   - Impacto: O aluno pode não conseguir tocar em botões ou campos próximos do rodapé.
+   - Evidência: audit-results/screenshots/iphone-se-estados-principais-com-json-inv-lido-aba-hoje.png
+   - Recomendação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável.
+
+34. **P1 · iPhone SE · Estados principais com JSON inválido · Aba Curso — Elemento interativo sobreposto pela bottom nav**
+   - Área executiva: Navegação e estabilidade
+   - Relatório: quality-director-empty-states-security / iPhone SE
+   - Ocorrências agrupadas: 1
+   - Impacto: O aluno pode não conseguir tocar em botões ou campos próximos do rodapé.
+   - Evidência: audit-results/screenshots/iphone-se-estados-principais-com-json-inv-lido-aba-curso.png
+   - Recomendação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável.
+
+35. **P1 · iPhone SE · Estados principais com JSON inválido · Aba Cartas — Elemento interativo sobreposto pela bottom nav**
+   - Área executiva: Navegação e estabilidade
+   - Relatório: quality-director-empty-states-security / iPhone SE
+   - Ocorrências agrupadas: 1
+   - Impacto: O aluno pode não conseguir tocar em botões ou campos próximos do rodapé.
+   - Evidência: audit-results/screenshots/iphone-se-estados-principais-com-json-inv-lido-aba-cartas.png
+   - Recomendação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável.
+
+36. **P1 · iPhone SE · Estados principais com JSON inválido · Aba Ajustes — Elemento interativo sobreposto pela bottom nav**
+   - Área executiva: Navegação e estabilidade
+   - Relatório: quality-director-empty-states-security / iPhone SE
+   - Ocorrências agrupadas: 1
+   - Impacto: O aluno pode não conseguir tocar em botões ou campos próximos do rodapé.
+   - Evidência: audit-results/screenshots/iphone-se-estados-principais-com-json-inv-lido-aba-ajustes.png
+   - Recomendação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável.
+
+37. **P1 · iPhone SE · Sem aula atual mas com configurações básicas · Aba Hoje — Elemento interativo sobreposto pela bottom nav**
+   - Área executiva: Navegação e estabilidade
+   - Relatório: quality-director-empty-states-security / iPhone SE
+   - Ocorrências agrupadas: 1
+   - Impacto: O aluno pode não conseguir tocar em botões ou campos próximos do rodapé.
+   - Evidência: audit-results/screenshots/iphone-se-sem-aula-atual-mas-com-configura-es-b-sicas-aba-hoje.png
+   - Recomendação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável.
+
+38. **P1 · iPhone SE · Sem aula atual mas com configurações básicas · Aba Curso — Elemento interativo sobreposto pela bottom nav**
+   - Área executiva: Navegação e estabilidade
+   - Relatório: quality-director-empty-states-security / iPhone SE
+   - Ocorrências agrupadas: 1
+   - Impacto: O aluno pode não conseguir tocar em botões ou campos próximos do rodapé.
+   - Evidência: audit-results/screenshots/iphone-se-sem-aula-atual-mas-com-configura-es-b-sicas-aba-curso.png
+   - Recomendação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável.
+
+39. **P1 · iPhone SE · Sem aula atual mas com configurações básicas · Aba Cartas — Elemento interativo sobreposto pela bottom nav**
+   - Área executiva: Navegação e estabilidade
+   - Relatório: quality-director-empty-states-security / iPhone SE
+   - Ocorrências agrupadas: 1
+   - Impacto: O aluno pode não conseguir tocar em botões ou campos próximos do rodapé.
+   - Evidência: audit-results/screenshots/iphone-se-sem-aula-atual-mas-com-configura-es-b-sicas-aba-cartas.png
+   - Recomendação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável.
+
+40. **P1 · iPhone SE · Sem aula atual mas com configurações básicas · Aba Ajustes — Elemento interativo sobreposto pela bottom nav**
+   - Área executiva: Navegação e estabilidade
+   - Relatório: quality-director-empty-states-security / iPhone SE
+   - Ocorrências agrupadas: 1
+   - Impacto: O aluno pode não conseguir tocar em botões ou campos próximos do rodapé.
+   - Evidência: audit-results/screenshots/iphone-se-sem-aula-atual-mas-com-configura-es-b-sicas-aba-ajustes.png
+   - Recomendação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável.
+
 
 ## Como usar este relatório
 
-1. Corrigir P0 antes de qualquer evolução nova.
+1. Corrigir P0 confirmados antes de qualquer evolução nova.
 2. Corrigir P1 antes de confiar o uso contínuo ao aluno.
 3. Transformar grupos de P2 em blocos de polimento.
 4. Registrar correções no Notion e rodar novamente o Quality Director.
