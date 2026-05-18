@@ -6,7 +6,11 @@ export function LessonPhaseStepper({ phases = [], activeIndex = 0, visitedPhaseI
       {phases.map((phase, index) => {
         const active = index === activeIndex;
         const visited = visitedPhaseIds.includes(phase.id);
-        const isBlocked = canGoToIndex ? !canGoToIndex(index) : index > activeIndex;
+        // Student can use the stepper to review current/previous phases only.
+        // Forward navigation must happen through Continuar, otherwise free phases could be skipped.
+        const future = index > activeIndex;
+        const blockedByFlow = canGoToIndex ? !canGoToIndex(index) : false;
+        const isBlocked = future || blockedByFlow;
         const Icon = isBlocked ? Lock : visited ? CheckCircle2 : Circle;
         return (
           <button
@@ -20,7 +24,7 @@ export function LessonPhaseStepper({ phases = [], activeIndex = 0, visitedPhaseI
             disabled={isBlocked}
             aria-disabled={isBlocked}
             aria-current={active ? 'step' : undefined}
-            title={isBlocked ? 'Conclua as etapas anteriores para desbloquear.' : undefined}
+            title={isBlocked ? 'Use Continuar para avançar em ordem.' : undefined}
           >
             <Icon size={14} />
             <span>{phase.shortTitle || phase.title}</span>
