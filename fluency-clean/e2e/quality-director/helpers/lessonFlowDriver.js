@@ -134,3 +134,51 @@ export async function satisfyCurrentPhase(page, reporter, area) {
   reportEarlyAnswerLeaks({ text, reporter, area });
   return false;
 }
+
+export async function advanceOrReport(page, reporter, area) {
+  const beforeTitle = await getCurrentPhaseTitle(page);
+  const continueButton = page.getByRole('button', { name: /continuar|concluir aula/i }).last();
+
+  if (!(await continueButton.isVisible().catch(() => false))) {
+    reporter.addIssue({
+      severity: 'P1',
+      area,
+      title: 'Botão Continuar/Concluir não está visível na jornada',
+      impact: 'O aluno pode ficar sem ação clara para avançar.',
+      recommendation: 'Garantir CTA principal visível em todas as fases da aula.',
+    });
+    return false;
+  }
+
+  if (!(await continueButton.isEnabled().catch(() => false))) {
+    reporter.addIssue({
+      severity: 'P1',
+      area,
+      title: 'Botão Continuar/Concluir está desabilitado após tentativa',
+      impact: 'O aluno pode ficar travado mesmo depois de interagir com a fase.',
+      recommendation: 'Verificar critérios de liberação da fase e estados de tentativa.',
+    });
+    return false;
+  }
+
+  await continueButton.click().catch(() => null);
+  await page.waitForTimeout(120);
+
+  const afterTitle = await getCurrentPhaseTitle(page);
+  const text = await getPageText(page);
+  reportTechnicalLeaks({ text, reporter, area });
+
+  if (beforeTitle && afterTitle && beforeTitle === afterTitle && !/progresso salvo|aula concluída|aula já concluída|revisão adaptativa/i.test(text)) {
+    reporter.addIssue({
+      severity: 'P1',
+      area,
+      title: 'Clique em Continuar não avançou a fase',
+      impact: 'A jornada pode ficar presa em uma fase sem feedback claro.',
+      evidence: `fase=${beforeTitle}`,
+      recommendation: 'Verificar LessonFlowShell, canAdvance e estados de conclusão da fase.',
+    });
+    return false;
+  }
+
+  return true;
+}
