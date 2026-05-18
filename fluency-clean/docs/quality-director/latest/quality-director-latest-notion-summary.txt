@@ -1,8 +1,8 @@
 Status: Crítico
 Nota geral: 0/100
-Relatórios: 21
-Checks: 3256
-Issues únicas: 2748 (brutas=5259, agrupadas=2511)
-Severidade: P0=3, P1=1158, P2=1587, P3=0
+Relatórios: 25
+Checks: 3264
+Issues únicas: 3043 (brutas=5565, agrupadas=2522)
+Severidade: P0=3, P1=1323, P2=1717, P3=0
 Direção: Corrigir P0 confirmados antes de continuar evolução visual/pedagógica.
 Top issues: P0 Exercício · A2-READING-006 — Resposta correta não aparece nas alternativas | P0 Exercício · A2-READING-020 — Resposta correta não aparece nas alternativas | P0 Exercício · A2-LISTENING-015 — Resposta correta não aparece nas alternativas | P1 Pilar grammar · A1 — Ordens duplicadas no pilar | P1 Currículo · A1 · grammar · A1-PERSONAL-GRAMMAR-001 — ID da aula não segue padrão esperado do pilar
