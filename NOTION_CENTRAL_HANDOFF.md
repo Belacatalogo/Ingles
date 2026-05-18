@@ -1,6 +1,6 @@
 # Notion Central Handoff — Fluency Clean
 
-Última atualização: 2026-05-17
+Última atualização: 2026-05-18
 
 Este arquivo existe apenas para apontar qualquer agente que entrar pelo GitHub para a nova central operacional no Notion.
 
@@ -57,8 +57,25 @@ Antes de qualquer alteração no projeto:
 4. Verificar o `Roadmap de Blocos`.
 5. Conferir `Atualizações de Blocos` para saber o que foi feito recentemente.
 6. Conferir `Decisões e Regras Estruturais` para não violar regras do projeto.
-7. Executar apenas o próximo bloco válido.
-8. Registrar o resultado no Notion ao final.
+7. Confirmar que a branch atual é `main`.
+8. Executar alterações apenas na `main`, sem criar branch, PR, merge ou rebase no fluxo normal.
+9. Executar apenas o próximo bloco válido ou hotfix solicitado pelo usuário.
+10. Registrar o resultado no Notion ao final.
+
+---
+
+## Regra máxima de branch
+
+```txt
+Branch oficial única: main
+```
+
+- Trabalhar apenas na `main`.
+- Não criar branch sem autorização explícita.
+- Não usar `rewrite-fluency-clean-lab`, `rewrite-fluency-clean`, `lab` ou branches antigas como continuação.
+- Não abrir PR para fluxo normal.
+- Não fazer merge, rebase ou force push sem autorização explícita.
+- Se houver divergência entre handoffs antigos e esta regra, prevalece a regra atual: `main`.
 
 ---
 
@@ -68,6 +85,7 @@ Antes de qualquer alteração no projeto:
 - B1 está registrado no Notion como `BLOCO-B1-CONTINUOUS-DEEP-LESSONS — Continuação automática das aulas profundas B1`.
 - Status do B1 no Notion: `Em andamento`.
 - Próximo recomendado no Notion: B1 contínuo, sem iniciar fluxo concorrente que reescreva B1 sem verificar atualizações recentes.
+- Hotfix 2026-05-18: correção global de scroll ao trocar abas adicionada na `main`.
 
 ---
 
@@ -93,3 +111,4 @@ A aula ensina. A IA observa, corrige, adapta e reforça.
 - Decisões e Regras Estruturais criado e preenchido com regras principais.
 - B1 contínuo registrado como em andamento.
 - Notion definido como handoff operacional principal.
+- Regra de branch atualizada: trabalhar apenas na `main`.
