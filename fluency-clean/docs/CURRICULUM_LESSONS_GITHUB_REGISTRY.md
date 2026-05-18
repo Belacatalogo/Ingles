@@ -14,9 +14,9 @@ Branch: main
 | A2    |   122 |      28 |         20 |      20 |        18 |      18 |      18 |         0 |
 | B1    |    73 |      22 |         17 |       8 |         8 |       9 |       9 |         0 |
 | B2    |    83 |      22 |         17 |      12 |         8 |      11 |      13 |         0 |
-| C1    |    47 |      13 |          9 |       5 |         5 |       5 |      10 |         0 |
-| C2    |     0 |       — |          — |       — |         — |       — |       — |         — |
-| **TOTAL** | **464** | — | — | — | — | — | — | — |
+| C1    |    73 |      18 |         14 |       8 |         8 |       8 |      16 |         1 |
+| C2    |    42 |       9 |          9 |       5 |         5 |       5 |       8 |         1 |
+| **TOTAL** | **532** | — | — | — | — | — | — | — |
 
 ---
 
@@ -91,20 +91,81 @@ Branch: main
 - **Aulas**: C1-GRAMMAR-012 a 013, C1-VOCABULARY-009, C1-READING-005, C1-LISTENING-005, C1-SPEAKING-005, C1-WRITING-009 a 010
 - **Build**: ✅
 
-### C1.6 — Academic Writing (Status: PENDENTE)
-- IDs planejados: C1-GRAMMAR-014 a 015, C1-VOCABULARY-010 a 011, C1-READING-006, C1-LISTENING-006, C1-SPEAKING-006, C1-WRITING-011 a 013
-- Arquivo planejado: deepC1AcademicWritingPart1.js, deepC1AcademicWritingPart2.js
+### C1.6 — Academic Writing (10 aulas)
+- **Commit**: `feat(C1): add C1.6 Academic Writing`
+- **Arquivos**: deepC1AcademicWritingPart1.js, deepC1AcademicWritingPart2.js
+- **Aulas**: C1-GRAMMAR-014 a 015, C1-VOCABULARY-010 a 011, C1-READING-006, C1-LISTENING-006, C1-SPEAKING-006, C1-WRITING-011 a 013
+- **Build**: ✅
+
+### C1.7 — Cultural & Intellectual Discourse (9 aulas)
+- **Commit**: `feat(C1): add C1.7 Cultural & Intellectual Discourse`
+- **Arquivos**: deepC1CulturalDiscoursePart1.js, deepC1CulturalDiscoursePart2.js
+- **Aulas**: C1-GRAMMAR-016 a 017, C1-VOCABULARY-012 a 013, C1-READING-007, C1-LISTENING-007, C1-SPEAKING-007, C1-WRITING-014 a 015
+- **Build**: ✅
+
+### C1.8 — Review & Final Exam (7 aulas + checkpoint)
+- **Commit**: `feat(C1): add C1.8 Review & Final Exam — C1 COMPLETE`
+- **Arquivo**: deepC1ReviewFinalExam.js
+- **Aulas**: C1-GRAMMAR-018, C1-VOCABULARY-014, C1-READING-008, C1-LISTENING-008, C1-SPEAKING-008, C1-WRITING-016, C1-CHECKPOINT-001
+- **Build**: ✅
+- **C1 TOTAL: 73 aulas** ✅
 
 ### Índice de integração C1
 - **Arquivo**: `fluency-clean/src/content/curriculum/staticLessonContent.js`
 - **Export**: `C1_READY_LESSONS`, `STATIC_READY_LESSONS_BY_LEVEL.C1`, `STATIC_READY_LESSONS_BY_LEVEL_AND_PILLAR.C1`
-- **C1 TOTAL ATUAL: 47 aulas**
 
 ---
 
-## C2 — PENDENTE
+## C2 — CONFIRMADO NO GITHUB
 
-Nenhuma aula C2 criada ainda.
+### C2.1 — Bridge (9 aulas)
+- **Arquivos**: deepC2BridgePart1.js, deepC2BridgePart2.js
+- **Aulas**: C2-GRAMMAR-001 a 002, C2-VOCABULARY-001 a 002, C2-READING-001, C2-LISTENING-001, C2-SPEAKING-001, C2-WRITING-001 a 002
+- **Build**: ✅
+
+### C2.2 — Rhetoric & Style (9 aulas)
+- **Arquivos**: deepC2RhetoricPart1.js, deepC2RhetoricPart2.js
+- **Aulas**: C2-GRAMMAR-003 a 004, C2-VOCABULARY-003 a 004, C2-READING-002, C2-LISTENING-002, C2-SPEAKING-002, C2-WRITING-003 a 004
+- **Build**: ✅
+
+### C2.3 — Mastery of Complex Discourse (7 aulas)
+- **Arquivos**: deepC2ComplexDiscoursPart1.js, deepC2ComplexDiscoursPart2.js
+- **Aulas**: C2-GRAMMAR-005 a 006, C2-VOCABULARY-005 a 006, C2-READING-003, C2-LISTENING-003, C2-SPEAKING-003
+- **Build**: ✅
+
+### C2.4 — Near-Native Production (9 aulas)
+- **Arquivos**: deepC2NativeProductionPart1.js, deepC2NativeProductionPart2.js
+- **Aulas**: C2-GRAMMAR-007 a 008, C2-VOCABULARY-007 a 008, C2-READING-004, C2-LISTENING-004, C2-SPEAKING-004, C2-WRITING-005 a 006
+- **Build**: ✅
+
+### C2.5 — Review & Mastery Gate (7 aulas + checkpoint)
+- **Commit**: `9c9c5f4 feat(C2): add C2.5 Review & Mastery Gate — C2 COMPLETE`
+- **Arquivo**: deepC2ReviewMasteryGate.js
+- **Aulas**: C2-GRAMMAR-009, C2-VOCABULARY-009, C2-READING-005, C2-LISTENING-005, C2-SPEAKING-005, C2-WRITING-007 a 008, C2-CHECKPOINT-001
+- **Build**: ✅
+- **C2 TOTAL: 42 aulas** ✅
+
+### Índice de integração C2
+- **Arquivo**: `fluency-clean/src/content/curriculum/staticLessonContent.js`
+- **Export**: `C2_READY_LESSONS`, `STATIC_READY_LESSONS_BY_LEVEL.C2`, `STATIC_READY_LESSONS_BY_LEVEL_AND_PILLAR.C2`
+
+---
+
+## FASE 4 — FECHAMENTO PEDAGÓGICO B1/B2
+
+### B1 Mastery Assessments
+- **Commit**: `957b70d feat(FASE4): add B1 mastery assessments + B1/B2 premium audit doc`
+- **Arquivo**: `fluency-clean/src/content/curriculum/levels/B1/b1MasteryAssessments.js`
+- **Exports**: `B1_CHECKPOINTS` (mid + final), `B1_FINAL_EXAM`, `evaluateB1FinalGate`, `getB1FinalExamReadiness`
+
+### B2 Mastery Assessments
+- **Commit**: `44bfcab feat(FASE4): add B2 mastery assessments — B1/B2 pedagogical closing complete`
+- **Arquivo**: `fluency-clean/src/content/curriculum/levels/B2/b2MasteryAssessments.js`
+- **Exports**: `B2_CHECKPOINTS` (mid + final), `B2_FINAL_EXAM`, `evaluateB2FinalGate`, `getB2FinalExamReadiness`
+
+### Audit Doc
+- **Arquivo**: `fluency-clean/docs/LESSON_PREMIUM_AUDIT_B1_B2.md`
+- Documenta distribuição B1/B2, gap B2-READING-012/013, ações de fechamento
 
 ---
 

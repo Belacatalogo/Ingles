@@ -2,75 +2,69 @@
 
 ## Estado atual
 - branch atual: main
-- último bloco concluído: C1.5 Advanced Professional Communication (commit 90829fe)
-- último bloco parcialmente iniciado: C1.6 Academic Writing — EM CRIAÇÃO
-- último commit: 90829fe feat(C1): add C1.5 Advanced Professional Communication
-- último push: 90829fe → origin/main
+- último bloco concluído: FASE 4 — B1/B2 Pedagogical Closing (commit 44bfcab)
+- C1: COMPLETO (73 aulas + C1-CHECKPOINT-001)
+- C2: COMPLETO (42 aulas + C2-CHECKPOINT-001)
+- FASE 4: COMPLETO (b1MasteryAssessments.js + b2MasteryAssessments.js + audit doc)
+- último push: 44bfcab → origin/main
 - build status: ✅ limpo (verificado 2026-05-18)
 - zero duplicatas: ✅
-- data/hora aproximada: 2026-05-18
 
-## Contagem atual
+## Contagem atual (verificada 2026-05-18)
 - A1: 139
 - A2: 122
-- B1: 73
-- B2: 83 (COMPLETO)
-- C1: 47 (em andamento — C1.1 a C1.5 concluídos)
-- C2: 0 (pendente)
+- B1: 73 (COMPLETO — mastery gate adicionado)
+- B2: 83 (COMPLETO — mastery gate adicionado)
+- C1: 73 (COMPLETO — inclui C1-CHECKPOINT-001)
+- C2: 42 (COMPLETO — inclui C2-CHECKPOINT-001)
+- **TOTAL: 532 aulas**
 
-## Distribuição por pilar do nível em andamento (C1 atual)
-- grammar: 13
-- vocabulary: 9
-- reading: 5
-- listening: 5
-- speaking: 5
-- writing: 10
-- checkpoint: 0
+## Distribuição por pilar (estado final)
 
-## Arquivos alterados no último bloco (C1.5)
-- deepC1ProfessionalPart1.js (criado)
-- deepC1ProfessionalPart2.js (criado)
-- staticLessonContent.js (atualizado — importações + integração C1.5)
+| Nível | Grammar | Vocabulary | Reading | Listening | Speaking | Writing | Checkpoint |
+|-------|--------:|-----------:|--------:|----------:|--------:|--------:|----------:|
+| A1    |      29 |         21 |      22 |        21 |      21 |      18 |         7 |
+| A2    |      28 |         20 |      20 |        18 |      18 |      18 |         0 |
+| B1    |      22 |         17 |       8 |         8 |       9 |       9 |         0 |
+| B2    |      22 |         17 |      12 |         8 |      11 |      13 |         0 |
+| C1    |      18 |         14 |       8 |         8 |       8 |      16 |         1 |
+| C2    |       9 |          9 |       5 |         5 |       5 |       8 |         1 |
 
-## Próximo bloco exato
-- nível: C1
-- bloco: C1.6
-- tema: Academic Writing — Essays, Reports and Critical Reviews
-- quantidade planejada de aulas: 10
-- distribuição planejada por pilar:
-  - grammar: 2 (C1-GRAMMAR-014, C1-GRAMMAR-015)
-  - vocabulary: 2 (C1-VOCABULARY-010, C1-VOCABULARY-011)
-  - reading: 1 (C1-READING-006)
-  - listening: 1 (C1-LISTENING-006)
-  - speaking: 1 (C1-SPEAKING-006)
-  - writing: 3 (C1-WRITING-011, C1-WRITING-012, C1-WRITING-013)
-- primeiro arquivo provável: deepC1AcademicWritingPart1.js
-- observações: Focar em argumentation essays, critical reviews, academic reports. Usar factory functions existentes. Seguir padrão dos arquivos C1.4 e C1.5.
+## Arquivos alterados nas últimas fases
 
-## Blocos C1 restantes planejados
+### FASE 3 — C2 completo
+- deepC2BridgePart1.js, deepC2BridgePart2.js (C2.1)
+- deepC2RhetoricPart1.js, deepC2RhetoricPart2.js (C2.2)
+- deepC2ComplexDiscoursPart1.js, deepC2ComplexDiscoursPart2.js (C2.3)
+- deepC2NativeProductionPart1.js, deepC2NativeProductionPart2.js (C2.4)
+- deepC2ReviewMasteryGate.js (C2.5)
+- staticLessonContent.js (importações + integração C1 e C2 completos)
 
-| Bloco | Tema | Aulas | IDs Grammar | IDs Vocab | IDs Outros |
-|-------|------|------:|-------------|-----------|------------|
-| C1.6  | Academic Writing | 10 | G014-G015 | V010-V011 | R006, L006, S006, W011-W013 |
-| C1.7  | Cultural & Intellectual Discourse | 9 | G016-G017 | V012-V013 | R007, L007, S007, W014-W015 |
-| C1.8  | C1 Review & Final Exam | 7 | G018 | V014 | R008, L008, S008, W016, C1-CHECKPOINT-001 |
+### FASE 4 — Fechamento pedagógico B1/B2
+- fluency-clean/src/content/curriculum/levels/B1/b1MasteryAssessments.js (criado)
+- fluency-clean/src/content/curriculum/levels/B2/b2MasteryAssessments.js (criado)
+- fluency-clean/docs/LESSON_PREMIUM_AUDIT_B1_B2.md (criado)
+
+## Issues conhecidos
+- B2-READING-012 e B2-READING-013 não existem no sistema (salto de R011 → R014).
+  Documentado em LESSON_PREMIUM_AUDIT_B1_B2.md. Não corrigir sem análise de impacto.
+
+## FASE 5 — REGISTRAR APENAS, NÃO EXECUTAR
+
+| Sub-fase | Tema | Status |
+|----------|------|--------|
+| 5.1 | A1 finalization (aulas incompletas/pendentes) | REGISTRADO — não executar |
+| 5.2 | SRS (Spaced Repetition System) integração avançada | REGISTRADO — não executar |
+| 5.3 | Gamification (XP, badges, streaks) | REGISTRADO — não executar |
+| 5.4 | UI (melhorias de interface e navegação) | REGISTRADO — não executar |
 
 ## Instrução de retomada
 Ao retomar:
-1. Ler REWRITE_HANDOFF.md.
-2. Ler NOTION_CENTRAL_HANDOFF.md.
-3. Ler fluency-clean/docs/MASTER-CONTINUIDADE-BLOCOS-CURSO-ATE-C1-C2.md.
-4. Ler fluency-clean/docs/CURRICULUM_LESSONS_GITHUB_REGISTRY.md.
-5. Ler este arquivo AUTO_RESUME_NEXT_BLOCK.md.
-6. Confirmar branch: git branch --show-current → deve ser "main".
-7. Confirmar estado: git log --oneline -5.
-8. Não recriar B2 nem C1.1–C1.5.
-9. Verificar contagem atual: node -e "import('./fluency-clean/src/content/curriculum/staticLessonContent.js').then(m => console.log(Object.keys(m.STATIC_READY_LESSONS_BY_LEVEL).map(l => l + ': ' + m.STATIC_READY_LESSONS_BY_LEVEL[l].length).join(', ')))"
-10. Continuar exatamente do próximo bloco registrado acima.
-
-## Pendências
-- C1.6 Academic Writing: criar deepC1AcademicWritingPart1.js e Part2
-- C1.7 Cultural & Intellectual Discourse: criar deepC1CulturalDiscoursePart1.js
-- C1.8 Review & Final Exam: criar deepC1ReviewFinalExam.js
-- C2: 0 aulas — início após C1 completo
-- Fechamento pedagógico B1/B2: após C2 completo
+1. Ler este arquivo AUTO_RESUME_NEXT_BLOCK.md.
+2. Ler fluency-clean/docs/CURRICULUM_LESSONS_GITHUB_REGISTRY.md.
+3. Ler fluency-clean/docs/LESSON_PREMIUM_AUDIT_B1_B2.md.
+4. Confirmar branch: git branch --show-current → deve ser "main".
+5. Confirmar estado: git log --oneline -5.
+6. Verificar contagem: deve ser A1:139, A2:122, B1:73, B2:83, C1:73, C2:42 = 532 total.
+7. Verificar zero duplicatas antes de qualquer novo trabalho.
+8. FASE 5: aguardar autorização explícita antes de iniciar qualquer sub-fase.
