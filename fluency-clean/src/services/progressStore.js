@@ -2,6 +2,7 @@ import { diagnostics } from './diagnostics.js';
 import { markCurriculumLessonComplete } from './curriculumPlan.js';
 import { recordLessonMastery } from './masteryStore.js';
 import { recordPracticeSrsResult, SRS_ITEM_TYPES } from './practiceSrsExtended.js';
+import { registerLessonTagsInSrs } from './lessonSrsAdvanced.js';
 import { storage } from './storage.js';
 
 const PROGRESS_KEY = 'progress.summary';
@@ -308,6 +309,7 @@ export function completeLesson({ lesson, answers = {}, writtenAnswer = '', flowR
   if (!alreadyCompleted && lesson?.checkpoint !== 'saturday-adaptive-review') {
     try { markCurriculumLessonComplete(lesson); } catch (e) { console.warn('[Fluency] markCurriculumLessonComplete falhou:', e); }
   }
+  try { registerLessonTagsInSrs({ lesson, flowErrors, flowScore: completion.flowScore }); } catch (e) { console.warn('[Fluency] registerLessonTagsInSrs falhou:', e); }
 
   diagnostics.setPhase('aula concluída', saved ? 'success' : 'error');
   diagnostics.log(`${alreadyCompleted ? 'Aula já estava concluída' : 'Aula concluída'}: ${completion.title}`, 'info');

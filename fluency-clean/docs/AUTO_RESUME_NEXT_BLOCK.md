@@ -2,7 +2,7 @@
 
 ## Estado actual
 - branch actual: main ✅
-- último bloco concluído: BLOCO-A1-TAGS-COMPLETION (2026-05-18)
+- último bloco concluído: FASE 5.4 — SRS Advanced Integration (2026-05-18)
 - C1: COMPLETO (73 aulas + C1-CHECKPOINT-001 — schemaVersion corrigido ✅)
 - C2: COMPLETO (42 aulas + C2-CHECKPOINT-001 — schemaVersion corrigido ✅)
 - FASE 2: COMPLETO — B2 objectives (47/47) + A2 mastery gate criado
@@ -97,16 +97,32 @@
 | ~~5.1~~ | ~~Mastery gate A2~~ | ✅ **CONCLUÍDO FASE 2** |
 | ~~5.2~~ | ~~Objectives vazios nas lições B2.1~~ | ✅ **CONCLUÍDO FASE 2** |
 | ~~5.3~~ | ~~Tags ausentes nas 146 lições A1~~ | ✅ **CONCLUÍDO** — 139/139 lições A1 com tags |
-| 5.4 | SRS (Spaced Repetition System) integração avançada | FASE 5 |
-| 5.5 | Gamification (XP, badges, streaks) | FASE 5 |
+| ~~5.4~~ | ~~SRS (Spaced Repetition System) integração avançada~~ | ✅ **CONCLUÍDO** — `lessonSrsAdvanced.js` criado, integrado em `completeLesson()` |
+| 5.5 | Gamification (XP, badges, streaks) | FASE 5 — próximo bloco autorizado |
 | 5.6 | UI (melhorias de interface e navegação) | FASE 5 |
+
+## FASE 5.4 — Arquivos alterados (2026-05-18)
+
+| Arquivo | Mudança |
+|---------|---------|
+| `src/services/lessonSrsAdvanced.js` | CRIADO — SRS avançado de nível de aula |
+| `src/services/progressStore.js` | MODIFICADO — import + call `registerLessonTagsInSrs()` em `completeLesson()` |
+| `docs/SRS_ADVANCED_INTEGRATION_REPORT.md` | CRIADO — documentação completa da fase |
+| `docs/AUTO_RESUME_NEXT_BLOCK.md` | ATUALIZADO — este ficheiro |
+
+## Pendências conhecidas (FASE 5.4)
+
+- Tags `lesson.tags[]` existem apenas no A1 (139 lições). A2→C2 ainda não têm tags — o SRS funciona mas sem dados pedagógicos para esses níveis.
+- Sem UI de revisão SRS por ora — apenas camada de serviço (sem componentes .jsx modificados).
+- Decay automático não implementado nesta fase.
 
 ## Instrução de retomada
 Ao retomar:
 1. Ler este arquivo AUTO_RESUME_NEXT_BLOCK.md.
 2. Ler fluency-clean/docs/CURRICULUM_STUDY_READY_CERTIFICATION.md (veredicto final: ✅ STUDY READY).
-3. Confirmar branch: git branch --show-current → deve ser "main".
-4. Confirmar estado: git log --oneline -5.
-5. Verificar contagem: deve ser A1:139, A2:122, B1:73, B2:83, C1:73, C2:42 = 532 total.
-6. Verificar zero duplicatas antes de qualquer novo trabalho.
-7. FASE 5: aguardar autorização explícita antes de iniciar qualquer sub-fase.
+3. Ler fluency-clean/docs/SRS_ADVANCED_INTEGRATION_REPORT.md (FASE 5.4 concluída).
+4. Confirmar branch: git branch --show-current → deve ser "main".
+5. Confirmar estado: git log --oneline -5.
+6. Verificar contagem: deve ser A1:139, A2:122, B1:73, B2:83, C1:73, C2:42 = 532 total.
+7. Verificar zero duplicatas antes de qualquer novo trabalho.
+8. FASE 5.5 — Gamification: aguardar autorização explícita antes de iniciar.

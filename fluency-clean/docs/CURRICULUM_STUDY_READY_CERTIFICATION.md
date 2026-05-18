@@ -127,7 +127,7 @@ O currículo A1 → C2 do Fluency está operacional para estudo autônomo pelo a
 | ~~5.1~~ | ~~Mastery gate A2~~ | ✅ **CONCLUÍDO** — a2MasteryAssessments.js |
 | ~~5.2~~ | ~~Objectives vazios nas 31 lições B2.1~~ | ✅ **CONCLUÍDO** — 47/47 com objectives |
 | ~~5.3~~ | ~~Adicionar tags ausentes nas 146 lições A1~~ | ✅ **CONCLUÍDO** — 139/139 lições A1 com tags |
-| 5.4 | SRS (Spaced Repetition System) integração avançada | FASE 5 |
+| ~~5.4~~ | ~~SRS (Spaced Repetition System) integração avançada~~ | ✅ **CONCLUÍDO** — lessonSrsAdvanced.js |
 | 5.5 | Gamification (XP, badges, streaks) | FASE 5 |
 | 5.6 | UI improvements | FASE 5 |
 
