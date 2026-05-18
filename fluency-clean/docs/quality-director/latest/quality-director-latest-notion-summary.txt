@@ -1,8 +1,8 @@
-Status: Revisar antes de confiar
+Status: Crítico
 Nota geral: 0/100
-Relatórios: 25
-Checks: 3268
-Issues únicas: 2821 (brutas=5303, agrupadas=2482)
-Severidade: P0=0, P1=1227, P2=1594, P3=0
-Direção: Corrigir P1 antes de considerar o sistema confiável para estudo contínuo.
-Top issues: P1 Pilar grammar · A1 — Ordens duplicadas no pilar | P1 Currículo · A1 · grammar · A1-PERSONAL-GRAMMAR-001 — ID da aula não segue padrão esperado do pilar | P1 Currículo · A1 · vocabulary · A1-VOCABULARY-006 — Aula sem título forte | P1 Currículo · A1 · vocabulary · A1-VOCABULARY-011 — Aula sem título forte | P1 Currículo · A1 · vocabulary · A1-PERSONAL-VOCABULARY-001 — ID da aula não segue padrão esperado do pilar
+Relatórios: 3
+Checks: 1001
+Issues únicas: 3891 (brutas=3959, agrupadas=68)
+Severidade: P0=4, P1=2076, P2=1811, P3=0
+Direção: Corrigir P0 confirmados antes de continuar evolução visual/pedagógica.
+Top issues: P0 iPhone SE · Todas as aulas · B1-SPEAKING-004 · etapa 1 — Objeto bruto apareceu para o aluno | P0 iPhone SE · Todas as aulas · B1-SPEAKING-005 · etapa 1 — Objeto bruto apareceu para o aluno | P0 iPhone SE · Todas as aulas · B1-SPEAKING-006 · etapa 1 — Objeto bruto apareceu para o aluno | P0 iPhone SE · Todas as aulas · B1-SPEAKING-007 · etapa 1 — Objeto bruto apareceu para o aluno | P1 Exercício · A1-GRAMMAR-001 — Mais de uma alternativa parece correta
