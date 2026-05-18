@@ -9,6 +9,7 @@ function task(instruction, note = '', expected = '') { return { instruction, not
 // ─── C2 CHECKPOINT (manual, not using factory) ───────────────────────────────
 const c2checkpoint = Object.freeze({
   id: 'C2-CHECKPOINT-001',
+  schemaVersion: 'static-lesson-schema-v2-deep',
   level,
   status,
   pillar: 'checkpoint',
