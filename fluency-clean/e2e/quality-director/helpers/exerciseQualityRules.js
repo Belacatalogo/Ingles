@@ -185,6 +185,13 @@ function optionMatchesAnswer(option, answer) {
   const optionTokens = tokenSet(option);
   if (!answerTokens.size || !optionTokens.size) return false;
 
+  // Grammar guard: when stopword removal leaves ≤ 1 meaningful token on both sides,
+  // token overlap is too imprecise — "I am tired" and "It am tired" both reduce to
+  // ["tired"], but they are grammatically distinct. Require normalized equality instead.
+  if (answerTokens.size <= 1 && optionTokens.size <= 1) {
+    return optionNorm === answerNorm;
+  }
+
   let matched = 0;
   answerTokens.forEach((word) => {
     if (optionTokens.has(word)) matched += 1;
@@ -193,7 +200,9 @@ function optionMatchesAnswer(option, answer) {
   const coverage = matched / answerTokens.size;
   const reverseCoverage = matched / optionTokens.size;
   const answerShort = answerTokens.size <= 3;
-  const optionIsConciseSummary = optionTokens.size <= 4 && reverseCoverage >= 0.99 && matched >= Math.min(2, optionTokens.size);
+  // Concise summary: option is a short restatement of a longer answer (e.g., reading/listening).
+  // Require ≥ 2 matched tokens to avoid false positives on 1-token grammar sentences.
+  const optionIsConciseSummary = optionTokens.size <= 4 && reverseCoverage >= 0.99 && matched >= Math.min(2, optionTokens.size) && matched >= 2;
 
   if (optionIsConciseSummary) return true;
   if (answerShort && coverage >= 0.66) return true;

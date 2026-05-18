@@ -22,8 +22,8 @@ const common = {
 export const A1_DEEP_PERSONAL_LIFE = Object.freeze([
   createGrammarLesson({
     ...common,
-    id: 'A1-PERSONAL-GRAMMAR-001',
-    order: 21,
+    id: 'A1-GRAMMAR-021-PERSONAL',
+    order: 21.1,
     title: 'My, your, his, her + simple be statements',
     objectives: ['Usar my, your, his e her para falar de vida pessoal.', 'Construir frases simples com be.', 'Evitar confundir possessivos com pronomes pessoais.', 'Produzir frases curtas sobre si e outra pessoa.'],
     teacherOpening: 'Nesta unidade A1.2, você começa a falar de vida pessoal de forma mais completa. Para isso, precisa controlar my, your, his e her. Esses pequenos blocos dizem de quem é a informação: my name, your city, his sister, her phone number. O objetivo não é decorar uma tabela isolada; é usar possessivos em frases reais com verb to be.',
@@ -67,7 +67,7 @@ export const A1_DEEP_PERSONAL_LIFE = Object.freeze([
 
   createVocabularyLesson({
     ...common,
-    id: 'A1-PERSONAL-VOCABULARY-001',
+    id: 'A1-VOCABULARY-021-PERSONAL',
     order: 21,
     title: 'Personal life words',
     objectives: ['Aprender palavras de vida pessoal.', 'Usar chunks para falar de rotina, cidade, contato e família.', 'Evitar confusões comuns como address/email address.', 'Criar mini frases pessoais.'],
@@ -104,7 +104,7 @@ export const A1_DEEP_PERSONAL_LIFE = Object.freeze([
 
   createReadingLesson({
     ...common,
-    id: 'A1-PERSONAL-READING-001',
+    id: 'A1-READING-021-PERSONAL',
     order: 21,
     title: 'A personal life profile',
     objectives: ['Ler um perfil pessoal A1.2.', 'Identificar dados pessoais, estudo, hobby e preferência.', 'Responder com evidência textual.', 'Produzir resumo guiado.'],
@@ -134,7 +134,7 @@ export const A1_DEEP_PERSONAL_LIFE = Object.freeze([
 
   createListeningLesson({
     ...common,
-    id: 'A1-PERSONAL-LISTENING-001',
+    id: 'A1-LISTENING-021-PERSONAL',
     order: 21,
     title: 'Personal information exchange',
     objectives: ['Ouvir perguntas sobre vida pessoal.', 'Identificar cidade, telefone, e-mail e hobby.', 'Ouvir primeiro sem transcript.', 'Repetir chunks úteis.'],
@@ -184,7 +184,7 @@ Luis: Photo editing.`,
 
   createSpeakingLesson({
     ...common,
-    id: 'A1-PERSONAL-SPEAKING-001',
+    id: 'A1-SPEAKING-021-PERSONAL',
     order: 21,
     title: 'Talk about yourself and someone else',
     objectives: ['Responder perguntas pessoais em voz alta.', 'Falar sobre você e outra pessoa usando my/his/her.', 'Usar modelo antes da fala livre.', 'Gravar fala curta de 30 segundos.'],
@@ -214,7 +214,7 @@ Luis: Photo editing.`,
 
   createWritingLesson({
     ...common,
-    id: 'A1-PERSONAL-WRITING-001',
+    id: 'A1-WRITING-021-PERSONAL',
     order: 21,
     title: 'Write a short personal life paragraph',
     objectives: ['Escrever um parágrafo curto sobre vida pessoal.', 'Usar modelo antes do rascunho.', 'Usar my/his/her com dados pessoais.', 'Revisar e criar versão final.'],
