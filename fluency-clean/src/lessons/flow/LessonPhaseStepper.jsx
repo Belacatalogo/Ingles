@@ -6,15 +6,18 @@ export function LessonPhaseStepper({ phases = [], activeIndex = 0, visitedPhaseI
       {phases.map((phase, index) => {
         const active = index === activeIndex;
         const visited = visitedPhaseIds.includes(phase.id);
-        // Per-phase access: if canGoToIndex is provided use it; fall back to permissive
-        const isBlocked = canGoToIndex ? !canGoToIndex(index) : false;
+        const isBlocked = canGoToIndex ? !canGoToIndex(index) : index > activeIndex;
         const Icon = isBlocked ? Lock : visited ? CheckCircle2 : Circle;
         return (
           <button
             type="button"
             key={phase.id}
             className={[active ? 'active' : '', visited ? 'visited' : '', isBlocked ? 'blocked' : ''].filter(Boolean).join(' ')}
-            onClick={() => onSelect?.(index)}
+            onClick={() => {
+              if (isBlocked) return;
+              onSelect?.(index);
+            }}
+            disabled={isBlocked}
             aria-disabled={isBlocked}
             aria-current={active ? 'step' : undefined}
             title={isBlocked ? 'Conclua as etapas anteriores para desbloquear.' : undefined}
