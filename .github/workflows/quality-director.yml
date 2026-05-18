@@ -2,6 +2,15 @@ name: Fluency Quality Director
 
 on:
   workflow_dispatch:
+    inputs:
+      audit_mode:
+        description: 'Modo da auditoria'
+        required: true
+        default: 'full'
+        type: choice
+        options:
+          - full
+          - smart
   push:
     branches:
       - main
@@ -34,6 +43,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           persist-credentials: true
+          fetch-depth: 2
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -51,8 +61,23 @@ jobs:
       - name: Build app
         run: npm run build
 
+      - name: Select Quality Director suites
+        id: select_suites
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ github.event.inputs.audit_mode }}" = "full" ]; then
+            node scripts/quality-director/select-suites.mjs --full
+          else
+            node scripts/quality-director/select-suites.mjs
+          fi
+
+      - name: Show selected suites
+        run: |
+          echo "Mode: ${{ steps.select_suites.outputs.mode }}"
+          echo "Suites: ${{ steps.select_suites.outputs.suites }}"
+          cat audit-results/quality-director-suite-selection.txt
+
       - name: Run Quality Director
-        run: npm run test:quality-director
+        run: npx playwright test ${{ steps.select_suites.outputs.suites }}
 
       - name: Publish latest Quality Director report
         if: always()
