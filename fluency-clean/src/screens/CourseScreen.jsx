@@ -23,7 +23,7 @@ const pillarLabels = {
 
 const statusLabels = {
   done: 'concluída',
-  ready: 'disponível',
+  ready: 'próxima',
   locked: 'bloqueada',
   planned: 'planejada',
 };
@@ -43,14 +43,20 @@ const TODAY_DAY = new Date().getDay();
 function safeArray(value) { return Array.isArray(value) ? value : []; }
 function countReadyLessons(level) { return safeArray(getStaticLessons(level)).filter(isStaticLessonReady).length; }
 
-function buildLevelLessons(level, completedIds) {
+function buildLevelLessons(level, completedIds, nextLessonId = '') {
   return safeArray(getStaticLessons(level)).map((lesson) => {
     const isDone = completedIds.has(lesson.id);
     const ready = isStaticLessonReady(lesson);
-    const blocked = ready && !isDone && Boolean(getLessonLockReason(lesson, completedIds));
-    const available = ready && !isDone && !blocked;
+    const prereqBlocked = ready && !isDone && Boolean(getLessonLockReason(lesson, completedIds));
+    const isNext = Boolean(nextLessonId && lesson.id === nextLessonId);
+    const available = ready && !isDone && !prereqBlocked && isNext;
     const status = isDone ? 'done' : available ? 'ready' : ready ? 'locked' : 'planned';
-    return { ...lesson, status };
+    const lockReason = !isDone && ready && !available
+      ? prereqBlocked
+        ? getLessonLockReason(lesson, completedIds)
+        : 'Siga pelo botão Começar aula. O Fluency libera uma aula por vez na sequência guiada.'
+      : '';
+    return { ...lesson, status, lockReason };
   });
 }
 
@@ -84,10 +90,10 @@ export function CourseScreen({ onNavigate }) {
   const validation = useMemo(() => getStaticCurriculumValidationStatus(activeLevel), [activeLevel]);
   const guidedAccess = useMemo(() => validateGuidedCourseAccess(activeLevel), [activeLevel, message]);
   const dailyState = useMemo(() => getDailyStaticCourseLessonState(activeLevel), [activeLevel, message]);
-  const levelLessons = useMemo(() => buildLevelLessons(activeLevel, completedIds), [activeLevel, message, completedIds]);
-  const guidedStatusLabel = guidedAccess.approved ? 'sequência protegida' : 'sequência em revisão';
   const nextLesson = dailyState.lesson;
   const nextIsBlocked = Boolean(nextLesson && dailyState.reason);
+  const levelLessons = useMemo(() => buildLevelLessons(activeLevel, completedIds, nextLesson?.id || ''), [activeLevel, message, completedIds, nextLesson?.id]);
+  const guidedStatusLabel = guidedAccess.approved ? 'sequência protegida' : 'sequência em revisão';
 
   function isLevelBlocked(level) {
     return level !== 'A1' && !a1Gate.canUnlockA2;
@@ -244,19 +250,22 @@ export function CourseScreen({ onNavigate }) {
                 onClick={
                   lesson.status === 'done' ? () => handleReviewLesson(lesson)
                   : lesson.status === 'ready' ? handleStartDailyLesson
-                  : undefined
+                  : () => showMessage(lesson.lockReason || 'Aula bloqueada. Use Começar aula para seguir a sequência guiada.')
                 }
-                disabled={lesson.status === 'locked' || lesson.status === 'planned'}
+                disabled={lesson.status === 'planned'}
+                aria-disabled={lesson.status === 'locked' || lesson.status === 'planned'}
+                title={lesson.lockReason || undefined}
               >
                 <span className={`course-lesson-number pillar-${lesson.pillar}`}>
-                  {lesson.status === 'done' ? '✓' : lesson.status === 'ready' ? '▶' : ''}
+                  {lesson.status === 'done' ? '✓' : lesson.status === 'ready' ? '▶' : lesson.status === 'locked' ? '🔒' : ''}
                 </span>
                 <span className="course-lesson-copy">
                   <strong>{lesson.title}</strong>
                   <small>{lesson.level} · {pillarLabels[lesson.pillar] || 'Aula'} · {statusLabels[lesson.status]}</small>
                 </span>
                 {lesson.status === 'done' && <span className="course-lesson-state"><CheckCircle2 size={15} /> Revisar</span>}
-                {lesson.status === 'ready' && <span className="course-lesson-state"><Play size={15} /> Disponível</span>}
+                {lesson.status === 'ready' && <span className="course-lesson-state"><Play size={15} /> Próxima</span>}
+                {lesson.status === 'locked' && <span className="course-lesson-state"><Lock size={15} /> Bloqueada</span>}
               </button>
             ))}
           </div>
