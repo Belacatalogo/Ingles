@@ -19,10 +19,11 @@ const STOPWORDS = new Set([
 const GRAMMAR_PRONOUNS = new Set(['i', 'you', 'he', 'she', 'it', 'we', 'they']);
 const GRAMMAR_BE_FORMS = new Set(['am', 'is', 'are', 'was', 'were', 'be', 'been', 'being']);
 const GRAMMAR_DETERMINERS = new Set(['a', 'an', 'the', 'my', 'your', 'his', 'her', 'our', 'their']);
+const GRAMMAR_DEMONSTRATIVES = new Set(['this', 'that', 'these', 'those', 'there']);
 const GRAMMAR_AUXILIARIES = new Set(['do', 'does', 'did', 'can', 'could', 'will', 'would', 'should']);
 const RESPONSE_PREFIXES = new Set(['yes', 'no']);
 const NEGATION_WORDS = new Set(['not', 'no', 'never']);
-const STRUCTURAL_WORDS = new Set([...GRAMMAR_BE_FORMS, ...GRAMMAR_DETERMINERS, ...GRAMMAR_AUXILIARIES, ...NEGATION_WORDS, 'there', 'this', 'that', 'these', 'those', 'have', 'has', 'can']);
+const STRUCTURAL_WORDS = new Set([...GRAMMAR_BE_FORMS, ...GRAMMAR_DETERMINERS, ...GRAMMAR_DEMONSTRATIVES, ...GRAMMAR_AUXILIARIES, ...NEGATION_WORDS, 'have', 'has', 'can']);
 const COMPREHENSION_PATH_PATTERNS = [/evidenceQuestions/i, /readingComprehension/i, /listeningComprehension/i, /comprehensionQuestions/i, /listeningQuestions/i, /readingQuestions/i];
 
 const SYNONYMS = new Map([
@@ -101,7 +102,7 @@ function sameSet(a, b) { if (a.size !== b.size) return false; for (const item of
 function sameSequence(a, b) { return a.length === b.length && a.every((item, index) => item === b[index]); }
 function startsWithGrammarFrame(tokens) {
   const stripped = stripResponsePrefix(tokens);
-  return GRAMMAR_PRONOUNS.has(stripped[0]) || GRAMMAR_BE_FORMS.has(stripped[0]) || GRAMMAR_AUXILIARIES.has(stripped[0]) || GRAMMAR_DETERMINERS.has(stripped[0]);
+  return GRAMMAR_PRONOUNS.has(stripped[0]) || GRAMMAR_BE_FORMS.has(stripped[0]) || GRAMMAR_AUXILIARIES.has(stripped[0]) || GRAMMAR_DETERMINERS.has(stripped[0]) || GRAMMAR_DEMONSTRATIVES.has(stripped[0]);
 }
 function endsAsQuestion(value) { return /\?\s*$/.test(clean(value)); }
 function isComprehensionPath(path = '') { return COMPREHENSION_PATH_PATTERNS.some((pattern) => pattern.test(path)); }
@@ -153,6 +154,13 @@ function sameTokenBag(a, b) {
   return counts.size === 0;
 }
 
+function hasShortOrderMismatch(option, answer) {
+  const optionRaw = stripResponsePrefix(rawWords(option));
+  const answerRaw = stripResponsePrefix(rawWords(answer));
+  if (!optionRaw.length || !answerRaw.length || optionRaw.length > 9 || answerRaw.length > 9) return false;
+  return sameTokenBag(optionRaw, answerRaw) && !sameSequence(optionRaw, answerRaw);
+}
+
 function hasGrammarCoreMismatch(option, answer) {
   const optionRaw = rawWords(option);
   const answerRaw = rawWords(answer);
@@ -167,14 +175,17 @@ function hasGrammarCoreMismatch(option, answer) {
   const answerBeForms = setFrom(answerRaw, GRAMMAR_BE_FORMS);
   const optionDeterminers = setFrom(optionRaw, GRAMMAR_DETERMINERS);
   const answerDeterminers = setFrom(answerRaw, GRAMMAR_DETERMINERS);
+  const optionDemonstratives = setFrom(optionRaw, GRAMMAR_DEMONSTRATIVES);
+  const answerDemonstratives = setFrom(answerRaw, GRAMMAR_DEMONSTRATIVES);
   const optionAuxiliaries = setFrom(optionRaw, GRAMMAR_AUXILIARIES);
   const answerAuxiliaries = setFrom(answerRaw, GRAMMAR_AUXILIARIES);
 
   if (!sameSet(optionPronouns, answerPronouns)) return true;
   if (!sameSet(optionBeForms, answerBeForms)) return true;
   if (!sameSet(optionAuxiliaries, answerAuxiliaries)) return true;
+  if (!sameSet(optionDemonstratives, answerDemonstratives)) return true;
   if (answerRaw.length <= 8 && !sameSet(optionDeterminers, answerDeterminers)) return true;
-  if (sameTokenBag(optionRaw, answerRaw) && !sameSequence(optionRaw, answerRaw)) return true;
+  if (hasShortOrderMismatch(option, answer)) return true;
   if (startsWithGrammarFrame(answerRaw) && optionRaw[0] !== answerRaw[0]) return true;
   return false;
 }
@@ -248,6 +259,7 @@ function optionMatchesAnswer(option, answer, context = {}) {
   if (!comprehensionPath && hasNegationMismatch(option, answer)) return false;
   if (!comprehensionPath && hasBeAgreementMismatch(option, answer)) return false;
   if (!comprehensionPath && hasCompoundGrammarMismatch(option, answer)) return false;
+  if (!comprehensionPath && hasShortOrderMismatch(option, answer)) return false;
 
   const grammarSensitiveShortAnswer = !comprehensionPath && isShortGrammarStructureSensitive(option, answer);
   if (grammarSensitiveShortAnswer) return false;
@@ -262,13 +274,16 @@ function optionMatchesAnswer(option, answer, context = {}) {
   const reverseCoverage = matched / optionTokens.size;
 
   if (!comprehensionPath && hasGrammarCoreMismatch(option, answer)) return false;
-  if (isConciseContentSummary(option, answer, matched, reverseCoverage)) return true;
+  if (comprehensionPath && isConciseContentSummary(option, answer, matched, reverseCoverage)) return true;
 
-  if (optionNorm.length > 3 && answerNorm.length > 3 && (optionNorm.includes(answerNorm) || answerNorm.includes(optionNorm))) return true;
+  if (comprehensionPath && optionNorm.length > 3 && answerNorm.length > 3 && (optionNorm.includes(answerNorm) || answerNorm.includes(optionNorm))) return true;
+  if (!comprehensionPath && optionNorm.length > 10 && answerNorm.length > 10 && answerTokens.size >= 3 && optionTokens.size >= 3 && (optionNorm.includes(answerNorm) || answerNorm.includes(optionNorm))) return true;
 
-  const optionIsConciseSummary = optionTokens.size <= 8 && reverseCoverage >= 0.99 && matched >= Math.min(2, optionTokens.size);
-  if (optionIsConciseSummary) return true;
-  if (coverage >= 0.72 && reverseCoverage >= 0.45) return true;
+  if (comprehensionPath) {
+    const optionIsConciseSummary = optionTokens.size <= 8 && reverseCoverage >= 0.99 && matched >= Math.min(2, optionTokens.size);
+    if (optionIsConciseSummary) return true;
+  }
+  if (matched >= 2 && coverage >= 0.72 && reverseCoverage >= 0.45) return true;
   if (matched >= 2 && coverage >= 0.6 && reverseCoverage >= 0.6) return true;
   return false;
 }
