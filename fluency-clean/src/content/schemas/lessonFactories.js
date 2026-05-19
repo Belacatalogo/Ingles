@@ -32,6 +32,15 @@ function hasChoicePractice(...groups) {
   return groups.flat().some((item) => item && typeof item === 'object' && clean(item.question) && safeArray(item.options).length >= 2 && clean(item.answer));
 }
 
+function normalizeVocabEntry(entry = {}) {
+  if (typeof entry === 'string') return { term: clean(entry), meaning: '' };
+  if (!entry || typeof entry !== 'object') return { term: '', meaning: '' };
+  return {
+    term: firstNonEmpty(entry.word, entry.term, entry.english, entry.phrase, entry.chunk, entry.text, entry.label),
+    meaning: firstNonEmpty(entry.translation, entry.meaning, entry.pt, entry.portuguese, entry.definition, entry.explanation),
+  };
+}
+
 function createFallbackGrammarPractice(input = {}) {
   const title = clean(input.title) || 'grammar';
   const goal = firstNonEmpty(input.grammarGoal, input.objectives?.[0], `Usar ${title} em frase A1.`);
@@ -56,6 +65,36 @@ function createFallbackGrammarPractice(input = {}) {
       options: [sample, 'Portuguese word order', 'Missing verb'],
       answer: sample,
       explanation: 'A resposta correta mantém uma frase curta, completa e adequada ao nível A1.',
+    },
+  ];
+}
+
+function createFallbackVocabularyPractice(input = {}) {
+  const title = clean(input.title) || 'vocabulário';
+  const rawEntries = [
+    ...safeArray(input.essentialWords),
+    ...safeArray(input.chunks),
+    ...safeArray(input.lexicalSets).flatMap((set) => safeArray(set?.items || set?.words || set?.entries)),
+    ...safeArray(input.examples),
+  ].map(normalizeVocabEntry).filter((entry) => entry.term);
+
+  const primary = rawEntries[0] || { term: 'hello', meaning: 'olá' };
+  const secondary = rawEntries.find((entry) => entry.term !== primary.term) || { term: 'goodbye', meaning: 'tchau' };
+  const third = rawEntries.find((entry) => entry.term !== primary.term && entry.term !== secondary.term) || { term: 'thank you', meaning: 'obrigado' };
+  const primaryMeaning = primary.meaning || `vocabulário de ${title}`;
+
+  return [
+    {
+      question: `Qual palavra ou chunk pertence à aula de ${title}?`,
+      options: [primary.term, secondary.term, third.term],
+      answer: primary.term,
+      explanation: `A aula trabalha ${primary.term}${primary.meaning ? ` = ${primary.meaning}` : ''}.`,
+    },
+    {
+      question: `Qual opção combina com “${primary.term}”?`,
+      options: [primaryMeaning, 'opção incorreta', 'fora do tema'],
+      answer: primaryMeaning,
+      explanation: 'Escolha o significado ou uso apresentado no vocabulário da aula.',
     },
   ];
 }
@@ -115,6 +154,9 @@ export function createGrammarLesson(input = {}) {
 
 export function createVocabularyLesson(input = {}) {
   const examples = safeArray(input.examples);
+  const recognitionPractice = safeArray(input.recognitionPractice);
+  const usagePractice = safeArray(input.usagePractice);
+  const fallbackPractice = hasChoicePractice(recognitionPractice, usagePractice) ? [] : createFallbackVocabularyPractice({ ...input, examples });
   return {
     ...createStaticLessonBase({ ...input, pillar: 'vocabulary' }),
     topicContext: clean(input.topicContext),
@@ -129,8 +171,8 @@ export function createVocabularyLesson(input = {}) {
     lexicalSets: safeArray(input.lexicalSets),
     pronunciationNotes: safeArray(input.pronunciationNotes),
     examples,
-    recognitionPractice: safeArray(input.recognitionPractice),
-    usagePractice: safeArray(input.usagePractice),
+    recognitionPractice: recognitionPractice.length ? recognitionPractice : fallbackPractice,
+    usagePractice,
     productionTasks: safeArray(input.productionTasks),
   };
 }
