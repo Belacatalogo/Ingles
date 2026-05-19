@@ -1,8 +1,8 @@
-Status: Revisar antes de confiar
+Status: Crítico
 Nota geral: 0/100
 Relatórios: 25
 Checks: 3268
-Issues únicas: 2347 (brutas=4376, agrupadas=2029)
-Severidade: P0=0, P1=1195, P2=1152, P3=0
-Direção: Corrigir P1 antes de considerar o sistema confiável para estudo contínuo.
-Top issues: P1 iPhone 13 · Instalação limpa sem dados · Aba Cartas — Elemento interativo sobreposto pela bottom nav | P1 iPhone 13 · Estados principais como null · Aba Cartas — Elemento interativo sobreposto pela bottom nav | P1 iPhone 13 · Estados principais com JSON inválido · Aba Cartas — Elemento interativo sobreposto pela bottom nav | P1 iPhone 13 · Sem aula atual mas com configurações básicas · Aba Cartas — Elemento interativo sobreposto pela bottom nav | P1 iPhone SE · Instalação limpa sem dados · Aba Hoje — Elemento interativo sobreposto pela bottom nav
+Issues únicas: 2315 (brutas=4312, agrupadas=1997)
+Severidade: P0=39, P1=1124, P2=1152, P3=0
+Direção: Corrigir P0 confirmados antes de continuar evolução visual/pedagógica.
+Top issues: P0 Exercício · A1-READING-015 — Resposta correta não aparece nas alternativas | P0 Exercício · A1-READING-018-CLOTHES — Resposta correta não aparece nas alternativas | P0 Exercício · A2-READING-001 — Resposta correta não aparece nas alternativas | P0 Exercício · A2-READING-003 — Resposta correta não aparece nas alternativas | P0 Exercício · A2-READING-005 — Resposta correta não aparece nas alternativas
