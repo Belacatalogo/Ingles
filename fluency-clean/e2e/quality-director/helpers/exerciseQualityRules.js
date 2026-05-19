@@ -19,6 +19,8 @@ const STOPWORDS = new Set([
 const GRAMMAR_PRONOUNS = new Set(['i', 'you', 'he', 'she', 'it', 'we', 'they']);
 const GRAMMAR_BE_FORMS = new Set(['am', 'is', 'are', 'was', 'were', 'be', 'been', 'being']);
 const GRAMMAR_DETERMINERS = new Set(['a', 'an', 'the', 'my', 'your', 'his', 'her', 'our', 'their']);
+const GRAMMAR_AUXILIARIES = new Set(['do', 'does', 'did', 'can', 'could', 'will', 'would', 'should']);
+const NEGATION_WORDS = new Set(['not', 'no', 'never']);
 
 const SYNONYMS = new Map([
   ['comfortable', 'comfort'], ['comfy', 'comfort'], ['working', 'work'], ['works', 'work'], ['worked', 'work'],
@@ -92,21 +94,63 @@ function lexicalOverlap(a, b) {
 
 function setFrom(tokens, vocabulary) { return new Set(tokens.filter((token) => vocabulary.has(token))); }
 function sameSet(a, b) { if (a.size !== b.size) return false; for (const item of a) if (!b.has(item)) return false; return true; }
+function sameSequence(a, b) { return a.length === b.length && a.every((item, index) => item === b[index]); }
+function startsWithGrammarFrame(tokens) { return GRAMMAR_PRONOUNS.has(tokens[0]) || GRAMMAR_BE_FORMS.has(tokens[0]) || GRAMMAR_AUXILIARIES.has(tokens[0]); }
+function endsAsQuestion(value) { return /\?\s*$/.test(clean(value)); }
+
+function hasNegationMismatch(option, answer) {
+  const optionRaw = rawWords(option);
+  const answerRaw = rawWords(answer);
+  const optionNegation = setFrom(optionRaw, NEGATION_WORDS);
+  const answerNegation = setFrom(answerRaw, NEGATION_WORDS);
+  if (!optionNegation.size && !answerNegation.size) return false;
+  return !sameSet(optionNegation, answerNegation);
+}
+
+function isShortGrammarStructureSensitive(option, answer) {
+  const optionRaw = rawWords(option);
+  const answerRaw = rawWords(answer);
+  if (!optionRaw.length || !answerRaw.length || answerRaw.length > 8 || optionRaw.length > 9) return false;
+  if (endsAsQuestion(option) || endsAsQuestion(answer)) return true;
+  if (startsWithGrammarFrame(answerRaw) || startsWithGrammarFrame(optionRaw)) return true;
+  if (answerRaw.length <= 4 && (answerRaw.some((token) => NEGATION_WORDS.has(token)) || optionRaw.some((token) => NEGATION_WORDS.has(token)))) return true;
+  return false;
+}
+
+function sameTokenBag(a, b) {
+  if (a.length !== b.length) return false;
+  const counts = new Map();
+  a.forEach((token) => counts.set(token, (counts.get(token) || 0) + 1));
+  for (const token of b) {
+    const next = (counts.get(token) || 0) - 1;
+    if (next < 0) return false;
+    if (next === 0) counts.delete(token); else counts.set(token, next);
+  }
+  return counts.size === 0;
+}
 
 function hasGrammarCoreMismatch(option, answer) {
   const optionRaw = rawWords(option);
   const answerRaw = rawWords(answer);
+  if (!isShortGrammarStructureSensitive(option, answer)) return false;
+  if (hasNegationMismatch(option, answer)) return true;
+  if (endsAsQuestion(option) !== endsAsQuestion(answer)) return true;
+
   const optionPronouns = setFrom(optionRaw, GRAMMAR_PRONOUNS);
   const answerPronouns = setFrom(answerRaw, GRAMMAR_PRONOUNS);
   const optionBeForms = setFrom(optionRaw, GRAMMAR_BE_FORMS);
   const answerBeForms = setFrom(answerRaw, GRAMMAR_BE_FORMS);
   const optionDeterminers = setFrom(optionRaw, GRAMMAR_DETERMINERS);
   const answerDeterminers = setFrom(answerRaw, GRAMMAR_DETERMINERS);
-  const grammarSensitive = answerPronouns.size || answerBeForms.size || answerDeterminers.size;
-  if (!grammarSensitive) return false;
+  const optionAuxiliaries = setFrom(optionRaw, GRAMMAR_AUXILIARIES);
+  const answerAuxiliaries = setFrom(answerRaw, GRAMMAR_AUXILIARIES);
+
   if (!sameSet(optionPronouns, answerPronouns)) return true;
   if (!sameSet(optionBeForms, answerBeForms)) return true;
+  if (!sameSet(optionAuxiliaries, answerAuxiliaries)) return true;
   if (answerRaw.length <= 8 && !sameSet(optionDeterminers, answerDeterminers)) return true;
+  if (sameTokenBag(optionRaw, answerRaw) && !sameSequence(optionRaw, answerRaw)) return true;
+  if (startsWithGrammarFrame(answerRaw) && optionRaw[0] !== answerRaw[0]) return true;
   return false;
 }
 
@@ -127,6 +171,10 @@ function optionMatchesAnswer(option, answer) {
   const answerNorm = normalize(answer);
   if (!optionNorm || !answerNorm) return false;
   if (optionNorm === answerNorm) return true;
+  if (hasNegationMismatch(option, answer)) return false;
+
+  const grammarSensitiveShortAnswer = isShortGrammarStructureSensitive(option, answer);
+  if (grammarSensitiveShortAnswer) return false;
 
   const answerTokens = tokenSet(answer);
   const optionTokens = tokenSet(option);
@@ -137,12 +185,10 @@ function optionMatchesAnswer(option, answer) {
   const coverage = matched / answerTokens.size;
   const reverseCoverage = matched / optionTokens.size;
 
-  if (isConciseContentSummary(option, answer, matched, reverseCoverage)) return true;
   if (hasGrammarCoreMismatch(option, answer)) return false;
+  if (isConciseContentSummary(option, answer, matched, reverseCoverage)) return true;
 
-  const answerRaw = rawWords(answer);
-  const grammarSensitiveShortAnswer = answerRaw.length <= 8 && answerRaw.some((token) => GRAMMAR_PRONOUNS.has(token) || GRAMMAR_BE_FORMS.has(token) || GRAMMAR_DETERMINERS.has(token));
-  if (!grammarSensitiveShortAnswer && (optionNorm.includes(answerNorm) || answerNorm.includes(optionNorm))) return true;
+  if (optionNorm.length > 3 && answerNorm.length > 3 && (optionNorm.includes(answerNorm) || answerNorm.includes(optionNorm))) return true;
 
   const optionIsConciseSummary = optionTokens.size <= 8 && reverseCoverage >= 0.99 && matched >= Math.min(2, optionTokens.size);
   if (optionIsConciseSummary) return true;
