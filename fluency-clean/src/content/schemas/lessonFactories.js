@@ -144,7 +144,9 @@ export function createListeningLesson(input = {}) {
 export function createSpeakingLesson(input = {}) {
   return {
     ...createStaticLessonBase({ ...input, pillar: 'speaking' }),
-    speakingSituation: clean(input.speakingSituation),
+    speakingSituation: typeof input.speakingSituation === 'object' && input.speakingSituation !== null
+      ? clean(input.speakingSituation.context || input.speakingSituation.text || '')
+      : clean(input.speakingSituation),
     modelPhrases: safeArray(input.modelPhrases),
     pronunciationChunks: safeArray(input.pronunciationChunks),
     repeatAfterMe: safeArray(input.repeatAfterMe),
