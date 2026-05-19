@@ -1,6 +1,6 @@
 # Fluency Quality Director — Relatório Executivo Latest
 
-Gerado em: 2026-05-19T08:02:19.031Z
+Gerado em: 2026-05-19T08:58:47.217Z
 
 ## Veredito
 
@@ -142,7 +142,7 @@ Gerado em: 2026-05-19T08:02:19.031Z
    - Relatório: quality-director-empty-states-security / iPhone SE
    - Ocorrências agrupadas: 1
    - Impacto: O aluno pode não conseguir tocar em botões ou campos próximos do rodapé.
-   - Evidência: audit-results/screenshots/iphone-se-instala-o-limpa-sem-dados-aba-hoje.png; overlap={"nav":{"x":17,"y":585,"width":341,"height":70},"offenders":[{"tag":"BUTTON","className":"today-task-card","text":"Aula de hoje Curso fixo em preparação","rect":{"x":14,"y":591,"width":347,"height":92,"bottom":683},"overlapPx":64,"overlapRatio":0.7}]}
+   - Evidência: audit-results/screenshots/iphone-se-instala-o-limpa-sem-dados-aba-hoje.png; overlap={"nav":{"x":17,"y":585,"width":341,"height":70},"offenders":[{"tag":"BUTTON","className":"today-task-card","text":"Concluir 1 bolha da trilha Complete uma bolha para fixar vocabulário","rect":{"x":14,"y":594,"width":347,"height":74,"bottom":668},"overlapPx":61,"overlapRatio":0.83}]}
    - Recomendação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável ou remover o elemento da faixa fixa inferior.
 
 2. **P1 · iPhone SE · Estados principais como null · Aba Hoje — Elemento interativo sobreposto pela bottom nav**
@@ -150,7 +150,7 @@ Gerado em: 2026-05-19T08:02:19.031Z
    - Relatório: quality-director-empty-states-security / iPhone SE
    - Ocorrências agrupadas: 1
    - Impacto: O aluno pode não conseguir tocar em botões ou campos próximos do rodapé.
-   - Evidência: audit-results/screenshots/iphone-se-estados-principais-como-null-aba-hoje.png; overlap={"nav":{"x":17,"y":585,"width":341,"height":70},"offenders":[{"tag":"BUTTON","className":"today-task-card","text":"Aula de hoje Curso fixo em preparação","rect":{"x":14,"y":591,"width":347,"height":92,"bottom":683},"overlapPx":64,"overlapRatio":0.7}]}
+   - Evidência: audit-results/screenshots/iphone-se-estados-principais-como-null-aba-hoje.png; overlap={"nav":{"x":17,"y":585,"width":341,"height":70},"offenders":[{"tag":"BUTTON","className":"today-task-card","text":"Concluir 1 bolha da trilha Complete uma bolha para fixar vocabulário","rect":{"x":14,"y":594,"width":347,"height":74,"bottom":668},"overlapPx":61,"overlapRatio":0.83}]}
    - Recomendação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável ou remover o elemento da faixa fixa inferior.
 
 3. **P1 · iPhone SE · Estados principais com JSON inválido · Aba Hoje — Elemento interativo sobreposto pela bottom nav**
@@ -158,7 +158,7 @@ Gerado em: 2026-05-19T08:02:19.031Z
    - Relatório: quality-director-empty-states-security / iPhone SE
    - Ocorrências agrupadas: 1
    - Impacto: O aluno pode não conseguir tocar em botões ou campos próximos do rodapé.
-   - Evidência: audit-results/screenshots/iphone-se-estados-principais-com-json-inv-lido-aba-hoje.png; overlap={"nav":{"x":17,"y":585,"width":341,"height":70},"offenders":[{"tag":"BUTTON","className":"today-task-card","text":"Aula de hoje Curso fixo em preparação","rect":{"x":14,"y":591,"width":347,"height":92,"bottom":683},"overlapPx":64,"overlapRatio":0.7}]}
+   - Evidência: audit-results/screenshots/iphone-se-estados-principais-com-json-inv-lido-aba-hoje.png; overlap={"nav":{"x":17,"y":585,"width":341,"height":70},"offenders":[{"tag":"BUTTON","className":"today-task-card","text":"Concluir 1 bolha da trilha Complete uma bolha para fixar vocabulário","rect":{"x":14,"y":594,"width":347,"height":74,"bottom":668},"overlapPx":61,"overlapRatio":0.83}]}
    - Recomendação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável ou remover o elemento da faixa fixa inferior.
 
 4. **P1 · iPhone SE · Sem aula atual mas com configurações básicas · Aba Hoje — Elemento interativo sobreposto pela bottom nav**
@@ -166,7 +166,7 @@ Gerado em: 2026-05-19T08:02:19.031Z
    - Relatório: quality-director-empty-states-security / iPhone SE
    - Ocorrências agrupadas: 1
    - Impacto: O aluno pode não conseguir tocar em botões ou campos próximos do rodapé.
-   - Evidência: audit-results/screenshots/iphone-se-sem-aula-atual-mas-com-configura-es-b-sicas-aba-hoje.png; overlap={"nav":{"x":17,"y":585,"width":341,"height":70},"offenders":[{"tag":"BUTTON","className":"today-task-card","text":"Aula de hoje Curso fixo em preparação","rect":{"x":14,"y":591,"width":347,"height":92,"bottom":683},"overlapPx":64,"overlapRatio":0.7}]}
+   - Evidência: audit-results/screenshots/iphone-se-sem-aula-atual-mas-com-configura-es-b-sicas-aba-hoje.png; overlap={"nav":{"x":17,"y":585,"width":341,"height":70},"offenders":[{"tag":"BUTTON","className":"today-task-card","text":"Concluir 1 bolha da trilha Complete uma bolha para fixar vocabulário","rect":{"x":14,"y":594,"width":347,"height":74,"bottom":668},"overlapPx":61,"overlapRatio":0.83}]}
    - Recomendação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável ou remover o elemento da faixa fixa inferior.
 
 5. **P1 · Exercício · A1-GRAMMAR-001 — Mais de uma alternativa parece correta**
