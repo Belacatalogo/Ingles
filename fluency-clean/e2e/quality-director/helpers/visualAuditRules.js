@@ -51,102 +51,43 @@ export async function auditVisualViewport({ page, reporter, area }) {
   const bodyText = await page.locator('body').innerText({ timeout: 8000 }).catch(() => '');
   const screenshotPath = await captureEvidence(page, area);
 
-  reporter.addCheck({
-    area,
-    title: `Screenshot capturado: ${screenshotPath}`,
-  });
+  reporter.addCheck({ area, title: `Screenshot capturado: ${screenshotPath}` });
 
   if (!bodyText.trim()) {
-    reporter.addIssue({
-      severity: 'P0',
-      area,
-      title: 'Tela sem texto visível',
-      impact: 'Pode indicar tela branca ou renderização quebrada.',
-      evidence: screenshotPath,
-      recommendation: 'Verificar carregamento da tela e estados vazios.',
-    });
+    reporter.addIssue({ severity: 'P0', area, title: 'Tela sem texto visível', impact: 'Pode indicar tela branca ou renderização quebrada.', evidence: screenshotPath, recommendation: 'Verificar carregamento da tela e estados vazios.' });
   }
 
   const bottomNavBox = await box(page.locator('.bottom-nav, .reference-bottom-nav'));
   if (!bottomNavBox) {
-    reporter.addIssue({
-      severity: 'P1',
-      area,
-      title: 'Bottom navigation não visível',
-      impact: 'O aluno pode ficar sem navegação principal no mobile.',
-      evidence: screenshotPath,
-      recommendation: 'Garantir que a navegação inferior apareça e respeite safe-area.',
-    });
+    reporter.addIssue({ severity: 'P1', area, title: 'Bottom navigation não visível', impact: 'O aluno pode ficar sem navegação principal no mobile.', evidence: screenshotPath, recommendation: 'Garantir que a navegação inferior apareça e respeite safe-area.' });
   } else if (bottomNavBox.y + bottomNavBox.height > viewport.height + 8) {
-    reporter.addIssue({
-      severity: 'P1',
-      area,
-      title: 'Bottom navigation extrapola a viewport',
-      impact: 'A navegação pode ficar cortada ou difícil de tocar.',
-      evidence: `${screenshotPath}; nav=${JSON.stringify(bottomNavBox)} viewport=${JSON.stringify(viewport)}`,
-      recommendation: 'Revisar posição fixa, safe-area e altura da bottom nav.',
-    });
+    reporter.addIssue({ severity: 'P1', area, title: 'Bottom navigation extrapola a viewport', impact: 'A navegação pode ficar cortada ou difícil de tocar.', evidence: `${screenshotPath}; nav=${JSON.stringify(bottomNavBox)} viewport=${JSON.stringify(viewport)}`, recommendation: 'Revisar posição fixa, safe-area e altura da bottom nav.' });
   }
 
   const headingBox = await box(page.locator('h1, h2').first());
   if (headingBox && headingBox.x < -1) {
-    reporter.addIssue({
-      severity: 'P1',
-      area,
-      title: 'Título principal cortado à esquerda',
-      impact: 'A tela pode parecer quebrada ou mal alinhada.',
-      evidence: `${screenshotPath}; heading=${JSON.stringify(headingBox)}`,
-      recommendation: 'Revisar padding lateral e overflow horizontal.',
-    });
+    reporter.addIssue({ severity: 'P1', area, title: 'Título principal cortado à esquerda', impact: 'A tela pode parecer quebrada ou mal alinhada.', evidence: `${screenshotPath}; heading=${JSON.stringify(headingBox)}`, recommendation: 'Revisar padding lateral e overflow horizontal.' });
   }
 
   const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
   if (scrollWidth > viewport.width + 4) {
-    reporter.addIssue({
-      severity: 'P1',
-      area,
-      title: 'Overflow horizontal detectado',
-      impact: 'O aluno pode ver conteúdo cortado ou rolagem lateral no mobile.',
-      evidence: `${screenshotPath}; scrollWidth=${scrollWidth}; viewportWidth=${viewport.width}`,
-      recommendation: 'Verificar cards, pre, tabelas, botões largos e textos sem quebra.',
-    });
+    reporter.addIssue({ severity: 'P1', area, title: 'Overflow horizontal detectado', impact: 'O aluno pode ver conteúdo cortado ou rolagem lateral no mobile.', evidence: `${screenshotPath}; scrollWidth=${scrollWidth}; viewportWidth=${viewport.width}`, recommendation: 'Verificar cards, pre, tabelas, botões largos e textos sem quebra.' });
   }
 
   const buttons = await allBoxes(page.getByRole('button'), 35);
   buttons.forEach((item) => {
     if (item.box.width < 36 || item.box.height < 36) {
-      reporter.addIssue({
-        severity: 'P2',
-        area,
-        title: 'Botão com área de toque pequena',
-        impact: 'No iPhone, o aluno pode ter dificuldade para tocar com precisão.',
-        evidence: `${screenshotPath}; botão=${item.text.slice(0, 80)}; box=${JSON.stringify(item.box)}`,
-        recommendation: 'Preferir botões com área mínima próxima de 44x44px em mobile.',
-      });
+      reporter.addIssue({ severity: 'P2', area, title: 'Botão com área de toque pequena', impact: 'No iPhone, o aluno pode ter dificuldade para tocar com precisão.', evidence: `${screenshotPath}; botão=${item.text.slice(0, 80)}; box=${JSON.stringify(item.box)}`, recommendation: 'Preferir botões com área mínima próxima de 44x44px em mobile.' });
     }
   });
 
   const cards = await allBoxes(page.locator('.card, .lesson-flow-phase-card, .lesson-reference-hero, .dashboard-card'), 20);
   cards.forEach((item) => {
     if (item.box.width > viewport.width + 4) {
-      reporter.addIssue({
-        severity: 'P1',
-        area,
-        title: 'Card mais largo que a viewport',
-        impact: 'Conteúdo pode ficar cortado no mobile.',
-        evidence: `${screenshotPath}; card=${JSON.stringify(item.box)} viewport=${JSON.stringify(viewport)}`,
-        recommendation: 'Revisar max-width, padding, overflow e break-word.',
-      });
+      reporter.addIssue({ severity: 'P1', area, title: 'Card mais largo que a viewport', impact: 'Conteúdo pode ficar cortado no mobile.', evidence: `${screenshotPath}; card=${JSON.stringify(item.box)} viewport=${JSON.stringify(viewport)}`, recommendation: 'Revisar max-width, padding, overflow e break-word.' });
     }
     if (item.box.height > viewport.height * 1.65) {
-      reporter.addIssue({
-        severity: 'P2',
-        area,
-        title: 'Card muito alto para leitura mobile',
-        impact: 'A tela pode parecer pesada e cansativa no iPhone.',
-        evidence: `${screenshotPath}; card height=${item.box.height}; viewport height=${viewport.height}`,
-        recommendation: 'Dividir conteúdo em seções menores ou compactar visualmente sem cortar conteúdo.',
-      });
+      reporter.addIssue({ severity: 'P2', area, title: 'Card muito alto para leitura mobile', impact: 'A tela pode parecer pesada e cansativa no iPhone.', evidence: `${screenshotPath}; card height=${item.box.height}; viewport height=${viewport.height}`, recommendation: 'Dividir conteúdo em seções menores ou compactar visualmente sem cortar conteúdo.' });
     }
   });
 
@@ -155,6 +96,7 @@ export async function auditVisualViewport({ page, reporter, area }) {
         const elements = [...document.querySelectorAll('button, input, textarea, .lesson-flow-action-footer, .lesson-phase-primary')];
         const offenders = [];
         elements.forEach((el) => {
+          if (el.disabled || el.getAttribute('aria-disabled') === 'true') return;
           const rect = el.getBoundingClientRect();
           if (rect.width === 0 || rect.height === 0) return;
           if (el.closest('.bottom-nav') || el.closest('.reference-bottom-nav')) return;
@@ -165,13 +107,7 @@ export async function auditVisualViewport({ page, reporter, area }) {
               tag: el.tagName,
               className: typeof el.className === 'string' ? el.className : '',
               text: String(el.innerText || el.getAttribute('aria-label') || el.getAttribute('placeholder') || '').replace(/\s+/g, ' ').trim().slice(0, 120),
-              rect: {
-                x: Math.round(rect.x),
-                y: Math.round(rect.y),
-                width: Math.round(rect.width),
-                height: Math.round(rect.height),
-                bottom: Math.round(rect.bottom),
-              },
+              rect: { x: Math.round(rect.x), y: Math.round(rect.y), width: Math.round(rect.width), height: Math.round(rect.height), bottom: Math.round(rect.bottom) },
               overlapPx: Math.round(overlapPx),
               overlapRatio: Number((overlapPx / elementHeight).toFixed(2)),
             });
@@ -182,14 +118,7 @@ export async function auditVisualViewport({ page, reporter, area }) {
     : null;
 
   if (fixedFooterOverlap) {
-    reporter.addIssue({
-      severity: 'P1',
-      area,
-      title: 'Elemento interativo sobreposto pela bottom nav',
-      impact: 'O aluno pode não conseguir tocar em botões ou campos próximos do rodapé.',
-      evidence: `${screenshotPath}; overlap=${JSON.stringify(fixedFooterOverlap)}`,
-      recommendation: 'Adicionar padding-bottom/safe-area nas telas com conteúdo rolável ou remover o elemento da faixa fixa inferior.',
-    });
+    reporter.addIssue({ severity: 'P1', area, title: 'Elemento interativo sobreposto pela bottom nav', impact: 'O aluno pode não conseguir tocar em botões ou campos próximos do rodapé.', evidence: `${screenshotPath}; overlap=${JSON.stringify(fixedFooterOverlap)}`, recommendation: 'Adicionar padding-bottom/safe-area nas telas com conteúdo rolável ou remover o elemento da faixa fixa inferior.' });
   }
 
   return screenshotPath;
