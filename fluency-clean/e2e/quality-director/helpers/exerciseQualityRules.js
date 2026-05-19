@@ -21,6 +21,7 @@ const GRAMMAR_BE_FORMS = new Set(['am', 'is', 'are', 'was', 'were', 'be', 'been'
 const GRAMMAR_DETERMINERS = new Set(['a', 'an', 'the', 'my', 'your', 'his', 'her', 'our', 'their']);
 const GRAMMAR_AUXILIARIES = new Set(['do', 'does', 'did', 'can', 'could', 'will', 'would', 'should']);
 const NEGATION_WORDS = new Set(['not', 'no', 'never']);
+const COMPREHENSION_PATH_PATTERNS = [/evidenceQuestions/i, /readingComprehension/i, /listeningComprehension/i, /comprehensionQuestions/i, /listeningQuestions/i, /readingQuestions/i];
 
 const SYNONYMS = new Map([
   ['comfortable', 'comfort'], ['comfy', 'comfort'], ['working', 'work'], ['works', 'work'], ['worked', 'work'],
@@ -97,6 +98,7 @@ function sameSet(a, b) { if (a.size !== b.size) return false; for (const item of
 function sameSequence(a, b) { return a.length === b.length && a.every((item, index) => item === b[index]); }
 function startsWithGrammarFrame(tokens) { return GRAMMAR_PRONOUNS.has(tokens[0]) || GRAMMAR_BE_FORMS.has(tokens[0]) || GRAMMAR_AUXILIARIES.has(tokens[0]); }
 function endsAsQuestion(value) { return /\?\s*$/.test(clean(value)); }
+function isComprehensionPath(path = '') { return COMPREHENSION_PATH_PATTERNS.some((pattern) => pattern.test(path)); }
 
 function hasNegationMismatch(option, answer) {
   const optionRaw = rawWords(option);
@@ -166,14 +168,33 @@ function isConciseContentSummary(option, answer, matched, reverseCoverage) {
   return matched >= Math.min(2, optionTokens.size);
 }
 
-function optionMatchesAnswer(option, answer) {
+function isComprehensionConciseMatch(option, answer) {
   const optionNorm = normalize(option);
   const answerNorm = normalize(answer);
   if (!optionNorm || !answerNorm) return false;
   if (optionNorm === answerNorm) return true;
-  if (hasNegationMismatch(option, answer)) return false;
+  if (answerNorm.includes(optionNorm) && optionNorm.length >= 2) return true;
 
-  const grammarSensitiveShortAnswer = isShortGrammarStructureSensitive(option, answer);
+  const answerTokens = tokenSet(answer);
+  const optionTokens = tokenSet(option);
+  if (!answerTokens.size || !optionTokens.size) return false;
+  let matched = 0;
+  answerTokens.forEach((word) => { if (optionTokens.has(word)) matched += 1; });
+  const reverseCoverage = matched / optionTokens.size;
+  return isConciseContentSummary(option, answer, matched, reverseCoverage);
+}
+
+function optionMatchesAnswer(option, answer, context = {}) {
+  const optionNorm = normalize(option);
+  const answerNorm = normalize(answer);
+  if (!optionNorm || !answerNorm) return false;
+  if (optionNorm === answerNorm) return true;
+
+  const comprehensionPath = isComprehensionPath(context.path);
+  if (comprehensionPath && isComprehensionConciseMatch(option, answer)) return true;
+  if (!comprehensionPath && hasNegationMismatch(option, answer)) return false;
+
+  const grammarSensitiveShortAnswer = !comprehensionPath && isShortGrammarStructureSensitive(option, answer);
   if (grammarSensitiveShortAnswer) return false;
 
   const answerTokens = tokenSet(answer);
@@ -185,7 +206,7 @@ function optionMatchesAnswer(option, answer) {
   const coverage = matched / answerTokens.size;
   const reverseCoverage = matched / optionTokens.size;
 
-  if (hasGrammarCoreMismatch(option, answer)) return false;
+  if (!comprehensionPath && hasGrammarCoreMismatch(option, answer)) return false;
   if (isConciseContentSummary(option, answer, matched, reverseCoverage)) return true;
 
   if (optionNorm.length > 3 && answerNorm.length > 3 && (optionNorm.includes(answerNorm) || answerNorm.includes(optionNorm))) return true;
@@ -214,7 +235,7 @@ function auditOptionGroup({ issues, area, path, question, answer, options }) {
   if (absurd.length >= 2) addIssue(issues, { severity: 'P1', area, title: 'Distratores absurdos ou fáceis demais', impact: 'O aluno pode acertar por eliminação sem entender a aula.', evidence: `${path}: ${options.join(' | ')}`, recommendation: 'Trocar por distratores próximos do tema e do nível CEFR.' });
 
   if (answer) {
-    const matching = options.filter((option) => optionMatchesAnswer(option, answer));
+    const matching = options.filter((option) => optionMatchesAnswer(option, answer, { path, question }));
     if (matching.length === 0) addIssue(issues, { severity: 'P0', area, title: 'Resposta correta não aparece nas alternativas', impact: 'O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.', evidence: `${path}: resposta=${answer}; opções=${options.join(' | ')}`, recommendation: 'Adicionar a resposta correta entre as opções ou revisar o answerKey.' });
     if (matching.length > 1) addIssue(issues, { severity: 'P1', area, title: 'Mais de uma alternativa parece correta', impact: 'O exercício fica ambíguo e pode frustrar o aluno.', evidence: `${path}: resposta=${answer}; matches=${matching.join(' | ')}`, recommendation: 'Deixar apenas uma resposta claramente correta ou reformular a pergunta.' });
   }
