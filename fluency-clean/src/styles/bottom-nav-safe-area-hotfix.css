@@ -43,6 +43,15 @@
   overscroll-behavior: auto;
 }
 
+/*
+  A aba Hoje tem cards grandes. Se o último painel encosta na bottom nav,
+  o fundo do card aparece atrás da navbar. Mantemos uma zona vazia real
+  depois do Curso guiado premium para a navbar flutuar sobre o fundo da página.
+*/
+.today-reference-screen .static-next-lesson-panel {
+  margin-bottom: var(--bottom-nav-safe-space) !important;
+}
+
 .today-reference-screen > :last-child,
 .cards-screen > :last-child,
 .course-screen > :last-child,
