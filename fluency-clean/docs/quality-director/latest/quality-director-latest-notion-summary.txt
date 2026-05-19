@@ -2,7 +2,7 @@ Status: Revisar antes de confiar
 Nota geral: 0/100
 Relatórios: 25
 Checks: 3268
-Issues únicas: 2108 (brutas=3903, agrupadas=1795)
-Severidade: P0=0, P1=785, P2=1323, P3=0
+Issues únicas: 2088 (brutas=3863, agrupadas=1775)
+Severidade: P0=0, P1=765, P2=1323, P3=0
 Direção: Corrigir P1 antes de considerar o sistema confiável para estudo contínuo.
-Top issues: P1 Aula A1-SPEAKING-015 — Nenhum exercício detectado na aula ready | P1 Aula A1-SPEAKING-016-WEATHER — Nenhum exercício detectado na aula ready | P1 Aula A1-WRITING-001 — Nenhum exercício detectado na aula ready | P1 Aula A1-WRITING-002 — Nenhum exercício detectado na aula ready | P1 Aula A1-WRITING-003 — Nenhum exercício detectado na aula ready
+Top issues: P1 Aula A1-WRITING-001 — Nenhum exercício detectado na aula ready | P1 Aula A1-WRITING-002 — Nenhum exercício detectado na aula ready | P1 Aula A1-WRITING-003 — Nenhum exercício detectado na aula ready | P1 Aula A1-WRITING-004 — Nenhum exercício detectado na aula ready | P1 Aula A1-WRITING-005 — Nenhum exercício detectado na aula ready
