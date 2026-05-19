@@ -2,7 +2,7 @@ Status: Revisar antes de confiar
 Nota geral: 0/100
 Relatórios: 25
 Checks: 3268
-Issues únicas: 2183 (brutas=4058, agrupadas=1875)
-Severidade: P0=0, P1=1025, P2=1158, P3=0
+Issues únicas: 2179 (brutas=4050, agrupadas=1871)
+Severidade: P0=0, P1=1021, P2=1158, P3=0
 Direção: Corrigir P1 antes de considerar o sistema confiável para estudo contínuo.
-Top issues: P1 Exercício · A1-GRAMMAR-001 — Mais de uma alternativa parece correta | P1 Exercício · A1-GRAMMAR-001 — Mais de uma alternativa parece correta | P1 Exercício · A1-GRAMMAR-001 — Mais de uma alternativa parece correta | P1 Exercício · A1-GRAMMAR-001 — Mais de uma alternativa parece correta | P1 Exercício · A1-GRAMMAR-002 — Mais de uma alternativa parece correta
+Top issues: P1 Exercício · A1-GRAMMAR-002 — Mais de uma alternativa parece correta | P1 Exercício · A1-GRAMMAR-005 — Mais de uma alternativa parece correta | P1 Exercício · A1-GRAMMAR-005 — Mais de uma alternativa parece correta | P1 Exercício · A1-GRAMMAR-005 — Mais de uma alternativa parece correta | P1 Exercício · A1-GRAMMAR-005 — Mais de uma alternativa parece correta
