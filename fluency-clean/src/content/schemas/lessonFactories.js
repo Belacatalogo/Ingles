@@ -82,10 +82,15 @@ function createFallbackVocabularyPractice(input = {}) {
   const secondary = rawEntries.find((entry) => entry.term !== primary.term) || { term: 'goodbye', meaning: 'tchau' };
   const third = rawEntries.find((entry) => entry.term !== primary.term && entry.term !== secondary.term) || { term: 'thank you', meaning: 'obrigado' };
   const primaryMeaning = primary.meaning || `vocabulário de ${title}`;
+  // Não repetir o título nem o termo-resposta no enunciado (gerava
+  // "Pergunta parece entregar a resposta", ex.: tema Clothes / resposta clothes).
+  const recognitionPrompt = primary.meaning
+    ? `Qual palavra ou chunk corresponde a “${primary.meaning}”?`
+    : 'Qual destas opções é uma palavra ou chunk desta aula?';
 
   return [
     {
-      question: `Qual palavra ou chunk pertence à aula de ${title}?`,
+      question: recognitionPrompt,
       options: [primary.term, secondary.term, third.term],
       answer: primary.term,
       explanation: `A aula trabalha ${primary.term}${primary.meaning ? ` = ${primary.meaning}` : ''}.`,
