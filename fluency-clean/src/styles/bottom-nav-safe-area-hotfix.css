@@ -3,10 +3,14 @@
    Mantém a solução modular e no fim da ordem de imports para vencer regras antigas espalhadas. */
 
 :root {
-  --bottom-nav-safe-space: calc(168px + env(safe-area-inset-bottom));
+  --bottom-nav-height: 86px;
+  --bottom-nav-gap: 18px;
+  --bottom-nav-safe-space: calc(var(--bottom-nav-height) + var(--bottom-nav-gap) + env(safe-area-inset-bottom));
+  --content-safe-viewport: calc(100dvh - var(--bottom-nav-safe-space));
 }
 
 .fluency-reference-shell {
+  min-height: 100dvh;
   padding-bottom: var(--bottom-nav-safe-space) !important;
 }
 
@@ -19,6 +23,21 @@
 .lesson-screen {
   padding-bottom: var(--bottom-nav-safe-space) !important;
   scroll-padding-bottom: var(--bottom-nav-safe-space);
+}
+
+/*
+  A bottom nav é fixa. Padding no fim da página ajuda no scroll, mas não impede
+  que um botão visível na primeira viewport fique atrás da nav. Para os estados
+  auditados, reservamos uma área de viewport acima da navegação e deixamos a tela
+  rolar internamente quando necessário.
+*/
+.today-reference-screen,
+.cards-screen,
+.settings-screen {
+  max-height: var(--content-safe-viewport);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
 .today-reference-screen > :last-child,
@@ -67,17 +86,19 @@
 }
 
 .diagnostic-mini-button {
-  bottom: calc(104px + env(safe-area-inset-bottom)) !important;
+  bottom: calc(var(--bottom-nav-height) + 28px + env(safe-area-inset-bottom)) !important;
 }
 
 @media (max-width: 430px) {
   :root {
-    --bottom-nav-safe-space: calc(176px + env(safe-area-inset-bottom));
+    --bottom-nav-height: 86px;
+    --bottom-nav-gap: 24px;
   }
 }
 
 @media (max-width: 360px) {
   :root {
-    --bottom-nav-safe-space: calc(184px + env(safe-area-inset-bottom));
+    --bottom-nav-height: 88px;
+    --bottom-nav-gap: 30px;
   }
 }
