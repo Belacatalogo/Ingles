@@ -4,4 +4,5 @@ fluency-clean/node_modules/
 fluency-clean/package-lock.json
 fluency-clean/playwright-report/
 fluency-clean/test-results/
+fluency-clean/audit-results/
 preview-clean/assets/*.map
