@@ -1,6 +1,6 @@
 # Fluency Quality Director — Relatório Executivo Latest
 
-Gerado em: 2026-05-19T00:42:49.106Z
+Gerado em: 2026-05-19T00:52:24.948Z
 
 ## Veredito
 
@@ -12,10 +12,10 @@ Gerado em: 2026-05-19T00:42:49.106Z
 
 - Relatórios consolidados: 25
 - Checks executados: 3268
-- Problemas únicos: 2315
-- Problemas brutos antes de deduplicar: 4312
-- Duplicatas agrupadas: 1997
-- P0: 39
+- Problemas únicos: 2281
+- Problemas brutos antes de deduplicar: 4244
+- Duplicatas agrupadas: 1963
+- P0: 5
 - P1: 1124
 - P2: 1152
 - P3: 0
@@ -26,7 +26,7 @@ Gerado em: 2026-05-19T00:42:49.106Z
 |---|---:|---|---:|---:|---:|---:|
 | Navegação e estabilidade | 0 | Revisar antes de confiar | 0 | 47 | 154 | 0 |
 | Jornada real do aluno | 22 | Revisar antes de confiar | 0 | 2 | 57 | 0 |
-| Exercícios e alternativas | 0 | Crítico | 39 | 409 | 699 | 0 |
+| Exercícios e alternativas | 0 | Crítico | 5 | 409 | 699 | 0 |
 | Aulas e pedagogia | 0 | Revisar antes de confiar | 0 | 666 | 238 | 0 |
 | Visual e mobile | 100 | Saudável | 0 | 0 | 0 | 0 |
 | Progresso, XP e mastery | 100 | Saudável | 0 | 0 | 0 | 0 |
@@ -44,8 +44,8 @@ Gerado em: 2026-05-19T00:42:49.106Z
 | quality-director-curriculum-consistency | iPhone SE | 94 | 7 | 5 | 5 | 0 | 0 | 5 | 0 |
 | quality-director-empty-states-security | iPhone 13 | 6 | 56 | 64 | 68 | 0 | 4 | 60 | 0 |
 | quality-director-empty-states-security | iPhone SE | 0 | 56 | 68 | 72 | 0 | 8 | 60 | 0 |
-| quality-director-exercise-quality | iPhone 13 | 0 | 501 | 1029 | 1029 | 39 | 381 | 609 | 0 |
-| quality-director-exercise-quality | iPhone SE | 0 | 501 | 1029 | 1029 | 39 | 381 | 609 | 0 |
+| quality-director-exercise-quality | iPhone 13 | 0 | 501 | 995 | 995 | 5 | 381 | 609 | 0 |
+| quality-director-exercise-quality | iPhone SE | 0 | 501 | 995 | 995 | 5 | 381 | 609 | 0 |
 | quality-director-exploratory-student-audit | iPhone 13 | 0 | 3 | 54 | 56 | 0 | 35 | 19 | 0 |
 | quality-director-exploratory-student-audit | iPhone SE | 0 | 3 | 54 | 56 | 0 | 35 | 19 | 0 |
 | quality-director-lesson-quality | iPhone 13 | 0 | 500 | 135 | 135 | 0 | 45 | 90 | 0 |
@@ -70,28 +70,19 @@ Gerado em: 2026-05-19T00:42:49.106Z
 
 ### Ações imediatas
 
-1. **P0 · Exercício · A1-READING-015 — Resposta correta não aparece nas alternativas**
+1. **P0 · Exercício · A2-READING-001 — Resposta correta não aparece nas alternativas**
    - Ocorrências agrupadas: 2
    - Ação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-2. **P0 · Exercício · A1-READING-018-CLOTHES — Resposta correta não aparece nas alternativas**
+2. **P0 · Exercício · A2-READING-003 — Resposta correta não aparece nas alternativas**
    - Ocorrências agrupadas: 2
    - Ação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-3. **P0 · Exercício · A2-READING-001 — Resposta correta não aparece nas alternativas**
+3. **P0 · Exercício · A2-READING-011 — Resposta correta não aparece nas alternativas**
    - Ocorrências agrupadas: 2
    - Ação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-4. **P0 · Exercício · A2-READING-003 — Resposta correta não aparece nas alternativas**
+4. **P0 · Exercício · A2-READING-011 — Resposta correta não aparece nas alternativas**
    - Ocorrências agrupadas: 2
    - Ação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-5. **P0 · Exercício · A2-READING-005 — Resposta correta não aparece nas alternativas**
-   - Ocorrências agrupadas: 2
-   - Ação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-6. **P0 · Exercício · A2-READING-006 — Resposta correta não aparece nas alternativas**
-   - Ocorrências agrupadas: 2
-   - Ação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-7. **P0 · Exercício · A2-READING-008 — Resposta correta não aparece nas alternativas**
-   - Ocorrências agrupadas: 2
-   - Ação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-8. **P0 · Exercício · A2-READING-010 — Resposta correta não aparece nas alternativas**
+5. **P0 · Exercício · A2-READING-020 — Resposta correta não aparece nas alternativas**
    - Ocorrências agrupadas: 2
    - Ação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
 
@@ -124,23 +115,7 @@ Gerado em: 2026-05-19T00:42:49.106Z
 
 ## Principais problemas
 
-1. **P0 · Exercício · A1-READING-015 — Resposta correta não aparece nas alternativas**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
-   - Evidência: lesson.evidenceQuestions[4]: resposta=the book / it; opções=the book | the phone | the jacket
-   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-
-2. **P0 · Exercício · A1-READING-018-CLOTHES — Resposta correta não aparece nas alternativas**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
-   - Evidência: lesson.evidenceQuestions[2]: resposta=No, she does not.; opções=No | Yes | The text does not say
-   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-
-3. **P0 · Exercício · A2-READING-001 — Resposta correta não aparece nas alternativas**
+1. **P0 · Exercício · A2-READING-001 — Resposta correta não aparece nas alternativas**
    - Área executiva: Exercícios e alternativas
    - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
@@ -148,7 +123,7 @@ Gerado em: 2026-05-19T00:42:49.106Z
    - Evidência: lesson.evidenceQuestions[4]: resposta=because he learned new words about travel and dates; opções=learned new words about travel and dates | met a friend | finished early
    - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
 
-4. **P0 · Exercício · A2-READING-003 — Resposta correta não aparece nas alternativas**
+2. **P0 · Exercício · A2-READING-003 — Resposta correta não aparece nas alternativas**
    - Área executiva: Exercícios e alternativas
    - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
@@ -156,47 +131,7 @@ Gerado em: 2026-05-19T00:42:49.106Z
    - Evidência: lesson.evidenceQuestions[4]: resposta=because she had heavy luggage and wanted a room near the elevator; opções=heavy luggage and room near elevator | lost ticket | late train
    - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
 
-5. **P0 · Exercício · A2-READING-005 — Resposta correta não aparece nas alternativas**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
-   - Evidência: lesson.evidenceQuestions[3]: resposta=because it is too small; opções=too small | too expensive | wrong color
-   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-
-6. **P0 · Exercício · A2-READING-006 — Resposta correta não aparece nas alternativas**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
-   - Evidência: lesson.evidenceQuestions[4]: resposta=if they have a fever or feel worse tomorrow; opções=if fever or worse | if hungry | if better
-   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-
-7. **P0 · Exercício · A2-READING-008 — Resposta correta não aparece nas alternativas**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
-   - Evidência: lesson.evidenceQuestions[2]: resposta=it was canceled; opções=canceled | moved to 9 | finished
-   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-
-8. **P0 · Exercício · A2-READING-010 — Resposta correta não aparece nas alternativas**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
-   - Evidência: lesson.evidenceQuestions[2]: resposta=on the password screen; opções=password screen | home screen | camera
-   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-
-9. **P0 · Exercício · A2-READING-010 — Resposta correta não aparece nas alternativas**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
-   - Evidência: lesson.evidenceQuestions[3]: resposta=restarted the phone and checked internet; opções=restarted and checked internet | updated app | changed password
-   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-
-10. **P0 · Exercício · A2-READING-011 — Resposta correta não aparece nas alternativas**
+3. **P0 · Exercício · A2-READING-011 — Resposta correta não aparece nas alternativas**
    - Área executiva: Exercícios e alternativas
    - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
@@ -204,7 +139,7 @@ Gerado em: 2026-05-19T00:42:49.106Z
    - Evidência: lesson.evidenceQuestions[0]: resposta=because the sink is leaking; opções=sink is leaking | phone is broken | meeting canceled
    - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
 
-11. **P0 · Exercício · A2-READING-011 — Resposta correta não aparece nas alternativas**
+4. **P0 · Exercício · A2-READING-011 — Resposta correta não aparece nas alternativas**
    - Área executiva: Exercícios e alternativas
    - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
@@ -212,135 +147,7 @@ Gerado em: 2026-05-19T00:42:49.106Z
    - Evidência: lesson.evidenceQuestions[4]: resposta=the sky is very dark; opções=sky is dark | battery is low | sink is leaking
    - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
 
-12. **P0 · Exercício · A2-READING-012 — Resposta correta não aparece nas alternativas**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
-   - Evidência: lesson.evidenceQuestions[0]: resposta=the blue jacket; opções=blue jacket | black jacket | both
-   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-
-13. **P0 · Exercício · A2-READING-012 — Resposta correta não aparece nas alternativas**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
-   - Evidência: lesson.evidenceQuestions[1]: resposta=it was too tight; opções=too tight | too expensive | too loose
-   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-
-14. **P0 · Exercício · A2-READING-012 — Resposta correta não aparece nas alternativas**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
-   - Evidência: lesson.evidenceQuestions[3]: resposta=the black jacket; opções=black jacket | blue jacket | neither
-   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-
-15. **P0 · Exercício · A2-READING-012 — Resposta correta não aparece nas alternativas**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
-   - Evidência: lesson.evidenceQuestions[4]: resposta=it is the better choice for work; opções=better for work | cheaper | medium size
-   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-
-16. **P0 · Exercício · A2-READING-013 — Resposta correta não aparece nas alternativas**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
-   - Evidência: lesson.evidenceQuestions[1]: resposta=the café; opções=café | library | store
-   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-
-17. **P0 · Exercício · A2-READING-013 — Resposta correta não aparece nas alternativas**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
-   - Evidência: lesson.evidenceQuestions[2]: resposta=the library; opções=library | café | both
-   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-
-18. **P0 · Exercício · A2-READING-013 — Resposta correta não aparece nas alternativas**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
-   - Evidência: lesson.evidenceQuestions[3]: resposta=they need a quiet place to study; opções=quiet place to study | better coffee | closer to Ana
-   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-
-19. **P0 · Exercício · A2-READING-014 — Resposta correta não aparece nas alternativas**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
-   - Evidência: lesson.evidenceQuestions[0]: resposta=the phone app is not working well; opções=app not working well | jacket too tight | store far
-   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-
-20. **P0 · Exercício · A2-READING-014 — Resposta correta não aparece nas alternativas**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
-   - Evidência: lesson.evidenceQuestions[1]: resposta=simple but slow and freezes a lot; opções=simple but slow | modern and useful | expensive and clean
-   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-
-21. **P0 · Exercício · A2-READING-014 — Resposta correta não aparece nas alternativas**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
-   - Evidência: lesson.evidenceQuestions[4]: resposta=it saves time; opções=saves time | is cheaper | is older
-   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-
-22. **P0 · Exercício · A2-READING-015 — Resposta correta não aparece nas alternativas**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
-   - Evidência: lesson.evidenceQuestions[0]: resposta=a blue jacket; opções=blue jacket | black jacket | shoes
-   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-
-23. **P0 · Exercício · A2-READING-015 — Resposta correta não aparece nas alternativas**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
-   - Evidência: lesson.evidenceQuestions[1]: resposta=it was too tight; opções=too tight | too loose | too dirty
-   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-
-24. **P0 · Exercício · A2-READING-015 — Resposta correta não aparece nas alternativas**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
-   - Evidência: lesson.evidenceQuestions[2]: resposta=my brother; opções=brother | seller | friend
-   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-
-25. **P0 · Exercício · A2-READING-016 — Resposta correta não aparece nas alternativas**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
-   - Evidência: lesson.evidenceQuestions[0]: resposta=a new pair of shoes; opções=new pair of shoes | new phone | new jacket
-   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-
-26. **P0 · Exercício · A2-READING-016 — Resposta correta não aparece nas alternativas**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
-   - Evidência: lesson.evidenceQuestions[2]: resposta=shoes are more expensive; opções=more expensive | dirty | crowded
-   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-
-27. **P0 · Exercício · A2-READING-018 — Resposta correta não aparece nas alternativas**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
-   - Evidência: lesson.evidenceQuestions[0]: resposta=because the meeting starts at 9; opções=meeting starts at 9 | client arrives at 8 | uniform is required
-   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-
-28. **P0 · Exercício · A2-READING-020 — Resposta correta não aparece nas alternativas**
+5. **P0 · Exercício · A2-READING-020 — Resposta correta não aparece nas alternativas**
    - Área executiva: Exercícios e alternativas
    - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
@@ -348,101 +155,285 @@ Gerado em: 2026-05-19T00:42:49.106Z
    - Evidência: lesson.evidenceQuestions[3]: resposta=the training room is smaller; opções=room is smaller | bags are expensive | lunch is near office
    - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
 
-29. **P0 · Exercício · A2-READING-020 — Resposta correta não aparece nas alternativas**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
-   - Evidência: lesson.evidenceQuestions[5]: resposta=they can talk more comfortably there; opções=talk more comfortably | it is cheaper | it is closer
-   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-
-30. **P0 · Exercício · A2-LISTENING-004 — Resposta correta não aparece nas alternativas**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
-   - Evidência: lesson.listeningComprehension[1]: resposta=yes, a small salad; opções=yes | no | not mentioned
-   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-
-31. **P0 · Exercício · A2-LISTENING-010 — Resposta correta não aparece nas alternativas**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
-   - Evidência: lesson.listeningComprehension[3]: resposta=update the app and try again; opções=update app | buy new phone | change charger
-   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-
-32. **P0 · Exercício · A2-LISTENING-011 — Resposta correta não aparece nas alternativas**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
-   - Evidência: lesson.listeningComprehension[0]: resposta=clean the kitchen; opções=clean kitchen | visit park | study English
-   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-
-33. **P0 · Exercício · A2-LISTENING-011 — Resposta correta não aparece nas alternativas**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
-   - Evidência: lesson.listeningComprehension[1]: resposta=the sink is leaking; opções=sink leaking | phone broken | door broken
-   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-
-34. **P0 · Exercício · A2-LISTENING-011 — Resposta correta não aparece nas alternativas**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
-   - Evidência: lesson.listeningComprehension[2]: resposta=visit the park; opções=visit park | call technician | clean kitchen
-   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-
-35. **P0 · Exercício · A2-LISTENING-012 — Resposta correta não aparece nas alternativas**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
-   - Evidência: lesson.listeningComprehension[0]: resposta=the blue one; opções=blue | black | both
-   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-
-36. **P0 · Exercício · A2-LISTENING-012 — Resposta correta não aparece nas alternativas**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
-   - Evidência: lesson.listeningComprehension[1]: resposta=it is a little tight; opções=tight | dirty | broken
-   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-
-37. **P0 · Exercício · A2-LISTENING-012 — Resposta correta não aparece nas alternativas**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
-   - Evidência: lesson.listeningComprehension[2]: resposta=the black jacket; opções=black | blue | neither
-   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-
-38. **P0 · Exercício · A2-LISTENING-012 — Resposta correta não aparece nas alternativas**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
-   - Evidência: lesson.listeningComprehension[3]: resposta=the black jacket; opções=black | blue | no jacket
-   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-
-39. **P0 · Exercício · A2-LISTENING-016 — Resposta correta não aparece nas alternativas**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
-   - Evidência: lesson.listeningComprehension[3]: resposta=it has more cereal; opções=has more cereal | is smaller | is blue
-   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
-
-40. **P1 · iPhone 13 · Instalação limpa sem dados · Aba Cartas — Elemento interativo sobreposto pela bottom nav**
+6. **P1 · iPhone 13 · Instalação limpa sem dados · Aba Cartas — Elemento interativo sobreposto pela bottom nav**
    - Área executiva: Navegação e estabilidade
    - Relatório: quality-director-empty-states-security / iPhone 13
    - Ocorrências agrupadas: 1
    - Impacto: O aluno pode não conseguir tocar em botões ou campos próximos do rodapé.
    - Evidência: audit-results/screenshots/iphone-13-instala-o-limpa-sem-dados-aba-cartas.png
    - Recomendação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável.
+
+7. **P1 · iPhone 13 · Estados principais como null · Aba Cartas — Elemento interativo sobreposto pela bottom nav**
+   - Área executiva: Navegação e estabilidade
+   - Relatório: quality-director-empty-states-security / iPhone 13
+   - Ocorrências agrupadas: 1
+   - Impacto: O aluno pode não conseguir tocar em botões ou campos próximos do rodapé.
+   - Evidência: audit-results/screenshots/iphone-13-estados-principais-como-null-aba-cartas.png
+   - Recomendação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável.
+
+8. **P1 · iPhone 13 · Estados principais com JSON inválido · Aba Cartas — Elemento interativo sobreposto pela bottom nav**
+   - Área executiva: Navegação e estabilidade
+   - Relatório: quality-director-empty-states-security / iPhone 13
+   - Ocorrências agrupadas: 1
+   - Impacto: O aluno pode não conseguir tocar em botões ou campos próximos do rodapé.
+   - Evidência: audit-results/screenshots/iphone-13-estados-principais-com-json-inv-lido-aba-cartas.png
+   - Recomendação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável.
+
+9. **P1 · iPhone 13 · Sem aula atual mas com configurações básicas · Aba Cartas — Elemento interativo sobreposto pela bottom nav**
+   - Área executiva: Navegação e estabilidade
+   - Relatório: quality-director-empty-states-security / iPhone 13
+   - Ocorrências agrupadas: 1
+   - Impacto: O aluno pode não conseguir tocar em botões ou campos próximos do rodapé.
+   - Evidência: audit-results/screenshots/iphone-13-sem-aula-atual-mas-com-configura-es-b-sicas-aba-cartas.png
+   - Recomendação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável.
+
+10. **P1 · iPhone SE · Instalação limpa sem dados · Aba Hoje — Elemento interativo sobreposto pela bottom nav**
+   - Área executiva: Navegação e estabilidade
+   - Relatório: quality-director-empty-states-security / iPhone SE
+   - Ocorrências agrupadas: 1
+   - Impacto: O aluno pode não conseguir tocar em botões ou campos próximos do rodapé.
+   - Evidência: audit-results/screenshots/iphone-se-instala-o-limpa-sem-dados-aba-hoje.png
+   - Recomendação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável.
+
+11. **P1 · iPhone SE · Instalação limpa sem dados · Aba Cartas — Elemento interativo sobreposto pela bottom nav**
+   - Área executiva: Navegação e estabilidade
+   - Relatório: quality-director-empty-states-security / iPhone SE
+   - Ocorrências agrupadas: 1
+   - Impacto: O aluno pode não conseguir tocar em botões ou campos próximos do rodapé.
+   - Evidência: audit-results/screenshots/iphone-se-instala-o-limpa-sem-dados-aba-cartas.png
+   - Recomendação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável.
+
+12. **P1 · iPhone SE · Estados principais como null · Aba Hoje — Elemento interativo sobreposto pela bottom nav**
+   - Área executiva: Navegação e estabilidade
+   - Relatório: quality-director-empty-states-security / iPhone SE
+   - Ocorrências agrupadas: 1
+   - Impacto: O aluno pode não conseguir tocar em botões ou campos próximos do rodapé.
+   - Evidência: audit-results/screenshots/iphone-se-estados-principais-como-null-aba-hoje.png
+   - Recomendação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável.
+
+13. **P1 · iPhone SE · Estados principais como null · Aba Cartas — Elemento interativo sobreposto pela bottom nav**
+   - Área executiva: Navegação e estabilidade
+   - Relatório: quality-director-empty-states-security / iPhone SE
+   - Ocorrências agrupadas: 1
+   - Impacto: O aluno pode não conseguir tocar em botões ou campos próximos do rodapé.
+   - Evidência: audit-results/screenshots/iphone-se-estados-principais-como-null-aba-cartas.png
+   - Recomendação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável.
+
+14. **P1 · iPhone SE · Estados principais com JSON inválido · Aba Hoje — Elemento interativo sobreposto pela bottom nav**
+   - Área executiva: Navegação e estabilidade
+   - Relatório: quality-director-empty-states-security / iPhone SE
+   - Ocorrências agrupadas: 1
+   - Impacto: O aluno pode não conseguir tocar em botões ou campos próximos do rodapé.
+   - Evidência: audit-results/screenshots/iphone-se-estados-principais-com-json-inv-lido-aba-hoje.png
+   - Recomendação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável.
+
+15. **P1 · iPhone SE · Estados principais com JSON inválido · Aba Cartas — Elemento interativo sobreposto pela bottom nav**
+   - Área executiva: Navegação e estabilidade
+   - Relatório: quality-director-empty-states-security / iPhone SE
+   - Ocorrências agrupadas: 1
+   - Impacto: O aluno pode não conseguir tocar em botões ou campos próximos do rodapé.
+   - Evidência: audit-results/screenshots/iphone-se-estados-principais-com-json-inv-lido-aba-cartas.png
+   - Recomendação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável.
+
+16. **P1 · iPhone SE · Sem aula atual mas com configurações básicas · Aba Hoje — Elemento interativo sobreposto pela bottom nav**
+   - Área executiva: Navegação e estabilidade
+   - Relatório: quality-director-empty-states-security / iPhone SE
+   - Ocorrências agrupadas: 1
+   - Impacto: O aluno pode não conseguir tocar em botões ou campos próximos do rodapé.
+   - Evidência: audit-results/screenshots/iphone-se-sem-aula-atual-mas-com-configura-es-b-sicas-aba-hoje.png
+   - Recomendação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável.
+
+17. **P1 · iPhone SE · Sem aula atual mas com configurações básicas · Aba Cartas — Elemento interativo sobreposto pela bottom nav**
+   - Área executiva: Navegação e estabilidade
+   - Relatório: quality-director-empty-states-security / iPhone SE
+   - Ocorrências agrupadas: 1
+   - Impacto: O aluno pode não conseguir tocar em botões ou campos próximos do rodapé.
+   - Evidência: audit-results/screenshots/iphone-se-sem-aula-atual-mas-com-configura-es-b-sicas-aba-cartas.png
+   - Recomendação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável.
+
+18. **P1 · Exercício · A1-GRAMMAR-002 — Mais de uma alternativa parece correta**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
+   - Evidência: lesson.errorCorrectionPractice[0]: resposta=She is here.; matches=She is here. | She here is.
+   - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
+
+19. **P1 · Exercício · A1-GRAMMAR-002 — Mais de uma alternativa parece correta**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
+   - Evidência: lesson.errorCorrectionPractice[1]: resposta=They are students.; matches=They are students. | They students are.
+   - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
+
+20. **P1 · Exercício · A1-GRAMMAR-002 — Mais de uma alternativa parece correta**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
+   - Evidência: lesson.transformationPractice[0]: resposta=I am a student.; matches=I am a student. | Am I a student.
+   - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
+
+21. **P1 · Exercício · A1-GRAMMAR-002 — Mais de uma alternativa parece correta**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
+   - Evidência: lesson.transformationPractice[1]: resposta=She is happy.; matches=She is happy. | Is she happy.
+   - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
+
+22. **P1 · Exercício · A1-GRAMMAR-002 — Mais de uma alternativa parece correta**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
+   - Evidência: lesson.transformationPractice[2]: resposta=They are friends.; matches=They are friends. | Are they friends.
+   - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
+
+23. **P1 · Exercício · A1-GRAMMAR-003 — Mais de uma alternativa parece correta**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
+   - Evidência: lesson.errorCorrectionPractice[0]: resposta=She is not happy.; matches=She is not happy. | She not happy is.
+   - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
+
+24. **P1 · Exercício · A1-GRAMMAR-003 — Mais de uma alternativa parece correta**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
+   - Evidência: lesson.errorCorrectionPractice[1]: resposta=They are not teachers.; matches=They are not teachers. | They not are teachers.
+   - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
+
+25. **P1 · Exercício · A1-GRAMMAR-003 — Mais de uma alternativa parece correta**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
+   - Evidência: lesson.errorCorrectionPractice[2]: resposta=I am not ready.; matches=I am not ready. | I do not am ready. | I not am ready.
+   - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
+
+26. **P1 · Exercício · A1-GRAMMAR-003 — Mais de uma alternativa parece correta**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
+   - Evidência: lesson.errorCorrectionPractice[3]: resposta=It is not red.; matches=It is not red. | It not is red.
+   - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
+
+27. **P1 · Exercício · A1-GRAMMAR-003 — Mais de uma alternativa parece correta**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
+   - Evidência: lesson.translationPractice[0]: resposta=I am not ready.; matches=I am not ready. | I not am ready.
+   - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
+
+28. **P1 · Exercício · A1-GRAMMAR-003 — Mais de uma alternativa parece correta**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
+   - Evidência: lesson.translationPractice[1]: resposta=She is not here.; matches=She is not here. | She not is here.
+   - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
+
+29. **P1 · Exercício · A1-GRAMMAR-003 — Mais de uma alternativa parece correta**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
+   - Evidência: lesson.translationPractice[2]: resposta=They are not teachers.; matches=They are not teachers. | They not are teachers.
+   - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
+
+30. **P1 · Exercício · A1-GRAMMAR-003 — Mais de uma alternativa parece correta**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
+   - Evidência: lesson.guidedPractice[0]: resposta=not; matches=no | not
+   - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
+
+31. **P1 · Exercício · A1-GRAMMAR-003 — Mais de uma alternativa parece correta**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
+   - Evidência: lesson.guidedPractice[2]: resposta=not; matches=not | no
+   - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
+
+32. **P1 · Exercício · A1-GRAMMAR-003 — Mais de uma alternativa parece correta**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
+   - Evidência: lesson.guidedPractice[3]: resposta=I am not tired.; matches=I not am tired. | I am not tired.
+   - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
+
+33. **P1 · Exercício · A1-GRAMMAR-003 — Mais de uma alternativa parece correta**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
+   - Evidência: lesson.guidedPractice[6]: resposta=not; matches=not | no
+   - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
+
+34. **P1 · Exercício · A1-GRAMMAR-003 — Mais de uma alternativa parece correta**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
+   - Evidência: lesson.transformationPractice[0]: resposta=I am not ready.; matches=I am not ready. | I not am ready.
+   - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
+
+35. **P1 · Exercício · A1-GRAMMAR-003 — Mais de uma alternativa parece correta**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
+   - Evidência: lesson.transformationPractice[1]: resposta=She is not here.; matches=She is not here. | She not is here.
+   - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
+
+36. **P1 · Exercício · A1-GRAMMAR-003 — Mais de uma alternativa parece correta**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
+   - Evidência: lesson.transformationPractice[2]: resposta=They are not students.; matches=They are not students. | They not are students.
+   - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
+
+37. **P1 · Exercício · A1-GRAMMAR-003 — Mais de uma alternativa parece correta**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
+   - Evidência: lesson.transformationPractice[3]: resposta=It is not blue.; matches=It is not blue. | It not is blue.
+   - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
+
+38. **P1 · Exercício · A1-GRAMMAR-004 — Mais de uma alternativa parece correta**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
+   - Evidência: lesson.errorCorrectionPractice[0]: resposta=Are you happy?; matches=Are you happy? | You are happy?
+   - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
+
+39. **P1 · Exercício · A1-GRAMMAR-004 — Mais de uma alternativa parece correta**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
+   - Evidência: lesson.errorCorrectionPractice[1]: resposta=Are they ready?; matches=Are they ready? | They are ready?
+   - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
+
+40. **P1 · Exercício · A1-GRAMMAR-004 — Mais de uma alternativa parece correta**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
+   - Evidência: lesson.errorCorrectionPractice[2]: resposta=Is she here?; matches=Is she here? | She is here?
+   - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
 
 
 ## Como usar este relatório

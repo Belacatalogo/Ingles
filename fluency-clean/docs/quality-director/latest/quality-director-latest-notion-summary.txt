@@ -2,7 +2,7 @@ Status: Crítico
 Nota geral: 0/100
 Relatórios: 25
 Checks: 3268
-Issues únicas: 2315 (brutas=4312, agrupadas=1997)
-Severidade: P0=39, P1=1124, P2=1152, P3=0
+Issues únicas: 2281 (brutas=4244, agrupadas=1963)
+Severidade: P0=5, P1=1124, P2=1152, P3=0
 Direção: Corrigir P0 confirmados antes de continuar evolução visual/pedagógica.
-Top issues: P0 Exercício · A1-READING-015 — Resposta correta não aparece nas alternativas | P0 Exercício · A1-READING-018-CLOTHES — Resposta correta não aparece nas alternativas | P0 Exercício · A2-READING-001 — Resposta correta não aparece nas alternativas | P0 Exercício · A2-READING-003 — Resposta correta não aparece nas alternativas | P0 Exercício · A2-READING-005 — Resposta correta não aparece nas alternativas
+Top issues: P0 Exercício · A2-READING-001 — Resposta correta não aparece nas alternativas | P0 Exercício · A2-READING-003 — Resposta correta não aparece nas alternativas | P0 Exercício · A2-READING-011 — Resposta correta não aparece nas alternativas | P0 Exercício · A2-READING-011 — Resposta correta não aparece nas alternativas | P0 Exercício · A2-READING-020 — Resposta correta não aparece nas alternativas
