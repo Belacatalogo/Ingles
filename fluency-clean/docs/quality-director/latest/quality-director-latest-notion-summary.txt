@@ -2,7 +2,7 @@ Status: Revisar antes de confiar
 Nota geral: 0/100
 Relatórios: 25
 Checks: 3268
-Issues únicas: 2158 (brutas=4008, agrupadas=1850)
-Severidade: P0=0, P1=986, P2=1172, P3=0
+Issues únicas: 2060 (brutas=3812, agrupadas=1752)
+Severidade: P0=0, P1=864, P2=1196, P3=0
 Direção: Corrigir P1 antes de considerar o sistema confiável para estudo contínuo.
-Top issues: P1 Aula A1-GRAMMAR-014 — Nenhum exercício detectado na aula ready | P1 Aula A1-GRAMMAR-022 — Nenhum exercício detectado na aula ready | P1 Aula A1-GRAMMAR-024 — Nenhum exercício detectado na aula ready | P1 Exercício · A1-GRAMMAR-027 — Mais de uma alternativa parece correta | P1 Exercício · A1-GRAMMAR-027 — Mais de uma alternativa parece correta
+Top issues: P1 Exercício · A1-GRAMMAR-027 — Mais de uma alternativa parece correta | P1 Exercício · A1-GRAMMAR-027 — Mais de uma alternativa parece correta | P1 Exercício · A1-VOCABULARY-003 — Mais de uma alternativa parece correta | P1 Exercício · A1-VOCABULARY-004 — Mais de uma alternativa parece correta | P1 Exercício · A1-VOCABULARY-004 — Mais de uma alternativa parece correta
