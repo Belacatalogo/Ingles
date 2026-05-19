@@ -153,19 +153,33 @@ export async function auditVisualViewport({ page, reporter, area }) {
   const fixedFooterOverlap = bottomNavBox
     ? await page.evaluate((nav) => {
         const elements = [...document.querySelectorAll('button, input, textarea, .lesson-flow-action-footer, .lesson-phase-primary')];
-        return elements.some((el) => {
+        const offenders = [];
+        elements.forEach((el) => {
           const rect = el.getBoundingClientRect();
-          if (rect.width === 0 || rect.height === 0) return false;
-          if (el.closest('.bottom-nav') || el.closest('.reference-bottom-nav')) return false;
-          // Only flag when more than half the element is hidden behind the nav.
-          // Minor overlap (e.g. bottom 10px of a 98px scrollable list item) is expected
-          // scroll-list behaviour and does not prevent interaction.
+          if (rect.width === 0 || rect.height === 0) return;
+          if (el.closest('.bottom-nav') || el.closest('.reference-bottom-nav')) return;
           const overlapPx = Math.max(0, Math.min(rect.bottom, nav.y + nav.height) - Math.max(rect.top, nav.y));
           const elementHeight = rect.bottom - rect.top;
-          return overlapPx > elementHeight * 0.5;
+          if (overlapPx > elementHeight * 0.5) {
+            offenders.push({
+              tag: el.tagName,
+              className: typeof el.className === 'string' ? el.className : '',
+              text: String(el.innerText || el.getAttribute('aria-label') || el.getAttribute('placeholder') || '').replace(/\s+/g, ' ').trim().slice(0, 120),
+              rect: {
+                x: Math.round(rect.x),
+                y: Math.round(rect.y),
+                width: Math.round(rect.width),
+                height: Math.round(rect.height),
+                bottom: Math.round(rect.bottom),
+              },
+              overlapPx: Math.round(overlapPx),
+              overlapRatio: Number((overlapPx / elementHeight).toFixed(2)),
+            });
+          }
         });
+        return offenders.length ? { nav, offenders: offenders.slice(0, 5) } : null;
       }, bottomNavBox)
-    : false;
+    : null;
 
   if (fixedFooterOverlap) {
     reporter.addIssue({
@@ -173,8 +187,8 @@ export async function auditVisualViewport({ page, reporter, area }) {
       area,
       title: 'Elemento interativo sobreposto pela bottom nav',
       impact: 'O aluno pode não conseguir tocar em botões ou campos próximos do rodapé.',
-      evidence: screenshotPath,
-      recommendation: 'Adicionar padding-bottom/safe-area nas telas com conteúdo rolável.',
+      evidence: `${screenshotPath}; overlap=${JSON.stringify(fixedFooterOverlap)}`,
+      recommendation: 'Adicionar padding-bottom/safe-area nas telas com conteúdo rolável ou remover o elemento da faixa fixa inferior.',
     });
   }
 
