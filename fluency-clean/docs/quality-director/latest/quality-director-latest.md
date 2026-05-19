@@ -1,6 +1,6 @@
 # Fluency Quality Director — Relatório Executivo Latest
 
-Gerado em: 2026-05-19T01:44:10.427Z
+Gerado em: 2026-05-19T01:53:26.621Z
 
 ## Veredito
 
@@ -71,29 +71,29 @@ Gerado em: 2026-05-19T01:44:10.427Z
 ### Ações imediatas
 
 1. **P1 · iPhone 13 · Instalação limpa sem dados · Aba Cartas — Elemento interativo sobreposto pela bottom nav**
-   - Ação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável.
+   - Ação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável ou remover o elemento da faixa fixa inferior.
 2. **P1 · iPhone 13 · Estados principais como null · Aba Cartas — Elemento interativo sobreposto pela bottom nav**
-   - Ação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável.
+   - Ação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável ou remover o elemento da faixa fixa inferior.
 3. **P1 · iPhone 13 · Estados principais com JSON inválido · Aba Cartas — Elemento interativo sobreposto pela bottom nav**
-   - Ação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável.
+   - Ação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável ou remover o elemento da faixa fixa inferior.
 4. **P1 · iPhone 13 · Sem aula atual mas com configurações básicas · Aba Cartas — Elemento interativo sobreposto pela bottom nav**
-   - Ação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável.
+   - Ação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável ou remover o elemento da faixa fixa inferior.
 5. **P1 · iPhone SE · Instalação limpa sem dados · Aba Hoje — Elemento interativo sobreposto pela bottom nav**
-   - Ação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável.
+   - Ação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável ou remover o elemento da faixa fixa inferior.
 6. **P1 · iPhone SE · Instalação limpa sem dados · Aba Cartas — Elemento interativo sobreposto pela bottom nav**
-   - Ação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável.
+   - Ação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável ou remover o elemento da faixa fixa inferior.
 7. **P1 · iPhone SE · Estados principais como null · Aba Hoje — Elemento interativo sobreposto pela bottom nav**
-   - Ação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável.
+   - Ação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável ou remover o elemento da faixa fixa inferior.
 8. **P1 · iPhone SE · Estados principais como null · Aba Cartas — Elemento interativo sobreposto pela bottom nav**
-   - Ação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável.
+   - Ação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável ou remover o elemento da faixa fixa inferior.
 9. **P1 · iPhone SE · Estados principais com JSON inválido · Aba Hoje — Elemento interativo sobreposto pela bottom nav**
-   - Ação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável.
+   - Ação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável ou remover o elemento da faixa fixa inferior.
 10. **P1 · iPhone SE · Estados principais com JSON inválido · Aba Cartas — Elemento interativo sobreposto pela bottom nav**
-   - Ação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável.
+   - Ação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável ou remover o elemento da faixa fixa inferior.
 11. **P1 · iPhone SE · Sem aula atual mas com configurações básicas · Aba Hoje — Elemento interativo sobreposto pela bottom nav**
-   - Ação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável.
+   - Ação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável ou remover o elemento da faixa fixa inferior.
 12. **P1 · iPhone SE · Sem aula atual mas com configurações básicas · Aba Cartas — Elemento interativo sobreposto pela bottom nav**
-   - Ação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável.
+   - Ação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável ou remover o elemento da faixa fixa inferior.
 
 ### Próximas ações
 
@@ -134,96 +134,96 @@ Gerado em: 2026-05-19T01:44:10.427Z
    - Relatório: quality-director-empty-states-security / iPhone 13
    - Ocorrências agrupadas: 1
    - Impacto: O aluno pode não conseguir tocar em botões ou campos próximos do rodapé.
-   - Evidência: audit-results/screenshots/iphone-13-instala-o-limpa-sem-dados-aba-cartas.png
-   - Recomendação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável.
+   - Evidência: audit-results/screenshots/iphone-13-instala-o-limpa-sem-dados-aba-cartas.png; overlap={"nav":{"x":17,"y":762,"width":356,"height":70},"offenders":[{"tag":"BUTTON","className":"cards-topic-button  locked","text":"Lugares e cidade A1 · 0/4 bolhas 0%","rect":{"x":32,"y":762,"width":326,"height":58,"bottom":820},"overlapPx":58,"overlapRatio":1}]}
+   - Recomendação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável ou remover o elemento da faixa fixa inferior.
 
 2. **P1 · iPhone 13 · Estados principais como null · Aba Cartas — Elemento interativo sobreposto pela bottom nav**
    - Área executiva: Navegação e estabilidade
    - Relatório: quality-director-empty-states-security / iPhone 13
    - Ocorrências agrupadas: 1
    - Impacto: O aluno pode não conseguir tocar em botões ou campos próximos do rodapé.
-   - Evidência: audit-results/screenshots/iphone-13-estados-principais-como-null-aba-cartas.png
-   - Recomendação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável.
+   - Evidência: audit-results/screenshots/iphone-13-estados-principais-como-null-aba-cartas.png; overlap={"nav":{"x":17,"y":762,"width":356,"height":70},"offenders":[{"tag":"BUTTON","className":"cards-topic-button  locked","text":"Lugares e cidade A1 · 0/4 bolhas 0%","rect":{"x":32,"y":762,"width":326,"height":58,"bottom":820},"overlapPx":58,"overlapRatio":1}]}
+   - Recomendação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável ou remover o elemento da faixa fixa inferior.
 
 3. **P1 · iPhone 13 · Estados principais com JSON inválido · Aba Cartas — Elemento interativo sobreposto pela bottom nav**
    - Área executiva: Navegação e estabilidade
    - Relatório: quality-director-empty-states-security / iPhone 13
    - Ocorrências agrupadas: 1
    - Impacto: O aluno pode não conseguir tocar em botões ou campos próximos do rodapé.
-   - Evidência: audit-results/screenshots/iphone-13-estados-principais-com-json-inv-lido-aba-cartas.png
-   - Recomendação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável.
+   - Evidência: audit-results/screenshots/iphone-13-estados-principais-com-json-inv-lido-aba-cartas.png; overlap={"nav":{"x":17,"y":762,"width":356,"height":70},"offenders":[{"tag":"BUTTON","className":"cards-topic-button  locked","text":"Lugares e cidade A1 · 0/4 bolhas 0%","rect":{"x":32,"y":762,"width":326,"height":58,"bottom":820},"overlapPx":58,"overlapRatio":1}]}
+   - Recomendação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável ou remover o elemento da faixa fixa inferior.
 
 4. **P1 · iPhone 13 · Sem aula atual mas com configurações básicas · Aba Cartas — Elemento interativo sobreposto pela bottom nav**
    - Área executiva: Navegação e estabilidade
    - Relatório: quality-director-empty-states-security / iPhone 13
    - Ocorrências agrupadas: 1
    - Impacto: O aluno pode não conseguir tocar em botões ou campos próximos do rodapé.
-   - Evidência: audit-results/screenshots/iphone-13-sem-aula-atual-mas-com-configura-es-b-sicas-aba-cartas.png
-   - Recomendação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável.
+   - Evidência: audit-results/screenshots/iphone-13-sem-aula-atual-mas-com-configura-es-b-sicas-aba-cartas.png; overlap={"nav":{"x":17,"y":762,"width":356,"height":70},"offenders":[{"tag":"BUTTON","className":"cards-topic-button  locked","text":"Lugares e cidade A1 · 0/4 bolhas 0%","rect":{"x":32,"y":762,"width":326,"height":58,"bottom":820},"overlapPx":58,"overlapRatio":1}]}
+   - Recomendação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável ou remover o elemento da faixa fixa inferior.
 
 5. **P1 · iPhone SE · Instalação limpa sem dados · Aba Hoje — Elemento interativo sobreposto pela bottom nav**
    - Área executiva: Navegação e estabilidade
    - Relatório: quality-director-empty-states-security / iPhone SE
    - Ocorrências agrupadas: 1
    - Impacto: O aluno pode não conseguir tocar em botões ou campos próximos do rodapé.
-   - Evidência: audit-results/screenshots/iphone-se-instala-o-limpa-sem-dados-aba-hoje.png
-   - Recomendação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável.
+   - Evidência: audit-results/screenshots/iphone-se-instala-o-limpa-sem-dados-aba-hoje.png; overlap={"nav":{"x":17,"y":585,"width":341,"height":70},"offenders":[{"tag":"BUTTON","className":"today-task-card","text":"Aula de hoje Curso fixo em preparação","rect":{"x":14,"y":591,"width":347,"height":92,"bottom":683},"overlapPx":64,"overlapRatio":0.7}]}
+   - Recomendação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável ou remover o elemento da faixa fixa inferior.
 
 6. **P1 · iPhone SE · Instalação limpa sem dados · Aba Cartas — Elemento interativo sobreposto pela bottom nav**
    - Área executiva: Navegação e estabilidade
    - Relatório: quality-director-empty-states-security / iPhone SE
    - Ocorrências agrupadas: 1
    - Impacto: O aluno pode não conseguir tocar em botões ou campos próximos do rodapé.
-   - Evidência: audit-results/screenshots/iphone-se-instala-o-limpa-sem-dados-aba-cartas.png
-   - Recomendação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável.
+   - Evidência: audit-results/screenshots/iphone-se-instala-o-limpa-sem-dados-aba-cartas.png; overlap={"nav":{"x":17,"y":585,"width":341,"height":70},"offenders":[{"tag":"BUTTON","className":"cards-topic-button  locked","text":"Rotina diária A1 · 0/4 bolhas 0%","rect":{"x":32,"y":576,"width":311,"height":58,"bottom":634},"overlapPx":49,"overlapRatio":0.84}]}
+   - Recomendação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável ou remover o elemento da faixa fixa inferior.
 
 7. **P1 · iPhone SE · Estados principais como null · Aba Hoje — Elemento interativo sobreposto pela bottom nav**
    - Área executiva: Navegação e estabilidade
    - Relatório: quality-director-empty-states-security / iPhone SE
    - Ocorrências agrupadas: 1
    - Impacto: O aluno pode não conseguir tocar em botões ou campos próximos do rodapé.
-   - Evidência: audit-results/screenshots/iphone-se-estados-principais-como-null-aba-hoje.png
-   - Recomendação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável.
+   - Evidência: audit-results/screenshots/iphone-se-estados-principais-como-null-aba-hoje.png; overlap={"nav":{"x":17,"y":585,"width":341,"height":70},"offenders":[{"tag":"BUTTON","className":"today-task-card","text":"Aula de hoje Curso fixo em preparação","rect":{"x":14,"y":591,"width":347,"height":92,"bottom":683},"overlapPx":64,"overlapRatio":0.7}]}
+   - Recomendação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável ou remover o elemento da faixa fixa inferior.
 
 8. **P1 · iPhone SE · Estados principais como null · Aba Cartas — Elemento interativo sobreposto pela bottom nav**
    - Área executiva: Navegação e estabilidade
    - Relatório: quality-director-empty-states-security / iPhone SE
    - Ocorrências agrupadas: 1
    - Impacto: O aluno pode não conseguir tocar em botões ou campos próximos do rodapé.
-   - Evidência: audit-results/screenshots/iphone-se-estados-principais-como-null-aba-cartas.png
-   - Recomendação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável.
+   - Evidência: audit-results/screenshots/iphone-se-estados-principais-como-null-aba-cartas.png; overlap={"nav":{"x":17,"y":585,"width":341,"height":70},"offenders":[{"tag":"BUTTON","className":"cards-topic-button  locked","text":"Rotina diária A1 · 0/4 bolhas 0%","rect":{"x":32,"y":576,"width":311,"height":58,"bottom":634},"overlapPx":49,"overlapRatio":0.84}]}
+   - Recomendação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável ou remover o elemento da faixa fixa inferior.
 
 9. **P1 · iPhone SE · Estados principais com JSON inválido · Aba Hoje — Elemento interativo sobreposto pela bottom nav**
    - Área executiva: Navegação e estabilidade
    - Relatório: quality-director-empty-states-security / iPhone SE
    - Ocorrências agrupadas: 1
    - Impacto: O aluno pode não conseguir tocar em botões ou campos próximos do rodapé.
-   - Evidência: audit-results/screenshots/iphone-se-estados-principais-com-json-inv-lido-aba-hoje.png
-   - Recomendação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável.
+   - Evidência: audit-results/screenshots/iphone-se-estados-principais-com-json-inv-lido-aba-hoje.png; overlap={"nav":{"x":17,"y":585,"width":341,"height":70},"offenders":[{"tag":"BUTTON","className":"today-task-card","text":"Aula de hoje Curso fixo em preparação","rect":{"x":14,"y":591,"width":347,"height":92,"bottom":683},"overlapPx":64,"overlapRatio":0.7}]}
+   - Recomendação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável ou remover o elemento da faixa fixa inferior.
 
 10. **P1 · iPhone SE · Estados principais com JSON inválido · Aba Cartas — Elemento interativo sobreposto pela bottom nav**
    - Área executiva: Navegação e estabilidade
    - Relatório: quality-director-empty-states-security / iPhone SE
    - Ocorrências agrupadas: 1
    - Impacto: O aluno pode não conseguir tocar em botões ou campos próximos do rodapé.
-   - Evidência: audit-results/screenshots/iphone-se-estados-principais-com-json-inv-lido-aba-cartas.png
-   - Recomendação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável.
+   - Evidência: audit-results/screenshots/iphone-se-estados-principais-com-json-inv-lido-aba-cartas.png; overlap={"nav":{"x":17,"y":585,"width":341,"height":70},"offenders":[{"tag":"BUTTON","className":"cards-topic-button  locked","text":"Rotina diária A1 · 0/4 bolhas 0%","rect":{"x":32,"y":576,"width":311,"height":58,"bottom":634},"overlapPx":49,"overlapRatio":0.84}]}
+   - Recomendação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável ou remover o elemento da faixa fixa inferior.
 
 11. **P1 · iPhone SE · Sem aula atual mas com configurações básicas · Aba Hoje — Elemento interativo sobreposto pela bottom nav**
    - Área executiva: Navegação e estabilidade
    - Relatório: quality-director-empty-states-security / iPhone SE
    - Ocorrências agrupadas: 1
    - Impacto: O aluno pode não conseguir tocar em botões ou campos próximos do rodapé.
-   - Evidência: audit-results/screenshots/iphone-se-sem-aula-atual-mas-com-configura-es-b-sicas-aba-hoje.png
-   - Recomendação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável.
+   - Evidência: audit-results/screenshots/iphone-se-sem-aula-atual-mas-com-configura-es-b-sicas-aba-hoje.png; overlap={"nav":{"x":17,"y":585,"width":341,"height":70},"offenders":[{"tag":"BUTTON","className":"today-task-card","text":"Aula de hoje Curso fixo em preparação","rect":{"x":14,"y":591,"width":347,"height":92,"bottom":683},"overlapPx":64,"overlapRatio":0.7}]}
+   - Recomendação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável ou remover o elemento da faixa fixa inferior.
 
 12. **P1 · iPhone SE · Sem aula atual mas com configurações básicas · Aba Cartas — Elemento interativo sobreposto pela bottom nav**
    - Área executiva: Navegação e estabilidade
    - Relatório: quality-director-empty-states-security / iPhone SE
    - Ocorrências agrupadas: 1
    - Impacto: O aluno pode não conseguir tocar em botões ou campos próximos do rodapé.
-   - Evidência: audit-results/screenshots/iphone-se-sem-aula-atual-mas-com-configura-es-b-sicas-aba-cartas.png
-   - Recomendação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável.
+   - Evidência: audit-results/screenshots/iphone-se-sem-aula-atual-mas-com-configura-es-b-sicas-aba-cartas.png; overlap={"nav":{"x":17,"y":585,"width":341,"height":70},"offenders":[{"tag":"BUTTON","className":"cards-topic-button  locked","text":"Rotina diária A1 · 0/4 bolhas 0%","rect":{"x":32,"y":576,"width":311,"height":58,"bottom":634},"overlapPx":49,"overlapRatio":0.84}]}
+   - Recomendação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável ou remover o elemento da faixa fixa inferior.
 
 13. **P1 · Exercício · A1-GRAMMAR-001 — Mais de uma alternativa parece correta**
    - Área executiva: Exercícios e alternativas
