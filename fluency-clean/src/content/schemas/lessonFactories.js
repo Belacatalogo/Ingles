@@ -222,6 +222,10 @@ export function createListeningLesson(input = {}) {
     listeningComprehension: safeArray(input.listeningComprehension?.length ? input.listeningComprehension : input.comprehensionQuestions),
     oralProduction: taskOrNull(input.oralProduction),
     comprehensionQuestions: safeArray(input.comprehensionQuestions),
+    // Schema premium dos pacotes B2/C1/C2 — preservar staged listeningTasks
+    // e audioMetadata; o auditor reconhece depois (Bloco 7A).
+    listeningTasks: safeArray(input.listeningTasks),
+    audioMetadata: safeObject(input.audioMetadata),
   };
 }
 
@@ -241,7 +245,13 @@ export function createSpeakingLesson(input = {}) {
     pronunciationFocus: input.pronunciationFocus || null,
     guidedSpeaking: safeArray(input.guidedSpeaking),
     recordingTasks: safeArray(input.recordingTasks),
-    freeSpeaking: safeArray(input.freeSpeaking),
+    freeSpeaking: Array.isArray(input.freeSpeaking)
+      ? input.freeSpeaking
+      : (input.freeSpeaking && typeof input.freeSpeaking === 'object' ? [input.freeSpeaking] : []),
+    // Schema premium dos pacotes B2/C1/C2 — preservar sem transformar
+    // checklist passivo em exercício; o auditor decide depois (Bloco 7A).
+    warmUp: safeArray(input.warmUp),
+    guidedPractice: safeArray(input.guidedPractice),
   };
 }
 
@@ -261,6 +271,11 @@ export function createWritingLesson(input = {}) {
     checklist: safeArray(input.checklist),
     draftTask: input.draftTask || null,
     revisionTask: input.revisionTask || null,
+    // Schema premium dos pacotes B2/C1/C2 — preservar sem transformar.
+    writingTasks: safeArray(input.writingTasks),
+    writingModel: safeObject(input.writingModel),
+    writingChecklist: safeArray(input.writingChecklist),
+    grammarAnnotations: safeArray(input.grammarAnnotations),
   };
 }
 
