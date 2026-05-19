@@ -445,10 +445,28 @@ function auditExerciseObject({ lesson, item, path }) {
   return issues;
 }
 
+// Speaking é prática ativa mesmo sem options/answer: repetir, substituir,
+// responder, montar resposta, gravar, falar. Campos só reflexivos
+// (speakingChecklist) NÃO contam como prática principal.
+const SPEAKING_ACTION_FIELDS = ['repeatAfterMe', 'substitutionDrills', 'questionAnswerDrills', 'buildYourAnswer', 'guidedSpeaking', 'recordingTasks', 'freeSpeaking', 'modelPhrases', 'pronunciationChunks'];
+const SPEAKING_TEXT_KEYS = ['instruction', 'prompt', 'text', 'sentence', 'phrase', 'model', 'question', 'title'];
+
+function speakingItemHasText(item) {
+  if (typeof item === 'string' || typeof item === 'number') return clean(item).length >= 3;
+  if (!item || typeof item !== 'object' || Array.isArray(item)) return false;
+  return SPEAKING_TEXT_KEYS.some((key) => clean(item[key]).length >= 3);
+}
+
+function hasActiveSpeakingPractice(lesson) {
+  if (!lesson || (lesson.pillar !== 'speaking' && lesson.type !== 'speaking')) return false;
+  return SPEAKING_ACTION_FIELDS.some((field) => Array.isArray(lesson[field]) && lesson[field].some(speakingItemHasText));
+}
+
 export function auditLessonExercisesDeep(lesson) {
   const exercises = collectExerciseObjects(lesson);
   const issues = [];
   if (!exercises.length) {
+    if (hasActiveSpeakingPractice(lesson)) return issues;
     addIssue(issues, { severity: 'P1', area: `Aula ${lesson?.id || 'unknown-lesson'}`, title: 'Nenhum exercício detectado na aula ready', impact: 'A aula pode ensinar sem exigir prática ativa do aluno.', recommendation: 'Adicionar exercícios, tarefas de tentativa ou perguntas avaliáveis.' });
     return issues;
   }
