@@ -159,7 +159,7 @@ Please order at the counter. For here or to go?`,
     guidedDiscovery: [task('Se ouvir anything else, espere outro item ou no, thank you.'), task('Se ouvir for here or to go, responda for here ou to go.')],
     guidedBeforeQuiz: [task('Primeira escuta: qual é a situação?'), task('Segunda escuta: quais itens são pedidos?')],
     listeningPreparation: [task('Não leia o transcript antes da primeira escuta.'), task('Prepare: coffee, sandwich, anything else, for here, to go.'), task('Objetivo: identificar pedido e resposta final.')],
-    keyWordsToHear: [vocab('coffee','café'), vocab('sandwich','sanduíche'), vocab('anything else','mais alguma coisa?'), vocab('for here','para aqui'), vocab('to go','para viagem')],
+    keyWordsToHear: [vocab('coffee','café'), vocab('tea','chá'), vocab('water','água'), vocab('sandwich','sanduíche'), vocab('anything else','mais alguma coisa?'), vocab('for here','para aqui'), vocab('to go','para viagem')],
     audioScript: `Clerk: Good morning. What would you like?
 Customer: Good morning. Can I have a coffee, please?
 Clerk: Sure. Anything else?
