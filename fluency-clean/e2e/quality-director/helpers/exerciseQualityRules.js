@@ -320,10 +320,38 @@ function optionMatchesAnswer(option, answer, context = {}) {
   return false;
 }
 
+function escapeRegExp(value) { return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+
+// Vazamento real = a resposta aparece como palavra(s) inteira(s) no enunciado.
+// includes() cru marcava falso positivo por substring parcial
+// (ex.: "reserva" dentro de "reservation").
 function hasAnswerLeak(question, answer) {
   const questionNorm = normalize(question);
   const answerNorm = normalize(answer);
-  return Boolean(questionNorm && answerNorm && answerNorm.length >= 4 && questionNorm.includes(answerNorm));
+  if (!questionNorm || !answerNorm || answerNorm.length < 4) return false;
+  return new RegExp(`\\b${escapeRegExp(answerNorm)}\\b`).test(questionNorm);
+}
+
+// Em reading/listening A1, perguntas binárias ("big or small?") e perguntas
+// sobre uma fala citada ('Who says "my name is Luis"?') naturalmente contêm
+// a resposta sem entregá-la. Só relaxa no caminho de comprehension; grammar/
+// quiz continua estrito.
+function isBinaryChoiceQuestion(question, answer) {
+  if (!endsAsQuestion(question)) return false;
+  const answerNorm = normalize(answer);
+  if (!answerNorm || rawWords(answer).length > 4) return false;
+  if (!/(^|\s)(or|ou)(\s|$)/.test(normalize(question))) return false;
+  return normalize(question).includes(answerNorm);
+}
+function isQuotedStimulusLeak(question, answer) {
+  const answerNorm = normalize(answer);
+  if (!answerNorm) return false;
+  const withoutQuotes = clean(question).replace(/[“"'«»‘’]([^“”"'«»‘’]*)[”"'«»‘’]/g, ' ');
+  // A resposta só aparecia dentro da fala citada (estímulo), não no enunciado.
+  return normalize(question).includes(answerNorm) && !normalize(withoutQuotes).includes(answerNorm);
+}
+function isSafeComprehensionLeak(question, answer) {
+  return isBinaryChoiceQuestion(question, answer) || isQuotedStimulusLeak(question, answer);
 }
 
 function isStructuralGrammarDrill({ path, question, answer, options }) {
@@ -365,7 +393,7 @@ function auditOptionGroup({ issues, area, path, question, answer, options }) {
   const min = Math.min(...optionLengths);
   if (options.length >= 3 && min > 0 && max / min >= 5) addIssue(issues, { severity: 'P2', area, title: 'Tamanho das alternativas muito desigual', impact: 'A resposta pode ficar óbvia pelo tamanho, não pelo conhecimento.', evidence: `${path}: ${options.join(' | ')}`, recommendation: 'Equilibrar comprimento e nível de detalhe das alternativas.' });
 
-  if (question && answer && hasAnswerLeak(question, answer)) addIssue(issues, { severity: 'P1', area, title: 'Pergunta parece entregar a resposta', impact: 'O aluno não precisa raciocinar para responder.', evidence: `${path}: pergunta=${question}; resposta=${answer}`, recommendation: 'Reformular a pergunta para não conter a resposta literal.' });
+  if (question && answer && hasAnswerLeak(question, answer) && !(isComprehensionPath(path) && isSafeComprehensionLeak(question, answer))) addIssue(issues, { severity: 'P1', area, title: 'Pergunta parece entregar a resposta', impact: 'O aluno não precisa raciocinar para responder.', evidence: `${path}: pergunta=${question}; resposta=${answer}`, recommendation: 'Reformular a pergunta para não conter a resposta literal.' });
 }
 
 function auditExerciseObject({ lesson, item, path }) {
