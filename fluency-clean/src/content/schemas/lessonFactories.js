@@ -171,7 +171,7 @@ export function createVocabularyLesson(input = {}) {
     lexicalSets: safeArray(input.lexicalSets),
     pronunciationNotes: safeArray(input.pronunciationNotes),
     examples,
-    recognitionPractice: recognitionPractice.length ? recognitionPractice : fallbackPractice,
+    recognitionPractice: [...recognitionPractice, ...fallbackPractice],
     usagePractice,
     productionTasks: safeArray(input.productionTasks),
   };
