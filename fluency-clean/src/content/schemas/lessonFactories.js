@@ -28,6 +28,38 @@ function normalizeDeepCommon(input = {}) {
   };
 }
 
+function hasChoicePractice(...groups) {
+  return groups.flat().some((item) => item && typeof item === 'object' && clean(item.question) && safeArray(item.options).length >= 2 && clean(item.answer));
+}
+
+function createFallbackGrammarPractice(input = {}) {
+  const title = clean(input.title) || 'grammar';
+  const goal = firstNonEmpty(input.grammarGoal, input.objectives?.[0], `Usar ${title} em frase A1.`);
+  const sample = firstNonEmpty(
+    input.teacherExamples?.[0]?.english,
+    input.professorExamples?.[0]?.english,
+    input.teacherExamples?.[0]?.text,
+    input.professorExamples?.[0]?.text,
+    input.formationGuide?.[0]?.note,
+    input.formationGuide?.[0]?.text,
+    'I study English.'
+  );
+  return [
+    {
+      question: `Qual opção combina com a aula de ${title}?`,
+      options: [sample, 'Wrong sentence', 'No answer'],
+      answer: sample,
+      explanation: `Use a forma ensinada nesta aula: ${goal}`,
+    },
+    {
+      question: `Qual alternativa é uma prática segura de ${title}?`,
+      options: [sample, 'Portuguese word order', 'Missing verb'],
+      answer: sample,
+      explanation: 'A resposta correta mantém uma frase curta, completa e adequada ao nível A1.',
+    },
+  ];
+}
+
 export function createStaticLessonBase(input = {}) {
   const level = normalizeStaticLevel(input.level);
   const pillar = normalizeStaticPillar(input.pillar);
@@ -54,6 +86,11 @@ export function createGrammarLesson(input = {}) {
   const professorExamples = safeArray(input.teacherExamples?.length ? input.teacherExamples : input.professorExamples);
   const commonMistakes = safeArray(input.commonBrazilianMistakes?.length ? input.commonBrazilianMistakes : input.commonMistakes);
   const guidedPractice = safeArray(input.guidedPractice);
+  const controlledPractice = safeArray(input.controlledPractice);
+  const errorCorrectionPractice = safeArray(input.errorCorrectionPractice);
+  const translationPractice = safeArray(input.translationPractice);
+  const transformationPractice = safeArray(input.transformationPractice);
+  const fallbackPractice = hasChoicePractice(guidedPractice, controlledPractice, errorCorrectionPractice, translationPractice, transformationPractice) ? [] : createFallbackGrammarPractice({ ...input, teacherExamples: professorExamples });
   return {
     ...createStaticLessonBase({ ...input, pillar: 'grammar' }),
     grammarGoal: clean(input.grammarGoal),
@@ -63,14 +100,14 @@ export function createGrammarLesson(input = {}) {
     grammarTable: safeArray(input.grammarTable),
     teacherExamples: professorExamples,
     commonBrazilianMistakes: commonMistakes,
-    controlledPractice: safeArray(input.controlledPractice),
-    errorCorrectionPractice: safeArray(input.errorCorrectionPractice),
-    translationPractice: safeArray(input.translationPractice),
+    controlledPractice,
+    errorCorrectionPractice,
+    translationPractice,
     explanationSections: safeArray(input.explanationSections),
     professorExamples,
     commonMistakes,
-    guidedPractice,
-    transformationPractice: safeArray(input.transformationPractice),
+    guidedPractice: guidedPractice.length ? guidedPractice : fallbackPractice,
+    transformationPractice,
     productionTasks: safeArray(input.productionTasks),
     finalChecklist: safeArray(input.finalChecklist),
   };
