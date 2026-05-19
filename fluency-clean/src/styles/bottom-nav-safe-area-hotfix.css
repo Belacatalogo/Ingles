@@ -20,7 +20,6 @@
   padding-bottom: 0 !important;
 }
 
-.today-reference-screen,
 .cards-screen,
 .course-screen,
 .settings-screen,
@@ -28,6 +27,16 @@
 .speaking-reference-screen,
 .lesson-screen {
   padding-bottom: var(--bottom-nav-safe-space) !important;
+  scroll-padding-bottom: var(--bottom-nav-safe-space);
+}
+
+/*
+  A aba Hoje já tem cards altos e é a única que mostrava um bloco vazio atrás
+  da navbar. Ela precisa de scroll-margin para foco/ancoragem, mas não de um
+  padding gigante no final da tela.
+*/
+.today-reference-screen {
+  padding-bottom: 18px !important;
   scroll-padding-bottom: var(--bottom-nav-safe-space);
 }
 
@@ -43,16 +52,6 @@
   overscroll-behavior: auto;
 }
 
-/*
-  A aba Hoje tem cards grandes. Se o último painel encosta na bottom nav,
-  o fundo do card aparece atrás da navbar. Mantemos uma zona vazia real
-  depois do Curso guiado premium para a navbar flutuar sobre o fundo da página.
-*/
-.today-reference-screen .static-next-lesson-panel {
-  margin-bottom: var(--bottom-nav-safe-space) !important;
-}
-
-.today-reference-screen > :last-child,
 .cards-screen > :last-child,
 .course-screen > :last-child,
 .settings-screen > :last-child,
@@ -60,6 +59,14 @@
 .speaking-reference-screen > :last-child,
 .lesson-screen > :last-child {
   margin-bottom: max(28px, env(safe-area-inset-bottom));
+}
+
+.today-reference-screen > :last-child {
+  margin-bottom: 0 !important;
+}
+
+.today-reference-screen .static-next-lesson-panel {
+  margin-bottom: 0 !important;
 }
 
 .today-reference-screen button,
@@ -122,6 +129,7 @@
 
   .today-reference-screen {
     gap: 10px !important;
+    padding-bottom: var(--bottom-nav-safe-space) !important;
   }
 
   .today-hero-card {
