@@ -128,21 +128,13 @@
   }
 }
 
-/* iPhone SE / telas legadas: compacta a primeira dobra sem criar fundo extra no iPhone 13. */
+/* iPhone SE / telas legadas: compacta a primeira dobra.
+   NÃO clampar a altura da tela: clampar com max-height + overflow-y:auto
+   transformava a Hoje/Cartas/Ajustes numa caixa de rolagem curta cuja base
+   terminava ~110px acima da navbar fixa, deixando uma faixa escura (o "tapete")
+   visível. Sem clamp, a página inteira rola e o conteúdo passa por trás da
+   navbar, igual às abas Progresso/Curso (que nunca foram clampadas). */
 @media (max-width: 380px), (max-height: 700px) {
-  .app-shell:has(.today-reference-screen) {
-    padding-bottom: 0 !important;
-  }
-
-  .today-reference-screen,
-  .cards-screen,
-  .settings-screen {
-    max-height: max(360px, var(--content-safe-viewport)) !important;
-    overflow-y: auto !important;
-    overscroll-behavior: contain;
-    -webkit-overflow-scrolling: touch;
-  }
-
   .today-reference-screen {
     gap: 10px !important;
     padding-bottom: var(--bottom-nav-safe-space) !important;
