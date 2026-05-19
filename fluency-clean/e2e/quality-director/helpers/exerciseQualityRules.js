@@ -32,6 +32,17 @@ const SYNONYMS = new Map([
   ['bottles', 'bottle'], ['prices', 'price'], ['shoes', 'shoe'], ['leaking', 'leak'], ['ids', 'id'],
 ]);
 
+// "one" fica de fora de propósito: é polissêmico (artigo/pronome —
+// "one day", "the red one") e gerava falso conflito numérico em resumos
+// concisos. O bug-alvo (19/20/21 years old) usa dígitos, não palavras.
+const NUMBER_WORDS = new Map([
+  ['zero', 0], ['two', 2], ['three', 3], ['four', 4], ['five', 5], ['six', 6], ['seven', 7],
+  ['eight', 8], ['nine', 9], ['ten', 10], ['eleven', 11], ['twelve', 12], ['thirteen', 13], ['fourteen', 14],
+  ['fifteen', 15], ['sixteen', 16], ['seventeen', 17], ['eighteen', 18], ['nineteen', 19], ['twenty', 20],
+  ['thirty', 30], ['forty', 40], ['fifty', 50], ['sixty', 60], ['seventy', 70], ['eighty', 80],
+  ['ninety', 90], ['hundred', 100],
+]);
+
 function clean(value) {
   if (value === null || value === undefined) return '';
   if (typeof value === 'string' || typeof value === 'number') return String(value).trim().replace(/\s+/g, ' ');
@@ -108,6 +119,26 @@ function endsAsQuestion(value) { return /\?\s*$/.test(clean(value)); }
 function isComprehensionPath(path = '') { return COMPREHENSION_PATH_PATTERNS.some((pattern) => pattern.test(path)); }
 function splitSentences(value) { return clean(value).split(/[.!?]+/).map((part) => part.trim()).filter(Boolean); }
 function contentWithoutBe(tokens) { return tokens.filter((token) => !GRAMMAR_BE_FORMS.has(token)); }
+
+function numericValues(value) {
+  const result = [];
+  for (const token of rawWords(value)) {
+    if (/^\d+$/.test(token)) result.push(Number(token));
+    else if (NUMBER_WORDS.has(token)) result.push(NUMBER_WORDS.get(token));
+  }
+  return result.sort((a, b) => a - b);
+}
+
+// Numbers carry the answer in comprehension items (idade, horário, quantidade).
+// "19 years old" e "20 years old" compartilham "years old" mas NÃO são equivalentes.
+// Só bloqueia quando ambos os lados têm número e os conjuntos divergem;
+// respostas sem número e matches exatos não são afetados.
+function hasNumericConflict(option, answer) {
+  const optionNums = numericValues(option);
+  const answerNums = numericValues(answer);
+  if (!optionNums.length || !answerNums.length) return false;
+  return !sameSequence(optionNums, answerNums);
+}
 
 function hasNegationMismatch(option, answer) {
   const optionRaw = rawWords(option);
@@ -253,6 +284,7 @@ function optionMatchesAnswer(option, answer, context = {}) {
   const answerNorm = normalize(answer);
   if (!optionNorm || !answerNorm) return false;
   if (optionNorm === answerNorm) return true;
+  if (hasNumericConflict(option, answer)) return false;
 
   const comprehensionPath = isComprehensionPath(context.path);
   if (comprehensionPath && isComprehensionConciseMatch(option, answer)) return true;
