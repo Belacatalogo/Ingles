@@ -362,7 +362,31 @@ function isStructuralGrammarDrill({ path, question, answer, options }) {
   return allOptionsShort && asksForStructure && answerWords.some((word) => STRUCTURAL_WORDS.has(word)) && optionWords.some((word) => STRUCTURAL_WORDS.has(word));
 }
 
-function auditOptionGroup({ issues, area, path, question, answer, options }) {
+const LESSON_DOMAIN_FIELDS = ['title', 'theme', 'topicContext', 'conceptExplanation', 'teacherOpening', 'mentalModel', 'realLifeUseCases', 'objectives', 'lessonRecap', 'mainText', 'readingPurpose', 'transcript', 'audioScript', 'listeningScript', 'keyWordsToHear', 'preReadingVocabulary', 'essentialWords', 'chunks', 'vocabulary', 'examples', 'miniDialogues', 'collocations', 'lexicalSets'];
+
+function collectStrings(value, acc = []) {
+  if (value === null || value === undefined) return acc;
+  if (typeof value === 'string' || typeof value === 'number') { acc.push(String(value)); return acc; }
+  if (Array.isArray(value)) { value.forEach((entry) => collectStrings(entry, acc)); return acc; }
+  if (typeof value === 'object') { Object.values(value).forEach((entry) => collectStrings(entry, acc)); return acc; }
+  return acc;
+}
+
+// Tokens do domínio real da aula (sem incluir as opções do próprio item,
+// para não validar um distrator usando ele mesmo).
+function lessonDomainTokens(lesson, item) {
+  const parts = [];
+  if (lesson && typeof lesson === 'object') LESSON_DOMAIN_FIELDS.forEach((field) => collectStrings(lesson[field], parts));
+  if (item) { parts.push(getQuestion(item), getAnswer(item)); collectStrings(item.evidence, parts); collectStrings(item.explanation, parts); }
+  return tokenSet(parts.join(' '));
+}
+
+function isOnTopicText(value, domainTokens) {
+  const tokens = words(value);
+  return tokens.length > 0 && tokens.every((token) => domainTokens.has(token));
+}
+
+function auditOptionGroup({ issues, area, path, question, answer, options, domainTokens = new Set() }) {
   const normalizedOptions = options.map(normalize);
   if (new Set(normalizedOptions).size !== normalizedOptions.length) addIssue(issues, { severity: 'P1', area, title: 'Alternativas duplicadas', impact: 'O aluno pode perceber exercício mal revisado ou ter menos alternativas reais.', evidence: `${path}: ${options.join(' | ')}`, recommendation: 'Garantir opções únicas e semanticamente distintas.' });
 
@@ -372,13 +396,20 @@ function auditOptionGroup({ issues, area, path, question, answer, options }) {
   const absurd = options.filter((option) => ABSURD_DISTRACTORS.has(normalize(option)));
   if (absurd.length >= 2) {
     const structuralGrammarDrill = isStructuralGrammarDrill({ path, question, answer, options });
+    // Palavra "absurda" deixa de ser absurda quando a própria aula a ensina/
+    // menciona e a resposta correta também é do tema (ex.: coffee/tea/water
+    // numa aula "Food and drinks"/"Ordering food"). Só rebaixa para P2 quando
+    // a resposta é on-topic E todas as opções sinalizadas estão no domínio
+    // real da aula; distrator fora do tema continua P1.
+    const contextuallyCoherent = isOnTopicText(answer, domainTokens) && absurd.every((option) => isOnTopicText(option, domainTokens));
+    const downgrade = structuralGrammarDrill || contextuallyCoherent;
     addIssue(issues, {
-      severity: structuralGrammarDrill ? 'P2' : 'P1',
+      severity: downgrade ? 'P2' : 'P1',
       area,
-      title: structuralGrammarDrill ? 'Distratores fracos em exercício estrutural' : 'Distratores absurdos ou fáceis demais',
-      impact: structuralGrammarDrill ? 'O aluno ainda consegue praticar a palavra estrutural, mas os distratores poderiam ser mais plausíveis.' : 'O aluno pode acertar por eliminação sem entender a aula.',
+      title: structuralGrammarDrill ? 'Distratores fracos em exercício estrutural' : (contextuallyCoherent ? 'Distratores simples, mas dentro do tema' : 'Distratores absurdos ou fáceis demais'),
+      impact: downgrade ? 'O aluno ainda pratica o conteúdo da aula; os distratores poderiam ser mais desafiadores.' : 'O aluno pode acertar por eliminação sem entender a aula.',
       evidence: `${path}: ${options.join(' | ')}`,
-      recommendation: structuralGrammarDrill ? 'Preferir distratores estruturais próximos, mas não bloquear o fluxo como P1.' : 'Trocar por distratores próximos do tema e do nível CEFR.',
+      recommendation: downgrade ? 'Opcional: usar distratores mais próximos do nível CEFR; não bloqueia o fluxo.' : 'Trocar por distratores próximos do tema e do nível CEFR.',
     });
   }
 
@@ -408,7 +439,7 @@ function auditExerciseObject({ lesson, item, path }) {
 
   if (question.length < 8) addIssue(issues, { severity: 'P2', area, title: 'Pergunta curta demais', impact: 'Pode indicar exercício raso ou sem contexto suficiente.', evidence: `${path}: ${question || 'sem pergunta'}`, recommendation: 'Escrever enunciado claro, específico e conectado à aula.' });
   if (!answer && options.length >= 2) addIssue(issues, { severity: 'P1', area, title: 'Exercício com alternativas mas sem resposta esperada clara', impact: 'O sistema pode não avaliar corretamente o aluno.', evidence: `${path}: ${question}`, recommendation: 'Adicionar `answer`, `expected`, `correct` ou campo equivalente.' });
-  if (options.length) auditOptionGroup({ issues, area, path, question, answer, options });
+  if (options.length) auditOptionGroup({ issues, area, path, question, answer, options, domainTokens: lessonDomainTokens(lesson, item) });
   if (feedback && (feedback.length < 12 || GENERIC_FEEDBACK_PATTERNS.some((pattern) => pattern.test(feedback)))) addIssue(issues, { severity: 'P2', area, title: 'Feedback genérico demais', impact: 'O aluno não entende por que errou ou acertou.', evidence: `${path}: ${feedback}`, recommendation: 'Explicar a regra, evidência textual ou raciocínio da resposta.' });
   if (lessonContext && question && lexicalOverlap(question, lessonContext) === 0 && options.length >= 2) addIssue(issues, { severity: 'P2', area, title: 'Pergunta com baixa conexão lexical com a aula', impact: 'Pode ser um exercício fora do tema ou genérico demais.', evidence: `${path}: ${question}`, recommendation: 'Verificar se o exercício cobra algo realmente ensinado nesta aula.' });
   return issues;
