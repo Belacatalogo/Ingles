@@ -462,11 +462,25 @@ function hasActiveSpeakingPractice(lesson) {
   return SPEAKING_ACTION_FIELDS.some((field) => Array.isArray(lesson[field]) && lesson[field].some(speakingItemHasText));
 }
 
+// Writing é prática ativa quando o aluno escreve/revisa/transforma/substitui:
+// draftTask, revisionTask, finalVersionTask, guidedSubstitution. modelText,
+// modelTextBreakdown, usefulSentences e checklists (exemplo/explicação/
+// reflexivo) NÃO contam sozinhos como prática principal.
+const WRITING_ACTION_FIELDS = ['draftTask', 'revisionTask', 'finalVersionTask', 'guidedSubstitution'];
+
+function hasActiveWritingPractice(lesson) {
+  if (!lesson || (lesson.pillar !== 'writing' && lesson.type !== 'writing')) return false;
+  return WRITING_ACTION_FIELDS.some((field) => {
+    const value = lesson[field];
+    return Array.isArray(value) ? value.some(speakingItemHasText) : speakingItemHasText(value);
+  });
+}
+
 export function auditLessonExercisesDeep(lesson) {
   const exercises = collectExerciseObjects(lesson);
   const issues = [];
   if (!exercises.length) {
-    if (hasActiveSpeakingPractice(lesson)) return issues;
+    if (hasActiveSpeakingPractice(lesson) || hasActiveWritingPractice(lesson)) return issues;
     addIssue(issues, { severity: 'P1', area: `Aula ${lesson?.id || 'unknown-lesson'}`, title: 'Nenhum exercício detectado na aula ready', impact: 'A aula pode ensinar sem exigir prática ativa do aluno.', recommendation: 'Adicionar exercícios, tarefas de tentativa ou perguntas avaliáveis.' });
     return issues;
   }
