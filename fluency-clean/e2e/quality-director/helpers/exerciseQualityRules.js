@@ -20,6 +20,7 @@ const GRAMMAR_PRONOUNS = new Set(['i', 'you', 'he', 'she', 'it', 'we', 'they']);
 const GRAMMAR_BE_FORMS = new Set(['am', 'is', 'are', 'was', 'were', 'be', 'been', 'being']);
 const GRAMMAR_DETERMINERS = new Set(['a', 'an', 'the', 'my', 'your', 'his', 'her', 'our', 'their']);
 const GRAMMAR_AUXILIARIES = new Set(['do', 'does', 'did', 'can', 'could', 'will', 'would', 'should']);
+const RESPONSE_PREFIXES = new Set(['yes', 'no']);
 const NEGATION_WORDS = new Set(['not', 'no', 'never']);
 const COMPREHENSION_PATH_PATTERNS = [/evidenceQuestions/i, /readingComprehension/i, /listeningComprehension/i, /comprehensionQuestions/i, /listeningQuestions/i, /readingQuestions/i];
 
@@ -42,6 +43,7 @@ function normalize(value) {
 }
 
 function rawWords(value) { return normalize(value).split(/\s+/).filter(Boolean); }
+function stripResponsePrefix(tokens) { return tokens.length > 1 && RESPONSE_PREFIXES.has(tokens[0]) ? tokens.slice(1) : tokens; }
 
 function stem(word) {
   const direct = SYNONYMS.get(word);
@@ -96,10 +98,14 @@ function lexicalOverlap(a, b) {
 function setFrom(tokens, vocabulary) { return new Set(tokens.filter((token) => vocabulary.has(token))); }
 function sameSet(a, b) { if (a.size !== b.size) return false; for (const item of a) if (!b.has(item)) return false; return true; }
 function sameSequence(a, b) { return a.length === b.length && a.every((item, index) => item === b[index]); }
-function startsWithGrammarFrame(tokens) { return GRAMMAR_PRONOUNS.has(tokens[0]) || GRAMMAR_BE_FORMS.has(tokens[0]) || GRAMMAR_AUXILIARIES.has(tokens[0]); }
+function startsWithGrammarFrame(tokens) {
+  const stripped = stripResponsePrefix(tokens);
+  return GRAMMAR_PRONOUNS.has(stripped[0]) || GRAMMAR_BE_FORMS.has(stripped[0]) || GRAMMAR_AUXILIARIES.has(stripped[0]) || GRAMMAR_DETERMINERS.has(stripped[0]);
+}
 function endsAsQuestion(value) { return /\?\s*$/.test(clean(value)); }
 function isComprehensionPath(path = '') { return COMPREHENSION_PATH_PATTERNS.some((pattern) => pattern.test(path)); }
 function splitSentences(value) { return clean(value).split(/[.!?]+/).map((part) => part.trim()).filter(Boolean); }
+function contentWithoutBe(tokens) { return tokens.filter((token) => !GRAMMAR_BE_FORMS.has(token)); }
 
 function hasNegationMismatch(option, answer) {
   const optionRaw = rawWords(option);
@@ -110,13 +116,27 @@ function hasNegationMismatch(option, answer) {
   return !sameSet(optionNegation, answerNegation);
 }
 
+function hasBeAgreementMismatch(option, answer) {
+  const optionRaw = stripResponsePrefix(rawWords(option));
+  const answerRaw = stripResponsePrefix(rawWords(answer));
+  if (!optionRaw.length || !answerRaw.length || optionRaw.length > 9 || answerRaw.length > 9) return false;
+  const optionBe = setFrom(optionRaw, GRAMMAR_BE_FORMS);
+  const answerBe = setFrom(answerRaw, GRAMMAR_BE_FORMS);
+  if (!optionBe.size || !answerBe.size) return false;
+  if (sameSet(optionBe, answerBe)) return false;
+  return sameSequence(contentWithoutBe(optionRaw), contentWithoutBe(answerRaw));
+}
+
 function isShortGrammarStructureSensitive(option, answer) {
   const optionRaw = rawWords(option);
   const answerRaw = rawWords(answer);
+  const optionCore = stripResponsePrefix(optionRaw);
+  const answerCore = stripResponsePrefix(answerRaw);
   if (!optionRaw.length || !answerRaw.length || answerRaw.length > 8 || optionRaw.length > 9) return false;
   if (endsAsQuestion(option) || endsAsQuestion(answer)) return true;
   if (startsWithGrammarFrame(answerRaw) || startsWithGrammarFrame(optionRaw)) return true;
-  if (answerRaw.length <= 4 && (answerRaw.some((token) => NEGATION_WORDS.has(token)) || optionRaw.some((token) => NEGATION_WORDS.has(token)))) return true;
+  if (hasBeAgreementMismatch(option, answer)) return true;
+  if (answerCore.length <= 4 && (answerCore.some((token) => NEGATION_WORDS.has(token)) || optionCore.some((token) => NEGATION_WORDS.has(token)))) return true;
   return false;
 }
 
@@ -137,6 +157,7 @@ function hasGrammarCoreMismatch(option, answer) {
   const answerRaw = rawWords(answer);
   if (!isShortGrammarStructureSensitive(option, answer)) return false;
   if (hasNegationMismatch(option, answer)) return true;
+  if (hasBeAgreementMismatch(option, answer)) return true;
   if (endsAsQuestion(option) !== endsAsQuestion(answer)) return true;
 
   const optionPronouns = setFrom(optionRaw, GRAMMAR_PRONOUNS);
@@ -166,6 +187,7 @@ function hasCompoundGrammarMismatch(option, answer) {
   return answerSentences.some((answerSentence, index) => {
     const optionSentence = optionSentences[index] || '';
     if (normalize(optionSentence) === normalize(answerSentence)) return false;
+    if (hasBeAgreementMismatch(optionSentence, answerSentence)) return true;
     if (isShortGrammarStructureSensitive(optionSentence, answerSentence)) return true;
     if (hasGrammarCoreMismatch(optionSentence, answerSentence)) return true;
 
@@ -223,6 +245,7 @@ function optionMatchesAnswer(option, answer, context = {}) {
   const comprehensionPath = isComprehensionPath(context.path);
   if (comprehensionPath && isComprehensionConciseMatch(option, answer)) return true;
   if (!comprehensionPath && hasNegationMismatch(option, answer)) return false;
+  if (!comprehensionPath && hasBeAgreementMismatch(option, answer)) return false;
   if (!comprehensionPath && hasCompoundGrammarMismatch(option, answer)) return false;
 
   const grammarSensitiveShortAnswer = !comprehensionPath && isShortGrammarStructureSensitive(option, answer);
