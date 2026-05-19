@@ -20,6 +20,15 @@
   padding-bottom: 0 !important;
 }
 
+/*
+  A regra antiga de .app-shell em index.css usa padding-bottom: 108px.
+  Na aba Hoje esse padding global aparece como um fundo vazio atrás da bottom nav.
+  Removemos apenas quando o shell contém a tela Hoje.
+*/
+.app-shell:has(.today-reference-screen) {
+  padding-bottom: 14px !important;
+}
+
 .cards-screen,
 .course-screen,
 .settings-screen,
@@ -30,20 +39,11 @@
   scroll-padding-bottom: var(--bottom-nav-safe-space);
 }
 
-/*
-  A aba Hoje já tem cards altos e é a única que mostrava um bloco vazio atrás
-  da navbar. Ela precisa de scroll-margin para foco/ancoragem, mas não de um
-  padding gigante no final da tela.
-*/
 .today-reference-screen {
   padding-bottom: 18px !important;
   scroll-padding-bottom: var(--bottom-nav-safe-space);
 }
 
-/*
-  iPhone 13 e telas modernas devem usar o scroll normal da página.
-  O scroll interno com max-height foi o que criou o fundo visível atrás da navbar.
-*/
 .today-reference-screen,
 .cards-screen,
 .settings-screen {
@@ -61,10 +61,7 @@
   margin-bottom: max(28px, env(safe-area-inset-bottom));
 }
 
-.today-reference-screen > :last-child {
-  margin-bottom: 0 !important;
-}
-
+.today-reference-screen > :last-child,
 .today-reference-screen .static-next-lesson-panel {
   margin-bottom: 0 !important;
 }
@@ -118,6 +115,10 @@
 
 /* iPhone SE / telas legadas: compacta a primeira dobra sem criar fundo extra no iPhone 13. */
 @media (max-width: 380px), (max-height: 700px) {
+  .app-shell:has(.today-reference-screen) {
+    padding-bottom: 0 !important;
+  }
+
   .today-reference-screen,
   .cards-screen,
   .settings-screen {
