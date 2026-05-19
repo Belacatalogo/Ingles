@@ -2,7 +2,7 @@ Status: Revisar antes de confiar
 Nota geral: 0/100
 Relatórios: 25
 Checks: 3268
-Issues únicas: 2281 (brutas=4244, agrupadas=1963)
-Severidade: P0=0, P1=1129, P2=1152, P3=0
+Issues únicas: 2271 (brutas=4234, agrupadas=1963)
+Severidade: P0=0, P1=1119, P2=1152, P3=0
 Direção: Corrigir P1 antes de considerar o sistema confiável para estudo contínuo.
-Top issues: P1 iPhone 13 · Instalação limpa sem dados · Aba Cartas — Elemento interativo sobreposto pela bottom nav | P1 iPhone 13 · Estados principais como null · Aba Cartas — Elemento interativo sobreposto pela bottom nav | P1 iPhone 13 · Estados principais com JSON inválido · Aba Cartas — Elemento interativo sobreposto pela bottom nav | P1 iPhone 13 · Sem aula atual mas com configurações básicas · Aba Cartas — Elemento interativo sobreposto pela bottom nav | P1 iPhone SE · Instalação limpa sem dados · Aba Hoje — Elemento interativo sobreposto pela bottom nav
+Top issues: P1 iPhone SE · Instalação limpa sem dados · Aba Hoje — Elemento interativo sobreposto pela bottom nav | P1 iPhone SE · Estados principais como null · Aba Hoje — Elemento interativo sobreposto pela bottom nav | P1 iPhone SE · Estados principais com JSON inválido · Aba Hoje — Elemento interativo sobreposto pela bottom nav | P1 iPhone SE · Sem aula atual mas com configurações básicas · Aba Hoje — Elemento interativo sobreposto pela bottom nav | P1 Exercício · A1-GRAMMAR-001 — Mais de uma alternativa parece correta
