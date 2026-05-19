@@ -52,3 +52,6 @@
 
 /* de: premium-polish.css — BLOCO FIGMA-UI-PREMIUM-POLISH-1 */
 @import './premium-polish.css';
+
+/* HOTFIX — bottom nav/safe-area deve carregar por último para vencer regras antigas. */
+@import './bottom-nav-safe-area-hotfix.css';
