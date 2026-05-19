@@ -11,6 +11,7 @@ import './styles/screens.css';
 import './styles/static-gates.css';
 import './styles/course-screen.css';
 import './styles/a1-mastery-gate.css';
+import './styles/bottom-nav-safe-area-hotfix.css';
 
 const rootElement = document.getElementById('root');
 const root = createRoot(rootElement);
