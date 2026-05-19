@@ -111,12 +111,12 @@ function grammarLesson([n, title, pattern, chunks, examples]) {
 }
 
 const VOCAB_TOPICS = [
-  [6, 'Jobs', ['teacher', 'driver', 'student', 'worker', 'doctor', 'nurse', 'seller', 'cook', 'mechanic', 'police officer', 'receptionist', 'manager', 'assistant', 'farmer', 'engineer']],
+  [6, 'Jobs and professions', ['teacher', 'driver', 'student', 'worker', 'doctor', 'nurse', 'seller', 'cook', 'mechanic', 'police officer', 'receptionist', 'manager', 'assistant', 'farmer', 'engineer']],
   [7, 'Classroom objects', ['book', 'notebook', 'pen', 'pencil', 'desk', 'chair', 'board', 'door', 'window', 'bag', 'phone', 'computer', 'paper', 'eraser', 'ruler']],
   [8, 'Common adjectives', ['big', 'small', 'new', 'old', 'good', 'bad', 'easy', 'difficult', 'happy', 'sad', 'tired', 'busy', 'beautiful', 'important', 'simple']],
   [9, 'Colors', ['red', 'blue', 'green', 'yellow', 'black', 'white', 'gray', 'brown', 'pink', 'purple', 'orange', 'light', 'dark', 'gold', 'silver']],
   [10, 'Days and months', ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'December']],
-  [11, 'Time', ['morning', 'afternoon', 'evening', 'night', 'today', 'tomorrow', 'yesterday', 'hour', 'minute', 'o clock', 'half past', 'early', 'late', 'now', 'soon']],
+  [11, 'Telling the time', ['morning', 'afternoon', 'evening', 'night', 'today', 'tomorrow', 'yesterday', 'hour', 'minute', 'o clock', 'half past', 'early', 'late', 'now', 'soon']],
   [12, 'Daily routine verbs', ['wake up', 'work', 'study', 'eat', 'drink', 'go', 'come', 'sleep', 'read', 'write', 'listen', 'repeat', 'watch', 'clean', 'rest']],
   [13, 'Food and drinks', ['water', 'coffee', 'tea', 'milk', 'bread', 'rice', 'beans', 'meat', 'chicken', 'fish', 'egg', 'apple', 'banana', 'juice', 'sandwich']],
   [14, 'Places in town', ['school', 'work', 'home', 'market', 'bank', 'pharmacy', 'hospital', 'restaurant', 'park', 'bus stop', 'store', 'street', 'church', 'gym', 'library']],

@@ -29,9 +29,11 @@ const defaultMinutesByPillar = { grammar: 35, vocabulary: 25, reading: 30, liste
 const packageMapByLevel = { A1: A1_PACKAGES, A2: A2_PACKAGES, B1: B1_PACKAGES, B2: B2_PACKAGES, C1: C1_PACKAGES, C2: C2_PACKAGES };
 const pillarMapByLevel = { A1: A1_PILLAR_MAPS, A2: A2_PILLAR_MAPS, B1: B1_PILLAR_MAPS, B2: B2_PILLAR_MAPS, C1: C1_PILLAR_MAPS, C2: C2_PILLAR_MAPS };
 
-function lesson(level, pillar, order, mapItem, options = {}) {
+function lesson(level, pillar, order, mapItem, options = {}, prevLessonId) {
   const id = mapItem.id || `${level}-${pillar.toUpperCase()}-${String(order).padStart(3, '0')}`;
-  const previousId = order > 1 ? `${level}-${pillar.toUpperCase()}-${String(order - 1).padStart(3, '0')}` : '';
+  // Use actual previous lesson ID when provided; fall back to formula for standalone calls.
+  const defaultPrevId = order > 1 ? `${level}-${pillar.toUpperCase()}-${String(order - 1).padStart(3, '0')}` : '';
+  const previousId = prevLessonId !== undefined ? prevLessonId : defaultPrevId;
   const packages = packageMapByLevel[level] || {};
   const base = {
     id,
@@ -51,11 +53,30 @@ function lesson(level, pillar, order, mapItem, options = {}) {
     status: options.status || 'planned',
   };
   const ready = findStaticReadyLesson(id);
-  return ready ? { ...base, ...ready, packageId: base.packageId, packageKey: base.packageKey, checkpoint: base.checkpoint || ready.checkpoint || '', status: 'ready' } : base;
+  if (!ready) return base;
+  return {
+    ...base,
+    ...ready,
+    // Map-derived fields always win over ready content to keep the curriculum consistent.
+    order: base.order,
+    // Preserve computed prerequisites when ready content omits them.
+    prerequisites: Array.isArray(ready.prerequisites) && ready.prerequisites.length > 0 ? ready.prerequisites : base.prerequisites,
+    packageId: base.packageId,
+    packageKey: base.packageKey,
+    checkpoint: base.checkpoint || ready.checkpoint || '',
+    status: 'ready',
+  };
 }
 
 function makePillarLessons(level, pillar, mapItems = []) {
-  return mapItems.map((mapItem, index) => lesson(level, pillar, index + 1, mapItem));
+  const result = [];
+  for (let i = 0; i < mapItems.length; i++) {
+    // Pass the actual ID of the previous lesson so that explicit-ID lessons (e.g.
+    // A1-GRAMMAR-010-HOUSE) produce valid prerequisites for their successors.
+    const prevId = i > 0 ? result[i - 1].id : '';
+    result.push(lesson(level, pillar, i + 1, mapItems[i], {}, prevId));
+  }
+  return result;
 }
 
 function makeLevelPillars(level) {

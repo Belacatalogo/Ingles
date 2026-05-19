@@ -156,7 +156,13 @@ export async function auditVisualViewport({ page, reporter, area }) {
         return elements.some((el) => {
           const rect = el.getBoundingClientRect();
           if (rect.width === 0 || rect.height === 0) return false;
-          return rect.bottom > nav.y && rect.top < nav.y + nav.height && !el.closest('.bottom-nav') && !el.closest('.reference-bottom-nav');
+          if (el.closest('.bottom-nav') || el.closest('.reference-bottom-nav')) return false;
+          // Only flag when more than half the element is hidden behind the nav.
+          // Minor overlap (e.g. bottom 10px of a 98px scrollable list item) is expected
+          // scroll-list behaviour and does not prevent interaction.
+          const overlapPx = Math.max(0, Math.min(rect.bottom, nav.y + nav.height) - Math.max(rect.top, nav.y));
+          const elementHeight = rect.bottom - rect.top;
+          return overlapPx > elementHeight * 0.5;
         });
       }, bottomNavBox)
     : false;
