@@ -22,6 +22,7 @@ const GRAMMAR_DETERMINERS = new Set(['a', 'an', 'the', 'my', 'your', 'his', 'her
 const GRAMMAR_AUXILIARIES = new Set(['do', 'does', 'did', 'can', 'could', 'will', 'would', 'should']);
 const RESPONSE_PREFIXES = new Set(['yes', 'no']);
 const NEGATION_WORDS = new Set(['not', 'no', 'never']);
+const STRUCTURAL_WORDS = new Set([...GRAMMAR_BE_FORMS, ...GRAMMAR_DETERMINERS, ...GRAMMAR_AUXILIARIES, ...NEGATION_WORDS, 'there', 'this', 'that', 'these', 'those', 'have', 'has', 'can']);
 const COMPREHENSION_PATH_PATTERNS = [/evidenceQuestions/i, /readingComprehension/i, /listeningComprehension/i, /comprehensionQuestions/i, /listeningQuestions/i, /readingQuestions/i];
 
 const SYNONYMS = new Map([
@@ -278,6 +279,14 @@ function hasAnswerLeak(question, answer) {
   return Boolean(questionNorm && answerNorm && answerNorm.length >= 4 && questionNorm.includes(answerNorm));
 }
 
+function isStructuralGrammarDrill({ path, question, answer, options }) {
+  const answerWords = rawWords(answer);
+  const optionWords = options.flatMap(rawWords);
+  const allOptionsShort = options.length >= 3 && options.every((option) => rawWords(option).length <= 2);
+  const asksForStructure = /palavra estrutural|complete.*palavra|lacuna|estrutura|padr[aã]o|structural|grammar|transformationpractice/i.test(`${path} ${question}`);
+  return allOptionsShort && asksForStructure && answerWords.some((word) => STRUCTURAL_WORDS.has(word)) && optionWords.some((word) => STRUCTURAL_WORDS.has(word));
+}
+
 function auditOptionGroup({ issues, area, path, question, answer, options }) {
   const normalizedOptions = options.map(normalize);
   if (new Set(normalizedOptions).size !== normalizedOptions.length) addIssue(issues, { severity: 'P1', area, title: 'Alternativas duplicadas', impact: 'O aluno pode perceber exercício mal revisado ou ter menos alternativas reais.', evidence: `${path}: ${options.join(' | ')}`, recommendation: 'Garantir opções únicas e semanticamente distintas.' });
@@ -286,7 +295,17 @@ function auditOptionGroup({ issues, area, path, question, answer, options }) {
   if (genericOptions.length) addIssue(issues, { severity: 'P1', area, title: 'Alternativas genéricas ou placeholder', impact: 'O exercício parece incompleto ou gerado sem curadoria.', evidence: `${path}: ${genericOptions.join(' | ')}`, recommendation: 'Substituir placeholders por alternativas reais, contextualizadas e plausíveis.' });
 
   const absurd = options.filter((option) => ABSURD_DISTRACTORS.has(normalize(option)));
-  if (absurd.length >= 2) addIssue(issues, { severity: 'P1', area, title: 'Distratores absurdos ou fáceis demais', impact: 'O aluno pode acertar por eliminação sem entender a aula.', evidence: `${path}: ${options.join(' | ')}`, recommendation: 'Trocar por distratores próximos do tema e do nível CEFR.' });
+  if (absurd.length >= 2) {
+    const structuralGrammarDrill = isStructuralGrammarDrill({ path, question, answer, options });
+    addIssue(issues, {
+      severity: structuralGrammarDrill ? 'P2' : 'P1',
+      area,
+      title: structuralGrammarDrill ? 'Distratores fracos em exercício estrutural' : 'Distratores absurdos ou fáceis demais',
+      impact: structuralGrammarDrill ? 'O aluno ainda consegue praticar a palavra estrutural, mas os distratores poderiam ser mais plausíveis.' : 'O aluno pode acertar por eliminação sem entender a aula.',
+      evidence: `${path}: ${options.join(' | ')}`,
+      recommendation: structuralGrammarDrill ? 'Preferir distratores estruturais próximos, mas não bloquear o fluxo como P1.' : 'Trocar por distratores próximos do tema e do nível CEFR.',
+    });
+  }
 
   if (answer) {
     const matching = options.filter((option) => optionMatchesAnswer(option, answer, { path, question }));
