@@ -1,10 +1,10 @@
 # Fluency Quality Director — Relatório Executivo Latest
 
-Gerado em: 2026-05-19T09:15:18.347Z
+Gerado em: 2026-05-19T10:02:58.575Z
 
 ## Veredito
 
-**Status:** Revisar antes de confiar
+**Status:** Crítico
 
 **Nota geral:** 0/100
 
@@ -12,11 +12,11 @@ Gerado em: 2026-05-19T09:15:18.347Z
 
 - Relatórios consolidados: 25
 - Checks executados: 3268
-- Problemas únicos: 2271
-- Problemas brutos antes de deduplicar: 4234
-- Duplicatas agrupadas: 1963
-- P0: 0
-- P1: 1113
+- Problemas únicos: 2193
+- Problemas brutos antes de deduplicar: 4078
+- Duplicatas agrupadas: 1885
+- P0: 10
+- P1: 1025
 - P2: 1158
 - P3: 0
 
@@ -26,7 +26,7 @@ Gerado em: 2026-05-19T09:15:18.347Z
 |---|---:|---|---:|---:|---:|---:|
 | Navegação e estabilidade | 0 | Revisar antes de confiar | 0 | 32 | 159 | 0 |
 | Jornada real do aluno | 25 | Revisar antes de confiar | 0 | 1 | 58 | 0 |
-| Exercícios e alternativas | 0 | Revisar antes de confiar | 0 | 414 | 699 | 0 |
+| Exercícios e alternativas | 0 | Crítico | 10 | 326 | 699 | 0 |
 | Aulas e pedagogia | 0 | Revisar antes de confiar | 0 | 666 | 238 | 0 |
 | Visual e mobile | 100 | Saudável | 0 | 0 | 0 | 0 |
 | Progresso, XP e mastery | 100 | Saudável | 0 | 0 | 0 | 0 |
@@ -44,8 +44,8 @@ Gerado em: 2026-05-19T09:15:18.347Z
 | quality-director-curriculum-consistency | iPhone SE | 94 | 7 | 5 | 5 | 0 | 0 | 5 | 0 |
 | quality-director-empty-states-security | iPhone 13 | 26 | 56 | 60 | 64 | 0 | 0 | 60 | 0 |
 | quality-director-empty-states-security | iPhone SE | 22 | 56 | 64 | 68 | 0 | 0 | 64 | 0 |
-| quality-director-exercise-quality | iPhone 13 | 0 | 501 | 995 | 995 | 0 | 386 | 609 | 0 |
-| quality-director-exercise-quality | iPhone SE | 0 | 501 | 995 | 995 | 0 | 386 | 609 | 0 |
+| quality-director-exercise-quality | iPhone 13 | 0 | 501 | 917 | 917 | 10 | 298 | 609 | 0 |
+| quality-director-exercise-quality | iPhone SE | 0 | 501 | 917 | 917 | 10 | 298 | 609 | 0 |
 | quality-director-exploratory-student-audit | iPhone 13 | 0 | 3 | 54 | 56 | 0 | 35 | 19 | 0 |
 | quality-director-exploratory-student-audit | iPhone SE | 0 | 3 | 54 | 56 | 0 | 35 | 19 | 0 |
 | quality-director-lesson-quality | iPhone 13 | 0 | 500 | 135 | 135 | 0 | 45 | 90 | 0 |
@@ -66,400 +66,395 @@ Gerado em: 2026-05-19T09:15:18.347Z
 
 ## Plano de ação
 
-**Direção:** Corrigir P1 antes de considerar o sistema confiável para estudo contínuo.
+**Direção:** Corrigir P0 confirmados antes de continuar evolução visual/pedagógica.
 
 ### Ações imediatas
 
-1. **P1 · Exercício · A1-GRAMMAR-001 — Mais de uma alternativa parece correta**
+1. **P0 · Exercício · A1-READING-018-CLOTHES — Resposta correta não aparece nas alternativas**
    - Ocorrências agrupadas: 2
-   - Ação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
-2. **P1 · Exercício · A1-GRAMMAR-001 — Mais de uma alternativa parece correta**
+   - Ação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
+2. **P0 · Exercício · A2-READING-008 — Resposta correta não aparece nas alternativas**
    - Ocorrências agrupadas: 2
-   - Ação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
-3. **P1 · Exercício · A1-GRAMMAR-001 — Mais de uma alternativa parece correta**
+   - Ação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
+3. **P0 · Exercício · A2-READING-012 — Resposta correta não aparece nas alternativas**
    - Ocorrências agrupadas: 2
-   - Ação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
-4. **P1 · Exercício · A1-GRAMMAR-002 — Mais de uma alternativa parece correta**
+   - Ação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
+4. **P0 · Exercício · A2-READING-012 — Resposta correta não aparece nas alternativas**
    - Ocorrências agrupadas: 2
-   - Ação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
-5. **P1 · Exercício · A1-GRAMMAR-002 — Mais de uma alternativa parece correta**
+   - Ação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
+5. **P0 · Exercício · A2-READING-013 — Resposta correta não aparece nas alternativas**
    - Ocorrências agrupadas: 2
-   - Ação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
-6. **P1 · Exercício · A1-GRAMMAR-002 — Mais de uma alternativa parece correta**
+   - Ação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
+6. **P0 · Exercício · A2-READING-014 — Resposta correta não aparece nas alternativas**
    - Ocorrências agrupadas: 2
-   - Ação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
-7. **P1 · Exercício · A1-GRAMMAR-002 — Mais de uma alternativa parece correta**
+   - Ação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
+7. **P0 · Exercício · A2-READING-015 — Resposta correta não aparece nas alternativas**
    - Ocorrências agrupadas: 2
-   - Ação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
-8. **P1 · Exercício · A1-GRAMMAR-002 — Mais de uma alternativa parece correta**
+   - Ação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
+8. **P0 · Exercício · A2-READING-020 — Resposta correta não aparece nas alternativas**
    - Ocorrências agrupadas: 2
-   - Ação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
-9. **P1 · Exercício · A1-GRAMMAR-002 — Mais de uma alternativa parece correta**
-   - Ocorrências agrupadas: 2
-   - Ação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
-10. **P1 · Exercício · A1-GRAMMAR-003 — Mais de uma alternativa parece correta**
-   - Ocorrências agrupadas: 2
-   - Ação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
-11. **P1 · Exercício · A1-GRAMMAR-003 — Mais de uma alternativa parece correta**
-   - Ocorrências agrupadas: 2
-   - Ação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
-12. **P1 · Exercício · A1-GRAMMAR-003 — Mais de uma alternativa parece correta**
-   - Ocorrências agrupadas: 2
-   - Ação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
+   - Ação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
 
 ### Próximas ações
 
-1. **P2 · iPhone 13 · Aba Ajustes — Primeiro Tab não focou elemento interativo**
-   - Ação: Garantir ordem de foco em botões/links principais.
-2. **P2 · iPhone SE · Aba Ajustes — Primeiro Tab não focou elemento interativo**
-   - Ação: Garantir ordem de foco em botões/links principais.
-3. **P2 · Currículo · A1 — readyLessonCount diverge da contagem real**
+1. **P1 · Exercício · A1-GRAMMAR-001 — Mais de uma alternativa parece correta**
    - Ocorrências agrupadas: 2
-   - Ação: Revisar getStaticReadyLessons(level) e composição dos mapas.
-4. **P2 · Currículo · B2 — readyLessonCount diverge da contagem real**
+   - Ação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
+2. **P1 · Exercício · A1-GRAMMAR-001 — Mais de uma alternativa parece correta**
    - Ocorrências agrupadas: 2
-   - Ação: Revisar getStaticReadyLessons(level) e composição dos mapas.
-5. **P2 · Currículo · C1 — readyLessonCount diverge da contagem real**
+   - Ação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
+3. **P1 · Exercício · A1-GRAMMAR-001 — Mais de uma alternativa parece correta**
    - Ocorrências agrupadas: 2
-   - Ação: Revisar getStaticReadyLessons(level) e composição dos mapas.
-6. **P2 · Currículo · C2 — readyLessonCount diverge da contagem real**
+   - Ação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
+4. **P1 · Exercício · A1-GRAMMAR-001 — Mais de uma alternativa parece correta**
    - Ocorrências agrupadas: 2
-   - Ação: Revisar getStaticReadyLessons(level) e composição dos mapas.
-7. **P2 · Currículo · B1 · reading · B1-READING-004 — Sinal de linguagem avançada demais para o nível**
+   - Ação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
+5. **P1 · Exercício · A1-GRAMMAR-002 — Mais de uma alternativa parece correta**
    - Ocorrências agrupadas: 2
-   - Ação: Revisar vocabulário, complexidade e scaffolding para o nível.
-8. **P2 · iPhone 13 · Instalação limpa sem dados · Aba Hoje — Botão com área de toque pequena**
-   - Ação: Preferir botões com área mínima próxima de 44x44px em mobile.
-9. **P2 · iPhone 13 · Instalação limpa sem dados · Aba Hoje — Botão com área de toque pequena**
-   - Ação: Preferir botões com área mínima próxima de 44x44px em mobile.
-10. **P2 · iPhone 13 · Instalação limpa sem dados · Aba Aula — Botão com área de toque pequena**
-   - Ação: Preferir botões com área mínima próxima de 44x44px em mobile.
-11. **P2 · iPhone 13 · Instalação limpa sem dados · Aba Aula — Botão com área de toque pequena**
-   - Ação: Preferir botões com área mínima próxima de 44x44px em mobile.
-12. **P2 · iPhone 13 · Instalação limpa sem dados · Aba Aula — Botão com área de toque pequena**
-   - Ação: Preferir botões com área mínima próxima de 44x44px em mobile.
+   - Ação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
+6. **P1 · Exercício · A1-GRAMMAR-005 — Mais de uma alternativa parece correta**
+   - Ocorrências agrupadas: 2
+   - Ação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
+7. **P1 · Exercício · A1-GRAMMAR-005 — Mais de uma alternativa parece correta**
+   - Ocorrências agrupadas: 2
+   - Ação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
+8. **P1 · Exercício · A1-GRAMMAR-005 — Mais de uma alternativa parece correta**
+   - Ocorrências agrupadas: 2
+   - Ação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
+9. **P1 · Exercício · A1-GRAMMAR-005 — Mais de uma alternativa parece correta**
+   - Ocorrências agrupadas: 2
+   - Ação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
+10. **P1 · Exercício · A1-GRAMMAR-005 — Mais de uma alternativa parece correta**
+   - Ocorrências agrupadas: 2
+   - Ação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
+11. **P1 · Exercício · A1-GRAMMAR-005 — Mais de uma alternativa parece correta**
+   - Ocorrências agrupadas: 2
+   - Ação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
+12. **P1 · Exercício · A1-GRAMMAR-005 — Mais de uma alternativa parece correta**
+   - Ocorrências agrupadas: 2
+   - Ação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
 
 ## Principais problemas
 
-1. **P1 · Exercício · A1-GRAMMAR-001 — Mais de uma alternativa parece correta**
+1. **P0 · Exercício · A1-READING-018-CLOTHES — Resposta correta não aparece nas alternativas**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
+   - Evidência: lesson.evidenceQuestions[2]: resposta=No, she does not.; opções=No | Yes | The text does not say
+   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
+
+2. **P0 · Exercício · A2-READING-008 — Resposta correta não aparece nas alternativas**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
+   - Evidência: lesson.evidenceQuestions[2]: resposta=it was canceled; opções=canceled | moved to 9 | finished
+   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
+
+3. **P0 · Exercício · A2-READING-012 — Resposta correta não aparece nas alternativas**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
+   - Evidência: lesson.evidenceQuestions[1]: resposta=it was too tight; opções=too tight | too expensive | too loose
+   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
+
+4. **P0 · Exercício · A2-READING-012 — Resposta correta não aparece nas alternativas**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
+   - Evidência: lesson.evidenceQuestions[4]: resposta=it is the better choice for work; opções=better for work | cheaper | medium size
+   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
+
+5. **P0 · Exercício · A2-READING-013 — Resposta correta não aparece nas alternativas**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
+   - Evidência: lesson.evidenceQuestions[3]: resposta=they need a quiet place to study; opções=quiet place to study | better coffee | closer to Ana
+   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
+
+6. **P0 · Exercício · A2-READING-014 — Resposta correta não aparece nas alternativas**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
+   - Evidência: lesson.evidenceQuestions[4]: resposta=it saves time; opções=saves time | is cheaper | is older
+   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
+
+7. **P0 · Exercício · A2-READING-015 — Resposta correta não aparece nas alternativas**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
+   - Evidência: lesson.evidenceQuestions[1]: resposta=it was too tight; opções=too tight | too loose | too dirty
+   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
+
+8. **P0 · Exercício · A2-READING-020 — Resposta correta não aparece nas alternativas**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
+   - Evidência: lesson.evidenceQuestions[5]: resposta=they can talk more comfortably there; opções=talk more comfortably | it is cheaper | it is closer
+   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
+
+9. **P0 · Exercício · A2-LISTENING-012 — Resposta correta não aparece nas alternativas**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
+   - Evidência: lesson.listeningComprehension[1]: resposta=it is a little tight; opções=tight | dirty | broken
+   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
+
+10. **P0 · Exercício · A2-LISTENING-016 — Resposta correta não aparece nas alternativas**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno pode ser penalizado mesmo escolhendo a melhor opção disponível.
+   - Evidência: lesson.listeningComprehension[3]: resposta=it has more cereal; opções=has more cereal | is smaller | is blue
+   - Recomendação: Adicionar a resposta correta entre as opções ou revisar o answerKey.
+
+11. **P1 · Exercício · A1-GRAMMAR-001 — Mais de uma alternativa parece correta**
    - Área executiva: Exercícios e alternativas
    - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
-   - Evidência: lesson.translationPractice[0]: resposta=I am a student.; matches=I am a student. | Am a student.
+   - Evidência: lesson.errorCorrectionPractice[1]: resposta=My phone is new. It is black.; matches=My phone is new. It is black. | My phone is new. She is black. | My phone is new. They is black.
    - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
 
-2. **P1 · Exercício · A1-GRAMMAR-001 — Mais de uma alternativa parece correta**
+12. **P1 · Exercício · A1-GRAMMAR-001 — Mais de uma alternativa parece correta**
    - Área executiva: Exercícios e alternativas
    - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
-   - Evidência: lesson.translationPractice[2]: resposta=It is my phone.; matches=It is my phone. | Is my phone.
+   - Evidência: lesson.errorCorrectionPractice[2]: resposta=Ana is here. She is ready.; matches=Ana is here. She is ready. | Ana is here. It is ready. | Ana is here. They are ready.
    - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
 
-3. **P1 · Exercício · A1-GRAMMAR-001 — Mais de uma alternativa parece correta**
+13. **P1 · Exercício · A1-GRAMMAR-001 — Mais de uma alternativa parece correta**
    - Área executiva: Exercícios e alternativas
    - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
-   - Evidência: lesson.guidedPractice[8]: resposta=It is my city.; matches=Is my city. | It is my city.
+   - Evidência: lesson.errorCorrectionPractice[3]: resposta=Luis and Ana are here. They are happy.; matches=Luis and Ana are here. They are happy. | Luis and Ana are here. He is happy. | Luis and Ana are here. It is happy.
    - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
 
-4. **P1 · Exercício · A1-GRAMMAR-002 — Mais de uma alternativa parece correta**
+14. **P1 · Exercício · A1-GRAMMAR-001 — Mais de uma alternativa parece correta**
    - Área executiva: Exercícios e alternativas
    - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
-   - Evidência: lesson.errorCorrectionPractice[0]: resposta=She is here.; matches=She is here. | She here is.
+   - Evidência: lesson.errorCorrectionPractice[4]: resposta=The book is blue. It is new.; matches=The book is blue. It is new. | The book is blue. He is new. | The book is blue. They are new.
    - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
 
-5. **P1 · Exercício · A1-GRAMMAR-002 — Mais de uma alternativa parece correta**
+15. **P1 · Exercício · A1-GRAMMAR-002 — Mais de uma alternativa parece correta**
    - Área executiva: Exercícios e alternativas
    - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
-   - Evidência: lesson.errorCorrectionPractice[1]: resposta=They are students.; matches=They are students. | They students are.
+   - Evidência: lesson.transformationPractice[3]: resposta=My books are new.; matches=My books are new. | My books is new. | My books am new.
    - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
 
-6. **P1 · Exercício · A1-GRAMMAR-002 — Mais de uma alternativa parece correta**
+16. **P1 · Exercício · A1-GRAMMAR-005 — Mais de uma alternativa parece correta**
    - Área executiva: Exercícios e alternativas
    - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
-   - Evidência: lesson.translationPractice[0]: resposta=I am a student.; matches=I am a student. | Am a student.
+   - Evidência: lesson.errorCorrectionPractice[0]: resposta=Yes, I am.; matches=Yes, I am. | Yes, I are. | Yes, I is.
    - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
 
-7. **P1 · Exercício · A1-GRAMMAR-002 — Mais de uma alternativa parece correta**
+17. **P1 · Exercício · A1-GRAMMAR-005 — Mais de uma alternativa parece correta**
    - Área executiva: Exercícios e alternativas
    - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
-   - Evidência: lesson.transformationPractice[0]: resposta=I am a student.; matches=I am a student. | Am I a student.
+   - Evidência: lesson.errorCorrectionPractice[2]: resposta=Yes, they are.; matches=Yes, they are. | Yes, they am. | Yes, they do.
    - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
 
-8. **P1 · Exercício · A1-GRAMMAR-002 — Mais de uma alternativa parece correta**
+18. **P1 · Exercício · A1-GRAMMAR-005 — Mais de uma alternativa parece correta**
    - Área executiva: Exercícios e alternativas
    - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
-   - Evidência: lesson.transformationPractice[1]: resposta=She is happy.; matches=She is happy. | Is she happy.
+   - Evidência: lesson.errorCorrectionPractice[3]: resposta=Yes, it is.; matches=Yes, it is. | Yes, she is. | Yes, they are.
    - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
 
-9. **P1 · Exercício · A1-GRAMMAR-002 — Mais de uma alternativa parece correta**
+19. **P1 · Exercício · A1-GRAMMAR-005 — Mais de uma alternativa parece correta**
    - Área executiva: Exercícios e alternativas
    - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
-   - Evidência: lesson.transformationPractice[2]: resposta=They are friends.; matches=They are friends. | Are they friends.
+   - Evidência: lesson.translationPractice[0]: resposta=Yes, I am.; matches=Yes, I am. | Yes, I do. | Yes, I are.
    - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
 
-10. **P1 · Exercício · A1-GRAMMAR-003 — Mais de uma alternativa parece correta**
+20. **P1 · Exercício · A1-GRAMMAR-005 — Mais de uma alternativa parece correta**
    - Área executiva: Exercícios e alternativas
    - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
-   - Evidência: lesson.errorCorrectionPractice[0]: resposta=She is not happy.; matches=She is not happy. | She not happy is.
+   - Evidência: lesson.translationPractice[2]: resposta=Yes, they are.; matches=Yes, they are. | Yes, they is. | Yes, they do.
    - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
 
-11. **P1 · Exercício · A1-GRAMMAR-003 — Mais de uma alternativa parece correta**
+21. **P1 · Exercício · A1-GRAMMAR-005 — Mais de uma alternativa parece correta**
    - Área executiva: Exercícios e alternativas
    - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
-   - Evidência: lesson.errorCorrectionPractice[1]: resposta=They are not teachers.; matches=They are not teachers. | They not are teachers.
+   - Evidência: lesson.guidedPractice[0]: resposta=Yes, I am.; matches=Yes, I am. | Yes, I are. | Yes, I do.
    - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
 
-12. **P1 · Exercício · A1-GRAMMAR-003 — Mais de uma alternativa parece correta**
+22. **P1 · Exercício · A1-GRAMMAR-005 — Mais de uma alternativa parece correta**
    - Área executiva: Exercícios e alternativas
    - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
-   - Evidência: lesson.errorCorrectionPractice[2]: resposta=I am not ready.; matches=I am not ready. | I do not am ready. | I not am ready.
+   - Evidência: lesson.guidedPractice[1]: resposta=Yes, she is.; matches=Yes, she is. | Yes, she are. | Yes, she do.
    - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
 
-13. **P1 · Exercício · A1-GRAMMAR-003 — Mais de uma alternativa parece correta**
+23. **P1 · Exercício · A1-GRAMMAR-005 — Mais de uma alternativa parece correta**
    - Área executiva: Exercícios e alternativas
    - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
-   - Evidência: lesson.errorCorrectionPractice[3]: resposta=It is not red.; matches=It is not red. | It not is red.
+   - Evidência: lesson.guidedPractice[2]: resposta=Yes, they are.; matches=Yes, they are. | Yes, they is. | Yes, they do.
    - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
 
-14. **P1 · Exercício · A1-GRAMMAR-003 — Mais de uma alternativa parece correta**
+24. **P1 · Exercício · A1-GRAMMAR-005 — Mais de uma alternativa parece correta**
    - Área executiva: Exercícios e alternativas
    - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
-   - Evidência: lesson.translationPractice[0]: resposta=I am not ready.; matches=I am not ready. | I not am ready.
+   - Evidência: lesson.transformationPractice[0]: resposta=Yes, I am.; matches=Yes, I am. | Yes, you are. | Yes, I do.
    - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
 
-15. **P1 · Exercício · A1-GRAMMAR-003 — Mais de uma alternativa parece correta**
+25. **P1 · Exercício · A1-GRAMMAR-005 — Mais de uma alternativa parece correta**
    - Área executiva: Exercícios e alternativas
    - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
-   - Evidência: lesson.translationPractice[1]: resposta=She is not here.; matches=She is not here. | She not is here.
+   - Evidência: lesson.transformationPractice[2]: resposta=Yes, they are.; matches=Yes, they are. | Yes, they is. | Yes, it is.
    - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
 
-16. **P1 · Exercício · A1-GRAMMAR-003 — Mais de uma alternativa parece correta**
+26. **P1 · Exercício · A1-GRAMMAR-006 — Mais de uma alternativa parece correta**
    - Área executiva: Exercícios e alternativas
    - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
-   - Evidência: lesson.translationPractice[2]: resposta=They are not teachers.; matches=They are not teachers. | They not are teachers.
+   - Evidência: lesson.errorCorrectionPractice[0]: resposta=My name is Luis.; matches=My name is Luis. | Me name is Luis.
    - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
 
-17. **P1 · Exercício · A1-GRAMMAR-003 — Mais de uma alternativa parece correta**
+27. **P1 · Exercício · A1-GRAMMAR-006 — Mais de uma alternativa parece correta**
    - Área executiva: Exercícios e alternativas
    - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
-   - Evidência: lesson.guidedPractice[0]: resposta=not; matches=no | not
+   - Evidência: lesson.errorCorrectionPractice[1]: resposta=Her book is here.; matches=Her book is here. | His book is here.
    - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
 
-18. **P1 · Exercício · A1-GRAMMAR-003 — Mais de uma alternativa parece correta**
+28. **P1 · Exercício · A1-GRAMMAR-006 — Mais de uma alternativa parece correta**
    - Área executiva: Exercícios e alternativas
    - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
-   - Evidência: lesson.guidedPractice[2]: resposta=not; matches=not | no
+   - Evidência: lesson.errorCorrectionPractice[2]: resposta=His phone is new.; matches=His phone is new. | Her phone is new.
    - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
 
-19. **P1 · Exercício · A1-GRAMMAR-003 — Mais de uma alternativa parece correta**
+29. **P1 · Exercício · A1-GRAMMAR-006 — Mais de uma alternativa parece correta**
    - Área executiva: Exercícios e alternativas
    - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
-   - Evidência: lesson.guidedPractice[3]: resposta=I am not tired.; matches=I not am tired. | I am not tired.
+   - Evidência: lesson.translationPractice[0]: resposta=My name is Ana.; matches=My name is Ana. | Me name is Ana.
    - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
 
-20. **P1 · Exercício · A1-GRAMMAR-003 — Mais de uma alternativa parece correta**
+30. **P1 · Exercício · A1-GRAMMAR-006 — Mais de uma alternativa parece correta**
    - Área executiva: Exercícios e alternativas
    - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
-   - Evidência: lesson.guidedPractice[6]: resposta=not; matches=not | no
+   - Evidência: lesson.translationPractice[1]: resposta=Your phone is black.; matches=Your phone is black. | His phone is black.
    - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
 
-21. **P1 · Exercício · A1-GRAMMAR-003 — Mais de uma alternativa parece correta**
+31. **P1 · Exercício · A1-GRAMMAR-006 — Mais de uma alternativa parece correta**
    - Área executiva: Exercícios e alternativas
    - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
-   - Evidência: lesson.transformationPractice[0]: resposta=I am not ready.; matches=I am not ready. | I not am ready.
+   - Evidência: lesson.translationPractice[2]: resposta=His book is new.; matches=His book is new. | Her book is new.
    - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
 
-22. **P1 · Exercício · A1-GRAMMAR-003 — Mais de uma alternativa parece correta**
+32. **P1 · Exercício · A1-GRAMMAR-006 — Mais de uma alternativa parece correta**
    - Área executiva: Exercícios e alternativas
    - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
-   - Evidência: lesson.transformationPractice[1]: resposta=She is not here.; matches=She is not here. | She not is here.
+   - Evidência: lesson.translationPractice[3]: resposta=Her mother is here.; matches=Her mother is here. | His mother is here.
    - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
 
-23. **P1 · Exercício · A1-GRAMMAR-003 — Mais de uma alternativa parece correta**
+33. **P1 · Exercício · A1-GRAMMAR-006 — Mais de uma alternativa parece correta**
    - Área executiva: Exercícios e alternativas
    - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
-   - Evidência: lesson.transformationPractice[2]: resposta=They are not students.; matches=They are not students. | They not are students.
+   - Evidência: lesson.guidedPractice[4]: resposta=My name is Ana.; matches=My name is Ana. | Me name is Ana.
    - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
 
-24. **P1 · Exercício · A1-GRAMMAR-003 — Mais de uma alternativa parece correta**
+34. **P1 · Exercício · A1-GRAMMAR-006 — Mais de uma alternativa parece correta**
    - Área executiva: Exercícios e alternativas
    - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
-   - Evidência: lesson.transformationPractice[3]: resposta=It is not blue.; matches=It is not blue. | It not is blue.
+   - Evidência: lesson.guidedPractice[7]: resposta=His phone is black.; matches=His phone is black. | Him phone is black.
    - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
 
-25. **P1 · Exercício · A1-GRAMMAR-004 — Mais de uma alternativa parece correta**
+35. **P1 · Exercício · A1-GRAMMAR-007 — Distratores absurdos ou fáceis demais**
    - Área executiva: Exercícios e alternativas
    - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
-   - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
-   - Evidência: lesson.errorCorrectionPractice[0]: resposta=Are you happy?; matches=Are you happy? | You are happy?
-   - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
+   - Impacto: O aluno pode acertar por eliminação sem entender a aula.
+   - Evidência: lesson.transformationPractice[4]: is | blue | table
+   - Recomendação: Trocar por distratores próximos do tema e do nível CEFR.
 
-26. **P1 · Exercício · A1-GRAMMAR-004 — Mais de uma alternativa parece correta**
+36. **P1 · Exercício · A1-GRAMMAR-008 — Distratores absurdos ou fáceis demais**
    - Área executiva: Exercícios e alternativas
    - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
-   - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
-   - Evidência: lesson.errorCorrectionPractice[1]: resposta=Are they ready?; matches=Are they ready? | They are ready?
-   - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
+   - Impacto: O aluno pode acertar por eliminação sem entender a aula.
+   - Evidência: lesson.transformationPractice[4]: is | blue | table
+   - Recomendação: Trocar por distratores próximos do tema e do nível CEFR.
 
-27. **P1 · Exercício · A1-GRAMMAR-004 — Mais de uma alternativa parece correta**
+37. **P1 · Exercício · A1-GRAMMAR-009 — Distratores absurdos ou fáceis demais**
    - Área executiva: Exercícios e alternativas
    - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
-   - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
-   - Evidência: lesson.errorCorrectionPractice[2]: resposta=Is she here?; matches=Is she here? | She is here?
-   - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
+   - Impacto: O aluno pode acertar por eliminação sem entender a aula.
+   - Evidência: lesson.transformationPractice[4]: is | blue | table
+   - Recomendação: Trocar por distratores próximos do tema e do nível CEFR.
 
-28. **P1 · Exercício · A1-GRAMMAR-004 — Mais de uma alternativa parece correta**
+38. **P1 · Exercício · A1-GRAMMAR-010 — Distratores absurdos ou fáceis demais**
    - Área executiva: Exercícios e alternativas
    - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
-   - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
-   - Evidência: lesson.errorCorrectionPractice[3]: resposta=Is it blue?; matches=Is it blue? | It is blue?
-   - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
+   - Impacto: O aluno pode acertar por eliminação sem entender a aula.
+   - Evidência: lesson.transformationPractice[4]: is | blue | table
+   - Recomendação: Trocar por distratores próximos do tema e do nível CEFR.
 
-29. **P1 · Exercício · A1-GRAMMAR-004 — Mais de uma alternativa parece correta**
+39. **P1 · Exercício · A1-GRAMMAR-011 — Distratores absurdos ou fáceis demais**
    - Área executiva: Exercícios e alternativas
    - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
-   - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
-   - Evidência: lesson.translationPractice[0]: resposta=Are you ready?; matches=Are you ready? | Do you are ready? | You are ready?
-   - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
+   - Impacto: O aluno pode acertar por eliminação sem entender a aula.
+   - Evidência: lesson.transformationPractice[4]: is | blue | table
+   - Recomendação: Trocar por distratores próximos do tema e do nível CEFR.
 
-30. **P1 · Exercício · A1-GRAMMAR-004 — Mais de uma alternativa parece correta**
+40. **P1 · Exercício · A1-GRAMMAR-012 — Distratores absurdos ou fáceis demais**
    - Área executiva: Exercícios e alternativas
    - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
-   - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
-   - Evidência: lesson.translationPractice[1]: resposta=Is she your sister?; matches=Is she your sister? | Do she is your sister?
-   - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
-
-31. **P1 · Exercício · A1-GRAMMAR-004 — Mais de uma alternativa parece correta**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
-   - Evidência: lesson.translationPractice[2]: resposta=Are they students?; matches=Are they students? | Do they are students?
-   - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
-
-32. **P1 · Exercício · A1-GRAMMAR-004 — Mais de uma alternativa parece correta**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
-   - Evidência: lesson.guidedPractice[0]: resposta=Are you ready?; matches=Are you ready? | You are ready? | Do you are ready?
-   - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
-
-33. **P1 · Exercício · A1-GRAMMAR-004 — Mais de uma alternativa parece correta**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
-   - Evidência: lesson.guidedPractice[5]: resposta=Are you from Brazil?; matches=Do you are from Brazil? | Are you from Brazil? | You are from Brazil?
-   - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
-
-34. **P1 · Exercício · A1-GRAMMAR-004 — Mais de uma alternativa parece correta**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
-   - Evidência: lesson.transformationPractice[0]: resposta=Is she a student?; matches=Is she a student? | She is a student?
-   - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
-
-35. **P1 · Exercício · A1-GRAMMAR-004 — Mais de uma alternativa parece correta**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
-   - Evidência: lesson.transformationPractice[1]: resposta=Are they friends?; matches=Are they friends? | They are friends?
-   - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
-
-36. **P1 · Exercício · A1-GRAMMAR-004 — Mais de uma alternativa parece correta**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
-   - Evidência: lesson.transformationPractice[2]: resposta=Is it your book?; matches=Is it your book? | Do it is your book?
-   - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
-
-37. **P1 · Exercício · A1-GRAMMAR-004 — Mais de uma alternativa parece correta**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
-   - Evidência: lesson.transformationPractice[3]: resposta=Are we late?; matches=Are we late? | Do we are late?
-   - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
-
-38. **P1 · Exercício · A1-GRAMMAR-007 — Mais de uma alternativa parece correta**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
-   - Evidência: lesson.transformationPractice[0]: resposta=I do not study every day.; matches=I do not study every day. | I not study every day. | I study not every day.
-   - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
-
-39. **P1 · Exercício · A1-GRAMMAR-007 — Mais de uma alternativa parece correta**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
-   - Evidência: lesson.transformationPractice[1]: resposta=Do you study English?; matches=Do you study English? | You do study English? | Study you English?
-   - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
-
-40. **P1 · Exercício · A1-GRAMMAR-007 — Mais de uma alternativa parece correta**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
-   - Evidência: lesson.transformationPractice[2]: resposta=I study English at night.; matches=I study English at night. | I English study at night. | At night English I study.
-   - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
+   - Impacto: O aluno pode acertar por eliminação sem entender a aula.
+   - Evidência: lesson.transformationPractice[4]: is | blue | table
+   - Recomendação: Trocar por distratores próximos do tema e do nível CEFR.
 
 
 ## Como usar este relatório

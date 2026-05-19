@@ -1,8 +1,8 @@
-Status: Revisar antes de confiar
+Status: Crítico
 Nota geral: 0/100
 Relatórios: 25
 Checks: 3268
-Issues únicas: 2271 (brutas=4234, agrupadas=1963)
-Severidade: P0=0, P1=1113, P2=1158, P3=0
-Direção: Corrigir P1 antes de considerar o sistema confiável para estudo contínuo.
-Top issues: P1 Exercício · A1-GRAMMAR-001 — Mais de uma alternativa parece correta | P1 Exercício · A1-GRAMMAR-001 — Mais de uma alternativa parece correta | P1 Exercício · A1-GRAMMAR-001 — Mais de uma alternativa parece correta | P1 Exercício · A1-GRAMMAR-002 — Mais de uma alternativa parece correta | P1 Exercício · A1-GRAMMAR-002 — Mais de uma alternativa parece correta
+Issues únicas: 2193 (brutas=4078, agrupadas=1885)
+Severidade: P0=10, P1=1025, P2=1158, P3=0
+Direção: Corrigir P0 confirmados antes de continuar evolução visual/pedagógica.
+Top issues: P0 Exercício · A1-READING-018-CLOTHES — Resposta correta não aparece nas alternativas | P0 Exercício · A2-READING-008 — Resposta correta não aparece nas alternativas | P0 Exercício · A2-READING-012 — Resposta correta não aparece nas alternativas | P0 Exercício · A2-READING-012 — Resposta correta não aparece nas alternativas | P0 Exercício · A2-READING-013 — Resposta correta não aparece nas alternativas
