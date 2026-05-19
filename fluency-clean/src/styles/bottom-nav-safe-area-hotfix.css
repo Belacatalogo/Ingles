@@ -37,26 +37,19 @@
 }
 
 /*
-  A regra antiga de .app-shell em index.css usa padding-bottom: 108px.
-  Na aba Hoje esse padding global aparece como um fundo vazio atrás da bottom nav.
-  Removemos apenas quando o shell contém a tela Hoje.
+  Todas as telas roláveis — inclusive a Hoje — reservam o mesmo espaço seguro
+  no rodapé. A Hoje era a única exceção (padding-bottom: 0), o que deixava o
+  último card encostar atrás da bottom nav fixa. Tratando-a igual às demais o
+  tapete escuro desaparece.
 */
-.app-shell:has(.today-reference-screen) {
-  padding-bottom: 0 !important;
-}
-
 .cards-screen,
 .course-screen,
 .settings-screen,
 .progress-screen,
 .speaking-reference-screen,
-.lesson-screen {
-  padding-bottom: var(--bottom-nav-safe-space) !important;
-  scroll-padding-bottom: var(--bottom-nav-safe-space);
-}
-
+.lesson-screen,
 .today-reference-screen {
-  padding-bottom: 0 !important;
+  padding-bottom: var(--bottom-nav-safe-space) !important;
   scroll-padding-bottom: var(--bottom-nav-safe-space);
 }
 
@@ -73,13 +66,9 @@
 .settings-screen > :last-child,
 .progress-screen > :last-child,
 .speaking-reference-screen > :last-child,
-.lesson-screen > :last-child {
+.lesson-screen > :last-child,
+.today-reference-screen > :last-child {
   margin-bottom: max(28px, env(safe-area-inset-bottom));
-}
-
-.today-reference-screen > :last-child,
-.today-reference-screen .static-next-lesson-panel {
-  margin-bottom: 0 !important;
 }
 
 .today-reference-screen button,
