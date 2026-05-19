@@ -99,6 +99,7 @@ function sameSequence(a, b) { return a.length === b.length && a.every((item, ind
 function startsWithGrammarFrame(tokens) { return GRAMMAR_PRONOUNS.has(tokens[0]) || GRAMMAR_BE_FORMS.has(tokens[0]) || GRAMMAR_AUXILIARIES.has(tokens[0]); }
 function endsAsQuestion(value) { return /\?\s*$/.test(clean(value)); }
 function isComprehensionPath(path = '') { return COMPREHENSION_PATH_PATTERNS.some((pattern) => pattern.test(path)); }
+function splitSentences(value) { return clean(value).split(/[.!?]+/).map((part) => part.trim()).filter(Boolean); }
 
 function hasNegationMismatch(option, answer) {
   const optionRaw = rawWords(option);
@@ -156,6 +157,35 @@ function hasGrammarCoreMismatch(option, answer) {
   return false;
 }
 
+function hasCompoundGrammarMismatch(option, answer) {
+  const optionSentences = splitSentences(option);
+  const answerSentences = splitSentences(answer);
+  if (optionSentences.length < 2 && answerSentences.length < 2) return false;
+  if (optionSentences.length !== answerSentences.length) return true;
+
+  return answerSentences.some((answerSentence, index) => {
+    const optionSentence = optionSentences[index] || '';
+    if (normalize(optionSentence) === normalize(answerSentence)) return false;
+    if (isShortGrammarStructureSensitive(optionSentence, answerSentence)) return true;
+    if (hasGrammarCoreMismatch(optionSentence, answerSentence)) return true;
+
+    const optionRaw = rawWords(optionSentence);
+    const answerRaw = rawWords(answerSentence);
+    const optionPronouns = setFrom(optionRaw, GRAMMAR_PRONOUNS);
+    const answerPronouns = setFrom(answerRaw, GRAMMAR_PRONOUNS);
+    const optionBeForms = setFrom(optionRaw, GRAMMAR_BE_FORMS);
+    const answerBeForms = setFrom(answerRaw, GRAMMAR_BE_FORMS);
+    const optionAuxiliaries = setFrom(optionRaw, GRAMMAR_AUXILIARIES);
+    const answerAuxiliaries = setFrom(answerRaw, GRAMMAR_AUXILIARIES);
+
+    if (!sameSet(optionPronouns, answerPronouns)) return true;
+    if (!sameSet(optionBeForms, answerBeForms)) return true;
+    if (!sameSet(optionAuxiliaries, answerAuxiliaries)) return true;
+    if (sameTokenBag(optionRaw, answerRaw) && !sameSequence(optionRaw, answerRaw)) return true;
+    return false;
+  });
+}
+
 function isConciseContentSummary(option, answer, matched, reverseCoverage) {
   const optionRaw = rawWords(option);
   const answerRaw = rawWords(answer);
@@ -193,6 +223,7 @@ function optionMatchesAnswer(option, answer, context = {}) {
   const comprehensionPath = isComprehensionPath(context.path);
   if (comprehensionPath && isComprehensionConciseMatch(option, answer)) return true;
   if (!comprehensionPath && hasNegationMismatch(option, answer)) return false;
+  if (!comprehensionPath && hasCompoundGrammarMismatch(option, answer)) return false;
 
   const grammarSensitiveShortAnswer = !comprehensionPath && isShortGrammarStructureSensitive(option, answer);
   if (grammarSensitiveShortAnswer) return false;
