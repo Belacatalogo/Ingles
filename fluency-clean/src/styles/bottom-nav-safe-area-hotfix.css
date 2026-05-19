@@ -4,9 +4,10 @@
 
 :root {
   --bottom-nav-height: 86px;
-  --bottom-nav-gap: 18px;
+  --bottom-nav-gap: 24px;
+  --topbar-safe-space: 108px;
   --bottom-nav-safe-space: calc(var(--bottom-nav-height) + var(--bottom-nav-gap) + env(safe-area-inset-bottom));
-  --content-safe-viewport: calc(100dvh - var(--bottom-nav-safe-space));
+  --content-safe-viewport: calc(100dvh - var(--topbar-safe-space) - var(--bottom-nav-safe-space));
 }
 
 .fluency-reference-shell {
@@ -27,14 +28,13 @@
 
 /*
   A bottom nav é fixa. Padding no fim da página ajuda no scroll, mas não impede
-  que um botão visível na primeira viewport fique atrás da nav. Para os estados
-  auditados, reservamos uma área de viewport acima da navegação e deixamos a tela
-  rolar internamente quando necessário.
+  que um botão visível na primeira viewport fique atrás da nav. Como as telas
+  começam abaixo do topbar, o viewport seguro precisa descontar topo + nav.
 */
 .today-reference-screen,
 .cards-screen,
 .settings-screen {
-  max-height: var(--content-safe-viewport);
+  max-height: max(360px, var(--content-safe-viewport));
   overflow-y: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
@@ -47,7 +47,7 @@
 .progress-screen > :last-child,
 .speaking-reference-screen > :last-child,
 .lesson-screen > :last-child {
-  margin-bottom: max(24px, env(safe-area-inset-bottom));
+  margin-bottom: max(28px, env(safe-area-inset-bottom));
 }
 
 .today-reference-screen button,
@@ -92,13 +92,15 @@
 @media (max-width: 430px) {
   :root {
     --bottom-nav-height: 86px;
-    --bottom-nav-gap: 24px;
+    --bottom-nav-gap: 28px;
+    --topbar-safe-space: 112px;
   }
 }
 
 @media (max-width: 360px) {
   :root {
     --bottom-nav-height: 88px;
-    --bottom-nav-gap: 30px;
+    --bottom-nav-gap: 34px;
+    --topbar-safe-space: 116px;
   }
 }
