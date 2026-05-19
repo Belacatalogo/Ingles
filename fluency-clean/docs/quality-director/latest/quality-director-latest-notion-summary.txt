@@ -2,7 +2,7 @@ Status: Revisar antes de confiar
 Nota geral: 0/100
 Relatórios: 25
 Checks: 3268
-Issues únicas: 2088 (brutas=3863, agrupadas=1775)
-Severidade: P0=0, P1=765, P2=1323, P3=0
+Issues únicas: 2051 (brutas=3789, agrupadas=1738)
+Severidade: P0=0, P1=728, P2=1323, P3=0
 Direção: Corrigir P1 antes de considerar o sistema confiável para estudo contínuo.
-Top issues: P1 Aula A1-WRITING-001 — Nenhum exercício detectado na aula ready | P1 Aula A1-WRITING-002 — Nenhum exercício detectado na aula ready | P1 Aula A1-WRITING-003 — Nenhum exercício detectado na aula ready | P1 Aula A1-WRITING-004 — Nenhum exercício detectado na aula ready | P1 Aula A1-WRITING-005 — Nenhum exercício detectado na aula ready
+Top issues: P1 Exercício · A2-READING-006 — Distratores absurdos ou fáceis demais | P1 Exercício · A2-LISTENING-004 — Distratores absurdos ou fáceis demais | P1 Exercício · A2-LISTENING-005 — Distratores absurdos ou fáceis demais | P1 Exercício · B1-GRAMMAR-019 — Exercício com alternativas mas sem resposta esperada clara | P1 Exercício · B1-GRAMMAR-020 — Exercício com alternativas mas sem resposta esperada clara
