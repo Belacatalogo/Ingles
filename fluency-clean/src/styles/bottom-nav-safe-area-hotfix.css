@@ -1,0 +1,83 @@
+/* HOTFIX — Bottom nav safe area
+   Objetivo: impedir que elementos interativos das telas principais fiquem sob a bottom nav fixa.
+   Mantém a solução modular e no fim da ordem de imports para vencer regras antigas espalhadas. */
+
+:root {
+  --bottom-nav-safe-space: calc(168px + env(safe-area-inset-bottom));
+}
+
+.fluency-reference-shell {
+  padding-bottom: var(--bottom-nav-safe-space) !important;
+}
+
+.today-reference-screen,
+.cards-screen,
+.course-screen,
+.settings-screen,
+.progress-screen,
+.speaking-reference-screen,
+.lesson-screen {
+  padding-bottom: var(--bottom-nav-safe-space) !important;
+  scroll-padding-bottom: var(--bottom-nav-safe-space);
+}
+
+.today-reference-screen > :last-child,
+.cards-screen > :last-child,
+.course-screen > :last-child,
+.settings-screen > :last-child,
+.progress-screen > :last-child,
+.speaking-reference-screen > :last-child,
+.lesson-screen > :last-child {
+  margin-bottom: max(24px, env(safe-area-inset-bottom));
+}
+
+.today-reference-screen button,
+.cards-screen button,
+.course-screen button,
+.settings-screen button,
+.progress-screen button,
+.speaking-reference-screen button,
+.lesson-screen button,
+.today-reference-screen a,
+.cards-screen a,
+.course-screen a,
+.settings-screen a,
+.progress-screen a,
+.speaking-reference-screen a,
+.lesson-screen a,
+.today-reference-screen input,
+.cards-screen input,
+.course-screen input,
+.settings-screen input,
+.progress-screen input,
+.speaking-reference-screen input,
+.lesson-screen input,
+.today-reference-screen textarea,
+.cards-screen textarea,
+.course-screen textarea,
+.settings-screen textarea,
+.progress-screen textarea,
+.speaking-reference-screen textarea,
+.lesson-screen textarea {
+  scroll-margin-bottom: var(--bottom-nav-safe-space);
+}
+
+.cards-study-mode {
+  padding-bottom: var(--bottom-nav-safe-space) !important;
+}
+
+.diagnostic-mini-button {
+  bottom: calc(104px + env(safe-area-inset-bottom)) !important;
+}
+
+@media (max-width: 430px) {
+  :root {
+    --bottom-nav-safe-space: calc(176px + env(safe-area-inset-bottom));
+  }
+}
+
+@media (max-width: 360px) {
+  :root {
+    --bottom-nav-safe-space: calc(184px + env(safe-area-inset-bottom));
+  }
+}
