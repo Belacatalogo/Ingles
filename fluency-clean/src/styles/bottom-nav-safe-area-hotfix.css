@@ -10,9 +10,14 @@
   --content-safe-viewport: calc(100dvh - var(--topbar-safe-space) - var(--bottom-nav-safe-space));
 }
 
+/*
+  O shell não deve ganhar padding visual no rodapé.
+  O espaçamento seguro fica nas telas roláveis; caso contrário aparece uma
+  “placa”/fundo atrás da bottom nav no iPhone 13.
+*/
 .fluency-reference-shell {
   min-height: 100dvh;
-  padding-bottom: var(--bottom-nav-safe-space) !important;
+  padding-bottom: 0 !important;
 }
 
 .today-reference-screen,
@@ -27,17 +32,15 @@
 }
 
 /*
-  A bottom nav é fixa. Padding no fim da página ajuda no scroll, mas não impede
-  que um botão visível na primeira viewport fique atrás da nav. Como as telas
-  começam abaixo do topbar, o viewport seguro precisa descontar topo + nav.
+  iPhone 13 e telas modernas devem usar o scroll normal da página.
+  O scroll interno com max-height foi o que criou o fundo visível atrás da navbar.
 */
 .today-reference-screen,
 .cards-screen,
 .settings-screen {
-  max-height: max(360px, var(--content-safe-viewport));
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  -webkit-overflow-scrolling: touch;
+  max-height: none !important;
+  overflow-y: visible !important;
+  overscroll-behavior: auto;
 }
 
 .today-reference-screen > :last-child,
@@ -97,8 +100,17 @@
   }
 }
 
-/* iPhone SE: compacta a primeira dobra da aba Hoje para a primeira tarefa não cair atrás da nav. */
+/* iPhone SE / telas legadas: compacta a primeira dobra sem criar fundo extra no iPhone 13. */
 @media (max-width: 380px), (max-height: 700px) {
+  .today-reference-screen,
+  .cards-screen,
+  .settings-screen {
+    max-height: max(360px, var(--content-safe-viewport)) !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
   .today-reference-screen {
     gap: 10px !important;
   }
