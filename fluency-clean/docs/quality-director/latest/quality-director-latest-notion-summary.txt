@@ -2,7 +2,7 @@ Status: Revisar antes de confiar
 Nota geral: 0/100
 Relatórios: 25
 Checks: 3268
-Issues únicas: 2109 (brutas=3905, agrupadas=1796)
-Severidade: P0=0, P1=789, P2=1320, P3=0
+Issues únicas: 2108 (brutas=3903, agrupadas=1795)
+Severidade: P0=0, P1=785, P2=1323, P3=0
 Direção: Corrigir P1 antes de considerar o sistema confiável para estudo contínuo.
-Top issues: P1 Exercício · A1-VOCABULARY-013 — Distratores absurdos ou fáceis demais | P1 Exercício · A1-READING-002 — Distratores absurdos ou fáceis demais | P1 Exercício · A1-LISTENING-009 — Distratores absurdos ou fáceis demais | P1 Exercício · A1-LISTENING-021-PERSONAL — Distratores absurdos ou fáceis demais | P1 Aula A1-SPEAKING-015 — Nenhum exercício detectado na aula ready
+Top issues: P1 Aula A1-SPEAKING-015 — Nenhum exercício detectado na aula ready | P1 Aula A1-SPEAKING-016-WEATHER — Nenhum exercício detectado na aula ready | P1 Aula A1-WRITING-001 — Nenhum exercício detectado na aula ready | P1 Aula A1-WRITING-002 — Nenhum exercício detectado na aula ready | P1 Aula A1-WRITING-003 — Nenhum exercício detectado na aula ready
