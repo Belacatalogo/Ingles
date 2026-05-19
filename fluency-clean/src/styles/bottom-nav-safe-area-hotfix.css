@@ -97,6 +97,128 @@
   }
 }
 
+/* iPhone SE: compacta a primeira dobra da aba Hoje para a primeira tarefa não cair atrás da nav. */
+@media (max-width: 380px), (max-height: 700px) {
+  .today-reference-screen {
+    gap: 10px !important;
+  }
+
+  .today-hero-card {
+    grid-template-columns: 1fr auto !important;
+    gap: 10px !important;
+    padding: 14px !important;
+    border-radius: 22px !important;
+  }
+
+  .today-hero-copy h1 {
+    margin-top: 4px !important;
+    font-size: clamp(28px, 9vw, 36px) !important;
+    line-height: .92 !important;
+  }
+
+  .today-hero-copy p {
+    margin-top: 8px !important;
+    max-width: 230px !important;
+    font-size: 13px !important;
+    line-height: 1.25 !important;
+  }
+
+  .today-ring {
+    width: 54px !important;
+    height: 54px !important;
+  }
+
+  .today-ring::after {
+    inset: 9px !important;
+  }
+
+  .today-ring strong {
+    font-size: 14px !important;
+  }
+
+  .today-hero-actions {
+    grid-template-columns: 1fr 42px !important;
+    gap: 8px !important;
+    margin-top: 0 !important;
+  }
+
+  .today-primary-action,
+  .today-secondary-action {
+    min-height: 44px !important;
+    border-radius: 15px !important;
+  }
+
+  .today-summary-grid {
+    gap: 8px !important;
+  }
+
+  .today-summary-card {
+    padding: 10px !important;
+    border-radius: 18px !important;
+  }
+
+  .today-card-heading {
+    margin-bottom: 6px !important;
+  }
+
+  .today-summary-card > strong {
+    font-size: 21px !important;
+  }
+
+  .today-streak-days {
+    margin-top: 8px !important;
+  }
+
+  .today-streak-days i {
+    height: 13px !important;
+  }
+
+  .today-level-track {
+    margin-top: 9px !important;
+  }
+
+  .today-summary-card p,
+  .today-streak-days span {
+    display: none !important;
+  }
+
+  .today-section-head {
+    margin-top: 0 !important;
+  }
+
+  .today-task-list {
+    gap: 8px !important;
+  }
+
+  .today-task-card {
+    min-height: 74px !important;
+    grid-template-columns: 46px 1fr auto !important;
+    gap: 10px !important;
+    padding: 10px !important;
+    border-radius: 19px !important;
+  }
+
+  .today-task-icon {
+    width: 46px !important;
+    height: 46px !important;
+    border-radius: 16px !important;
+  }
+
+  .today-task-copy strong {
+    font-size: 17px !important;
+  }
+
+  .today-task-copy small {
+    margin-top: 3px !important;
+    font-size: 12px !important;
+    line-height: 1.15 !important;
+  }
+
+  .today-task-copy em {
+    display: none !important;
+  }
+}
+
 @media (max-width: 360px) {
   :root {
     --bottom-nav-height: 88px;
