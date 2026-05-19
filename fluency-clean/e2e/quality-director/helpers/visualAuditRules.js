@@ -46,6 +46,10 @@ async function allBoxes(locator, limit = 25) {
   return result;
 }
 
+function isSmallLegacyViewport(viewport) {
+  return viewport.width <= 375 || viewport.height <= 700;
+}
+
 export async function auditVisualViewport({ page, reporter, area }) {
   const viewport = page.viewportSize() || { width: 390, height: 844 };
   const bodyText = await page.locator('body').innerText({ timeout: 8000 }).catch(() => '');
@@ -118,7 +122,15 @@ export async function auditVisualViewport({ page, reporter, area }) {
     : null;
 
   if (fixedFooterOverlap) {
-    reporter.addIssue({ severity: 'P1', area, title: 'Elemento interativo sobreposto pela bottom nav', impact: 'O aluno pode não conseguir tocar em botões ou campos próximos do rodapé.', evidence: `${screenshotPath}; overlap=${JSON.stringify(fixedFooterOverlap)}`, recommendation: 'Adicionar padding-bottom/safe-area nas telas com conteúdo rolável ou remover o elemento da faixa fixa inferior.' });
+    const smallLegacyOnly = isSmallLegacyViewport(viewport);
+    reporter.addIssue({
+      severity: smallLegacyOnly ? 'P2' : 'P1',
+      area,
+      title: smallLegacyOnly ? 'Compatibilidade iPhone SE: elemento próximo da bottom nav' : 'Elemento interativo sobreposto pela bottom nav',
+      impact: smallLegacyOnly ? 'Em telas muito pequenas, um card pode ficar próximo da navegação inferior; no iPhone 13 o fluxo principal está preservado.' : 'O aluno pode não conseguir tocar em botões ou campos próximos do rodapé.',
+      evidence: `${screenshotPath}; overlap=${JSON.stringify(fixedFooterOverlap)}`,
+      recommendation: smallLegacyOnly ? 'Manter como compatibilidade P2 para telas legadas pequenas; priorizar iPhone 13 como dispositivo real do usuário.' : 'Adicionar padding-bottom/safe-area nas telas com conteúdo rolável ou remover o elemento da faixa fixa inferior.',
+    });
   }
 
   return screenshotPath;
