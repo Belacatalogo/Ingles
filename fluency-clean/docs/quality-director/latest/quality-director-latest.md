@@ -1,6 +1,6 @@
 # Fluency Quality Director — Relatório Executivo Latest
 
-Gerado em: 2026-05-19T10:45:51.245Z
+Gerado em: 2026-05-19T13:06:01.273Z
 
 ## Veredito
 
@@ -12,21 +12,21 @@ Gerado em: 2026-05-19T10:45:51.245Z
 
 - Relatórios consolidados: 25
 - Checks executados: 3268
-- Problemas únicos: 2060
-- Problemas brutos antes de deduplicar: 3812
-- Duplicatas agrupadas: 1752
+- Problemas únicos: 2092
+- Problemas brutos antes de deduplicar: 3871
+- Duplicatas agrupadas: 1779
 - P0: 0
-- P1: 864
-- P2: 1196
+- P1: 827
+- P2: 1265
 - P3: 0
 
 ## Notas por área
 
 | Área | Nota | Status | P0 | P1 | P2 | P3 |
 |---|---:|---|---:|---:|---:|---:|
-| Navegação e estabilidade | 0 | Revisar antes de confiar | 0 | 32 | 159 | 0 |
+| Navegação e estabilidade | 0 | Revisar antes de confiar | 0 | 32 | 164 | 0 |
 | Jornada real do aluno | 25 | Revisar antes de confiar | 0 | 1 | 58 | 0 |
-| Exercícios e alternativas | 0 | Revisar antes de confiar | 0 | 246 | 737 | 0 |
+| Exercícios e alternativas | 0 | Revisar antes de confiar | 0 | 209 | 801 | 0 |
 | Aulas e pedagogia | 0 | Revisar antes de confiar | 0 | 585 | 238 | 0 |
 | Visual e mobile | 100 | Saudável | 0 | 0 | 0 | 0 |
 | Progresso, XP e mastery | 100 | Saudável | 0 | 0 | 0 | 0 |
@@ -43,9 +43,9 @@ Gerado em: 2026-05-19T10:45:51.245Z
 | quality-director-curriculum-consistency | iPhone 13 | 94 | 7 | 5 | 5 | 0 | 0 | 5 | 0 |
 | quality-director-curriculum-consistency | iPhone SE | 94 | 7 | 5 | 5 | 0 | 0 | 5 | 0 |
 | quality-director-empty-states-security | iPhone 13 | 26 | 56 | 60 | 64 | 0 | 0 | 60 | 0 |
-| quality-director-empty-states-security | iPhone SE | 22 | 56 | 64 | 68 | 0 | 0 | 64 | 0 |
-| quality-director-exercise-quality | iPhone 13 | 0 | 501 | 865 | 865 | 0 | 218 | 647 | 0 |
-| quality-director-exercise-quality | iPhone SE | 0 | 501 | 865 | 865 | 0 | 218 | 647 | 0 |
+| quality-director-empty-states-security | iPhone SE | 17 | 56 | 68 | 72 | 0 | 0 | 68 | 0 |
+| quality-director-exercise-quality | iPhone 13 | 0 | 501 | 892 | 892 | 0 | 181 | 711 | 0 |
+| quality-director-exercise-quality | iPhone SE | 0 | 501 | 892 | 892 | 0 | 181 | 711 | 0 |
 | quality-director-exploratory-student-audit | iPhone 13 | 0 | 3 | 54 | 56 | 0 | 35 | 19 | 0 |
 | quality-director-exploratory-student-audit | iPhone SE | 0 | 3 | 54 | 56 | 0 | 35 | 19 | 0 |
 | quality-director-lesson-quality | iPhone 13 | 0 | 500 | 135 | 135 | 0 | 45 | 90 | 0 |
@@ -62,7 +62,7 @@ Gerado em: 2026-05-19T10:45:51.245Z
 | quality-director-student-journey | iPhone SE | 100 | 6 | 0 | 0 | 0 | 0 | 0 | 0 |
 |  |  | 100 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
 | quality-director-visual-mobile | iPhone 13 | 43 | 11 | 44 | 45 | 0 | 1 | 43 | 0 |
-| quality-director-visual-mobile | iPhone SE | 44 | 11 | 46 | 47 | 0 | 0 | 46 | 0 |
+| quality-director-visual-mobile | iPhone SE | 43 | 11 | 47 | 48 | 0 | 0 | 47 | 0 |
 
 ## Plano de ação
 
@@ -70,42 +70,42 @@ Gerado em: 2026-05-19T10:45:51.245Z
 
 ### Ações imediatas
 
-1. **P1 · Exercício · A1-GRAMMAR-027 — Mais de uma alternativa parece correta**
-   - Ocorrências agrupadas: 2
-   - Ação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
-2. **P1 · Exercício · A1-GRAMMAR-027 — Mais de uma alternativa parece correta**
-   - Ocorrências agrupadas: 2
-   - Ação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
-3. **P1 · Exercício · A1-VOCABULARY-003 — Mais de uma alternativa parece correta**
-   - Ocorrências agrupadas: 2
-   - Ação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
-4. **P1 · Exercício · A1-VOCABULARY-004 — Mais de uma alternativa parece correta**
-   - Ocorrências agrupadas: 2
-   - Ação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
-5. **P1 · Exercício · A1-VOCABULARY-004 — Mais de uma alternativa parece correta**
-   - Ocorrências agrupadas: 2
-   - Ação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
-6. **P1 · Exercício · A1-VOCABULARY-004 — Mais de uma alternativa parece correta**
-   - Ocorrências agrupadas: 2
-   - Ação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
-7. **P1 · Exercício · A1-VOCABULARY-005 — Mais de uma alternativa parece correta**
-   - Ocorrências agrupadas: 2
-   - Ação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
-8. **P1 · Exercício · A1-VOCABULARY-005 — Mais de uma alternativa parece correta**
-   - Ocorrências agrupadas: 2
-   - Ação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
-9. **P1 · Exercício · A1-VOCABULARY-005 — Mais de uma alternativa parece correta**
-   - Ocorrências agrupadas: 2
-   - Ação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
-10. **P1 · Exercício · A1-VOCABULARY-008 — Mais de uma alternativa parece correta**
-   - Ocorrências agrupadas: 2
-   - Ação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
-11. **P1 · Aula A1-VOCABULARY-012 — Nenhum exercício detectado na aula ready**
+1. **P1 · Aula A1-VOCABULARY-012 — Nenhum exercício detectado na aula ready**
    - Ocorrências agrupadas: 2
    - Ação: Adicionar exercícios, tarefas de tentativa ou perguntas avaliáveis.
-12. **P1 · Aula A1-VOCABULARY-013 — Nenhum exercício detectado na aula ready**
+2. **P1 · Aula A1-VOCABULARY-013 — Nenhum exercício detectado na aula ready**
    - Ocorrências agrupadas: 2
    - Ação: Adicionar exercícios, tarefas de tentativa ou perguntas avaliáveis.
+3. **P1 · Aula A1-VOCABULARY-016 — Nenhum exercício detectado na aula ready**
+   - Ocorrências agrupadas: 2
+   - Ação: Adicionar exercícios, tarefas de tentativa ou perguntas avaliáveis.
+4. **P1 · Aula A1-VOCABULARY-020 — Nenhum exercício detectado na aula ready**
+   - Ocorrências agrupadas: 2
+   - Ação: Adicionar exercícios, tarefas de tentativa ou perguntas avaliáveis.
+5. **P1 · Aula A1-VOCABULARY-021-PERSONAL — Nenhum exercício detectado na aula ready**
+   - Ocorrências agrupadas: 2
+   - Ação: Adicionar exercícios, tarefas de tentativa ou perguntas avaliáveis.
+6. **P1 · Exercício · A1-READING-001 — Mais de uma alternativa parece correta**
+   - Ocorrências agrupadas: 2
+   - Ação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
+7. **P1 · Exercício · A1-READING-001 — Mais de uma alternativa parece correta**
+   - Ocorrências agrupadas: 2
+   - Ação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
+8. **P1 · Exercício · A1-READING-002 — Mais de uma alternativa parece correta**
+   - Ocorrências agrupadas: 2
+   - Ação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
+9. **P1 · Exercício · A1-READING-002 — Distratores absurdos ou fáceis demais**
+   - Ocorrências agrupadas: 2
+   - Ação: Trocar por distratores próximos do tema e do nível CEFR.
+10. **P1 · Exercício · A1-READING-002 — Pergunta parece entregar a resposta**
+   - Ocorrências agrupadas: 2
+   - Ação: Reformular a pergunta para não conter a resposta literal.
+11. **P1 · Exercício · A1-READING-003 — Pergunta parece entregar a resposta**
+   - Ocorrências agrupadas: 2
+   - Ação: Reformular a pergunta para não conter a resposta literal.
+12. **P1 · Exercício · A1-LISTENING-001 — Pergunta parece entregar a resposta**
+   - Ocorrências agrupadas: 2
+   - Ação: Reformular a pergunta para não conter a resposta literal.
 
 ### Próximas ações
 
@@ -141,122 +141,42 @@ Gerado em: 2026-05-19T10:45:51.245Z
 
 ## Principais problemas
 
-1. **P1 · Exercício · A1-GRAMMAR-027 — Mais de uma alternativa parece correta**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
-   - Evidência: lesson.guidedPractice[3]: resposta=There are books on the table.; matches=There are books on the table. | Book my is.
-   - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
-
-2. **P1 · Exercício · A1-GRAMMAR-027 — Mais de uma alternativa parece correta**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
-   - Evidência: lesson.guidedPractice[8]: resposta=There are books on the table.; matches=There are books on the table. | On table book.
-   - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
-
-3. **P1 · Exercício · A1-VOCABULARY-003 — Mais de uma alternativa parece correta**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
-   - Evidência: lesson.recognitionPractice[2]: resposta=twenty-one; matches=twenty-one | twenty
-   - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
-
-4. **P1 · Exercício · A1-VOCABULARY-004 — Mais de uma alternativa parece correta**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
-   - Evidência: lesson.recognitionPractice[5]: resposta=Japanese; matches=Japanese | Japan
-   - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
-
-5. **P1 · Exercício · A1-VOCABULARY-004 — Mais de uma alternativa parece correta**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
-   - Evidência: lesson.usagePractice[1]: resposta=Brazilian; matches=Brazilian | Brazil
-   - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
-
-6. **P1 · Exercício · A1-VOCABULARY-004 — Mais de uma alternativa parece correta**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
-   - Evidência: lesson.usagePractice[6]: resposta=Brazilian; matches=Brazilian | Brazil
-   - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
-
-7. **P1 · Exercício · A1-VOCABULARY-005 — Mais de uma alternativa parece correta**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
-   - Evidência: lesson.recognitionPractice[3]: resposta=irmão; matches=irmão | irmã
-   - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
-
-8. **P1 · Exercício · A1-VOCABULARY-005 — Mais de uma alternativa parece correta**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
-   - Evidência: lesson.recognitionPractice[4]: resposta=irmã; matches=irmã | irmão
-   - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
-
-9. **P1 · Exercício · A1-VOCABULARY-005 — Mais de uma alternativa parece correta**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
-   - Evidência: lesson.usagePractice[4]: resposta=This is my mother.; matches=This is my mother. | This my mother is.
-   - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
-
-10. **P1 · Exercício · A1-VOCABULARY-008 — Mais de uma alternativa parece correta**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O exercício fica ambíguo e pode frustrar o aluno.
-   - Evidência: lesson.recognitionPractice[5]: resposta=bad; matches=bad | bad option
-   - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
-
-11. **P1 · Aula A1-VOCABULARY-012 — Nenhum exercício detectado na aula ready**
+1. **P1 · Aula A1-VOCABULARY-012 — Nenhum exercício detectado na aula ready**
    - Área executiva: Exercícios e alternativas
    - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: A aula pode ensinar sem exigir prática ativa do aluno.
    - Recomendação: Adicionar exercícios, tarefas de tentativa ou perguntas avaliáveis.
 
-12. **P1 · Aula A1-VOCABULARY-013 — Nenhum exercício detectado na aula ready**
+2. **P1 · Aula A1-VOCABULARY-013 — Nenhum exercício detectado na aula ready**
    - Área executiva: Exercícios e alternativas
    - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: A aula pode ensinar sem exigir prática ativa do aluno.
    - Recomendação: Adicionar exercícios, tarefas de tentativa ou perguntas avaliáveis.
 
-13. **P1 · Aula A1-VOCABULARY-016 — Nenhum exercício detectado na aula ready**
+3. **P1 · Aula A1-VOCABULARY-016 — Nenhum exercício detectado na aula ready**
    - Área executiva: Exercícios e alternativas
    - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: A aula pode ensinar sem exigir prática ativa do aluno.
    - Recomendação: Adicionar exercícios, tarefas de tentativa ou perguntas avaliáveis.
 
-14. **P1 · Aula A1-VOCABULARY-020 — Nenhum exercício detectado na aula ready**
+4. **P1 · Aula A1-VOCABULARY-020 — Nenhum exercício detectado na aula ready**
    - Área executiva: Exercícios e alternativas
    - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: A aula pode ensinar sem exigir prática ativa do aluno.
    - Recomendação: Adicionar exercícios, tarefas de tentativa ou perguntas avaliáveis.
 
-15. **P1 · Aula A1-VOCABULARY-021-PERSONAL — Nenhum exercício detectado na aula ready**
+5. **P1 · Aula A1-VOCABULARY-021-PERSONAL — Nenhum exercício detectado na aula ready**
    - Área executiva: Exercícios e alternativas
    - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: A aula pode ensinar sem exigir prática ativa do aluno.
    - Recomendação: Adicionar exercícios, tarefas de tentativa ou perguntas avaliáveis.
 
-16. **P1 · Exercício · A1-READING-001 — Mais de uma alternativa parece correta**
+6. **P1 · Exercício · A1-READING-001 — Mais de uma alternativa parece correta**
    - Área executiva: Exercícios e alternativas
    - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
@@ -264,7 +184,7 @@ Gerado em: 2026-05-19T10:45:51.245Z
    - Evidência: lesson.evidenceQuestions[1]: resposta=19 years old; matches=19 years old | 20 years old | 18 years old
    - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
 
-17. **P1 · Exercício · A1-READING-001 — Mais de uma alternativa parece correta**
+7. **P1 · Exercício · A1-READING-001 — Mais de uma alternativa parece correta**
    - Área executiva: Exercícios e alternativas
    - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
@@ -272,7 +192,7 @@ Gerado em: 2026-05-19T10:45:51.245Z
    - Evidência: lesson.evidenceQuestions[6]: resposta=20 years old; matches=20 years old | 19 years old | 21 years old
    - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
 
-18. **P1 · Exercício · A1-READING-002 — Mais de uma alternativa parece correta**
+8. **P1 · Exercício · A1-READING-002 — Mais de uma alternativa parece correta**
    - Área executiva: Exercícios e alternativas
    - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
@@ -280,7 +200,7 @@ Gerado em: 2026-05-19T10:45:51.245Z
    - Evidência: lesson.evidenceQuestions[1]: resposta=21 years old; matches=21 years old | 19 years old | 20 years old
    - Recomendação: Deixar apenas uma resposta claramente correta ou reformular a pergunta.
 
-19. **P1 · Exercício · A1-READING-002 — Distratores absurdos ou fáceis demais**
+9. **P1 · Exercício · A1-READING-002 — Distratores absurdos ou fáceis demais**
    - Área executiva: Exercícios e alternativas
    - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
@@ -288,7 +208,7 @@ Gerado em: 2026-05-19T10:45:51.245Z
    - Evidência: lesson.evidenceQuestions[3]: English | music | coffee
    - Recomendação: Trocar por distratores próximos do tema e do nível CEFR.
 
-20. **P1 · Exercício · A1-READING-002 — Pergunta parece entregar a resposta**
+10. **P1 · Exercício · A1-READING-002 — Pergunta parece entregar a resposta**
    - Área executiva: Exercícios e alternativas
    - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
@@ -296,7 +216,7 @@ Gerado em: 2026-05-19T10:45:51.245Z
    - Evidência: lesson.evidenceQuestions[4]: pergunta=Is his family big or small?; resposta=small
    - Recomendação: Reformular a pergunta para não conter a resposta literal.
 
-21. **P1 · Exercício · A1-READING-003 — Pergunta parece entregar a resposta**
+11. **P1 · Exercício · A1-READING-003 — Pergunta parece entregar a resposta**
    - Área executiva: Exercícios e alternativas
    - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
@@ -304,7 +224,7 @@ Gerado em: 2026-05-19T10:45:51.245Z
    - Evidência: lesson.evidenceQuestions[1]: pergunta=Is her family big or small?; resposta=small
    - Recomendação: Reformular a pergunta para não conter a resposta literal.
 
-22. **P1 · Exercício · A1-LISTENING-001 — Pergunta parece entregar a resposta**
+12. **P1 · Exercício · A1-LISTENING-001 — Pergunta parece entregar a resposta**
    - Área executiva: Exercícios e alternativas
    - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
@@ -312,7 +232,7 @@ Gerado em: 2026-05-19T10:45:51.245Z
    - Evidência: lesson.listeningComprehension[1]: pergunta=Who says “my name is Luis”?; resposta=Luis
    - Recomendação: Reformular a pergunta para não conter a resposta literal.
 
-23. **P1 · Exercício · A1-LISTENING-009 — Distratores absurdos ou fáceis demais**
+13. **P1 · Exercício · A1-LISTENING-009 — Distratores absurdos ou fáceis demais**
    - Área executiva: Exercícios e alternativas
    - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
@@ -320,7 +240,7 @@ Gerado em: 2026-05-19T10:45:51.245Z
    - Evidência: lesson.listeningComprehension[0]: coffee | tea | water
    - Recomendação: Trocar por distratores próximos do tema e do nível CEFR.
 
-24. **P1 · Exercício · A1-LISTENING-009 — Pergunta parece entregar a resposta**
+14. **P1 · Exercício · A1-LISTENING-009 — Pergunta parece entregar a resposta**
    - Área executiva: Exercícios e alternativas
    - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
@@ -328,7 +248,7 @@ Gerado em: 2026-05-19T10:45:51.245Z
    - Evidência: lesson.listeningComprehension[2]: pergunta=Is the order for here or to go?; resposta=for here
    - Recomendação: Reformular a pergunta para não conter a resposta literal.
 
-25. **P1 · Exercício · A1-LISTENING-021-PERSONAL — Distratores absurdos ou fáceis demais**
+15. **P1 · Exercício · A1-LISTENING-021-PERSONAL — Distratores absurdos ou fáceis demais**
    - Área executiva: Exercícios e alternativas
    - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
@@ -336,105 +256,175 @@ Gerado em: 2026-05-19T10:45:51.245Z
    - Evidência: lesson.listeningComprehension[1]: photo editing | music | coffee
    - Recomendação: Trocar por distratores próximos do tema e do nível CEFR.
 
-26. **P1 · Aula A1-SPEAKING-015 — Nenhum exercício detectado na aula ready**
+16. **P1 · Aula A1-SPEAKING-015 — Nenhum exercício detectado na aula ready**
    - Área executiva: Exercícios e alternativas
    - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: A aula pode ensinar sem exigir prática ativa do aluno.
    - Recomendação: Adicionar exercícios, tarefas de tentativa ou perguntas avaliáveis.
 
-27. **P1 · Aula A1-SPEAKING-016-WEATHER — Nenhum exercício detectado na aula ready**
+17. **P1 · Aula A1-SPEAKING-016-WEATHER — Nenhum exercício detectado na aula ready**
    - Área executiva: Exercícios e alternativas
    - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: A aula pode ensinar sem exigir prática ativa do aluno.
    - Recomendação: Adicionar exercícios, tarefas de tentativa ou perguntas avaliáveis.
 
-28. **P1 · Aula A1-WRITING-001 — Nenhum exercício detectado na aula ready**
+18. **P1 · Aula A1-WRITING-001 — Nenhum exercício detectado na aula ready**
    - Área executiva: Exercícios e alternativas
    - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: A aula pode ensinar sem exigir prática ativa do aluno.
    - Recomendação: Adicionar exercícios, tarefas de tentativa ou perguntas avaliáveis.
 
-29. **P1 · Aula A1-WRITING-002 — Nenhum exercício detectado na aula ready**
+19. **P1 · Aula A1-WRITING-002 — Nenhum exercício detectado na aula ready**
    - Área executiva: Exercícios e alternativas
    - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: A aula pode ensinar sem exigir prática ativa do aluno.
    - Recomendação: Adicionar exercícios, tarefas de tentativa ou perguntas avaliáveis.
 
-30. **P1 · Aula A1-WRITING-003 — Nenhum exercício detectado na aula ready**
+20. **P1 · Aula A1-WRITING-003 — Nenhum exercício detectado na aula ready**
    - Área executiva: Exercícios e alternativas
    - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: A aula pode ensinar sem exigir prática ativa do aluno.
    - Recomendação: Adicionar exercícios, tarefas de tentativa ou perguntas avaliáveis.
 
-31. **P1 · Aula A1-WRITING-004 — Nenhum exercício detectado na aula ready**
+21. **P1 · Aula A1-WRITING-004 — Nenhum exercício detectado na aula ready**
    - Área executiva: Exercícios e alternativas
    - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: A aula pode ensinar sem exigir prática ativa do aluno.
    - Recomendação: Adicionar exercícios, tarefas de tentativa ou perguntas avaliáveis.
 
-32. **P1 · Aula A1-WRITING-005 — Nenhum exercício detectado na aula ready**
+22. **P1 · Aula A1-WRITING-005 — Nenhum exercício detectado na aula ready**
    - Área executiva: Exercícios e alternativas
    - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: A aula pode ensinar sem exigir prática ativa do aluno.
    - Recomendação: Adicionar exercícios, tarefas de tentativa ou perguntas avaliáveis.
 
-33. **P1 · Aula A1-WRITING-006 — Nenhum exercício detectado na aula ready**
+23. **P1 · Aula A1-WRITING-006 — Nenhum exercício detectado na aula ready**
    - Área executiva: Exercícios e alternativas
    - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: A aula pode ensinar sem exigir prática ativa do aluno.
    - Recomendação: Adicionar exercícios, tarefas de tentativa ou perguntas avaliáveis.
 
-34. **P1 · Aula A1-WRITING-007 — Nenhum exercício detectado na aula ready**
+24. **P1 · Aula A1-WRITING-007 — Nenhum exercício detectado na aula ready**
    - Área executiva: Exercícios e alternativas
    - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: A aula pode ensinar sem exigir prática ativa do aluno.
    - Recomendação: Adicionar exercícios, tarefas de tentativa ou perguntas avaliáveis.
 
-35. **P1 · Aula A1-WRITING-008 — Nenhum exercício detectado na aula ready**
+25. **P1 · Aula A1-WRITING-008 — Nenhum exercício detectado na aula ready**
    - Área executiva: Exercícios e alternativas
    - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: A aula pode ensinar sem exigir prática ativa do aluno.
    - Recomendação: Adicionar exercícios, tarefas de tentativa ou perguntas avaliáveis.
 
-36. **P1 · Aula A1-WRITING-009 — Nenhum exercício detectado na aula ready**
+26. **P1 · Aula A1-WRITING-009 — Nenhum exercício detectado na aula ready**
    - Área executiva: Exercícios e alternativas
    - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: A aula pode ensinar sem exigir prática ativa do aluno.
    - Recomendação: Adicionar exercícios, tarefas de tentativa ou perguntas avaliáveis.
 
-37. **P1 · Aula A1-WRITING-010 — Nenhum exercício detectado na aula ready**
+27. **P1 · Aula A1-WRITING-010 — Nenhum exercício detectado na aula ready**
    - Área executiva: Exercícios e alternativas
    - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: A aula pode ensinar sem exigir prática ativa do aluno.
    - Recomendação: Adicionar exercícios, tarefas de tentativa ou perguntas avaliáveis.
 
-38. **P1 · Aula A1-WRITING-011 — Nenhum exercício detectado na aula ready**
+28. **P1 · Aula A1-WRITING-011 — Nenhum exercício detectado na aula ready**
    - Área executiva: Exercícios e alternativas
    - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: A aula pode ensinar sem exigir prática ativa do aluno.
    - Recomendação: Adicionar exercícios, tarefas de tentativa ou perguntas avaliáveis.
 
-39. **P1 · Aula A1-WRITING-013 — Nenhum exercício detectado na aula ready**
+29. **P1 · Aula A1-WRITING-013 — Nenhum exercício detectado na aula ready**
    - Área executiva: Exercícios e alternativas
    - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: A aula pode ensinar sem exigir prática ativa do aluno.
    - Recomendação: Adicionar exercícios, tarefas de tentativa ou perguntas avaliáveis.
 
-40. **P1 · Aula A1-WRITING-014 — Nenhum exercício detectado na aula ready**
+30. **P1 · Aula A1-WRITING-014 — Nenhum exercício detectado na aula ready**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: A aula pode ensinar sem exigir prática ativa do aluno.
+   - Recomendação: Adicionar exercícios, tarefas de tentativa ou perguntas avaliáveis.
+
+31. **P1 · Aula A1-WRITING-016 — Nenhum exercício detectado na aula ready**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: A aula pode ensinar sem exigir prática ativa do aluno.
+   - Recomendação: Adicionar exercícios, tarefas de tentativa ou perguntas avaliáveis.
+
+32. **P1 · Aula A1-WRITING-018-PERSONAL — Nenhum exercício detectado na aula ready**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: A aula pode ensinar sem exigir prática ativa do aluno.
+   - Recomendação: Adicionar exercícios, tarefas de tentativa ou perguntas avaliáveis.
+
+33. **P1 · Aula A2-VOCABULARY-001 — Nenhum exercício detectado na aula ready**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: A aula pode ensinar sem exigir prática ativa do aluno.
+   - Recomendação: Adicionar exercícios, tarefas de tentativa ou perguntas avaliáveis.
+
+34. **P1 · Aula A2-VOCABULARY-002 — Nenhum exercício detectado na aula ready**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: A aula pode ensinar sem exigir prática ativa do aluno.
+   - Recomendação: Adicionar exercícios, tarefas de tentativa ou perguntas avaliáveis.
+
+35. **P1 · Aula A2-VOCABULARY-003 — Nenhum exercício detectado na aula ready**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: A aula pode ensinar sem exigir prática ativa do aluno.
+   - Recomendação: Adicionar exercícios, tarefas de tentativa ou perguntas avaliáveis.
+
+36. **P1 · Aula A2-VOCABULARY-004 — Nenhum exercício detectado na aula ready**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: A aula pode ensinar sem exigir prática ativa do aluno.
+   - Recomendação: Adicionar exercícios, tarefas de tentativa ou perguntas avaliáveis.
+
+37. **P1 · Aula A2-VOCABULARY-005 — Nenhum exercício detectado na aula ready**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: A aula pode ensinar sem exigir prática ativa do aluno.
+   - Recomendação: Adicionar exercícios, tarefas de tentativa ou perguntas avaliáveis.
+
+38. **P1 · Aula A2-VOCABULARY-007 — Nenhum exercício detectado na aula ready**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: A aula pode ensinar sem exigir prática ativa do aluno.
+   - Recomendação: Adicionar exercícios, tarefas de tentativa ou perguntas avaliáveis.
+
+39. **P1 · Aula A2-VOCABULARY-009 — Nenhum exercício detectado na aula ready**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: A aula pode ensinar sem exigir prática ativa do aluno.
+   - Recomendação: Adicionar exercícios, tarefas de tentativa ou perguntas avaliáveis.
+
+40. **P1 · Aula A2-VOCABULARY-010 — Nenhum exercício detectado na aula ready**
    - Área executiva: Exercícios e alternativas
    - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
