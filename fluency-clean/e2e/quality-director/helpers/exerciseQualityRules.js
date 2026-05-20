@@ -5,6 +5,18 @@ const FEEDBACK_KEYS = ['explanation', 'feedback', 'hint', 'tip', 'why', 'rationa
 
 const GENERIC_OPTION_PATTERNS = [/^option\s*[a-d]?$/i, /^choice\s*[a-d]?$/i, /^answer\s*[a-d]?$/i, /^correct answer$/i, /^wrong answer$/i, /^n\/a$/i];
 const ABSURD_DISTRACTORS = new Set(['banana', 'pizza', 'car', 'blue', 'red', 'green', 'dog', 'cat', 'table', 'chair', 'computer', 'house', 'water', 'book', 'phone', 'apple', 'orange', 'football', 'music', 'coffee']);
+// Conjuntos semânticos comuns A1/A2 — quando resposta + todos os
+// flagged absurdos pertencem a UM mesmo conjunto, o set é coerente
+// (mesma categoria) e o exercício não é absurdo por eliminação.
+const SEMANTIC_CATEGORIES = [
+  new Set(['water', 'coffee', 'tea', 'juice', 'milk', 'soda', 'beer', 'wine']),
+  new Set(['blue', 'black', 'red', 'green', 'yellow', 'white', 'brown', 'gray', 'grey', 'pink', 'orange', 'purple']),
+  new Set(['pizza', 'sandwich', 'bread', 'banana', 'apple', 'rice', 'pasta', 'cake']),
+  new Set(['dog', 'cat', 'bird', 'fish', 'horse']),
+  new Set(['car', 'bus', 'train', 'bike', 'plane']),
+  new Set(['football', 'soccer', 'tennis', 'basketball']),
+  new Set(['music', 'song', 'piano', 'guitar']),
+];
 const GENERIC_FEEDBACK_PATTERNS = [/^good$/i, /^ok$/i, /^correct$/i, /^incorrect$/i, /^try again$/i, /^resposta correta$/i, /^resposta incorreta$/i, /^boa$/i, /^muito bem$/i, /^tente novamente$/i];
 
 const STOPWORDS = new Set([
@@ -412,7 +424,12 @@ function auditOptionGroup({ issues, area, path, question, answer, options, domai
     // numa aula "Food and drinks"/"Ordering food"). Só rebaixa para P2 quando
     // a resposta é on-topic E todas as opções sinalizadas estão no domínio
     // real da aula; distrator fora do tema continua P1.
-    const contextuallyCoherent = isOnTopicText(answer, domainTokens) && absurd.every((option) => isOnTopicText(option, domainTokens));
+    const sameCategory = (() => {
+      const tokens = [normalize(answer), ...absurd.map(normalize)].filter((t) => t && !t.includes(' '));
+      if (tokens.length < 2) return false;
+      return SEMANTIC_CATEGORIES.some((cat) => tokens.every((t) => cat.has(t)));
+    })();
+    const contextuallyCoherent = sameCategory || (isOnTopicText(answer, domainTokens) && absurd.every((option) => isOnTopicText(option, domainTokens)));
     const downgrade = structuralGrammarDrill || contextuallyCoherent;
     addIssue(issues, {
       severity: downgrade ? 'P2' : 'P1',
