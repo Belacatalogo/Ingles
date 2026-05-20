@@ -67,45 +67,123 @@ function requireMinimumList({ issues, lesson, fields, min, title, impact, recomm
   }
 }
 
+const GRAMMAR_ACTION_RE = /\b(complete|choose|correct|rewrite|transform|translate|produce|write|practice|apply|identify|fill)\b|complete|corrija|corrigir|substitua|substituir|traduza|traduzir|transforme|transformar|escreva|produza|identifique|aplique|pratique/i;
+
+function hasGrammarTaskLike(value) {
+  if (!value) return false;
+  if (typeof value === 'string') return GRAMMAR_ACTION_RE.test(value);
+  if (Array.isArray(value)) return value.some(hasGrammarTaskLike);
+  if (typeof value !== 'object') return false;
+
+  const taskText = clean([
+    value.question,
+    value.instruction,
+    value.task,
+    value.prompt,
+    value.text,
+    value.note,
+    value.expected,
+    value.miniPractice,
+  ]);
+
+  if (safeArray(value.options).length >= 2 && clean(value.answer)) return true;
+  if (GRAMMAR_ACTION_RE.test(taskText)) return true;
+  return false;
+}
+
+function hasActiveGrammarPractice(lesson) {
+  return [
+    lesson?.guidedPractice,
+    lesson?.controlledPractice,
+    lesson?.errorCorrectionPractice,
+    lesson?.translationPractice,
+    lesson?.transformationPractice,
+    lesson?.productionTasks,
+    lesson?.guidedDiscovery,
+  ].some(hasGrammarTaskLike);
+}
+
+function hasGrammarConceptExplanation(lesson) {
+  const concept = clean(lesson?.conceptExplanation || lesson?.grammarExplanation || lesson?.ruleExplanation);
+  if (concept.length >= 80) return true;
+
+  const formation = clean(lesson?.formationGuide || lesson?.grammarTable || lesson?.explanationSections || lesson?.stepByStep);
+  const goal = clean(lesson?.grammarGoal || lesson?.whenToUse || lesson?.mentalModel);
+  if (formation.length >= 80 && goal.length >= 20) return true;
+
+  const teacherOpening = clean(lesson?.teacherOpening);
+  if (teacherOpening.length >= 120 && formation.length >= 80) return true;
+
+  return false;
+}
+
+function countGrammarExamplesOrSteps(lesson) {
+  return countAnyField(lesson, [
+    'examples',
+    'positiveExamples',
+    'negativeExamples',
+    'stepByStep',
+    'guidedDiscovery',
+    'teacherExamples',
+    'professorExamples',
+    'formationGuide',
+    'grammarTable',
+  ]);
+}
+
+function hasGrammarPortugueseContrast(lesson) {
+  return hasAnyField(lesson, [
+    'portugueseContrast',
+    'commonMistakes',
+    'commonBrazilianMistakes',
+    'contrast',
+  ]);
+}
+
 function auditGrammar(lesson) {
   const issues = [];
-  const text = clean(lesson).toLowerCase();
 
-  requireField({
-    issues,
-    lesson,
-    fields: ['conceptExplanation', 'teacherOpening', 'grammarExplanation', 'ruleExplanation'],
-    title: 'Grammar sem explicação conceitual clara',
-    impact: 'O aluno pode praticar sem entender a regra gramatical.',
-    recommendation: 'Adicionar explicação da regra, quando usar e como formar a estrutura.',
-  });
+  if (!hasGrammarConceptExplanation(lesson)) {
+    addIssue(issues, {
+      severity: 'P1',
+      area: lessonArea(lesson),
+      title: 'Grammar sem explicação conceitual clara',
+      impact: 'O aluno pode praticar sem entender a regra gramatical.',
+      evidence: 'Não foi encontrada explicação conceitual substancial em conceptExplanation ou combinação grammarGoal + formationGuide/grammarTable.',
+      recommendation: 'Adicionar explicação da regra, quando usar e como formar a estrutura.',
+    });
+  }
 
-  requireMinimumList({
-    issues,
-    lesson,
-    fields: ['examples', 'positiveExamples', 'negativeExamples', 'stepByStep', 'guidedDiscovery'],
-    min: 3,
-    title: 'Grammar com poucos exemplos ou passos guiados',
-    impact: 'A aula pode ficar abstrata e difícil de aplicar.',
-    recommendation: 'Adicionar exemplos positivos, negativos e prática guiada.',
-  });
+  const examplesOrSteps = countGrammarExamplesOrSteps(lesson);
+  if (examplesOrSteps < 3) {
+    addIssue(issues, {
+      severity: 'P2',
+      area: lessonArea(lesson),
+      title: 'Grammar com poucos exemplos ou passos guiados',
+      impact: 'A aula pode ficar abstrata e difícil de aplicar.',
+      evidence: `Encontrado ${examplesOrSteps}; mínimo esperado 3. Campos: examples, teacherExamples, stepByStep, guidedDiscovery, formationGuide, grammarTable`,
+      recommendation: 'Adicionar exemplos positivos, negativos e prática guiada.',
+    });
+  }
 
-  requireField({
-    issues,
-    lesson,
-    fields: ['portugueseContrast', 'commonMistakes', 'contrast'],
-    title: 'Grammar sem contraste português/inglês ou erros comuns',
-    impact: 'O aluno brasileiro pode repetir transferências erradas do português.',
-    recommendation: 'Adicionar contraste direto com português e erros comuns.',
-    severity: 'P2',
-  });
+  if (!hasGrammarPortugueseContrast(lesson)) {
+    addIssue(issues, {
+      severity: 'P2',
+      area: lessonArea(lesson),
+      title: 'Grammar sem contraste português/inglês ou erros comuns',
+      impact: 'O aluno brasileiro pode repetir transferências erradas do português.',
+      evidence: 'Campos esperados ausentes/vazios: portugueseContrast, commonMistakes, commonBrazilianMistakes, contrast',
+      recommendation: 'Adicionar contraste direto com português e erros comuns.',
+    });
+  }
 
-  if (!textIncludesAny(text, [/practice|prática|guided|exerc/i])) {
+  if (!hasActiveGrammarPractice(lesson)) {
     addIssue(issues, {
       severity: 'P1',
       area: lessonArea(lesson),
       title: 'Grammar sem sinal claro de prática ativa',
       impact: 'A aula pode virar teoria sem verificação de domínio.',
+      evidence: 'Nenhuma prática ativa detectada em guided/controlled/errorCorrection/translation/transformation/production tasks.',
       recommendation: 'Adicionar exercícios de aplicação da regra em contexto.',
     });
   }
