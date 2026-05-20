@@ -2,7 +2,7 @@ Status: Revisar antes de confiar
 Nota geral: 0/100
 Relatórios: 25
 Checks: 3268
-Issues únicas: 1652 (brutas=3254, agrupadas=1602)
-Severidade: P0=0, P1=539, P2=1113, P3=0
+Issues únicas: 1640 (brutas=3237, agrupadas=1597)
+Severidade: P0=0, P1=509, P2=1131, P3=0
 Direção: Corrigir P1 antes de considerar o sistema confiável para estudo contínuo.
-Top issues: P1 Explorar aula A1-LISTENING-001 — Possível resposta/modelo apareceu antes da tentativa | P1 iPhone SE · Explorar aba Speaking — Botão interativo fora da tela | P1 Aula A1-GRAMMAR-007 — Distratores absurdos ou fáceis demais | P1 Aula A1-GRAMMAR-007 — Distratores absurdos ou fáceis demais | P1 Aula A1-GRAMMAR-008 — Distratores absurdos ou fáceis demais
+Top issues: P1 Aula A1-VOCABULARY-006 — Texto genérico/placeholder detectado na aula | P1 Aula A1-VOCABULARY-007 — Texto genérico/placeholder detectado na aula | P1 Aula A1-VOCABULARY-008 — Texto genérico/placeholder detectado na aula | P1 Aula A1-VOCABULARY-009 — Texto genérico/placeholder detectado na aula | P1 Aula A1-VOCABULARY-010 — Texto genérico/placeholder detectado na aula

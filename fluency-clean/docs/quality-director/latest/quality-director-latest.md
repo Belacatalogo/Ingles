@@ -1,6 +1,6 @@
 # Fluency Quality Director — Relatório Executivo Latest
 
-Gerado em: 2026-05-20T12:02:33.010Z
+Gerado em: 2026-05-20T13:43:51.947Z
 
 ## Veredito
 
@@ -12,22 +12,22 @@ Gerado em: 2026-05-20T12:02:33.010Z
 
 - Relatórios consolidados: 25
 - Checks executados: 3268
-- Problemas únicos: 1652
-- Problemas brutos antes de deduplicar: 3254
-- Duplicatas agrupadas: 1602
+- Problemas únicos: 1640
+- Problemas brutos antes de deduplicar: 3237
+- Duplicatas agrupadas: 1597
 - P0: 0
-- P1: 539
-- P2: 1113
+- P1: 509
+- P2: 1131
 - P3: 0
 
 ## Notas por área
 
 | Área | Nota | Status | P0 | P1 | P2 | P3 |
 |---|---:|---|---:|---:|---:|---:|
-| Navegação e estabilidade | 35 | Revisar antes de confiar | 0 | 1 | 50 | 0 |
+| Navegação e estabilidade | 52 | Precisa revisão | 0 | 0 | 40 | 0 |
 | Jornada real do aluno | 93 | Revisar antes de confiar | 0 | 1 | 2 | 0 |
-| Exercícios e alternativas | 0 | Revisar antes de confiar | 0 | 28 | 860 | 0 |
-| Aulas e pedagogia | 0 | Revisar antes de confiar | 0 | 509 | 201 | 0 |
+| Exercícios e alternativas | 0 | Precisa revisão | 0 | 0 | 888 | 0 |
+| Aulas e pedagogia | 0 | Revisar antes de confiar | 0 | 508 | 201 | 0 |
 | Visual e mobile | 100 | Saudável | 0 | 0 | 0 | 0 |
 | Progresso, XP e mastery | 100 | Saudável | 0 | 0 | 0 | 0 |
 | Estados vazios e segurança visual | 100 | Saudável | 0 | 0 | 0 | 0 |
@@ -43,13 +43,13 @@ Gerado em: 2026-05-20T12:02:33.010Z
 | quality-director-curriculum-consistency | iPhone 13 | 100 | 7 | 0 | 0 | 0 | 0 | 0 | 0 |
 | quality-director-curriculum-consistency | iPhone SE | 100 | 7 | 0 | 0 | 0 | 0 | 0 | 0 |
 | quality-director-empty-states-security | iPhone 13 | 100 | 56 | 0 | 0 | 0 | 0 | 0 | 0 |
-| quality-director-empty-states-security | iPhone SE | 90 | 56 | 8 | 8 | 0 | 0 | 8 | 0 |
+| quality-director-empty-states-security | iPhone SE | 100 | 56 | 0 | 0 | 0 | 0 | 0 | 0 |
 | quality-director-exercise-quality | iPhone 13 | 0 | 501 | 770 | 770 | 0 | 0 | 770 | 0 |
 | quality-director-exercise-quality | iPhone SE | 0 | 501 | 770 | 770 | 0 | 0 | 770 | 0 |
-| quality-director-exploratory-student-audit | iPhone 13 | 71 | 3 | 20 | 22 | 0 | 1 | 19 | 0 |
-| quality-director-exploratory-student-audit | iPhone SE | 66 | 3 | 21 | 23 | 0 | 2 | 19 | 0 |
-| quality-director-lesson-quality | iPhone 13 | 0 | 500 | 139 | 139 | 0 | 49 | 90 | 0 |
-| quality-director-lesson-quality | iPhone SE | 0 | 500 | 139 | 139 | 0 | 49 | 90 | 0 |
+| quality-director-exploratory-student-audit | iPhone 13 | 77 | 3 | 19 | 19 | 0 | 0 | 19 | 0 |
+| quality-director-exploratory-student-audit | iPhone SE | 77 | 3 | 19 | 19 | 0 | 0 | 19 | 0 |
+| quality-director-lesson-quality | iPhone 13 | 0 | 500 | 139 | 139 | 0 | 21 | 118 | 0 |
+| quality-director-lesson-quality | iPhone SE | 0 | 500 | 139 | 139 | 0 | 21 | 118 | 0 |
 | quality-director-navigation | iPhone 13 | 100 | 13 | 0 | 0 | 0 | 0 | 0 | 0 |
 | quality-director-navigation | iPhone SE | 100 | 13 | 0 | 0 | 0 | 0 | 0 | 0 |
 | quality-director-pillar-quality | iPhone 13 | 0 | 506 | 688 | 688 | 0 | 487 | 201 | 0 |
@@ -62,7 +62,7 @@ Gerado em: 2026-05-20T12:02:33.010Z
 | quality-director-student-journey | iPhone SE | 100 | 6 | 0 | 0 | 0 | 0 | 0 | 0 |
 |  |  | 100 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
 | quality-director-visual-mobile | iPhone 13 | 95 | 11 | 1 | 1 | 0 | 1 | 0 | 0 |
-| quality-director-visual-mobile | iPhone SE | 95 | 11 | 4 | 4 | 0 | 0 | 4 | 0 |
+| quality-director-visual-mobile | iPhone SE | 98 | 11 | 2 | 2 | 0 | 0 | 2 | 0 |
 
 ## Plano de ação
 
@@ -70,41 +70,42 @@ Gerado em: 2026-05-20T12:02:33.010Z
 
 ### Ações imediatas
 
-1. **P1 · Explorar aula A1-LISTENING-001 — Possível resposta/modelo apareceu antes da tentativa**
-   - Ocorrências agrupadas: 6
-   - Ação: Garantir que gabarito, transcript, modelo e resposta esperada só apareçam após tentativa quando a etapa exigir descoberta.
-2. **P1 · iPhone SE · Explorar aba Speaking — Botão interativo fora da tela**
-   - Ação: Ajustar layout responsivo e evitar botões cortados.
-3. **P1 · Aula A1-GRAMMAR-007 — Distratores absurdos ou fáceis demais**
+1. **P1 · Aula A1-VOCABULARY-006 — Texto genérico/placeholder detectado na aula**
    - Ocorrências agrupadas: 2
-   - Ação: Trocar por distratores plausíveis, próximos do tema da aula.
-4. **P1 · Aula A1-GRAMMAR-007 — Distratores absurdos ou fáceis demais**
+   - Ação: Substituir placeholders por textos específicos da aula.
+2. **P1 · Aula A1-VOCABULARY-007 — Texto genérico/placeholder detectado na aula**
    - Ocorrências agrupadas: 2
-   - Ação: Trocar por distratores plausíveis, próximos do tema da aula.
-5. **P1 · Aula A1-GRAMMAR-008 — Distratores absurdos ou fáceis demais**
+   - Ação: Substituir placeholders por textos específicos da aula.
+3. **P1 · Aula A1-VOCABULARY-008 — Texto genérico/placeholder detectado na aula**
    - Ocorrências agrupadas: 2
-   - Ação: Trocar por distratores plausíveis, próximos do tema da aula.
-6. **P1 · Aula A1-GRAMMAR-008 — Distratores absurdos ou fáceis demais**
+   - Ação: Substituir placeholders por textos específicos da aula.
+4. **P1 · Aula A1-VOCABULARY-009 — Texto genérico/placeholder detectado na aula**
    - Ocorrências agrupadas: 2
-   - Ação: Trocar por distratores plausíveis, próximos do tema da aula.
-7. **P1 · Aula A1-GRAMMAR-009 — Distratores absurdos ou fáceis demais**
+   - Ação: Substituir placeholders por textos específicos da aula.
+5. **P1 · Aula A1-VOCABULARY-010 — Texto genérico/placeholder detectado na aula**
    - Ocorrências agrupadas: 2
-   - Ação: Trocar por distratores plausíveis, próximos do tema da aula.
-8. **P1 · Aula A1-GRAMMAR-009 — Distratores absurdos ou fáceis demais**
+   - Ação: Substituir placeholders por textos específicos da aula.
+6. **P1 · Aula A1-VOCABULARY-011 — Texto genérico/placeholder detectado na aula**
    - Ocorrências agrupadas: 2
-   - Ação: Trocar por distratores plausíveis, próximos do tema da aula.
-9. **P1 · Aula A1-GRAMMAR-010 — Distratores absurdos ou fáceis demais**
+   - Ação: Substituir placeholders por textos específicos da aula.
+7. **P1 · Aula A1-VOCABULARY-017 — Texto genérico/placeholder detectado na aula**
    - Ocorrências agrupadas: 2
-   - Ação: Trocar por distratores plausíveis, próximos do tema da aula.
-10. **P1 · Aula A1-GRAMMAR-010 — Distratores absurdos ou fáceis demais**
+   - Ação: Substituir placeholders por textos específicos da aula.
+8. **P1 · Aula A1-VOCABULARY-018 — Texto genérico/placeholder detectado na aula**
    - Ocorrências agrupadas: 2
-   - Ação: Trocar por distratores plausíveis, próximos do tema da aula.
-11. **P1 · Aula A1-GRAMMAR-011 — Distratores absurdos ou fáceis demais**
+   - Ação: Substituir placeholders por textos específicos da aula.
+9. **P1 · Aula A2-GRAMMAR-027 — Texto genérico/placeholder detectado na aula**
    - Ocorrências agrupadas: 2
-   - Ação: Trocar por distratores plausíveis, próximos do tema da aula.
-12. **P1 · Aula A1-GRAMMAR-011 — Distratores absurdos ou fáceis demais**
+   - Ação: Substituir placeholders por textos específicos da aula.
+10. **P1 · Aula A2-READING-012 — Texto genérico/placeholder detectado na aula**
    - Ocorrências agrupadas: 2
-   - Ação: Trocar por distratores plausíveis, próximos do tema da aula.
+   - Ação: Substituir placeholders por textos específicos da aula.
+11. **P1 · Aula A2-READING-014 — Texto genérico/placeholder detectado na aula**
+   - Ocorrências agrupadas: 2
+   - Ação: Substituir placeholders por textos específicos da aula.
+12. **P1 · Aula A2-READING-016 — Texto genérico/placeholder detectado na aula**
+   - Ocorrências agrupadas: 2
+   - Ação: Substituir placeholders por textos específicos da aula.
 
 ### Próximas ações
 
@@ -112,272 +113,40 @@ Gerado em: 2026-05-20T12:02:33.010Z
    - Ação: Garantir ordem de foco em botões/links principais.
 2. **P2 · iPhone SE · Aba Ajustes — Primeiro Tab não focou elemento interativo**
    - Ação: Garantir ordem de foco em botões/links principais.
-3. **P2 · iPhone SE · Instalação limpa sem dados · Aba Hoje — Compatibilidade iPhone SE: elemento próximo da bottom nav**
-   - Ação: Manter como compatibilidade P2 para telas legadas pequenas; priorizar iPhone 13 como dispositivo real do usuário.
-4. **P2 · iPhone SE · Instalação limpa sem dados · Aba Curso — Compatibilidade iPhone SE: elemento próximo da bottom nav**
-   - Ação: Manter como compatibilidade P2 para telas legadas pequenas; priorizar iPhone 13 como dispositivo real do usuário.
-5. **P2 · iPhone SE · Estados principais como null · Aba Hoje — Compatibilidade iPhone SE: elemento próximo da bottom nav**
-   - Ação: Manter como compatibilidade P2 para telas legadas pequenas; priorizar iPhone 13 como dispositivo real do usuário.
-6. **P2 · iPhone SE · Estados principais como null · Aba Curso — Compatibilidade iPhone SE: elemento próximo da bottom nav**
-   - Ação: Manter como compatibilidade P2 para telas legadas pequenas; priorizar iPhone 13 como dispositivo real do usuário.
-7. **P2 · iPhone SE · Estados principais com JSON inválido · Aba Hoje — Compatibilidade iPhone SE: elemento próximo da bottom nav**
-   - Ação: Manter como compatibilidade P2 para telas legadas pequenas; priorizar iPhone 13 como dispositivo real do usuário.
-8. **P2 · iPhone SE · Estados principais com JSON inválido · Aba Curso — Compatibilidade iPhone SE: elemento próximo da bottom nav**
-   - Ação: Manter como compatibilidade P2 para telas legadas pequenas; priorizar iPhone 13 como dispositivo real do usuário.
-9. **P2 · iPhone SE · Sem aula atual mas com configurações básicas · Aba Hoje — Compatibilidade iPhone SE: elemento próximo da bottom nav**
-   - Ação: Manter como compatibilidade P2 para telas legadas pequenas; priorizar iPhone 13 como dispositivo real do usuário.
-10. **P2 · iPhone SE · Sem aula atual mas com configurações básicas · Aba Curso — Compatibilidade iPhone SE: elemento próximo da bottom nav**
-   - Ação: Manter como compatibilidade P2 para telas legadas pequenas; priorizar iPhone 13 como dispositivo real do usuário.
-11. **P2 · Exercício · A1-GRAMMAR-001 — Pergunta com baixa conexão lexical com a aula**
+3. **P2 · Exercício · A1-GRAMMAR-001 — Pergunta com baixa conexão lexical com a aula**
    - Ocorrências agrupadas: 2
    - Ação: Verificar se o exercício cobra algo realmente ensinado nesta aula.
+4. **P2 · Exercício · A1-GRAMMAR-001 — Pergunta com baixa conexão lexical com a aula**
+   - Ocorrências agrupadas: 2
+   - Ação: Verificar se o exercício cobra algo realmente ensinado nesta aula.
+5. **P2 · Exercício · A1-GRAMMAR-001 — Pergunta com baixa conexão lexical com a aula**
+   - Ocorrências agrupadas: 2
+   - Ação: Verificar se o exercício cobra algo realmente ensinado nesta aula.
+6. **P2 · Exercício · A1-GRAMMAR-001 — Pergunta com baixa conexão lexical com a aula**
+   - Ocorrências agrupadas: 2
+   - Ação: Verificar se o exercício cobra algo realmente ensinado nesta aula.
+7. **P2 · Exercício · A1-GRAMMAR-001 — Pergunta com baixa conexão lexical com a aula**
+   - Ocorrências agrupadas: 2
+   - Ação: Verificar se o exercício cobra algo realmente ensinado nesta aula.
+8. **P2 · Exercício · A1-GRAMMAR-001 — Pergunta com baixa conexão lexical com a aula**
+   - Ocorrências agrupadas: 2
+   - Ação: Verificar se o exercício cobra algo realmente ensinado nesta aula.
+9. **P2 · Exercício · A1-GRAMMAR-001 — Pergunta com baixa conexão lexical com a aula**
+   - Ocorrências agrupadas: 2
+   - Ação: Verificar se o exercício cobra algo realmente ensinado nesta aula.
+10. **P2 · Exercício · A1-GRAMMAR-001 — Pergunta com baixa conexão lexical com a aula**
+   - Ocorrências agrupadas: 2
+   - Ação: Verificar se o exercício cobra algo realmente ensinado nesta aula.
+11. **P2 · Exercício · A1-GRAMMAR-001 — Feedback genérico demais**
+   - Ocorrências agrupadas: 2
+   - Ação: Explicar a regra, evidência textual ou raciocínio da resposta.
 12. **P2 · Exercício · A1-GRAMMAR-001 — Pergunta com baixa conexão lexical com a aula**
    - Ocorrências agrupadas: 2
    - Ação: Verificar se o exercício cobra algo realmente ensinado nesta aula.
 
 ## Principais problemas
 
-1. **P1 · Explorar aula A1-LISTENING-001 — Possível resposta/modelo apareceu antes da tentativa**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-exploratory-student-audit / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 6
-   - Impacto: O exercício pode perder validade pedagógica se entregar resposta, transcript ou modelo cedo demais.
-   - Evidência: Padrão encontrado antes da tentativa: /transcript/i
-   - Recomendação: Garantir que gabarito, transcript, modelo e resposta esperada só apareçam após tentativa quando a etapa exigir descoberta.
-
-2. **P1 · iPhone SE · Explorar aba Speaking — Botão interativo fora da tela**
-   - Área executiva: Navegação e estabilidade
-   - Relatório: quality-director-exploratory-student-audit / iPhone SE
-   - Ocorrências agrupadas: 1
-   - Impacto: Aluno pode não conseguir acessar uma ação importante.
-   - Evidência: [{"text":"Imersão","disabled":false,"inHScroll":false,"x":314.71875,"y":93,"width":74,"height":44}]
-   - Recomendação: Ajustar layout responsivo e evitar botões cortados.
-
-3. **P1 · Aula A1-GRAMMAR-007 — Distratores absurdos ou fáceis demais**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno acerta por eliminação sem aprender ou compreender o conteúdo.
-   - Evidência: Grupo 32: is | blue | table
-   - Recomendação: Trocar por distratores plausíveis, próximos do tema da aula.
-
-4. **P1 · Aula A1-GRAMMAR-007 — Distratores absurdos ou fáceis demais**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno acerta por eliminação sem aprender ou compreender o conteúdo.
-   - Evidência: Grupo 33: is | blue | table
-   - Recomendação: Trocar por distratores plausíveis, próximos do tema da aula.
-
-5. **P1 · Aula A1-GRAMMAR-008 — Distratores absurdos ou fáceis demais**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno acerta por eliminação sem aprender ou compreender o conteúdo.
-   - Evidência: Grupo 32: is | blue | table
-   - Recomendação: Trocar por distratores plausíveis, próximos do tema da aula.
-
-6. **P1 · Aula A1-GRAMMAR-008 — Distratores absurdos ou fáceis demais**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno acerta por eliminação sem aprender ou compreender o conteúdo.
-   - Evidência: Grupo 33: is | blue | table
-   - Recomendação: Trocar por distratores plausíveis, próximos do tema da aula.
-
-7. **P1 · Aula A1-GRAMMAR-009 — Distratores absurdos ou fáceis demais**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno acerta por eliminação sem aprender ou compreender o conteúdo.
-   - Evidência: Grupo 32: is | blue | table
-   - Recomendação: Trocar por distratores plausíveis, próximos do tema da aula.
-
-8. **P1 · Aula A1-GRAMMAR-009 — Distratores absurdos ou fáceis demais**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno acerta por eliminação sem aprender ou compreender o conteúdo.
-   - Evidência: Grupo 33: is | blue | table
-   - Recomendação: Trocar por distratores plausíveis, próximos do tema da aula.
-
-9. **P1 · Aula A1-GRAMMAR-010 — Distratores absurdos ou fáceis demais**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno acerta por eliminação sem aprender ou compreender o conteúdo.
-   - Evidência: Grupo 32: is | blue | table
-   - Recomendação: Trocar por distratores plausíveis, próximos do tema da aula.
-
-10. **P1 · Aula A1-GRAMMAR-010 — Distratores absurdos ou fáceis demais**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno acerta por eliminação sem aprender ou compreender o conteúdo.
-   - Evidência: Grupo 33: is | blue | table
-   - Recomendação: Trocar por distratores plausíveis, próximos do tema da aula.
-
-11. **P1 · Aula A1-GRAMMAR-011 — Distratores absurdos ou fáceis demais**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno acerta por eliminação sem aprender ou compreender o conteúdo.
-   - Evidência: Grupo 32: is | blue | table
-   - Recomendação: Trocar por distratores plausíveis, próximos do tema da aula.
-
-12. **P1 · Aula A1-GRAMMAR-011 — Distratores absurdos ou fáceis demais**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno acerta por eliminação sem aprender ou compreender o conteúdo.
-   - Evidência: Grupo 33: is | blue | table
-   - Recomendação: Trocar por distratores plausíveis, próximos do tema da aula.
-
-13. **P1 · Aula A1-GRAMMAR-012 — Distratores absurdos ou fáceis demais**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno acerta por eliminação sem aprender ou compreender o conteúdo.
-   - Evidência: Grupo 32: is | blue | table
-   - Recomendação: Trocar por distratores plausíveis, próximos do tema da aula.
-
-14. **P1 · Aula A1-GRAMMAR-012 — Distratores absurdos ou fáceis demais**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno acerta por eliminação sem aprender ou compreender o conteúdo.
-   - Evidência: Grupo 33: is | blue | table
-   - Recomendação: Trocar por distratores plausíveis, próximos do tema da aula.
-
-15. **P1 · Aula A1-GRAMMAR-013 — Distratores absurdos ou fáceis demais**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno acerta por eliminação sem aprender ou compreender o conteúdo.
-   - Evidência: Grupo 32: is | blue | table
-   - Recomendação: Trocar por distratores plausíveis, próximos do tema da aula.
-
-16. **P1 · Aula A1-GRAMMAR-013 — Distratores absurdos ou fáceis demais**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno acerta por eliminação sem aprender ou compreender o conteúdo.
-   - Evidência: Grupo 33: is | blue | table
-   - Recomendação: Trocar por distratores plausíveis, próximos do tema da aula.
-
-17. **P1 · Aula A1-GRAMMAR-015 — Distratores absurdos ou fáceis demais**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno acerta por eliminação sem aprender ou compreender o conteúdo.
-   - Evidência: Grupo 32: is | blue | table
-   - Recomendação: Trocar por distratores plausíveis, próximos do tema da aula.
-
-18. **P1 · Aula A1-GRAMMAR-015 — Distratores absurdos ou fáceis demais**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno acerta por eliminação sem aprender ou compreender o conteúdo.
-   - Evidência: Grupo 33: is | blue | table
-   - Recomendação: Trocar por distratores plausíveis, próximos do tema da aula.
-
-19. **P1 · Aula A1-GRAMMAR-016 — Distratores absurdos ou fáceis demais**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno acerta por eliminação sem aprender ou compreender o conteúdo.
-   - Evidência: Grupo 32: is | blue | table
-   - Recomendação: Trocar por distratores plausíveis, próximos do tema da aula.
-
-20. **P1 · Aula A1-GRAMMAR-016 — Distratores absurdos ou fáceis demais**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno acerta por eliminação sem aprender ou compreender o conteúdo.
-   - Evidência: Grupo 33: is | blue | table
-   - Recomendação: Trocar por distratores plausíveis, próximos do tema da aula.
-
-21. **P1 · Aula A1-GRAMMAR-017 — Distratores absurdos ou fáceis demais**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno acerta por eliminação sem aprender ou compreender o conteúdo.
-   - Evidência: Grupo 33: is | blue | table
-   - Recomendação: Trocar por distratores plausíveis, próximos do tema da aula.
-
-22. **P1 · Aula A1-GRAMMAR-017 — Distratores absurdos ou fáceis demais**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno acerta por eliminação sem aprender ou compreender o conteúdo.
-   - Evidência: Grupo 34: is | blue | table
-   - Recomendação: Trocar por distratores plausíveis, próximos do tema da aula.
-
-23. **P1 · Aula A1-GRAMMAR-018 — Distratores absurdos ou fáceis demais**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno acerta por eliminação sem aprender ou compreender o conteúdo.
-   - Evidência: Grupo 32: is | blue | table
-   - Recomendação: Trocar por distratores plausíveis, próximos do tema da aula.
-
-24. **P1 · Aula A1-GRAMMAR-018 — Distratores absurdos ou fáceis demais**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno acerta por eliminação sem aprender ou compreender o conteúdo.
-   - Evidência: Grupo 33: is | blue | table
-   - Recomendação: Trocar por distratores plausíveis, próximos do tema da aula.
-
-25. **P1 · Aula A1-GRAMMAR-019 — Distratores absurdos ou fáceis demais**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno acerta por eliminação sem aprender ou compreender o conteúdo.
-   - Evidência: Grupo 32: is | blue | table
-   - Recomendação: Trocar por distratores plausíveis, próximos do tema da aula.
-
-26. **P1 · Aula A1-GRAMMAR-019 — Distratores absurdos ou fáceis demais**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno acerta por eliminação sem aprender ou compreender o conteúdo.
-   - Evidência: Grupo 33: is | blue | table
-   - Recomendação: Trocar por distratores plausíveis, próximos do tema da aula.
-
-27. **P1 · Aula A1-GRAMMAR-020 — Distratores absurdos ou fáceis demais**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno acerta por eliminação sem aprender ou compreender o conteúdo.
-   - Evidência: Grupo 33: is | blue | table
-   - Recomendação: Trocar por distratores plausíveis, próximos do tema da aula.
-
-28. **P1 · Aula A1-GRAMMAR-020 — Distratores absurdos ou fáceis demais**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno acerta por eliminação sem aprender ou compreender o conteúdo.
-   - Evidência: Grupo 34: is | blue | table
-   - Recomendação: Trocar por distratores plausíveis, próximos do tema da aula.
-
-29. **P1 · Aula A1-GRAMMAR-027 — Distratores absurdos ou fáceis demais**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno acerta por eliminação sem aprender ou compreender o conteúdo.
-   - Evidência: Grupo 30: is | blue | table
-   - Recomendação: Trocar por distratores plausíveis, próximos do tema da aula.
-
-30. **P1 · Aula A1-GRAMMAR-027 — Distratores absurdos ou fáceis demais**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno acerta por eliminação sem aprender ou compreender o conteúdo.
-   - Evidência: Grupo 31: is | blue | table
-   - Recomendação: Trocar por distratores plausíveis, próximos do tema da aula.
-
-31. **P1 · Aula A1-VOCABULARY-006 — Texto genérico/placeholder detectado na aula**
+1. **P1 · Aula A1-VOCABULARY-006 — Texto genérico/placeholder detectado na aula**
    - Área executiva: Aulas e pedagogia
    - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
@@ -385,7 +154,7 @@ Gerado em: 2026-05-20T12:02:33.010Z
    - Evidência: Padrão encontrado: /option\s*[abcd]/i
    - Recomendação: Substituir placeholders por textos específicos da aula.
 
-32. **P1 · Aula A1-VOCABULARY-007 — Texto genérico/placeholder detectado na aula**
+2. **P1 · Aula A1-VOCABULARY-007 — Texto genérico/placeholder detectado na aula**
    - Área executiva: Aulas e pedagogia
    - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
@@ -393,7 +162,7 @@ Gerado em: 2026-05-20T12:02:33.010Z
    - Evidência: Padrão encontrado: /option\s*[abcd]/i
    - Recomendação: Substituir placeholders por textos específicos da aula.
 
-33. **P1 · Aula A1-VOCABULARY-008 — Texto genérico/placeholder detectado na aula**
+3. **P1 · Aula A1-VOCABULARY-008 — Texto genérico/placeholder detectado na aula**
    - Área executiva: Aulas e pedagogia
    - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
@@ -401,7 +170,7 @@ Gerado em: 2026-05-20T12:02:33.010Z
    - Evidência: Padrão encontrado: /option\s*[abcd]/i
    - Recomendação: Substituir placeholders por textos específicos da aula.
 
-34. **P1 · Aula A1-VOCABULARY-009 — Texto genérico/placeholder detectado na aula**
+4. **P1 · Aula A1-VOCABULARY-009 — Texto genérico/placeholder detectado na aula**
    - Área executiva: Aulas e pedagogia
    - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
@@ -409,7 +178,7 @@ Gerado em: 2026-05-20T12:02:33.010Z
    - Evidência: Padrão encontrado: /option\s*[abcd]/i
    - Recomendação: Substituir placeholders por textos específicos da aula.
 
-35. **P1 · Aula A1-VOCABULARY-010 — Texto genérico/placeholder detectado na aula**
+5. **P1 · Aula A1-VOCABULARY-010 — Texto genérico/placeholder detectado na aula**
    - Área executiva: Aulas e pedagogia
    - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
@@ -417,7 +186,7 @@ Gerado em: 2026-05-20T12:02:33.010Z
    - Evidência: Padrão encontrado: /option\s*[abcd]/i
    - Recomendação: Substituir placeholders por textos específicos da aula.
 
-36. **P1 · Aula A1-VOCABULARY-011 — Texto genérico/placeholder detectado na aula**
+6. **P1 · Aula A1-VOCABULARY-011 — Texto genérico/placeholder detectado na aula**
    - Área executiva: Aulas e pedagogia
    - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
@@ -425,7 +194,7 @@ Gerado em: 2026-05-20T12:02:33.010Z
    - Evidência: Padrão encontrado: /option\s*[abcd]/i
    - Recomendação: Substituir placeholders por textos específicos da aula.
 
-37. **P1 · Aula A1-VOCABULARY-017 — Texto genérico/placeholder detectado na aula**
+7. **P1 · Aula A1-VOCABULARY-017 — Texto genérico/placeholder detectado na aula**
    - Área executiva: Aulas e pedagogia
    - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
@@ -433,7 +202,7 @@ Gerado em: 2026-05-20T12:02:33.010Z
    - Evidência: Padrão encontrado: /option\s*[abcd]/i
    - Recomendação: Substituir placeholders por textos específicos da aula.
 
-38. **P1 · Aula A1-VOCABULARY-018 — Texto genérico/placeholder detectado na aula**
+8. **P1 · Aula A1-VOCABULARY-018 — Texto genérico/placeholder detectado na aula**
    - Área executiva: Aulas e pedagogia
    - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
@@ -441,7 +210,7 @@ Gerado em: 2026-05-20T12:02:33.010Z
    - Evidência: Padrão encontrado: /option\s*[abcd]/i
    - Recomendação: Substituir placeholders por textos específicos da aula.
 
-39. **P1 · Aula A2-GRAMMAR-027 — Texto genérico/placeholder detectado na aula**
+9. **P1 · Aula A2-GRAMMAR-027 — Texto genérico/placeholder detectado na aula**
    - Área executiva: Aulas e pedagogia
    - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
@@ -449,13 +218,247 @@ Gerado em: 2026-05-20T12:02:33.010Z
    - Evidência: Padrão encontrado: /option\s*[abcd]/i
    - Recomendação: Substituir placeholders por textos específicos da aula.
 
-40. **P1 · Aula A2-READING-012 — Texto genérico/placeholder detectado na aula**
+10. **P1 · Aula A2-READING-012 — Texto genérico/placeholder detectado na aula**
    - Área executiva: Aulas e pedagogia
    - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: Exercícios ou instruções podem parecer gerados às pressas.
    - Evidência: Padrão encontrado: /option\s*[abcd]/i
    - Recomendação: Substituir placeholders por textos específicos da aula.
+
+11. **P1 · Aula A2-READING-014 — Texto genérico/placeholder detectado na aula**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: Exercícios ou instruções podem parecer gerados às pressas.
+   - Evidência: Padrão encontrado: /option\s*[abcd]/i
+   - Recomendação: Substituir placeholders por textos específicos da aula.
+
+12. **P1 · Aula A2-READING-016 — Texto genérico/placeholder detectado na aula**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: Exercícios ou instruções podem parecer gerados às pressas.
+   - Evidência: Padrão encontrado: /option\s*[abcd]/i
+   - Recomendação: Substituir placeholders por textos específicos da aula.
+
+13. **P1 · Aula A2-LISTENING-012 — Texto genérico/placeholder detectado na aula**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: Exercícios ou instruções podem parecer gerados às pressas.
+   - Evidência: Padrão encontrado: /option\s*[abcd]/i
+   - Recomendação: Substituir placeholders por textos específicos da aula.
+
+14. **P1 · Aula A2-SPEAKING-013 — Texto genérico/placeholder detectado na aula**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: Exercícios ou instruções podem parecer gerados às pressas.
+   - Evidência: Padrão encontrado: /option\s*[abcd]/i
+   - Recomendação: Substituir placeholders por textos específicos da aula.
+
+15. **P1 · Aula A2-WRITING-013 — Texto genérico/placeholder detectado na aula**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: Exercícios ou instruções podem parecer gerados às pressas.
+   - Evidência: Padrão encontrado: /option\s*[abcd]/i
+   - Recomendação: Substituir placeholders por textos específicos da aula.
+
+16. **P1 · Aula B1-GRAMMAR-021 — Texto genérico/placeholder detectado na aula**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: Exercícios ou instruções podem parecer gerados às pressas.
+   - Evidência: Padrão encontrado: /option\s*[abcd]/i
+   - Recomendação: Substituir placeholders por textos específicos da aula.
+
+17. **P1 · Aula C1-READING-008 — Texto genérico/placeholder detectado na aula**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: Exercícios ou instruções podem parecer gerados às pressas.
+   - Evidência: Padrão encontrado: /correct answer/i
+   - Recomendação: Substituir placeholders por textos específicos da aula.
+
+18. **P1 · Aula C1-SPEAKING-008 — Texto genérico/placeholder detectado na aula**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: Exercícios ou instruções podem parecer gerados às pressas.
+   - Evidência: Padrão encontrado: /correct answer/i
+   - Recomendação: Substituir placeholders por textos específicos da aula.
+
+19. **P1 · Aula C2-READING-002 — Texto genérico/placeholder detectado na aula**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: Exercícios ou instruções podem parecer gerados às pressas.
+   - Evidência: Padrão encontrado: /correct answer/i
+   - Recomendação: Substituir placeholders por textos específicos da aula.
+
+20. **P1 · Aula C2-READING-003 — Texto genérico/placeholder detectado na aula**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: Exercícios ou instruções podem parecer gerados às pressas.
+   - Evidência: Padrão encontrado: /correct answer/i
+   - Recomendação: Substituir placeholders por textos específicos da aula.
+
+21. **P1 · Aula C2-WRITING-002 — Texto genérico/placeholder detectado na aula**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: Exercícios ou instruções podem parecer gerados às pressas.
+   - Evidência: Padrão encontrado: /option\s*[abcd]/i
+   - Recomendação: Substituir placeholders por textos específicos da aula.
+
+22. **P1 · Pilar GRAMMAR · A1-GRAMMAR-001 — Grammar sem sinal claro de prática ativa**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: A aula pode virar teoria sem verificação de domínio.
+   - Recomendação: Adicionar exercícios de aplicação da regra em contexto.
+
+23. **P1 · Pilar GRAMMAR · A1-GRAMMAR-002 — Grammar sem sinal claro de prática ativa**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: A aula pode virar teoria sem verificação de domínio.
+   - Recomendação: Adicionar exercícios de aplicação da regra em contexto.
+
+24. **P1 · Pilar GRAMMAR · A1-GRAMMAR-003 — Grammar sem sinal claro de prática ativa**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: A aula pode virar teoria sem verificação de domínio.
+   - Recomendação: Adicionar exercícios de aplicação da regra em contexto.
+
+25. **P1 · Pilar GRAMMAR · A1-GRAMMAR-004 — Grammar sem sinal claro de prática ativa**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: A aula pode virar teoria sem verificação de domínio.
+   - Recomendação: Adicionar exercícios de aplicação da regra em contexto.
+
+26. **P1 · Pilar GRAMMAR · A1-GRAMMAR-005 — Grammar sem sinal claro de prática ativa**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: A aula pode virar teoria sem verificação de domínio.
+   - Recomendação: Adicionar exercícios de aplicação da regra em contexto.
+
+27. **P1 · Pilar GRAMMAR · A1-GRAMMAR-006 — Grammar sem sinal claro de prática ativa**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: A aula pode virar teoria sem verificação de domínio.
+   - Recomendação: Adicionar exercícios de aplicação da regra em contexto.
+
+28. **P1 · Pilar GRAMMAR · A1-GRAMMAR-007 — Grammar sem explicação conceitual clara**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno pode praticar sem entender a regra gramatical.
+   - Evidência: Campos esperados ausentes/vazios: conceptExplanation, teacherOpening, grammarExplanation, ruleExplanation
+   - Recomendação: Adicionar explicação da regra, quando usar e como formar a estrutura.
+
+29. **P1 · Pilar GRAMMAR · A1-GRAMMAR-008 — Grammar sem explicação conceitual clara**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno pode praticar sem entender a regra gramatical.
+   - Evidência: Campos esperados ausentes/vazios: conceptExplanation, teacherOpening, grammarExplanation, ruleExplanation
+   - Recomendação: Adicionar explicação da regra, quando usar e como formar a estrutura.
+
+30. **P1 · Pilar GRAMMAR · A1-GRAMMAR-009 — Grammar sem explicação conceitual clara**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno pode praticar sem entender a regra gramatical.
+   - Evidência: Campos esperados ausentes/vazios: conceptExplanation, teacherOpening, grammarExplanation, ruleExplanation
+   - Recomendação: Adicionar explicação da regra, quando usar e como formar a estrutura.
+
+31. **P1 · Pilar GRAMMAR · A1-GRAMMAR-010 — Grammar sem explicação conceitual clara**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno pode praticar sem entender a regra gramatical.
+   - Evidência: Campos esperados ausentes/vazios: conceptExplanation, teacherOpening, grammarExplanation, ruleExplanation
+   - Recomendação: Adicionar explicação da regra, quando usar e como formar a estrutura.
+
+32. **P1 · Pilar GRAMMAR · A1-GRAMMAR-011 — Grammar sem explicação conceitual clara**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno pode praticar sem entender a regra gramatical.
+   - Evidência: Campos esperados ausentes/vazios: conceptExplanation, teacherOpening, grammarExplanation, ruleExplanation
+   - Recomendação: Adicionar explicação da regra, quando usar e como formar a estrutura.
+
+33. **P1 · Pilar GRAMMAR · A1-GRAMMAR-012 — Grammar sem explicação conceitual clara**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno pode praticar sem entender a regra gramatical.
+   - Evidência: Campos esperados ausentes/vazios: conceptExplanation, teacherOpening, grammarExplanation, ruleExplanation
+   - Recomendação: Adicionar explicação da regra, quando usar e como formar a estrutura.
+
+34. **P1 · Pilar GRAMMAR · A1-GRAMMAR-013 — Grammar sem explicação conceitual clara**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno pode praticar sem entender a regra gramatical.
+   - Evidência: Campos esperados ausentes/vazios: conceptExplanation, teacherOpening, grammarExplanation, ruleExplanation
+   - Recomendação: Adicionar explicação da regra, quando usar e como formar a estrutura.
+
+35. **P1 · Pilar GRAMMAR · A1-GRAMMAR-015 — Grammar sem explicação conceitual clara**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno pode praticar sem entender a regra gramatical.
+   - Evidência: Campos esperados ausentes/vazios: conceptExplanation, teacherOpening, grammarExplanation, ruleExplanation
+   - Recomendação: Adicionar explicação da regra, quando usar e como formar a estrutura.
+
+36. **P1 · Pilar GRAMMAR · A1-GRAMMAR-016 — Grammar sem explicação conceitual clara**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno pode praticar sem entender a regra gramatical.
+   - Evidência: Campos esperados ausentes/vazios: conceptExplanation, teacherOpening, grammarExplanation, ruleExplanation
+   - Recomendação: Adicionar explicação da regra, quando usar e como formar a estrutura.
+
+37. **P1 · Pilar GRAMMAR · A1-GRAMMAR-017 — Grammar sem explicação conceitual clara**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno pode praticar sem entender a regra gramatical.
+   - Evidência: Campos esperados ausentes/vazios: conceptExplanation, teacherOpening, grammarExplanation, ruleExplanation
+   - Recomendação: Adicionar explicação da regra, quando usar e como formar a estrutura.
+
+38. **P1 · Pilar GRAMMAR · A1-GRAMMAR-018 — Grammar sem explicação conceitual clara**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno pode praticar sem entender a regra gramatical.
+   - Evidência: Campos esperados ausentes/vazios: conceptExplanation, teacherOpening, grammarExplanation, ruleExplanation
+   - Recomendação: Adicionar explicação da regra, quando usar e como formar a estrutura.
+
+39. **P1 · Pilar GRAMMAR · A1-GRAMMAR-019 — Grammar sem explicação conceitual clara**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno pode praticar sem entender a regra gramatical.
+   - Evidência: Campos esperados ausentes/vazios: conceptExplanation, teacherOpening, grammarExplanation, ruleExplanation
+   - Recomendação: Adicionar explicação da regra, quando usar e como formar a estrutura.
+
+40. **P1 · Pilar GRAMMAR · A1-GRAMMAR-020 — Grammar sem explicação conceitual clara**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno pode praticar sem entender a regra gramatical.
+   - Evidência: Campos esperados ausentes/vazios: conceptExplanation, teacherOpening, grammarExplanation, ruleExplanation
+   - Recomendação: Adicionar explicação da regra, quando usar e como formar a estrutura.
 
 
 ## Como usar este relatório
