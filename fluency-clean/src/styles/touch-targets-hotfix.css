@@ -3,6 +3,19 @@
    no mobile (links de texto, chips, mode switches). Mantém o visual:
    só amplia a hit area via padding + inline-flex centralizado. */
 
+/* iPhone 13/SE: o cabeçalho Speaking não comporta titulo + switch
+   de 3 modos numa linha só (estoura ~4px no iPhone 13, ~19px no SE).
+   Quebra para nova linha e dá largura total ao switch. */
+@media (max-width: 430px) {
+  .speaking-reference-header {
+    flex-wrap: wrap;
+  }
+  .speaking-mode-switch {
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
 @media (hover: none), (max-width: 720px) {
   .today-section-head button,
   .today-quote-card footer button,
