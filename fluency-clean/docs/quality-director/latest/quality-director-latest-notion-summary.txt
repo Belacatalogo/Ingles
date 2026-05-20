@@ -1,8 +1,8 @@
 Status: Revisar antes de confiar
 Nota geral: 0/100
 Relatórios: 25
-Checks: 3268
-Issues únicas: 1640 (brutas=3237, agrupadas=1597)
-Severidade: P0=0, P1=509, P2=1131, P3=0
+Checks: 3270
+Issues únicas: 1527 (brutas=3013, agrupadas=1486)
+Severidade: P0=0, P1=488, P2=1039, P3=0
 Direção: Corrigir P1 antes de considerar o sistema confiável para estudo contínuo.
-Top issues: P1 Aula A1-VOCABULARY-006 — Texto genérico/placeholder detectado na aula | P1 Aula A1-VOCABULARY-007 — Texto genérico/placeholder detectado na aula | P1 Aula A1-VOCABULARY-008 — Texto genérico/placeholder detectado na aula | P1 Aula A1-VOCABULARY-009 — Texto genérico/placeholder detectado na aula | P1 Aula A1-VOCABULARY-010 — Texto genérico/placeholder detectado na aula
+Top issues: P1 Pilar GRAMMAR · A1-GRAMMAR-001 — Grammar sem sinal claro de prática ativa | P1 Pilar GRAMMAR · A1-GRAMMAR-002 — Grammar sem sinal claro de prática ativa | P1 Pilar GRAMMAR · A1-GRAMMAR-003 — Grammar sem sinal claro de prática ativa | P1 Pilar GRAMMAR · A1-GRAMMAR-004 — Grammar sem sinal claro de prática ativa | P1 Pilar GRAMMAR · A1-GRAMMAR-005 — Grammar sem sinal claro de prática ativa
