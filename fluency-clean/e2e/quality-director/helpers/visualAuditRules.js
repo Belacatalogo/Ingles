@@ -114,6 +114,12 @@ export async function auditVisualViewport({ page, reporter, area }) {
           const rect = el.getBoundingClientRect();
           if (rect.width === 0 || rect.height === 0) return;
           if (el.closest('.bottom-nav') || el.closest('.reference-bottom-nav')) return;
+          // Elemento em fluxo normal pode ser revelado por scroll; só
+          // marca como "sobreposto pela bottom nav" se ele estiver
+          // pinned (fixed/sticky/absolute), o que torna o overlap real
+          // e nao-resolvivel pelo usuario.
+          const pos = getComputedStyle(el).position;
+          if (pos !== 'fixed' && pos !== 'sticky' && pos !== 'absolute') return;
           const overlapPx = Math.max(0, Math.min(rect.bottom, nav.y + nav.height) - Math.max(rect.top, nav.y));
           const elementHeight = rect.bottom - rect.top;
           if (overlapPx > elementHeight * 0.5) {
