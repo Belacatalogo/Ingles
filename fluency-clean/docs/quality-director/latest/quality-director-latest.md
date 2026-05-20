@@ -1,6 +1,6 @@
 # Fluency Quality Director — Relatório Executivo Latest
 
-Gerado em: 2026-05-20T20:04:50.046Z
+Gerado em: 2026-05-20T20:21:55.789Z
 
 ## Veredito
 
@@ -12,11 +12,11 @@ Gerado em: 2026-05-20T20:04:50.046Z
 
 - Relatórios consolidados: 25
 - Checks executados: 3270
-- Problemas únicos: 1352
-- Problemas brutos antes de deduplicar: 2663
-- Duplicatas agrupadas: 1311
+- Problemas únicos: 1348
+- Problemas brutos antes de deduplicar: 2655
+- Duplicatas agrupadas: 1307
 - P0: 0
-- P1: 368
+- P1: 364
 - P2: 984
 - P3: 0
 
@@ -27,7 +27,7 @@ Gerado em: 2026-05-20T20:04:50.046Z
 | Navegação e estabilidade | 54 | Precisa revisão | 0 | 0 | 38 | 0 |
 | Jornada real do aluno | 93 | Revisar antes de confiar | 0 | 1 | 2 | 0 |
 | Exercícios e alternativas | 0 | Precisa revisão | 0 | 0 | 798 | 0 |
-| Aulas e pedagogia | 0 | Revisar antes de confiar | 0 | 367 | 146 | 0 |
+| Aulas e pedagogia | 0 | Revisar antes de confiar | 0 | 363 | 146 | 0 |
 | Visual e mobile | 100 | Saudável | 0 | 0 | 0 | 0 |
 | Progresso, XP e mastery | 100 | Saudável | 0 | 0 | 0 | 0 |
 | Estados vazios e segurança visual | 100 | Saudável | 0 | 0 | 0 | 0 |
@@ -52,8 +52,8 @@ Gerado em: 2026-05-20T20:04:50.046Z
 | quality-director-lesson-quality | iPhone SE | 66 | 500 | 28 | 28 | 0 | 0 | 28 | 0 |
 | quality-director-navigation | iPhone 13 | 100 | 13 | 0 | 0 | 0 | 0 | 0 | 0 |
 | quality-director-navigation | iPhone SE | 100 | 13 | 0 | 0 | 0 | 0 | 0 | 0 |
-| quality-director-pillar-quality | iPhone 13 | 0 | 506 | 513 | 513 | 0 | 367 | 146 | 0 |
-| quality-director-pillar-quality | iPhone SE | 0 | 506 | 513 | 513 | 0 | 367 | 146 | 0 |
+| quality-director-pillar-quality | iPhone 13 | 0 | 506 | 509 | 509 | 0 | 363 | 146 | 0 |
+| quality-director-pillar-quality | iPhone SE | 0 | 506 | 509 | 509 | 0 | 363 | 146 | 0 |
 | quality-director-progress-mastery | iPhone 13 | 100 | 1 | 0 | 0 | 0 | 0 | 0 | 0 |
 | quality-director-progress-mastery | iPhone SE | 100 | 1 | 0 | 0 | 0 | 0 | 0 | 0 |
 | quality-director-real-student-regression | iPhone 13 | 100 | 3 | 0 | 0 | 0 | 0 | 0 | 0 |
