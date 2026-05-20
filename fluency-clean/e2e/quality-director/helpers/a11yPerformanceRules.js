@@ -160,6 +160,12 @@ export async function auditA11yBasics({ page, reporter, area }) {
 }
 
 export async function auditKeyboardFocusBasics({ page, reporter, area }) {
+  // Reseta o foco para body antes do Tab inicial — assim o teste verifica
+  // a a11y do DOM (primeiro focusable em ordem natural) e não a posição
+  // de foco residual do clique anterior. Sem isso, clicar na ÚLTIMA
+  // nav-button (Ajustes) deixa o foco na cauda do DOM e Tab cicla para
+  // body, gerando falso "Primeiro Tab não focou".
+  await page.evaluate(() => { if (document.activeElement instanceof HTMLElement) document.activeElement.blur(); });
   await page.keyboard.press('Tab');
   await page.waitForTimeout(80);
   const firstFocus = await page.evaluate(() => {
