@@ -2,7 +2,7 @@ Status: Revisar antes de confiar
 Nota geral: 0/100
 Relatórios: 25
 Checks: 3270
-Issues únicas: 1359 (brutas=2677, agrupadas=1318)
-Severidade: P0=0, P1=319, P2=1040, P3=0
+Issues únicas: 1352 (brutas=2663, agrupadas=1311)
+Severidade: P0=0, P1=368, P2=984, P3=0
 Direção: Corrigir P1 antes de considerar o sistema confiável para estudo contínuo.
-Top issues: P1 Pilar GRAMMAR · A1-GRAMMAR-001 — Grammar sem sinal claro de prática ativa | P1 Pilar GRAMMAR · A1-GRAMMAR-002 — Grammar sem sinal claro de prática ativa | P1 Pilar GRAMMAR · A1-GRAMMAR-003 — Grammar sem sinal claro de prática ativa | P1 Pilar GRAMMAR · A1-GRAMMAR-004 — Grammar sem sinal claro de prática ativa | P1 Pilar GRAMMAR · A1-GRAMMAR-005 — Grammar sem sinal claro de prática ativa
+Top issues: P1 Pilar GRAMMAR · A1-GRAMMAR-007 — Grammar sem explicação conceitual clara | P1 Pilar GRAMMAR · A1-GRAMMAR-008 — Grammar sem explicação conceitual clara | P1 Pilar GRAMMAR · A1-GRAMMAR-009 — Grammar sem explicação conceitual clara | P1 Pilar GRAMMAR · A1-GRAMMAR-010 — Grammar sem explicação conceitual clara | P1 Pilar GRAMMAR · A1-GRAMMAR-011 — Grammar sem explicação conceitual clara
