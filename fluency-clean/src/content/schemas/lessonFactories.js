@@ -202,6 +202,10 @@ export function createReadingLesson(input = {}) {
     evidenceTasks: safeArray(input.evidenceTasks),
     shortResponse: safeArray(input.shortResponse),
     productionTask: input.productionTask || null,
+    // Schema universal/C2 — preservar sem transformar.
+    tasks: safeArray(input.tasks),
+    passage: clean(input.passage),
+    wordCount: typeof input.wordCount === 'number' ? input.wordCount : null,
   };
 }
 
@@ -226,6 +230,8 @@ export function createListeningLesson(input = {}) {
     // e audioMetadata; o auditor reconhece depois (Bloco 7A).
     listeningTasks: safeArray(input.listeningTasks),
     audioMetadata: safeObject(input.audioMetadata),
+    // Schema universal/C2.
+    tasks: safeArray(input.tasks),
   };
 }
 
@@ -252,6 +258,9 @@ export function createSpeakingLesson(input = {}) {
     // checklist passivo em exercício; o auditor decide depois (Bloco 7A).
     warmUp: safeArray(input.warmUp),
     guidedPractice: safeArray(input.guidedPractice),
+    // Schema universal/C2.
+    tasks: safeArray(input.tasks),
+    prompt: clean(input.prompt),
   };
 }
 
@@ -276,6 +285,11 @@ export function createWritingLesson(input = {}) {
     writingModel: safeObject(input.writingModel),
     writingChecklist: safeArray(input.writingChecklist),
     grammarAnnotations: safeArray(input.grammarAnnotations),
+    // Schema universal/C2.
+    tasks: safeArray(input.tasks),
+    writingTask: clean(input.writingTask),
+    inputText: clean(input.inputText),
+    wordTarget: typeof input.wordTarget === 'number' ? input.wordTarget : null,
   };
 }
 
