@@ -504,12 +504,30 @@ function isOpenComprehensionItem(item) {
   if (typeof item.minWords === 'number' && item.minWords > 0) return true;
   return false;
 }
+// Tipos de comprehension não-MCQ adicionais (detail/inference/analysis)
+// só contam quando há contexto textual suficiente no nível da aula —
+// passage/mainText/inputText reais. Item solto não conta.
+const OPEN_COMPREHENSION_TYPES = new Set(['detail', 'inference', 'analysis']);
+function lessonHasTextualContext(lesson) {
+  return [lesson?.passage, lesson?.mainText, lesson?.inputText, lesson?.transcript, lesson?.audioScript]
+    .some((v) => typeof v === 'string' && v.trim().length >= 200);
+}
+function isTypedOpenComprehensionItem(item) {
+  if (!item || typeof item !== 'object' || Array.isArray(item)) return false;
+  const question = clean(item.question || item.prompt);
+  if (question.length < 8) return false;
+  if (clean(item.answer).length >= 1) return false;
+  if (Array.isArray(item.options) && item.options.length >= 2) return false;
+  return OPEN_COMPREHENSION_TYPES.has(String(item.type || '').toLowerCase());
+}
 function hasOpenComprehensionPractice(lesson) {
   if (!lesson) return false;
   const pillar = lesson.pillar || lesson.type;
   if (pillar !== 'reading' && pillar !== 'listening') return false;
-  return ['comprehensionQuestions', 'evidenceQuestions'].some((field) =>
-    Array.isArray(lesson[field]) && lesson[field].some(isOpenComprehensionItem));
+  const fields = ['comprehensionQuestions', 'evidenceQuestions'];
+  if (fields.some((field) => Array.isArray(lesson[field]) && lesson[field].some(isOpenComprehensionItem))) return true;
+  if (!lessonHasTextualContext(lesson)) return false;
+  return fields.some((field) => Array.isArray(lesson[field]) && lesson[field].some(isTypedOpenComprehensionItem));
 }
 
 // Writing avançado: writingTasks[].task = instrução de produção real
