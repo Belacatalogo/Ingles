@@ -1,0 +1,26 @@
+/* Touch target hotfix
+   Garantir área mínima de toque ~44px em controles que são pequenos
+   no mobile (links de texto, chips, mode switches). Mantém o visual:
+   só amplia a hit area via padding + inline-flex centralizado. */
+
+@media (hover: none), (max-width: 720px) {
+  .today-section-head button,
+  .today-quote-card footer button,
+  .a1-gate-review-btn,
+  .speaking-mode-switch button,
+  .speaking-listen-link,
+  .lesson-type-stepper-flow button,
+  .progress-range-toggle button {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding-block: 8px;
+  }
+  /* Toggles de range curtos ("7d", "30d", "Tudo") precisam de min-width
+     também para passar o alvo de toque ~44px. */
+  .progress-range-toggle button {
+    min-width: 44px;
+    padding-inline: 12px;
+  }
+}

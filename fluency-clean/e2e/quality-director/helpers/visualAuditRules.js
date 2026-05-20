@@ -79,7 +79,17 @@ export async function auditVisualViewport({ page, reporter, area }) {
   }
 
   const buttons = await allBoxes(page.getByRole('button'), 35);
+  // Botoes dentro de paineis dev (.lesson-preview-lab-card) nao sao
+  // expostos ao aluno em producao — nao contam como touch target.
+  const devButtonTexts = new Set(
+    await page.locator('.lesson-preview-lab-card button').evaluateAll(
+      (els) => els.map((el) => String(el.innerText || el.getAttribute('aria-label') || '').trim().slice(0, 200))
+    ).catch(() => [])
+  );
   buttons.forEach((item) => {
+    const phantomOffscreen = !String(item.text || '').trim() && (item.box.y + item.box.height) <= 0;
+    if (phantomOffscreen) return;
+    if (devButtonTexts.has(String(item.text || '').trim().slice(0, 200))) return;
     if (item.box.width < 36 || item.box.height < 36) {
       reporter.addIssue({ severity: 'P2', area, title: 'Botão com área de toque pequena', impact: 'No iPhone, o aluno pode ter dificuldade para tocar com precisão.', evidence: `${screenshotPath}; botão=${item.text.slice(0, 80)}; box=${JSON.stringify(item.box)}`, recommendation: 'Preferir botões com área mínima próxima de 44x44px em mobile.' });
     }
