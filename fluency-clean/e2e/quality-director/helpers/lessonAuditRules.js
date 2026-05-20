@@ -1,11 +1,15 @@
+// Padrões mantidos só os que sao placeholder INEQUIVOCO. Removidos
+// /option [abcd]/, /correct answer/, /example sentence/ etc. — apareciam
+// legitimamente em conteudo pedagogico ("option A vs option B" em
+// leitura comparativa, "no single correct answer" em comentario do
+// professor, "here is an example sentence" como modelo).
 export const GENERIC_EXERCISE_PATTERNS = [
-  /option\s*[abcd]/i,
-  /correct answer/i,
-  /wrong answer/i,
-  /choose the correct option/i,
-  /example sentence/i,
-  /placeholder/i,
+  /\bplaceholder\b/i,
   /lorem ipsum/i,
+  // Placeholders de dev convencionais sao em CAIXA ALTA com `:`. Sem
+  // /i para nao colidir com "todo:" portugues ("tempo todo: lugares").
+  /(?:^|\s)(TODO|FIXME|TBD|XXX):/,
+  /coming soon/i,
 ];
 
 // Mesmas categorias semânticas do exerciseQualityRules para alinhar
@@ -30,6 +34,9 @@ const GRAMMAR_STRUCTURAL_WORDS = new Set([
   'not', 'no', 'never',
   'and', 'or', 'but', 'so', 'because',
   'in', 'on', 'at', 'to', 'for', 'with', 'from', 'by',
+  // Pronomes pessoais — usados em drills estruturais
+  // (ex.: "He | They | I", "He | She | It").
+  'i', 'you', 'he', 'she', 'it', 'we', 'they', 'me', 'him', 'us', 'them',
 ]);
 
 export const ABSURD_DISTRACTOR_WORDS = [
@@ -170,14 +177,24 @@ export function auditLessonObject(lesson) {
 
     const shortOptions = options.filter((option) => option.length <= 2);
     if (shortOptions.length >= 2) {
-      addIssue(issues, {
-        severity: 'P2',
-        area,
-        title: 'Alternativas curtas demais',
-        impact: 'Pode indicar exercício raso ou pouco contextualizado.',
-        evidence: `Grupo ${index + 1}: ${options.join(' | ')}`,
-        recommendation: 'Usar alternativas com contexto suficiente para medir compreensão real.',
-      });
+      // Drill estrutural com pronomes/funcionais ("He | They | I",
+      // "Do | Does | Did") são curtos por natureza — não conta como
+      // exercício raso. Idem para drills numéricos ("19 | 20 | 9") e
+      // tamanhos/abreviações ("L | M | S"): respostas curtas são a
+      // PRÓPRIA pergunta. Mantém warning para outros casos.
+      const structuralDrill = options.some((option) => GRAMMAR_STRUCTURAL_WORDS.has(option.toLowerCase()));
+      const allNonAlpha = options.every((option) => !/[a-zA-Z]/.test(option.trim())); // números, $1, %, símbolos
+      const allShortLabels = options.every((option) => /^[a-z]{1,2}$/i.test(option.trim())); // L|M|S, A|B|C
+      if (!structuralDrill && !allNonAlpha && !allShortLabels) {
+        addIssue(issues, {
+          severity: 'P2',
+          area,
+          title: 'Alternativas curtas demais',
+          impact: 'Pode indicar exercício raso ou pouco contextualizado.',
+          evidence: `Grupo ${index + 1}: ${options.join(' | ')}`,
+          recommendation: 'Usar alternativas com contexto suficiente para medir compreensão real.',
+        });
+      }
     }
 
     const absurdMatches = options.filter((option) => ABSURD_DISTRACTOR_WORDS.includes(option.toLowerCase()));
