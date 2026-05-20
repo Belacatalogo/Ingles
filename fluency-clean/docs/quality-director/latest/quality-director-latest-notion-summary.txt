@@ -2,7 +2,7 @@ Status: Revisar antes de confiar
 Nota geral: 0/100
 Relatórios: 25
 Checks: 3268
-Issues únicas: 1995 (brutas=3677, agrupadas=1682)
-Severidade: P0=0, P1=672, P2=1323, P3=0
+Issues únicas: 1941 (brutas=3569, agrupadas=1628)
+Severidade: P0=0, P1=617, P2=1324, P3=0
 Direção: Corrigir P1 antes de considerar o sistema confiável para estudo contínuo.
-Top issues: P1 Exercício · A2-READING-006 — Distratores absurdos ou fáceis demais | P1 Exercício · A2-LISTENING-004 — Distratores absurdos ou fáceis demais | P1 Exercício · A2-LISTENING-005 — Distratores absurdos ou fáceis demais | P1 Exercício · B1-GRAMMAR-019 — Exercício com alternativas mas sem resposta esperada clara | P1 Exercício · B1-GRAMMAR-020 — Exercício com alternativas mas sem resposta esperada clara
+Top issues: P1 Aula B2-READING-011 — Nenhum exercício detectado na aula ready | P1 iPhone 13 · Explorar aba Curso — Botão interativo fora da tela | P1 iPhone 13 · Explorar aba Speaking — Botão interativo fora da tela | P1 iPhone 13 · Explorar aba Hoje · ação 1 — Botão interativo fora da tela | P1 iPhone 13 · Explorar aba Hoje · ação 2 — Botão interativo fora da tela
