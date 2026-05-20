@@ -1,6 +1,6 @@
 # Fluency Quality Director — Relatório Executivo Latest
 
-Gerado em: 2026-05-20T10:48:36.435Z
+Gerado em: 2026-05-20T12:02:33.010Z
 
 ## Veredito
 
@@ -12,26 +12,26 @@ Gerado em: 2026-05-20T10:48:36.435Z
 
 - Relatórios consolidados: 25
 - Checks executados: 3268
-- Problemas únicos: 1941
-- Problemas brutos antes de deduplicar: 3569
-- Duplicatas agrupadas: 1628
+- Problemas únicos: 1652
+- Problemas brutos antes de deduplicar: 3254
+- Duplicatas agrupadas: 1602
 - P0: 0
-- P1: 617
-- P2: 1324
+- P1: 539
+- P2: 1113
 - P3: 0
 
 ## Notas por área
 
 | Área | Nota | Status | P0 | P1 | P2 | P3 |
 |---|---:|---|---:|---:|---:|---:|
-| Navegação e estabilidade | 0 | Revisar antes de confiar | 0 | 32 | 164 | 0 |
-| Jornada real do aluno | 25 | Revisar antes de confiar | 0 | 1 | 58 | 0 |
-| Exercícios e alternativas | 0 | Revisar antes de confiar | 0 | 29 | 860 | 0 |
-| Aulas e pedagogia | 0 | Revisar antes de confiar | 0 | 555 | 238 | 0 |
+| Navegação e estabilidade | 35 | Revisar antes de confiar | 0 | 1 | 50 | 0 |
+| Jornada real do aluno | 93 | Revisar antes de confiar | 0 | 1 | 2 | 0 |
+| Exercícios e alternativas | 0 | Revisar antes de confiar | 0 | 28 | 860 | 0 |
+| Aulas e pedagogia | 0 | Revisar antes de confiar | 0 | 509 | 201 | 0 |
 | Visual e mobile | 100 | Saudável | 0 | 0 | 0 | 0 |
 | Progresso, XP e mastery | 100 | Saudável | 0 | 0 | 0 | 0 |
 | Estados vazios e segurança visual | 100 | Saudável | 0 | 0 | 0 | 0 |
-| Currículo e CEFR | 94 | Saudável | 0 | 0 | 4 | 0 |
+| Currículo e CEFR | 100 | Saudável | 0 | 0 | 0 | 0 |
 | Acessibilidade e performance | 100 | Saudável | 0 | 0 | 0 | 0 |
 
 ## Relatórios consolidados
@@ -40,20 +40,20 @@ Gerado em: 2026-05-20T10:48:36.435Z
 |---|---|---:|---:|---:|---:|---:|---:|---:|---:|
 | quality-director-a11y-performance | iPhone 13 | 99 | 27 | 1 | 1 | 0 | 0 | 1 | 0 |
 | quality-director-a11y-performance | iPhone SE | 99 | 27 | 1 | 1 | 0 | 0 | 1 | 0 |
-| quality-director-curriculum-consistency | iPhone 13 | 94 | 7 | 5 | 5 | 0 | 0 | 5 | 0 |
-| quality-director-curriculum-consistency | iPhone SE | 94 | 7 | 5 | 5 | 0 | 0 | 5 | 0 |
-| quality-director-empty-states-security | iPhone 13 | 26 | 56 | 60 | 64 | 0 | 0 | 60 | 0 |
-| quality-director-empty-states-security | iPhone SE | 17 | 56 | 68 | 72 | 0 | 0 | 68 | 0 |
-| quality-director-exercise-quality | iPhone 13 | 0 | 501 | 771 | 771 | 0 | 1 | 770 | 0 |
-| quality-director-exercise-quality | iPhone SE | 0 | 501 | 771 | 771 | 0 | 1 | 770 | 0 |
-| quality-director-exploratory-student-audit | iPhone 13 | 0 | 3 | 54 | 56 | 0 | 35 | 19 | 0 |
-| quality-director-exploratory-student-audit | iPhone SE | 0 | 3 | 54 | 56 | 0 | 35 | 19 | 0 |
+| quality-director-curriculum-consistency | iPhone 13 | 100 | 7 | 0 | 0 | 0 | 0 | 0 | 0 |
+| quality-director-curriculum-consistency | iPhone SE | 100 | 7 | 0 | 0 | 0 | 0 | 0 | 0 |
+| quality-director-empty-states-security | iPhone 13 | 100 | 56 | 0 | 0 | 0 | 0 | 0 | 0 |
+| quality-director-empty-states-security | iPhone SE | 90 | 56 | 8 | 8 | 0 | 0 | 8 | 0 |
+| quality-director-exercise-quality | iPhone 13 | 0 | 501 | 770 | 770 | 0 | 0 | 770 | 0 |
+| quality-director-exercise-quality | iPhone SE | 0 | 501 | 770 | 770 | 0 | 0 | 770 | 0 |
+| quality-director-exploratory-student-audit | iPhone 13 | 71 | 3 | 20 | 22 | 0 | 1 | 19 | 0 |
+| quality-director-exploratory-student-audit | iPhone SE | 66 | 3 | 21 | 23 | 0 | 2 | 19 | 0 |
 | quality-director-lesson-quality | iPhone 13 | 0 | 500 | 139 | 139 | 0 | 49 | 90 | 0 |
 | quality-director-lesson-quality | iPhone SE | 0 | 500 | 139 | 139 | 0 | 49 | 90 | 0 |
 | quality-director-navigation | iPhone 13 | 100 | 13 | 0 | 0 | 0 | 0 | 0 | 0 |
 | quality-director-navigation | iPhone SE | 100 | 13 | 0 | 0 | 0 | 0 | 0 | 0 |
-| quality-director-pillar-quality | iPhone 13 | 0 | 506 | 698 | 698 | 0 | 497 | 201 | 0 |
-| quality-director-pillar-quality | iPhone SE | 0 | 506 | 698 | 698 | 0 | 497 | 201 | 0 |
+| quality-director-pillar-quality | iPhone 13 | 0 | 506 | 688 | 688 | 0 | 487 | 201 | 0 |
+| quality-director-pillar-quality | iPhone SE | 0 | 506 | 688 | 688 | 0 | 487 | 201 | 0 |
 | quality-director-progress-mastery | iPhone 13 | 100 | 1 | 0 | 0 | 0 | 0 | 0 | 0 |
 | quality-director-progress-mastery | iPhone SE | 100 | 1 | 0 | 0 | 0 | 0 | 0 | 0 |
 | quality-director-real-student-regression | iPhone 13 | 100 | 3 | 0 | 0 | 0 | 0 | 0 | 0 |
@@ -61,8 +61,8 @@ Gerado em: 2026-05-20T10:48:36.435Z
 | quality-director-student-journey | iPhone 13 | 100 | 6 | 0 | 0 | 0 | 0 | 0 | 0 |
 | quality-director-student-journey | iPhone SE | 100 | 6 | 0 | 0 | 0 | 0 | 0 | 0 |
 |  |  | 100 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| quality-director-visual-mobile | iPhone 13 | 43 | 11 | 44 | 45 | 0 | 1 | 43 | 0 |
-| quality-director-visual-mobile | iPhone SE | 43 | 11 | 47 | 48 | 0 | 0 | 47 | 0 |
+| quality-director-visual-mobile | iPhone 13 | 95 | 11 | 1 | 1 | 0 | 1 | 0 | 0 |
+| quality-director-visual-mobile | iPhone SE | 95 | 11 | 4 | 4 | 0 | 0 | 4 | 0 |
 
 ## Plano de ação
 
@@ -70,31 +70,41 @@ Gerado em: 2026-05-20T10:48:36.435Z
 
 ### Ações imediatas
 
-1. **P1 · Aula B2-READING-011 — Nenhum exercício detectado na aula ready**
+1. **P1 · Explorar aula A1-LISTENING-001 — Possível resposta/modelo apareceu antes da tentativa**
+   - Ocorrências agrupadas: 6
+   - Ação: Garantir que gabarito, transcript, modelo e resposta esperada só apareçam após tentativa quando a etapa exigir descoberta.
+2. **P1 · iPhone SE · Explorar aba Speaking — Botão interativo fora da tela**
+   - Ação: Ajustar layout responsivo e evitar botões cortados.
+3. **P1 · Aula A1-GRAMMAR-007 — Distratores absurdos ou fáceis demais**
    - Ocorrências agrupadas: 2
-   - Ação: Adicionar exercícios, tarefas de tentativa ou perguntas avaliáveis.
-2. **P1 · iPhone 13 · Explorar aba Curso — Botão interativo fora da tela**
-   - Ação: Ajustar layout responsivo e evitar botões cortados.
-3. **P1 · iPhone 13 · Explorar aba Speaking — Botão interativo fora da tela**
-   - Ação: Ajustar layout responsivo e evitar botões cortados.
-4. **P1 · iPhone 13 · Explorar aba Hoje · ação 1 — Botão interativo fora da tela**
-   - Ação: Ajustar layout responsivo e evitar botões cortados.
-5. **P1 · iPhone 13 · Explorar aba Hoje · ação 2 — Botão interativo fora da tela**
-   - Ação: Ajustar layout responsivo e evitar botões cortados.
-6. **P1 · iPhone 13 · Explorar aba Curso · ação 1 — Botão interativo fora da tela**
-   - Ação: Ajustar layout responsivo e evitar botões cortados.
-7. **P1 · iPhone 13 · Explorar aba Curso · ação 2 — Botão interativo fora da tela**
-   - Ação: Ajustar layout responsivo e evitar botões cortados.
-8. **P1 · iPhone 13 · Explorar aba Aula · ação 1 — Botão interativo fora da tela**
-   - Ação: Ajustar layout responsivo e evitar botões cortados.
-9. **P1 · iPhone 13 · Explorar aba Aula · ação 2 — Botão interativo fora da tela**
-   - Ação: Ajustar layout responsivo e evitar botões cortados.
-10. **P1 · iPhone 13 · Explorar aba Cartas · ação 1 — Botão interativo fora da tela**
-   - Ação: Ajustar layout responsivo e evitar botões cortados.
-11. **P1 · iPhone 13 · Explorar aba Cartas · ação 2 — Botão interativo fora da tela**
-   - Ação: Ajustar layout responsivo e evitar botões cortados.
-12. **P1 · iPhone 13 · Explorar aba Speaking · ação 1 — Botão interativo fora da tela**
-   - Ação: Ajustar layout responsivo e evitar botões cortados.
+   - Ação: Trocar por distratores plausíveis, próximos do tema da aula.
+4. **P1 · Aula A1-GRAMMAR-007 — Distratores absurdos ou fáceis demais**
+   - Ocorrências agrupadas: 2
+   - Ação: Trocar por distratores plausíveis, próximos do tema da aula.
+5. **P1 · Aula A1-GRAMMAR-008 — Distratores absurdos ou fáceis demais**
+   - Ocorrências agrupadas: 2
+   - Ação: Trocar por distratores plausíveis, próximos do tema da aula.
+6. **P1 · Aula A1-GRAMMAR-008 — Distratores absurdos ou fáceis demais**
+   - Ocorrências agrupadas: 2
+   - Ação: Trocar por distratores plausíveis, próximos do tema da aula.
+7. **P1 · Aula A1-GRAMMAR-009 — Distratores absurdos ou fáceis demais**
+   - Ocorrências agrupadas: 2
+   - Ação: Trocar por distratores plausíveis, próximos do tema da aula.
+8. **P1 · Aula A1-GRAMMAR-009 — Distratores absurdos ou fáceis demais**
+   - Ocorrências agrupadas: 2
+   - Ação: Trocar por distratores plausíveis, próximos do tema da aula.
+9. **P1 · Aula A1-GRAMMAR-010 — Distratores absurdos ou fáceis demais**
+   - Ocorrências agrupadas: 2
+   - Ação: Trocar por distratores plausíveis, próximos do tema da aula.
+10. **P1 · Aula A1-GRAMMAR-010 — Distratores absurdos ou fáceis demais**
+   - Ocorrências agrupadas: 2
+   - Ação: Trocar por distratores plausíveis, próximos do tema da aula.
+11. **P1 · Aula A1-GRAMMAR-011 — Distratores absurdos ou fáceis demais**
+   - Ocorrências agrupadas: 2
+   - Ação: Trocar por distratores plausíveis, próximos do tema da aula.
+12. **P1 · Aula A1-GRAMMAR-011 — Distratores absurdos ou fáceis demais**
+   - Ocorrências agrupadas: 2
+   - Ação: Trocar por distratores plausíveis, próximos do tema da aula.
 
 ### Próximas ações
 
@@ -102,250 +112,32 @@ Gerado em: 2026-05-20T10:48:36.435Z
    - Ação: Garantir ordem de foco em botões/links principais.
 2. **P2 · iPhone SE · Aba Ajustes — Primeiro Tab não focou elemento interativo**
    - Ação: Garantir ordem de foco em botões/links principais.
-3. **P2 · Currículo · A1 — readyLessonCount diverge da contagem real**
+3. **P2 · iPhone SE · Instalação limpa sem dados · Aba Hoje — Compatibilidade iPhone SE: elemento próximo da bottom nav**
+   - Ação: Manter como compatibilidade P2 para telas legadas pequenas; priorizar iPhone 13 como dispositivo real do usuário.
+4. **P2 · iPhone SE · Instalação limpa sem dados · Aba Curso — Compatibilidade iPhone SE: elemento próximo da bottom nav**
+   - Ação: Manter como compatibilidade P2 para telas legadas pequenas; priorizar iPhone 13 como dispositivo real do usuário.
+5. **P2 · iPhone SE · Estados principais como null · Aba Hoje — Compatibilidade iPhone SE: elemento próximo da bottom nav**
+   - Ação: Manter como compatibilidade P2 para telas legadas pequenas; priorizar iPhone 13 como dispositivo real do usuário.
+6. **P2 · iPhone SE · Estados principais como null · Aba Curso — Compatibilidade iPhone SE: elemento próximo da bottom nav**
+   - Ação: Manter como compatibilidade P2 para telas legadas pequenas; priorizar iPhone 13 como dispositivo real do usuário.
+7. **P2 · iPhone SE · Estados principais com JSON inválido · Aba Hoje — Compatibilidade iPhone SE: elemento próximo da bottom nav**
+   - Ação: Manter como compatibilidade P2 para telas legadas pequenas; priorizar iPhone 13 como dispositivo real do usuário.
+8. **P2 · iPhone SE · Estados principais com JSON inválido · Aba Curso — Compatibilidade iPhone SE: elemento próximo da bottom nav**
+   - Ação: Manter como compatibilidade P2 para telas legadas pequenas; priorizar iPhone 13 como dispositivo real do usuário.
+9. **P2 · iPhone SE · Sem aula atual mas com configurações básicas · Aba Hoje — Compatibilidade iPhone SE: elemento próximo da bottom nav**
+   - Ação: Manter como compatibilidade P2 para telas legadas pequenas; priorizar iPhone 13 como dispositivo real do usuário.
+10. **P2 · iPhone SE · Sem aula atual mas com configurações básicas · Aba Curso — Compatibilidade iPhone SE: elemento próximo da bottom nav**
+   - Ação: Manter como compatibilidade P2 para telas legadas pequenas; priorizar iPhone 13 como dispositivo real do usuário.
+11. **P2 · Exercício · A1-GRAMMAR-001 — Pergunta com baixa conexão lexical com a aula**
    - Ocorrências agrupadas: 2
-   - Ação: Revisar getStaticReadyLessons(level) e composição dos mapas.
-4. **P2 · Currículo · B2 — readyLessonCount diverge da contagem real**
+   - Ação: Verificar se o exercício cobra algo realmente ensinado nesta aula.
+12. **P2 · Exercício · A1-GRAMMAR-001 — Pergunta com baixa conexão lexical com a aula**
    - Ocorrências agrupadas: 2
-   - Ação: Revisar getStaticReadyLessons(level) e composição dos mapas.
-5. **P2 · Currículo · C1 — readyLessonCount diverge da contagem real**
-   - Ocorrências agrupadas: 2
-   - Ação: Revisar getStaticReadyLessons(level) e composição dos mapas.
-6. **P2 · Currículo · C2 — readyLessonCount diverge da contagem real**
-   - Ocorrências agrupadas: 2
-   - Ação: Revisar getStaticReadyLessons(level) e composição dos mapas.
-7. **P2 · Currículo · B1 · reading · B1-READING-004 — Sinal de linguagem avançada demais para o nível**
-   - Ocorrências agrupadas: 2
-   - Ação: Revisar vocabulário, complexidade e scaffolding para o nível.
-8. **P2 · iPhone 13 · Instalação limpa sem dados · Aba Hoje — Botão com área de toque pequena**
-   - Ação: Preferir botões com área mínima próxima de 44x44px em mobile.
-9. **P2 · iPhone 13 · Instalação limpa sem dados · Aba Hoje — Botão com área de toque pequena**
-   - Ação: Preferir botões com área mínima próxima de 44x44px em mobile.
-10. **P2 · iPhone 13 · Instalação limpa sem dados · Aba Aula — Botão com área de toque pequena**
-   - Ação: Preferir botões com área mínima próxima de 44x44px em mobile.
-11. **P2 · iPhone 13 · Instalação limpa sem dados · Aba Aula — Botão com área de toque pequena**
-   - Ação: Preferir botões com área mínima próxima de 44x44px em mobile.
-12. **P2 · iPhone 13 · Instalação limpa sem dados · Aba Aula — Botão com área de toque pequena**
-   - Ação: Preferir botões com área mínima próxima de 44x44px em mobile.
+   - Ação: Verificar se o exercício cobra algo realmente ensinado nesta aula.
 
 ## Principais problemas
 
-1. **P1 · Aula B2-READING-011 — Nenhum exercício detectado na aula ready**
-   - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: A aula pode ensinar sem exigir prática ativa do aluno.
-   - Recomendação: Adicionar exercícios, tarefas de tentativa ou perguntas avaliáveis.
-
-2. **P1 · iPhone 13 · Explorar aba Curso — Botão interativo fora da tela**
-   - Área executiva: Navegação e estabilidade
-   - Relatório: quality-director-exploratory-student-audit / iPhone 13
-   - Ocorrências agrupadas: 1
-   - Impacto: Aluno pode não conseguir acessar uma ação importante.
-   - Evidência: [{"text":"B1\nBLOQUEADO\nContinue pelo nível atual","disabled":false,"x":389,"y":846.265625,"width":168,"height":115.96875},{"text":"B2\nBLOQUEADO\nContinue pelo nível atual","disabled":false,"x":567,"y":846.265625,"width":168,"height":115.96875},{"text":"C1\nBLOQUEADO\nContinue pelo nível atual","disabled":false,"x":745,"y":846.265625,"width":168,"height":115.96875}]
-   - Recomendação: Ajustar layout responsivo e evitar botões cortados.
-
-3. **P1 · iPhone 13 · Explorar aba Speaking — Botão interativo fora da tela**
-   - Área executiva: Navegação e estabilidade
-   - Relatório: quality-director-exploratory-student-audit / iPhone 13
-   - Ocorrências agrupadas: 1
-   - Impacto: Aluno pode não conseguir acessar uma ação importante.
-   - Evidência: [{"text":"3\nCenário","disabled":false,"x":284.671875,"y":196,"width":112,"height":47},{"text":"4\nConversa","disabled":false,"x":405.671875,"y":196,"width":117.71875,"height":47},{"text":"5\nGravar","disabled":false,"x":532.390625,"y":196,"width":112,"height":47}]
-   - Recomendação: Ajustar layout responsivo e evitar botões cortados.
-
-4. **P1 · iPhone 13 · Explorar aba Hoje · ação 1 — Botão interativo fora da tela**
-   - Área executiva: Navegação e estabilidade
-   - Relatório: quality-director-exploratory-student-audit / iPhone 13
-   - Ocorrências agrupadas: 1
-   - Impacto: Aluno pode não conseguir acessar uma ação importante.
-   - Evidência: [{"text":"B1\nBLOQUEADO\nContinue pelo nível atual","disabled":false,"x":389,"y":846.265625,"width":168,"height":115.96875},{"text":"B2\nBLOQUEADO\nContinue pelo nível atual","disabled":false,"x":567,"y":846.265625,"width":168,"height":115.96875},{"text":"C1\nBLOQUEADO\nContinue pelo nível atual","disabled":false,"x":745,"y":846.265625,"width":168,"height":115.96875}]
-   - Recomendação: Ajustar layout responsivo e evitar botões cortados.
-
-5. **P1 · iPhone 13 · Explorar aba Hoje · ação 2 — Botão interativo fora da tela**
-   - Área executiva: Navegação e estabilidade
-   - Relatório: quality-director-exploratory-student-audit / iPhone 13
-   - Ocorrências agrupadas: 1
-   - Impacto: Aluno pode não conseguir acessar uma ação importante.
-   - Evidência: [{"text":"B1\nBLOQUEADO\nContinue pelo nível atual","disabled":false,"x":389,"y":846.265625,"width":168,"height":115.96875},{"text":"B2\nBLOQUEADO\nContinue pelo nível atual","disabled":false,"x":567,"y":846.265625,"width":168,"height":115.96875},{"text":"C1\nBLOQUEADO\nContinue pelo nível atual","disabled":false,"x":745,"y":846.265625,"width":168,"height":115.96875}]
-   - Recomendação: Ajustar layout responsivo e evitar botões cortados.
-
-6. **P1 · iPhone 13 · Explorar aba Curso · ação 1 — Botão interativo fora da tela**
-   - Área executiva: Navegação e estabilidade
-   - Relatório: quality-director-exploratory-student-audit / iPhone 13
-   - Ocorrências agrupadas: 1
-   - Impacto: Aluno pode não conseguir acessar uma ação importante.
-   - Evidência: [{"text":"B1\nBLOQUEADO\nContinue pelo nível atual","disabled":false,"x":389,"y":846.265625,"width":168,"height":115.96875},{"text":"B2\nBLOQUEADO\nContinue pelo nível atual","disabled":false,"x":567,"y":846.265625,"width":168,"height":115.96875},{"text":"C1\nBLOQUEADO\nContinue pelo nível atual","disabled":false,"x":745,"y":846.265625,"width":168,"height":115.96875}]
-   - Recomendação: Ajustar layout responsivo e evitar botões cortados.
-
-7. **P1 · iPhone 13 · Explorar aba Curso · ação 2 — Botão interativo fora da tela**
-   - Área executiva: Navegação e estabilidade
-   - Relatório: quality-director-exploratory-student-audit / iPhone 13
-   - Ocorrências agrupadas: 1
-   - Impacto: Aluno pode não conseguir acessar uma ação importante.
-   - Evidência: [{"text":"B1\nBLOQUEADO\nContinue pelo nível atual","disabled":false,"x":389,"y":846.265625,"width":168,"height":115.96875},{"text":"B2\nBLOQUEADO\nContinue pelo nível atual","disabled":false,"x":567,"y":846.265625,"width":168,"height":115.96875},{"text":"C1\nBLOQUEADO\nContinue pelo nível atual","disabled":false,"x":745,"y":846.265625,"width":168,"height":115.96875}]
-   - Recomendação: Ajustar layout responsivo e evitar botões cortados.
-
-8. **P1 · iPhone 13 · Explorar aba Aula · ação 1 — Botão interativo fora da tela**
-   - Área executiva: Navegação e estabilidade
-   - Relatório: quality-director-exploratory-student-audit / iPhone 13
-   - Ocorrências agrupadas: 1
-   - Impacto: Aluno pode não conseguir acessar uma ação importante.
-   - Evidência: [{"text":"B1\nBLOQUEADO\nContinue pelo nível atual","disabled":false,"x":389,"y":846.265625,"width":168,"height":115.96875},{"text":"B2\nBLOQUEADO\nContinue pelo nível atual","disabled":false,"x":567,"y":846.265625,"width":168,"height":115.96875},{"text":"C1\nBLOQUEADO\nContinue pelo nível atual","disabled":false,"x":745,"y":846.265625,"width":168,"height":115.96875}]
-   - Recomendação: Ajustar layout responsivo e evitar botões cortados.
-
-9. **P1 · iPhone 13 · Explorar aba Aula · ação 2 — Botão interativo fora da tela**
-   - Área executiva: Navegação e estabilidade
-   - Relatório: quality-director-exploratory-student-audit / iPhone 13
-   - Ocorrências agrupadas: 1
-   - Impacto: Aluno pode não conseguir acessar uma ação importante.
-   - Evidência: [{"text":"B1\nBLOQUEADO\nContinue pelo nível atual","disabled":false,"x":389,"y":846.265625,"width":168,"height":115.96875},{"text":"B2\nBLOQUEADO\nContinue pelo nível atual","disabled":false,"x":567,"y":846.265625,"width":168,"height":115.96875},{"text":"C1\nBLOQUEADO\nContinue pelo nível atual","disabled":false,"x":745,"y":846.265625,"width":168,"height":115.96875}]
-   - Recomendação: Ajustar layout responsivo e evitar botões cortados.
-
-10. **P1 · iPhone 13 · Explorar aba Cartas · ação 1 — Botão interativo fora da tela**
-   - Área executiva: Navegação e estabilidade
-   - Relatório: quality-director-exploratory-student-audit / iPhone 13
-   - Ocorrências agrupadas: 1
-   - Impacto: Aluno pode não conseguir acessar uma ação importante.
-   - Evidência: [{"text":"B1\nBLOQUEADO\nContinue pelo nível atual","disabled":false,"x":389,"y":846.265625,"width":168,"height":115.96875},{"text":"B2\nBLOQUEADO\nContinue pelo nível atual","disabled":false,"x":567,"y":846.265625,"width":168,"height":115.96875},{"text":"C1\nBLOQUEADO\nContinue pelo nível atual","disabled":false,"x":745,"y":846.265625,"width":168,"height":115.96875}]
-   - Recomendação: Ajustar layout responsivo e evitar botões cortados.
-
-11. **P1 · iPhone 13 · Explorar aba Cartas · ação 2 — Botão interativo fora da tela**
-   - Área executiva: Navegação e estabilidade
-   - Relatório: quality-director-exploratory-student-audit / iPhone 13
-   - Ocorrências agrupadas: 1
-   - Impacto: Aluno pode não conseguir acessar uma ação importante.
-   - Evidência: [{"text":"B1\nBLOQUEADO\nContinue pelo nível atual","disabled":false,"x":389,"y":846.265625,"width":168,"height":115.96875},{"text":"B2\nBLOQUEADO\nContinue pelo nível atual","disabled":false,"x":567,"y":846.265625,"width":168,"height":115.96875},{"text":"C1\nBLOQUEADO\nContinue pelo nível atual","disabled":false,"x":745,"y":846.265625,"width":168,"height":115.96875}]
-   - Recomendação: Ajustar layout responsivo e evitar botões cortados.
-
-12. **P1 · iPhone 13 · Explorar aba Speaking · ação 1 — Botão interativo fora da tela**
-   - Área executiva: Navegação e estabilidade
-   - Relatório: quality-director-exploratory-student-audit / iPhone 13
-   - Ocorrências agrupadas: 1
-   - Impacto: Aluno pode não conseguir acessar uma ação importante.
-   - Evidência: [{"text":"B1\nBLOQUEADO\nContinue pelo nível atual","disabled":false,"x":389,"y":846.265625,"width":168,"height":115.96875},{"text":"B2\nBLOQUEADO\nContinue pelo nível atual","disabled":false,"x":567,"y":846.265625,"width":168,"height":115.96875},{"text":"C1\nBLOQUEADO\nContinue pelo nível atual","disabled":false,"x":745,"y":846.265625,"width":168,"height":115.96875}]
-   - Recomendação: Ajustar layout responsivo e evitar botões cortados.
-
-13. **P1 · iPhone 13 · Explorar aba Speaking · ação 2 — Botão interativo fora da tela**
-   - Área executiva: Navegação e estabilidade
-   - Relatório: quality-director-exploratory-student-audit / iPhone 13
-   - Ocorrências agrupadas: 1
-   - Impacto: Aluno pode não conseguir acessar uma ação importante.
-   - Evidência: [{"text":"B1\nBLOQUEADO\nContinue pelo nível atual","disabled":false,"x":389,"y":846.265625,"width":168,"height":115.96875},{"text":"B2\nBLOQUEADO\nContinue pelo nível atual","disabled":false,"x":567,"y":846.265625,"width":168,"height":115.96875},{"text":"C1\nBLOQUEADO\nContinue pelo nível atual","disabled":false,"x":745,"y":846.265625,"width":168,"height":115.96875}]
-   - Recomendação: Ajustar layout responsivo e evitar botões cortados.
-
-14. **P1 · iPhone 13 · Explorar aba Progresso · ação 1 — Botão interativo fora da tela**
-   - Área executiva: Navegação e estabilidade
-   - Relatório: quality-director-exploratory-student-audit / iPhone 13
-   - Ocorrências agrupadas: 1
-   - Impacto: Aluno pode não conseguir acessar uma ação importante.
-   - Evidência: [{"text":"B1\nBLOQUEADO\nContinue pelo nível atual","disabled":false,"x":389,"y":846.265625,"width":168,"height":115.96875},{"text":"B2\nBLOQUEADO\nContinue pelo nível atual","disabled":false,"x":567,"y":846.265625,"width":168,"height":115.96875},{"text":"C1\nBLOQUEADO\nContinue pelo nível atual","disabled":false,"x":745,"y":846.265625,"width":168,"height":115.96875}]
-   - Recomendação: Ajustar layout responsivo e evitar botões cortados.
-
-15. **P1 · iPhone 13 · Explorar aba Progresso · ação 2 — Botão interativo fora da tela**
-   - Área executiva: Navegação e estabilidade
-   - Relatório: quality-director-exploratory-student-audit / iPhone 13
-   - Ocorrências agrupadas: 1
-   - Impacto: Aluno pode não conseguir acessar uma ação importante.
-   - Evidência: [{"text":"B1\nBLOQUEADO\nContinue pelo nível atual","disabled":false,"x":389,"y":846.265625,"width":168,"height":115.96875},{"text":"B2\nBLOQUEADO\nContinue pelo nível atual","disabled":false,"x":567,"y":846.265625,"width":168,"height":115.96875},{"text":"C1\nBLOQUEADO\nContinue pelo nível atual","disabled":false,"x":745,"y":846.265625,"width":168,"height":115.96875}]
-   - Recomendação: Ajustar layout responsivo e evitar botões cortados.
-
-16. **P1 · iPhone 13 · Explorar aba Ajustes · ação 1 — Botão interativo fora da tela**
-   - Área executiva: Navegação e estabilidade
-   - Relatório: quality-director-exploratory-student-audit / iPhone 13
-   - Ocorrências agrupadas: 1
-   - Impacto: Aluno pode não conseguir acessar uma ação importante.
-   - Evidência: [{"text":"B1\nBLOQUEADO\nContinue pelo nível atual","disabled":false,"x":389,"y":846.265625,"width":168,"height":115.96875},{"text":"B2\nBLOQUEADO\nContinue pelo nível atual","disabled":false,"x":567,"y":846.265625,"width":168,"height":115.96875},{"text":"C1\nBLOQUEADO\nContinue pelo nível atual","disabled":false,"x":745,"y":846.265625,"width":168,"height":115.96875}]
-   - Recomendação: Ajustar layout responsivo e evitar botões cortados.
-
-17. **P1 · iPhone 13 · Explorar aba Ajustes · ação 2 — Botão interativo fora da tela**
-   - Área executiva: Navegação e estabilidade
-   - Relatório: quality-director-exploratory-student-audit / iPhone 13
-   - Ocorrências agrupadas: 1
-   - Impacto: Aluno pode não conseguir acessar uma ação importante.
-   - Evidência: [{"text":"B1\nBLOQUEADO\nContinue pelo nível atual","disabled":false,"x":389,"y":846.265625,"width":168,"height":115.96875},{"text":"B2\nBLOQUEADO\nContinue pelo nível atual","disabled":false,"x":567,"y":846.265625,"width":168,"height":115.96875},{"text":"C1\nBLOQUEADO\nContinue pelo nível atual","disabled":false,"x":745,"y":846.265625,"width":168,"height":115.96875}]
-   - Recomendação: Ajustar layout responsivo e evitar botões cortados.
-
-18. **P1 · iPhone 13 · Explorar aula A1-GRAMMAR-001 · etapa 1 — Botão interativo fora da tela**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-exploratory-student-audit / iPhone 13
-   - Ocorrências agrupadas: 1
-   - Impacto: Aluno pode não conseguir acessar uma ação importante.
-   - Evidência: [{"text":"Forma","disabled":true,"x":333.46875,"y":246.765625,"width":83.484375,"height":36},{"text":"Passos","disabled":true,"x":424.953125,"y":246.765625,"width":87.25,"height":36},{"text":"Exemplos","disabled":true,"x":520.203125,"y":246.765625,"width":105.671875,"height":36}]
-   - Recomendação: Ajustar layout responsivo e evitar botões cortados.
-
-19. **P1 · iPhone 13 · Explorar aula A1-GRAMMAR-001 · etapa 2 — Botão interativo fora da tela**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-exploratory-student-audit / iPhone 13
-   - Ocorrências agrupadas: 1
-   - Impacto: Aluno pode não conseguir acessar uma ação importante.
-   - Evidência: [{"text":"Forma","disabled":true,"x":333.46875,"y":246.765625,"width":83.484375,"height":36},{"text":"Passos","disabled":true,"x":424.953125,"y":246.765625,"width":87.25,"height":36},{"text":"Exemplos","disabled":true,"x":520.203125,"y":246.765625,"width":105.671875,"height":36}]
-   - Recomendação: Ajustar layout responsivo e evitar botões cortados.
-
-20. **P1 · iPhone 13 · Explorar aula A1-GRAMMAR-001 · etapa 3 — Botão interativo fora da tela**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-exploratory-student-audit / iPhone 13
-   - Ocorrências agrupadas: 1
-   - Impacto: Aluno pode não conseguir acessar uma ação importante.
-   - Evidência: [{"text":"Forma","disabled":true,"x":333.46875,"y":246.765625,"width":83.484375,"height":36},{"text":"Passos","disabled":true,"x":424.953125,"y":246.765625,"width":87.25,"height":36},{"text":"Exemplos","disabled":true,"x":520.203125,"y":246.765625,"width":105.671875,"height":36}]
-   - Recomendação: Ajustar layout responsivo e evitar botões cortados.
-
-21. **P1 · iPhone 13 · Explorar aula A1-VOCABULARY-001 · etapa 1 — Botão interativo fora da tela**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-exploratory-student-audit / iPhone 13
-   - Ocorrências agrupadas: 1
-   - Impacto: Aluno pode não conseguir acessar uma ação importante.
-   - Evidência: [{"text":"Pronúncia","disabled":true,"x":333.53125,"y":246.265625,"width":108.921875,"height":36},{"text":"Confusões","disabled":true,"x":450.453125,"y":246.265625,"width":111.03125,"height":36},{"text":"Diálogo 1","disabled":true,"x":569.484375,"y":246.265625,"width":104.890625,"height":36}]
-   - Recomendação: Ajustar layout responsivo e evitar botões cortados.
-
-22. **P1 · iPhone 13 · Explorar aula A1-VOCABULARY-001 · etapa 2 — Botão interativo fora da tela**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-exploratory-student-audit / iPhone 13
-   - Ocorrências agrupadas: 1
-   - Impacto: Aluno pode não conseguir acessar uma ação importante.
-   - Evidência: [{"text":"Pronúncia","disabled":true,"x":333.53125,"y":246.265625,"width":108.921875,"height":36},{"text":"Confusões","disabled":true,"x":450.453125,"y":246.265625,"width":111.03125,"height":36},{"text":"Diálogo 1","disabled":true,"x":569.484375,"y":246.265625,"width":104.890625,"height":36}]
-   - Recomendação: Ajustar layout responsivo e evitar botões cortados.
-
-23. **P1 · iPhone 13 · Explorar aula A1-VOCABULARY-001 · etapa 3 — Botão interativo fora da tela**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-exploratory-student-audit / iPhone 13
-   - Ocorrências agrupadas: 1
-   - Impacto: Aluno pode não conseguir acessar uma ação importante.
-   - Evidência: [{"text":"Pronúncia","disabled":true,"x":333.53125,"y":246.265625,"width":108.921875,"height":36},{"text":"Confusões","disabled":true,"x":450.453125,"y":246.265625,"width":111.03125,"height":36},{"text":"Diálogo 1","disabled":true,"x":569.484375,"y":246.265625,"width":104.890625,"height":36}]
-   - Recomendação: Ajustar layout responsivo e evitar botões cortados.
-
-24. **P1 · iPhone 13 · Explorar aula A1-READING-001 · etapa 1 — Botão interativo fora da tela**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-exploratory-student-audit / iPhone 13
-   - Ocorrências agrupadas: 1
-   - Impacto: Aluno pode não conseguir acessar uma ação importante.
-   - Evidência: [{"text":"Texto","disabled":true,"x":371.46875,"y":246.765625,"width":77.453125,"height":36},{"text":"1ª leitura","disabled":true,"x":456.921875,"y":246.765625,"width":104.96875,"height":36},{"text":"2ª leitura 1","disabled":true,"x":569.890625,"y":246.765625,"width":117.484375,"height":36}]
-   - Recomendação: Ajustar layout responsivo e evitar botões cortados.
-
-25. **P1 · iPhone 13 · Explorar aula A1-READING-001 · etapa 2 — Botão interativo fora da tela**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-exploratory-student-audit / iPhone 13
-   - Ocorrências agrupadas: 1
-   - Impacto: Aluno pode não conseguir acessar uma ação importante.
-   - Evidência: [{"text":"Texto","disabled":true,"x":371.46875,"y":246.765625,"width":77.453125,"height":36},{"text":"1ª leitura","disabled":true,"x":456.921875,"y":246.765625,"width":104.96875,"height":36},{"text":"2ª leitura 1","disabled":true,"x":569.890625,"y":246.765625,"width":117.484375,"height":36}]
-   - Recomendação: Ajustar layout responsivo e evitar botões cortados.
-
-26. **P1 · iPhone 13 · Explorar aula A1-READING-001 · etapa 3 — Botão interativo fora da tela**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-exploratory-student-audit / iPhone 13
-   - Ocorrências agrupadas: 1
-   - Impacto: Aluno pode não conseguir acessar uma ação importante.
-   - Evidência: [{"text":"Texto","disabled":true,"x":371.46875,"y":246.765625,"width":77.453125,"height":36},{"text":"1ª leitura","disabled":true,"x":456.921875,"y":246.765625,"width":104.96875,"height":36},{"text":"2ª leitura 1","disabled":true,"x":569.890625,"y":246.765625,"width":117.484375,"height":36}]
-   - Recomendação: Ajustar layout responsivo e evitar botões cortados.
-
-27. **P1 · iPhone 13 · Explorar aula A1-LISTENING-001 · etapa 1 — Botão interativo fora da tela**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-exploratory-student-audit / iPhone 13
-   - Ocorrências agrupadas: 1
-   - Impacto: Aluno pode não conseguir acessar uma ação importante.
-   - Evidência: [{"text":"1ª tarefa 1","disabled":true,"x":346.328125,"y":246.265625,"width":114.03125,"height":36},{"text":"1ª tarefa 2","disabled":true,"x":468.359375,"y":246.265625,"width":114.03125,"height":36},{"text":"1ª tarefa 3","disabled":true,"x":590.390625,"y":246.265625,"width":114.03125,"height":36}]
-   - Recomendação: Ajustar layout responsivo e evitar botões cortados.
-
-28. **P1 · Explorar aula A1-LISTENING-001 — Possível resposta/modelo apareceu antes da tentativa**
+1. **P1 · Explorar aula A1-LISTENING-001 — Possível resposta/modelo apareceu antes da tentativa**
    - Área executiva: Aulas e pedagogia
    - Relatório: quality-director-exploratory-student-audit / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 6
@@ -353,101 +145,317 @@ Gerado em: 2026-05-20T10:48:36.435Z
    - Evidência: Padrão encontrado antes da tentativa: /transcript/i
    - Recomendação: Garantir que gabarito, transcript, modelo e resposta esperada só apareçam após tentativa quando a etapa exigir descoberta.
 
-29. **P1 · iPhone 13 · Explorar aula A1-LISTENING-001 · etapa 2 — Botão interativo fora da tela**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-exploratory-student-audit / iPhone 13
-   - Ocorrências agrupadas: 1
-   - Impacto: Aluno pode não conseguir acessar uma ação importante.
-   - Evidência: [{"text":"1ª tarefa 1","disabled":true,"x":346.328125,"y":246.265625,"width":114.03125,"height":36},{"text":"1ª tarefa 2","disabled":true,"x":468.359375,"y":246.265625,"width":114.03125,"height":36},{"text":"1ª tarefa 3","disabled":true,"x":590.390625,"y":246.265625,"width":114.03125,"height":36}]
-   - Recomendação: Ajustar layout responsivo e evitar botões cortados.
-
-30. **P1 · iPhone 13 · Explorar aula A1-LISTENING-001 · etapa 3 — Botão interativo fora da tela**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-exploratory-student-audit / iPhone 13
-   - Ocorrências agrupadas: 1
-   - Impacto: Aluno pode não conseguir acessar uma ação importante.
-   - Evidência: [{"text":"1ª tarefa 1","disabled":true,"x":346.328125,"y":246.265625,"width":114.03125,"height":36},{"text":"1ª tarefa 2","disabled":true,"x":468.359375,"y":246.265625,"width":114.03125,"height":36},{"text":"1ª tarefa 3","disabled":true,"x":590.390625,"y":246.265625,"width":114.03125,"height":36}]
-   - Recomendação: Ajustar layout responsivo e evitar botões cortados.
-
-31. **P1 · iPhone 13 · Explorar aula A1-SPEAKING-001 · etapa 1 — Botão interativo fora da tela**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-exploratory-student-audit / iPhone 13
-   - Ocorrências agrupadas: 1
-   - Impacto: Aluno pode não conseguir acessar uma ação importante.
-   - Evidência: [{"text":"Repetir 1","disabled":true,"x":340.796875,"y":246.265625,"width":103.40625,"height":36},{"text":"Repetir 2","disabled":true,"x":452.203125,"y":246.265625,"width":103.40625,"height":36},{"text":"Repetir 3","disabled":true,"x":563.609375,"y":246.265625,"width":103.40625,"height":36}]
-   - Recomendação: Ajustar layout responsivo e evitar botões cortados.
-
-32. **P1 · iPhone 13 · Explorar aula A1-SPEAKING-001 · etapa 2 — Botão interativo fora da tela**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-exploratory-student-audit / iPhone 13
-   - Ocorrências agrupadas: 1
-   - Impacto: Aluno pode não conseguir acessar uma ação importante.
-   - Evidência: [{"text":"Repetir 1","disabled":true,"x":340.796875,"y":246.265625,"width":103.40625,"height":36},{"text":"Repetir 2","disabled":true,"x":452.203125,"y":246.265625,"width":103.40625,"height":36},{"text":"Repetir 3","disabled":true,"x":563.609375,"y":246.265625,"width":103.40625,"height":36}]
-   - Recomendação: Ajustar layout responsivo e evitar botões cortados.
-
-33. **P1 · iPhone 13 · Explorar aula A1-SPEAKING-001 · etapa 3 — Botão interativo fora da tela**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-exploratory-student-audit / iPhone 13
-   - Ocorrências agrupadas: 1
-   - Impacto: Aluno pode não conseguir acessar uma ação importante.
-   - Evidência: [{"text":"Repetir 1","disabled":true,"x":340.796875,"y":246.265625,"width":103.40625,"height":36},{"text":"Repetir 2","disabled":true,"x":452.203125,"y":246.265625,"width":103.40625,"height":36},{"text":"Repetir 3","disabled":true,"x":563.609375,"y":246.265625,"width":103.40625,"height":36}]
-   - Recomendação: Ajustar layout responsivo e evitar botões cortados.
-
-34. **P1 · iPhone 13 · Explorar aula A1-WRITING-001 · etapa 1 — Botão interativo fora da tela**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-exploratory-student-audit / iPhone 13
-   - Ocorrências agrupadas: 1
-   - Impacto: Aluno pode não conseguir acessar uma ação importante.
-   - Evidência: [{"text":"Gramática","disabled":true,"x":301.8125,"y":272.625,"width":110.53125,"height":36},{"text":"Subst. 1","disabled":true,"x":420.34375,"y":272.625,"width":96.75,"height":36},{"text":"Subst. 2","disabled":true,"x":525.09375,"y":272.625,"width":96.75,"height":36}]
-   - Recomendação: Ajustar layout responsivo e evitar botões cortados.
-
-35. **P1 · iPhone 13 · Explorar aula A1-WRITING-001 · etapa 2 — Botão interativo fora da tela**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-exploratory-student-audit / iPhone 13
-   - Ocorrências agrupadas: 1
-   - Impacto: Aluno pode não conseguir acessar uma ação importante.
-   - Evidência: [{"text":"Gramática","disabled":true,"x":301.8125,"y":272.625,"width":110.53125,"height":36},{"text":"Subst. 1","disabled":true,"x":420.34375,"y":272.625,"width":96.75,"height":36},{"text":"Subst. 2","disabled":true,"x":525.09375,"y":272.625,"width":96.75,"height":36}]
-   - Recomendação: Ajustar layout responsivo e evitar botões cortados.
-
-36. **P1 · iPhone 13 · Explorar aula A1-WRITING-001 · etapa 3 — Botão interativo fora da tela**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-exploratory-student-audit / iPhone 13
-   - Ocorrências agrupadas: 1
-   - Impacto: Aluno pode não conseguir acessar uma ação importante.
-   - Evidência: [{"text":"Gramática","disabled":true,"x":301.8125,"y":272.625,"width":110.53125,"height":36},{"text":"Subst. 1","disabled":true,"x":420.34375,"y":272.625,"width":96.75,"height":36},{"text":"Subst. 2","disabled":true,"x":525.09375,"y":272.625,"width":96.75,"height":36}]
-   - Recomendação: Ajustar layout responsivo e evitar botões cortados.
-
-37. **P1 · iPhone SE · Explorar aba Curso — Botão interativo fora da tela**
+2. **P1 · iPhone SE · Explorar aba Speaking — Botão interativo fora da tela**
    - Área executiva: Navegação e estabilidade
    - Relatório: quality-director-exploratory-student-audit / iPhone SE
    - Ocorrências agrupadas: 1
    - Impacto: Aluno pode não conseguir acessar uma ação importante.
-   - Evidência: [{"text":"B1\nBLOQUEADO\nContinue pelo nível atual","disabled":false,"x":389,"y":843.390625,"width":168,"height":115.96875},{"text":"B2\nBLOQUEADO\nContinue pelo nível atual","disabled":false,"x":567,"y":843.390625,"width":168,"height":115.96875},{"text":"C1\nBLOQUEADO\nContinue pelo nível atual","disabled":false,"x":745,"y":843.390625,"width":168,"height":115.96875}]
+   - Evidência: [{"text":"Imersão","disabled":false,"inHScroll":false,"x":314.71875,"y":93,"width":74,"height":44}]
    - Recomendação: Ajustar layout responsivo e evitar botões cortados.
 
-38. **P1 · iPhone SE · Explorar aba Speaking — Botão interativo fora da tela**
-   - Área executiva: Navegação e estabilidade
-   - Relatório: quality-director-exploratory-student-audit / iPhone SE
-   - Ocorrências agrupadas: 1
-   - Impacto: Aluno pode não conseguir acessar uma ação importante.
-   - Evidência: [{"text":"Imersão","disabled":false,"x":314.71875,"y":93,"width":74,"height":34},{"text":"3\nCenário","disabled":false,"x":284.671875,"y":196,"width":112,"height":47},{"text":"4\nConversa","disabled":false,"x":405.671875,"y":196,"width":117.71875,"height":47}]
-   - Recomendação: Ajustar layout responsivo e evitar botões cortados.
+3. **P1 · Aula A1-GRAMMAR-007 — Distratores absurdos ou fáceis demais**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno acerta por eliminação sem aprender ou compreender o conteúdo.
+   - Evidência: Grupo 32: is | blue | table
+   - Recomendação: Trocar por distratores plausíveis, próximos do tema da aula.
 
-39. **P1 · iPhone SE · Explorar aba Hoje · ação 1 — Botão interativo fora da tela**
-   - Área executiva: Navegação e estabilidade
-   - Relatório: quality-director-exploratory-student-audit / iPhone SE
-   - Ocorrências agrupadas: 1
-   - Impacto: Aluno pode não conseguir acessar uma ação importante.
-   - Evidência: [{"text":"B1\nBLOQUEADO\nContinue pelo nível atual","disabled":false,"x":389,"y":843.390625,"width":168,"height":115.96875},{"text":"B2\nBLOQUEADO\nContinue pelo nível atual","disabled":false,"x":567,"y":843.390625,"width":168,"height":115.96875},{"text":"C1\nBLOQUEADO\nContinue pelo nível atual","disabled":false,"x":745,"y":843.390625,"width":168,"height":115.96875}]
-   - Recomendação: Ajustar layout responsivo e evitar botões cortados.
+4. **P1 · Aula A1-GRAMMAR-007 — Distratores absurdos ou fáceis demais**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno acerta por eliminação sem aprender ou compreender o conteúdo.
+   - Evidência: Grupo 33: is | blue | table
+   - Recomendação: Trocar por distratores plausíveis, próximos do tema da aula.
 
-40. **P1 · iPhone SE · Explorar aba Hoje · ação 2 — Botão interativo fora da tela**
-   - Área executiva: Navegação e estabilidade
-   - Relatório: quality-director-exploratory-student-audit / iPhone SE
-   - Ocorrências agrupadas: 1
-   - Impacto: Aluno pode não conseguir acessar uma ação importante.
-   - Evidência: [{"text":"B1\nBLOQUEADO\nContinue pelo nível atual","disabled":false,"x":389,"y":843.390625,"width":168,"height":115.96875},{"text":"B2\nBLOQUEADO\nContinue pelo nível atual","disabled":false,"x":567,"y":843.390625,"width":168,"height":115.96875},{"text":"C1\nBLOQUEADO\nContinue pelo nível atual","disabled":false,"x":745,"y":843.390625,"width":168,"height":115.96875}]
-   - Recomendação: Ajustar layout responsivo e evitar botões cortados.
+5. **P1 · Aula A1-GRAMMAR-008 — Distratores absurdos ou fáceis demais**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno acerta por eliminação sem aprender ou compreender o conteúdo.
+   - Evidência: Grupo 32: is | blue | table
+   - Recomendação: Trocar por distratores plausíveis, próximos do tema da aula.
+
+6. **P1 · Aula A1-GRAMMAR-008 — Distratores absurdos ou fáceis demais**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno acerta por eliminação sem aprender ou compreender o conteúdo.
+   - Evidência: Grupo 33: is | blue | table
+   - Recomendação: Trocar por distratores plausíveis, próximos do tema da aula.
+
+7. **P1 · Aula A1-GRAMMAR-009 — Distratores absurdos ou fáceis demais**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno acerta por eliminação sem aprender ou compreender o conteúdo.
+   - Evidência: Grupo 32: is | blue | table
+   - Recomendação: Trocar por distratores plausíveis, próximos do tema da aula.
+
+8. **P1 · Aula A1-GRAMMAR-009 — Distratores absurdos ou fáceis demais**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno acerta por eliminação sem aprender ou compreender o conteúdo.
+   - Evidência: Grupo 33: is | blue | table
+   - Recomendação: Trocar por distratores plausíveis, próximos do tema da aula.
+
+9. **P1 · Aula A1-GRAMMAR-010 — Distratores absurdos ou fáceis demais**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno acerta por eliminação sem aprender ou compreender o conteúdo.
+   - Evidência: Grupo 32: is | blue | table
+   - Recomendação: Trocar por distratores plausíveis, próximos do tema da aula.
+
+10. **P1 · Aula A1-GRAMMAR-010 — Distratores absurdos ou fáceis demais**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno acerta por eliminação sem aprender ou compreender o conteúdo.
+   - Evidência: Grupo 33: is | blue | table
+   - Recomendação: Trocar por distratores plausíveis, próximos do tema da aula.
+
+11. **P1 · Aula A1-GRAMMAR-011 — Distratores absurdos ou fáceis demais**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno acerta por eliminação sem aprender ou compreender o conteúdo.
+   - Evidência: Grupo 32: is | blue | table
+   - Recomendação: Trocar por distratores plausíveis, próximos do tema da aula.
+
+12. **P1 · Aula A1-GRAMMAR-011 — Distratores absurdos ou fáceis demais**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno acerta por eliminação sem aprender ou compreender o conteúdo.
+   - Evidência: Grupo 33: is | blue | table
+   - Recomendação: Trocar por distratores plausíveis, próximos do tema da aula.
+
+13. **P1 · Aula A1-GRAMMAR-012 — Distratores absurdos ou fáceis demais**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno acerta por eliminação sem aprender ou compreender o conteúdo.
+   - Evidência: Grupo 32: is | blue | table
+   - Recomendação: Trocar por distratores plausíveis, próximos do tema da aula.
+
+14. **P1 · Aula A1-GRAMMAR-012 — Distratores absurdos ou fáceis demais**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno acerta por eliminação sem aprender ou compreender o conteúdo.
+   - Evidência: Grupo 33: is | blue | table
+   - Recomendação: Trocar por distratores plausíveis, próximos do tema da aula.
+
+15. **P1 · Aula A1-GRAMMAR-013 — Distratores absurdos ou fáceis demais**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno acerta por eliminação sem aprender ou compreender o conteúdo.
+   - Evidência: Grupo 32: is | blue | table
+   - Recomendação: Trocar por distratores plausíveis, próximos do tema da aula.
+
+16. **P1 · Aula A1-GRAMMAR-013 — Distratores absurdos ou fáceis demais**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno acerta por eliminação sem aprender ou compreender o conteúdo.
+   - Evidência: Grupo 33: is | blue | table
+   - Recomendação: Trocar por distratores plausíveis, próximos do tema da aula.
+
+17. **P1 · Aula A1-GRAMMAR-015 — Distratores absurdos ou fáceis demais**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno acerta por eliminação sem aprender ou compreender o conteúdo.
+   - Evidência: Grupo 32: is | blue | table
+   - Recomendação: Trocar por distratores plausíveis, próximos do tema da aula.
+
+18. **P1 · Aula A1-GRAMMAR-015 — Distratores absurdos ou fáceis demais**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno acerta por eliminação sem aprender ou compreender o conteúdo.
+   - Evidência: Grupo 33: is | blue | table
+   - Recomendação: Trocar por distratores plausíveis, próximos do tema da aula.
+
+19. **P1 · Aula A1-GRAMMAR-016 — Distratores absurdos ou fáceis demais**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno acerta por eliminação sem aprender ou compreender o conteúdo.
+   - Evidência: Grupo 32: is | blue | table
+   - Recomendação: Trocar por distratores plausíveis, próximos do tema da aula.
+
+20. **P1 · Aula A1-GRAMMAR-016 — Distratores absurdos ou fáceis demais**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno acerta por eliminação sem aprender ou compreender o conteúdo.
+   - Evidência: Grupo 33: is | blue | table
+   - Recomendação: Trocar por distratores plausíveis, próximos do tema da aula.
+
+21. **P1 · Aula A1-GRAMMAR-017 — Distratores absurdos ou fáceis demais**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno acerta por eliminação sem aprender ou compreender o conteúdo.
+   - Evidência: Grupo 33: is | blue | table
+   - Recomendação: Trocar por distratores plausíveis, próximos do tema da aula.
+
+22. **P1 · Aula A1-GRAMMAR-017 — Distratores absurdos ou fáceis demais**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno acerta por eliminação sem aprender ou compreender o conteúdo.
+   - Evidência: Grupo 34: is | blue | table
+   - Recomendação: Trocar por distratores plausíveis, próximos do tema da aula.
+
+23. **P1 · Aula A1-GRAMMAR-018 — Distratores absurdos ou fáceis demais**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno acerta por eliminação sem aprender ou compreender o conteúdo.
+   - Evidência: Grupo 32: is | blue | table
+   - Recomendação: Trocar por distratores plausíveis, próximos do tema da aula.
+
+24. **P1 · Aula A1-GRAMMAR-018 — Distratores absurdos ou fáceis demais**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno acerta por eliminação sem aprender ou compreender o conteúdo.
+   - Evidência: Grupo 33: is | blue | table
+   - Recomendação: Trocar por distratores plausíveis, próximos do tema da aula.
+
+25. **P1 · Aula A1-GRAMMAR-019 — Distratores absurdos ou fáceis demais**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno acerta por eliminação sem aprender ou compreender o conteúdo.
+   - Evidência: Grupo 32: is | blue | table
+   - Recomendação: Trocar por distratores plausíveis, próximos do tema da aula.
+
+26. **P1 · Aula A1-GRAMMAR-019 — Distratores absurdos ou fáceis demais**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno acerta por eliminação sem aprender ou compreender o conteúdo.
+   - Evidência: Grupo 33: is | blue | table
+   - Recomendação: Trocar por distratores plausíveis, próximos do tema da aula.
+
+27. **P1 · Aula A1-GRAMMAR-020 — Distratores absurdos ou fáceis demais**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno acerta por eliminação sem aprender ou compreender o conteúdo.
+   - Evidência: Grupo 33: is | blue | table
+   - Recomendação: Trocar por distratores plausíveis, próximos do tema da aula.
+
+28. **P1 · Aula A1-GRAMMAR-020 — Distratores absurdos ou fáceis demais**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno acerta por eliminação sem aprender ou compreender o conteúdo.
+   - Evidência: Grupo 34: is | blue | table
+   - Recomendação: Trocar por distratores plausíveis, próximos do tema da aula.
+
+29. **P1 · Aula A1-GRAMMAR-027 — Distratores absurdos ou fáceis demais**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno acerta por eliminação sem aprender ou compreender o conteúdo.
+   - Evidência: Grupo 30: is | blue | table
+   - Recomendação: Trocar por distratores plausíveis, próximos do tema da aula.
+
+30. **P1 · Aula A1-GRAMMAR-027 — Distratores absurdos ou fáceis demais**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno acerta por eliminação sem aprender ou compreender o conteúdo.
+   - Evidência: Grupo 31: is | blue | table
+   - Recomendação: Trocar por distratores plausíveis, próximos do tema da aula.
+
+31. **P1 · Aula A1-VOCABULARY-006 — Texto genérico/placeholder detectado na aula**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: Exercícios ou instruções podem parecer gerados às pressas.
+   - Evidência: Padrão encontrado: /option\s*[abcd]/i
+   - Recomendação: Substituir placeholders por textos específicos da aula.
+
+32. **P1 · Aula A1-VOCABULARY-007 — Texto genérico/placeholder detectado na aula**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: Exercícios ou instruções podem parecer gerados às pressas.
+   - Evidência: Padrão encontrado: /option\s*[abcd]/i
+   - Recomendação: Substituir placeholders por textos específicos da aula.
+
+33. **P1 · Aula A1-VOCABULARY-008 — Texto genérico/placeholder detectado na aula**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: Exercícios ou instruções podem parecer gerados às pressas.
+   - Evidência: Padrão encontrado: /option\s*[abcd]/i
+   - Recomendação: Substituir placeholders por textos específicos da aula.
+
+34. **P1 · Aula A1-VOCABULARY-009 — Texto genérico/placeholder detectado na aula**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: Exercícios ou instruções podem parecer gerados às pressas.
+   - Evidência: Padrão encontrado: /option\s*[abcd]/i
+   - Recomendação: Substituir placeholders por textos específicos da aula.
+
+35. **P1 · Aula A1-VOCABULARY-010 — Texto genérico/placeholder detectado na aula**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: Exercícios ou instruções podem parecer gerados às pressas.
+   - Evidência: Padrão encontrado: /option\s*[abcd]/i
+   - Recomendação: Substituir placeholders por textos específicos da aula.
+
+36. **P1 · Aula A1-VOCABULARY-011 — Texto genérico/placeholder detectado na aula**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: Exercícios ou instruções podem parecer gerados às pressas.
+   - Evidência: Padrão encontrado: /option\s*[abcd]/i
+   - Recomendação: Substituir placeholders por textos específicos da aula.
+
+37. **P1 · Aula A1-VOCABULARY-017 — Texto genérico/placeholder detectado na aula**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: Exercícios ou instruções podem parecer gerados às pressas.
+   - Evidência: Padrão encontrado: /option\s*[abcd]/i
+   - Recomendação: Substituir placeholders por textos específicos da aula.
+
+38. **P1 · Aula A1-VOCABULARY-018 — Texto genérico/placeholder detectado na aula**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: Exercícios ou instruções podem parecer gerados às pressas.
+   - Evidência: Padrão encontrado: /option\s*[abcd]/i
+   - Recomendação: Substituir placeholders por textos específicos da aula.
+
+39. **P1 · Aula A2-GRAMMAR-027 — Texto genérico/placeholder detectado na aula**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: Exercícios ou instruções podem parecer gerados às pressas.
+   - Evidência: Padrão encontrado: /option\s*[abcd]/i
+   - Recomendação: Substituir placeholders por textos específicos da aula.
+
+40. **P1 · Aula A2-READING-012 — Texto genérico/placeholder detectado na aula**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-lesson-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: Exercícios ou instruções podem parecer gerados às pressas.
+   - Evidência: Padrão encontrado: /option\s*[abcd]/i
+   - Recomendação: Substituir placeholders por textos específicos da aula.
 
 
 ## Como usar este relatório
