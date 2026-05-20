@@ -8,6 +8,30 @@ export const GENERIC_EXERCISE_PATTERNS = [
   /lorem ipsum/i,
 ];
 
+// Mesmas categorias semânticas do exerciseQualityRules para alinhar
+// detecção contextual (Bloco 4/9).
+const SEMANTIC_CATEGORIES = [
+  new Set(['water', 'coffee', 'tea', 'juice', 'milk', 'soda', 'beer', 'wine']),
+  new Set(['blue', 'black', 'red', 'green', 'yellow', 'white', 'brown', 'gray', 'grey', 'pink', 'orange', 'purple']),
+  new Set(['pizza', 'sandwich', 'bread', 'banana', 'apple', 'rice', 'pasta', 'cake']),
+  new Set(['dog', 'cat', 'bird', 'fish', 'horse']),
+  new Set(['car', 'bus', 'train', 'bike', 'plane']),
+  new Set(['football', 'soccer', 'tennis', 'basketball']),
+  new Set(['music', 'song', 'piano', 'guitar']),
+];
+// Palavras gramaticais/funcionais — quando aparecem no grupo, é drill
+// estrutural (não MCQ comum).
+const GRAMMAR_STRUCTURAL_WORDS = new Set([
+  'am', 'is', 'are', 'was', 'were', 'be', 'been', 'being',
+  'a', 'an', 'the', 'my', 'your', 'his', 'her', 'our', 'their',
+  'this', 'that', 'these', 'those', 'there',
+  'do', 'does', 'did', 'can', 'could', 'will', 'would', 'should',
+  'have', 'has', 'had',
+  'not', 'no', 'never',
+  'and', 'or', 'but', 'so', 'because',
+  'in', 'on', 'at', 'to', 'for', 'with', 'from', 'by',
+]);
+
 export const ABSURD_DISTRACTOR_WORDS = [
   'banana',
   'car',
@@ -158,13 +182,30 @@ export function auditLessonObject(lesson) {
 
     const absurdMatches = options.filter((option) => ABSURD_DISTRACTOR_WORDS.includes(option.toLowerCase()));
     if (absurdMatches.length >= 2) {
+      // Drill estrutural: se o grupo contém uma palavra gramatical/funcional
+      // (is/are/the/this/do/...), o objetivo provavelmente é distinguir a
+      // palavra estrutural de palavras de conteúdo — não é absurdo por
+      // eliminação, é o desenho do exercício. Rebaixa para P2.
+      const structuralPresent = options.some((option) => GRAMMAR_STRUCTURAL_WORDS.has(option.toLowerCase()));
+      const sameCategory = absurdMatches.length >= 2 && SEMANTIC_CATEGORIES.some(
+        (cat) => absurdMatches.every((option) => cat.has(option.toLowerCase()))
+      );
+      const downgrade = structuralPresent || sameCategory;
       addIssue(issues, {
-        severity: 'P1',
+        severity: downgrade ? 'P2' : 'P1',
         area,
-        title: 'Distratores absurdos ou fáceis demais',
-        impact: 'O aluno acerta por eliminação sem aprender ou compreender o conteúdo.',
+        title: structuralPresent
+          ? 'Distratores fracos em exercício estrutural'
+          : sameCategory
+            ? 'Distratores simples, mas dentro do tema'
+            : 'Distratores absurdos ou fáceis demais',
+        impact: downgrade
+          ? 'O aluno ainda pratica o conteúdo; os distratores poderiam ser mais desafiadores.'
+          : 'O aluno acerta por eliminação sem aprender ou compreender o conteúdo.',
         evidence: `Grupo ${index + 1}: ${options.join(' | ')}`,
-        recommendation: 'Trocar por distratores plausíveis, próximos do tema da aula.',
+        recommendation: downgrade
+          ? 'Opcional: usar distratores mais próximos do nível CEFR; não bloqueia o fluxo.'
+          : 'Trocar por distratores plausíveis, próximos do tema da aula.',
       });
     }
   });
