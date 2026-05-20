@@ -59,18 +59,33 @@ export async function assertLayoutSanity({ page, reporter, area }) {
     const viewportWidth = document.documentElement.clientWidth;
     const viewportHeight = document.documentElement.clientHeight;
     const scrollWidth = document.documentElement.scrollWidth;
+    // Um botão dentro de um container com scroll horizontal real é
+    // intencionalmente alcançável por scroll/swipe (carrossel, stepper,
+    // trilha de níveis) — não é "fora da tela" no sentido de inacessível.
+    const hasHorizontalScrollAncestor = (node) => {
+      let el = node.parentElement;
+      while (el && el !== document.documentElement) {
+        const style = getComputedStyle(el);
+        const overflowX = style.overflowX;
+        const scrollable = (overflowX === 'auto' || overflowX === 'scroll' || style.scrollSnapType !== 'none');
+        if (scrollable && el.scrollWidth > el.clientWidth + 4) return true;
+        el = el.parentElement;
+      }
+      return false;
+    };
     const buttons = [...document.querySelectorAll('button')].map((button) => {
       const rect = button.getBoundingClientRect();
       return {
         text: String(button.innerText || button.getAttribute('aria-label') || '').trim().slice(0, 80),
         disabled: button.disabled || button.getAttribute('aria-disabled') === 'true',
+        inHScroll: hasHorizontalScrollAncestor(button),
         x: rect.x,
         y: rect.y,
         width: rect.width,
         height: rect.height,
       };
     }).filter((button) => button.width > 0 && button.height > 0);
-    const offscreenButtons = buttons.filter((button) => button.x < -4 || button.x + button.width > viewportWidth + 4);
+    const offscreenButtons = buttons.filter((button) => !button.inHScroll && (button.x < -4 || button.x + button.width > viewportWidth + 4));
     const tinyButtons = buttons.filter((button) => !button.disabled && (button.width < 32 || button.height < 32));
     const visibleText = String(document.body.innerText || '').trim();
     return { viewportWidth, viewportHeight, scrollWidth, offscreenButtons, tinyButtons, visibleTextLength: visibleText.length };
