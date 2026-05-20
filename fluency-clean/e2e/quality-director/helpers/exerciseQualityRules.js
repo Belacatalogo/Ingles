@@ -75,7 +75,17 @@ function firstValue(object, keys) {
   return '';
 }
 
-function getOptions(object = {}) { for (const key of OPTION_KEYS) if (Array.isArray(object[key])) return object[key].map(clean).filter(Boolean); return []; }
+function getOptions(object = {}) {
+  // Error-correction practice: {instruction, sentences:[...], answers:[...]}
+  // tem "answers" como correções paralelas às sentences — NÃO são MCQ
+  // options. Evita falso positivo "alternativas sem resposta clara".
+  const hasSentences = Array.isArray(object.sentences) && object.sentences.some((s) => clean(s).length > 0);
+  for (const key of OPTION_KEYS) {
+    if (hasSentences && key === 'answers') continue;
+    if (Array.isArray(object[key])) return object[key].map(clean).filter(Boolean);
+  }
+  return [];
+}
 function getQuestion(object = {}) { return clean(firstValue(object, QUESTION_KEYS)); }
 function getAnswer(object = {}) { return clean(firstValue(object, ANSWER_KEYS)); }
 function getFeedback(object = {}) { return clean(firstValue(object, FEEDBACK_KEYS)); }
@@ -85,7 +95,8 @@ function isExerciseLike(object = {}) {
   const question = getQuestion(object);
   const answer = getAnswer(object);
   const options = getOptions(object);
-  return Boolean(question && (answer || options.length >= 2 || /pergunta|question|quiz|exercise|exerc/i.test(question)));
+  const sentences = Array.isArray(object.sentences) ? object.sentences.filter((s) => clean(s).length > 0) : [];
+  return Boolean(question && (answer || options.length >= 2 || sentences.length > 0 || /pergunta|question|quiz|exercise|exerc/i.test(question)));
 }
 
 function collectExerciseObjects(value, result = [], path = 'lesson') {
