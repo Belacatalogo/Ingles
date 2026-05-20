@@ -183,7 +183,9 @@ export function createVocabularyLesson(input = {}) {
 }
 
 export function createReadingLesson(input = {}) {
-  const mainText = clean(input.mainText);
+  const readingText = safeObject(input.readingText);
+  const readingBody = clean(readingText.body || readingText.text);
+  const mainText = clean(input.mainText) || readingBody;
   return {
     ...createStaticLessonBase({ ...input, pillar: 'reading' }),
     readingPurpose: clean(input.readingPurpose),
@@ -205,7 +207,11 @@ export function createReadingLesson(input = {}) {
     // Schema universal/C2 — preservar sem transformar.
     tasks: safeArray(input.tasks),
     passage: clean(input.passage),
-    wordCount: typeof input.wordCount === 'number' ? input.wordCount : null,
+    wordCount: typeof input.wordCount === 'number' ? input.wordCount : (typeof readingText.wordCount === 'number' ? readingText.wordCount : null),
+    // Schema premium B2/C1 — preservar readingText, paraphrasingTask, discussionTasks.
+    readingText,
+    paraphrasingTask: input.paraphrasingTask && typeof input.paraphrasingTask === 'object' ? input.paraphrasingTask : null,
+    discussionTasks: safeArray(input.discussionTasks),
   };
 }
 
