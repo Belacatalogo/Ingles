@@ -8,6 +8,10 @@ function clean(value) {
   return '';
 }
 
+function safeArray(value) {
+  return Array.isArray(value) ? value : [];
+}
+
 function hasAnyField(lesson, fields) {
   return fields.some((field) => {
     const value = lesson?.[field];
@@ -261,37 +265,106 @@ function auditSpeaking(lesson) {
   return issues;
 }
 
+const WRITING_ACTION_RE = /\b(write|writing|draft|revise|revision|rewrite|produce|compose|complete|transform|paragraph|sentence|email|message|post|final version|response|answer)\b|escrev|redija|rascunho|revis|reescrev|parágrafo|frase|resposta|versão final/i;
+
+function hasActiveWritingItem(value) {
+  if (!value) return false;
+  if (typeof value === 'string') return WRITING_ACTION_RE.test(value);
+  if (Array.isArray(value)) return value.some(hasActiveWritingItem);
+  if (typeof value !== 'object') return false;
+
+  const taskText = clean([
+    value.task,
+    value.prompt,
+    value.instruction,
+    value.question,
+    value.title,
+    value.expectedOutput,
+    value.rubric,
+    value.criteria,
+    value.steps,
+  ]);
+
+  if (WRITING_ACTION_RE.test(taskText)) return true;
+  if (typeof value.minWords === 'number' && taskText.length >= 20) return true;
+  if (typeof value.wordTarget === 'number' && taskText.length >= 20) return true;
+
+  return false;
+}
+
+function hasPremiumWritingProduction(lesson) {
+  return [
+    lesson?.writingPrompt,
+    lesson?.prompt,
+    lesson?.connectedProduction,
+    lesson?.productionTask,
+    lesson?.draftTask,
+    lesson?.revisionTask,
+    lesson?.finalVersionTask,
+    lesson?.guidedSubstitution,
+    lesson?.writingTasks,
+    lesson?.tasks,
+    lesson?.writingTask,
+  ].some(hasActiveWritingItem);
+}
+
+function countWritingReviewCriteria(lesson) {
+  return [
+    ...safeArray(lesson?.checklist),
+    ...safeArray(lesson?.revisionChecklist),
+    ...safeArray(lesson?.writingChecklist),
+    ...safeArray(lesson?.selfAssessment),
+    ...safeArray(lesson?.feedbackPreparation),
+  ].filter((item) => clean(item).length >= 8).length;
+}
+
+function hasPremiumWritingModel(lesson) {
+  const modelText = clean(lesson?.modelText || lesson?.exampleText || lesson?.sampleAnswer || lesson?.modelAnswer || lesson?.guidedModel);
+  if (modelText.length >= 40) return true;
+
+  const writingModel = lesson?.writingModel;
+  if (writingModel && typeof writingModel === 'object' && clean(writingModel).length >= 40) return true;
+
+  const breakdown = safeArray(lesson?.modelTextBreakdown);
+  return breakdown.length >= 2 && clean(breakdown).length >= 80;
+}
+
 function auditWriting(lesson) {
   const issues = [];
-  requireField({
-    issues,
-    lesson,
-    fields: ['writingPrompt', 'prompt', 'connectedProduction', 'productionTask'],
-    title: 'Writing sem prompt claro de produção',
-    impact: 'O aluno pode não saber exatamente o que escrever.',
-    recommendation: 'Adicionar prompt com tarefa, formato, tamanho e foco linguístico.',
-    severity: 'P1',
-  });
 
-  requireMinimumList({
-    issues,
-    lesson,
-    fields: ['checklist', 'revisionChecklist', 'selfAssessment'],
-    min: 4,
-    title: 'Writing com checklist/revisão fraco',
-    impact: 'O aluno pode escrever sem critérios de qualidade.',
-    recommendation: 'Adicionar checklist de conteúdo, gramática, vocabulário, clareza e revisão.',
-    severity: 'P1',
-  });
+  if (!hasPremiumWritingProduction(lesson)) {
+    addIssue(issues, {
+      severity: 'P1',
+      area: lessonArea(lesson),
+      title: 'Writing sem prompt claro de produção',
+      impact: 'O aluno pode não saber exatamente o que escrever.',
+      evidence: 'Nenhuma tarefa ativa de escrita detectada em prompt/draft/revision/finalVersion/writingTasks/tasks.',
+      recommendation: 'Adicionar prompt com tarefa, formato, tamanho e foco linguístico.',
+    });
+  }
 
-  requireField({
-    issues,
-    lesson,
-    fields: ['modelAnswer', 'sampleAnswer', 'exampleText', 'guidedModel'],
-    title: 'Writing sem modelo/exemplo pedagógico',
-    impact: 'O aluno pode não entender o padrão esperado do texto.',
-    recommendation: 'Adicionar modelo ou exemplo controlado, com cuidado para não aparecer cedo demais em exercício de descoberta.',
-  });
+  const reviewCriteriaCount = countWritingReviewCriteria(lesson);
+  if (reviewCriteriaCount < 4) {
+    addIssue(issues, {
+      severity: 'P1',
+      area: lessonArea(lesson),
+      title: 'Writing com checklist/revisão fraco',
+      impact: 'O aluno pode escrever sem critérios de qualidade.',
+      evidence: `Encontrado ${reviewCriteriaCount}; mínimo esperado 4. Campos: checklist, revisionChecklist, writingChecklist, selfAssessment, feedbackPreparation`,
+      recommendation: 'Adicionar checklist de conteúdo, gramática, vocabulário, clareza e revisão.',
+    });
+  }
+
+  if (!hasPremiumWritingModel(lesson)) {
+    addIssue(issues, {
+      severity: 'P2',
+      area: lessonArea(lesson),
+      title: 'Writing sem modelo/exemplo pedagógico',
+      impact: 'O aluno pode não entender o padrão esperado do texto.',
+      evidence: 'Ausente modelo textual substancial em modelText/writingModel/modelTextBreakdown.',
+      recommendation: 'Adicionar modelo ou exemplo controlado, com cuidado para não aparecer cedo demais em exercício de descoberta.',
+    });
+  }
 
   return issues;
 }
