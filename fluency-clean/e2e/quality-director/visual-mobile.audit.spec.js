@@ -79,7 +79,7 @@ test('Quality Director 05: captura fases iniciais de uma aula real', async ({ pa
       area: `${testInfo.project.name} · Aula A1-READING-001 · fase-${step + 1}`,
     });
 
-    await satisfyCurrentPhase(page, reporter, 'Visual aula A1-READING-001');
+    await satisfyCurrentPhase(page, reporter, 'Visual aula A1-READING-001', lesson);
     const continueButton = page.getByRole('button', { name: /continuar|concluir aula/i }).last();
     if (!(await continueButton.isVisible().catch(() => false))) {
       await captureEvidence(page, `${testInfo.project.name}-aula-reading-sem-continuar-step-${step + 1}`);

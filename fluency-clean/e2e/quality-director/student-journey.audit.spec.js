@@ -97,7 +97,7 @@ for (const lessonId of JOURNEY_LESSON_IDS) {
       }
 
       seenPhases.add(phaseTitle);
-      await satisfyCurrentPhase(page, reporter, `Aula ${lessonId}`);
+      await satisfyCurrentPhase(page, reporter, `Aula ${lessonId}`, lesson);
       const advanced = await advanceOrReport(page, reporter, `Aula ${lessonId} · ${phaseTitle}`);
       if (!advanced) break;
     }

@@ -108,7 +108,7 @@ test('Exploratory Student Audit: abre amostra curta de aulas reais por pilar', a
 
     for (let step = 0; step < MAX_STEPS_PER_LESSON; step += 1) {
       await runStudentExperienceInvariants({ page, reporter, area: `${testInfo.project.name} · Explorar aula ${lesson.id} · etapa ${step + 1}` });
-      await satisfyCurrentPhase(page, reporter, `Explorar aula ${lesson.id}`);
+      await satisfyCurrentPhase(page, reporter, `Explorar aula ${lesson.id}`, lesson);
       const continueButton = page.getByRole('button', { name: /continuar|concluir aula/i }).last();
       if (!(await continueButton.isVisible().catch(() => false))) break;
       await continueButton.click().catch(() => null);

@@ -116,7 +116,7 @@ for (const lesson of lessons) {
         reporter,
         area: `${testInfo.project.name} · Todas as aulas · ${lesson.id} · etapa ${step + 1}`,
       });
-      await satisfyCurrentPhase(page, reporter, `Todas as aulas · ${lesson.id}`);
+      await satisfyCurrentPhase(page, reporter, `Todas as aulas · ${lesson.id}`, lesson);
       const continueButton = page.getByRole('button', { name: /continuar|concluir aula/i }).last();
       if (!(await continueButton.isVisible().catch(() => false))) break;
       await continueButton.click().catch(() => null);

@@ -12,12 +12,12 @@ const TECHNICAL_LEAK_PATTERNS = [
 ];
 
 const EARLY_ANSWER_LEAK_PATTERNS = [
-  /resposta esperada era/i,
-  /modelo:/i,
-  /transcript/i,
-  /gabarito/i,
-  /answer key/i,
-  /correct answer/i,
+  { pattern: /resposta esperada era/i, key: 'expected' },
+  { pattern: /modelo:/i, key: 'model' },
+  { pattern: /transcript/i, key: 'transcript' },
+  { pattern: /gabarito/i, key: 'answerKey' },
+  { pattern: /answer key/i, key: 'answerKey' },
+  { pattern: /correct answer/i, key: 'correctAnswer' },
 ];
 
 export async function seedCurrentLesson(page, lesson) {
@@ -74,18 +74,37 @@ export function reportTechnicalLeaks({ text, reporter, area }) {
   });
 }
 
-export function reportEarlyAnswerLeaks({ text, reporter, area }) {
-  EARLY_ANSWER_LEAK_PATTERNS.forEach((pattern) => {
-    if (pattern.test(text)) {
-      reporter.addIssue({
-        severity: 'P1',
-        area,
-        title: 'Possível resposta/modelo apareceu antes da tentativa',
-        impact: 'O exercício pode perder validade pedagógica se entregar resposta, transcript ou modelo cedo demais.',
-        evidence: `Padrão encontrado antes da tentativa: ${pattern}`,
-        recommendation: 'Garantir que gabarito, transcript, modelo e resposta esperada só apareçam após tentativa quando a etapa exigir descoberta.',
-      });
-    }
+// "transcript" como label de botão/seção ("Mostrar transcript",
+// "Transcript depois da escuta") ou em instrução pedagógica
+// ("Feche o transcript na primeira escuta", "shadowing prepara...") NÃO
+// é leak. Real leak = conteúdo transcrito visível (turnos de fala).
+function isTranscriptRealLeak(text, lesson) {
+  const transcriptContent = String(
+    (lesson && (lesson.transcript || lesson.audioScript)) || ''
+  ).trim();
+  if (transcriptContent.length >= 40) {
+    // Probe substantivo: primeiras 40 chars normalizadas devem aparecer no texto.
+    const probe = transcriptContent.slice(0, 60).replace(/\s+/g, ' ').trim();
+    if (probe && text.replace(/\s+/g, ' ').includes(probe)) return true;
+    return false;
+  }
+  // Sem dados da aula: detecta padrão de diálogo (>=2 turnos de fala).
+  const speakerTurns = (text.match(/^\s*[A-Z][a-zA-Z]{1,15}:\s+\S/gm) || []).length;
+  return speakerTurns >= 2;
+}
+
+export function reportEarlyAnswerLeaks({ text, reporter, area, lesson }) {
+  EARLY_ANSWER_LEAK_PATTERNS.forEach(({ pattern, key }) => {
+    if (!pattern.test(text)) return;
+    if (key === 'transcript' && !isTranscriptRealLeak(text, lesson)) return;
+    reporter.addIssue({
+      severity: 'P1',
+      area,
+      title: 'Possível resposta/modelo apareceu antes da tentativa',
+      impact: 'O exercício pode perder validade pedagógica se entregar resposta, transcript ou modelo cedo demais.',
+      evidence: `Padrão encontrado antes da tentativa: ${pattern}`,
+      recommendation: 'Garantir que gabarito, transcript, modelo e resposta esperada só apareçam após tentativa quando a etapa exigir descoberta.',
+    });
   });
 }
 
@@ -122,7 +141,7 @@ async function chooseOptionIfPresent(page) {
   return false;
 }
 
-export async function satisfyCurrentPhase(page, reporter, area) {
+export async function satisfyCurrentPhase(page, reporter, area, lesson) {
   const didAttempt = await fillAttemptIfPresent(page);
   if (didAttempt) return true;
 
@@ -131,7 +150,7 @@ export async function satisfyCurrentPhase(page, reporter, area) {
 
   const text = await getPageText(page);
   reportTechnicalLeaks({ text, reporter, area });
-  reportEarlyAnswerLeaks({ text, reporter, area });
+  reportEarlyAnswerLeaks({ text, reporter, area, lesson });
   return false;
 }
 
