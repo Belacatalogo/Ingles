@@ -309,13 +309,29 @@ function hasPremiumWritingProduction(lesson) {
 }
 
 function countWritingReviewCriteria(lesson) {
-  return [
+  const shallow = [
     ...safeArray(lesson?.checklist),
     ...safeArray(lesson?.revisionChecklist),
     ...safeArray(lesson?.writingChecklist),
     ...safeArray(lesson?.selfAssessment),
     ...safeArray(lesson?.feedbackPreparation),
   ].filter((item) => clean(item).length >= 8).length;
+
+  // C1/C2 usam `tasks[]` onde cada task carrega critério em campos
+  // distintos: `note` (guidance de processo), `expected` (rubrica de
+  // qualidade), `rubric`/`criteria` (avaliação explícita). Cada campo
+  // não-vazio é um critério separado — reconhece o schema premium sem
+  // mascarar.
+  const taskCriteria = safeArray(lesson?.tasks).reduce((sum, task) => {
+    if (!task || typeof task !== 'object') return sum;
+    return sum
+      + (clean(task.note).length >= 8 ? 1 : 0)
+      + (clean(task.expected).length >= 8 ? 1 : 0)
+      + (clean(task.rubric).length >= 8 ? 1 : 0)
+      + (clean(task.criteria).length >= 8 ? 1 : 0);
+  }, 0);
+
+  return shallow + taskCriteria;
 }
 
 function hasPremiumWritingModel(lesson) {
@@ -326,7 +342,14 @@ function hasPremiumWritingModel(lesson) {
   if (writingModel && typeof writingModel === 'object' && clean(writingModel).length >= 40) return true;
 
   const breakdown = safeArray(lesson?.modelTextBreakdown);
-  return breakdown.length >= 2 && clean(breakdown).length >= 80;
+  if (breakdown.length >= 2 && clean(breakdown).length >= 80) return true;
+
+  // C2: o texto-fonte/insumo da tarefa (inputText) cumpre o papel de
+  // modelo de leitura/análise antes de escrever. Aceita quando substantivo.
+  const inputText = clean(lesson?.inputText);
+  if (inputText.length >= 200) return true;
+
+  return false;
 }
 
 function auditWriting(lesson) {
