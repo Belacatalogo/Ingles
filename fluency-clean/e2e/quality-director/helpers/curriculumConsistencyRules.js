@@ -44,6 +44,25 @@ function clean(value) {
   return '';
 }
 
+// Comentário pedagógico do professor (explicação/justificativa) usa
+// metalinguagem do nível CEFR de ensino, não conta como "linguagem
+// avançada para o aluno". Só esses campos são excluídos da varredura
+// CEFR; nada mais é mascarado.
+const TEACHER_COMMENTARY_KEYS = new Set(['explanation', 'rationale', 'why']);
+function studentFacingText(value, acc = []) {
+  if (value === null || value === undefined) return acc;
+  if (typeof value === 'string' || typeof value === 'number') { acc.push(String(value)); return acc; }
+  if (Array.isArray(value)) { value.forEach((v) => studentFacingText(v, acc)); return acc; }
+  if (typeof value === 'object') {
+    for (const [key, v] of Object.entries(value)) {
+      if (TEACHER_COMMENTARY_KEYS.has(key)) continue;
+      studentFacingText(v, acc);
+    }
+    return acc;
+  }
+  return acc;
+}
+
 function addIssue(issues, issue) {
   issues.push({ severity: 'P2', ...issue });
 }
@@ -256,7 +275,7 @@ export function auditCefrCoherence(lesson) {
   const level = String(lesson?.level || '').toUpperCase();
   const rules = CEFR_SIGNALS[level];
   if (!rules) return issues;
-  const text = clean(lesson);
+  const text = studentFacingText(lesson).join(' ');
 
   rules.tooAdvanced.forEach((pattern) => {
     if (pattern.test(text)) {
