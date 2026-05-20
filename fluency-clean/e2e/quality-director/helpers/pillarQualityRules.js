@@ -67,154 +67,45 @@ function requireMinimumList({ issues, lesson, fields, min, title, impact, recomm
   }
 }
 
-const GRAMMAR_ACTION_RE = /\b(complete|choose|correct|rewrite|transform|translate|produce|write|practice|apply|identify|fill)\b|complete|corrija|corrigir|substitua|substituir|traduza|traduzir|transforme|transformar|escreva|produza|identifique|aplique|pratique/i;
-
-function hasGrammarTaskLike(value) {
-  if (!value) return false;
-  if (typeof value === 'string') return GRAMMAR_ACTION_RE.test(value);
-  if (Array.isArray(value)) return value.some(hasGrammarTaskLike);
-  if (typeof value !== 'object') return false;
-
-  const taskText = clean([
-    value.question,
-    value.instruction,
-    value.task,
-    value.prompt,
-    value.text,
-    value.note,
-    value.expected,
-    value.miniPractice,
-  ]);
-
-  if (safeArray(value.options).length >= 2 && clean(value.answer)) return true;
-  if (GRAMMAR_ACTION_RE.test(taskText)) return true;
-  return false;
-}
-
-function hasActiveGrammarPractice(lesson) {
-  return [
-    lesson?.guidedPractice,
-    lesson?.controlledPractice,
-    lesson?.errorCorrectionPractice,
-    lesson?.translationPractice,
-    lesson?.transformationPractice,
-    lesson?.productionTasks,
-    lesson?.guidedDiscovery,
-  ].some(hasGrammarTaskLike);
-}
-
-function countStructuredGrammarItems(value) {
-  if (!value) return 0;
-  if (Array.isArray(value)) {
-    return value.filter((item) => clean(item).length >= 8).length;
-  }
-  if (typeof value === 'object') {
-    const nestedCount = Object.values(value).reduce((sum, item) => sum + countStructuredGrammarItems(item), 0);
-    if (nestedCount > 0) return nestedCount;
-    return clean(value).length >= 40 ? 1 : 0;
-  }
-  return clean(value).length >= 40 ? 1 : 0;
-}
-
-function hasGrammarConceptExplanation(lesson) {
-  const concept = clean(lesson?.conceptExplanation || lesson?.grammarExplanation || lesson?.ruleExplanation);
-  if (concept.length >= 60) return true;
-
-  const grammarGoal = clean(lesson?.grammarGoal);
-  const teacherOpening = clean(lesson?.teacherOpening);
-  const mentalModel = clean(lesson?.mentalModel);
-  const explanationSections = clean(lesson?.explanationSections);
-  const formationGuide = clean(lesson?.formationGuide);
-  const grammarTable = clean(lesson?.grammarTable);
-  const whenToUse = clean(lesson?.whenToUse);
-  const stepByStep = clean(lesson?.stepByStep);
-  const examples = clean([lesson?.teacherExamples, lesson?.professorExamples]);
-
-  let signals = 0;
-  if (grammarGoal.length >= 20) signals += 1;
-  if (countStructuredGrammarItems(lesson?.formationGuide) >= 1 || formationGuide.length >= 60) signals += 1;
-  if (countStructuredGrammarItems(lesson?.grammarTable) >= 2 || grammarTable.length >= 80) signals += 1;
-  if (countStructuredGrammarItems(lesson?.whenToUse) >= 1 || whenToUse.length >= 60) signals += 1;
-  if (countStructuredGrammarItems(lesson?.stepByStep) >= 2 || stepByStep.length >= 80) signals += 1;
-  if (countStructuredGrammarItems(lesson?.explanationSections) >= 1 || explanationSections.length >= 60) signals += 1;
-  if (mentalModel.length >= 60) signals += 1;
-
-  const hasStructuralRule = grammarGoal.length >= 20 || formationGuide.length >= 60 || grammarTable.length >= 80;
-  if (teacherOpening.length >= 120 && hasStructuralRule) signals += 1;
-  if (examples.length >= 100 && hasStructuralRule) signals += 1;
-
-  // Não aceita title/objectives, teacherOpening ou exemplos soltos sozinhos.
-  // Exige combinação de pelo menos dois sinais estruturais reais.
-  return signals >= 2;
-}
-
-function countGrammarExamplesOrSteps(lesson) {
-  return countAnyField(lesson, [
-    'examples',
-    'positiveExamples',
-    'negativeExamples',
-    'stepByStep',
-    'guidedDiscovery',
-    'teacherExamples',
-    'professorExamples',
-    'formationGuide',
-    'grammarTable',
-  ]);
-}
-
-function hasGrammarPortugueseContrast(lesson) {
-  return hasAnyField(lesson, [
-    'portugueseContrast',
-    'commonMistakes',
-    'commonBrazilianMistakes',
-    'contrast',
-  ]);
-}
-
 function auditGrammar(lesson) {
   const issues = [];
+  const text = clean(lesson).toLowerCase();
 
-  if (!hasGrammarConceptExplanation(lesson)) {
-    addIssue(issues, {
-      severity: 'P1',
-      area: lessonArea(lesson),
-      title: 'Grammar sem explicação conceitual clara',
-      impact: 'O aluno pode praticar sem entender a regra gramatical.',
-      evidence: 'Não foi encontrada explicação conceitual substancial em conceptExplanation ou combinação grammarGoal + formationGuide/grammarTable.',
-      recommendation: 'Adicionar explicação da regra, quando usar e como formar a estrutura.',
-    });
-  }
+  requireField({
+    issues,
+    lesson,
+    fields: ['conceptExplanation', 'teacherOpening', 'grammarExplanation', 'ruleExplanation'],
+    title: 'Grammar sem explicação conceitual clara',
+    impact: 'O aluno pode praticar sem entender a regra gramatical.',
+    recommendation: 'Adicionar explicação da regra, quando usar e como formar a estrutura.',
+  });
 
-  const examplesOrSteps = countGrammarExamplesOrSteps(lesson);
-  if (examplesOrSteps < 3) {
-    addIssue(issues, {
-      severity: 'P2',
-      area: lessonArea(lesson),
-      title: 'Grammar com poucos exemplos ou passos guiados',
-      impact: 'A aula pode ficar abstrata e difícil de aplicar.',
-      evidence: `Encontrado ${examplesOrSteps}; mínimo esperado 3. Campos: examples, teacherExamples, stepByStep, guidedDiscovery, formationGuide, grammarTable`,
-      recommendation: 'Adicionar exemplos positivos, negativos e prática guiada.',
-    });
-  }
+  requireMinimumList({
+    issues,
+    lesson,
+    fields: ['examples', 'positiveExamples', 'negativeExamples', 'stepByStep', 'guidedDiscovery'],
+    min: 3,
+    title: 'Grammar com poucos exemplos ou passos guiados',
+    impact: 'A aula pode ficar abstrata e difícil de aplicar.',
+    recommendation: 'Adicionar exemplos positivos, negativos e prática guiada.',
+  });
 
-  if (!hasGrammarPortugueseContrast(lesson)) {
-    addIssue(issues, {
-      severity: 'P2',
-      area: lessonArea(lesson),
-      title: 'Grammar sem contraste português/inglês ou erros comuns',
-      impact: 'O aluno brasileiro pode repetir transferências erradas do português.',
-      evidence: 'Campos esperados ausentes/vazios: portugueseContrast, commonMistakes, commonBrazilianMistakes, contrast',
-      recommendation: 'Adicionar contraste direto com português e erros comuns.',
-    });
-  }
+  requireField({
+    issues,
+    lesson,
+    fields: ['portugueseContrast', 'commonMistakes', 'contrast'],
+    title: 'Grammar sem contraste português/inglês ou erros comuns',
+    impact: 'O aluno brasileiro pode repetir transferências erradas do português.',
+    recommendation: 'Adicionar contraste direto com português e erros comuns.',
+    severity: 'P2',
+  });
 
-  if (!hasActiveGrammarPractice(lesson)) {
+  if (!textIncludesAny(text, [/practice|prática|guided|exerc/i])) {
     addIssue(issues, {
       severity: 'P1',
       area: lessonArea(lesson),
       title: 'Grammar sem sinal claro de prática ativa',
       impact: 'A aula pode virar teoria sem verificação de domínio.',
-      evidence: 'Nenhuma prática ativa detectada em guided/controlled/errorCorrection/translation/transformation/production tasks.',
       recommendation: 'Adicionar exercícios de aplicação da regra em contexto.',
     });
   }
@@ -418,29 +309,13 @@ function hasPremiumWritingProduction(lesson) {
 }
 
 function countWritingReviewCriteria(lesson) {
-  const shallow = [
+  return [
     ...safeArray(lesson?.checklist),
     ...safeArray(lesson?.revisionChecklist),
     ...safeArray(lesson?.writingChecklist),
     ...safeArray(lesson?.selfAssessment),
     ...safeArray(lesson?.feedbackPreparation),
   ].filter((item) => clean(item).length >= 8).length;
-
-  // C1/C2 usam `tasks[]` onde cada task carrega critério em campos
-  // distintos: `note` (guidance de processo), `expected` (rubrica de
-  // qualidade), `rubric`/`criteria` (avaliação explícita). Cada campo
-  // não-vazio é um critério separado — reconhece o schema premium sem
-  // mascarar.
-  const taskCriteria = safeArray(lesson?.tasks).reduce((sum, task) => {
-    if (!task || typeof task !== 'object') return sum;
-    return sum
-      + (clean(task.note).length >= 8 ? 1 : 0)
-      + (clean(task.expected).length >= 8 ? 1 : 0)
-      + (clean(task.rubric).length >= 8 ? 1 : 0)
-      + (clean(task.criteria).length >= 8 ? 1 : 0);
-  }, 0);
-
-  return shallow + taskCriteria;
 }
 
 function hasPremiumWritingModel(lesson) {
@@ -451,14 +326,7 @@ function hasPremiumWritingModel(lesson) {
   if (writingModel && typeof writingModel === 'object' && clean(writingModel).length >= 40) return true;
 
   const breakdown = safeArray(lesson?.modelTextBreakdown);
-  if (breakdown.length >= 2 && clean(breakdown).length >= 80) return true;
-
-  // C2: o texto-fonte/insumo da tarefa (inputText) cumpre o papel de
-  // modelo de leitura/análise antes de escrever. Aceita quando substantivo.
-  const inputText = clean(lesson?.inputText);
-  if (inputText.length >= 200) return true;
-
-  return false;
+  return breakdown.length >= 2 && clean(breakdown).length >= 80;
 }
 
 function auditWriting(lesson) {
