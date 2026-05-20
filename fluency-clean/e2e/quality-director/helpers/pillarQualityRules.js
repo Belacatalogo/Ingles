@@ -103,18 +103,49 @@ function hasActiveGrammarPractice(lesson) {
   ].some(hasGrammarTaskLike);
 }
 
+function countStructuredGrammarItems(value) {
+  if (!value) return 0;
+  if (Array.isArray(value)) {
+    return value.filter((item) => clean(item).length >= 8).length;
+  }
+  if (typeof value === 'object') {
+    const nestedCount = Object.values(value).reduce((sum, item) => sum + countStructuredGrammarItems(item), 0);
+    if (nestedCount > 0) return nestedCount;
+    return clean(value).length >= 40 ? 1 : 0;
+  }
+  return clean(value).length >= 40 ? 1 : 0;
+}
+
 function hasGrammarConceptExplanation(lesson) {
   const concept = clean(lesson?.conceptExplanation || lesson?.grammarExplanation || lesson?.ruleExplanation);
-  if (concept.length >= 80) return true;
+  if (concept.length >= 60) return true;
 
-  const formation = clean(lesson?.formationGuide || lesson?.grammarTable || lesson?.explanationSections || lesson?.stepByStep);
-  const goal = clean(lesson?.grammarGoal || lesson?.whenToUse || lesson?.mentalModel);
-  if (formation.length >= 80 && goal.length >= 20) return true;
-
+  const grammarGoal = clean(lesson?.grammarGoal);
   const teacherOpening = clean(lesson?.teacherOpening);
-  if (teacherOpening.length >= 120 && formation.length >= 80) return true;
+  const mentalModel = clean(lesson?.mentalModel);
+  const explanationSections = clean(lesson?.explanationSections);
+  const formationGuide = clean(lesson?.formationGuide);
+  const grammarTable = clean(lesson?.grammarTable);
+  const whenToUse = clean(lesson?.whenToUse);
+  const stepByStep = clean(lesson?.stepByStep);
+  const examples = clean([lesson?.teacherExamples, lesson?.professorExamples]);
 
-  return false;
+  let signals = 0;
+  if (grammarGoal.length >= 20) signals += 1;
+  if (countStructuredGrammarItems(lesson?.formationGuide) >= 1 || formationGuide.length >= 60) signals += 1;
+  if (countStructuredGrammarItems(lesson?.grammarTable) >= 2 || grammarTable.length >= 80) signals += 1;
+  if (countStructuredGrammarItems(lesson?.whenToUse) >= 1 || whenToUse.length >= 60) signals += 1;
+  if (countStructuredGrammarItems(lesson?.stepByStep) >= 2 || stepByStep.length >= 80) signals += 1;
+  if (countStructuredGrammarItems(lesson?.explanationSections) >= 1 || explanationSections.length >= 60) signals += 1;
+  if (mentalModel.length >= 60) signals += 1;
+
+  const hasStructuralRule = grammarGoal.length >= 20 || formationGuide.length >= 60 || grammarTable.length >= 80;
+  if (teacherOpening.length >= 120 && hasStructuralRule) signals += 1;
+  if (examples.length >= 100 && hasStructuralRule) signals += 1;
+
+  // Não aceita title/objectives, teacherOpening ou exemplos soltos sozinhos.
+  // Exige combinação de pelo menos dois sinais estruturais reais.
+  return signals >= 2;
 }
 
 function countGrammarExamplesOrSteps(lesson) {
