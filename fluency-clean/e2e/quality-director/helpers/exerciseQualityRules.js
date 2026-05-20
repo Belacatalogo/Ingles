@@ -476,11 +476,100 @@ function hasActiveWritingPractice(lesson) {
   });
 }
 
+// Bloco 7A — prática aberta/avançada já presente no objeto final (pós-7B).
+// Conta SÓ como existência de prática (gate "Nenhum exercício detectado");
+// não entra em collectExerciseObjects para não disparar auditoria de MCQ
+// (que geraria P0 "Resposta correta não aparece" para itens abertos sem
+// answer/options). Critério estrito: title/objective sozinhos NÃO contam.
+const ACTIVE_PRACTICE_KEYS = ['instruction', 'prompt', 'task', 'question', 'sentence', 'phrase', 'text'];
+
+function isActivePracticeText(item) {
+  if (typeof item === 'string' || typeof item === 'number') return clean(item).length >= 8;
+  if (!item || typeof item !== 'object' || Array.isArray(item)) return false;
+  return ACTIVE_PRACTICE_KEYS.some((key) => clean(item[key]).length >= 3);
+}
+
+// Reading/Listening: pergunta aberta com orientação clara (não MCQ).
+function isOpenComprehensionItem(item) {
+  if (!item || typeof item !== 'object' || Array.isArray(item)) return false;
+  const question = clean(item.question || item.prompt);
+  if (question.length < 8) return false;
+  // Se já tem answer/options ≥2, é MCQ clássico — não é open.
+  if (clean(item.answer).length >= 1) return false;
+  if (Array.isArray(item.options) && item.options.length >= 2) return false;
+  if (String(item.type || '').toLowerCase() === 'open') return true;
+  if (clean(item.guidance).length >= 3) return true;
+  if (clean(item.expected).length >= 3) return true;
+  if (clean(item.rubric).length >= 3) return true;
+  if (typeof item.minWords === 'number' && item.minWords > 0) return true;
+  return false;
+}
+function hasOpenComprehensionPractice(lesson) {
+  if (!lesson) return false;
+  const pillar = lesson.pillar || lesson.type;
+  if (pillar !== 'reading' && pillar !== 'listening') return false;
+  return ['comprehensionQuestions', 'evidenceQuestions'].some((field) =>
+    Array.isArray(lesson[field]) && lesson[field].some(isOpenComprehensionItem));
+}
+
+// Writing avançado: writingTasks[].task = instrução de produção real
+// (escrever/transformar/produzir). writingModel/grammarAnnotations/
+// writingChecklist passivos NÃO contam.
+function isWritingTaskItem(item) {
+  if (typeof item === 'string') return item.trim().length >= 8;
+  if (!item || typeof item !== 'object' || Array.isArray(item)) return false;
+  return ['task', 'instruction', 'prompt'].some((key) => clean(item[key]).length >= 8);
+}
+function hasAdvancedWritingPractice(lesson) {
+  if (!lesson || (lesson.pillar !== 'writing' && lesson.type !== 'writing')) return false;
+  return Array.isArray(lesson.writingTasks) && lesson.writingTasks.some(isWritingTaskItem);
+}
+
+// Speaking avançado: warmUp ativo + guidedPractice com steps/tasks reais.
+// Bloco {title, steps:[...]} só conta se steps tiver texto ativo; título
+// sozinho não basta. speakingChecklist permanece excluído (reflexivo).
+function hasActiveStepsArray(value) {
+  return Array.isArray(value) && value.some(isActivePracticeText);
+}
+function isGuidedPracticeBlock(item) {
+  if (typeof item === 'string') return item.trim().length >= 8;
+  if (!item || typeof item !== 'object' || Array.isArray(item)) return false;
+  if (hasActiveStepsArray(item.steps)) return true;
+  if (hasActiveStepsArray(item.tasks)) return true;
+  return isActivePracticeText(item);
+}
+function hasAdvancedSpeakingPractice(lesson) {
+  if (!lesson || (lesson.pillar !== 'speaking' && lesson.type !== 'speaking')) return false;
+  if (Array.isArray(lesson.warmUp) && lesson.warmUp.some(isActivePracticeText)) return true;
+  if (Array.isArray(lesson.guidedPractice) && lesson.guidedPractice.some(isGuidedPracticeBlock)) return true;
+  return false;
+}
+
+// Listening staged: listeningTasks: [{stage, tasks:[...]}] — só conta se
+// alguma stage tiver tasks com texto ativo. audioMetadata/transcript não
+// contam.
+function isStagedListeningItem(item) {
+  if (!item || typeof item !== 'object' || Array.isArray(item)) return false;
+  if (hasActiveStepsArray(item.tasks)) return true;
+  return false;
+}
+function hasStagedListeningPractice(lesson) {
+  if (!lesson || (lesson.pillar !== 'listening' && lesson.type !== 'listening')) return false;
+  return Array.isArray(lesson.listeningTasks) && lesson.listeningTasks.some(isStagedListeningItem);
+}
+
+function hasAnyAdvancedActivePractice(lesson) {
+  return hasOpenComprehensionPractice(lesson)
+    || hasAdvancedWritingPractice(lesson)
+    || hasAdvancedSpeakingPractice(lesson)
+    || hasStagedListeningPractice(lesson);
+}
+
 export function auditLessonExercisesDeep(lesson) {
   const exercises = collectExerciseObjects(lesson);
   const issues = [];
   if (!exercises.length) {
-    if (hasActiveSpeakingPractice(lesson) || hasActiveWritingPractice(lesson)) return issues;
+    if (hasActiveSpeakingPractice(lesson) || hasActiveWritingPractice(lesson) || hasAnyAdvancedActivePractice(lesson)) return issues;
     addIssue(issues, { severity: 'P1', area: `Aula ${lesson?.id || 'unknown-lesson'}`, title: 'Nenhum exercício detectado na aula ready', impact: 'A aula pode ensinar sem exigir prática ativa do aluno.', recommendation: 'Adicionar exercícios, tarefas de tentativa ou perguntas avaliáveis.' });
     return issues;
   }
