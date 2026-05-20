@@ -85,6 +85,15 @@ function makeLevelPillars(level) {
 }
 
 function levelEntry({ level, title, description, exitCriteria, totalCount, packages }) {
+  const pillars = makeLevelPillars(level);
+  // Derivar readyLessonCount da MESMA fonte que o currículo expõe via
+  // entry.pillars (mapa real usado pela UI/auditor), em vez de
+  // STATIC_READY_LESSONS_BY_LEVEL. Evita divergência entre número
+  // declarado e contagem real.
+  const readyLessonCount = Object.values(pillars).reduce(
+    (sum, list) => sum + list.filter((lesson) => lesson.status === 'ready').length,
+    0,
+  );
   return {
     level,
     title,
@@ -92,10 +101,10 @@ function levelEntry({ level, title, description, exitCriteria, totalCount, packa
     requiredCompletion: 1,
     exitCriteria,
     plannedLessonCount: totalCount,
-    readyLessonCount: getStaticReadyLessons(level).length,
+    readyLessonCount,
     packages: Object.values(packages).map((item) => item.title),
     packageDetails: packages,
-    pillars: makeLevelPillars(level),
+    pillars,
   };
 }
 
