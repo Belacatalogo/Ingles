@@ -67,18 +67,66 @@ function requireMinimumList({ issues, lesson, fields, min, title, impact, recomm
   }
 }
 
+// Campos que carregam prática ativa de Grammar como estrutura (não texto solto).
+const GRAMMAR_PRACTICE_FIELDS = [
+  'guidedPractice',
+  'controlledPractice',
+  'errorCorrectionPractice',
+  'translationPractice',
+  'transformationPractice',
+  'productionTasks',
+  'guidedDiscovery',
+];
+
+// Sinais de tarefa real dentro de um item de prática.
+const GRAMMAR_PRACTICE_TASK_KEYS = ['question', 'instruction', 'prompt', 'task', 'sentence', 'text'];
+
+function hasGrammarPracticeItem(value) {
+  // String solta só conta se for instrução substantiva, não um label curto.
+  if (typeof value === 'string') return clean(value).length >= 12;
+  if (value && typeof value === 'object') {
+    return GRAMMAR_PRACTICE_TASK_KEYS.some((key) => clean(value[key]).length >= 4);
+  }
+  return false;
+}
+
+function hasActiveGrammarPractice(lesson) {
+  return GRAMMAR_PRACTICE_FIELDS.some((field) =>
+    safeArray(lesson?.[field]).some(hasGrammarPracticeItem),
+  );
+}
+
+// Schema antigo (fullContent/createGrammarLesson) coloca a explicação conceitual
+// em explanationSections [{ title, content }]. Reconhece quando há pelo menos
+// duas seções com texto útil — conservador, não aceita seções vazias.
+function hasSubstantialExplanationSections(lesson) {
+  const useful = safeArray(lesson?.explanationSections).filter((section) => {
+    if (typeof section === 'string') return clean(section).length >= 40;
+    if (section && typeof section === 'object') {
+      return clean(section.content || section.body || section.text || section).length >= 40;
+    }
+    return false;
+  });
+  return useful.length >= 2;
+}
+
 function auditGrammar(lesson) {
   const issues = [];
   const text = clean(lesson).toLowerCase();
 
-  requireField({
-    issues,
-    lesson,
-    fields: ['conceptExplanation', 'teacherOpening', 'grammarExplanation', 'ruleExplanation'],
-    title: 'Grammar sem explicação conceitual clara',
-    impact: 'O aluno pode praticar sem entender a regra gramatical.',
-    recommendation: 'Adicionar explicação da regra, quando usar e como formar a estrutura.',
-  });
+  const hasConceptExplanation =
+    hasAnyField(lesson, ['conceptExplanation', 'teacherOpening', 'grammarExplanation', 'ruleExplanation']) ||
+    hasSubstantialExplanationSections(lesson);
+  if (!hasConceptExplanation) {
+    addIssue(issues, {
+      severity: 'P1',
+      area: lessonArea(lesson),
+      title: 'Grammar sem explicação conceitual clara',
+      impact: 'O aluno pode praticar sem entender a regra gramatical.',
+      evidence: 'Campos esperados ausentes/vazios: conceptExplanation, teacherOpening, grammarExplanation, ruleExplanation, explanationSections (>=2 seções com texto).',
+      recommendation: 'Adicionar explicação da regra, quando usar e como formar a estrutura.',
+    });
+  }
 
   requireMinimumList({
     issues,
@@ -100,7 +148,9 @@ function auditGrammar(lesson) {
     severity: 'P2',
   });
 
-  if (!textIncludesAny(text, [/practice|prática|guided|exerc/i])) {
+  // Prática ativa: prioriza evidência estrutural (arrays de tarefas reais);
+  // mantém o sinal textual como fallback para schemas que só tenham texto.
+  if (!hasActiveGrammarPractice(lesson) && !textIncludesAny(text, [/practice|prática|guided|exerc/i])) {
     addIssue(issues, {
       severity: 'P1',
       area: lessonArea(lesson),
