@@ -5,6 +5,9 @@
 /* de: flashcards-polish.css */
 @import './flashcards-polish.css';
 
+/* BLOCO-VOCAB-ZIGZAG-MAP-POLISH — overrides seguros do mapa da trilha */
+@import './flashcards-zigzag-polish.css';
+
 /* de: flashcards-session.css */
 @import './flashcards-session.css';
 
