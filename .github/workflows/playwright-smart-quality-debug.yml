@@ -1,0 +1,161 @@
+name: Playwright Smart Quality Debug
+
+# Workflow manual e reutilizável para rodar Playwright/Quality Director sem
+# depender de execução local. Modo smart escolhe suites pelos arquivos
+# alterados; modo manual permite escolher suite/device. Não substitui o
+# workflow "Fluency Quality Director" (Flow full), que segue intacto.
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'smart (detecta por arquivos alterados) ou manual'
+        required: true
+        default: smart
+        type: choice
+        options: [smart, manual]
+      suite:
+        description: 'Suite (modo manual). auto = deixar o smart decidir.'
+        required: true
+        default: auto
+        type: choice
+        options:
+          - auto
+          - all
+          - quality-director
+          - pillar-quality
+          - exercise-quality
+          - lesson-quality
+          - visual-mobile
+          - navigation
+          - exploratory-student-audit
+          - student-journey
+          - progress-mastery
+          - empty-states-security
+          - curriculum-consistency
+          - a11y-performance
+          - real-student-regression
+      device:
+        description: 'Projeto Playwright'
+        required: true
+        default: all
+        type: choice
+        options:
+          - all
+          - iPhone 13
+          - iPhone SE
+      trace:
+        description: 'Playwright trace'
+        required: true
+        default: off
+        type: choice
+        options: [off, on, retain-on-failure]
+      upload_artifacts:
+        description: 'Subir artifacts (report/test-results/docs)'
+        required: true
+        default: 'true'
+        type: choice
+        options: ['true', 'false']
+      publish_latest:
+        description: 'Publicar relatório latest do Quality Director'
+        required: true
+        default: 'false'
+        type: choice
+        options: ['false', 'true']
+      base_ref:
+        description: 'Branch base para diff no modo smart'
+        required: true
+        default: main
+        type: string
+      changed_files_override:
+        description: 'Opcional: caminhos alterados (um por linha ou separados por vírgula) para forçar o smart'
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  smart-debug:
+    name: Smart Playwright (${{ github.event.inputs.mode }}/${{ github.event.inputs.suite }}/${{ github.event.inputs.device }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    defaults:
+      run:
+        working-directory: fluency-clean
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: fluency-clean/package.json
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Build app
+        run: npm run build
+
+      - name: Compute changed files (smart)
+        id: changed
+        if: ${{ github.event.inputs.mode == 'smart' || github.event.inputs.suite == 'auto' }}
+        run: |
+          OVERRIDE="${{ github.event.inputs.changed_files_override }}"
+          if [ -n "$OVERRIDE" ]; then
+            echo "Usando changed_files_override do input."
+            FILES="$OVERRIDE"
+          else
+            BASE="${{ github.event.inputs.base_ref }}"
+            git fetch origin "$BASE" --depth=50 || true
+            # Diff entre a base e o HEAD atual; fallback para o último commit.
+            FILES=$(git diff --name-only "origin/$BASE...HEAD" || true)
+            if [ -z "$FILES" ]; then
+              FILES=$(git diff-tree --no-commit-id --name-only -r HEAD || true)
+            fi
+          fi
+          echo "Arquivos detectados:"
+          echo "$FILES"
+          # Exporta multilinha para o ambiente do próximo step.
+          {
+            echo 'CHANGED_FILES<<EOF'
+            echo "$FILES"
+            echo 'EOF'
+          } >> "$GITHUB_ENV"
+        working-directory: .
+
+      - name: Run Playwright Smart Quality Debug
+        env:
+          SMART_MODE: ${{ github.event.inputs.mode }}
+          SMART_SUITE: ${{ github.event.inputs.suite }}
+          SMART_DEVICE: ${{ github.event.inputs.device }}
+          SMART_TRACE: ${{ github.event.inputs.trace }}
+          QUALITY_DIRECTOR_CHANGED_FILES: ${{ env.CHANGED_FILES }}
+        run: node scripts/quality-director/run-smart-playwright.mjs
+
+      - name: Publish latest Quality Director report
+        if: ${{ always() && github.event.inputs.publish_latest == 'true' }}
+        run: npm run quality-director:publish-latest
+
+      - name: Upload artifacts
+        if: ${{ always() && github.event.inputs.upload_artifacts == 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: smart-debug-${{ github.event.inputs.mode }}-${{ github.run_id }}
+          path: |
+            fluency-clean/playwright-report/
+            fluency-clean/test-results/
+            fluency-clean/audit-results/
+            fluency-clean/docs/quality-director/
+          if-no-files-found: warn
+          retention-days: 14

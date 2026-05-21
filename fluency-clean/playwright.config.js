@@ -18,11 +18,21 @@ const iphoneSE = {
   userAgent: iphone13.userAgent,
 };
 
+// Trace/video controlados por env para o "Playwright Smart Quality Debug",
+// sem alterar o comportamento padrão (off) usado pelo Flow existente.
+const traceMode = process.env.PW_TRACE || 'off';
+const videoMode = process.env.PW_VIDEO || 'off';
+
 export default defineConfig({
   testDir: './e2e',
   timeout: 30_000,
   retries: 0,
-  reporter: [['html', { open: 'never' }]],
+  // html para inspeção; list para logs legíveis no Actions; json para parsing.
+  reporter: [
+    ['html', { open: 'never' }],
+    ['list'],
+    ['json', { outputFile: 'audit-results/playwright-results.json' }],
+  ],
 
   projects: [
     {
@@ -38,7 +48,8 @@ export default defineConfig({
   use: {
     baseURL: 'http://localhost:5173',
     screenshot: 'only-on-failure',
-    video: 'off',
+    trace: traceMode,
+    video: videoMode,
   },
 
   webServer: {
