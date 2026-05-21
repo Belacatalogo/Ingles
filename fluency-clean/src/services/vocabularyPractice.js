@@ -103,6 +103,16 @@ function maskExample(card) {
   return words.join(' ');
 }
 
+function distractorWordsForSentence(cards, target, limit = 4) {
+  return stableShuffle(
+    cards
+      .filter((card) => card.id !== target.id)
+      .flatMap((card) => wordsFromExample(card))
+      .filter((word) => normalizeOption(word).length > 1),
+    `${target.id}-sentence-word-distractors`,
+  ).slice(0, limit);
+}
+
 function activityIntro(card, index) {
   return {
     id: `intro-${card.id}-${index}`,
@@ -146,6 +156,37 @@ function activityComplete(card, cards, index) {
   };
 }
 
+function activityPhraseGap(card, cards, index) {
+  return {
+    id: `phrase-gap-${card.id}-${index}`,
+    type: 'phrase_gap',
+    cardId: card.id,
+    word: card.word,
+    title: 'Complete a frase real',
+    prompt: `Complete a lacuna sem traduzir palavra por palavra:\n${maskExample(card)}`,
+    answer: card.word,
+    options: makeOptions(card.word, distractorsFor(cards, card, 'word'), `phrase-gap-${card.id}-${index}`),
+    hint: card.translation || card.definition,
+    instruction: 'Use o sentido da frase inteira para escolher a palavra correta.',
+  };
+}
+
+function activityPhraseTranslate(card, cards, index) {
+  const words = wordsFromExample(card);
+  const distractors = distractorWordsForSentence(cards, card, Math.max(2, Math.min(4, words.length)));
+  return {
+    id: `phrase-translate-${card.id}-${index}`,
+    type: 'phrase_translate',
+    cardId: card.id,
+    word: card.word,
+    title: 'Construa a frase',
+    prompt: `Monte uma frase em inglês usando a ideia “${card.translation || card.definition || card.word}”.`,
+    answer: words.join(' '),
+    options: stableShuffle(uniqueBy([...words, ...distractors], normalizeOption), `phrase-translate-${card.id}-${index}`),
+    instruction: 'Use o banco de palavras para reconstruir uma frase natural em inglês.',
+  };
+}
+
 function activityListen(card, cards, index) {
   const correct = card.example || card.word;
   return {
@@ -179,19 +220,24 @@ function activityBuild(card, index) {
 function activityLooksSafe(activity) {
   if (!activity) return false;
   if (activity.type === 'intro' || activity.type === 'build') return true;
+  if (activity.type === 'phrase_translate') {
+    const promptWithoutAnswer = !includesNormalized(activity.prompt, activity.answer);
+    const options = Array.isArray(activity.options) ? activity.options : [];
+    return Boolean(promptWithoutAnswer && options.length >= sentenceWords(activity.answer).length);
+  }
   const options = Array.isArray(activity.options) ? activity.options : [];
   if (options.length < 3) return false;
   const uniqueOptions = uniqueBy(options, normalizeOption);
   if (uniqueOptions.length !== options.length) return false;
   if (!options.some((option) => normalizeOption(option) === normalizeOption(activity.answer))) return false;
 
-  if (activity.type === 'choice') {
+  if (activity.type === 'choice' || activity.type === 'phrase_gap') {
     const promptWithoutMaskedLine = String(activity.prompt || '').split('\n')[0] || '';
     const answerIsLeaked = includesNormalized(promptWithoutMaskedLine, activity.answer);
     if (answerIsLeaked) return false;
   }
 
-  if (activity.id?.startsWith('complete-')) {
+  if (activity.id?.startsWith('complete-') || activity.id?.startsWith('phrase-gap-')) {
     const maskedPart = String(activity.prompt || '').split('\n').slice(1).join(' ');
     if (includesNormalized(maskedPart, activity.answer)) return false;
   }
@@ -210,11 +256,11 @@ function targetQuestionCount(level, selectedCount) {
   return Math.min(20, Math.max(18, selectedCount * 3));
 }
 
-function stagedPracticeOrder({ intro, meaning, complete, listen, build }, seed, targetCount, level) {
-  const warmup = stableShuffle([...intro, ...meaning], `${seed}-warmup`).filter(activityLooksSafe);
-  const middle = stableShuffle([...meaning, ...complete, ...listen], `${seed}-middle`).filter(activityLooksSafe);
-  const production = stableShuffle([...build], `${seed}-production`).filter(activityLooksSafe);
-  const review = stableShuffle([...meaning, ...complete, ...listen, ...build], `${seed}-review`).filter(activityLooksSafe);
+function stagedPracticeOrder({ intro, meaning, complete, phraseGap, listen, build, phraseTranslate }, seed, targetCount, level) {
+  const warmup = stableShuffle([...intro, ...phraseGap, ...meaning], `${seed}-warmup`).filter(activityLooksSafe);
+  const middle = stableShuffle([...phraseGap, ...meaning, ...complete, ...listen], `${seed}-middle`).filter(activityLooksSafe);
+  const production = stableShuffle([...phraseTranslate, ...build], `${seed}-production`).filter(activityLooksSafe);
+  const review = stableShuffle([...phraseGap, ...meaning, ...complete, ...listen, ...phraseTranslate, ...build], `${seed}-review`).filter(activityLooksSafe);
 
   const result = [];
   const pushUnique = (items, limit = Infinity) => {
@@ -225,13 +271,13 @@ function stagedPracticeOrder({ intro, meaning, complete, listen, build }, seed, 
   };
 
   pushUnique(warmup, level <= 1 ? Math.min(8, targetCount) : Math.min(6, targetCount));
-  pushUnique(middle, Math.max(result.length, targetCount - Math.min(4, production.length)));
+  pushUnique(middle, Math.max(result.length, targetCount - Math.min(5, production.length)));
   pushUnique(production, targetCount);
 
   let reviewIndex = 0;
   while (result.length < targetCount && review.length) {
     const source = review[reviewIndex % review.length];
-    if (source.type === 'build' && result.length < Math.ceil(targetCount * 0.55)) {
+    if ((source.type === 'build' || source.type === 'phrase_translate') && result.length < Math.ceil(targetCount * 0.55)) {
       reviewIndex += 1;
       continue;
     }
@@ -251,10 +297,12 @@ export function buildVocabularyPracticeActivities(rawCards = [], { level = 1 } =
   const intro = selected.map((card, index) => activityIntro(card, index));
   const meaning = selected.map((card, index) => activityMeaning(card, cards, index));
   const complete = selected.map((card, index) => activityComplete(card, cards, index));
+  const phraseGap = selected.map((card, index) => activityPhraseGap(card, cards, index));
   const listen = selected.map((card, index) => activityListen(card, cards, index));
   const build = selected.filter((card) => card.example).map((card, index) => activityBuild(card, index));
+  const phraseTranslate = selected.filter((card) => card.example).map((card, index) => activityPhraseTranslate(card, cards, index));
 
-  return stagedPracticeOrder({ intro, meaning, complete, listen, build }, seed, targetCount, level);
+  return stagedPracticeOrder({ intro, meaning, complete, phraseGap, listen, build, phraseTranslate }, seed, targetCount, level);
 }
 
 export function scoreVocabularyPractice(activity, userAnswer) {
