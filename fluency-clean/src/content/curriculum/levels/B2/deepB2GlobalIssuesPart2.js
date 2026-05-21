@@ -20,6 +20,12 @@ export const B2_DEEP_GLOBAL_ISSUES_PART2 = Object.freeze([
       'Recognise passive reporting structures and nominalization in academic prose.',
       'Evaluate the author\'s argument and distinguish evidence from interpretation.',
     ],
+    readingStrategy: [
+      task('Before reading: predict the paradox in the title. How could global poverty decline while inequality still becomes more serious? Write one possible explanation before you read.', 'This gives you a hypothesis to test against the data.'),
+      task('First read (gist): read quickly and identify the main contrast the article builds: global-level progress versus within-country inequality.', 'Focus on the argument shape before analysing the numbers.'),
+      task('Second read (scanning/detail): locate every statistic in the text and label what each one proves, qualifies or complicates.', 'B2 data reading requires connecting numbers to claims, not memorising figures.'),
+      task('Evidence task: before answering, copy the sentence that links inequality to social mobility, trust, polarisation or long-run growth.', 'Use this sentence as textual evidence for the analysis question about implications.'),
+    ],
     readingText: {
       title: 'The Inequality Paradox',
       subtitle: 'How global poverty has declined as inequality within nations has surged',
@@ -89,6 +95,12 @@ What is perhaps most striking is the contrast in policy responses. On climate ch
       'Identify the author\'s argument structure: claim, evidence, concession, restate.',
       'Distinguish between facts and opinions in a persuasive text.',
       'Recognise and evaluate hedging, qualification and qualification language in formal opinion writing.',
+    ],
+    readingStrategy: [
+      task('Before reading: list two global problems that individual countries cannot solve alone. Predict why global institutions might struggle with them.', 'This prepares you to evaluate the article\'s governance argument.'),
+      task('First read (gist): identify the author\'s overall position: has multilateralism failed, or is the argument more qualified?', 'Look for the concession that prevents a simple yes/no reading.'),
+      task('Second read (scanning/detail): mark the examples of institutional strain in paragraph 2 and the examples of multilateral success in paragraph 3.', 'Scanning the contrast helps you see how the editorial balances criticism and concession.'),
+      task('Evidence task: copy one phrase that reveals authorial stance rather than neutral reporting, then explain what attitude it signals.', 'Use this as evidence for the critical-reading question about fact versus opinion.'),
     ],
     readingText: {
       title: 'The Limits of Global Governance',
