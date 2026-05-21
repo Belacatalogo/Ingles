@@ -8,6 +8,7 @@
 //   SMART_DEVICE   = all | "iPhone 13" | "iPhone SE"           (default: all)
 //   SMART_TRACE    = off | on | retain-on-failure              (default: off)
 //   SMART_VIDEO    = off | on | retain-on-failure              (default: off)
+//   SMART_WORKERS  = número de workers Playwright (opcional)
 //   SMART_DRY_RUN  = "1" para apenas imprimir o plano (não roda)
 //   QUALITY_DIRECTOR_CHANGED_FILES = lista (vírgula/linha) para override smart
 //
@@ -20,6 +21,7 @@ import { spawnSync } from 'node:child_process';
 import { FULL_SUITES, SUITE_MAP, getChangedFiles, routeChangedFiles } from './changed-files-to-suites.mjs';
 
 const QD_DIR = 'e2e/quality-director';
+const A11Y_PERFORMANCE_SUITE = `${QD_DIR}/a11y-performance.audit.spec.js`;
 const VALID_DEVICES = ['iPhone 13', 'iPhone SE'];
 
 const mode = (process.env.SMART_MODE || 'smart').trim();
@@ -27,6 +29,7 @@ const suiteInput = (process.env.SMART_SUITE || 'auto').trim();
 const deviceInput = (process.env.SMART_DEVICE || 'all').trim();
 const trace = (process.env.SMART_TRACE || 'off').trim();
 const video = (process.env.SMART_VIDEO || 'off').trim();
+const workersInput = (process.env.SMART_WORKERS || '').trim();
 const dryRun = process.env.SMART_DRY_RUN === '1';
 
 function resolveSelection() {
@@ -67,18 +70,44 @@ function resolveProjects() {
   return [deviceInput];
 }
 
+function selectionIncludesA11yPerformance(selection) {
+  return selection.suites.some((suite) => suite === QD_DIR || suite === A11Y_PERFORMANCE_SUITE || suite.endsWith('/a11y-performance.audit.spec.js'));
+}
+
+function resolveWorkers({ hasA11yPerformance }) {
+  if (workersInput) return workersInput;
+  // A suíte a11y-performance mede tempo, navega por todas as abas e coleta sinais
+  // técnicos. Em execuções amplas do Smart Debug, muita concorrência pode gerar
+  // timeout/flakiness de CI. Limitar workers não mascara falha real: só reduz
+  // contenção de CPU enquanto mantém a suíte obrigatória e com exit code real.
+  return hasA11yPerformance ? '2' : '';
+}
+
 const selection = resolveSelection();
 const projects = resolveProjects();
+const hasA11yPerformance = selectionIncludesA11yPerformance(selection);
+const effectiveTrace = hasA11yPerformance && trace === 'off' ? 'retain-on-failure' : trace;
+const workers = resolveWorkers({ hasA11yPerformance });
 
 const args = ['playwright', 'test', ...selection.suites];
 projects.forEach((p) => args.push(`--project=${p}`));
-if (trace && trace !== 'off') args.push(`--trace=${trace}`);
+if (workers) args.push(`--workers=${workers}`);
+if (effectiveTrace && effectiveTrace !== 'off') args.push(`--trace=${effectiveTrace}`);
 
 const childEnv = { ...process.env };
 if (video && video !== 'off') childEnv.PW_VIDEO = video;
-if (trace && trace !== 'off') childEnv.PW_TRACE = trace;
+if (effectiveTrace && effectiveTrace !== 'off') childEnv.PW_TRACE = effectiveTrace;
 
 const commandStr = `npx ${args.join(' ')}`;
+const traceLabel = effectiveTrace === trace ? trace : `${effectiveTrace} (input: ${trace})`;
+const stabilizationLines = hasA11yPerformance
+  ? [
+      '',
+      'estabilização:',
+      '  - a11y-performance detectada: workers limitados para reduzir contenção no CI',
+      effectiveTrace !== trace ? '  - trace retain-on-failure ativado automaticamente para diagnóstico' : '  - trace mantido conforme input',
+    ]
+  : [];
 
 const planLines = [
   '──────────────────────────────────────────────',
@@ -87,10 +116,12 @@ const planLines = [
   `modo:     ${selection.mode}`,
   `suite in: ${suiteInput}`,
   `device:   ${projects.join(', ')}`,
-  `trace:    ${trace}   video: ${video}`,
+  `trace:    ${traceLabel}   video: ${video}`,
+  `workers:  ${workers || 'default'}`,
   '',
   `suites (${selection.suites.length}):`,
   ...selection.suites.map((s) => `  - ${s}`),
+  ...stabilizationLines,
 ];
 if (selection.files?.length) {
   planLines.push('', `arquivos alterados detectados (${selection.files.length}):`, ...selection.files.map((f) => `  - ${f}`));
@@ -114,8 +145,10 @@ function writeStepSummary(status, code) {
     '',
     `- **Modo:** \`${selection.mode}\` (input suite: \`${suiteInput}\`)`,
     `- **Devices:** ${projects.map((p) => `\`${p}\``).join(', ')}`,
-    `- **Trace:** \`${trace}\` · **Video:** \`${video}\``,
+    `- **Trace:** \`${traceLabel}\` · **Video:** \`${video}\``,
+    `- **Workers:** \`${workers || 'default'}\``,
     `- **Resultado:** ${status} (exit ${code})`,
+    ...(hasA11yPerformance ? ['', '### Estabilização a11y-performance', '- Workers limitados quando a suíte sensível está incluída.', '- Trace `retain-on-failure` é ativado automaticamente se o input estiver `off`.'] : []),
     '',
     '### Suites executadas',
     ...selection.suites.map((s) => `- \`${s}\``),
