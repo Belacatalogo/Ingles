@@ -1,8 +1,10 @@
 import { getVocabularyDeckCards, getVocabularyDecks } from './vocabularyDecks.js';
+import { getVocabularySrsWeakCards } from './vocabularySrs.js';
 
 const STORAGE_KEY = 'fluency.vocabularyPath.v1';
 const BUBBLE_SIZE = 6;
 const LEVEL_CARD_STEPS = [4, 5, 6];
+const WEAK_INJECTION_BY_LEVEL = [1, 2, 3];
 const LAB_UNLOCK_LEVEL_MARKERS = new Set(['A1', 'A1-A2', 'A2']);
 
 function safeJsonParse(value, fallback) {
@@ -18,6 +20,20 @@ function writeState(state) {
   if (typeof window === 'undefined') return state;
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   return state;
+}
+
+function cardKey(card = {}) {
+  return String(card.id || card.word || card.term || card.expression || '').toLowerCase().replace(/\s+/g, '-');
+}
+
+function uniqueCards(cards = []) {
+  const seen = new Set();
+  return cards.filter((card) => {
+    const key = cardKey(card);
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 }
 
 function chunkCards(cards) {
@@ -37,6 +53,34 @@ function getBubbleLevel(progress, bubbleIndex) {
 function isFirstDeckForLevel(decks, deck, index) {
   if (!LAB_UNLOCK_LEVEL_MARKERS.has(deck.level)) return false;
   return decks.findIndex((item) => item.level === deck.level) === index;
+}
+
+function getWeakInjectionLimit(level) {
+  const index = Math.max(0, Math.min(2, Number(level || 1) - 1));
+  return WEAK_INJECTION_BY_LEVEL[index] || WEAK_INJECTION_BY_LEVEL[0];
+}
+
+function injectWeakCards({ selectedCards, deckId, bubbleIndex, level }) {
+  const weakLimit = getWeakInjectionLimit(level);
+  const weakCards = getVocabularySrsWeakCards(weakLimit)
+    .map((card, index) => ({
+      ...card,
+      id: `reinforcement-${deckId}-${bubbleIndex}-${level}-${card.srsKey || card.id || index}`,
+      deck: card.deck || 'Reforço SRS',
+      reinforcement: true,
+    }))
+    .filter((card) => !selectedCards.some((base) => cardKey(base) === cardKey(card) || String(base.word || '').toLowerCase() === String(card.word || '').toLowerCase()));
+
+  if (!weakCards.length) return selectedCards;
+  const result = [];
+  const queue = [...weakCards];
+  selectedCards.forEach((card, index) => {
+    result.push(card);
+    const shouldInject = queue.length && (index === 0 || (level >= 2 && index === 2) || (level >= 3 && index === selectedCards.length - 1));
+    if (shouldInject) result.push(queue.shift());
+  });
+  while (queue.length && result.length < selectedCards.length + weakLimit) result.push(queue.shift());
+  return uniqueCards(result);
 }
 
 export function getVocabularyPathState() {
@@ -97,7 +141,8 @@ export function getBubbleCardsForLevel(deckId, bubbleIndex, level = 1) {
   const bubbleCards = chunks[bubbleIndex] || chunks[0] || [];
   const count = LEVEL_CARD_STEPS[Math.max(0, Math.min(2, Number(level || 1) - 1))] || LEVEL_CARD_STEPS[0];
   const previousCards = bubbleIndex > 0 ? chunks.slice(0, bubbleIndex).flat().slice(-2) : [];
-  return [...previousCards, ...bubbleCards.slice(0, Math.min(count, bubbleCards.length))];
+  const selectedCards = uniqueCards([...previousCards, ...bubbleCards.slice(0, Math.min(count, bubbleCards.length))]);
+  return injectWeakCards({ selectedCards, deckId, bubbleIndex, level });
 }
 
 export function completeVocabularyBubbleLevel({ deckId, bubbleIndex, level }) {
