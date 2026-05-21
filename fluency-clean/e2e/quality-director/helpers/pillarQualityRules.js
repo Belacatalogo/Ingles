@@ -378,36 +378,61 @@ function auditListening(lesson) {
   return issues;
 }
 
+// Modelo de fala: frases/diálogos modelo + frames de produção controlada.
+function hasSpeakingModel(lesson) {
+  if (hasAnyField(lesson, ['modelPhrases', 'speakingModel', 'modelAnswer', 'exampleDialogue', 'guidedModel', 'usefulPhrases', 'sentenceFrames', 'dialogue', 'repeatAfterMe', 'substitutionDrills', 'questionAnswerDrills', 'buildYourAnswer'])) return true;
+  if (clean(lesson?.speakingSituation).length >= 40) return true;
+  return false;
+}
+
+// Foco de pronúncia/shadowing reconhecido estruturalmente.
+function hasSpeakingPronunciation(lesson) {
+  return hasAnyField(lesson, ['pronunciationTips', 'pronunciationFocus', 'shadowingTasks', 'repeatTasks', 'fluencyDrills', 'intonationPractice', 'stressPractice', 'minimalPairs', 'pronunciationChunks', 'repeatAfterMe']);
+}
+
+// Produção oral final: tarefas produtivas reconhecidas em vários schemas.
+function hasSpeakingProduction(lesson) {
+  if (hasAnyField(lesson, ['freeSpeaking', 'speakingTask', 'productionTask', 'connectedProduction', 'roleplay', 'conversationTask', 'finalSpeakingTask', 'recordingTasks'])) return true;
+  if (safeArray(lesson?.tasks).some((t) => clean(t?.instruction || t).length >= 30)) return true;
+  if (safeArray(lesson?.guidedPractice).some((t) => clean(t?.instruction || t).length >= 30)) return true;
+  if (clean(lesson?.prompt).length >= 40) return true;
+  return false;
+}
+
 function auditSpeaking(lesson) {
   const issues = [];
-  requireField({
-    issues,
-    lesson,
-    fields: ['modelPhrases', 'speakingModel', 'modelAnswer', 'exampleDialogue', 'guidedModel'],
-    title: 'Speaking sem modelo de fala suficiente',
-    impact: 'O aluno pode ser forçado a produzir sem base linguística.',
-    recommendation: 'Adicionar frases-modelo, mini diálogo ou resposta exemplar antes da produção.',
-    severity: 'P1',
-  });
+  if (!hasSpeakingModel(lesson)) {
+    addIssue(issues, {
+      severity: 'P1',
+      area: lessonArea(lesson),
+      title: 'Speaking sem modelo de fala suficiente',
+      impact: 'O aluno pode ser forçado a produzir sem base linguística.',
+      evidence: 'Sem modelo em modelPhrases/speakingModel/modelAnswer/exampleDialogue/guidedModel/usefulPhrases/sentenceFrames/dialogue/repeatAfterMe/substitutionDrills/questionAnswerDrills/buildYourAnswer/speakingSituation.',
+      recommendation: 'Adicionar frases-modelo, mini diálogo ou resposta exemplar antes da produção.',
+    });
+  }
 
-  requireField({
-    issues,
-    lesson,
-    fields: ['pronunciationTips', 'pronunciationFocus', 'shadowingTasks', 'repeatTasks'],
-    title: 'Speaking sem foco de pronúncia/shadowing',
-    impact: 'A aula pode virar apenas escrita lida em voz alta.',
-    recommendation: 'Adicionar foco de pronúncia e repetição guiada.',
-  });
+  if (!hasSpeakingPronunciation(lesson)) {
+    addIssue(issues, {
+      severity: 'P1',
+      area: lessonArea(lesson),
+      title: 'Speaking sem foco de pronúncia/shadowing',
+      impact: 'A aula pode virar apenas escrita lida em voz alta.',
+      evidence: 'Sem pronúncia em pronunciationTips/pronunciationFocus/shadowingTasks/repeatTasks/fluencyDrills/intonationPractice/stressPractice/minimalPairs/pronunciationChunks/repeatAfterMe.',
+      recommendation: 'Adicionar foco de pronúncia e repetição guiada.',
+    });
+  }
 
-  requireField({
-    issues,
-    lesson,
-    fields: ['freeSpeaking', 'speakingTask', 'productionTask', 'connectedProduction'],
-    title: 'Speaking sem tarefa produtiva final',
-    impact: 'O aluno pode praticar frases soltas sem produção própria.',
-    recommendation: 'Adicionar tarefa final de fala com critérios mínimos.',
-    severity: 'P1',
-  });
+  if (!hasSpeakingProduction(lesson)) {
+    addIssue(issues, {
+      severity: 'P1',
+      area: lessonArea(lesson),
+      title: 'Speaking sem tarefa produtiva final',
+      impact: 'O aluno pode praticar frases soltas sem produção própria.',
+      evidence: 'Sem produção em freeSpeaking/speakingTask/productionTask/connectedProduction/roleplay/conversationTask/finalSpeakingTask/recordingTasks/tasks/guidedPractice/prompt.',
+      recommendation: 'Adicionar tarefa final de fala com critérios mínimos.',
+    });
+  }
 
   return issues;
 }
