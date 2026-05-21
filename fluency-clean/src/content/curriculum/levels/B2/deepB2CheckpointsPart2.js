@@ -20,6 +20,12 @@ export const B2_DEEP_CHECKPOINTS_PART2 = Object.freeze([
       'Show command of all B2 reading skills: gist, detail, inference, critical evaluation.',
       'Complete this assessment independently without revisiting B2 lessons.',
     ],
+    readingStrategy: [
+      task('Before reading: preview title and subtitle, then predict whether the text will present automation as mostly opportunity, mostly risk, or a governance dilemma.', 'Write a hypothesis before reading to guide your attention.'),
+      task('First read (gist): read the full text once and identify the overall thesis in one sentence.', 'Focus on the author\'s line of argument, not every statistic.'),
+      task('Second read (scanning/detail): scan each paragraph and match one core claim to one concrete example or data point.', 'This builds accuracy for detail and inference questions under assessment pressure.'),
+      task('Evidence task: for each answer, cite the exact phrase or sentence that supports your interpretation.', 'Assessment-quality responses are evidence-based, not impression-based.'),
+    ],
     readingText: {
       title: 'The Future of Work',
       subtitle: 'Automation, inequality and the governance of technological change',

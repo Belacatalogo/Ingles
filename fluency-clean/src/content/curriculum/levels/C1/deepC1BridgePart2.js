@@ -20,6 +20,12 @@ export const C1_DEEP_BRIDGE_PART2 = Object.freeze([
       'Recognise and interpret C1 vocabulary and collocations in context.',
       'Practise critical reading — evaluating the strength and limitations of the author\'s argument.',
     ],
+    readingStrategy: [
+      task('Before reading: based on the title and subtitle, predict what kind of "crisis" the author is describing and why democratic systems might be vulnerable to it.', 'A pre-reading hypothesis helps you process dense concepts with purpose.'),
+      task('First read (gist): read the passage once without stopping and write the central claim in one precise sentence.', 'Prioritise the thesis and overall line of reasoning before detail.'),
+      task('Second read (scanning/detail): scan for where the author concedes the value of epistemic pluralism and where they limit that concession.', 'Track argument movement from concession to rebuttal.'),
+      task('Evidence task: select two short excerpts that distinguish normative disagreement from factual breakdown, and use them to justify your interpretation.', 'Support each critical answer with direct textual evidence.'),
+    ],
     readingText: {
       title: 'The Epistemic Crisis',
       subtitle: 'How the fragmentation of shared knowledge threatens democratic governance',
