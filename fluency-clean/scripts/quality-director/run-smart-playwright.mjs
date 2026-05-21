@@ -23,12 +23,39 @@ import { FULL_SUITES, SUITE_MAP, getChangedFiles, routeChangedFiles } from './ch
 const QD_DIR = 'e2e/quality-director';
 const A11Y_PERFORMANCE_SUITE = `${QD_DIR}/a11y-performance.audit.spec.js`;
 const VALID_DEVICES = ['iPhone 13', 'iPhone SE'];
+const VALID_TRACE_MODES = new Set(['off', 'on', 'on-first-retry', 'on-all-retries', 'retain-on-failure', 'retain-on-first-failure', 'retain-on-failure-and-retries']);
+const VALID_VIDEO_MODES = new Set(['off', 'on', 'retain-on-failure', 'on-first-retry']);
+
+function normalizeBooleanLikeMode(value, fallback = 'off') {
+  const raw = String(value ?? fallback).trim();
+  if (!raw) return fallback;
+  const lowered = raw.toLowerCase();
+  if (lowered === 'false' || lowered === '0' || lowered === 'no') return 'off';
+  if (lowered === 'true' || lowered === '1' || lowered === 'yes') return 'on';
+  return raw;
+}
+
+function normalizeTraceMode(value) {
+  const normalized = normalizeBooleanLikeMode(value, 'off');
+  if (VALID_TRACE_MODES.has(normalized)) return normalized;
+  console.warn(`[smart-debug] SMART_TRACE inválido: "${value}". Usando "off".`);
+  return 'off';
+}
+
+function normalizeVideoMode(value) {
+  const normalized = normalizeBooleanLikeMode(value, 'off');
+  if (VALID_VIDEO_MODES.has(normalized)) return normalized;
+  console.warn(`[smart-debug] SMART_VIDEO inválido: "${value}". Usando "off".`);
+  return 'off';
+}
 
 const mode = (process.env.SMART_MODE || 'smart').trim();
 const suiteInput = (process.env.SMART_SUITE || 'auto').trim();
 const deviceInput = (process.env.SMART_DEVICE || 'all').trim();
-const trace = (process.env.SMART_TRACE || 'off').trim();
-const video = (process.env.SMART_VIDEO || 'off').trim();
+const trace = normalizeTraceMode(process.env.SMART_TRACE);
+const video = normalizeVideoMode(process.env.SMART_VIDEO);
+const rawTrace = String(process.env.SMART_TRACE ?? 'off').trim() || 'off';
+const rawVideo = String(process.env.SMART_VIDEO ?? 'off').trim() || 'off';
 const workersInput = (process.env.SMART_WORKERS || '').trim();
 const dryRun = process.env.SMART_DRY_RUN === '1';
 
@@ -83,6 +110,10 @@ function resolveWorkers({ hasA11yPerformance }) {
   return hasA11yPerformance ? '2' : '';
 }
 
+function labelNormalizedMode({ raw, normalized }) {
+  return raw === normalized ? normalized : `${normalized} (input: ${raw})`;
+}
+
 const selection = resolveSelection();
 const projects = resolveProjects();
 const hasA11yPerformance = selectionIncludesA11yPerformance(selection);
@@ -99,7 +130,9 @@ if (video && video !== 'off') childEnv.PW_VIDEO = video;
 if (effectiveTrace && effectiveTrace !== 'off') childEnv.PW_TRACE = effectiveTrace;
 
 const commandStr = `npx ${args.join(' ')}`;
-const traceLabel = effectiveTrace === trace ? trace : `${effectiveTrace} (input: ${trace})`;
+const normalizedTraceLabel = labelNormalizedMode({ raw: rawTrace, normalized: trace });
+const normalizedVideoLabel = labelNormalizedMode({ raw: rawVideo, normalized: video });
+const traceLabel = effectiveTrace === trace ? normalizedTraceLabel : `${effectiveTrace} (input normalizado: ${normalizedTraceLabel})`;
 const stabilizationLines = hasA11yPerformance
   ? [
       '',
@@ -116,7 +149,7 @@ const planLines = [
   `modo:     ${selection.mode}`,
   `suite in: ${suiteInput}`,
   `device:   ${projects.join(', ')}`,
-  `trace:    ${traceLabel}   video: ${video}`,
+  `trace:    ${traceLabel}   video: ${normalizedVideoLabel}`,
   `workers:  ${workers || 'default'}`,
   '',
   `suites (${selection.suites.length}):`,
@@ -145,10 +178,10 @@ function writeStepSummary(status, code) {
     '',
     `- **Modo:** \`${selection.mode}\` (input suite: \`${suiteInput}\`)`,
     `- **Devices:** ${projects.map((p) => `\`${p}\``).join(', ')}`,
-    `- **Trace:** \`${traceLabel}\` · **Video:** \`${video}\``,
+    `- **Trace:** \`${traceLabel}\` · **Video:** \`${normalizedVideoLabel}\``,
     `- **Workers:** \`${workers || 'default'}\``,
     `- **Resultado:** ${status} (exit ${code})`,
-    ...(hasA11yPerformance ? ['', '### Estabilização a11y-performance', '- Workers limitados quando a suíte sensível está incluída.', '- Trace `retain-on-failure` é ativado automaticamente se o input estiver `off`.'] : []),
+    ...(hasA11yPerformance ? ['', '### Estabilização a11y-performance', '- Workers limitados quando a suíte sensível está incluída.', '- Trace `retain-on-failure` é ativado automaticamente se o input estiver `off`/`false`.'] : []),
     '',
     '### Suites executadas',
     ...selection.suites.map((s) => `- \`${s}\``),
