@@ -46,6 +46,23 @@ function resolveStatus(correct, previous = {}) {
 function dueFor(status, now) {
   return localDateKey(addDays(now, INTERVALS[status] || 1));
 }
+function itemToReviewCard(item = {}, index = 0) {
+  const word = clean(item.word || item.expected || item.key || `review-${index + 1}`);
+  const expected = clean(item.expected);
+  const lastAnswer = clean(item.lastAnswer);
+  const sentenceLike = expected && expected.split(/\s+/).length >= 3;
+  return {
+    id: `srs-${item.key || word}-${index}`,
+    word,
+    translation: sentenceLike ? word : expected || 'Item para revisão.',
+    definition: item.status === 'weak' ? 'Palavra fraca: revise com atenção.' : 'Revisão espaçada vencida.',
+    example: sentenceLike ? expected : `I use ${word}.`,
+    deck: clean(item.deck || 'Revisão SRS'),
+    level: clean(item.level || 'A1'),
+    srsKey: item.key,
+    lastAnswer,
+  };
+}
 
 export function getVocabularySrsState() {
   const state = readState();
@@ -111,6 +128,20 @@ export function getVocabularySrsSummary() {
     weakItems: weak.sort((a, b) => Number(b.wrong || 0) - Number(a.wrong || 0)).slice(0, 12),
     updatedAt: new Date().toISOString(),
   };
+}
+
+export function getVocabularySrsReviewCards(limit = 12) {
+  const summary = getVocabularySrsSummary();
+  const selected = [];
+  const seen = new Set();
+  for (const item of [...summary.dueItems, ...summary.weakItems]) {
+    const key = item.key || item.word || item.expected;
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    selected.push(item);
+    if (selected.length >= limit) break;
+  }
+  return selected.map(itemToReviewCard);
 }
 
 export function hasVocabularyReviewDueToday() {
