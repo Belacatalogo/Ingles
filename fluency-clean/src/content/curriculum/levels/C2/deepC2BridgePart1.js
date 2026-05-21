@@ -226,6 +226,11 @@ There is an objection to this argument that needs to be confronted. If the novel
       'Understand how academic speakers signal hedging, qualification, and disagreement in formal spoken discourse.',
       'Answer comprehension, inference, and critical evaluation questions at C2 level.',
     ],
+    listeningPreparation: [
+      task('Before listening: consider whether the language you speak could shape the way you think — and if so, whether the effect is trivial or significant. Activate your awareness of the distinction between strong determinism (language limits what you can think) and weak influence (language biases attention without preventing thought).', 'This spectrum is central to the debate; arriving with a clear position sharpens critical listening.'),
+      task('Prediction: predict one empirical argument a speaker might offer for linguistic influence on cognition and one methodological objection another speaker might raise against it.', 'Listen for how each speaker calibrates between theoretical plausibility and empirical evidence.'),
+      task('Key words to listen for: epistemological vocabulary (under-determination, falsifiable, burden of proof, replication), qualification markers (that\'s a fair point, I\'d distinguish between, the more cautious claim), and scope modifiers (in certain contexts, online vs offline, cognitively salient).', 'These signals help you track how speakers narrow or expand claims in real time.'),
+    ],
     teacherOpening: 'This is a graduate seminar discussion on the Sapir-Whorf hypothesis — the claim, in various forms, that the language you speak shapes the way you think. The three participants hold different positions and use sophisticated academic language to develop and challenge them. Listen for the specific claims each person makes and the evidence or arguments they use.',
     transcript: [
       { speaker: 'Prof. Yamada', text: 'The Sapir-Whorf hypothesis has had a difficult century. The strong version — that language determines thought, that you cannot think in concepts your language doesn\'t have — was essentially abandoned by the 1970s. But I want to make a case for a weak version that I think is still defensible and importantly underappreciated.' },

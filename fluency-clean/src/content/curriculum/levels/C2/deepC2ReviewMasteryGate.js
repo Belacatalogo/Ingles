@@ -203,6 +203,11 @@ The virtue I am advocating — intellectual humility — is not the same as inte
       'Identify moments of agreement, partial agreement, and genuine disagreement with precision.',
       'Answer comprehension, inference, and critical evaluation questions at C2 level.',
     ],
+    listeningPreparation: [
+      task('Before listening: consider whether it is fair to judge historical figures by contemporary moral standards. Think about the difference between judging an institution as wrong and judging an individual as morally culpable for participating in it.', 'This distinction is central to the discussion; arriving with a clear position helps you track where speakers agree and diverge.'),
+      task('Prediction: predict one argument for contextualising historical judgement (e.g., moral frameworks were different) and one argument against (e.g., dissenting voices existed at the time). Consider whether the function of historical judgement — blame vs understanding moral progress — changes which argument is stronger.', 'Listen for how one speaker reframes the debate from culpability to capacity.'),
+      task('Key words to listen for: philosophical framing (anachronistic, morally culpable, epistemically corrupting, moral self-congratulation), discourse markers signalling reframing (I want to complicate the framing, that\'s a useful reframe, the more interesting question is), and concession language (that\'s a fair refinement, I\'m largely with X on that).', 'These cues help you reconstruct precise distinctions rather than general positions.'),
+    ],
     teacherOpening: 'This final review discussion is between three academics on the contested question of how we should judge historical figures. It is unscripted in register — fast-paced, with overlapping and partial statements. Listen carefully and take notes. The questions require you to reconstruct precise distinctions, not just general positions.',
     transcript: [
       { speaker: 'Moderator', text: 'The question of judging historical figures by contemporary moral standards is contested. James, you\'ve argued that historical judgement must be contextualised — that we can\'t simply project our values onto the past.' },

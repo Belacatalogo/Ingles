@@ -227,6 +227,11 @@ In its popular circulation, the argument has been simplified to something like: 
       'Identify implicit premises and unstated assumptions in spoken academic argument.',
       'Answer comprehension, inference, and critical evaluation questions at C2 level.',
     ],
+    listeningPreparation: [
+      task('Before listening: consider whether there are principled limits to free speech and, if so, who should decide where those limits lie. Think about the tension between protecting vulnerable speakers from harm and protecting dissenting speech from state restriction.', 'This tension drives the entire debate; having a position helps you evaluate each speaker\'s moves.'),
+      task('Prediction: predict one argument that speech restrictions will be misused against the powerless and one counter-argument that unrestricted speech itself silences the powerless. Consider whether the speech-conduct distinction resolves this tension.', 'Listen for how each speaker handles the gap between principle and implementation.'),
+      task('Key words to listen for: structural framing (asymmetries of power, chilling effect, speech-conduct distinction), argumentative moves (I\'d push back on, that\'s a concern about X not Y, your position entails), and scope language (narrow basis, burden of proof, expansion of categories).', 'These cues help you track rapid exchanges and reconstruct arguments that are made partially or interrupted.'),
+    ],
     teacherOpening: 'This debate is faster and less structured than previous listening exercises — this is intentional. At C2, you need to function in authentic academic discourse, which does not always slow down or repeat itself. Listen carefully, take notes, and be prepared to reconstruct arguments that are made partially, interrupted, and revised in real time.',
     transcript: [
       { speaker: 'Moderator', text: 'We\'re asking whether there are principled limits to free speech, and if so, where they lie. Marcus, you\'ve argued that the standard liberal view — that almost all speech should be protected — is inadequate. Why?' },

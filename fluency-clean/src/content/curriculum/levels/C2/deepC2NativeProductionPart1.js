@@ -227,6 +227,11 @@ None of this is an argument against evidence. It is an argument for a more sophi
       'Understand how a speaker builds intellectual credibility through acknowledgement of complexity.',
       'Answer comprehension, inference, and critical evaluation questions at C2 level.',
     ],
+    listeningPreparation: [
+      task('Before listening: consider how evidence is used in political decision-making. Think about the difference between evidence informing policy and evidence determining policy, and why this distinction matters.', 'This frame helps you evaluate the speaker\'s examples and detect implicit assumptions about the relationship between knowledge and power.'),
+      task('Prediction: predict one structural reason why robust evidence might fail to influence policy (e.g., political economy, institutional inertia) and one way the interpretation of evidence might be shaped by non-neutral factors (e.g., framing, metrics).', 'Listen for how the speaker moves between abstract principles and concrete policy examples.'),
+      task('Key words to listen for: policy vocabulary (political economy, coalition, framing, institutional inertia, Goodhart\'s Law), register-management cues (that\'s not cynicism, the alternative to X is not Y), and epistemic stance markers (genuinely robust, not contested, the question is whether).', 'These signals help you track how the speaker builds credibility through acknowledgement of complexity rather than simplification.'),
+    ],
     teacherOpening: 'This interview is with a senior policy analyst who advises governments on social policy. The conversation concerns how evidence is used in policy-making and the ways in which political and institutional pressures shape what counts as evidence. It is a real-world application of the themes in C2-READING-004. Listen for both the content and the register — the speaker is very sophisticated about navigating between academic rigour and the practical constraints of policy work.',
     transcript: [
       { speaker: 'Interviewer', text: 'You\'ve spent twenty years working at the interface between research evidence and government policy. What\'s the most important thing you\'ve learned about how policy is actually made?' },
