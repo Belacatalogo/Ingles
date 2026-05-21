@@ -163,27 +163,63 @@ function auditGrammar(lesson) {
   return issues;
 }
 
+// Conta volume lexical reconhecendo schema premium: palavras diretas + itens de
+// lexicalSets (items/words/entries) + chunks reais. Só conta itens com conteúdo,
+// nunca listas vazias ou labels.
+function countVocabularyVolume(lesson) {
+  const direct = ['essentialWords', 'vocabulary', 'keyVocabulary', 'preReadingVocabulary']
+    .reduce((sum, field) => sum + safeArray(lesson?.[field]).filter((item) => clean(item).length >= 1).length, 0);
+  const lexical = safeArray(lesson?.lexicalSets).reduce((sum, set) => {
+    if (set && typeof set === 'object') {
+      return sum + safeArray(set.items || set.words || set.entries).filter((item) => clean(item).length >= 1).length;
+    }
+    return sum;
+  }, 0);
+  const chunks = safeArray(lesson?.chunks).filter((c) => clean(c?.chunk || c?.text || c).length >= 4).length;
+  return direct + lexical + chunks;
+}
+
+// Reconhece contexto real de uso: campos diretos, frases em examples,
+// miniDialogues reais, exemplos por palavra (essentialWords[].example) ou
+// topicContext substancial. Não aceita só tema/título.
+function hasVocabularyContext(lesson) {
+  if (hasAnyField(lesson, ['realLifeUseCases', 'contextExamples', 'exampleSentences', 'contextVocabularyTasks'])) return true;
+  const exampleSentences = safeArray(lesson?.examples)
+    .filter((e) => clean(e?.text || e?.sentence || e).length >= 12).length;
+  if (exampleSentences >= 3) return true;
+  const dialogues = safeArray(lesson?.miniDialogues)
+    .filter((d) => safeArray(d?.lines).length >= 2 || clean(d).length >= 40).length;
+  if (dialogues >= 1) return true;
+  const wordExamples = safeArray(lesson?.essentialWords)
+    .filter((w) => w && typeof w === 'object' && clean(w.example || w.exampleSentences).length >= 8).length;
+  if (wordExamples >= 3) return true;
+  if (clean(lesson?.topicContext).length >= 60) return true;
+  return false;
+}
+
 function auditVocabulary(lesson) {
   const issues = [];
-  requireMinimumList({
-    issues,
-    lesson,
-    fields: ['essentialWords', 'vocabulary', 'keyVocabulary', 'preReadingVocabulary'],
-    min: 5,
-    title: 'Vocabulary com poucas palavras úteis',
-    impact: 'A aula pode não entregar volume suficiente de vocabulário para fixação.',
-    recommendation: 'Adicionar lista de palavras/frases com significado e exemplo.',
-    severity: 'P1',
-  });
+  if (countVocabularyVolume(lesson) < 5) {
+    addIssue(issues, {
+      severity: 'P1',
+      area: lessonArea(lesson),
+      title: 'Vocabulary com poucas palavras úteis',
+      impact: 'A aula pode não entregar volume suficiente de vocabulário para fixação.',
+      evidence: 'Volume reconhecido (<5) em essentialWords/vocabulary/keyVocabulary/preReadingVocabulary/lexicalSets/chunks.',
+      recommendation: 'Adicionar lista de palavras/frases com significado e exemplo.',
+    });
+  }
 
-  requireField({
-    issues,
-    lesson,
-    fields: ['realLifeUseCases', 'contextExamples', 'exampleSentences', 'contextVocabularyTasks'],
-    title: 'Vocabulary sem contexto real de uso',
-    impact: 'O aluno pode memorizar palavra solta sem saber usar em frase.',
-    recommendation: 'Adicionar exemplos contextualizados e situações reais.',
-  });
+  if (!hasVocabularyContext(lesson)) {
+    addIssue(issues, {
+      severity: 'P1',
+      area: lessonArea(lesson),
+      title: 'Vocabulary sem contexto real de uso',
+      impact: 'O aluno pode memorizar palavra solta sem saber usar em frase.',
+      evidence: 'Sem contexto em realLifeUseCases/contextExamples/exampleSentences/contextVocabularyTasks/examples/miniDialogues/essentialWords[].example/topicContext.',
+      recommendation: 'Adicionar exemplos contextualizados e situações reais.',
+    });
+  }
 
   const vocabText = clean([lesson?.essentialWords, lesson?.vocabulary, lesson?.keyVocabulary]);
   if (vocabText && !/example|exemplo|frase|sentence/i.test(vocabText)) {
