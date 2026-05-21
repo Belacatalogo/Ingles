@@ -236,6 +236,15 @@ The practical implication of this taxonomy is straightforward: conflating these 
       'Demonstrate the ability to distinguish main points from examples and qualifications.',
     ],
     teacherOpening: 'Summarising — selecting what is most important and restating it concisely — is one of the hardest academic skills. In spoken academic contexts, you are often asked to summarise what a text said, what a speaker argued, or what a study found. The ability to do this accurately, concisely and in your own words distinguishes a B2 academic speaker from a B1 one.',
+    pronunciationFocus: {
+      title: 'Pronunciation & shadowing',
+      tips: [
+        'Shadow: "In other words, what the author is suggesting is that..." — stress OTHER and sugGESTing. Practise the reformulation pause after "in other words".',
+        '"That is to say..." — say it as one chunk: /ðæt.ɪz.tə.seɪ/. Brief pause after, then the paraphrase.',
+        '"The speaker\'s central argument was, broadly speaking, that..." — practise embedding "broadly speaking" with minimal pauses to maintain fluency.',
+        '"To put it another way..." — stress aNOTHer to signal the reformulation. Falling intonation on "way".',
+      ],
+    },
     warmUp: [
       task('Look at your notes from the academic lecture (B2-LISTENING-007). Identify the FOUR main points. Write a one-sentence version of each — not a quote, your own words.'),
     ],

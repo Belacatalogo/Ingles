@@ -22,6 +22,15 @@ export const C2_DEEP_BRIDGE_PART2 = Object.freeze([
     ],
     teacherOpening: 'At C2, the speaking challenge is not producing correct structures — it is sustaining genuine intellectual discourse over time. This means thinking in English rather than translating, expressing nuance rather than approximating it, and managing uncertainty with precision rather than vagueness. This lesson practises the kind of sustained intellectual conversation that defines C2 speaking mastery.',
     prompt: 'A 15–20 minute discussion on one of the following questions. Choose the one you find most genuinely interesting — the quality of intellectual engagement matters more than the topic:\n\n(A) Does the language you speak shape the way you think — and does your answer to this question change after engaging with the evidence from the C2-LISTENING-001 discussion?\n(B) The author of C2-READING-001 argues that reading novels develops the capacity for perspective-taking. Is this claim convincing? What evidence would you want in order to accept or reject it?\n(C) At C2 level, does further grammatical study improve your English, or has language learning become primarily a matter of exposure, use, and attention to style?',
+    pronunciationFocus: {
+      title: 'Pronunciation & shadowing',
+      tips: [
+        'Shadow: "I think X, but I am genuinely uncertain whether Y." — stress GENuinely and unCERtain. Practise the epistemic humility pause before "whether" to signal real intellectual openness.',
+        '"Actually, that argument may not work, because..." — stress ACTually with falling intonation to signal self-correction. Practise the mid-argument revision as a fluid move.',
+        '"I want to use the word \'apposite\' here, and I think it is right because..." — practise the metalinguistic reflection with natural intonation: stress APPosite and RIGHT.',
+        '"The qualification I need to enter at this point is that..." — stress QUALification and ENter. Pause briefly after "point" to signal precision.',
+      ],
+    },
     tasks: [
       task(
         'Open the discussion by positioning yourself on the question. Within the first 2 minutes, make clear what you think, why you think it, and where you feel genuinely uncertain.',

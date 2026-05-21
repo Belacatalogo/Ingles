@@ -485,6 +485,15 @@ MARCUS: I\'d say: the warning signs are always there before they become undeniab
       'Had I known then what I know now, I would have handled it very differently.',
       'The experience must have shaped my approach, because since then I have always...',
     ],
+    pronunciationFocus: {
+      title: 'Pronunciation & shadowing',
+      tips: [
+        'Shadow: "What I didn\'t realise was that the situation had been deteriorating for weeks." Chunk: "what I DIDn\'t reaLISE / was that the situAtion / had been deTERiorating / for WEEKS."',
+        '"It turned out that..." — link "turned-out-that" smoothly: /tɜːnd.aʊt.ðət/. Keep "that" weak.',
+        '"Had I known then what I know now..." — practise the inverted conditional with stress on KNOWN and NOW.',
+        '"Looking back, I should have..." — pause after "back" and stress SHOULD to mark the reflective shift.',
+      ],
+    },
     guidedSpeaking: [
       { prompt: 'Describe a professional or academic challenge that you faced and eventually resolved.', structure: 'Context (had been... for months) → What happened → Turning point → What struck me → Reflection (looking back / should have)', minWords: 100 },
       { prompt: 'Describe a time when something you expected to go one way turned out very differently.', structure: 'Setup → It turned out that... → past perfect for context → reflection → conclusion (in the end)', minWords: 100 },

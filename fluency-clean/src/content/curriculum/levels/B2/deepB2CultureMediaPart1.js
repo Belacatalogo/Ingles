@@ -314,6 +314,15 @@ export const B2_DEEP_CULTURE_MEDIA_PART1 = Object.freeze([
       'Launching into this topic without acknowledging the complexity would be somewhat misleading.',
       'Having reviewed the evidence, I would argue that the problem lies not in the technology itself but in how it is deployed.',
     ],
+    pronunciationFocus: {
+      title: 'Pronunciation & shadowing',
+      tips: [
+        'Shadow: "Whereas traditional media had editorial gatekeepers, social media has largely removed that filter." Stress GATE-keepers and reMOVED. Pause at the comma to signal the contrast.',
+        '"Launching into this topic without acknowledging the complexity would be somewhat misleading." — chunk: "LAUNCHing into this topic / without acKNOWLedging the comPLEXity / would be SOMEwhat misLEADing."',
+        '"The evidence suggests that the problem lies not in the technology itself but in how it is deployed." — stress LIES, SELF, and dePLOYED to mark the three key points of the sentence.',
+        '"What strikes me about this debate is..." — rising intonation on "strikes" to signal that the most important insight is coming.',
+      ],
+    },
     guidedSpeaking: [
       { prompt: 'Is social media a tool for democratic participation or a threat to it? Give a nuanced 2-minute argument.', structure: 'Open with nuanced position → evidence for one side → "whereas" pivot to other side → qualification → your position', minWords: 120 },
       { prompt: 'Discuss the importance — or overstatement — of cultural representation in media and entertainment.', structure: 'Acknowledge the debate → give your view with evidence → challenge a counterpoint → conclusion', minWords: 100 },

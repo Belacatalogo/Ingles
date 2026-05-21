@@ -123,6 +123,15 @@ Foucault's insight — that knowledge is never simply the discovery of pre-exist
       'Close a contribution in a way that invites further dialogue rather than shutting down the discussion.',
     ],
     teacherOpening: 'The graduate seminar is a distinct genre of academic speech. It is not a lecture (you are not performing to an audience), not a debate (you are not trying to win), and not a tutorial (you are not demonstrating knowledge to a teacher). It is a collaborative intellectual inquiry in which every participant is expected to advance the discussion — not merely to agree with the previous speaker or to demonstrate that they have done the reading. At C2, this requires a specific set of linguistic and intellectual moves: how to enter a discussion already in progress, how to build on what has been said rather than starting from scratch, how to challenge without antagonising, and how to close in a way that keeps the conversation open.',
+    pronunciationFocus: {
+      title: 'Pronunciation & shadowing',
+      tips: [
+        'Shadow: "Building on what Professor Chen has just said, I\'d like to push on one aspect..." — stress BUILDing and PUSH. Practise the smooth collegial opening as a single breath group.',
+        '"There\'s one aspect of that summary I\'d like to push on, which is..." — use rising intonation on "push on" to signal that the challenge is coming.',
+        '"That framing is helpful — I want to add one complication, which is that..." — stress COMplication. Practise the diplomatic "that framing is helpful" before introducing the challenge.',
+        '"Under-determination is a real philosophical problem." — stress REAL and phiLOsophical. Practise /ˌʌn.dɜː.dɪˌtɜː.mɪˈneɪ.ʃən/ with clear syllable weight.',
+      ],
+    },
     guidedSpeaking: [
       task(
         'Opening a contribution to build on a previous speaker. Listen to the following fragment from the C2-LISTENING-003 transcript and prepare a 60–90 second contribution that takes the discussion one step further without simply restating what has been said:\n\nFragment: "Under-determination is a real philosophical problem — it shows that evidence alone doesn\'t determine theory choice. Scientists use extra-evidential criteria — parsimony, fruitfulness, coherence — to navigate the under-determination."\n\nYour contribution should: (a) briefly acknowledge what has just been said; (b) identify one specific aspect that you want to develop, question, or extend; (c) make your own claim about that aspect with at least one supporting reason or example.',

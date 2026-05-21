@@ -181,6 +181,15 @@ export const C1_DEEP_PROFESSIONAL_PART1 = Object.freeze([
       'Maintain formal professional register throughout a simulated negotiation.',
     ],
     teacherOpening: 'Professional negotiation in English requires a specific spoken register: formal enough to signal respect and seriousness, flexible enough to accommodate movement, and precise enough that the terms of any agreement are unambiguous. The grammar of negotiation relies heavily on conditionals (what we will do if...), hedging (our current position is...), and strategic concession (we are prepared to consider X if...).',
+    pronunciationFocus: {
+      title: 'Pronunciation & shadowing',
+      tips: [
+        'Shadow: "Were you to accept this structure, we\'d be in a position to commit to phase one delivery by month six." — stress WERE and comMIT. Practise the conditional → commitment sequence.',
+        '"I\'m not in a position to offer a reduction on the overall contract value." — use even, diplomatic intonation. Stress POsition and reDUCtion without sounding apologetic.',
+        '"I wonder if it would be helpful to explore whether..." — practise the multi-layered hedge as one smooth chunk. Stress HELP-ful and exPLORE.',
+        '"Subject to the agreed protocols being in place by week two." — stress SUBject and aGREED. Practise the formal conditional clause with confident falling intonation.',
+      ],
+    },
     dialogueTurns: [
       { speaker: 'Client (Selin)', text: 'Thank you for meeting with us today. We\'ve reviewed your proposal and we think it has strong foundations. However, our main concern is the timeline — the twelve-month implementation period is significantly longer than we\'d anticipated, and we\'d need to understand whether that\'s negotiable before we can move forward.' },
       { speaker: 'Supplier (Raj)', text: 'Thank you, Selin. We appreciate the positive feedback on the proposal. On the timeline, I want to be transparent: the twelve months reflects the complexity of the integration work, and we would not want to commit to a shorter timeline without understanding more about your technical infrastructure. That said, I understand the business need. I wonder if it would be helpful to explore whether a phased delivery model might address your concerns — one that delivers core functionality within six months, with full integration completed by month twelve.' },

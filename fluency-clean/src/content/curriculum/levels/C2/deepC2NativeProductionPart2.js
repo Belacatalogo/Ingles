@@ -22,6 +22,15 @@ export const C2_DEEP_NATIVE_PRODUCTION_PART2 = Object.freeze([
     ],
     teacherOpening: 'The extended monologue — sustained solo speech on a complex topic — is one of the most demanding speaking tasks at C2. Unlike a seminar discussion, it offers no external structure; you must create the structure and maintain it across 8–10 minutes. Unlike a prepared presentation, it should feel natural and responsive to the listener, not scripted. This lesson practises the skills of expert spoken exposition.',
     prompt: 'Choose ONE topic for an 8–10 minute extended explanation with no notes:\n\n(A) Explain the evidence-based policy debate as you understand it from C2-READING-004 and C2-LISTENING-004, then offer your own evaluation of the argument from Dr Patel\'s final turn: is evidence in policy a lost cause?\n(B) Explain the problem of under-determination in science (from C2-LISTENING-003) as if to a highly intelligent non-specialist. Then explain what you find most and least persuasive about the scientific realist response to it.\n(C) Explain what you now understand by "register" in English — what it is, why it matters, and how your understanding of register has changed over the course of your English learning.',
+    pronunciationFocus: {
+      title: 'Pronunciation & shadowing',
+      tips: [
+        'Shadow: "What I want to explain today is why this debate matters — and why the answer is less obvious than it first appears." — stress MATters and OBvious. Practise the "less X than Y" academic comparison.',
+        '"The tension between detail and structure is what distinguishes expert explanation from mere information delivery." — stress TENsion, disTINguishes, and deLIVery. Chunk into three breath groups.',
+        '"Let me pause here to make sure the central distinction is clear." — stress PAUSE and disTINCtion. Practise the self-monitoring move with confident intonation.',
+        '"To return to the thread I was developing..." — stress reTURN and deVELoping. Practise the discourse repair move smoothly, without hesitation markers.',
+      ],
+    },
     tasks: [
       task(
         'Open your monologue with an orientation: tell the listener what you are going to explain and why it is worth understanding. Within 60 seconds, the listener should know exactly what the next 9 minutes will cover.',

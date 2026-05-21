@@ -295,6 +295,15 @@ export const C1_DEEP_EXTENDED_DISCOURSE_PART1 = Object.freeze([
       'Make and recover from a strategic concession in real-time oral argument.',
     ],
     teacherOpening: 'Academic speaking at C1 is not the same as academic writing spoken aloud. Oral discourse requires different signposting (since listeners cannot see paragraph breaks), more explicit marking of argument structure, and the ability to acknowledge counter-arguments while maintaining momentum. The C1 speaking task in this lesson asks you to use the discourse tools from C1.3 in a live spoken context.',
+    pronunciationFocus: {
+      title: 'Pronunciation & shadowing',
+      tips: [
+        'Shadow: "What I would contend is that the production of knowledge and the institutional capacity to deploy it are distinct questions." — chunk into four breath groups and stress conTEND, proDUCtion, caPAcity, and disTINCT.',
+        '"I want to turn now to the objection I anticipated." — practise the signposting pause after "now" and stress obJECtion and anTIcipated.',
+        '"That said, I should note that this is not a new tension..." — reduce "that said" to a quick chunk; stress NEW and TENsion.',
+        '"The caveat I would enter is that..." — stress CAveat and ENter. Use confident falling intonation to signal precision, not hesitation.',
+      ],
+    },
     dialogueTurns: [
       { speaker: 'Tutor', text: 'Today we\'re practising the kind of spoken argument you\'d give in a seminar or a conference presentation. I want you to take a position on the following statement: "Academic institutions are ill-equipped to address the challenges of the twenty-first century." You have three to four minutes. Structure your argument explicitly — I\'ll be listening for how you signal transitions, handle uncertainty, and respond to counter-arguments. Ready?' },
       { speaker: 'Student (model)', text: 'Thank you. I want to argue that the statement is partially correct — but that "ill-equipped" overstates the case. I\'ll make three points and then address what I take to be the strongest objection.' },

@@ -419,6 +419,15 @@ SARA: Despite our differences, all three of us appear to acknowledge that the st
       'That being said, I maintain that...',
       'What the data appears to demonstrate is...',
     ],
+    pronunciationFocus: {
+      title: 'Pronunciation & shadowing',
+      tips: [
+        'Shadow: "I acknowledge that there are valid arguments on the other side; nevertheless..." — pause at the semicolon and stress NEVerthe-LESS to signal the turn.',
+        '"Arguably, the evidence suggests that..." — stress ARGuably with falling intonation, then rise on "suggests" to build anticipation.',
+        '"What tends to be overlooked in this debate is..." — link "tends-to-be" as one rhythmic unit. Stress overLOOKED.',
+        '"Despite the complexity, the fundamental question remains..." — practise strategic pausing after "complexity" before delivering the main claim.',
+      ],
+    },
     guidedSpeaking: [
       { prompt: 'Is remote work better or worse for productivity? Give a nuanced answer — not simply yes or no.', structure: 'Position (qualified) → Evidence → Concede opposing view → Maintain position with qualification', minWords: 100 },
       { prompt: 'Should social media platforms be regulated by governments? Defend your view, acknowledging both sides.', structure: 'Open with nuance → argue main point → use concession + "that being said" → conclusion with qualification', minWords: 100 },

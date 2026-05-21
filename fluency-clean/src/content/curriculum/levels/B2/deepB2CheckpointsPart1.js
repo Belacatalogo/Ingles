@@ -203,6 +203,15 @@ export const B2_DEEP_CHECKPOINTS_PART1 = Object.freeze([
       'Achieve a register appropriate to the topic (formal or semi-formal).',
     ],
     teacherOpening: 'This is your B2 Speaking Checkpoint. Three minutes is longer than you have practised in any previous lesson — and that is the point. Sustaining academic and formal spoken English for three minutes requires not just knowing the structures, but having internalised them well enough to deploy them under the pressure of continuous speech. This task prepares you for the B2 Gate speaking assessment.',
+    pronunciationFocus: {
+      title: 'Pronunciation & shadowing',
+      tips: [
+        'Shadow: "All things considered, I would argue that the benefits, albeit significant, do not outweigh the risks." Practise chunking this long sentence into four breath groups.',
+        '"Were one to examine the evidence more closely..." — practise the formal subjunctive with stress on WERE and EXamine.',
+        '"Notwithstanding the obvious objections..." — pronounce: /ˌnɒt.wɪθˈstæn.dɪŋ/. Stress STAND. Practise the chunk before a pause.',
+        '"In summation, the argument I have been developing is..." — stress SUMmation and deVELoping. Use confident falling intonation to signal the close.',
+      ],
+    },
     warmUp: [
       task('Choose any topic from B2.1–B2.7. Spend 2 minutes planning your monologue. Map it into four sections: framing → main argument → evidence + counterargument → qualified conclusion. Note specific grammar structures and vocabulary you intend to use.'),
     ],

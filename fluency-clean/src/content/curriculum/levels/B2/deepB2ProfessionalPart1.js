@@ -354,6 +354,15 @@ export const B2_DEEP_PROFESSIONAL_PART1 = Object.freeze([
       'I suggest we defer this item to the next meeting.',
       'Should you have any questions after the meeting, please feel free to contact me.',
     ],
+    pronunciationFocus: {
+      title: 'Pronunciation & shadowing',
+      tips: [
+        'Shadow: "Could we keep to the agenda for now and come back to that?" — practise the polite falling intonation that signals a directive, not a question.',
+        '"If I understand you correctly, you are suggesting that..." — link "understand-you-correctly" smoothly. Stress corRECTly and sugGESTing.',
+        '"To summarise what we have agreed so far..." — stress SUMmarise and aGREED. Use a clear pause after "far" to signal the summary is about to begin.',
+        '"Should you have any questions..." — practise the formal inverted conditional with stress on SHOULD at the opening.',
+      ],
+    },
     guidedSpeaking: [
       { prompt: 'You are chairing a team meeting. Open the meeting, introduce the agenda, and handle the first item: "Should we extend the project deadline?"', structure: 'Open meeting → introduce agenda → lead discussion → politely interrupt when needed → summarise and assign action point', minWords: 80 },
       { prompt: 'You are a participant. A colleague has just proposed a decision you disagree with. Politely challenge their proposal, ask for clarification, and suggest an alternative.', structure: 'Polite interruption → clarifying question → challenge with "I would argue that..." → propose alternative', minWords: 80 },

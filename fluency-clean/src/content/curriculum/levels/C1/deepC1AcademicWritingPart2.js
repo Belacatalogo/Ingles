@@ -129,6 +129,15 @@ This is not to say that the project fails. Hartley's documentation of the range 
     ],
     teacherOpening: 'In academic contexts, you need to be able to speak as well as write about complex ideas. This lesson practises the genre of the academic presentation and seminar contribution — contexts in which you must present a position, support it with evidence, and defend it under challenge. The goal is not to "win" the argument but to demonstrate rigorous thinking and good academic discourse habits.',
     prompt: 'Choose ONE of the following positions and prepare to defend it in a 3–4 minute spoken presentation, followed by questions from your teacher:\n\n(A) "Objectivity in academic research is an ideal that should be explicitly abandoned, not defended or rehabilitated."\n(B) "The essay format is poorly suited to disciplines where knowledge is primarily quantitative."\n(C) "Academic writing that is difficult to read is rarely difficult because of the complexity of its ideas."',
+    pronunciationFocus: {
+      title: 'Pronunciation & shadowing',
+      tips: [
+        'Shadow: "Objectivity in academic research is an ideal that should be explicitly abandoned, not defended or rehabilitated." — stress oBJECtivity, aBANdoned, and reHAbilitated. Practise the three-part conclusion rhythm.',
+        '"This presentation argues that..." — use confident falling intonation on "argues". Practise the formal academic opening as a single chunk.',
+        '"The question of X has generated considerable debate..." — stress conSIDerable and deBATE. Link "generated-considerable" smoothly.',
+        '"Let me now address the most compelling objection..." — stress comPELLing and obJECtion. Pause after "now" for signposting clarity.',
+      ],
+    },
     tasks: [
       task(
         'Open your presentation by stating your position clearly and explaining why the question is worth examining. Aim for 30–40 seconds of opening.',

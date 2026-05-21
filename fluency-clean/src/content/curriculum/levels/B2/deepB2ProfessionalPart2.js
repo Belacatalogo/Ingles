@@ -242,6 +242,15 @@ ANA: Understood. To summarise what we\'ve agreed: Marcus will prepare the provis
       'I acknowledge the urgency, but I believe a more measured approach would...',
       'In summary, my recommendation is...',
     ],
+    pronunciationFocus: {
+      title: 'Pronunciation & shadowing',
+      tips: [
+        'Shadow: "I would like to propose that we..." — stress proPOSE with confident falling intonation. Reduce "would like to" to a quick rhythmic unit.',
+        '"With respect, I would challenge the assumption that..." — pause briefly after "respect" to signal the diplomatic challenge. Stress CHALlenge and asSUMPtion.',
+        '"Were we to move forward without..." — practise the subjunctive conditional: stress WERE and MOVE. Keep "we to" weak.',
+        '"I acknowledge the urgency, but I believe a more measured approach would..." — stress MEAsured to contrast with "urgency".',
+      ],
+    },
     guidedSpeaking: [
       { prompt: 'Your manager has proposed cutting the training budget by 40% to reduce costs. Give your professional opinion — you disagree, but you need to be constructive and respectful.', structure: 'Acknowledge the pressure → challenge the assumption (with evidence/reasoning) → propose alternative → flag risk (formal conditional) → close with recommendation', minWords: 100 },
       { prompt: 'You have been asked to recommend one of two strategies for a project: (1) a fast, cheaper approach with higher risk, or (2) a slower, more expensive approach with lower risk. Present your recommendation with justification.', structure: 'State recommendation → evidence → acknowledge alternative → formal conditional for risk → conclude with conviction', minWords: 100 },

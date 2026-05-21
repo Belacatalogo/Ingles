@@ -270,6 +270,15 @@ None of this is inevitable. The architecture of the attention economy is a desig
     ],
     teacherOpening: 'This review lesson uses the conversation about your own learning as the vehicle for demonstrating C1-level speaking skills. Talking about language learning requires all the same skills as talking about any other complex topic — and it has the advantage of being something you know extremely well. The goal is sustained, precise, and intellectually engaged discourse.',
     prompt: 'A 10–12 minute conversation on the following questions. Answer each one in some depth — not just one or two sentences but a genuine reflection:\n\n1. What was the most intellectually challenging aspect of the C1 course for you, and why?\n2. Which skill — grammar, vocabulary, reading, listening, speaking, or writing — do you feel has developed most over C1, and which remains most difficult? Give specific examples.\n3. Is there a concept, idea, or text from the C1 course that has genuinely changed the way you think about something? What is it, and how has it changed your thinking?\n4. What do you think the relationship is between language and thought? Does learning English change what and how you think?',
+    pronunciationFocus: {
+      title: 'Pronunciation & shadowing',
+      tips: [
+        'Shadow: "The most intellectually challenging aspect was the counter-factual conditional." — stress intelLECtually, CHALlenging, and COUNter-factual. Practise the academic reflection register.',
+        '"What I found most striking was how the concept of X changed the way I think about Y." — stress STRIK-ing and CHANGED. Practise the reflective cleft as a smooth chunk.',
+        '"I would single out the distinction between..." — stress SINgle and disTINCtion. Use even academic intonation to signal careful analysis.',
+        '"In retrospect, what I think has developed most is..." — stress RETrospect and deVELoped. Practise "in retrospect" /ɪn ˈret.rə.spekt/ as a quick opening chunk.',
+      ],
+    },
     tasks: [
       task(
         'Answer question 1 with specificity. Name the specific element — a grammar structure, a type of writing, a vocabulary area, a reading or listening skill — and explain precisely why it was challenging.',

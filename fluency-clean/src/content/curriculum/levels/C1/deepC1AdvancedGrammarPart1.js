@@ -442,6 +442,15 @@ export const C1_DEEP_ADVANCED_GRAMMAR_PART1 = Object.freeze([
       'Maintain formal register and precise argument structure throughout.',
     ],
     teacherOpening: 'Today\'s speaking task requires you to argue a position on a complex topic — and to argue it with C1 precision: cleft sentences for emphasis, modal passives for academic distancing, and epistemic language that reflects exactly how confident you are in each claim. The topic is unseen: you will choose from the options below and have 2 minutes to prepare.',
+    pronunciationFocus: {
+      title: 'Pronunciation & shadowing',
+      tips: [
+        'Shadow: "It is conceivable that artificial intelligence could bolster, rather than undermine, democratic deliberation." — stress conCEIVable, BOLster, and UNdermine. Practise the "rather than" contrast with even stress.',
+        '"What it is that distinguishes X from Y is..." — practise the cleft structure with emphasis on "IS" in the cleft. Keep "what it is that" as a smooth chunk.',
+        '"This is widely regarded as having been established beyond reasonable doubt." — chunk: "this is WIDEly reGARDed / as having been esTABlished / beYOND reasonable DOUBT."',
+        '"Were one to adopt this position, the implications would be..." — stress WERE and adOPT in the formal subjunctive opening. Pause after "position".',
+      ],
+    },
     warmUp: [
       task('Choose a topic from the options below. Spend 2 minutes planning: (1) what you consider virtually certain; (2) what you think is probable; (3) what is a genuinely open question. This epistemic mapping will shape your entire argument.'),
     ],

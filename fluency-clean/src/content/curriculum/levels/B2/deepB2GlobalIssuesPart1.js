@@ -506,6 +506,15 @@ export const B2_DEEP_GLOBAL_ISSUES_PART1 = Object.freeze([
       'Maintain a nuanced position — claim, support, concession, restate.',
     ],
     teacherOpening: 'The global issues you read and listen to in this module involve complex, contested debates. At B2 level, you are expected not just to have an opinion, but to build a case: cite evidence, acknowledge counter-arguments, and maintain a nuanced position. Today\'s task puts all of B2.6\'s grammar and vocabulary into spoken production.',
+    pronunciationFocus: {
+      title: 'Pronunciation & shadowing',
+      tips: [
+        'Shadow: "The evidence is estimated to demonstrate a significantly higher correlation than previously assumed." Chunk: "the EVidence / is EStimated to demonstrate / a sigNIFicantly HIGHer correLA tion / than PREViously asSUMED."',
+        '"The premise of this argument rests on..." — stress PREMise and RESTS. Practise the academic falling intonation of a confident claim.',
+        '"Rose by approximately X per cent" — practise linking "rose-by" and stressing the number for emphasis.',
+        '"There is a growing consensus that..." — link "growing-consensus" smoothly. Stress conSENsus.',
+      ],
+    },
     warmUp: [
       task('Look at the three topics below and choose one. Spend 90 seconds gathering your thoughts — main claim, one piece of evidence (real or plausible), one counter-argument, your conclusion.', 'You do NOT need real statistics; plausible estimates are fine for spoken practice.'),
     ],

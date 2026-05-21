@@ -421,6 +421,15 @@ export const B2_DEEP_BRIDGE_PART1 = Object.freeze([
       'In contrast to what many assume, the data suggests...',
       'All things considered, I would conclude that...',
     ],
+    pronunciationFocus: {
+      title: 'Pronunciation & shadowing',
+      tips: [
+        'Shadow: "Nevertheless, one cannot ignore the fact that..." — stress NEVerthe-LESS and igNORE. Practise linking "cannot-ignore" as one unit.',
+        '"Not only does this affect individuals, but it also..." — use rising intonation on "individuals" and falling on "also" to signal the two-part contrast.',
+        '"Albeit" — pronounce /ɔːlˈbiːɪt/ (three syllables). Practise: "albeit not unconditionally" as one chunk.',
+        '"All things considered" — say it as a single rhythmic unit with stress on THINGS and conSIDered.',
+      ],
+    },
     guidedSpeaking: [
       { prompt: 'What is your view on remote work becoming permanent?', structure: 'Open with position → evidence/example → concession (nevertheless/albeit) → conclusion', minWords: 80 },
       { prompt: 'Do you think social media does more harm than good? Defend your position.', structure: 'State stance → use "not only...but also" → use "in contrast" to acknowledge other side → "nevertheless" to hold position', minWords: 80 },

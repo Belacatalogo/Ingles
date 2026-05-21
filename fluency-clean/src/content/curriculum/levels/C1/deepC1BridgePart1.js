@@ -515,6 +515,15 @@ export const C1_DEEP_BRIDGE_PART1 = Object.freeze([
       'Maintain formal register and demonstrate C1 rhetorical organisation throughout.',
     ],
     teacherOpening: 'The key difference between B2 and C1 speaking is not what you know — it is the degree to which what you know has become automatic. A B2 speaker thinks about structures; a C1 speaker thinks about ideas, and the structures come. Today\'s task pushes you toward that C1 fluency: you have three minutes to argue a position using C1 grammar and vocabulary, but the focus is on the argument — not on displaying individual structures.',
+    pronunciationFocus: {
+      title: 'Pronunciation & shadowing',
+      tips: [
+        'Shadow: "Were multilateral institutions to be dissolved today, what would be lost?" — practise the formal subjunctive opening: stress WERE and disSO LVED. Keep "to be" weak.',
+        '"Hitherto, the most effective changes..." — pronounce hitherto /ˌhɪð.əˈtuː/ (stress on final syllable). Pause after to signal the temporal scope.',
+        '"Not only does this undermine X, but it also calls into question Y." — rising intonation on "X" and falling on "Y" to mark the two-part structure.',
+        '"The qualification I would enter is that..." — stress QUALification and ENter. Practise the academic register pause before the qualification itself.',
+      ],
+    },
     warmUp: [
       task('Choose a topic that you know well and feel strongly about. Spend 2 minutes planning a 3-minute argument. Do not write a script — write three to five anchor words or phrases per section: position / evidence / counterargument / conclusion.'),
     ],

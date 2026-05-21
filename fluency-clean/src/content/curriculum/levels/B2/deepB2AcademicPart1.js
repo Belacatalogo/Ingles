@@ -428,6 +428,15 @@ export const B2_DEEP_ACADEMIC_PART1 = Object.freeze([
       'Demonstrate the signposting language typical of academic spoken discourse.',
     ],
     teacherOpening: 'In an academic seminar, you are expected not just to have an opinion but to present it with the clarity, precision and intellectual honesty of formal academic discourse. This means using cohesion devices so your points connect logically, hedging your claims appropriately, and signposting your structure so the listener can follow. Today\'s task replicates exactly this context.',
+    pronunciationFocus: {
+      title: 'Pronunciation & shadowing',
+      tips: [
+        'Shadow: "Furthermore, the data appear to support the hypothesis that..." — stress FURthermore and hyPOThesis. Practise the hedged "appear to" as a quick unit.',
+        '"Consequently, one might conclude that..." — stress CONsequently with clear falling intonation to signal a logical conclusion.',
+        '"I would like to turn now to..." — practise the academic signposting pause after "now" before introducing the new topic.',
+        '"The findings tend to suggest, albeit cautiously, that..." — practise embedding the hedge "albeit cautiously" with brief pauses on each side.',
+      ],
+    },
     warmUp: [
       task('Choose a topic from B2.6 or B2.7 (inequality, climate governance, multilateralism, media literacy, cultural identity). Spend 90 seconds organising your contribution into three parts: (1) opening claim, (2) evidence + analysis, (3) qualified conclusion.'),
     ],

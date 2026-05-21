@@ -22,6 +22,15 @@ export const C2_DEEP_RHETORIC_PART2 = Object.freeze([
     ],
     teacherOpening: 'The academic presentation is a distinctive genre: more structured than a seminar discussion, more interactive than a written essay. At C2, the expectation is not just correct content but mastery of the genre — a clear opening that orients the audience, a body that moves through an argument rather than delivering information, and a Q&A that engages rather than deflects. The grammar and vocabulary of this course should now be appearing naturally, not inserted.',
     prompt: 'Prepare and deliver a 10–12 minute presentation on ONE of the following:\n\n(A) Critically evaluate Popper\'s "paradox of tolerance" argument. Does it succeed on its own terms? Does its popular application faithfully reflect the original argument?\n(B) What is the relationship between language and register, and why does register matter for intellectual credibility? Use examples from your own language learning.\n(C) Evaluate the claim from C2-READING-001 that the novel performs a unique cognitive function. Is this claim well-founded? What would it take to confirm or disconfirm it?',
+    pronunciationFocus: {
+      title: 'Pronunciation & shadowing',
+      tips: [
+        'Shadow: "What Popper\'s paradox reveals is not a logical contradiction but a political dilemma." — stress PARAdox, reLOGical, and diLEMma. Practise the "not X but Y" contrast with clear intonation shift.',
+        '"The popular application of this argument does not faithfully reflect the original." — stress FAITHfully and oRIGinal. Practise the adverb + verb collocation as a single unit.',
+        '"I want to begin by distinguishing between the strong and weak versions of this claim." — stress disTINguishing, STRONG, and WEAK. Pause after "between" to frame the contrast.',
+        '"Let me now address the question that I anticipate is most likely to be raised." — stress ANticipate and RAISED. Practise the self-aware signposting of a C2 presentation.',
+      ],
+    },
     tasks: [
       task(
         'Open your presentation with a hook and a signpost. The hook should make the audience want to listen; the signpost should tell them clearly what you will argue and how you will structure the argument.',

@@ -22,6 +22,15 @@ export const C1_DEEP_CULTURAL_DISCOURSE_PART2 = Object.freeze([
     ],
     teacherOpening: 'Intellectual discourse is not just about having ideas — it is about the ability to express, develop, and defend them in conversation. This lesson practises the spoken version of academic argument: clear position-taking, precise use of vocabulary, genuine engagement with opposing views, and the ability to think on your feet. The goal is not to win but to demonstrate rigorous, good-faith engagement.',
     prompt: 'Choose ONE of the following positions to defend in an 8–10 minute discussion with your teacher:\n\n(A) "The distinction between high and popular culture was always a class marker rather than an aesthetic judgment."\n(B) "Authenticity, as a cultural value, has been so thoroughly commodified that it has ceased to be meaningful."\n(C) "Democratic societies need shared cultural reference points — but the question of who defines the shared culture is always a political question."\n\nYour teacher will defend a different position or challenge yours.',
+    pronunciationFocus: {
+      title: 'Pronunciation & shadowing',
+      tips: [
+        'Shadow: "The distinction between high and popular culture was always a class marker rather than an aesthetic judgment." — stress CLASS, MARK-er, and aesTHETic. Practise "rather than" as a quick linking phrase.',
+        '"Authenticity, as a cultural value, has been so thoroughly commodified that..." — stress auTHENticity and comMODified. Practise embedding "as a cultural value" with brief pauses.',
+        '"The question of who defines the shared culture is always a political question." — stress DEFINES and poLITical. Use falling intonation on the final "question" to close the claim.',
+        '"I would take issue with the premise that..." — stress PREMise. Practise this intellectual challenge phrase with confident but non-aggressive intonation.',
+      ],
+    },
     tasks: [
       task(
         'State your position clearly at the outset, in 2–3 sentences. Explain what you mean by the key terms you are using.',

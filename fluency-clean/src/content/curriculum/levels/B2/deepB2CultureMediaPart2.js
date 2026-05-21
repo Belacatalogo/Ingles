@@ -246,6 +246,15 @@ These are not abstract philosophical questions. They shape what stories get told
       'Show awareness of multiple perspectives while maintaining a clear personal stance.',
     ],
     teacherOpening: 'The topics in this lesson come directly from what you have read and listened to in B2.5: media bias, cultural identity, social media and representation. A B2 speaker can hold a position, qualify it, concede a counter-argument and return to their view — all in two minutes. Today you practise exactly that structure.',
+    pronunciationFocus: {
+      title: 'Pronunciation & shadowing',
+      tips: [
+        'Shadow: "Having said that, I would still maintain that the benefits outweigh the drawbacks." Stress mainTAIN and OUTweigh. Practise "having said that" as one smooth chunk.',
+        '"The question of whether X constitutes Y is..." — stress CONstitutes with even syllable weight. Pause after "whether" to frame the embedded question clearly.',
+        '"One might argue that..." — use this hedge with confident intonation; stress ARgue, not "might".',
+        '"I would push back on the assumption that..." — practise the strategic pause after "push back" before delivering the target of the challenge.',
+      ],
+    },
     warmUp: [
       task('Think about one of the following three topics. Spend 60 seconds forming a view before you speak: (1) Is social media harmful to cultural identity? (2) Should journalists be required to disclose their sources of funding? (3) Does media literacy make people more cynical or more informed?'),
     ],

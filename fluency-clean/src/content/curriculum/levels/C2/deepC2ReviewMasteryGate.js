@@ -257,6 +257,15 @@ The virtue I am advocating — intellectual humility — is not the same as inte
     ],
     teacherOpening: 'This is the final speaking lesson. There is no preparation time. Your teacher will introduce a topic — one you have not seen before — and you will engage with it in a 15-minute discussion. The goal is to demonstrate that C2 mastery means not just knowing the right words and structures but being able to think in English at the highest level.',
     prompt: 'Your teacher will choose one of the following unseen topics and introduce it at the start of the session:\n\n(A) "Intellectual humility — the virtue described in C2-READING-005 — seems in tension with intellectual confidence. Is it possible to have both? Should we want to?"\n(B) "The discussion in C2-LISTENING-005 suggests that historical judgement might be epistemically corrupting. If so, what follows for how we teach history?"\n(C) "A machine that could write C2-level English but had no genuine understanding of what it was writing — would it be more or less sophisticated than a human who could write C2-level English but could not explain why any of it was right? What does your answer reveal about what C2 mastery actually is?"',
+    pronunciationFocus: {
+      title: 'Pronunciation & shadowing',
+      tips: [
+        'Shadow: "This is a question I haven\'t thought about before; let me think through it..." — stress THOUGHT and THINK. Practise the epistemic honesty opening with steady, unhurried pacing.',
+        '"Intellectual humility seems in tension with intellectual confidence." — stress HUmility and CONfidence. Practise the abstract noun parallelism with balanced stress.',
+        '"What does your answer reveal about what C2 mastery actually is?" — stress rEVEAL and ACTually. Practise the meta-question with genuine curiosity intonation.',
+        '"If so, what follows for how we teach history?" — stress FOLlows and TEACH. Practise the formal conditional consequence with confident falling intonation.',
+      ],
+    },
     tasks: [
       task(
         'Engage with the topic immediately — do not ask for preparation time. The ability to engage immediately with an unseen intellectual question is one of the marks of C2 mastery.',

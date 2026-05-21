@@ -215,6 +215,15 @@ export const C1_DEEP_LITERATURE_PART1 = Object.freeze([
       'Use literary critical vocabulary from C1.4 in spoken academic discourse.',
     ],
     teacherOpening: 'Literary analysis in a seminar requires a different spoken register from other academic presentations. You are expected to quote — briefly and accurately — and then analyse the quotation rather than just describing it. You are also expected to hold a specific interpretive position and defend it when challenged, acknowledging the alternative reading while explaining why yours is more compelling.',
+    pronunciationFocus: {
+      title: 'Pronunciation & shadowing',
+      tips: [
+        'Shadow: "What is particularly striking is that both readings are fully supported by the textual evidence." — stress STRIKing and SUPported. Practise the cleft "What is particularly striking is..." as a smooth chunk.',
+        '"The ambiguity is not a failure of the text to commit; it is the text\'s most distinctive formal achievement." — pause at the semicolon; stress FAILure and aCHIEVEment as the antithesis.',
+        '"I would contend that this is precisely what makes it literarily significant." — stress preCISEly and SIGnificant. Practise "literarily" /ˈlɪt.ər.ər.ɪ.li/.',
+        '"This is the deployment of precision in the service of undecidability." — stress dePLOYment, preCISion, and undeCIDability. Practise the rhythm of the abstract noun chain.',
+      ],
+    },
     dialogueTurns: [
       { speaker: 'Tutor', text: 'For today\'s session, I\'d like you to take a position on the following: "In literature, ambiguity is a formal achievement, not a failure of meaning." Argue for or against this, and use at least one specific textual example. You have three to four minutes.' },
       { speaker: 'Student (model)', text: 'I want to argue for the statement, but with an important qualification: ambiguity is a formal achievement only when it is structural rather than accidental — when it arises from the text\'s deliberate design rather than from a failure of execution.' },
