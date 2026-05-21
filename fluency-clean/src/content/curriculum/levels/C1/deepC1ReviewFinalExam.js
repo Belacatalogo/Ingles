@@ -214,6 +214,11 @@ None of this is inevitable. The architecture of the attention economy is a desig
       'Track and summarise a developing argument across a long spoken text.',
       'Answer inference, position-attribution, and critical evaluation questions at C1 level.',
     ],
+    listeningPreparation: [
+      task('Before listening: consider what it means to say that democracy requires difficulty. Think about the difference between removing barriers to participation (which increases access) and removing the experience of genuine disagreement (which may weaken deliberation).', 'This distinction is central to the speaker\'s argument; arriving with your own view sharpens critical listening.'),
+      task('Prediction: predict one reason the speaker might argue that "comfortable" democracy is a problem and one concrete reform they might propose. Consider whether their argument applies equally to education, institutions, and technology.', 'Listen for how the speaker connects abstract principles to practical proposals.'),
+      task('Key words to listen for: conceptual vocabulary (productive difficulty, deliberative process, epistemic, polarisation), reform language (citizens\' assemblies, civic education, platform reform, regulatory intervention), and argumentative structure cues (the deeper issue is, the distinction I\'d draw is, three things).', 'These signals help you track how the speaker builds a layered argument from diagnosis to proposal.'),
+    ],
     teacherOpening: 'This is a review lesson. The interview is at C1 level and assesses all the listening skills developed across C1.1–C1.7. Listen carefully, take notes, and answer the questions as accurately as you can.',
     transcript: [
       { speaker: 'Interviewer', text: 'You\'ve argued in your recent book that we\'ve misdiagnosed the crisis of democracy. What\'s the misdiagnosis?' },

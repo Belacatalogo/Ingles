@@ -79,6 +79,11 @@ What all of these structures share is that they allow a writer to make choices t
       'Distinguish between the tutor\'s explanations and the students\' examples or questions.',
       'Answer inference and summary tasks at C1 level.',
     ],
+    listeningPreparation: [
+      task('Before listening: consider how grammar choices in academic writing do more than convey information — they position claims, manage reader expectations, and construct authority. Activate your awareness of passive voice, cleft structures, and causatives as argumentative tools.', 'This frame helps you listen for why a structure is used, not just what it means.'),
+      task('Prediction: predict one way the passive voice might serve an argumentative purpose beyond formality, and one way a cleft structure might manage what the reader expects.', 'Compare your predictions with the examples the speakers discuss.'),
+      task('Key words to listen for: epistemic markers (it has been argued, the data suggest), cleft/pseudocleft cues (what is particularly interesting is, it is X that), causative constructions (have something done, get something built), and evaluative stance language (precisely, notice, the point is).', 'These signals help you track how the speakers connect grammar to argumentation.'),
+    ],
     teacherOpening: 'This is a tutorial from a university writing course. The tutor, Dr Mensah, is discussing with three postgraduate students — Yuki, Rodrigo, and Fatima — how grammar choices construct academic argument. Listen for the specific examples each speaker uses.',
     transcript: [
       { speaker: 'Dr Mensah', text: 'So let\'s start with the question I posed at the end of last week\'s session: why does academic writing feel different from other formal writing? Not just harder — different in kind.' },

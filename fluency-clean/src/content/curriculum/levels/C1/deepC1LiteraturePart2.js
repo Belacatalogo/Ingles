@@ -72,6 +72,11 @@ She stepped back from the threshold and closed the door.`,
       'Distinguish between descriptive and evaluative readings.',
       'Answer inference, summary, and critical evaluation questions at C1 level.',
     ],
+    listeningPreparation: [
+      task('Before listening: consider the distinction between what a literary text says on the surface and what it means through implication, structure, or symbol. Think about how different interpretive lenses — psychological, formal, structural — produce different kinds of claims about the same passage.', 'This awareness prepares you to follow multiple competing readings simultaneously.'),
+      task('Prediction: predict one psychological interpretation and one formal/structural interpretation of a character who stands at a threshold without entering. What different claims would each approach make?', 'Compare your predictions with the interpretive moves the speakers actually make.'),
+      task('Key words to listen for: interpretive framing language (I read it as, my reading is, I\'d push back on), formal analysis terms (liminal, circularity, threshold, enact), and metacritical cues (that\'s not just characterisation — it\'s formal organisation, the form is the content).', 'These signals help you distinguish between descriptive and evaluative readings as the discussion unfolds.'),
+    ],
     teacherOpening: 'This is a literature seminar. Four speakers — tutor Dr Okello, and students Mei, Sanjay, and Carlota — are discussing close reading and interpretation. Listen for the interpretive moves each speaker makes and how they use textual evidence.',
     transcript: [
       { speaker: 'Dr Okello', text: 'Today I want to focus on a question that comes up in almost every close reading session: the difference between what a text says and what it means. These aren\'t always the same thing, and some of the most interesting literary analysis happens precisely in the gap between them. Let me start with a concrete example. In our passage from this week, the protagonist stands at the threshold and doesn\'t enter. What does the text say? That she stands at the threshold. What does it mean? Who wants to start?' },

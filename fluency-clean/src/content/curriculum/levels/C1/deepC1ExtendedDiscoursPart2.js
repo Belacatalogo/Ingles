@@ -79,6 +79,11 @@ The implication for the student writer is straightforward, if demanding. Hedging
       'Distinguish between different speakers\' positions and the degree of certainty they express.',
       'Answer inference, summary, and speaker-intention questions at C1 level.',
     ],
+    listeningPreparation: [
+      task('Before listening: think about the difference between hedging that reflects genuine uncertainty and hedging that avoids intellectual commitment. Consider whether academic conventions encourage one more than the other.', 'This distinction is central to the debate you are about to hear.'),
+      task('Prediction: predict one argument defending hedging as epistemically honest and one argument criticising hedging as a form of intellectual evasion. Think about how disciplinary norms might shape each position.', 'Listen for how each speaker positions themselves on this spectrum.'),
+      task('Key words to listen for: epistemic stance markers (the evidence suggests, it would appear, one might conclude), concession and pushback cues (I\'d push back on, I accept that distinction, but I\'d add), and metacognitive vocabulary (calibrated, reflexive, institutionally required, bad faith).', 'These signals help you track shifts between agreement, concession, and challenge across speakers.'),
+    ],
     teacherOpening: 'This is a doctoral research seminar. Four speakers — supervisor Dr Larsson, and doctoral researchers Ana, Jerome, and Priya — are discussing the use of hedging language in their own fields. Listen not only for what they say but for how they say it: the hedges, the discourse markers, and the moments when speakers concede or push back.',
     transcript: [
       { speaker: 'Dr Larsson', text: 'I want to start with a provocation. In the social sciences, we hedge constantly — "the evidence suggests," "it would appear that," "one might conclude." But I sometimes wonder whether we\'ve turned hedging into a kind of defensive ritual that protects us from being wrong rather than making us more accurate. Is there a point at which hedging becomes a form of intellectual bad faith?' },

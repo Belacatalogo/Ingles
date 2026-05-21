@@ -73,6 +73,11 @@ The professional writer must also manage the tension between clarity and caution
       'Analyse the advice given and evaluate its applicability.',
       'Answer inference, summary, and critical evaluation questions at C1 level.',
     ],
+    listeningPreparation: [
+      task('Before listening: think about a professional scenario in which someone must deliver bad news to a client or stakeholder. Consider how the sequence of information — context before numbers, or numbers before context — changes the tone and outcome of the conversation.', 'This frame helps you evaluate the strategic reasoning behind the coach\'s advice.'),
+      task('Prediction: predict one communication strategy the coach might recommend for delivering negative news and one distinction between accountability and blame that might arise.', 'Listen for how the coach separates transparency from capitulation.'),
+      task('Key words to listen for: strategic framing language (the sequence matters, provide the frame, transparency is not just about what you say), accountability distinctions (ownership without self-flagellation, acknowledging vs accepting blame), and persuasion cues (revised estimate, investment, cost revision).', 'These signals help you track the principles behind each piece of advice.'),
+    ],
     teacherOpening: 'This is an executive coaching conversation. Coach (Maya) is advising a senior manager (Kenji) on how to handle a difficult meeting in which he must communicate negative news to a key client. Listen for the specific communication strategies Maya recommends and the principles behind them.',
     transcript: [
       { speaker: 'Maya', text: 'So Kenji, let\'s think about this meeting. You\'ve got to tell the client that the project is running three weeks behind schedule, and that the original cost estimate needs to be revised upward by about fifteen percent. Both are sensitive. How are you planning to approach it?' },

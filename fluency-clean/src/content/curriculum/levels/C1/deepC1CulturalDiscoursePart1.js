@@ -251,6 +251,11 @@ Is there a way out? Perhaps only a radical willingness to be ordinary — to res
       'Understand how academic and critical ideas are debated in spoken discourse.',
       'Answer inference, position-attribution, and evaluative questions at C1 level.',
     ],
+    listeningPreparation: [
+      task('Before listening: consider whether the distinction between "high culture" and "popular culture" reflects genuine differences in quality or whether it is primarily a social and class distinction. Think about what happens when the institutions that maintained this distinction lose their authority.', 'Having a preliminary position helps you evaluate each speaker\'s argument more critically.'),
+      task('Prediction: predict one argument that the collapse of the high/low distinction is a gain (e.g., democratisation) and one argument that it is a loss (e.g., loss of shared reference points). Consider whether both can be true simultaneously.', 'Listen for how each panellist navigates this tension rather than resolving it simply.'),
+      task('Key words to listen for: cultural-theory vocabulary (canonisation, bourgeois cultural identity, institutional gatekeepers, democratisation), evaluative stance markers (I\'d resist the conclusion, can I offer a third position), and nuance cues (both of you are right about X and missing Y, the question isn\'t just whether).', 'These signals help you track how the panellists position themselves in relation to each other and to the central question.'),
+    ],
     teacherOpening: 'This is a panel discussion from a cultural forum, in which three participants debate whether the distinction between "high" and "popular" culture has collapsed and whether this matters. Listen for the different positions each participant holds, the evidence they use, and the moments where they agree or disagree. Track how the conversation moves and develops.',
     transcript: [
       { speaker: 'Moderator', text: 'The question on the table is whether the distinction between high and popular culture has collapsed and, if so, whether this is a loss or a gain. Priya, you\'ve argued that the distinction was never really about quality — it was always about class. Would you defend that?' },

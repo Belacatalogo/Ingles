@@ -71,6 +71,11 @@ This is not to say that the project fails. Hartley's documentation of the range 
       'Distinguish between different views on essay structure and argumentation.',
       'Answer inference, position-tracking, and evaluative questions at C1 level.',
     ],
+    listeningPreparation: [
+      task('Before listening: consider what separates a technically competent academic essay from a genuinely strong one. Think beyond structure and referencing — what makes an argument compelling rather than merely organised?', 'This question is the starting point of the discussion; having your own position will sharpen your listening.'),
+      task('Prediction: predict one criterion a speaker might use to define a strong essay (e.g., argument quality, handling of counter-evidence, prose style) and one way another speaker might challenge or complicate that criterion.', 'Listen for how participants build on, refine, or push back against each other\'s positions.'),
+      task('Key words to listen for: argument quality markers (through-line, developing position, sustained argument), counter-evidence language (engage with, grapple with, advocacy vs scholarship), and metacritical cues (push back on the framing, open up a problem, the distinction is not as clean as).', 'These signals help you track how the discussion evolves from simple criteria toward more nuanced positions.'),
+    ],
     teacherOpening: 'This is a postgraduate seminar discussion in which a professor and three students explore what distinguishes a strong academic essay from a weak one. Listen for the different positions each participant takes and the specific criteria they use. Notice the language of academic disagreement and how participants manage the social dimension of scholarly debate.',
     transcript: [
       { speaker: 'Prof. Chen', text: 'Let\'s start with a simple question that turns out to be quite complicated: what makes a good essay? Not a technically competent essay — one that has a clear structure and correct references — but a genuinely strong piece of academic writing. What\'s the difference?' },
