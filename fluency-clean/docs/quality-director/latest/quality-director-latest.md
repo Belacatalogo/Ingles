@@ -1,6 +1,6 @@
 # Fluency Quality Director — Relatório Executivo Latest
 
-Gerado em: 2026-05-20T21:09:10.684Z
+Gerado em: 2026-05-21T00:50:37.908Z
 
 ## Veredito
 
@@ -12,12 +12,12 @@ Gerado em: 2026-05-20T21:09:10.684Z
 
 - Relatórios consolidados: 25
 - Checks executados: 3270
-- Problemas únicos: 1387
-- Problemas brutos antes de deduplicar: 2733
-- Duplicatas agrupadas: 1346
+- Problemas únicos: 1359
+- Problemas brutos antes de deduplicar: 2677
+- Duplicatas agrupadas: 1318
 - P0: 0
-- P1: 333
-- P2: 1054
+- P1: 319
+- P2: 1040
 - P3: 0
 
 ## Notas por área
@@ -26,8 +26,8 @@ Gerado em: 2026-05-20T21:09:10.684Z
 |---|---:|---|---:|---:|---:|---:|
 | Navegação e estabilidade | 54 | Precisa revisão | 0 | 0 | 38 | 0 |
 | Jornada real do aluno | 93 | Revisar antes de confiar | 0 | 1 | 2 | 0 |
-| Exercícios e alternativas | 0 | Revisar antes de confiar | 0 | 14 | 798 | 0 |
-| Aulas e pedagogia | 0 | Revisar antes de confiar | 0 | 318 | 216 | 0 |
+| Exercícios e alternativas | 0 | Precisa revisão | 0 | 0 | 798 | 0 |
+| Aulas e pedagogia | 0 | Revisar antes de confiar | 0 | 318 | 202 | 0 |
 | Visual e mobile | 100 | Saudável | 0 | 0 | 0 | 0 |
 | Progresso, XP e mastery | 100 | Saudável | 0 | 0 | 0 | 0 |
 | Estados vazios e segurança visual | 100 | Saudável | 0 | 0 | 0 | 0 |
@@ -52,8 +52,8 @@ Gerado em: 2026-05-20T21:09:10.684Z
 | quality-director-lesson-quality | iPhone SE | 66 | 500 | 28 | 28 | 0 | 0 | 28 | 0 |
 | quality-director-navigation | iPhone 13 | 100 | 13 | 0 | 0 | 0 | 0 | 0 | 0 |
 | quality-director-navigation | iPhone SE | 100 | 13 | 0 | 0 | 0 | 0 | 0 | 0 |
-| quality-director-pillar-quality | iPhone 13 | 0 | 506 | 548 | 548 | 0 | 332 | 216 | 0 |
-| quality-director-pillar-quality | iPhone SE | 0 | 506 | 548 | 548 | 0 | 332 | 216 | 0 |
+| quality-director-pillar-quality | iPhone 13 | 0 | 506 | 520 | 520 | 0 | 318 | 202 | 0 |
+| quality-director-pillar-quality | iPhone SE | 0 | 506 | 520 | 520 | 0 | 318 | 202 | 0 |
 | quality-director-progress-mastery | iPhone 13 | 100 | 1 | 0 | 0 | 0 | 0 | 0 | 0 |
 | quality-director-progress-mastery | iPhone SE | 100 | 1 | 0 | 0 | 0 | 0 | 0 | 0 |
 | quality-director-real-student-regression | iPhone 13 | 100 | 3 | 0 | 0 | 0 | 0 | 0 | 0 |
