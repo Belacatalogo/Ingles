@@ -6,6 +6,10 @@ function normalize(value) {
   return clean(value).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[.,!?;:()"“”']/g, '').replace(/\s+/g, ' ');
 }
 
+function normalizeTokens(value) {
+  return normalize(value).split(/\s+/).filter(Boolean);
+}
+
 function wordCount(value) {
   return clean(value).split(/\s+/).filter(Boolean).length;
 }
@@ -22,12 +26,87 @@ function escapeRegExp(value) {
   return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
+const IRREGULAR_TARGET_FORMS = {
+  be: ['am', 'are', 'is', 'was', 'were', 'been', 'being'],
+  break: ['broke', 'broken', 'breaking', 'breaks'],
+  bring: ['brought', 'bringing', 'brings'],
+  buy: ['bought', 'buying', 'buys'],
+  come: ['came', 'coming', 'comes'],
+  deal: ['dealt', 'dealing', 'deals'],
+  do: ['does', 'did', 'done', 'doing'],
+  find: ['found', 'finding', 'finds'],
+  get: ['got', 'gotten', 'getting', 'gets'],
+  give: ['gave', 'given', 'giving', 'gives'],
+  go: ['went', 'gone', 'going', 'goes'],
+  have: ['has', 'had', 'having'],
+  keep: ['kept', 'keeping', 'keeps'],
+  know: ['knew', 'known', 'knowing', 'knows'],
+  leave: ['left', 'leaving', 'leaves'],
+  make: ['made', 'making', 'makes'],
+  pay: ['paid', 'paying', 'pays'],
+  read: ['reads', 'reading'],
+  run: ['ran', 'running', 'runs'],
+  say: ['said', 'saying', 'says'],
+  see: ['saw', 'seen', 'seeing', 'sees'],
+  sell: ['sold', 'selling', 'sells'],
+  take: ['took', 'taken', 'taking', 'takes'],
+  think: ['thought', 'thinking', 'thinks'],
+  write: ['wrote', 'written', 'writing', 'writes'],
+};
+
+function candidateForms(token) {
+  const base = normalize(token);
+  if (!base) return [];
+  const forms = new Set([base, ...(IRREGULAR_TARGET_FORMS[base] || [])]);
+  forms.add(`${base}s`);
+  forms.add(`${base}es`);
+  forms.add(`${base}ed`);
+  forms.add(`${base}ing`);
+  if (base.endsWith('e') && base.length > 2) {
+    forms.add(`${base}d`);
+    forms.add(`${base.slice(0, -1)}ing`);
+  }
+  if (/[^aeiou]y$/.test(base)) {
+    forms.add(`${base.slice(0, -1)}ies`);
+    forms.add(`${base.slice(0, -1)}ied`);
+  }
+  return [...forms];
+}
+
+function tokenMatches(token, targetToken) {
+  const normalizedToken = normalize(token);
+  return candidateForms(targetToken).includes(normalizedToken);
+}
+
+function tokensContainSingleTarget(exampleTokens, targetToken) {
+  return exampleTokens.some((token) => tokenMatches(token, targetToken));
+}
+
+function tokensContainTargetInOrder(exampleTokens, targetTokens) {
+  let searchStart = 0;
+  for (const targetToken of targetTokens) {
+    const nextIndex = exampleTokens.findIndex((token, index) => index >= searchStart && tokenMatches(token, targetToken));
+    if (nextIndex < 0) return false;
+    searchStart = nextIndex + 1;
+  }
+  return true;
+}
+
 function includesTarget(example, word) {
   const normalizedExample = normalize(example);
   const normalizedWord = normalize(word);
   if (!normalizedExample || !normalizedWord) return false;
-  if (normalizedWord.includes(' ')) return normalizedExample.includes(normalizedWord);
-  return new RegExp('(^|\\s)' + escapeRegExp(normalizedWord) + '(\\s|$)', 'i').test(normalizedExample);
+  if (normalizedExample.includes(normalizedWord)) return true;
+
+  const exampleTokens = normalizeTokens(example);
+  const targetTokens = normalizeTokens(word);
+  if (!targetTokens.length) return false;
+
+  if (targetTokens.length === 1) return tokensContainSingleTarget(exampleTokens, targetTokens[0]);
+
+  // Phrasal verbs and expressions can be naturally separated or inflected:
+  // try on -> try this on, run out of -> ran out of, subscribe to -> subscribed to.
+  return tokensContainTargetInOrder(exampleTokens, targetTokens);
 }
 
 function levelRank(level = '') {
