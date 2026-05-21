@@ -1,0 +1,169 @@
+/* BLOCO-VOCAB-ZIGZAG-MAP-POLISH
+   Escopo: somente mapa da Trilha de vocabulário na aba Cartas. */
+
+.cards-path-card {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 14% 0%, rgba(91, 156, 246, .16), transparent 32%),
+    radial-gradient(circle at 88% 10%, rgba(167, 139, 250, .16), transparent 34%),
+    rgba(10, 16, 36, .62);
+}
+
+.cards-path-card::before {
+  content: 'VOCAB TRAIL';
+  position: absolute;
+  right: -20px;
+  top: 20px;
+  color: rgba(255, 255, 255, .035);
+  font-size: 34px;
+  font-weight: 1000;
+  letter-spacing: -.08em;
+  transform: rotate(10deg);
+  pointer-events: none;
+}
+
+.cards-path-map {
+  min-height: 240px;
+  gap: 15px;
+  padding: 14px 0 8px;
+  isolation: isolate;
+}
+
+.cards-path-map::before {
+  top: 34px;
+  bottom: 34px;
+  width: 7px;
+  background:
+    linear-gradient(180deg, rgba(91, 156, 246, .38), rgba(167, 139, 250, .24), rgba(34, 211, 238, .18)),
+    repeating-linear-gradient(180deg, rgba(255, 255, 255, .22) 0 10px, transparent 10px 24px);
+  box-shadow: 0 0 30px rgba(91, 156, 246, .13);
+}
+
+.cards-path-map::after {
+  content: '';
+  position: absolute;
+  z-index: 0;
+  top: 48px;
+  bottom: 48px;
+  left: 50%;
+  width: 74%;
+  max-width: 310px;
+  border: 1px solid rgba(167, 139, 250, .10);
+  border-left-color: transparent;
+  border-right-color: transparent;
+  border-radius: 42px;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.cards-path-bubble {
+  width: min(158px, calc(50vw - 30px));
+  min-height: 126px;
+  padding: 13px 10px 12px;
+  border-radius: 26px;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255, 255, 255, .10), transparent 35%),
+    linear-gradient(180deg, rgba(15, 23, 48, .98), rgba(10, 16, 36, .96));
+  transform: translateZ(0);
+  transition: transform .22s ease, border-color .22s ease, box-shadow .22s ease, background .22s ease;
+}
+
+.cards-path-bubble::before {
+  content: '';
+  position: absolute;
+  top: 46px;
+  width: 52px;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(91, 156, 246, .05), rgba(167, 139, 250, .34));
+  pointer-events: none;
+}
+
+.cards-path-bubble.left { margin-left: 2px; }
+.cards-path-bubble.right { margin-right: 2px; }
+.cards-path-bubble.left::before { right: -51px; }
+.cards-path-bubble.right::before { left: -51px; transform: rotate(180deg); }
+
+.cards-path-bubble::after {
+  content: '☆ ☆ ☆';
+  position: absolute;
+  left: 50%;
+  bottom: 9px;
+  width: 68px;
+  padding: 2px 5px;
+  border-radius: 999px;
+  color: rgba(196, 181, 253, .58);
+  background: rgba(255, 255, 255, .045);
+  font-size: 9px;
+  letter-spacing: .08em;
+  transform: translateX(-50%);
+}
+
+.cards-path-bubble.active {
+  border-color: rgba(167, 139, 250, .62);
+  background:
+    radial-gradient(circle at 50% 0%, rgba(167, 139, 250, .24), transparent 38%),
+    linear-gradient(180deg, rgba(31, 41, 74, .98), rgba(12, 19, 42, .98));
+  box-shadow: 0 20px 52px rgba(124, 58, 237, .24), inset 0 1px 0 rgba(255, 255, 255, .10);
+}
+
+.cards-path-bubble.active::after {
+  content: '★ ☆ ☆';
+  color: #fde68a;
+  background: rgba(245, 192, 77, .11);
+}
+
+.cards-path-bubble.completed::after {
+  content: '★ ★ ★';
+  color: #fef3c7;
+  background: rgba(74, 222, 128, .12);
+}
+
+.cards-path-bubble.locked::after {
+  content: 'locked';
+  color: #8f9bb8;
+  letter-spacing: .04em;
+}
+
+.cards-path-bubble:where(:hover, :focus-visible) {
+  transform: translateY(-2px) scale(1.015);
+  border-color: rgba(196, 181, 253, .58);
+  box-shadow: 0 22px 54px rgba(91, 156, 246, .18), inset 0 1px 0 rgba(255, 255, 255, .10);
+  outline: none;
+}
+
+.cards-path-bubble > span {
+  width: 44px;
+  height: 44px;
+  box-shadow: 0 10px 26px rgba(91, 156, 246, .24), inset 0 1px 0 rgba(255, 255, 255, .18);
+}
+
+.cards-path-bubble.locked > span { box-shadow: none; }
+.cards-path-bubble strong { overflow-wrap: anywhere; }
+.cards-path-bubble small { min-height: 27px; overflow-wrap: anywhere; }
+.cards-path-bubble i { margin-bottom: 17px; }
+
+@media (max-width: 380px) {
+  .cards-path-card { padding-inline: 11px; }
+  .cards-path-map { gap: 12px; padding-top: 10px; }
+  .cards-path-map::before { width: 5px; }
+  .cards-path-map::after { width: 68%; }
+  .cards-path-bubble {
+    width: min(138px, calc(50vw - 22px));
+    min-height: 122px;
+    padding-inline: 8px;
+    border-radius: 22px;
+  }
+  .cards-path-bubble.left::before,
+  .cards-path-bubble.right::before { width: 40px; }
+  .cards-path-bubble.left::before { right: -38px; }
+  .cards-path-bubble.right::before { left: -38px; }
+  .cards-path-bubble strong { font-size: 12.5px; }
+  .cards-path-bubble small { font-size: 10px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cards-path-bubble { transition: none; }
+  .cards-path-bubble:where(:hover, :focus-visible) { transform: none; }
+}
