@@ -84,7 +84,11 @@ function createFallbackVocabularyPractice(input = {}) {
   const primaryMeaning = primary.meaning || `vocabulário de ${title}`;
   // Não repetir o título nem o termo-resposta no enunciado (gerava
   // "Pergunta parece entregar a resposta", ex.: tema Clothes / resposta clothes).
-  const recognitionPrompt = primary.meaning
+  // Definições longas (schema C1/C2) podem conter a própria palavra-resposta —
+  // nesse caso usa o enunciado neutro para não entregar a resposta.
+  const meaningRevealsAnswer = primary.meaning && primary.term
+    && primary.meaning.toLowerCase().includes(primary.term.toLowerCase());
+  const recognitionPrompt = primary.meaning && !meaningRevealsAnswer
     ? `Qual palavra ou chunk corresponde a “${primary.meaning}”?`
     : 'Qual destas opções é uma palavra ou chunk desta aula?';
 
@@ -157,15 +161,63 @@ export function createGrammarLesson(input = {}) {
   };
 }
 
+// Normaliza uma entrada de palavra para o schema essentialWords, preservando
+// definição, exemplo(s) e colocações. Aceita os schemas de autor targetWords
+// (word/definition/exampleSentences/collocations) e words (word/definition/
+// example/collocations) além do próprio essentialWords.
+function normalizeEssentialWord(entry = {}) {
+  if (typeof entry === 'string') return clean(entry) ? { word: clean(entry), meaning: '', example: '' } : null;
+  if (!entry || typeof entry !== 'object') return null;
+  const word = firstNonEmpty(entry.word, entry.term, entry.phrase, entry.english);
+  if (!word) return null;
+  const exampleSentences = safeArray(entry.exampleSentences).map(clean).filter(Boolean);
+  return {
+    word,
+    partOfSpeech: clean(entry.partOfSpeech),
+    definition: firstNonEmpty(entry.definition, entry.meaning, entry.translation, entry.explanation),
+    meaning: firstNonEmpty(entry.meaning, entry.translation, entry.definition),
+    example: firstNonEmpty(entry.example, exampleSentences[0]),
+    exampleSentences,
+    collocations: safeArray(entry.collocations).map(clean).filter(Boolean),
+    note: firstNonEmpty(entry.note, entry.register),
+  };
+}
+
 export function createVocabularyLesson(input = {}) {
-  const examples = safeArray(input.examples);
+  // Schemas alternativos de autor para a lista de palavras: targetWords, words,
+  // e targetCategories (palavras aninhadas em connectors/words por categoria).
+  const categoryWords = safeArray(input.targetCategories)
+    .flatMap((cat) => safeArray(cat?.connectors || cat?.words || cat?.items));
+  // Preserva essentialWords da fonte; só sintetiza dos schemas alternativos
+  // quando essentialWords está ausente/vazio.
+  const essentialWords = safeArray(input.essentialWords).length
+    ? safeArray(input.essentialWords)
+    : [...safeArray(input.targetWords), ...safeArray(input.words), ...categoryWords].map(normalizeEssentialWord).filter(Boolean);
+
+  // practiceExercises (schema antigo) vira usage/production quando os campos
+  // canônicos não foram fornecidos.
+  const practiceExercises = safeArray(input.practiceExercises);
+  const usagePractice = safeArray(input.usagePractice).length
+    ? safeArray(input.usagePractice)
+    : practiceExercises.filter((ex) => clean(ex?.type) !== 'production');
+  const productionTasks = safeArray(input.productionTasks).length
+    ? safeArray(input.productionTasks)
+    : practiceExercises.filter((ex) => clean(ex?.type) === 'production');
+
+  // Exemplos por categoria (targetCategories[].examples) viram contexto quando
+  // não há examples canônicos.
+  const categoryExamples = safeArray(input.targetCategories).flatMap((cat) => safeArray(cat?.examples));
+  const examples = safeArray(input.examples).length ? safeArray(input.examples) : categoryExamples;
   const recognitionPractice = safeArray(input.recognitionPractice);
-  const usagePractice = safeArray(input.usagePractice);
-  const fallbackPractice = hasChoicePractice(recognitionPractice, usagePractice) ? [] : createFallbackVocabularyPractice({ ...input, examples });
+  // O fallback usa o vocabulário real (essentialWords sintetizado), evitando
+  // o placeholder genérico em aulas cujo schema não trazia recognitionPractice.
+  const fallbackPractice = hasChoicePractice(recognitionPractice, usagePractice)
+    ? []
+    : createFallbackVocabularyPractice({ ...input, essentialWords, examples });
   return {
     ...createStaticLessonBase({ ...input, pillar: 'vocabulary' }),
     topicContext: clean(input.topicContext),
-    essentialWords: safeArray(input.essentialWords),
+    essentialWords,
     chunks: safeArray(input.chunks),
     pronunciationFocus: input.pronunciationFocus || null,
     dangerousConfusions: safeArray(input.dangerousConfusions),
@@ -178,7 +230,7 @@ export function createVocabularyLesson(input = {}) {
     examples,
     recognitionPractice: [...recognitionPractice, ...fallbackPractice],
     usagePractice,
-    productionTasks: safeArray(input.productionTasks),
+    productionTasks,
   };
 }
 
