@@ -109,6 +109,12 @@ export const B1_DEEP_OPINIONS_PART2 = Object.freeze([
     ...common,
     id: 'B1-READING-003',
     order: 3,
+    readingStrategy: [
+      task('Antes de ler: o título é uma pergunta — "Should cities ban cars from their centres?". Preveja: o texto vai defender um lado só ou mostrar os dois?', 'Predição ativa a leitura crítica do argumento.'),
+      task('Primeira leitura (gist): leia rápido e identifique apenas a posição final do autor, sem parar em cada palavra.', 'Gist primeiro, detalhe depois.'),
+      task('Segunda leitura (scan): localize os argumentos A FAVOR e os argumentos CONTRA; marque os linkers (Moreover, However, Besides, Despite).', 'Scanning pela estrutura do argumento.'),
+      task('Evidência: para a posição do autor, copie a frase exata do texto que prova sua resposta antes de responder às perguntas.', 'Resposta baseada em evidência textual.'),
+    ],
     title: 'Reading an opinion text — two sides of an argument',
     objectives: [
       'Ler um texto de opinião de 280-300 palavras com argumento estruturado.',

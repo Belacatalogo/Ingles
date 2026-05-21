@@ -14,6 +14,12 @@ export const B1_DEEP_MEDIA_TECHNOLOGY_PART2 = Object.freeze([
     ...common,
     id: 'B1-READING-007',
     order: 7,
+    readingStrategy: [
+      task('Antes de ler: o título é "The attention economy". Preveja: o texto vai falar de dinheiro, redes sociais, foco? Anote sua hipótese.', 'Predição pelo título.'),
+      task('Primeira leitura (gist): leia rápido e identifique a ideia central — como a atenção virou um recurso disputado.', 'Gist da ideia central.'),
+      task('Segunda leitura (scan): localize como as empresas capturam atenção e as consequências apontadas; marque conectores de causa/efeito (because, as a result, therefore).', 'Scanning por causa e efeito.'),
+      task('Evidência: antes de responder, copie a frase exata do texto que sustenta sua resposta.', 'Evidência textual.'),
+    ],
     title: 'Reading: The attention economy',
     objectives: [
       'Ler um artigo sobre o impacto da tecnologia na atenção humana com compreensão de argumento.',

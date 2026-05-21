@@ -131,6 +131,12 @@ export const B1_DEEP_PROBLEMS_PART2 = Object.freeze([
     ...common,
     id: 'B1-READING-004',
     order: 4,
+    readingStrategy: [
+      task('Antes de ler: pense numa decisão difícil de carreira que você (ou alguém próximo) enfrentou. O que pesou mais: segurança ou oportunidade?', 'Conecta o tema à sua experiência (predição).'),
+      task('Primeira leitura (gist): leia rápido e responda — o texto defende correr risco, jogar seguro, ou mostra os dois lados?', 'Gist da posição geral.'),
+      task('Segunda leitura (detail): localize o que a psicologia da decisão diz sobre por que hesitamos; procure "loss", "gain", "paralysis".', 'Leitura por detalhe específico.'),
+      task('Evidência: antes de responder, copie a frase do texto que sustenta cada resposta sobre a posição do autor.', 'Evidência textual.'),
+    ],
     title: 'Reading: The career dilemma',
     objectives: [
       'Ler um texto sobre dilemas e decisões com compreensão de argumento.',

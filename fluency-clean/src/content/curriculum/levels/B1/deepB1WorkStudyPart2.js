@@ -131,6 +131,12 @@ export const B1_DEEP_WORK_STUDY_PART2 = Object.freeze([
     ...common,
     id: 'B1-READING-005',
     order: 5,
+    readingStrategy: [
+      task('Antes de ler: como você imagina o trabalho híbrido (parte em casa, parte no escritório)? Liste 2 vantagens e 2 desvantagens que espera encontrar.', 'Predição ativa expectativas.'),
+      task('Primeira leitura (gist): leia rápido e identifique se o autor é a favor, contra, ou equilibrado sobre o trabalho híbrido.', 'Gist da posição.'),
+      task('Segunda leitura (scan): localize os benefícios e os problemas citados; marque conectores de contraste (However, Although, On the other hand).', 'Scanning por prós e contras.'),
+      task('Evidência: copie a frase exata que prova a posição do autor antes de responder.', 'Evidência textual.'),
+    ],
     title: 'Reading: The hybrid work revolution',
     objectives: [
       'Ler um artigo sobre trabalho híbrido com compreensão de argumento e detalhe.',

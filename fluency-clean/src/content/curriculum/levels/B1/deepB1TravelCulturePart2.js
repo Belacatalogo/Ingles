@@ -14,6 +14,12 @@ export const B1_DEEP_TRAVEL_CULTURE_PART2 = Object.freeze([
     ...common,
     id: 'B1-READING-006',
     order: 6,
+    readingStrategy: [
+      task('Antes de ler: o que você acha que é "slow travel"? Preveja o significado pelo título antes de confirmar no texto.', 'Predição de significado pelo título.'),
+      task('Primeira leitura (gist): leia rápido e identifique a tese principal do autor sobre slow travel.', 'Gist da tese.'),
+      task('Segunda leitura (detail): localize os argumentos e os exemplos concretos; marque palavras de comparação (faster, deeper, more meaningful).', 'Leitura por detalhe e comparação.'),
+      task('Evidência: para cada resposta, copie a frase do texto que a justifica.', 'Evidência textual.'),
+    ],
     title: 'Reading: The case for slow travel',
     objectives: [
       'Ler um artigo de opinião sobre slow travel com compreensão de argumento e detalhe.',
