@@ -20,6 +20,12 @@ export const B2_DEEP_CULTURE_MEDIA_PART2 = Object.freeze([
       'Evaluate the author\'s implicit argument and distinguish facts from opinion.',
       'Practise inference and critical reading at B2+ level.',
     ],
+    readingStrategy: [
+      task('Before reading: look at the title and predict who might control a news narrative — journalists, editors, owners, algorithms or readers. Write one hypothesis before you start.', 'Prediction helps you read for argument, not just information.'),
+      task('First read (gist): read the article quickly and identify the author\'s central claim about media literacy in one sentence.', 'Do not stop for every example yet; trace the overall line of argument first.'),
+      task('Second read (scanning/detail): find the two contrasting headlines, then mark how each framing changes the emotional effect of the same event.', 'This trains you to connect language choice with point of view.'),
+      task('Evidence task: choose one sentence that shows the author is not simply anti-media. Copy it before answering the inference questions.', 'Your answer must be grounded in textual evidence, especially the concession about investigative journalism.'),
+    ],
     readingText: {
       title: 'Who Controls the Narrative?',
       subtitle: 'A media literacy perspective',
@@ -92,6 +98,12 @@ Media literacy, once considered a niche academic concern, is now recognised by e
       'Distinguish between the concepts of cultural exchange, cultural appreciation and cultural appropriation.',
       'Identify and interpret non-defining relative clauses used to add information.',
       'Evaluate different perspectives on a culturally sensitive issue.',
+    ],
+    readingStrategy: [
+      task('Before reading: define the three ideas in your own words — cultural exchange, appreciation and appropriation. Do not worry if your definitions change after reading.', 'This gives you a purpose: test your initial definitions against the article.'),
+      task('First read (gist): decide whether the writer treats the issue as simple or complex. Write the phrase or sentence that first signals this.', 'Gist here means identifying the author\'s stance, not collecting details.'),
+      task('Second read (scanning/detail): underline the paragraph that explains power and context, then list the example used to illustrate asymmetry.', 'Scanning helps you find the evidence behind the abstract concept.'),
+      task('Evidence task: before answering the questions, copy the three diagnostic questions the article uses to separate exchange from appropriation.', 'These questions are the evidence key for the detail and inference items.'),
     ],
     readingText: {
       title: 'Whose Story Is It?',
@@ -176,7 +188,7 @@ These are not abstract philosophical questions. They shape what stories get told
       { speaker: 'ROSA', turn: 7, text: "That's a serious charge. Fatima, as someone who occupies multiple identities online — South Asian, British, Muslim, content creator — how do you navigate that?" },
       { speaker: 'FATIMA', turn: 8, text: "Carefully. And sometimes with frustration. There are elements of my cultural and religious identity that I am very deliberate about sharing — not because I'm hiding them, but because I know the platform will contextualise them in ways I can't fully control. That's the part people don't talk about enough: you're not just performing for your audience, you're performing within a system that has its own agenda." },
       { speaker: 'TOM', turn: 9, text: "Which brings us back to media literacy, frankly. I think the conversation has moved on from 'is this content real?' to something harder: 'what is this system doing to all of us collectively?' Social media didn't invent identity anxiety. But it has given it an infrastructure." },
-      { speaker: 'ROSA', turn: 10, text: "Kwame, final thought — is there a way out of this, or are we just going to have to learn to live with it?" },
+      { speaker: 'ROSA', turn: 10, text: "Kwame, final thought — is there a way out of this, or are we just going to have to learn with it?" },
       { speaker: 'KWAME', turn: 11, text: "Both, I'd argue. We need platform regulation — transparency about how algorithms work, accountability for discriminatory amplification patterns. But we also need individual and collective media literacy. Understanding that your feed is not a mirror — it's a funhouse mirror — is the beginning of a more honest relationship with the technology we use." },
       { speaker: 'FATIMA', turn: 12, text: "And I'd add: follow people who challenge your default settings. Not just to be 'balanced' in some abstract sense, but because the best thing social media can do — when it works — is expose you to lives and perspectives genuinely different from your own." },
       { speaker: 'ROSA', turn: 13, text: "Kwame, Fatima, Tom — thank you. After the break: is digital detox a privilege, or is it something everyone can access? We'll be right back." },
