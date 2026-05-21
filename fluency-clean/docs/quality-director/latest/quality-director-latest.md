@@ -1,6 +1,6 @@
 # Fluency Quality Director — Relatório Executivo Latest
 
-Gerado em: 2026-05-21T00:50:37.908Z
+Gerado em: 2026-05-21T09:46:27.669Z
 
 ## Veredito
 
@@ -12,11 +12,11 @@ Gerado em: 2026-05-21T00:50:37.908Z
 
 - Relatórios consolidados: 25
 - Checks executados: 3270
-- Problemas únicos: 1359
-- Problemas brutos antes de deduplicar: 2677
-- Duplicatas agrupadas: 1318
+- Problemas únicos: 1338
+- Problemas brutos antes de deduplicar: 2635
+- Duplicatas agrupadas: 1297
 - P0: 0
-- P1: 319
+- P1: 298
 - P2: 1040
 - P3: 0
 
@@ -27,7 +27,7 @@ Gerado em: 2026-05-21T00:50:37.908Z
 | Navegação e estabilidade | 54 | Precisa revisão | 0 | 0 | 38 | 0 |
 | Jornada real do aluno | 93 | Revisar antes de confiar | 0 | 1 | 2 | 0 |
 | Exercícios e alternativas | 0 | Precisa revisão | 0 | 0 | 798 | 0 |
-| Aulas e pedagogia | 0 | Revisar antes de confiar | 0 | 318 | 202 | 0 |
+| Aulas e pedagogia | 0 | Revisar antes de confiar | 0 | 297 | 202 | 0 |
 | Visual e mobile | 100 | Saudável | 0 | 0 | 0 | 0 |
 | Progresso, XP e mastery | 100 | Saudável | 0 | 0 | 0 | 0 |
 | Estados vazios e segurança visual | 100 | Saudável | 0 | 0 | 0 | 0 |
@@ -52,8 +52,8 @@ Gerado em: 2026-05-21T00:50:37.908Z
 | quality-director-lesson-quality | iPhone SE | 66 | 500 | 28 | 28 | 0 | 0 | 28 | 0 |
 | quality-director-navigation | iPhone 13 | 100 | 13 | 0 | 0 | 0 | 0 | 0 | 0 |
 | quality-director-navigation | iPhone SE | 100 | 13 | 0 | 0 | 0 | 0 | 0 | 0 |
-| quality-director-pillar-quality | iPhone 13 | 0 | 506 | 520 | 520 | 0 | 318 | 202 | 0 |
-| quality-director-pillar-quality | iPhone SE | 0 | 506 | 520 | 520 | 0 | 318 | 202 | 0 |
+| quality-director-pillar-quality | iPhone 13 | 0 | 506 | 499 | 499 | 0 | 297 | 202 | 0 |
+| quality-director-pillar-quality | iPhone SE | 0 | 506 | 499 | 499 | 0 | 297 | 202 | 0 |
 | quality-director-progress-mastery | iPhone 13 | 100 | 1 | 0 | 0 | 0 | 0 | 0 | 0 |
 | quality-director-progress-mastery | iPhone SE | 100 | 1 | 0 | 0 | 0 | 0 | 0 | 0 |
 | quality-director-real-student-regression | iPhone 13 | 100 | 3 | 0 | 0 | 0 | 0 | 0 | 0 |
@@ -70,42 +70,42 @@ Gerado em: 2026-05-21T00:50:37.908Z
 
 ### Ações imediatas
 
-1. **P1 · Pilar GRAMMAR · A1-GRAMMAR-001 — Grammar sem sinal claro de prática ativa**
+1. **P1 · Pilar VOCABULARY · A1-VOCABULARY-006 — Vocabulary com poucas palavras úteis**
    - Ocorrências agrupadas: 2
-   - Ação: Adicionar exercícios de aplicação da regra em contexto.
-2. **P1 · Pilar GRAMMAR · A1-GRAMMAR-002 — Grammar sem sinal claro de prática ativa**
+   - Ação: Adicionar lista de palavras/frases com significado e exemplo.
+2. **P1 · Pilar VOCABULARY · A1-VOCABULARY-006 — Vocabulary sem contexto real de uso**
    - Ocorrências agrupadas: 2
-   - Ação: Adicionar exercícios de aplicação da regra em contexto.
-3. **P1 · Pilar GRAMMAR · A1-GRAMMAR-003 — Grammar sem sinal claro de prática ativa**
+   - Ação: Adicionar exemplos contextualizados e situações reais.
+3. **P1 · Pilar VOCABULARY · A1-VOCABULARY-007 — Vocabulary com poucas palavras úteis**
    - Ocorrências agrupadas: 2
-   - Ação: Adicionar exercícios de aplicação da regra em contexto.
-4. **P1 · Pilar GRAMMAR · A1-GRAMMAR-004 — Grammar sem sinal claro de prática ativa**
+   - Ação: Adicionar lista de palavras/frases com significado e exemplo.
+4. **P1 · Pilar VOCABULARY · A1-VOCABULARY-007 — Vocabulary sem contexto real de uso**
    - Ocorrências agrupadas: 2
-   - Ação: Adicionar exercícios de aplicação da regra em contexto.
-5. **P1 · Pilar GRAMMAR · A1-GRAMMAR-005 — Grammar sem sinal claro de prática ativa**
+   - Ação: Adicionar exemplos contextualizados e situações reais.
+5. **P1 · Pilar VOCABULARY · A1-VOCABULARY-008 — Vocabulary com poucas palavras úteis**
    - Ocorrências agrupadas: 2
-   - Ação: Adicionar exercícios de aplicação da regra em contexto.
-6. **P1 · Pilar GRAMMAR · A1-GRAMMAR-006 — Grammar sem sinal claro de prática ativa**
+   - Ação: Adicionar lista de palavras/frases com significado e exemplo.
+6. **P1 · Pilar VOCABULARY · A1-VOCABULARY-008 — Vocabulary sem contexto real de uso**
    - Ocorrências agrupadas: 2
-   - Ação: Adicionar exercícios de aplicação da regra em contexto.
-7. **P1 · Pilar GRAMMAR · A1-GRAMMAR-007 — Grammar sem explicação conceitual clara**
+   - Ação: Adicionar exemplos contextualizados e situações reais.
+7. **P1 · Pilar VOCABULARY · A1-VOCABULARY-009 — Vocabulary com poucas palavras úteis**
    - Ocorrências agrupadas: 2
-   - Ação: Adicionar explicação da regra, quando usar e como formar a estrutura.
-8. **P1 · Pilar GRAMMAR · A1-GRAMMAR-008 — Grammar sem explicação conceitual clara**
+   - Ação: Adicionar lista de palavras/frases com significado e exemplo.
+8. **P1 · Pilar VOCABULARY · A1-VOCABULARY-009 — Vocabulary sem contexto real de uso**
    - Ocorrências agrupadas: 2
-   - Ação: Adicionar explicação da regra, quando usar e como formar a estrutura.
-9. **P1 · Pilar GRAMMAR · A1-GRAMMAR-009 — Grammar sem explicação conceitual clara**
+   - Ação: Adicionar exemplos contextualizados e situações reais.
+9. **P1 · Pilar VOCABULARY · A1-VOCABULARY-010 — Vocabulary com poucas palavras úteis**
    - Ocorrências agrupadas: 2
-   - Ação: Adicionar explicação da regra, quando usar e como formar a estrutura.
-10. **P1 · Pilar GRAMMAR · A1-GRAMMAR-010 — Grammar sem explicação conceitual clara**
+   - Ação: Adicionar lista de palavras/frases com significado e exemplo.
+10. **P1 · Pilar VOCABULARY · A1-VOCABULARY-010 — Vocabulary sem contexto real de uso**
    - Ocorrências agrupadas: 2
-   - Ação: Adicionar explicação da regra, quando usar e como formar a estrutura.
-11. **P1 · Pilar GRAMMAR · A1-GRAMMAR-011 — Grammar sem explicação conceitual clara**
+   - Ação: Adicionar exemplos contextualizados e situações reais.
+11. **P1 · Pilar VOCABULARY · A1-VOCABULARY-011 — Vocabulary com poucas palavras úteis**
    - Ocorrências agrupadas: 2
-   - Ação: Adicionar explicação da regra, quando usar e como formar a estrutura.
-12. **P1 · Pilar GRAMMAR · A1-GRAMMAR-012 — Grammar sem explicação conceitual clara**
+   - Ação: Adicionar lista de palavras/frases com significado e exemplo.
+12. **P1 · Pilar VOCABULARY · A1-VOCABULARY-011 — Vocabulary sem contexto real de uso**
    - Ocorrências agrupadas: 2
-   - Ação: Adicionar explicação da regra, quando usar e como formar a estrutura.
+   - Ação: Adicionar exemplos contextualizados e situações reais.
 
 ### Próximas ações
 
@@ -148,168 +148,7 @@ Gerado em: 2026-05-21T00:50:37.908Z
 
 ## Principais problemas
 
-1. **P1 · Pilar GRAMMAR · A1-GRAMMAR-001 — Grammar sem sinal claro de prática ativa**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: A aula pode virar teoria sem verificação de domínio.
-   - Recomendação: Adicionar exercícios de aplicação da regra em contexto.
-
-2. **P1 · Pilar GRAMMAR · A1-GRAMMAR-002 — Grammar sem sinal claro de prática ativa**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: A aula pode virar teoria sem verificação de domínio.
-   - Recomendação: Adicionar exercícios de aplicação da regra em contexto.
-
-3. **P1 · Pilar GRAMMAR · A1-GRAMMAR-003 — Grammar sem sinal claro de prática ativa**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: A aula pode virar teoria sem verificação de domínio.
-   - Recomendação: Adicionar exercícios de aplicação da regra em contexto.
-
-4. **P1 · Pilar GRAMMAR · A1-GRAMMAR-004 — Grammar sem sinal claro de prática ativa**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: A aula pode virar teoria sem verificação de domínio.
-   - Recomendação: Adicionar exercícios de aplicação da regra em contexto.
-
-5. **P1 · Pilar GRAMMAR · A1-GRAMMAR-005 — Grammar sem sinal claro de prática ativa**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: A aula pode virar teoria sem verificação de domínio.
-   - Recomendação: Adicionar exercícios de aplicação da regra em contexto.
-
-6. **P1 · Pilar GRAMMAR · A1-GRAMMAR-006 — Grammar sem sinal claro de prática ativa**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: A aula pode virar teoria sem verificação de domínio.
-   - Recomendação: Adicionar exercícios de aplicação da regra em contexto.
-
-7. **P1 · Pilar GRAMMAR · A1-GRAMMAR-007 — Grammar sem explicação conceitual clara**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno pode praticar sem entender a regra gramatical.
-   - Evidência: Campos esperados ausentes/vazios: conceptExplanation, teacherOpening, grammarExplanation, ruleExplanation
-   - Recomendação: Adicionar explicação da regra, quando usar e como formar a estrutura.
-
-8. **P1 · Pilar GRAMMAR · A1-GRAMMAR-008 — Grammar sem explicação conceitual clara**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno pode praticar sem entender a regra gramatical.
-   - Evidência: Campos esperados ausentes/vazios: conceptExplanation, teacherOpening, grammarExplanation, ruleExplanation
-   - Recomendação: Adicionar explicação da regra, quando usar e como formar a estrutura.
-
-9. **P1 · Pilar GRAMMAR · A1-GRAMMAR-009 — Grammar sem explicação conceitual clara**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno pode praticar sem entender a regra gramatical.
-   - Evidência: Campos esperados ausentes/vazios: conceptExplanation, teacherOpening, grammarExplanation, ruleExplanation
-   - Recomendação: Adicionar explicação da regra, quando usar e como formar a estrutura.
-
-10. **P1 · Pilar GRAMMAR · A1-GRAMMAR-010 — Grammar sem explicação conceitual clara**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno pode praticar sem entender a regra gramatical.
-   - Evidência: Campos esperados ausentes/vazios: conceptExplanation, teacherOpening, grammarExplanation, ruleExplanation
-   - Recomendação: Adicionar explicação da regra, quando usar e como formar a estrutura.
-
-11. **P1 · Pilar GRAMMAR · A1-GRAMMAR-011 — Grammar sem explicação conceitual clara**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno pode praticar sem entender a regra gramatical.
-   - Evidência: Campos esperados ausentes/vazios: conceptExplanation, teacherOpening, grammarExplanation, ruleExplanation
-   - Recomendação: Adicionar explicação da regra, quando usar e como formar a estrutura.
-
-12. **P1 · Pilar GRAMMAR · A1-GRAMMAR-012 — Grammar sem explicação conceitual clara**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno pode praticar sem entender a regra gramatical.
-   - Evidência: Campos esperados ausentes/vazios: conceptExplanation, teacherOpening, grammarExplanation, ruleExplanation
-   - Recomendação: Adicionar explicação da regra, quando usar e como formar a estrutura.
-
-13. **P1 · Pilar GRAMMAR · A1-GRAMMAR-013 — Grammar sem explicação conceitual clara**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno pode praticar sem entender a regra gramatical.
-   - Evidência: Campos esperados ausentes/vazios: conceptExplanation, teacherOpening, grammarExplanation, ruleExplanation
-   - Recomendação: Adicionar explicação da regra, quando usar e como formar a estrutura.
-
-14. **P1 · Pilar GRAMMAR · A1-GRAMMAR-015 — Grammar sem explicação conceitual clara**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno pode praticar sem entender a regra gramatical.
-   - Evidência: Campos esperados ausentes/vazios: conceptExplanation, teacherOpening, grammarExplanation, ruleExplanation
-   - Recomendação: Adicionar explicação da regra, quando usar e como formar a estrutura.
-
-15. **P1 · Pilar GRAMMAR · A1-GRAMMAR-016 — Grammar sem explicação conceitual clara**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno pode praticar sem entender a regra gramatical.
-   - Evidência: Campos esperados ausentes/vazios: conceptExplanation, teacherOpening, grammarExplanation, ruleExplanation
-   - Recomendação: Adicionar explicação da regra, quando usar e como formar a estrutura.
-
-16. **P1 · Pilar GRAMMAR · A1-GRAMMAR-017 — Grammar sem explicação conceitual clara**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno pode praticar sem entender a regra gramatical.
-   - Evidência: Campos esperados ausentes/vazios: conceptExplanation, teacherOpening, grammarExplanation, ruleExplanation
-   - Recomendação: Adicionar explicação da regra, quando usar e como formar a estrutura.
-
-17. **P1 · Pilar GRAMMAR · A1-GRAMMAR-018 — Grammar sem explicação conceitual clara**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno pode praticar sem entender a regra gramatical.
-   - Evidência: Campos esperados ausentes/vazios: conceptExplanation, teacherOpening, grammarExplanation, ruleExplanation
-   - Recomendação: Adicionar explicação da regra, quando usar e como formar a estrutura.
-
-18. **P1 · Pilar GRAMMAR · A1-GRAMMAR-019 — Grammar sem explicação conceitual clara**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno pode praticar sem entender a regra gramatical.
-   - Evidência: Campos esperados ausentes/vazios: conceptExplanation, teacherOpening, grammarExplanation, ruleExplanation
-   - Recomendação: Adicionar explicação da regra, quando usar e como formar a estrutura.
-
-19. **P1 · Pilar GRAMMAR · A1-GRAMMAR-020 — Grammar sem explicação conceitual clara**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno pode praticar sem entender a regra gramatical.
-   - Evidência: Campos esperados ausentes/vazios: conceptExplanation, teacherOpening, grammarExplanation, ruleExplanation
-   - Recomendação: Adicionar explicação da regra, quando usar e como formar a estrutura.
-
-20. **P1 · Pilar GRAMMAR · A1-GRAMMAR-027 — Grammar sem explicação conceitual clara**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno pode praticar sem entender a regra gramatical.
-   - Evidência: Campos esperados ausentes/vazios: conceptExplanation, teacherOpening, grammarExplanation, ruleExplanation
-   - Recomendação: Adicionar explicação da regra, quando usar e como formar a estrutura.
-
-21. **P1 · Pilar GRAMMAR · A1-GRAMMAR-029-PERSONAL — Grammar sem sinal claro de prática ativa**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: A aula pode virar teoria sem verificação de domínio.
-   - Recomendação: Adicionar exercícios de aplicação da regra em contexto.
-
-22. **P1 · Pilar VOCABULARY · A1-VOCABULARY-006 — Vocabulary com poucas palavras úteis**
+1. **P1 · Pilar VOCABULARY · A1-VOCABULARY-006 — Vocabulary com poucas palavras úteis**
    - Área executiva: Aulas e pedagogia
    - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
@@ -317,7 +156,7 @@ Gerado em: 2026-05-21T00:50:37.908Z
    - Evidência: Encontrado 0; mínimo esperado 5. Campos: essentialWords, vocabulary, keyVocabulary, preReadingVocabulary
    - Recomendação: Adicionar lista de palavras/frases com significado e exemplo.
 
-23. **P1 · Pilar VOCABULARY · A1-VOCABULARY-006 — Vocabulary sem contexto real de uso**
+2. **P1 · Pilar VOCABULARY · A1-VOCABULARY-006 — Vocabulary sem contexto real de uso**
    - Área executiva: Aulas e pedagogia
    - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
@@ -325,7 +164,7 @@ Gerado em: 2026-05-21T00:50:37.908Z
    - Evidência: Campos esperados ausentes/vazios: realLifeUseCases, contextExamples, exampleSentences, contextVocabularyTasks
    - Recomendação: Adicionar exemplos contextualizados e situações reais.
 
-24. **P1 · Pilar VOCABULARY · A1-VOCABULARY-007 — Vocabulary com poucas palavras úteis**
+3. **P1 · Pilar VOCABULARY · A1-VOCABULARY-007 — Vocabulary com poucas palavras úteis**
    - Área executiva: Aulas e pedagogia
    - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
@@ -333,7 +172,7 @@ Gerado em: 2026-05-21T00:50:37.908Z
    - Evidência: Encontrado 0; mínimo esperado 5. Campos: essentialWords, vocabulary, keyVocabulary, preReadingVocabulary
    - Recomendação: Adicionar lista de palavras/frases com significado e exemplo.
 
-25. **P1 · Pilar VOCABULARY · A1-VOCABULARY-007 — Vocabulary sem contexto real de uso**
+4. **P1 · Pilar VOCABULARY · A1-VOCABULARY-007 — Vocabulary sem contexto real de uso**
    - Área executiva: Aulas e pedagogia
    - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
@@ -341,7 +180,7 @@ Gerado em: 2026-05-21T00:50:37.908Z
    - Evidência: Campos esperados ausentes/vazios: realLifeUseCases, contextExamples, exampleSentences, contextVocabularyTasks
    - Recomendação: Adicionar exemplos contextualizados e situações reais.
 
-26. **P1 · Pilar VOCABULARY · A1-VOCABULARY-008 — Vocabulary com poucas palavras úteis**
+5. **P1 · Pilar VOCABULARY · A1-VOCABULARY-008 — Vocabulary com poucas palavras úteis**
    - Área executiva: Aulas e pedagogia
    - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
@@ -349,7 +188,7 @@ Gerado em: 2026-05-21T00:50:37.908Z
    - Evidência: Encontrado 0; mínimo esperado 5. Campos: essentialWords, vocabulary, keyVocabulary, preReadingVocabulary
    - Recomendação: Adicionar lista de palavras/frases com significado e exemplo.
 
-27. **P1 · Pilar VOCABULARY · A1-VOCABULARY-008 — Vocabulary sem contexto real de uso**
+6. **P1 · Pilar VOCABULARY · A1-VOCABULARY-008 — Vocabulary sem contexto real de uso**
    - Área executiva: Aulas e pedagogia
    - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
@@ -357,7 +196,7 @@ Gerado em: 2026-05-21T00:50:37.908Z
    - Evidência: Campos esperados ausentes/vazios: realLifeUseCases, contextExamples, exampleSentences, contextVocabularyTasks
    - Recomendação: Adicionar exemplos contextualizados e situações reais.
 
-28. **P1 · Pilar VOCABULARY · A1-VOCABULARY-009 — Vocabulary com poucas palavras úteis**
+7. **P1 · Pilar VOCABULARY · A1-VOCABULARY-009 — Vocabulary com poucas palavras úteis**
    - Área executiva: Aulas e pedagogia
    - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
@@ -365,7 +204,7 @@ Gerado em: 2026-05-21T00:50:37.908Z
    - Evidência: Encontrado 0; mínimo esperado 5. Campos: essentialWords, vocabulary, keyVocabulary, preReadingVocabulary
    - Recomendação: Adicionar lista de palavras/frases com significado e exemplo.
 
-29. **P1 · Pilar VOCABULARY · A1-VOCABULARY-009 — Vocabulary sem contexto real de uso**
+8. **P1 · Pilar VOCABULARY · A1-VOCABULARY-009 — Vocabulary sem contexto real de uso**
    - Área executiva: Aulas e pedagogia
    - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
@@ -373,7 +212,7 @@ Gerado em: 2026-05-21T00:50:37.908Z
    - Evidência: Campos esperados ausentes/vazios: realLifeUseCases, contextExamples, exampleSentences, contextVocabularyTasks
    - Recomendação: Adicionar exemplos contextualizados e situações reais.
 
-30. **P1 · Pilar VOCABULARY · A1-VOCABULARY-010 — Vocabulary com poucas palavras úteis**
+9. **P1 · Pilar VOCABULARY · A1-VOCABULARY-010 — Vocabulary com poucas palavras úteis**
    - Área executiva: Aulas e pedagogia
    - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
@@ -381,7 +220,7 @@ Gerado em: 2026-05-21T00:50:37.908Z
    - Evidência: Encontrado 0; mínimo esperado 5. Campos: essentialWords, vocabulary, keyVocabulary, preReadingVocabulary
    - Recomendação: Adicionar lista de palavras/frases com significado e exemplo.
 
-31. **P1 · Pilar VOCABULARY · A1-VOCABULARY-010 — Vocabulary sem contexto real de uso**
+10. **P1 · Pilar VOCABULARY · A1-VOCABULARY-010 — Vocabulary sem contexto real de uso**
    - Área executiva: Aulas e pedagogia
    - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
@@ -389,7 +228,7 @@ Gerado em: 2026-05-21T00:50:37.908Z
    - Evidência: Campos esperados ausentes/vazios: realLifeUseCases, contextExamples, exampleSentences, contextVocabularyTasks
    - Recomendação: Adicionar exemplos contextualizados e situações reais.
 
-32. **P1 · Pilar VOCABULARY · A1-VOCABULARY-011 — Vocabulary com poucas palavras úteis**
+11. **P1 · Pilar VOCABULARY · A1-VOCABULARY-011 — Vocabulary com poucas palavras úteis**
    - Área executiva: Aulas e pedagogia
    - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
@@ -397,7 +236,7 @@ Gerado em: 2026-05-21T00:50:37.908Z
    - Evidência: Encontrado 0; mínimo esperado 5. Campos: essentialWords, vocabulary, keyVocabulary, preReadingVocabulary
    - Recomendação: Adicionar lista de palavras/frases com significado e exemplo.
 
-33. **P1 · Pilar VOCABULARY · A1-VOCABULARY-011 — Vocabulary sem contexto real de uso**
+12. **P1 · Pilar VOCABULARY · A1-VOCABULARY-011 — Vocabulary sem contexto real de uso**
    - Área executiva: Aulas e pedagogia
    - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
@@ -405,7 +244,7 @@ Gerado em: 2026-05-21T00:50:37.908Z
    - Evidência: Campos esperados ausentes/vazios: realLifeUseCases, contextExamples, exampleSentences, contextVocabularyTasks
    - Recomendação: Adicionar exemplos contextualizados e situações reais.
 
-34. **P1 · Pilar VOCABULARY · A1-VOCABULARY-017 — Vocabulary com poucas palavras úteis**
+13. **P1 · Pilar VOCABULARY · A1-VOCABULARY-017 — Vocabulary com poucas palavras úteis**
    - Área executiva: Aulas e pedagogia
    - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
@@ -413,7 +252,7 @@ Gerado em: 2026-05-21T00:50:37.908Z
    - Evidência: Encontrado 0; mínimo esperado 5. Campos: essentialWords, vocabulary, keyVocabulary, preReadingVocabulary
    - Recomendação: Adicionar lista de palavras/frases com significado e exemplo.
 
-35. **P1 · Pilar VOCABULARY · A1-VOCABULARY-017 — Vocabulary sem contexto real de uso**
+14. **P1 · Pilar VOCABULARY · A1-VOCABULARY-017 — Vocabulary sem contexto real de uso**
    - Área executiva: Aulas e pedagogia
    - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
@@ -421,7 +260,7 @@ Gerado em: 2026-05-21T00:50:37.908Z
    - Evidência: Campos esperados ausentes/vazios: realLifeUseCases, contextExamples, exampleSentences, contextVocabularyTasks
    - Recomendação: Adicionar exemplos contextualizados e situações reais.
 
-36. **P1 · Pilar VOCABULARY · A1-VOCABULARY-018 — Vocabulary com poucas palavras úteis**
+15. **P1 · Pilar VOCABULARY · A1-VOCABULARY-018 — Vocabulary com poucas palavras úteis**
    - Área executiva: Aulas e pedagogia
    - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
@@ -429,7 +268,7 @@ Gerado em: 2026-05-21T00:50:37.908Z
    - Evidência: Encontrado 0; mínimo esperado 5. Campos: essentialWords, vocabulary, keyVocabulary, preReadingVocabulary
    - Recomendação: Adicionar lista de palavras/frases com significado e exemplo.
 
-37. **P1 · Pilar VOCABULARY · A1-VOCABULARY-018 — Vocabulary sem contexto real de uso**
+16. **P1 · Pilar VOCABULARY · A1-VOCABULARY-018 — Vocabulary sem contexto real de uso**
    - Área executiva: Aulas e pedagogia
    - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
@@ -437,7 +276,7 @@ Gerado em: 2026-05-21T00:50:37.908Z
    - Evidência: Campos esperados ausentes/vazios: realLifeUseCases, contextExamples, exampleSentences, contextVocabularyTasks
    - Recomendação: Adicionar exemplos contextualizados e situações reais.
 
-38. **P1 · Pilar READING · A1-READING-004 — Reading sem estratégia de leitura clara**
+17. **P1 · Pilar READING · A1-READING-004 — Reading sem estratégia de leitura clara**
    - Área executiva: Aulas e pedagogia
    - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
@@ -445,7 +284,7 @@ Gerado em: 2026-05-21T00:50:37.908Z
    - Evidência: Campos esperados ausentes/vazios: readingStrategy, strategy, guidedBeforeQuiz
    - Recomendação: Adicionar estratégia: gist, scanning, detalhe e evidência.
 
-39. **P1 · Pilar READING · A1-READING-006 — Reading sem estratégia de leitura clara**
+18. **P1 · Pilar READING · A1-READING-006 — Reading sem estratégia de leitura clara**
    - Área executiva: Aulas e pedagogia
    - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
@@ -453,13 +292,181 @@ Gerado em: 2026-05-21T00:50:37.908Z
    - Evidência: Campos esperados ausentes/vazios: readingStrategy, strategy, guidedBeforeQuiz
    - Recomendação: Adicionar estratégia: gist, scanning, detalhe e evidência.
 
-40. **P1 · Pilar READING · A1-READING-007 — Reading sem estratégia de leitura clara**
+19. **P1 · Pilar READING · A1-READING-007 — Reading sem estratégia de leitura clara**
    - Área executiva: Aulas e pedagogia
    - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: O aluno pode tentar traduzir tudo palavra por palavra.
    - Evidência: Campos esperados ausentes/vazios: readingStrategy, strategy, guidedBeforeQuiz
    - Recomendação: Adicionar estratégia: gist, scanning, detalhe e evidência.
+
+20. **P1 · Pilar READING · A1-READING-009 — Reading sem estratégia de leitura clara**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno pode tentar traduzir tudo palavra por palavra.
+   - Evidência: Campos esperados ausentes/vazios: readingStrategy, strategy, guidedBeforeQuiz
+   - Recomendação: Adicionar estratégia: gist, scanning, detalhe e evidência.
+
+21. **P1 · Pilar READING · A1-READING-011 — Reading sem estratégia de leitura clara**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno pode tentar traduzir tudo palavra por palavra.
+   - Evidência: Campos esperados ausentes/vazios: readingStrategy, strategy, guidedBeforeQuiz
+   - Recomendação: Adicionar estratégia: gist, scanning, detalhe e evidência.
+
+22. **P1 · Pilar READING · A1-READING-012 — Reading sem estratégia de leitura clara**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno pode tentar traduzir tudo palavra por palavra.
+   - Evidência: Campos esperados ausentes/vazios: readingStrategy, strategy, guidedBeforeQuiz
+   - Recomendação: Adicionar estratégia: gist, scanning, detalhe e evidência.
+
+23. **P1 · Pilar READING · A1-READING-013 — Reading sem estratégia de leitura clara**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno pode tentar traduzir tudo palavra por palavra.
+   - Evidência: Campos esperados ausentes/vazios: readingStrategy, strategy, guidedBeforeQuiz
+   - Recomendação: Adicionar estratégia: gist, scanning, detalhe e evidência.
+
+24. **P1 · Pilar READING · A1-READING-016 — Reading sem estratégia de leitura clara**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno pode tentar traduzir tudo palavra por palavra.
+   - Evidência: Campos esperados ausentes/vazios: readingStrategy, strategy, guidedBeforeQuiz
+   - Recomendação: Adicionar estratégia: gist, scanning, detalhe e evidência.
+
+25. **P1 · Pilar READING · A1-READING-017 — Reading sem estratégia de leitura clara**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno pode tentar traduzir tudo palavra por palavra.
+   - Evidência: Campos esperados ausentes/vazios: readingStrategy, strategy, guidedBeforeQuiz
+   - Recomendação: Adicionar estratégia: gist, scanning, detalhe e evidência.
+
+26. **P1 · Pilar READING · A1-READING-018 — Reading com texto principal curto demais**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno pode responder sem treinar leitura real.
+   - Evidência: 176 caracteres no texto principal.
+   - Recomendação: Adicionar texto com contexto, personagem/situação e detalhes suficientes.
+
+27. **P1 · Pilar READING · A1-READING-018 — Reading sem estratégia de leitura clara**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno pode tentar traduzir tudo palavra por palavra.
+   - Evidência: Campos esperados ausentes/vazios: readingStrategy, strategy, guidedBeforeQuiz
+   - Recomendação: Adicionar estratégia: gist, scanning, detalhe e evidência.
+
+28. **P1 · Pilar READING · A1-READING-020 — Reading sem estratégia de leitura clara**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno pode tentar traduzir tudo palavra por palavra.
+   - Evidência: Campos esperados ausentes/vazios: readingStrategy, strategy, guidedBeforeQuiz
+   - Recomendação: Adicionar estratégia: gist, scanning, detalhe e evidência.
+
+29. **P1 · Pilar LISTENING · A1-LISTENING-005 — Listening sem preparação/predição antes do áudio**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno escuta passivamente e perde estratégia de compreensão.
+   - Evidência: Campos esperados ausentes/vazios: listeningPreparation, preListening, predictionTask, guidedBeforeListening
+   - Recomendação: Adicionar predição, palavras-chave e objetivo antes do áudio.
+
+30. **P1 · Pilar LISTENING · A1-LISTENING-006 — Listening sem preparação/predição antes do áudio**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno escuta passivamente e perde estratégia de compreensão.
+   - Evidência: Campos esperados ausentes/vazios: listeningPreparation, preListening, predictionTask, guidedBeforeListening
+   - Recomendação: Adicionar predição, palavras-chave e objetivo antes do áudio.
+
+31. **P1 · Pilar LISTENING · A1-LISTENING-008 — Listening sem preparação/predição antes do áudio**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno escuta passivamente e perde estratégia de compreensão.
+   - Evidência: Campos esperados ausentes/vazios: listeningPreparation, preListening, predictionTask, guidedBeforeListening
+   - Recomendação: Adicionar predição, palavras-chave e objetivo antes do áudio.
+
+32. **P1 · Pilar LISTENING · A1-LISTENING-011 — Listening sem preparação/predição antes do áudio**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno escuta passivamente e perde estratégia de compreensão.
+   - Evidência: Campos esperados ausentes/vazios: listeningPreparation, preListening, predictionTask, guidedBeforeListening
+   - Recomendação: Adicionar predição, palavras-chave e objetivo antes do áudio.
+
+33. **P1 · Pilar LISTENING · A1-LISTENING-013 — Listening sem preparação/predição antes do áudio**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno escuta passivamente e perde estratégia de compreensão.
+   - Evidência: Campos esperados ausentes/vazios: listeningPreparation, preListening, predictionTask, guidedBeforeListening
+   - Recomendação: Adicionar predição, palavras-chave e objetivo antes do áudio.
+
+34. **P1 · Pilar LISTENING · A1-LISTENING-014 — Listening sem preparação/predição antes do áudio**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno escuta passivamente e perde estratégia de compreensão.
+   - Evidência: Campos esperados ausentes/vazios: listeningPreparation, preListening, predictionTask, guidedBeforeListening
+   - Recomendação: Adicionar predição, palavras-chave e objetivo antes do áudio.
+
+35. **P1 · Pilar LISTENING · A1-LISTENING-015 — Listening sem preparação/predição antes do áudio**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno escuta passivamente e perde estratégia de compreensão.
+   - Evidência: Campos esperados ausentes/vazios: listeningPreparation, preListening, predictionTask, guidedBeforeListening
+   - Recomendação: Adicionar predição, palavras-chave e objetivo antes do áudio.
+
+36. **P1 · Pilar LISTENING · A1-LISTENING-016 — Listening sem preparação/predição antes do áudio**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno escuta passivamente e perde estratégia de compreensão.
+   - Evidência: Campos esperados ausentes/vazios: listeningPreparation, preListening, predictionTask, guidedBeforeListening
+   - Recomendação: Adicionar predição, palavras-chave e objetivo antes do áudio.
+
+37. **P1 · Pilar LISTENING · A1-LISTENING-018 — Listening sem preparação/predição antes do áudio**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno escuta passivamente e perde estratégia de compreensão.
+   - Evidência: Campos esperados ausentes/vazios: listeningPreparation, preListening, predictionTask, guidedBeforeListening
+   - Recomendação: Adicionar predição, palavras-chave e objetivo antes do áudio.
+
+38. **P1 · Pilar SPEAKING · A1-SPEAKING-001 — Speaking sem foco de pronúncia/shadowing**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: A aula pode virar apenas escrita lida em voz alta.
+   - Evidência: Campos esperados ausentes/vazios: pronunciationTips, pronunciationFocus, shadowingTasks, repeatTasks
+   - Recomendação: Adicionar foco de pronúncia e repetição guiada.
+
+39. **P1 · Pilar SPEAKING · A1-SPEAKING-002 — Speaking sem foco de pronúncia/shadowing**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: A aula pode virar apenas escrita lida em voz alta.
+   - Evidência: Campos esperados ausentes/vazios: pronunciationTips, pronunciationFocus, shadowingTasks, repeatTasks
+   - Recomendação: Adicionar foco de pronúncia e repetição guiada.
+
+40. **P1 · Pilar SPEAKING · A1-SPEAKING-003 — Speaking sem foco de pronúncia/shadowing**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: A aula pode virar apenas escrita lida em voz alta.
+   - Evidência: Campos esperados ausentes/vazios: pronunciationTips, pronunciationFocus, shadowingTasks, repeatTasks
+   - Recomendação: Adicionar foco de pronúncia e repetição guiada.
 
 
 ## Como usar este relatório
