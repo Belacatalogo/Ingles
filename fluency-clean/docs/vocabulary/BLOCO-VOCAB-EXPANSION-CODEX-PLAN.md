@@ -1,6 +1,6 @@
 # BLOCO-VOCAB-EXPANSION-CODEX-PLAN
 
-- **Branch usada:** `codex/vocab-expansion-audit-plan`
+- **Branch usada:** `codex/expand-vocabulary-bank-with-new-cards`
 - **Arquivos alterados:**
   - `src/data/vocabulary/fixedExpansionB1B2.js`
   - `docs/vocabulary/BLOCO-VOCAB-EXPANSION-CODEX-PLAN.md`
