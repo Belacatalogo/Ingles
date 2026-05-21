@@ -58,6 +58,15 @@ export const C1_DEEP_CULTURAL_DISCOURSE_PART2 = Object.freeze([
         'Evaluate: Does the closing reflect what actually happened in the discussion? Does it acknowledge any genuine movement in the student\'s position? Is it intellectually honest?'
       ),
     ],
+    speakingChecklist: [
+      'Position stated clearly with key terms defined at the outset.',
+      'At least two distinct lines of argument developed with evidence.',
+      'At least four C1 vocabulary words used accurately in context.',
+      'Challenge from teacher engaged precisely — not deflected or restated.',
+      'Concession-rebuttal performed where appropriate.',
+      'Closing reflected the actual discussion, not just the opening position.',
+      'Register consistently formal and intellectually engaged.',
+    ],
   }),
 
   // ─── WRITING-014: Cultural commentary ────────────────────────────────────────

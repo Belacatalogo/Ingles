@@ -53,6 +53,15 @@ export const C2_DEEP_RHETORIC_PART2 = Object.freeze([
         'Evaluate: Does the student listen to the full question before responding? Do they engage the substance of challenges? Is the register consistent throughout the Q&A as well as the presentation? Do they distinguish between what they know and what they are uncertain about?'
       ),
     ],
+    speakingChecklist: [
+      'Opening hook created genuine engagement — not just "Today I will talk about...".',
+      'Argument developed through 3–4 clearly signposted, logically sequential points.',
+      'Counter-argument addressed within the presentation, not deferred to Q&A.',
+      'Fronting, cleft sentences, and stance markers deployed fluently.',
+      'Q&A responses engaged challenges directly — paraphrased before answering where appropriate.',
+      'Distinction made between what is known and what is genuinely uncertain.',
+      'C2 register maintained seamlessly across both presentation and Q&A.',
+    ],
   }),
 
   // ─── WRITING-003: The op-ed / intellectual essay ──────────────────────────────

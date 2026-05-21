@@ -250,6 +250,14 @@ export const C1_DEEP_LITERATURE_PART1 = Object.freeze([
         'Example: "That challenge applies to all readings, including the one that says my reading is merely imposed — that reading is also an interpretation. What I would contend is that the relevant question is not whether a reading is an interpretation (all readings are) but whether it is a well-evidenced one. I\'ve shown that the textual features I\'m pointing to — the syntax, the repetition, the frame narrative — are all consistent with my reading. A stronger objection would be to show that those same features are better explained by a different reading. I\'d be genuinely interested to see that argument made."'
       ),
     ],
+    speakingChecklist: [
+      'Interpretive claim is specific and arguable — not a summary of the text.',
+      'At least one quotation cited and analysed, not merely described.',
+      'Literary critical vocabulary used accurately (ambiguity, motif, register, syntax, irony).',
+      'Position defended against challenge without evasion or complete capitulation.',
+      'Quotation-and-analysis move performed: signal phrase → quotation → analytical commentary.',
+      'Register consistently formal and academic throughout.',
+    ],
   }),
 
 ]);

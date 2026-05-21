@@ -301,6 +301,15 @@ None of this is inevitable. The architecture of the attention economy is a desig
         'Evaluate: Does the student take a position? Is it supported by reasoning and evidence (from their own experience or from the course)? Do they engage with the complexity of the question, or give a simplistic answer?'
       ),
     ],
+    speakingChecklist: [
+      'Each question answered with specificity — no vague generalisations.',
+      'Self-assessment balanced — both strengths and remaining difficulties identified.',
+      'At least one concrete example from the course cited to support a claim.',
+      'Language of epistemic change used appropriately (before I assumed / now I realise).',
+      'Position on language and thought defended with reasoning, not just asserted.',
+      'Register sustained throughout the 10–12 minute discussion.',
+      'Full range of C1 vocabulary and grammar deployed naturally in spontaneous speech.',
+    ],
   }),
 
   // ─── WRITING-016: Final integrative essay ────────────────────────────────────

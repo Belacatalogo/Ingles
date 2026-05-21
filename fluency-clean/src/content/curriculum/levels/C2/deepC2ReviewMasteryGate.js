@@ -283,6 +283,15 @@ The virtue I am advocating — intellectual humility — is not the same as inte
         'Evaluate: does the closing reflect the actual discussion? Is there evidence of genuine movement, insight, or complication that the student has been honest about? Is the closing intellectually honest — not claiming resolution where there is none?'
       ),
     ],
+    speakingChecklist: [
+      'Engaged with unseen topic immediately — no request for preparation time.',
+      'Central tension or problem in the question identified clearly.',
+      'Position taken (even tentatively) and defended with reasoning.',
+      'Genuinely uncertain areas acknowledged explicitly, not hidden.',
+      'Full C2 vocabulary and grammar deployed naturally in spontaneous speech.',
+      'Self-correction performed mid-argument where needed — intellectual honesty under pressure.',
+      'Closing reflected genuine movement or complication — not a restated opening.',
+    ],
   }),
 
   // ─── WRITING-007: Final review writing task ───────────────────────────────────

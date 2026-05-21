@@ -58,6 +58,15 @@ export const C2_DEEP_BRIDGE_PART2 = Object.freeze([
         'Evaluate: Does the closing reflect the actual discussion? Has the student moved from their opening position — or stayed in the same place? Is the closing an honest reflection of the intellectual work done, or a scripted conclusion?'
       ),
     ],
+    speakingChecklist: [
+      'Clear position stated within the first 2 minutes, including areas of genuine uncertainty.',
+      'Distinction made between what I believe, what I know, and what I am unsure of.',
+      'New content introduced as the discussion developed — not just a restatement of the opening.',
+      'Challenge from teacher identified precisely and responded to specifically.',
+      'At least four C2 vocabulary items used naturally in context.',
+      'Closing reflected what emerged in the discussion, not a scripted conclusion.',
+      'Full C2 register maintained — no simplification under pressure.',
+    ],
   }),
 
   // ─── WRITING-001: Extended literary-critical essay ────────────────────────────

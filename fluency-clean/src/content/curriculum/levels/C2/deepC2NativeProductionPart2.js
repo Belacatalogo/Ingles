@@ -53,6 +53,15 @@ export const C2_DEEP_NATIVE_PRODUCTION_PART2 = Object.freeze([
         'Evaluate: does the closing advance beyond the body of the monologue? Does it reflect genuine synthesis rather than repetition? Is it proportionate in length?'
       ),
     ],
+    speakingChecklist: [
+      'Orientation created intellectual motivation — the listener wanted to understand the topic.',
+      'Information structure clear throughout — the listener always knew where they were.',
+      'Complex points explained with precision for a non-specialist audience.',
+      'Intonation, pacing, and cohesive devices used to guide the listener.',
+      'Self-monitoring performed — checked understanding, corrected course where needed.',
+      'Closing offered synthesis beyond the body — an implication, question, or reframing.',
+      'Duration: 8–10 minutes of sustained monologue without notes.',
+    ],
   }),
 
   // ─── WRITING-005: Complex data commentary ────────────────────────────────────

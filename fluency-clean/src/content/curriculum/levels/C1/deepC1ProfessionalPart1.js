@@ -219,6 +219,14 @@ export const C1_DEEP_PROFESSIONAL_PART1 = Object.freeze([
         'Your opening should: acknowledge the concern without accepting the premise (the fees are too high); explain the value proposition; make a conditional offer (subject to / were you to / should you); use an indirect speech act to introduce the offer; and be clear about your limits without being confrontational. Avoid: defensive language, over-apologising, or making concessions before they have been requested.'
       ),
     ],
+    speakingChecklist: [
+      'At least one formal conditional used (were you to / should you / subject to).',
+      'Strategic concession made without undermining core position.',
+      'Indirect speech act used to propose an offer (I wonder if / it might be worth exploring).',
+      'Professional register maintained — no over-apologising or defensive language.',
+      'Position limits stated clearly and diplomatically.',
+      'Negotiation closed with a concrete next step or summary of what was agreed.',
+    ],
   }),
 
 ]);

@@ -165,6 +165,15 @@ This is not to say that the project fails. Hartley's documentation of the range 
         'Evaluate: Does the conclusion accurately summarise what was argued (not what was intended)? Does it acknowledge genuine complexity? Is it proportionate to the length and depth of the presentation?'
       ),
     ],
+    speakingChecklist: [
+      'Opening framed the question academically — not just "I think...".',
+      'At least two main points developed with evidence or reasoning.',
+      'Counter-argument anticipated and addressed before being challenged.',
+      'Hedging and signposting used fluently (I would argue / let me turn to / the evidence suggests).',
+      'Response to teacher challenge engaged the substance, not deflected.',
+      'Conclusion summarised the argument and identified what remains open.',
+      'Register formal and academic throughout the presentation.',
+    ],
   }),
 
   // ─── WRITING-011: Argumentative essay ────────────────────────────────────────

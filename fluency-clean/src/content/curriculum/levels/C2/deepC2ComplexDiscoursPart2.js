@@ -154,6 +154,14 @@ Foucault's insight — that knowledge is never simply the discovery of pre-exist
         'Evaluate: Is the one-sentence summary genuinely a summary of the position — precise, not vague? Is the open question a real question — something the student is genuinely uncertain about — or a rhetorical move that expects agreement? Is the invitation to engage specific — does it identify what in the student\'s contribution the group should engage with — or is it so open ("What does everyone think?") that it provides no direction? Does the closing invite further discussion, or does it have the register and finality of a lecture conclusion?'
       ),
     ],
+    speakingChecklist: [
+      'Contribution built on previous speaker — not just restated or ignored.',
+      'Specific aspect of prior argument identified for development or challenge.',
+      'Objection stated diplomatically with genuine acknowledgement of the strong points.',
+      'Closing identified a specific open question and invited further engagement.',
+      'Collegial register maintained throughout — challenge without antagonism.',
+      'Contribution advanced the discussion rather than merely demonstrating knowledge.',
+    ],
   }),
 
 ]);

@@ -331,6 +331,15 @@ export const C1_DEEP_EXTENDED_DISCOURSE_PART1 = Object.freeze([
         '(a) Hedging: "I would contend" / "I should note" / "I would argue." (b) Transition: "Let me now turn to the objection I anticipated." (c) Concession: "This is a compelling point and I concede it fully." (d) Pivot: "What I would dispute, however, is the inference that..."'
       ),
     ],
+    speakingChecklist: [
+      'Position stated clearly and specifically in the opening.',
+      'At least three distinct points, each signposted with explicit transitions.',
+      'At least one hedging phrase used accurately (I would contend / tentatively / the evidence suggests).',
+      'Concession-and-pivot performed smoothly — concession is genuine, pivot is substantive.',
+      'Counter-argument addressed directly, not deflected.',
+      'Formal register maintained throughout — no slips into informal vocabulary.',
+      'Closing restates position with qualification, not mere repetition.',
+    ],
   }),
 
 ]);
