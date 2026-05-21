@@ -1,6 +1,6 @@
 # Fluency Quality Director — Relatório Executivo Latest
 
-Gerado em: 2026-05-21T14:07:16.367Z
+Gerado em: 2026-05-21T14:32:41.983Z
 
 ## Veredito
 
@@ -12,11 +12,11 @@ Gerado em: 2026-05-21T14:07:16.367Z
 
 - Relatórios consolidados: 26
 - Checks executados: 3270
-- Problemas únicos: 1170
-- Problemas brutos antes de deduplicar: 2299
-- Duplicatas agrupadas: 1129
+- Problemas únicos: 1109
+- Problemas brutos antes de deduplicar: 2177
+- Duplicatas agrupadas: 1068
 - P0: 0
-- P1: 145
+- P1: 84
 - P2: 1025
 - P3: 0
 
@@ -27,7 +27,7 @@ Gerado em: 2026-05-21T14:07:16.367Z
 | Navegação e estabilidade | 54 | Precisa revisão | 0 | 0 | 38 | 0 |
 | Jornada real do aluno | 93 | Revisar antes de confiar | 0 | 1 | 2 | 0 |
 | Exercícios e alternativas | 0 | Precisa revisão | 0 | 0 | 765 | 0 |
-| Aulas e pedagogia | 0 | Revisar antes de confiar | 0 | 144 | 220 | 0 |
+| Aulas e pedagogia | 0 | Revisar antes de confiar | 0 | 83 | 220 | 0 |
 | Visual e mobile | 100 | Saudável | 0 | 0 | 0 | 0 |
 | Progresso, XP e mastery | 100 | Saudável | 0 | 0 | 0 | 0 |
 | Estados vazios e segurança visual | 100 | Saudável | 0 | 0 | 0 | 0 |
@@ -53,8 +53,8 @@ Gerado em: 2026-05-21T14:07:16.367Z
 | quality-director-lesson-quality | iPhone SE | 66 | 500 | 28 | 28 | 0 | 0 | 28 | 0 |
 | quality-director-navigation | iPhone 13 | 100 | 13 | 0 | 0 | 0 | 0 | 0 | 0 |
 | quality-director-navigation | iPhone SE | 100 | 13 | 0 | 0 | 0 | 0 | 0 | 0 |
-| quality-director-pillar-quality | iPhone 13 | 0 | 506 | 364 | 364 | 0 | 144 | 220 | 0 |
-| quality-director-pillar-quality | iPhone SE | 0 | 506 | 364 | 364 | 0 | 144 | 220 | 0 |
+| quality-director-pillar-quality | iPhone 13 | 0 | 506 | 303 | 303 | 0 | 83 | 220 | 0 |
+| quality-director-pillar-quality | iPhone SE | 0 | 506 | 303 | 303 | 0 | 83 | 220 | 0 |
 | quality-director-progress-mastery | iPhone 13 | 100 | 1 | 0 | 0 | 0 | 0 | 0 | 0 |
 | quality-director-progress-mastery | iPhone SE | 100 | 1 | 0 | 0 | 0 | 0 | 0 | 0 |
 | quality-director-real-student-regression | iPhone 13 | 100 | 3 | 0 | 0 | 0 | 0 | 0 | 0 |
@@ -74,37 +74,37 @@ Gerado em: 2026-05-21T14:07:16.367Z
 1. **P1 · Pilar READING · A1-READING-018 — Reading com texto principal curto demais**
    - Ocorrências agrupadas: 2
    - Ação: Adicionar texto com contexto, personagem/situação e detalhes suficientes.
-2. **P1 · Pilar LISTENING · A1-LISTENING-005 — Listening sem preparação/predição antes do áudio**
+2. **P1 · Pilar READING · B1-READING-003 — Reading sem estratégia de leitura clara**
+   - Ocorrências agrupadas: 2
+   - Ação: Adicionar estratégia: gist, scanning, detalhe e evidência.
+3. **P1 · Pilar READING · B1-READING-004 — Reading sem estratégia de leitura clara**
+   - Ocorrências agrupadas: 2
+   - Ação: Adicionar estratégia: gist, scanning, detalhe e evidência.
+4. **P1 · Pilar READING · B1-READING-005 — Reading sem estratégia de leitura clara**
+   - Ocorrências agrupadas: 2
+   - Ação: Adicionar estratégia: gist, scanning, detalhe e evidência.
+5. **P1 · Pilar READING · B1-READING-006 — Reading sem estratégia de leitura clara**
+   - Ocorrências agrupadas: 2
+   - Ação: Adicionar estratégia: gist, scanning, detalhe e evidência.
+6. **P1 · Pilar READING · B1-READING-007 — Reading sem estratégia de leitura clara**
+   - Ocorrências agrupadas: 2
+   - Ação: Adicionar estratégia: gist, scanning, detalhe e evidência.
+7. **P1 · Pilar LISTENING · B1-LISTENING-004 — Listening sem preparação/predição antes do áudio**
    - Ocorrências agrupadas: 2
    - Ação: Adicionar predição, palavras-chave e objetivo antes do áudio.
-3. **P1 · Pilar LISTENING · A1-LISTENING-006 — Listening sem preparação/predição antes do áudio**
+8. **P1 · Pilar LISTENING · B1-LISTENING-005 — Listening sem preparação/predição antes do áudio**
    - Ocorrências agrupadas: 2
    - Ação: Adicionar predição, palavras-chave e objetivo antes do áudio.
-4. **P1 · Pilar LISTENING · A1-LISTENING-008 — Listening sem preparação/predição antes do áudio**
+9. **P1 · Pilar LISTENING · B1-LISTENING-006 — Listening sem preparação/predição antes do áudio**
    - Ocorrências agrupadas: 2
    - Ação: Adicionar predição, palavras-chave e objetivo antes do áudio.
-5. **P1 · Pilar LISTENING · A1-LISTENING-011 — Listening sem preparação/predição antes do áudio**
+10. **P1 · Pilar LISTENING · B1-LISTENING-007 — Listening sem preparação/predição antes do áudio**
    - Ocorrências agrupadas: 2
    - Ação: Adicionar predição, palavras-chave e objetivo antes do áudio.
-6. **P1 · Pilar LISTENING · A1-LISTENING-013 — Listening sem preparação/predição antes do áudio**
-   - Ocorrências agrupadas: 2
-   - Ação: Adicionar predição, palavras-chave e objetivo antes do áudio.
-7. **P1 · Pilar LISTENING · A1-LISTENING-014 — Listening sem preparação/predição antes do áudio**
-   - Ocorrências agrupadas: 2
-   - Ação: Adicionar predição, palavras-chave e objetivo antes do áudio.
-8. **P1 · Pilar LISTENING · A1-LISTENING-015 — Listening sem preparação/predição antes do áudio**
-   - Ocorrências agrupadas: 2
-   - Ação: Adicionar predição, palavras-chave e objetivo antes do áudio.
-9. **P1 · Pilar LISTENING · A1-LISTENING-016 — Listening sem preparação/predição antes do áudio**
-   - Ocorrências agrupadas: 2
-   - Ação: Adicionar predição, palavras-chave e objetivo antes do áudio.
-10. **P1 · Pilar LISTENING · A1-LISTENING-018 — Listening sem preparação/predição antes do áudio**
-   - Ocorrências agrupadas: 2
-   - Ação: Adicionar predição, palavras-chave e objetivo antes do áudio.
-11. **P1 · Pilar SPEAKING · A1-SPEAKING-001 — Speaking sem foco de pronúncia/shadowing**
+11. **P1 · Pilar SPEAKING · B1-SPEAKING-001 — Speaking sem foco de pronúncia/shadowing**
    - Ocorrências agrupadas: 2
    - Ação: Adicionar foco de pronúncia e repetição guiada.
-12. **P1 · Pilar SPEAKING · A1-SPEAKING-002 — Speaking sem foco de pronúncia/shadowing**
+12. **P1 · Pilar SPEAKING · B1-SPEAKING-002 — Speaking sem foco de pronúncia/shadowing**
    - Ocorrências agrupadas: 2
    - Ação: Adicionar foco de pronúncia e repetição guiada.
 
@@ -157,316 +157,316 @@ Gerado em: 2026-05-21T14:07:16.367Z
    - Evidência: 176 caracteres no texto principal (mainText/text/readingText/passage/inputText).
    - Recomendação: Adicionar texto com contexto, personagem/situação e detalhes suficientes.
 
-2. **P1 · Pilar LISTENING · A1-LISTENING-005 — Listening sem preparação/predição antes do áudio**
+2. **P1 · Pilar READING · B1-READING-003 — Reading sem estratégia de leitura clara**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno pode tentar traduzir tudo palavra por palavra.
+   - Evidência: Sem estratégia em readingStrategy/strategy/guidedBeforeQuiz/preReading/beforeReading/firstReadTask/readingPurpose/secondReadTasks/skimming/scanning/gist/detail/tasks analíticos.
+   - Recomendação: Adicionar estratégia: gist, scanning, detalhe e evidência.
+
+3. **P1 · Pilar READING · B1-READING-004 — Reading sem estratégia de leitura clara**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno pode tentar traduzir tudo palavra por palavra.
+   - Evidência: Sem estratégia em readingStrategy/strategy/guidedBeforeQuiz/preReading/beforeReading/firstReadTask/readingPurpose/secondReadTasks/skimming/scanning/gist/detail/tasks analíticos.
+   - Recomendação: Adicionar estratégia: gist, scanning, detalhe e evidência.
+
+4. **P1 · Pilar READING · B1-READING-005 — Reading sem estratégia de leitura clara**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno pode tentar traduzir tudo palavra por palavra.
+   - Evidência: Sem estratégia em readingStrategy/strategy/guidedBeforeQuiz/preReading/beforeReading/firstReadTask/readingPurpose/secondReadTasks/skimming/scanning/gist/detail/tasks analíticos.
+   - Recomendação: Adicionar estratégia: gist, scanning, detalhe e evidência.
+
+5. **P1 · Pilar READING · B1-READING-006 — Reading sem estratégia de leitura clara**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno pode tentar traduzir tudo palavra por palavra.
+   - Evidência: Sem estratégia em readingStrategy/strategy/guidedBeforeQuiz/preReading/beforeReading/firstReadTask/readingPurpose/secondReadTasks/skimming/scanning/gist/detail/tasks analíticos.
+   - Recomendação: Adicionar estratégia: gist, scanning, detalhe e evidência.
+
+6. **P1 · Pilar READING · B1-READING-007 — Reading sem estratégia de leitura clara**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno pode tentar traduzir tudo palavra por palavra.
+   - Evidência: Sem estratégia em readingStrategy/strategy/guidedBeforeQuiz/preReading/beforeReading/firstReadTask/readingPurpose/secondReadTasks/skimming/scanning/gist/detail/tasks analíticos.
+   - Recomendação: Adicionar estratégia: gist, scanning, detalhe e evidência.
+
+7. **P1 · Pilar LISTENING · B1-LISTENING-004 — Listening sem preparação/predição antes do áudio**
    - Área executiva: Aulas e pedagogia
    - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: O aluno escuta passivamente e perde estratégia de compreensão.
-   - Evidência: Campos esperados ausentes/vazios: listeningPreparation, preListening, predictionTask, guidedBeforeListening
+   - Evidência: Sem preparação em listeningPreparation/preListening/predictionTask/guidedBeforeListening/beforeListening/listeningPurpose/focusBeforeListening/keyWordsToHear/audioDescription/firstListenTasks/listeningTasks(1ª escuta).
    - Recomendação: Adicionar predição, palavras-chave e objetivo antes do áudio.
 
-3. **P1 · Pilar LISTENING · A1-LISTENING-006 — Listening sem preparação/predição antes do áudio**
+8. **P1 · Pilar LISTENING · B1-LISTENING-005 — Listening sem preparação/predição antes do áudio**
    - Área executiva: Aulas e pedagogia
    - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: O aluno escuta passivamente e perde estratégia de compreensão.
-   - Evidência: Campos esperados ausentes/vazios: listeningPreparation, preListening, predictionTask, guidedBeforeListening
+   - Evidência: Sem preparação em listeningPreparation/preListening/predictionTask/guidedBeforeListening/beforeListening/listeningPurpose/focusBeforeListening/keyWordsToHear/audioDescription/firstListenTasks/listeningTasks(1ª escuta).
    - Recomendação: Adicionar predição, palavras-chave e objetivo antes do áudio.
 
-4. **P1 · Pilar LISTENING · A1-LISTENING-008 — Listening sem preparação/predição antes do áudio**
+9. **P1 · Pilar LISTENING · B1-LISTENING-006 — Listening sem preparação/predição antes do áudio**
    - Área executiva: Aulas e pedagogia
    - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: O aluno escuta passivamente e perde estratégia de compreensão.
-   - Evidência: Campos esperados ausentes/vazios: listeningPreparation, preListening, predictionTask, guidedBeforeListening
+   - Evidência: Sem preparação em listeningPreparation/preListening/predictionTask/guidedBeforeListening/beforeListening/listeningPurpose/focusBeforeListening/keyWordsToHear/audioDescription/firstListenTasks/listeningTasks(1ª escuta).
    - Recomendação: Adicionar predição, palavras-chave e objetivo antes do áudio.
 
-5. **P1 · Pilar LISTENING · A1-LISTENING-011 — Listening sem preparação/predição antes do áudio**
+10. **P1 · Pilar LISTENING · B1-LISTENING-007 — Listening sem preparação/predição antes do áudio**
    - Área executiva: Aulas e pedagogia
    - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: O aluno escuta passivamente e perde estratégia de compreensão.
-   - Evidência: Campos esperados ausentes/vazios: listeningPreparation, preListening, predictionTask, guidedBeforeListening
+   - Evidência: Sem preparação em listeningPreparation/preListening/predictionTask/guidedBeforeListening/beforeListening/listeningPurpose/focusBeforeListening/keyWordsToHear/audioDescription/firstListenTasks/listeningTasks(1ª escuta).
    - Recomendação: Adicionar predição, palavras-chave e objetivo antes do áudio.
 
-6. **P1 · Pilar LISTENING · A1-LISTENING-013 — Listening sem preparação/predição antes do áudio**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno escuta passivamente e perde estratégia de compreensão.
-   - Evidência: Campos esperados ausentes/vazios: listeningPreparation, preListening, predictionTask, guidedBeforeListening
-   - Recomendação: Adicionar predição, palavras-chave e objetivo antes do áudio.
-
-7. **P1 · Pilar LISTENING · A1-LISTENING-014 — Listening sem preparação/predição antes do áudio**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno escuta passivamente e perde estratégia de compreensão.
-   - Evidência: Campos esperados ausentes/vazios: listeningPreparation, preListening, predictionTask, guidedBeforeListening
-   - Recomendação: Adicionar predição, palavras-chave e objetivo antes do áudio.
-
-8. **P1 · Pilar LISTENING · A1-LISTENING-015 — Listening sem preparação/predição antes do áudio**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno escuta passivamente e perde estratégia de compreensão.
-   - Evidência: Campos esperados ausentes/vazios: listeningPreparation, preListening, predictionTask, guidedBeforeListening
-   - Recomendação: Adicionar predição, palavras-chave e objetivo antes do áudio.
-
-9. **P1 · Pilar LISTENING · A1-LISTENING-016 — Listening sem preparação/predição antes do áudio**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno escuta passivamente e perde estratégia de compreensão.
-   - Evidência: Campos esperados ausentes/vazios: listeningPreparation, preListening, predictionTask, guidedBeforeListening
-   - Recomendação: Adicionar predição, palavras-chave e objetivo antes do áudio.
-
-10. **P1 · Pilar LISTENING · A1-LISTENING-018 — Listening sem preparação/predição antes do áudio**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: O aluno escuta passivamente e perde estratégia de compreensão.
-   - Evidência: Campos esperados ausentes/vazios: listeningPreparation, preListening, predictionTask, guidedBeforeListening
-   - Recomendação: Adicionar predição, palavras-chave e objetivo antes do áudio.
-
-11. **P1 · Pilar SPEAKING · A1-SPEAKING-001 — Speaking sem foco de pronúncia/shadowing**
+11. **P1 · Pilar SPEAKING · B1-SPEAKING-001 — Speaking sem foco de pronúncia/shadowing**
    - Área executiva: Aulas e pedagogia
    - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: A aula pode virar apenas escrita lida em voz alta.
-   - Evidência: Campos esperados ausentes/vazios: pronunciationTips, pronunciationFocus, shadowingTasks, repeatTasks
+   - Evidência: Sem pronúncia em pronunciationTips/pronunciationFocus/shadowingTasks/repeatTasks/fluencyDrills/intonationPractice/stressPractice/minimalPairs/pronunciationChunks/repeatAfterMe.
    - Recomendação: Adicionar foco de pronúncia e repetição guiada.
 
-12. **P1 · Pilar SPEAKING · A1-SPEAKING-002 — Speaking sem foco de pronúncia/shadowing**
+12. **P1 · Pilar SPEAKING · B1-SPEAKING-002 — Speaking sem foco de pronúncia/shadowing**
    - Área executiva: Aulas e pedagogia
    - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: A aula pode virar apenas escrita lida em voz alta.
-   - Evidência: Campos esperados ausentes/vazios: pronunciationTips, pronunciationFocus, shadowingTasks, repeatTasks
+   - Evidência: Sem pronúncia em pronunciationTips/pronunciationFocus/shadowingTasks/repeatTasks/fluencyDrills/intonationPractice/stressPractice/minimalPairs/pronunciationChunks/repeatAfterMe.
    - Recomendação: Adicionar foco de pronúncia e repetição guiada.
 
-13. **P1 · Pilar SPEAKING · A1-SPEAKING-003 — Speaking sem foco de pronúncia/shadowing**
+13. **P1 · Pilar SPEAKING · B1-SPEAKING-003 — Speaking sem foco de pronúncia/shadowing**
    - Área executiva: Aulas e pedagogia
    - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: A aula pode virar apenas escrita lida em voz alta.
-   - Evidência: Campos esperados ausentes/vazios: pronunciationTips, pronunciationFocus, shadowingTasks, repeatTasks
+   - Evidência: Sem pronúncia em pronunciationTips/pronunciationFocus/shadowingTasks/repeatTasks/fluencyDrills/intonationPractice/stressPractice/minimalPairs/pronunciationChunks/repeatAfterMe.
    - Recomendação: Adicionar foco de pronúncia e repetição guiada.
 
-14. **P1 · Pilar SPEAKING · A1-SPEAKING-004 — Speaking sem foco de pronúncia/shadowing**
+14. **P1 · Pilar SPEAKING · B1-SPEAKING-004 — Speaking sem foco de pronúncia/shadowing**
    - Área executiva: Aulas e pedagogia
    - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: A aula pode virar apenas escrita lida em voz alta.
-   - Evidência: Campos esperados ausentes/vazios: pronunciationTips, pronunciationFocus, shadowingTasks, repeatTasks
+   - Evidência: Sem pronúncia em pronunciationTips/pronunciationFocus/shadowingTasks/repeatTasks/fluencyDrills/intonationPractice/stressPractice/minimalPairs/pronunciationChunks/repeatAfterMe.
    - Recomendação: Adicionar foco de pronúncia e repetição guiada.
 
-15. **P1 · Pilar SPEAKING · A1-SPEAKING-011 — Speaking sem foco de pronúncia/shadowing**
+15. **P1 · Pilar SPEAKING · B1-SPEAKING-005 — Speaking sem foco de pronúncia/shadowing**
    - Área executiva: Aulas e pedagogia
    - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: A aula pode virar apenas escrita lida em voz alta.
-   - Evidência: Campos esperados ausentes/vazios: pronunciationTips, pronunciationFocus, shadowingTasks, repeatTasks
+   - Evidência: Sem pronúncia em pronunciationTips/pronunciationFocus/shadowingTasks/repeatTasks/fluencyDrills/intonationPractice/stressPractice/minimalPairs/pronunciationChunks/repeatAfterMe.
    - Recomendação: Adicionar foco de pronúncia e repetição guiada.
 
-16. **P1 · Pilar SPEAKING · A1-SPEAKING-013 — Speaking sem foco de pronúncia/shadowing**
+16. **P1 · Pilar SPEAKING · B1-SPEAKING-006 — Speaking sem foco de pronúncia/shadowing**
    - Área executiva: Aulas e pedagogia
    - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: A aula pode virar apenas escrita lida em voz alta.
-   - Evidência: Campos esperados ausentes/vazios: pronunciationTips, pronunciationFocus, shadowingTasks, repeatTasks
+   - Evidência: Sem pronúncia em pronunciationTips/pronunciationFocus/shadowingTasks/repeatTasks/fluencyDrills/intonationPractice/stressPractice/minimalPairs/pronunciationChunks/repeatAfterMe.
    - Recomendação: Adicionar foco de pronúncia e repetição guiada.
 
-17. **P1 · Pilar SPEAKING · A1-SPEAKING-014 — Speaking sem foco de pronúncia/shadowing**
+17. **P1 · Pilar SPEAKING · B1-SPEAKING-007 — Speaking sem foco de pronúncia/shadowing**
    - Área executiva: Aulas e pedagogia
    - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: A aula pode virar apenas escrita lida em voz alta.
-   - Evidência: Campos esperados ausentes/vazios: pronunciationTips, pronunciationFocus, shadowingTasks, repeatTasks
+   - Evidência: Sem pronúncia em pronunciationTips/pronunciationFocus/shadowingTasks/repeatTasks/fluencyDrills/intonationPractice/stressPractice/minimalPairs/pronunciationChunks/repeatAfterMe.
    - Recomendação: Adicionar foco de pronúncia e repetição guiada.
 
-18. **P1 · Pilar SPEAKING · A1-SPEAKING-015 — Speaking sem foco de pronúncia/shadowing**
+18. **P1 · Pilar SPEAKING · B1-SPEAKING-008 — Speaking sem foco de pronúncia/shadowing**
    - Área executiva: Aulas e pedagogia
    - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: A aula pode virar apenas escrita lida em voz alta.
-   - Evidência: Campos esperados ausentes/vazios: pronunciationTips, pronunciationFocus, shadowingTasks, repeatTasks
+   - Evidência: Sem pronúncia em pronunciationTips/pronunciationFocus/shadowingTasks/repeatTasks/fluencyDrills/intonationPractice/stressPractice/minimalPairs/pronunciationChunks/repeatAfterMe.
    - Recomendação: Adicionar foco de pronúncia e repetição guiada.
 
-19. **P1 · Pilar SPEAKING · A1-SPEAKING-017 — Speaking sem foco de pronúncia/shadowing**
+19. **P1 · Pilar SPEAKING · B1-SPEAKING-009 — Speaking sem foco de pronúncia/shadowing**
    - Área executiva: Aulas e pedagogia
    - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: A aula pode virar apenas escrita lida em voz alta.
-   - Evidência: Campos esperados ausentes/vazios: pronunciationTips, pronunciationFocus, shadowingTasks, repeatTasks
+   - Evidência: Sem pronúncia em pronunciationTips/pronunciationFocus/shadowingTasks/repeatTasks/fluencyDrills/intonationPractice/stressPractice/minimalPairs/pronunciationChunks/repeatAfterMe.
    - Recomendação: Adicionar foco de pronúncia e repetição guiada.
 
-20. **P1 · Pilar SPEAKING · A1-SPEAKING-009-HELP — Speaking sem foco de pronúncia/shadowing**
+20. **P1 · Pilar READING · B2-READING-006 — Reading sem estratégia de leitura clara**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno pode tentar traduzir tudo palavra por palavra.
+   - Evidência: Sem estratégia em readingStrategy/strategy/guidedBeforeQuiz/preReading/beforeReading/firstReadTask/readingPurpose/secondReadTasks/skimming/scanning/gist/detail/tasks analíticos.
+   - Recomendação: Adicionar estratégia: gist, scanning, detalhe e evidência.
+
+21. **P1 · Pilar READING · B2-READING-007 — Reading sem estratégia de leitura clara**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno pode tentar traduzir tudo palavra por palavra.
+   - Evidência: Sem estratégia em readingStrategy/strategy/guidedBeforeQuiz/preReading/beforeReading/firstReadTask/readingPurpose/secondReadTasks/skimming/scanning/gist/detail/tasks analíticos.
+   - Recomendação: Adicionar estratégia: gist, scanning, detalhe e evidência.
+
+22. **P1 · Pilar READING · B2-READING-008 — Reading sem estratégia de leitura clara**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno pode tentar traduzir tudo palavra por palavra.
+   - Evidência: Sem estratégia em readingStrategy/strategy/guidedBeforeQuiz/preReading/beforeReading/firstReadTask/readingPurpose/secondReadTasks/skimming/scanning/gist/detail/tasks analíticos.
+   - Recomendação: Adicionar estratégia: gist, scanning, detalhe e evidência.
+
+23. **P1 · Pilar READING · B2-READING-009 — Reading sem estratégia de leitura clara**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno pode tentar traduzir tudo palavra por palavra.
+   - Evidência: Sem estratégia em readingStrategy/strategy/guidedBeforeQuiz/preReading/beforeReading/firstReadTask/readingPurpose/secondReadTasks/skimming/scanning/gist/detail/tasks analíticos.
+   - Recomendação: Adicionar estratégia: gist, scanning, detalhe e evidência.
+
+24. **P1 · Pilar READING · B2-READING-010 — Reading sem estratégia de leitura clara**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno pode tentar traduzir tudo palavra por palavra.
+   - Evidência: Sem estratégia em readingStrategy/strategy/guidedBeforeQuiz/preReading/beforeReading/firstReadTask/readingPurpose/secondReadTasks/skimming/scanning/gist/detail/tasks analíticos.
+   - Recomendação: Adicionar estratégia: gist, scanning, detalhe e evidência.
+
+25. **P1 · Pilar READING · B2-READING-011 — Reading sem estratégia de leitura clara**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno pode tentar traduzir tudo palavra por palavra.
+   - Evidência: Sem estratégia em readingStrategy/strategy/guidedBeforeQuiz/preReading/beforeReading/firstReadTask/readingPurpose/secondReadTasks/skimming/scanning/gist/detail/tasks analíticos.
+   - Recomendação: Adicionar estratégia: gist, scanning, detalhe e evidência.
+
+26. **P1 · Pilar READING · B2-READING-014 — Reading sem estratégia de leitura clara**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno pode tentar traduzir tudo palavra por palavra.
+   - Evidência: Sem estratégia em readingStrategy/strategy/guidedBeforeQuiz/preReading/beforeReading/firstReadTask/readingPurpose/secondReadTasks/skimming/scanning/gist/detail/tasks analíticos.
+   - Recomendação: Adicionar estratégia: gist, scanning, detalhe e evidência.
+
+27. **P1 · Pilar SPEAKING · B2-SPEAKING-001 — Speaking sem foco de pronúncia/shadowing**
    - Área executiva: Aulas e pedagogia
    - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: A aula pode virar apenas escrita lida em voz alta.
-   - Evidência: Campos esperados ausentes/vazios: pronunciationTips, pronunciationFocus, shadowingTasks, repeatTasks
+   - Evidência: Sem pronúncia em pronunciationTips/pronunciationFocus/shadowingTasks/repeatTasks/fluencyDrills/intonationPractice/stressPractice/minimalPairs/pronunciationChunks/repeatAfterMe.
    - Recomendação: Adicionar foco de pronúncia e repetição guiada.
 
-21. **P1 · Pilar SPEAKING · A1-SPEAKING-016-WEATHER — Speaking sem foco de pronúncia/shadowing**
+28. **P1 · Pilar SPEAKING · B2-SPEAKING-002 — Speaking sem foco de pronúncia/shadowing**
    - Área executiva: Aulas e pedagogia
    - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: A aula pode virar apenas escrita lida em voz alta.
-   - Evidência: Campos esperados ausentes/vazios: pronunciationTips, pronunciationFocus, shadowingTasks, repeatTasks
+   - Evidência: Sem pronúncia em pronunciationTips/pronunciationFocus/shadowingTasks/repeatTasks/fluencyDrills/intonationPractice/stressPractice/minimalPairs/pronunciationChunks/repeatAfterMe.
    - Recomendação: Adicionar foco de pronúncia e repetição guiada.
 
-22. **P1 · Pilar SPEAKING · A1-SPEAKING-021-PERSONAL — Speaking sem foco de pronúncia/shadowing**
+29. **P1 · Pilar SPEAKING · B2-SPEAKING-003 — Speaking sem foco de pronúncia/shadowing**
    - Área executiva: Aulas e pedagogia
    - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: A aula pode virar apenas escrita lida em voz alta.
-   - Evidência: Campos esperados ausentes/vazios: pronunciationTips, pronunciationFocus, shadowingTasks, repeatTasks
+   - Evidência: Sem pronúncia em pronunciationTips/pronunciationFocus/shadowingTasks/repeatTasks/fluencyDrills/intonationPractice/stressPractice/minimalPairs/pronunciationChunks/repeatAfterMe.
    - Recomendação: Adicionar foco de pronúncia e repetição guiada.
 
-23. **P1 · Pilar SPEAKING · A2-SPEAKING-001 — Speaking sem foco de pronúncia/shadowing**
+30. **P1 · Pilar SPEAKING · B2-SPEAKING-004 — Speaking sem foco de pronúncia/shadowing**
    - Área executiva: Aulas e pedagogia
    - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: A aula pode virar apenas escrita lida em voz alta.
-   - Evidência: Campos esperados ausentes/vazios: pronunciationTips, pronunciationFocus, shadowingTasks, repeatTasks
+   - Evidência: Sem pronúncia em pronunciationTips/pronunciationFocus/shadowingTasks/repeatTasks/fluencyDrills/intonationPractice/stressPractice/minimalPairs/pronunciationChunks/repeatAfterMe.
    - Recomendação: Adicionar foco de pronúncia e repetição guiada.
 
-24. **P1 · Pilar SPEAKING · A2-SPEAKING-002 — Speaking sem foco de pronúncia/shadowing**
+31. **P1 · Pilar SPEAKING · B2-SPEAKING-005 — Speaking sem foco de pronúncia/shadowing**
    - Área executiva: Aulas e pedagogia
    - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: A aula pode virar apenas escrita lida em voz alta.
-   - Evidência: Campos esperados ausentes/vazios: pronunciationTips, pronunciationFocus, shadowingTasks, repeatTasks
+   - Evidência: Sem pronúncia em pronunciationTips/pronunciationFocus/shadowingTasks/repeatTasks/fluencyDrills/intonationPractice/stressPractice/minimalPairs/pronunciationChunks/repeatAfterMe.
    - Recomendação: Adicionar foco de pronúncia e repetição guiada.
 
-25. **P1 · Pilar SPEAKING · A2-SPEAKING-003 — Speaking sem foco de pronúncia/shadowing**
+32. **P1 · Pilar SPEAKING · B2-SPEAKING-006 — Speaking sem foco de pronúncia/shadowing**
    - Área executiva: Aulas e pedagogia
    - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: A aula pode virar apenas escrita lida em voz alta.
-   - Evidência: Campos esperados ausentes/vazios: pronunciationTips, pronunciationFocus, shadowingTasks, repeatTasks
+   - Evidência: Sem pronúncia em pronunciationTips/pronunciationFocus/shadowingTasks/repeatTasks/fluencyDrills/intonationPractice/stressPractice/minimalPairs/pronunciationChunks/repeatAfterMe.
    - Recomendação: Adicionar foco de pronúncia e repetição guiada.
 
-26. **P1 · Pilar SPEAKING · A2-SPEAKING-004 — Speaking sem foco de pronúncia/shadowing**
+33. **P1 · Pilar SPEAKING · B2-SPEAKING-007 — Speaking sem modelo de fala suficiente**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno pode ser forçado a produzir sem base linguística.
+   - Evidência: Sem modelo em modelPhrases/speakingModel/modelAnswer/exampleDialogue/guidedModel/usefulPhrases/sentenceFrames/dialogue/repeatAfterMe/substitutionDrills/questionAnswerDrills/buildYourAnswer/speakingSituation.
+   - Recomendação: Adicionar frases-modelo, mini diálogo ou resposta exemplar antes da produção.
+
+34. **P1 · Pilar SPEAKING · B2-SPEAKING-007 — Speaking sem foco de pronúncia/shadowing**
    - Área executiva: Aulas e pedagogia
    - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: A aula pode virar apenas escrita lida em voz alta.
-   - Evidência: Campos esperados ausentes/vazios: pronunciationTips, pronunciationFocus, shadowingTasks, repeatTasks
+   - Evidência: Sem pronúncia em pronunciationTips/pronunciationFocus/shadowingTasks/repeatTasks/fluencyDrills/intonationPractice/stressPractice/minimalPairs/pronunciationChunks/repeatAfterMe.
    - Recomendação: Adicionar foco de pronúncia e repetição guiada.
 
-27. **P1 · Pilar SPEAKING · A2-SPEAKING-005 — Speaking sem foco de pronúncia/shadowing**
+35. **P1 · Pilar SPEAKING · B2-SPEAKING-008 — Speaking sem modelo de fala suficiente**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno pode ser forçado a produzir sem base linguística.
+   - Evidência: Sem modelo em modelPhrases/speakingModel/modelAnswer/exampleDialogue/guidedModel/usefulPhrases/sentenceFrames/dialogue/repeatAfterMe/substitutionDrills/questionAnswerDrills/buildYourAnswer/speakingSituation.
+   - Recomendação: Adicionar frases-modelo, mini diálogo ou resposta exemplar antes da produção.
+
+36. **P1 · Pilar SPEAKING · B2-SPEAKING-008 — Speaking sem foco de pronúncia/shadowing**
    - Área executiva: Aulas e pedagogia
    - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: A aula pode virar apenas escrita lida em voz alta.
-   - Evidência: Campos esperados ausentes/vazios: pronunciationTips, pronunciationFocus, shadowingTasks, repeatTasks
+   - Evidência: Sem pronúncia em pronunciationTips/pronunciationFocus/shadowingTasks/repeatTasks/fluencyDrills/intonationPractice/stressPractice/minimalPairs/pronunciationChunks/repeatAfterMe.
    - Recomendação: Adicionar foco de pronúncia e repetição guiada.
 
-28. **P1 · Pilar SPEAKING · A2-SPEAKING-006 — Speaking sem foco de pronúncia/shadowing**
+37. **P1 · Pilar SPEAKING · B2-SPEAKING-009 — Speaking sem modelo de fala suficiente**
+   - Área executiva: Aulas e pedagogia
+   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno pode ser forçado a produzir sem base linguística.
+   - Evidência: Sem modelo em modelPhrases/speakingModel/modelAnswer/exampleDialogue/guidedModel/usefulPhrases/sentenceFrames/dialogue/repeatAfterMe/substitutionDrills/questionAnswerDrills/buildYourAnswer/speakingSituation.
+   - Recomendação: Adicionar frases-modelo, mini diálogo ou resposta exemplar antes da produção.
+
+38. **P1 · Pilar SPEAKING · B2-SPEAKING-009 — Speaking sem foco de pronúncia/shadowing**
    - Área executiva: Aulas e pedagogia
    - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: A aula pode virar apenas escrita lida em voz alta.
-   - Evidência: Campos esperados ausentes/vazios: pronunciationTips, pronunciationFocus, shadowingTasks, repeatTasks
+   - Evidência: Sem pronúncia em pronunciationTips/pronunciationFocus/shadowingTasks/repeatTasks/fluencyDrills/intonationPractice/stressPractice/minimalPairs/pronunciationChunks/repeatAfterMe.
    - Recomendação: Adicionar foco de pronúncia e repetição guiada.
 
-29. **P1 · Pilar SPEAKING · A2-SPEAKING-007 — Speaking sem foco de pronúncia/shadowing**
+39. **P1 · Pilar SPEAKING · B2-SPEAKING-010 — Speaking sem modelo de fala suficiente**
    - Área executiva: Aulas e pedagogia
    - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
-   - Impacto: A aula pode virar apenas escrita lida em voz alta.
-   - Evidência: Campos esperados ausentes/vazios: pronunciationTips, pronunciationFocus, shadowingTasks, repeatTasks
-   - Recomendação: Adicionar foco de pronúncia e repetição guiada.
+   - Impacto: O aluno pode ser forçado a produzir sem base linguística.
+   - Evidência: Sem modelo em modelPhrases/speakingModel/modelAnswer/exampleDialogue/guidedModel/usefulPhrases/sentenceFrames/dialogue/repeatAfterMe/substitutionDrills/questionAnswerDrills/buildYourAnswer/speakingSituation.
+   - Recomendação: Adicionar frases-modelo, mini diálogo ou resposta exemplar antes da produção.
 
-30. **P1 · Pilar SPEAKING · A2-SPEAKING-008 — Speaking sem foco de pronúncia/shadowing**
+40. **P1 · Pilar SPEAKING · B2-SPEAKING-010 — Speaking sem foco de pronúncia/shadowing**
    - Área executiva: Aulas e pedagogia
    - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: A aula pode virar apenas escrita lida em voz alta.
-   - Evidência: Campos esperados ausentes/vazios: pronunciationTips, pronunciationFocus, shadowingTasks, repeatTasks
-   - Recomendação: Adicionar foco de pronúncia e repetição guiada.
-
-31. **P1 · Pilar SPEAKING · A2-SPEAKING-009 — Speaking sem foco de pronúncia/shadowing**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: A aula pode virar apenas escrita lida em voz alta.
-   - Evidência: Campos esperados ausentes/vazios: pronunciationTips, pronunciationFocus, shadowingTasks, repeatTasks
-   - Recomendação: Adicionar foco de pronúncia e repetição guiada.
-
-32. **P1 · Pilar SPEAKING · A2-SPEAKING-010 — Speaking sem foco de pronúncia/shadowing**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: A aula pode virar apenas escrita lida em voz alta.
-   - Evidência: Campos esperados ausentes/vazios: pronunciationTips, pronunciationFocus, shadowingTasks, repeatTasks
-   - Recomendação: Adicionar foco de pronúncia e repetição guiada.
-
-33. **P1 · Pilar SPEAKING · A2-SPEAKING-011 — Speaking sem foco de pronúncia/shadowing**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: A aula pode virar apenas escrita lida em voz alta.
-   - Evidência: Campos esperados ausentes/vazios: pronunciationTips, pronunciationFocus, shadowingTasks, repeatTasks
-   - Recomendação: Adicionar foco de pronúncia e repetição guiada.
-
-34. **P1 · Pilar SPEAKING · A2-SPEAKING-012 — Speaking sem foco de pronúncia/shadowing**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: A aula pode virar apenas escrita lida em voz alta.
-   - Evidência: Campos esperados ausentes/vazios: pronunciationTips, pronunciationFocus, shadowingTasks, repeatTasks
-   - Recomendação: Adicionar foco de pronúncia e repetição guiada.
-
-35. **P1 · Pilar SPEAKING · A2-SPEAKING-013 — Speaking sem foco de pronúncia/shadowing**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: A aula pode virar apenas escrita lida em voz alta.
-   - Evidência: Campos esperados ausentes/vazios: pronunciationTips, pronunciationFocus, shadowingTasks, repeatTasks
-   - Recomendação: Adicionar foco de pronúncia e repetição guiada.
-
-36. **P1 · Pilar SPEAKING · A2-SPEAKING-014 — Speaking sem foco de pronúncia/shadowing**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: A aula pode virar apenas escrita lida em voz alta.
-   - Evidência: Campos esperados ausentes/vazios: pronunciationTips, pronunciationFocus, shadowingTasks, repeatTasks
-   - Recomendação: Adicionar foco de pronúncia e repetição guiada.
-
-37. **P1 · Pilar SPEAKING · A2-SPEAKING-015 — Speaking sem foco de pronúncia/shadowing**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: A aula pode virar apenas escrita lida em voz alta.
-   - Evidência: Campos esperados ausentes/vazios: pronunciationTips, pronunciationFocus, shadowingTasks, repeatTasks
-   - Recomendação: Adicionar foco de pronúncia e repetição guiada.
-
-38. **P1 · Pilar SPEAKING · A2-SPEAKING-016 — Speaking sem foco de pronúncia/shadowing**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: A aula pode virar apenas escrita lida em voz alta.
-   - Evidência: Campos esperados ausentes/vazios: pronunciationTips, pronunciationFocus, shadowingTasks, repeatTasks
-   - Recomendação: Adicionar foco de pronúncia e repetição guiada.
-
-39. **P1 · Pilar SPEAKING · A2-SPEAKING-017 — Speaking sem foco de pronúncia/shadowing**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: A aula pode virar apenas escrita lida em voz alta.
-   - Evidência: Campos esperados ausentes/vazios: pronunciationTips, pronunciationFocus, shadowingTasks, repeatTasks
-   - Recomendação: Adicionar foco de pronúncia e repetição guiada.
-
-40. **P1 · Pilar SPEAKING · A2-SPEAKING-018 — Speaking sem foco de pronúncia/shadowing**
-   - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
-   - Ocorrências agrupadas: 2
-   - Impacto: A aula pode virar apenas escrita lida em voz alta.
-   - Evidência: Campos esperados ausentes/vazios: pronunciationTips, pronunciationFocus, shadowingTasks, repeatTasks
+   - Evidência: Sem pronúncia em pronunciationTips/pronunciationFocus/shadowingTasks/repeatTasks/fluencyDrills/intonationPractice/stressPractice/minimalPairs/pronunciationChunks/repeatAfterMe.
    - Recomendação: Adicionar foco de pronúncia e repetição guiada.
 
 
