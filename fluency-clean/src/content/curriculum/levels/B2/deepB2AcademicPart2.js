@@ -20,6 +20,12 @@ export const B2_DEEP_ACADEMIC_PART2 = Object.freeze([
       'Recognise it-extraposition, nominal clause subjects and complex clause structures.',
       'Practise tracing the author\'s argument through multiple layers of qualification and concession.',
     ],
+    readingStrategy: [
+      task('Before reading: from the title and subtitle, predict two possible criticisms of the SDG framework the author may develop.', 'Use your prediction to notice whether the criticism is conceptual, practical or political.'),
+      task('First read (gist): read without stopping and decide whether the author presents the framework as mostly successful, mostly flawed, or structurally mixed.', 'Capture the overall stance in one sentence before analysing details.'),
+      task('Second read (scanning/detail): scan each paragraph to locate one key claim and one qualifier (for example "at least nominally", "at best", "depending on one\'s perspective").', 'This helps you track nuance and avoid oversimplified interpretation.'),
+      task('Evidence task: choose two short quotations that justify your interpretation of the author\'s position, then use them in your answers.', 'Anchor inference in textual evidence rather than opinion.'),
+    ],
     readingText: {
       title: 'Development and Its Discontents',
       subtitle: 'A critical assessment of the Sustainable Development Goals framework',
@@ -86,6 +92,12 @@ Empirical assessments of progress have tended to be mixed, at best. For all that
       'Identify the author\'s taxonomy — a classification system — and evaluate its logic.',
       'Practise inference: distinguishing what is stated from what is implied.',
       'Recognise and produce paraphrases of key arguments from the text.',
+    ],
+    readingStrategy: [
+      task('Before reading: predict what categories of climate scepticism you expect to find, and which one you think is most common in public debate.', 'Prediction prepares you to compare your assumptions with the author\'s taxonomy.'),
+      task('First read (gist): read quickly and identify the central purpose of the taxonomy in one sentence.', 'Focus on why the categories matter, not on memorising every example yet.'),
+      task('Second read (scanning/detail): scan for the label and defining feature of each of the four categories, then note one contrast between category 1 and category 4.', 'Build a precise category map before answering inference questions.'),
+      task('Evidence task: copy one sentence that signals the author\'s stance toward policy scepticism and one sentence that signals stance toward manufactured scepticism.', 'Use those sentences to support your interpretation of tone and argument.'),
     ],
     readingText: {
       title: 'A Taxonomy of Climate Scepticism',
