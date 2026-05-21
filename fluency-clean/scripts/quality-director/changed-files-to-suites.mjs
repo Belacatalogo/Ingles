@@ -194,13 +194,16 @@ export function routeChangedFiles(files, mode) {
     };
   }
 
-  if (mode === 'full' || process.env.GITHUB_EVENT_NAME === 'workflow_dispatch') {
+  // `workflow_dispatch` não deve forçar full aqui: o Playwright Smart Debug
+  // também é manual e precisa respeitar mode=smart + changed_files_override.
+  // O Flow full oficial continua explícito via mode === 'full' / --full.
+  if (mode === 'full') {
     return {
       mode: 'full',
       files,
       suites: FULL_SUITES,
       matchedRoutes: ['manual-full-audit'],
-      reasons: ['Execução manual ou modo full: roda auditoria completa padrão.'],
+      reasons: ['Execução modo full: roda auditoria completa padrão.'],
     };
   }
 
