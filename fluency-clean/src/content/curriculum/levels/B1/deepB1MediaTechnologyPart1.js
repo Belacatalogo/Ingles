@@ -405,6 +405,15 @@ export const B1_DEEP_MEDIA_TECHNOLOGY_PART1 = Object.freeze([
         ],
       },
     ],
+    pronunciationFocus: {
+      title: 'Pronunciation & shadowing',
+      tips: [
+        'Shadow: "I can see both sides of this argument." Chunk the phrase naturally: "I can see BOTH sides / of THIS argument." Stress BOTH and THIS.',
+        '"The problem isn\'t X itself — it\'s..." — pause briefly at the dash and stress "IT\'S" to signal the real cause is coming.',
+        '"It\'s hard to ignore the fact that..." — link "hard-to-ignore" as a single unit. Stress HARD and igNORE.',
+        '"What worries me most is..." — rising intonation on "most" to build anticipation for the main concern.',
+      ],
+    },
     guidedSpeaking: [
       {
         prompt: 'Dê a sua posição sobre tecnologia ou mídia em 1-2 frases. Seja honesto — não precisa ser "politicamente correto".',

@@ -397,6 +397,15 @@ She walked me all the way to my hotel, which took about fifteen minutes. We talk
         substitutions: ['worried / I realized it wasn\'t so bad', 'frustrated / I started to see the funny side', 'exhausted / I got my second wind'],
       },
     ],
+    pronunciationFocus: {
+      title: 'Pronunciation & shadowing',
+      tips: [
+        'Shadow: "I was waiting for a bus when my phone fell into a puddle." Stress the contrast: WAITing (background) → FELL (event).',
+        '"At first I was frustrated, but after a while..." — chunk the phrase: "at FIRST / I was fruSTRAted / but AFter a WHILE." Practise the rhythm.',
+        '"It turned out that..." — link "turned-out" as one unit: /tɜːnd.aʊt/. Keep the "that" weak.',
+        '"Looking back, I think..." — rising intonation on "back" signals reflection is coming.',
+      ],
+    },
     guidedSpeaking: [
       task('Responda em voz alta: "Tell me about a time you had to wait longer than expected." — 5-6 frases com background (Past Continuous), evento (Past Simple) e reação emocional.'),
       task('Responda: "Tell me about a time something surprised you." — inclua "It turned out..." e "Looking back..."'),

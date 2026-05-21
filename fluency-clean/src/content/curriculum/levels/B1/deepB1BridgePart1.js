@@ -519,6 +519,15 @@ Sara: About three months. I'm not great yet, but I enjoy it.`,
         substitutions: ['the food / it was unlike anything I\'d had before', 'a hike we did / the view from the top was incredible', 'an unexpected meeting / I bumped into an old friend'],
       },
     ],
+    pronunciationFocus: {
+      title: 'Pronunciation & shadowing',
+      tips: [
+        'Shadow the B1 model aloud: "Last year I took a trip to Florianópolis with some friends." Stress content words: TRIP, FlorianÓpolis, FRIENDS.',
+        '"Although it rained" — link "although-it" smoothly: /ɔːlˈðəʊ.ɪt/. Practise the chunk three times.',
+        '"I\'d definitely go back" — stress DEFinitely; reduce "I\'d" to a quick /aɪd/.',
+        '"One of the best trips I\'ve taken" — practise the rising-falling intonation of a final evaluation.',
+      ],
+    },
     preparationQuestions: [
       task('Think of a trip or experience. When was it?'),
       task('Who were you with?'),

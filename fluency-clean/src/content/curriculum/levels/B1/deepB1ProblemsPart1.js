@@ -368,6 +368,15 @@ export const B1_DEEP_PROBLEMS_PART1 = Object.freeze([
         ],
       },
     ],
+    pronunciationFocus: {
+      title: 'Pronunciation & shadowing',
+      tips: [
+        'Shadow: "I\'ve been struggling with my workload lately." Chunk: "I\'ve been STRUGGling / with my WORKload / LATEly." Stress the content words.',
+        '"What would you do if you were in my position?" — practise the rising intonation on "position" to signal a genuine question.',
+        '"If I were you, I would..." — reduce "I would" to "I\'d": /aɪd/. Keep the rhythm natural.',
+        '"The main issue is that..." — stress MAIN and ISSue; weaken "is that" to connect smoothly to the explanation.',
+      ],
+    },
     guidedSpeaking: [
       {
         prompt: 'Descreva um problema em 3 frases: (1) qual é o problema, (2) há quanto tempo existe, (3) qual o impacto.',

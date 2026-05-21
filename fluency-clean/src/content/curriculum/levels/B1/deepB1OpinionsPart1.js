@@ -405,6 +405,15 @@ export const B1_DEEP_OPINIONS_PART1 = Object.freeze([
         ],
       },
     ],
+    pronunciationFocus: {
+      title: 'Pronunciation & shadowing',
+      tips: [
+        'Shadow: "I believe working from home is more productive, although it has its challenges." Stress: beLIEVE, proDUCtive, CHALlenges.',
+        '"On the one hand... On the other hand..." — pause briefly after each "hand" to signal the contrast clearly.',
+        '"Having said that" — say it as one chunk: /ˈhævɪŋ.sed.ðæt/. Practise linking "said-that".',
+        '"That\'s a fair point, but..." — stress FAIR and BUT equally to acknowledge and counter in one breath.',
+      ],
+    },
     guidedSpeaking: [
       task(
         'Responda em voz alta: "What do you think about social media — is it mainly positive or negative?" — 60 segundos, use pelo menos: "I believe...", "On the one hand...", "Having said that...".',

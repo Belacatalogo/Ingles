@@ -402,6 +402,15 @@ export const B1_DEEP_TRAVEL_CULTURE_PART1 = Object.freeze([
         ],
       },
     ],
+    pronunciationFocus: {
+      title: 'Pronunciation & shadowing',
+      tips: [
+        'Shadow: "It completely exceeded my expectations." Chunk: "it comPLETEly / exCEEDed / my expecTAtions." Stress the three key words.',
+        '"I hadn\'t expected it to be so..." — link "hadn\'t-expected" smoothly: /ˈhæd.nt.ɪkˈspek.tɪd/. Practise the past perfect chunk.',
+        '"The highlight for me was..." — rising pitch on "highlight" to signal what comes next is the most important detail.',
+        '"By the time we had found our feet, it was already time to..." — practise the natural rhythm of this long chunk by pausing after "feet".',
+      ],
+    },
     guidedSpeaking: [
       {
         prompt: 'Diga onde você foi e quando. Adicione um detalhe sobre o motivo da viagem ou por que escolheu este destino.',

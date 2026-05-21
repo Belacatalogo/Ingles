@@ -366,6 +366,15 @@ export const B1_DEEP_WORK_STUDY_PART1 = Object.freeze([
         ],
       },
     ],
+    pronunciationFocus: {
+      title: 'Pronunciation & shadowing',
+      tips: [
+        'Shadow: "I\'m responsible for coordinating a team of eight developers." Chunk: "I\'m reSPONsible for / coORdinating / a TEAM of EIGHT developers." Stress the key nouns.',
+        '"At the moment, I\'m working on..." — link "at-the-moment" as one chunk. Stress MOMent and WORKing.',
+        '"It\'s been challenging because..." — reduce "It\'s been" to /ɪtsbɪn/. Stress CHALlenging.',
+        '"The team is on track to deliver on time." — practise the confident falling intonation of a positive status update.',
+      ],
+    },
     guidedSpeaking: [
       {
         prompt: 'Descreva o seu cargo e empresa (real ou inventado) em 2 frases.',
