@@ -40,6 +40,14 @@ function groupBy(items, key) {
   }, {});
 }
 
+function countCardsBy(items, key) {
+  return items.reduce((acc, item) => {
+    const value = item[key] || 'unknown';
+    acc[value] = (acc[value] || 0) + Number(item.count || 0);
+    return acc;
+  }, {});
+}
+
 function markdownTable(rows, headers) {
   if (!rows.length) return '_Nenhum item._';
   const head = `| ${headers.join(' | ')} |`;
@@ -65,6 +73,7 @@ function buildReport() {
   const decks = cardsByDeck();
   const byLevel = groupBy(decks, 'level');
   const byTopic = groupBy(decks, 'topic');
+  const countsByTopic = countCardsBy(decks, 'topic');
   const cards = getTotalVocabularyBankCount();
   const gap = Math.max(0, VOCABULARY_BANK_TARGET - cards);
 
@@ -75,7 +84,7 @@ function buildReport() {
     share: `${pct(count, cards)}%`,
   }));
 
-  const topicRows = sortObjectEntries(audit.countsByTopic || {}).map(([topic, count]) => ({
+  const topicRows = sortObjectEntries(countsByTopic).map(([topic, count]) => ({
     topic,
     cards: count,
     decks: byTopic[topic]?.length || 0,
@@ -92,7 +101,7 @@ function buildReport() {
     gap,
     completionPercent: audit.completionPercent,
     countsByLevel: audit.countsByLevel,
-    countsByTopic: audit.countsByTopic,
+    countsByTopic,
     bySeverity: audit.bySeverity,
     passedStructure: audit.passedStructure,
     passedChunks: audit.passedChunks,
