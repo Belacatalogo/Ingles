@@ -142,6 +142,21 @@ function activityMeaning(card, cards, index) {
   };
 }
 
+function activityPair(card, cards, index) {
+  const correct = card.example || card.word;
+  return {
+    id: `pair-${card.id}-${index}`,
+    type: 'pair',
+    cardId: card.id,
+    word: card.word,
+    title: 'Associe palavra e frase',
+    prompt: `Qual frase usa “${card.word}” com sentido de “${card.translation || card.definition || card.word}”?`,
+    answer: correct,
+    options: makeOptions(correct, distractorsFor(cards, card, 'example'), `pair-${card.id}-${index}`),
+    instruction: 'Escolha a frase que combina com a palavra e o sentido.',
+  };
+}
+
 function activityComplete(card, cards, index) {
   return {
     id: `complete-${card.id}-${index}`,
@@ -187,6 +202,35 @@ function activityPhraseTranslate(card, cards, index) {
   };
 }
 
+function activityTypeWord(card, index) {
+  return {
+    id: `type-word-${card.id}-${index}`,
+    type: 'type_word',
+    cardId: card.id,
+    word: card.word,
+    title: 'Digite a palavra',
+    prompt: `Digite a palavra que completa a frase:\n${maskExample(card)}`,
+    answer: card.word,
+    hint: card.translation || card.definition,
+    instruction: 'Agora produza a palavra sem olhar opções.',
+  };
+}
+
+function activityTranslateSentence(card, index) {
+  const answer = wordsFromExample(card).join(' ');
+  return {
+    id: `translate-sentence-${card.id}-${index}`,
+    type: 'translate_sentence',
+    cardId: card.id,
+    word: card.word,
+    title: 'Traduza a ideia',
+    prompt: `Escreva uma frase natural em inglês com a ideia “${card.translation || card.definition || card.word}”.`,
+    answer,
+    hint: `Use ${card.word} em uma frase curta.`,
+    instruction: 'Tente produzir a frase sem banco de palavras.',
+  };
+}
+
 function activityListen(card, cards, index) {
   const correct = card.example || card.word;
   return {
@@ -220,6 +264,10 @@ function activityBuild(card, index) {
 function activityLooksSafe(activity) {
   if (!activity) return false;
   if (activity.type === 'intro' || activity.type === 'build') return true;
+  if (activity.type === 'type_word' || activity.type === 'translate_sentence') {
+    const maskedPart = String(activity.prompt || '').split('\n').slice(1).join(' ');
+    return Boolean(activity.answer && !includesNormalized(maskedPart, activity.answer));
+  }
   if (activity.type === 'phrase_translate') {
     const promptWithoutAnswer = !includesNormalized(activity.prompt, activity.answer);
     const options = Array.isArray(activity.options) ? activity.options : [];
@@ -231,7 +279,7 @@ function activityLooksSafe(activity) {
   if (uniqueOptions.length !== options.length) return false;
   if (!options.some((option) => normalizeOption(option) === normalizeOption(activity.answer))) return false;
 
-  if (activity.type === 'choice' || activity.type === 'phrase_gap') {
+  if (activity.type === 'choice' || activity.type === 'phrase_gap' || activity.type === 'pair') {
     const promptWithoutMaskedLine = String(activity.prompt || '').split('\n')[0] || '';
     const answerIsLeaked = includesNormalized(promptWithoutMaskedLine, activity.answer);
     if (answerIsLeaked) return false;
@@ -256,11 +304,11 @@ function targetQuestionCount(level, selectedCount) {
   return Math.min(20, Math.max(18, selectedCount * 3));
 }
 
-function stagedPracticeOrder({ intro, meaning, complete, phraseGap, listen, build, phraseTranslate }, seed, targetCount, level) {
-  const warmup = stableShuffle([...intro, ...phraseGap, ...meaning], `${seed}-warmup`).filter(activityLooksSafe);
-  const middle = stableShuffle([...phraseGap, ...meaning, ...complete, ...listen], `${seed}-middle`).filter(activityLooksSafe);
-  const production = stableShuffle([...phraseTranslate, ...build], `${seed}-production`).filter(activityLooksSafe);
-  const review = stableShuffle([...phraseGap, ...meaning, ...complete, ...listen, ...phraseTranslate, ...build], `${seed}-review`).filter(activityLooksSafe);
+function stagedPracticeOrder({ intro, meaning, pair, complete, phraseGap, listen, build, phraseTranslate, typeWord, translateSentence }, seed, targetCount, level) {
+  const warmup = stableShuffle([...intro, ...phraseGap, ...meaning, ...pair], `${seed}-warmup`).filter(activityLooksSafe);
+  const middle = stableShuffle([...phraseGap, ...meaning, ...pair, ...complete, ...listen], `${seed}-middle`).filter(activityLooksSafe);
+  const production = stableShuffle([...phraseTranslate, ...build, ...typeWord, ...translateSentence], `${seed}-production`).filter(activityLooksSafe);
+  const review = stableShuffle([...phraseGap, ...meaning, ...pair, ...complete, ...listen, ...phraseTranslate, ...build, ...typeWord, ...translateSentence], `${seed}-review`).filter(activityLooksSafe);
 
   const result = [];
   const pushUnique = (items, limit = Infinity) => {
@@ -271,13 +319,13 @@ function stagedPracticeOrder({ intro, meaning, complete, phraseGap, listen, buil
   };
 
   pushUnique(warmup, level <= 1 ? Math.min(8, targetCount) : Math.min(6, targetCount));
-  pushUnique(middle, Math.max(result.length, targetCount - Math.min(5, production.length)));
+  pushUnique(middle, Math.max(result.length, targetCount - Math.min(6, production.length)));
   pushUnique(production, targetCount);
 
   let reviewIndex = 0;
   while (result.length < targetCount && review.length) {
     const source = review[reviewIndex % review.length];
-    if ((source.type === 'build' || source.type === 'phrase_translate') && result.length < Math.ceil(targetCount * 0.55)) {
+    if (['build', 'phrase_translate', 'type_word', 'translate_sentence'].includes(source.type) && result.length < Math.ceil(targetCount * 0.55)) {
       reviewIndex += 1;
       continue;
     }
@@ -296,13 +344,16 @@ export function buildVocabularyPracticeActivities(rawCards = [], { level = 1 } =
 
   const intro = selected.map((card, index) => activityIntro(card, index));
   const meaning = selected.map((card, index) => activityMeaning(card, cards, index));
+  const pair = selected.filter((card) => card.example).map((card, index) => activityPair(card, cards, index));
   const complete = selected.map((card, index) => activityComplete(card, cards, index));
   const phraseGap = selected.map((card, index) => activityPhraseGap(card, cards, index));
   const listen = selected.map((card, index) => activityListen(card, cards, index));
   const build = selected.filter((card) => card.example).map((card, index) => activityBuild(card, index));
   const phraseTranslate = selected.filter((card) => card.example).map((card, index) => activityPhraseTranslate(card, cards, index));
+  const typeWord = selected.map((card, index) => activityTypeWord(card, index));
+  const translateSentence = selected.filter((card) => card.example).map((card, index) => activityTranslateSentence(card, index));
 
-  return stagedPracticeOrder({ intro, meaning, complete, phraseGap, listen, build, phraseTranslate }, seed, targetCount, level);
+  return stagedPracticeOrder({ intro, meaning, pair, complete, phraseGap, listen, build, phraseTranslate, typeWord, translateSentence }, seed, targetCount, level);
 }
 
 export function scoreVocabularyPractice(activity, userAnswer) {
