@@ -330,16 +330,30 @@ function auditReading(lesson) {
   return issues;
 }
 
+// Preparação/predição antes do áudio reconhecida estruturalmente: campos
+// explícitos de pré-escuta, palavras-chave, descrição do áudio, tarefa de
+// primeira escuta (gist) ou listeningTasks staged com etapa de 1ª escuta.
+// Não conta tasks analíticos pós-escuta nem título/objetivo.
+function hasListeningPreparation(lesson) {
+  if (hasAnyField(lesson, ['listeningPreparation', 'preListening', 'predictionTask', 'guidedBeforeListening', 'beforeListening', 'focusBeforeListening', 'keywords', 'keyWordsToHear'])) return true;
+  if (clean(lesson?.listeningPurpose).length >= 20 || clean(lesson?.audioDescription).length >= 40) return true;
+  if (safeArray(lesson?.firstListenTasks).some((t) => clean(t?.instruction || t).length >= 10)) return true;
+  if (safeArray(lesson?.listeningTasks).some((stage) => /first listen|gist|primeira escuta|prepar/i.test(clean(stage?.stage)))) return true;
+  return false;
+}
+
 function auditListening(lesson) {
   const issues = [];
-  requireField({
-    issues,
-    lesson,
-    fields: ['listeningPreparation', 'preListening', 'predictionTask', 'guidedBeforeListening'],
-    title: 'Listening sem preparação/predição antes do áudio',
-    impact: 'O aluno escuta passivamente e perde estratégia de compreensão.',
-    recommendation: 'Adicionar predição, palavras-chave e objetivo antes do áudio.',
-  });
+  if (!hasListeningPreparation(lesson)) {
+    addIssue(issues, {
+      severity: 'P1',
+      area: lessonArea(lesson),
+      title: 'Listening sem preparação/predição antes do áudio',
+      impact: 'O aluno escuta passivamente e perde estratégia de compreensão.',
+      evidence: 'Sem preparação em listeningPreparation/preListening/predictionTask/guidedBeforeListening/beforeListening/listeningPurpose/focusBeforeListening/keyWordsToHear/audioDescription/firstListenTasks/listeningTasks(1ª escuta).',
+      recommendation: 'Adicionar predição, palavras-chave e objetivo antes do áudio.',
+    });
+  }
 
   requireField({
     issues,

@@ -269,13 +269,22 @@ export function createReadingLesson(input = {}) {
 
 export function createListeningLesson(input = {}) {
   const transcript = clean(input.transcript || input.audioScript);
+  // Schemas alternativos usam firstListenTask/secondListenTask (singular).
+  // Preserva o plural quando existir; senão, promove o singular a array.
+  const firstListenTasks = safeArray(input.firstListenTasks).length
+    ? safeArray(input.firstListenTasks)
+    : (input.firstListenTask ? [input.firstListenTask] : []);
+  const secondListenTasks = safeArray(input.secondListenTasks).length
+    ? safeArray(input.secondListenTasks)
+    : (input.secondListenTask ? [input.secondListenTask] : []);
   return {
     ...createStaticLessonBase({ ...input, pillar: 'listening' }),
     listeningPreparation: safeArray(input.listeningPreparation),
+    audioDescription: clean(input.audioDescription),
     keyWordsToHear: safeArray(input.keyWordsToHear),
     audioScript: clean(input.audioScript || transcript),
-    firstListenTasks: safeArray(input.firstListenTasks),
-    secondListenTasks: safeArray(input.secondListenTasks),
+    firstListenTasks,
+    secondListenTasks,
     transcript,
     vocabulary: safeArray(input.vocabulary),
     shadowing: safeArray(input.shadowing),
