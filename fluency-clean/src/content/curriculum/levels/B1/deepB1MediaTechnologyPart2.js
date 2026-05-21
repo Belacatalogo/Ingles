@@ -116,6 +116,11 @@ The solution, most experts agree, is not to blame the individual but to regulate
       'Reconhecer linguagem de concessão e contra-argumento.',
       'Praticar shadowing de estruturas de debate e opinião.',
     ],
+    listeningPreparation: [
+      task('Before listening: read the question in the title and decide your initial position in one sentence.', 'A clear starting position helps you notice how each speaker supports or challenges it.'),
+      task('Prediction: predict one argument for reducing technology use and one argument against a strict "use less" approach.', 'Be ready to compare your predictions with each speaker’s reasoning.'),
+      task('Key words to listen for: deduction and stance phrases (must be, seems unlikely, I’d argue), concession markers (that said, fair point), and solution language (regulation, education, awareness).', 'These signals help you follow argument shifts and partial agreement.'),
+    ],
     transcript: [
       'Host: Welcome back. Today we\'re asking: should we be using less technology? I\'ve got two guests with opposite views. Nadia, you think we need a digital detox. Why?',
       'Nadia: Well, I think we\'ve created a situation where most people are constantly connected without ever questioning whether that\'s good for them. The research on attention spans must be alarming to anyone who works in education. Children are finding it harder and harder to concentrate.',

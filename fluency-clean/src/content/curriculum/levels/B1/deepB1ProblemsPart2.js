@@ -231,6 +231,11 @@ Of course, not every risk is worth taking. The key is to weigh up the options ca
       'Reconhecer modais de conselho (should, had better, ought to) em uso natural.',
       'Praticar shadowing em padrões de conselho e especulação.',
     ],
+    listeningPreparation: [
+      task('Before listening: read the title and imagine one personal risk (job, study, or life decision) someone might be uncertain about.', 'Think about what practical concerns and emotional concerns usually appear in this type of dilemma.'),
+      task('Prediction: predict two arguments for taking the opportunity and two arguments for staying in the current situation.', 'Keep your predictions short so you can check them while listening.'),
+      task('Key words to listen for: advice modals (should, ought to, had better), balancing language (on balance, at least), and opportunity vs risk vocabulary.', 'These cues help you identify the turning point in the decision.'),
+    ],
     transcript: [
       'Sofia: I don\'t know what to do, Marcus. I\'ve been offered a new position, but it means leaving the team.',
       'Marcus: That\'s a big decision. What kind of role is it?',

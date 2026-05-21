@@ -231,6 +231,11 @@ The consensus among HR professionals is that hybrid work, done well, requires in
       'Reconhecer expressões de trabalho desta unidade em contexto.',
       'Praticar shadowing de padrões de linguagem profissional.',
     ],
+    listeningPreparation: [
+      task('Before listening: think about a difficult moment someone could face in a new or demanding job.', 'Focus on what usually goes wrong in deadlines, teamwork, or client communication.'),
+      task('Prediction: predict what actions a strong team lead might take to recover a project that is behind schedule.', 'Write 2-3 possible actions and compare them with the speaker’s real actions.'),
+      task('Key words to listen for: project problem signals (fall behind schedule, blockers), response actions (delegate, chase up, milestones), and outcome language (on track, on balance).', 'These words help you track problem → action → result.'),
+    ],
     transcript: [
       'Interviewer: So, tell me about your current role.',
       'Leo: Of course. I\'m currently working as a team lead at a software company. I\'m responsible for managing a team of seven developers.',

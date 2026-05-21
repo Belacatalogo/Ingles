@@ -116,6 +116,11 @@ The most memorable trips are rarely the ones with the longest checklist. They ar
       'Reconhecer expressões de expectativa, surpresa e avaliação.',
       'Praticar shadowing de linguagem descritiva e narrativa.',
     ],
+    listeningPreparation: [
+      task('Before listening: think about what travellers usually compare after a trip (expectations, food, places, transport, people).', 'Prepare these categories to organise details quickly.'),
+      task('Prediction: predict one expectation the speaker had before the trip and one surprise they might mention after arriving.', 'Listen for phrases that contrast expectations with reality.'),
+      task('Key words to listen for: comparison markers (better than, highlight, nowhere near), narrative cues (while we were..., then...), and travel words (guide, medina, market, rooftop).', 'These clues help you catch both opinion and story details.'),
+    ],
     transcript: [
       'Priya: So, how was Marrakech? You\'ve been talking about going for years.',
       'Daniel: It was incredible. Honestly, not what I expected at all — which made it even better.',
