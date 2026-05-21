@@ -235,9 +235,54 @@ function auditVocabulary(lesson) {
   return issues;
 }
 
+// Texto principal reconhecendo todos os schemas: mainText/text (A1/A2/B1/B2),
+// passage/mainPassage/inputText (C1/C2) e readingText.body/text.
+function readingMainText(lesson) {
+  const candidates = [
+    lesson?.mainText,
+    lesson?.text,
+    lesson?.readingText?.body || lesson?.readingText?.text || lesson?.readingText,
+    lesson?.passage,
+    lesson?.mainPassage,
+    lesson?.inputText,
+  ];
+  return candidates.reduce((longest, value) => {
+    const c = clean(value);
+    return c.length > longest.length ? c : longest;
+  }, '');
+}
+
+// Conta tarefas de leitura reais (instrução substantiva), usado para reconhecer
+// `tasks` analíticos (C1/C2) como estratégia/compreensão.
+function countReadingTasks(lesson, minInstruction = 1) {
+  return safeArray(lesson?.tasks)
+    .filter((t) => clean(t?.instruction || t?.question || t).length >= minInstruction).length;
+}
+
+// Estratégia de leitura reconhecida estruturalmente. Não conta comprehension
+// pura (comprehensionQuestions/guidedSummary) como estratégia.
+function hasReadingStrategy(lesson) {
+  if (hasAnyField(lesson, ['readingStrategy', 'strategy', 'guidedBeforeQuiz', 'preReading', 'beforeReading', 'skimmingTask', 'scanningTask', 'gistTask', 'detailTask', 'secondReadTasks'])) return true;
+  if (clean(lesson?.firstReadTask).length >= 20 || clean(lesson?.readingPurpose).length >= 20) return true;
+  // tarefas analíticas de leitura (C1/C2): ao menos 2 com instrução real.
+  if (countReadingTasks(lesson, 40) >= 2) return true;
+  return false;
+}
+
+function countReadingQuestions(lesson) {
+  return ['evidenceQuestions', 'comprehensionQuestions', 'questions', 'openQuestions', 'inferenceQuestions', 'tasks', 'secondReadTasks', 'evidenceTasks']
+    .reduce((sum, field) => sum + safeArray(lesson?.[field]).length, 0);
+}
+
+function hasReadingEvidence(lesson) {
+  if (safeArray(lesson?.evidenceQuestions).length || safeArray(lesson?.evidenceTasks).length) return true;
+  if (safeArray(lesson?.tasks).some((t) => clean(t?.expected || t?.note).length >= 8)) return true;
+  return /evidence|evidência|texto|frase|prova/i.test(clean(lesson));
+}
+
 function auditReading(lesson) {
   const issues = [];
-  const mainText = clean(lesson?.mainText || lesson?.text || lesson?.readingText);
+  const mainText = readingMainText(lesson);
 
   if (mainText.length < 180) {
     addIssue(issues, {
@@ -245,32 +290,34 @@ function auditReading(lesson) {
       area: lessonArea(lesson),
       title: 'Reading com texto principal curto demais',
       impact: 'O aluno pode responder sem treinar leitura real.',
-      evidence: `${mainText.length} caracteres no texto principal.`,
+      evidence: `${mainText.length} caracteres no texto principal (mainText/text/readingText/passage/inputText).`,
       recommendation: 'Adicionar texto com contexto, personagem/situação e detalhes suficientes.',
     });
   }
 
-  requireField({
-    issues,
-    lesson,
-    fields: ['readingStrategy', 'strategy', 'guidedBeforeQuiz'],
-    title: 'Reading sem estratégia de leitura clara',
-    impact: 'O aluno pode tentar traduzir tudo palavra por palavra.',
-    recommendation: 'Adicionar estratégia: gist, scanning, detalhe e evidência.',
-  });
+  if (!hasReadingStrategy(lesson)) {
+    addIssue(issues, {
+      severity: 'P1',
+      area: lessonArea(lesson),
+      title: 'Reading sem estratégia de leitura clara',
+      impact: 'O aluno pode tentar traduzir tudo palavra por palavra.',
+      evidence: 'Sem estratégia em readingStrategy/strategy/guidedBeforeQuiz/preReading/beforeReading/firstReadTask/readingPurpose/secondReadTasks/skimming/scanning/gist/detail/tasks analíticos.',
+      recommendation: 'Adicionar estratégia: gist, scanning, detalhe e evidência.',
+    });
+  }
 
-  requireMinimumList({
-    issues,
-    lesson,
-    fields: ['evidenceQuestions', 'comprehensionQuestions', 'questions'],
-    min: 3,
-    title: 'Reading com poucas perguntas de compreensão/evidência',
-    impact: 'A aula pode não verificar compreensão do texto.',
-    recommendation: 'Adicionar perguntas com evidência textual e distratores plausíveis.',
-    severity: 'P1',
-  });
+  if (countReadingQuestions(lesson) < 3) {
+    addIssue(issues, {
+      severity: 'P1',
+      area: lessonArea(lesson),
+      title: 'Reading com poucas perguntas de compreensão/evidência',
+      impact: 'A aula pode não verificar compreensão do texto.',
+      evidence: 'Menos de 3 em evidenceQuestions/comprehensionQuestions/questions/openQuestions/inferenceQuestions/tasks/secondReadTasks/evidenceTasks.',
+      recommendation: 'Adicionar perguntas com evidência textual e distratores plausíveis.',
+    });
+  }
 
-  if (!/evidence|evidência|texto|frase|prova/i.test(clean(lesson))) {
+  if (!hasReadingEvidence(lesson)) {
     addIssue(issues, {
       severity: 'P1',
       area: lessonArea(lesson),
