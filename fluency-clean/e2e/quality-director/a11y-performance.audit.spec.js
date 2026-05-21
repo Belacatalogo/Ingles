@@ -53,6 +53,12 @@ test.afterAll(() => {
 });
 
 test('Quality Director 09: performance inicial, acessibilidade e qualidade técnica por aba', async ({ page }, testInfo) => {
+  // Esta auditoria é propositalmente mais longa que specs funcionais simples:
+  // ela abre o app, percorre todas as abas, mede performance, inspeciona DOM,
+  // acessibilidade básica e foco por teclado. O timeout global de 30s pode
+  // gerar falso negativo no CI sem indicar bug real do app.
+  test.setTimeout(90_000);
+
   const started = Date.now();
   await page.goto('/');
   await expect(page.getByRole('navigation', { name: 'Navegação principal' })).toBeVisible({ timeout: 10_000 });
