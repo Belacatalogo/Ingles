@@ -1,8 +1,8 @@
 Status: Revisar antes de confiar
 Nota geral: 0/100
-Relatórios: 25
+Relatórios: 26
 Checks: 3270
-Issues únicas: 1232 (brutas=2423, agrupadas=1191)
-Severidade: P0=0, P1=207, P2=1025, P3=0
+Issues únicas: 1170 (brutas=2299, agrupadas=1129)
+Severidade: P0=0, P1=145, P2=1025, P3=0
 Direção: Corrigir P1 antes de considerar o sistema confiável para estudo contínuo.
-Top issues: P1 Pilar READING · A1-READING-004 — Reading sem estratégia de leitura clara | P1 Pilar READING · A1-READING-006 — Reading sem estratégia de leitura clara | P1 Pilar READING · A1-READING-007 — Reading sem estratégia de leitura clara | P1 Pilar READING · A1-READING-009 — Reading sem estratégia de leitura clara | P1 Pilar READING · A1-READING-011 — Reading sem estratégia de leitura clara
+Top issues: P1 Pilar READING · A1-READING-018 — Reading com texto principal curto demais | P1 Pilar LISTENING · A1-LISTENING-005 — Listening sem preparação/predição antes do áudio | P1 Pilar LISTENING · A1-LISTENING-006 — Listening sem preparação/predição antes do áudio | P1 Pilar LISTENING · A1-LISTENING-008 — Listening sem preparação/predição antes do áudio | P1 Pilar LISTENING · A1-LISTENING-011 — Listening sem preparação/predição antes do áudio
