@@ -22,6 +22,7 @@ export const B1_DEEP_MEDIA_TECHNOLOGY_PART1 = Object.freeze([
       'Aplicar essas estruturas em contexto de mídia, notícias e tecnologia.',
     ],
     teacherOpening: 'Quando você assiste às notícias, lê sobre tecnologia ou discute comportamentos na internet, você o tempo todo especula sobre causas, motivos e situações. "That story must be fake news." / "That algorithm could be influencing what we see." / "He can\'t be serious." Estas estruturas fazem parte do inglês B1 fluente e são essenciais para discussões críticas e jornalísticas.',
+    portugueseContrast: [task('Em Modal verbs: deduction and speculation, observe que a estrutura do inglês difere da ordem natural do português.'), task('Não traduza literalmente; identifique o padrão do inglês antes de produzir.')], 
     whyItMatters: 'No cotidiano com falantes nativos, a especulação é constante — inferência de situação, julgamento de probabilidade, análise de notícias. Sem estas formas, você é forçado a usar "I think... probably" repetidamente. Com elas, você expressa nuance real.',
     differenceFromA2: 'No A2: "I think he is tired." / "Maybe it is true." No B1: "He must be exhausted — he\'s been working for twelve hours." / "That can\'t be right — the figures don\'t add up." / "The article might be exaggerating the impact." A diferença é certeza gradual e raciocínio explícito.',
     grammarTable: {
@@ -155,6 +156,7 @@ export const B1_DEEP_MEDIA_TECHNOLOGY_PART1 = Object.freeze([
       'Evitar os erros mais comuns de brasileiros ao escolher entre -ing e to + infinitivo.',
     ],
     teacherOpening: 'Gerúndio e infinitivo são dois dos pontos mais problemáticos para brasileiros em inglês B1. "I enjoy to read" (errado). "I\'m interested to learn" (errado). "It\'s no use to try" (errado). Esta aula é cirúrgica: sem regras vagas, sem listas de centenas de verbos. Foco nos padrões mais frequentes e nos erros mais comuns.',
+    portugueseContrast: [task('Em Gerunds and infinitives: key uses at B1, observe que a estrutura do inglês difere da ordem natural do português.'), task('Não traduza literalmente; identifique o padrão do inglês antes de produzir.')], 
     whyItMatters: 'Em conversas sobre tecnologia, mídia e sociedade — e em qualquer nível de inglês — você usa gerúndio e infinitivo constantemente: "stop using", "decide to switch", "avoid sharing", "worth checking". Sem esse domínio, você trava em cada frase.',
     differenceFromA2: 'No A2: "I like watch TV." / "I want go online." (erros comuns). No B1: "I enjoy watching documentaries." / "She decided to stop scrolling before bed." / "It\'s worth reading the privacy policy." A diferença é a eliminação de erros e o uso natural em contexto complexo.',
     grammarTable: {

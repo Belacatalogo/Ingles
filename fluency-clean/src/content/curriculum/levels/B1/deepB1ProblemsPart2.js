@@ -23,6 +23,7 @@ export const B1_DEEP_PROBLEMS_PART2 = Object.freeze([
       'Evitar "If I would have..." — o erro mais comum no B1 brasileiro.',
     ],
     teacherOpening: 'O Third Conditional é a estrutura do "e se..." no passado — quando você imagina como as coisas poderiam ter sido diferentes. "If I had studied harder, I would have passed." A situação não aconteceu. É irreal. Esta aula te ensina a construir essa estrutura com precisão.',
+    portugueseContrast: [task('Em Third Conditional: If I had known, I would have..., observe que a estrutura do inglês difere da ordem natural do português.'), task('Não traduza literalmente; identifique o padrão do inglês antes de produzir.')], 
     whyItMatters: 'O Third Conditional aparece em conversas sobre arrependimentos, decisões passadas, erros de trabalho, histórias e análises. Sem ele, você não consegue falar sobre o passado hipotético — uma das funções mais sofisticadas do inglês B1.',
     differenceFromA2: 'No A2: "I didn\'t study and I failed." No B1+: "If I had studied, I wouldn\'t have failed. I regret not preparing better." A diferença é a capacidade de criar contra-factuals — imaginar o que teria acontecido se algo tivesse sido diferente.',
     grammarTable: {

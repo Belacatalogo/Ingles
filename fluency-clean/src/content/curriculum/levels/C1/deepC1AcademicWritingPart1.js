@@ -34,6 +34,7 @@ const grammar014 = createGrammarLesson({
     'Identify and correct the five most common syntactic weaknesses in C1 academic writing.',
   ],
   teacherOpening: `Academic prose at C1+ is not just about correct sentences — it is about the orchestration of sentence types, lengths, and openings to produce a text that moves forward with authority and clarity. A paragraph of ten sentences that all begin "The/This/There" signals a writer who has not yet achieved C1 control. This lesson addresses the syntactic tools that distinguish C1 academic writing from competent B2 writing.`,
+  portugueseContrast: [task('Em Sentence variety and syntactic complexity in academic writing, observe que a estrutura do inglês difere da ordem natural do português.'), task('Não traduza literalmente; identifique o padrão do inglês antes de produzir.')],
   whyItMatters: `Sentence variety is one of the clearest markers of academic register. Examiners and academic readers note its presence or absence immediately. The tools here — fronted participials, appositives, absolute constructions — appear throughout published academic English and are invisible in the sense that they do not draw attention to themselves: they simply make the writing read well.`,
   grammarTable: {
     headers: ['Structure', 'Example', 'Function', 'Common in'],
@@ -175,6 +176,7 @@ const grammar015 = createGrammarLesson({
     'Distinguish between the grammar of position-holding and position-modifying language.',
   ],
   teacherOpening: `At C1, you are not writing single paragraphs — you are constructing extended arguments. The challenge is to maintain the thread of your position across several moves: asserting, qualifying, anticipating objections, conceding partially, rebutting, and synthesising. Each of these moves has a grammar, and deploying them with precision is what distinguishes C1 from B2 academic writing.`,
+  portugueseContrast: [task('Em Argument architecture: organising complex positions across multiple paragraphs, observe que a estrutura do inglês difere da ordem natural do português.'), task('Não traduza literalmente; identifique o padrão do inglês antes de produzir.')],
   whyItMatters: `Argument architecture is what separates a series of related observations from a genuine academic argument. Without it, a writer may have excellent ideas but fail to persuade — because the reader cannot follow the reasoning, does not know when to agree or resist, and does not see how the parts connect to a conclusion. Controlling this architecture is a C1 skill that is explicitly tested in Cambridge and IELTS exams.`,
   grammarTable: {
     headers: ['Move', 'Function', 'Key language'],

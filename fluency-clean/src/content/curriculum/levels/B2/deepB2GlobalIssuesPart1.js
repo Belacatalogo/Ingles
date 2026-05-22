@@ -21,6 +21,7 @@ export const B2_DEEP_GLOBAL_ISSUES_PART1 = Object.freeze([
       'Produce sentences using passive reporting structures in global issues discourse.',
     ],
     teacherOpening: 'Passive reporting structures are one of the defining features of formal written English at B2 level. Instead of saying "People think inequality is rising" or "Researchers say migration has increased", formal English says: "Inequality is thought to be rising" or "Migration is reported to have increased." These forms let writers attribute claims without specifying the source — vital in academic writing, journalism and official reports.',
+    portugueseContrast: [task('Em Passive reporting structures: "is said to", "is believed to", "is reported to", observe que a estrutura do inglês difere da ordem natural do português.'), task('Não traduza literalmente; identifique o padrão do inglês antes de produzir.')], 
     whyItMatters: 'In academic writing, policy documents and journalism, passive reporting structures allow the writer to maintain formal distance, present claims as widely held, and avoid personally endorsing them. They are essential for B2 formal writing tasks on global issues.',
     differenceFromA2: 'A1/A2: "People say that poverty is increasing." B1: "It is said that poverty is increasing." B2: "Poverty is said to be increasing" / "Poverty is estimated to have increased by 12% since 2010."',
     grammarTable: {
@@ -83,6 +84,7 @@ export const B2_DEEP_GLOBAL_ISSUES_PART1 = Object.freeze([
       'Understand why nominalization is a marker of B2+ academic and formal writing.',
     ],
     teacherOpening: 'Compare: "Governments need to act quickly to reduce emissions" vs "The urgent need for action on emission reduction is now evident." The second sentence sounds more academic, more authoritative — not because it uses harder words, but because it uses nominalization: turning verbs like "act" and "reduce" into nouns like "action" and "reduction". This is the single most important stylistic shift between B1 and B2 formal writing.',
+    portugueseContrast: [task('Em Nominalization: converting verbs and adjectives into formal noun phrases, observe que a estrutura do inglês difere da ordem natural do português.'), task('Não traduza literalmente; identifique o padrão do inglês antes de produzir.')], 
     whyItMatters: 'Nominalization appears in every academic text, newspaper editorial and policy document. It allows writers to pack more information into fewer clauses, create logical connections between ideas using of/in/on phrases, and achieve the dense, authoritative tone that formal writing requires.',
     differenceFromA2: 'B1: "Living standards have improved because governments spent more on healthcare." B2: "The improvement in living standards reflects increased government investment in healthcare."',
     grammarTable: {
@@ -148,6 +150,7 @@ export const B2_DEEP_GLOBAL_ISSUES_PART1 = Object.freeze([
       'Combine data language with nominalization and passive reporting structures.',
     ],
     teacherOpening: 'When writing about global issues, you will almost always need to refer to data: statistics, trends, percentages, comparisons. B2 writers don\'t just say "it went up a lot" — they say "emissions rose significantly" or "inequality has increased by nearly 30% over two decades." This lesson gives you the precise language for interpreting graphs, statistics and research findings.',
+    portugueseContrast: [task('Em Advanced comparisons and quantifiers: interpreting data at B2 level, observe que a estrutura do inglês difere da ordem natural do português.'), task('Não traduza literalmente; identifique o padrão do inglês antes de produzir.')], 
     whyItMatters: 'Data interpretation is required in B2 academic writing, journalism and formal reports. The language in this lesson appears in every newspaper, policy paper and academic article dealing with global issues.',
     differenceFromA2: 'B1: "Poverty is higher in country A than country B." B2: "Poverty rates in country A are significantly higher than those in country B, with the disparity having more than doubled over the past two decades."',
     grammarTable: {

@@ -21,6 +21,7 @@ export const B2_DEEP_NARRATIVES_PART1 = Object.freeze([
       'Aplicar ambas as formas em narrativa, análise e contextos profissionais.',
     ],
     teacherOpening: 'At B2, telling a story or explaining a situation means layering time. "When I arrived, the meeting started" (two events in order) is not the same as "When I arrived, the meeting had already started" (the meeting was over or in progress before I arrived). This distinction — the past perfect — is what gives your narrative precision and credibility.',
+    portugueseContrast: [task('Em Past perfect and past perfect continuous: narrative depth, observe que a estrutura do inglês difere da ordem natural do português.'), task('Não traduza literalmente; identifique o padrão do inglês antes de produzir.')], 
     whyItMatters: 'In professional contexts — project post-mortems, incident reports, interviews — the ability to correctly sequence events in the past signals analytical precision. "We realised that the data had been corrupted months earlier" is very different from "we realised the data was corrupted."',
     differenceFromA2: 'B1: "She left before I arrived." (past simple sequence) B2: "By the time I arrived, she had already left and had been waiting for over an hour before giving up." (past perfect + past perfect continuous for duration)',
     grammarTable: {
@@ -85,6 +86,7 @@ export const B2_DEEP_NARRATIVES_PART1 = Object.freeze([
       'Usar backshift corretamente com reporting verbs no passado.',
     ],
     teacherOpening: 'When you summarise what someone said, the verb you choose reveals your interpretation. "He said he was innocent" is neutral. "He claimed he was innocent" implies scepticism. "He admitted he was guilty" implies the fact was damaging. Reporting verbs are how analytical writers interpret — not just report.',
+    portugueseContrast: [task('Em Reporting verbs B2: claimed, alleged, acknowledged, insisted, observe que a estrutura do inglês difere da ordem natural do português.'), task('Não traduza literalmente; identifique o padrão do inglês antes de produzir.')], 
     whyItMatters: 'In journalism, academic writing, workplace summaries and discussions, reporting verbs shape meaning. Choosing the right verb signals your analytical stance and controls the reader\'s interpretation.',
     grammarTable: {
       headers: ['Verbo', 'Stance implícita', 'Padrão', 'Exemplo'],
@@ -151,6 +153,7 @@ export const B2_DEEP_NARRATIVES_PART1 = Object.freeze([
       'Usar "would have" em condicionais e especulação sobre o que teria acontecido.',
     ],
     teacherOpening: 'Past modals let you reason about the past — deduce what happened, regret what didn\'t, or speculate about what might have been. These forms appear constantly in analysis, post-mortems, interviews and any time you reflect on past events with nuance.',
+    portugueseContrast: [task('Em Past modals: must have, could have, should have, might have, observe que a estrutura do inglês difere da ordem natural do português.'), task('Não traduza literalmente; identifique o padrão do inglês antes de produzir.')], 
     whyItMatters: 'In professional and academic contexts, past modals signal that you are not just reporting facts but thinking critically. "The project failed" is a fact. "The project should have had clearer milestones" is analysis. "It might have succeeded with better communication" is reflection.',
     grammarTable: {
       headers: ['Modal passado', 'Significado', 'Exemplo'],

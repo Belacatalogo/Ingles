@@ -91,6 +91,7 @@ export const C1_DEEP_REVIEW_FINAL_EXAM = Object.freeze([
       'Demonstrate command of C1-level sentence variety and syntactic complexity.',
     ],
     teacherOpening: 'This review lesson integrates the grammar taught across C1.1–C1.7. Rather than teaching new material, it provides a structured opportunity to revisit the most important structures, identify remaining gaps, and practise them in extended production. The goal is not coverage but genuine mastery of the structures that most distinguish C1 from B2.',
+    portugueseContrast: [task('Em Grammar review: Integrating C1 structures — inversion, cleft, conditionals, subjunctive, and discourse coherence, observe que a estrutura do inglês difere da ordem natural do português.'), task('Não traduza literalmente; identifique o padrão do inglês antes de produzir.')], 
     grammarTable: {
       headers: ['Structure', 'Key marker', 'C1 requirement', 'Common error'],
       rows: [

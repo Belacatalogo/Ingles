@@ -22,6 +22,7 @@ export const B1_DEEP_WORK_STUDY_PART1 = Object.freeze([
       'Transformar frases ativas em passivas e vice-versa.',
     ],
     teacherOpening: 'A voz passiva é essencial para textos formais, notícias, emails profissionais e apresentações. Em inglês de negócios, você vai ver e precisar usar frases como "the report was submitted", "the decision has been made" e "the project is being reviewed". Esta aula cobre as bases com precisão.',
+    portugueseContrast: [task('Em Passive voice: present and past simple, observe que a estrutura do inglês difere da ordem natural do português.'), task('Não traduza literalmente; identifique o padrão do inglês antes de produzir.')], 
     whyItMatters: 'No mundo profissional, a voz passiva é preferida quando o foco é na ação ou resultado, não em quem fez. "The meeting was cancelled" — não interessa quem cancelou. "The budget was approved" — o importante é o resultado.',
     differenceFromA2: 'No A2: "Someone fixed the computer." No B1: "The computer was fixed." / "The computer was fixed by the IT team." A diferença é o registro, a precisão e a capacidade de focar no resultado.',
     grammarTable: {
@@ -138,6 +139,7 @@ export const B1_DEEP_WORK_STUDY_PART1 = Object.freeze([
       'Reconhecer quando o backshift pode ser omitido (reporting de fatos permanentes).',
     ],
     teacherOpening: 'Quando você conta o que alguém disse, você usa reported speech. "She told me she was working late." "He said the project had been delayed." É uma das estruturas mais usadas em contexto profissional, acadêmico e conversacional — e uma das que mais causa erros no B1 brasileiro.',
+    portugueseContrast: [task('Em Reported speech: statements, observe que a estrutura do inglês difere da ordem natural do português.'), task('Não traduza literalmente; identifique o padrão do inglês antes de produzir.')], 
     whyItMatters: 'Emails de follow-up, reuniões, relatórios, conversas informais — em todos esses contextos, você vai precisar relatar o que alguém disse. Sem reported speech preciso, você usa construções pesadas ou incorretas.',
     differenceFromA2: 'No A2: "He said: I am busy." (direto). No B1: "He said he was busy." / "She told me she had already sent the report." A diferença é a fluência e a capacidade de encadear informações de forma natural.',
     grammarTable: {

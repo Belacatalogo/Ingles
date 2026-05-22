@@ -21,6 +21,7 @@ export const B2_DEEP_CHECKPOINTS_PART1 = Object.freeze([
       'Demonstrate command of the full B2 grammar range in an integrated task.',
     ],
     teacherOpening: 'This lesson is your grammar checkpoint before the B2 Gate. It covers every grammar structure introduced in B2.1 through B2.7. Work through the review table and the exercises. Where a structure feels uncertain, note the original lesson and return to it. This is not a test — it is a map of what you know and what you still need to consolidate.',
+    portugueseContrast: [task('Em B2 Grammar Consolidation: review of all 21 B2 grammar structures, observe que a estrutura do inglês difere da ordem natural do português.'), task('Não traduza literalmente; identifique o padrão do inglês antes de produzir.')], 
     whyItMatters: 'B2 grammar is not a collection of isolated rules. It is a system: the structures interact and reinforce each other. Consolidation means seeing the system, not just the parts.',
     differenceFromA2: 'B2 grammar distinguishes itself from B1 by complexity of embedding, by the density of clausal structures, and by the use of grammar for rhetorical effect — emphasis, hedging, formality, concession — not just to convey information.',
     grammarTable: {

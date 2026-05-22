@@ -21,6 +21,7 @@ export const C2_DEEP_BRIDGE_PART1 = Object.freeze([
       'Avoid the over-specification typical of advanced L2 learners still translating from L1.',
     ],
     teacherOpening: 'At C1, you achieved fluency with complex structures. At C2, the challenge is different: producing English that feels natural to a native reader — writing that coheres effortlessly, that does not over-specify, that uses ellipsis where ellipsis is expected and substitution where repetition would be clumsy. This is the grammar of expert prose, and it is learned by attention to what expert writers do not write as much as what they do.',
+    portugueseContrast: [task('Em Grammar: Ellipsis, substitution, and reference — cohesion without redundancy at C2 level, observe que a estrutura do inglês difere da ordem natural do português.'), task('Não traduza literalmente; identifique o padrão do inglês antes de produzir.')], 
     grammarTable: {
       headers: ['Cohesion device', 'Mechanism', 'Example', 'What L2 learners typically write instead'],
       rows: [
@@ -72,6 +73,7 @@ export const C2_DEEP_BRIDGE_PART1 = Object.freeze([
       'Recognise when nominalisation obscures meaning and when it increases precision.',
     ],
     teacherOpening: 'Nominalisation — converting verbs and adjectives into nouns — is the defining grammatical feature of academic and bureaucratic prose. It increases lexical density, allows complex ideas to be packaged as noun phrases that can then be modified, and creates the impersonal, authoritative register of expert writing. At C2, you must both produce nominalisations fluently and know when not to — because over-nominalisation is the hallmark of bureaucratic opacity, not intellectual depth.',
+    portugueseContrast: [task('Em Grammar: Nominalisation and lexical density — the grammar of expert academic prose, observe que a estrutura do inglês difere da ordem natural do português.'), task('Não traduza literalmente; identifique o padrão do inglês antes de produzir.')], 
     grammarTable: {
       headers: ['Base form', 'Nominalised form', 'Nominalised in context', 'Register effect'],
       rows: [

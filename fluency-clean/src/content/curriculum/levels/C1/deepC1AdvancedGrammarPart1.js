@@ -22,6 +22,7 @@ export const C1_DEEP_ADVANCED_GRAMMAR_PART1 = Object.freeze([
       'Avoid the most common errors in cleft construction.',
     ],
     teacherOpening: 'At B2 you learned the basic it-cleft: "It was the governance failure that caused the crisis." At C1, cleft structures multiply: pseudoclefts (What-clefts), reversed pseudoclefts, nominal clefts, and clefts with different focus positions. These are not decorative — they control information structure, placing new or important information in the most prominent syntactic position.',
+    portugueseContrast: [task('Em Advanced cleft sentences: pseudoclefts, reversed pseudoclefts and nominative clefts at C1, observe que a estrutura do inglês difere da ordem natural do português.'), task('Não traduza literalmente; identifique o padrão do inglês antes de produzir.')], 
     whyItMatters: 'Cleft structures are a signature feature of sophisticated formal writing and academic argument. They allow the writer to manage information flow — making old information the frame and new information the focus — in a way that flat sentences cannot achieve. C1 academic writers use them instinctively; C1 learners need to build that instinct deliberately.',
     differenceFromA2: 'B2: "It was the lack of enforcement that caused the policy to fail." C1: "What caused the policy to fail was not the design of the framework, but the absence of any meaningful enforcement mechanism." The C1 version gives more information, positions the contrast (not X but Y) inside the cleft, and moves the "new information" to the most prominent position.',
     grammarTable: {
@@ -81,6 +82,7 @@ export const C1_DEEP_ADVANCED_GRAMMAR_PART1 = Object.freeze([
       'Produce complex passive + perfect infinitive structures used in academic writing.',
     ],
     teacherOpening: 'By B2 you were confident with basic passive and with "is believed to be", "is said to have been". At C1, the passive expands into causatives, complex modal combinations, and — most importantly — the strategic use of passive as a rhetorical choice in academic writing. Passive is not just a grammar rule at C1: it is a choice about perspective, attribution and authority.',
+    portugueseContrast: [task('Em Advanced passive voice: causatives, complex modal passives and academic distancing, observe que a estrutura do inglês difere da ordem natural do português.'), task('Não traduza literalmente; identifique o padrão do inglês antes de produzir.')], 
     whyItMatters: 'Complex passive structures appear in every academic text, legal document and professional report. The causative passive (the framework was allowed to deteriorate) carries different implications from the simple active (they allowed the framework to deteriorate). At C1, these distinctions are semantic and rhetorical, not just grammatical.',
     differenceFromA2: 'B2: "People believe this policy has failed." → "This policy is believed to have failed." C1: "This policy is widely believed to have been allowed to fail through the systematic underfunding of the institutions charged with its implementation" — passive stacking for maximum academic density.',
     grammarTable: {
@@ -137,6 +139,7 @@ export const C1_DEEP_ADVANCED_GRAMMAR_PART1 = Object.freeze([
       'Use verbs of thinking and belief in complex patterns (consider X to be, believe X to be, expect X to, find X to be).',
     ],
     teacherOpening: 'At C1, verb patterns are not just about "right or wrong" — they carry meaning differences. "I stopped to read the report" means something different from "I stopped reading the report." "She remembered to submit" differs from "she remembered submitting." And "He found the argument compelling" differs subtly from "He found the argument to be compelling." Understanding these differences — and using them intentionally — is the mark of a C1 user.',
+    portugueseContrast: [task('Em Complex verb patterns: verb + object + infinitive/gerund and C1 pattern distinctions, observe que a estrutura do inglês difere da ordem natural do português.'), task('Não traduza literalmente; identifique o padrão do inglês antes de produzir.')], 
     whyItMatters: 'Complex verb patterns are dense in academic and professional English. The verb-object-infinitive pattern (This enables governments to adopt..., This prevents institutions from functioning...) is the backbone of formal argument about causes, effects, obligations and possibilities.',
     differenceFromA2: 'B2: "The policy stops the banks from doing this." C1: "The regulatory framework is intended to prevent financial institutions from engaging in the kind of speculative behaviour that precipitated the 2008 crisis."',
     grammarTable: {

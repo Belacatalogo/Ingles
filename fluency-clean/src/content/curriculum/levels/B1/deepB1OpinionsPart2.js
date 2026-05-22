@@ -23,6 +23,7 @@ export const B1_DEEP_OPINIONS_PART2 = Object.freeze([
       'Usar "despite" e "in spite of" com gerúndio ou substantivo.',
     ],
     teacherOpening: 'No B1, você conecta ideias com mais sofisticação. Esta aula ensina os conectores de argumento — as peças que transformam uma lista de frases em um raciocínio organizado e persuasivo.',
+    portugueseContrast: [task('Em Linkers: although, however, therefore, besides, despite, observe que a estrutura do inglês difere da ordem natural do português.'), task('Não traduza literalmente; identifique o padrão do inglês antes de produzir.')], 
     whyItMatters: 'Linkers aparecem em todas as redações de exame B1, em emails formais, em apresentações e em qualquer conversa onde você precise estruturar um argumento. Sem eles, seu inglês soa fragmentado.',
     differenceFromA2: 'No A2: "It is expensive. But it is good." No B1: "Although it is expensive, it is worth the investment. However, not everyone can afford it. Therefore, the government should consider subsidies."',
     grammarTable: {

@@ -21,6 +21,7 @@ export const C1_DEEP_CULTURAL_DISCOURSE_PART1 = Object.freeze([
       'Avoid Brazilian-influenced errors with modal + infinitive structures.',
     ],
     teacherOpening: 'English has largely absorbed its subjunctive into other structures, but the subjunctive is alive and well in academic, formal, and literary registers — exactly the contexts that matter at C1. It expresses unreality, desire, demand, and counter-factual thought. Mastering it separates formal from semi-formal writing.',
+    portugueseContrast: [task('Em Grammar: The subjunctive and hypothetical mood — distance, desire, and counter-factual thought, observe que a estrutura do inglês difere da ordem natural do português.'), task('Não traduza literalmente; identifique o padrão do inglês antes de produzir.')], 
     grammarTable: {
       headers: ['Structure', 'Function', 'Example'],
       rows: [
@@ -87,6 +88,7 @@ export const C1_DEEP_CULTURAL_DISCOURSE_PART1 = Object.freeze([
       'Avoid over-reliance on elementary connectors (however, therefore, also) at C1 level.',
     ],
     teacherOpening: 'At lower levels, connectors are simple: "however," "therefore," "also." At C1, you need a full toolkit of discourse markers that signal not just logical relationships but argumentative stance — concession, qualification, elaboration, and synthesis. These are the markers that distinguish C1 writing from B2.',
+    portugueseContrast: [task('Em Grammar: Discourse markers and cohesive devices — organising sophisticated argument across text, observe que a estrutura do inglês difere da ordem natural do português.'), task('Não traduza literalmente; identifique o padrão do inglês antes de produzir.')], 
     grammarTable: {
       headers: ['Function', 'Markers', 'Register note'],
       rows: [

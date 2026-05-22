@@ -22,6 +22,7 @@ export const B2_DEEP_BRIDGE_PART1 = Object.freeze([
       'Distinguir quando esses marcadores são mais naturais que "but" ou "however".',
     ],
     teacherOpening: 'At B2, your arguments need connective tissue. "But" and "however" are fine — but a B2 speaker also knows when to use "nevertheless" to acknowledge an opposing point without conceding it, or "albeit" to add a quiet qualification. These markers signal fluency and precision.',
+    portugueseContrast: [task('Em Advanced discourse markers: nevertheless, albeit, notwithstanding, observe que a estrutura do inglês difere da ordem natural do português.'), task('Não traduza literalmente; identifique o padrão do inglês antes de produzir.')], 
     whyItMatters: 'In professional writing, academic essays, presentations and debates, these markers allow you to build complex arguments without losing the reader. "The project was expensive; nevertheless, it delivered strong results" reads very differently from "but it delivered results."',
     differenceFromA2: 'A2/B1: "The report was late, but it was good." B2: "The report was submitted after the deadline; nevertheless, the quality of the analysis was exceptional." B2 adds precision, register and argumentative nuance.',
     grammarTable: {
@@ -94,6 +95,7 @@ export const B2_DEEP_BRIDGE_PART1 = Object.freeze([
       'Distinguir quando usar inversão (ênfase formal/retórica) vs estrutura normal.',
     ],
     teacherOpening: 'Inversion is one of the most powerful tools in B2+ English. Instead of "I have never seen such commitment," you say "Never have I seen such commitment." The effect is immediate — it commands attention, adds weight and signals advanced proficiency. You will encounter it in speeches, editorials, formal reports and literary writing.',
+    portugueseContrast: [task('Em Inversion for emphasis: Never have I, Rarely does, Not only...but also, observe que a estrutura do inglês difere da ordem natural do português.'), task('Não traduza literalmente; identifique o padrão do inglês antes de produzir.')], 
     whyItMatters: 'Inversion turns a flat statement into a forceful one. A single structural shift transforms "I have rarely worked with a more talented team" into "Rarely have I worked with a more talented team." In presentations, interviews and persuasive writing, this makes a significant difference.',
     differenceFromA2: 'B1: "I have never experienced anything like this." B2: "Never have I experienced anything like this." B2 adds rhetorical force and signals sophisticated control of word order.',
     grammarTable: {
@@ -166,6 +168,7 @@ export const B2_DEEP_BRIDGE_PART1 = Object.freeze([
       'Produzir clefts naturais em escrita e fala B2.',
     ],
     teacherOpening: 'Cleft sentences allow you to emphasise any element of a sentence by "splitting" it. "The team caused the delay" is neutral. "It was the team that caused the delay" focuses the blame. "What caused the delay was poor planning" focuses the cause. "All we needed was more time" simplifies the problem. These are essential B2 precision tools.',
+    portugueseContrast: [task('Em Cleft sentences: It was... that / What I need is / All I want is, observe que a estrutura do inglês difere da ordem natural do português.'), task('Não traduza literalmente; identifique o padrão do inglês antes de produzir.')], 
     whyItMatters: 'In arguments, presentations and written analysis, the ability to shift focus within a sentence is critical. Clefts let you guide the reader\'s attention without changing the facts.',
     differenceFromA2: 'B1: "The team was responsible for the problem." B2: "It was the team\'s decision that created the problem." / "What really concerned us was the lack of communication." The shift gives precision and argumentative power.',
     grammarTable: {

@@ -22,6 +22,7 @@ export const C2_DEEP_COMPLEX_DISCOURSE_PART1 = Object.freeze([
       'Choose the correct mixed conditional type depending on whether the hypothetical involves a past event, a present state, or both.',
     ],
     teacherOpening: 'Most learners know the four "types" of conditional. At C2, the question is not whether you know them but whether you can use them with the full range of modals, recognise inverted formal variants, and select the correct mixed type for a specific logical relationship. The conditional system is not four boxes — it is a single system for expressing hypothetical relationships, and the boxes are heuristics, not rules. This lesson maps the whole system.',
+    portugueseContrast: [task('Em Grammar: Advanced conditional constructions — the complete conditional system at C2, observe que a estrutura do inglês difere da ordem natural do português.'), task('Não traduza literalmente; identifique o padrão do inglês antes de produzir.')], 
     grammarTable: {
       headers: ['Conditional type', 'Structure', 'Key examples', 'Nuance / C2 note'],
       rows: [
@@ -78,6 +79,7 @@ export const C2_DEEP_COMPLEX_DISCOURSE_PART1 = Object.freeze([
       'Recognise and avoid the most persistent Brazilian errors in relative clause use, including comma placement and inappropriate pronoun choice.',
     ],
     teacherOpening: 'Relative clauses are one of the primary mechanisms for packing complex information into dense, precise sentences. At C2, the goal is not just to form relative clauses correctly but to choose the right type for the information structure you need: to know when to reduce, when to use a non-restrictive form, when a formal prepositional relative is required, and when an appositive is more economical. The difference between "the researcher who led the study" and "the researcher, who has published extensively in this area," is not just grammatical — it reflects a decision about which information is essential to identification and which is additional.',
+    portugueseContrast: [task('Em Grammar: Advanced relative clauses, appositives, and non-restrictive modification, observe que a estrutura do inglês difere da ordem natural do português.'), task('Não traduza literalmente; identifique o padrão do inglês antes de produzir.')], 
     grammarTable: {
       headers: ['Structure', 'Formation and function', 'Example', 'Register / C2 note'],
       rows: [

@@ -21,6 +21,7 @@ export const B2_DEEP_CULTURE_MEDIA_PART1 = Object.freeze([
       'Reconhecer e produzir cláusulas participiais em escrita formal e jornalística.',
     ],
     teacherOpening: 'Participle clauses are what separate B2 academic/formal English from B1. Instead of "Because it was released last year, the film quickly became controversial", a B2 writer would say "Released last year, the film quickly became controversial." This makes your writing more concise, varied and sophisticated.',
+    portugueseContrast: [task('Em Participle clauses: reducing clauses with -ing, -ed and having done, observe que a estrutura do inglês difere da ordem natural do português.'), task('Não traduza literalmente; identifique o padrão do inglês antes de produzir.')], 
     whyItMatters: 'Participle clauses appear constantly in news articles, academic writing, formal reports and literary texts. Recognising and producing them is essential for B2 reading comprehension and formal writing tasks.',
     differenceFromA2: 'B1: "Because the report was submitted on time, the client was satisfied." B2: "Submitted on time, the report satisfied the client." B2: "Having submitted the report, the team moved on to the next phase."',
     grammarTable: {
@@ -85,6 +86,7 @@ export const B2_DEEP_CULTURE_MEDIA_PART1 = Object.freeze([
       'Usar backshift corretamente (present → past, past → past perfect, will → would).',
     ],
     teacherOpening: 'At B2, reporting what people said is not just about statements — it also includes questions, commands, and requests. "She asked where the report was." "He told us to submit it by Friday." "They wanted to know whether we had enough data." These forms are essential in professional, journalistic and academic contexts.',
+    portugueseContrast: [task('Em Reported speech: questions, commands and requests, observe que a estrutura do inglês difere da ordem natural do português.'), task('Não traduza literalmente; identifique o padrão do inglês antes de produzir.')], 
     whyItMatters: 'In meeting summaries, news reports, academic citations and professional emails, reported speech for questions and commands is unavoidable. Getting the word order right — especially in reported questions — is a key B2 accuracy marker.',
     grammarTable: {
       headers: ['Tipo', 'Direto', 'Indireto (Reported)'],
@@ -150,6 +152,7 @@ export const B2_DEEP_CULTURE_MEDIA_PART1 = Object.freeze([
       'Reduzir relative clauses usando particípios (-ing, -ed).',
     ],
     teacherOpening: 'Relative clauses are the grammar of precision. "The report which was submitted on time won the award" (defining — only that report). "The report, which was submitted on time, won the award" (non-defining — extra info). The comma changes everything. At B2, mastery of both types — including reduced forms — is essential.',
+    portugueseContrast: [task('Em Relative clauses: defining, non-defining and reduced forms, observe que a estrutura do inglês difere da ordem natural do português.'), task('Não traduza literalmente; identifique o padrão do inglês antes de produzir.')], 
     whyItMatters: 'Academic, journalistic and professional texts use relative clauses constantly. The distinction between defining and non-defining affects meaning. Reduced relative clauses make writing more elegant and concise.',
     grammarTable: {
       headers: ['Tipo', 'Regra', 'Exemplo'],

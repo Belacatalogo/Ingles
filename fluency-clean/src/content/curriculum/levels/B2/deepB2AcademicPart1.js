@@ -21,6 +21,7 @@ export const B2_DEEP_ACADEMIC_PART1 = Object.freeze([
       'Produce cohesive academic paragraphs that read fluently and avoid unnecessary repetition.',
     ],
     teacherOpening: 'One of the things that makes academic writing feel difficult to read — but also sophisticated and efficient — is its system of cohesive reference. Instead of repeating "inequality" five times in a paragraph, an academic writer uses "this phenomenon", "the above-mentioned disparity", "such trends". These reference devices are not just stylistic; they signal logical connections between ideas. Learning them is essential for producing — and understanding — B2+ academic texts.',
+    portugueseContrast: [task('Em Advanced cohesion: reference chains, substitution and ellipsis in academic writing, observe que a estrutura do inglês difere da ordem natural do português.'), task('Não traduza literalmente; identifique o padrão do inglês antes de produzir.')], 
     whyItMatters: 'Academic texts are dense because they pack information into reference chains. If you cannot follow these chains, you lose the thread of the argument. If you cannot produce them, your writing sounds repetitive and under-developed.',
     differenceFromA2: 'B1: "Inequality is a serious problem. Inequality affects many people. Inequality is getting worse." B2: "Inequality is a serious problem. This trend affects millions globally and, as the data shows, is deteriorating rather than improving."',
     grammarTable: {
@@ -75,6 +76,7 @@ export const B2_DEEP_ACADEMIC_PART1 = Object.freeze([
       'Recognise these structures in academic texts and use them accurately in writing.',
     ],
     teacherOpening: 'Academic writing often places the key information at the end of a sentence — the position of most stress in English. It-extraposition (moving a that-clause or whether-clause to the end, starting the sentence with "It") is one of the main tools for achieving this. Nominal clause subjects (What is clear is...) are another. Both are rare in informal English and very common in academic writing — they are strong signals of B2+ register.',
+    portugueseContrast: [task('Em Complex clause structure: it-extraposition, nominal clauses and academic emphasis, observe que a estrutura do inglês difere da ordem natural do português.'), task('Não traduza literalmente; identifique o padrão do inglês antes de produzir.')], 
     whyItMatters: 'These structures control where emphasis falls in a sentence. They allow the writer to introduce a topic with a commentary phrase (It is often argued that, It should be noted that) and to foreground the most important information. Without them, academic writing sounds flat.',
     differenceFromA2: 'B1: "Solving inequality is difficult." B2: "It is worth noting that the challenge of inequality resists simple technical solutions." B1: "We don\'t know if the policy will work." B2: "Whether the policy will achieve its intended outcomes remains, at this stage, unclear."',
     grammarTable: {
@@ -131,6 +133,7 @@ export const B2_DEEP_ACADEMIC_PART1 = Object.freeze([
       'Practise paraphrasing academic passages without losing precision or changing meaning.',
     ],
     teacherOpening: 'Paraphrasing — expressing an idea in different words while keeping the meaning — is one of the most important academic skills. Whether you are avoiding plagiarism in an essay, summarising a source, or clarifying a complex idea in a spoken discussion, the ability to rephrase accurately is essential at B2+. Reformulation language (in other words, that is to say) lets you explicitly signal to the reader that you are restating something — a key tool for clarity in academic writing.',
+    portugueseContrast: [task('Em Paraphrasing and reformulation: "in other words", "that is to say", "to put it differently", observe que a estrutura do inglês difere da ordem natural do português.'), task('Não traduza literalmente; identifique o padrão do inglês antes de produzir.')], 
     whyItMatters: 'Academic writing requires paraphrasing when using sources, defining terms, and making complex ideas accessible. In academic speaking, reformulation helps you clarify your point mid-argument without losing fluency. These are skills tested in every B2 and C1 exam.',
     differenceFromA2: 'B1: "I mean..." / "Like, it\'s when..." B2: "In other words..." / "To put it more precisely..." / "What this implies is..."',
     grammarTable: {

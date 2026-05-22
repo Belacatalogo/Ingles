@@ -21,6 +21,7 @@ export const C2_DEEP_RHETORIC_PART1 = Object.freeze([
       'Recognise how expert writers control what is in theme position and why.',
     ],
     teacherOpening: 'Every English sentence has a theme — what it starts with — and a rheme — what is said about the theme. Expert writers do not leave this to chance. They front what they want to be the topic, they move the new information to the end (where it is most prominent), and they use unusual word order to create emphasis, contrast, and rhetorical force. At C2, this becomes a productive stylistic tool.',
+    portugueseContrast: [task('Em Grammar: Fronting and foregrounding — managing information structure for rhetorical effect, observe que a estrutura do inglês difere da ordem natural do português.'), task('Não traduza literalmente; identifique o padrão do inglês antes de produzir.')], 
     grammarTable: {
       headers: ['Structure', 'Example', 'Rhetorical function', 'Register'],
       rows: [
@@ -71,6 +72,7 @@ export const C2_DEEP_RHETORIC_PART1 = Object.freeze([
       'Calibrate stance to content — matching the certainty of a claim to the strength of the evidence.',
     ],
     teacherOpening: 'At C2, epistemic sophistication — knowing not just what to say but how certain to be about it, and how to signal that certainty precisely — is one of the marks of mastery. Every claim in an academic text carries an implicit or explicit stance: how confident is the writer? What is the evidence? Whose view is being reported? Expert writers calibrate this continuously and unconsciously; at C2, it becomes an explicit skill.',
+    portugueseContrast: [task('Em Grammar: Epistemic stance and evidentiality — positioning yourself and your sources at C2, observe que a estrutura do inglês difere da ordem natural do português.'), task('Não traduza literalmente; identifique o padrão do inglês antes de produzir.')], 
     grammarTable: {
       headers: ['Stance type', 'Markers', 'Function', 'Common error'],
       rows: [

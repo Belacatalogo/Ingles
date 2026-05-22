@@ -25,6 +25,7 @@ export const B1_DEEP_OPINIONS_PART1 = Object.freeze([
       'Evitar os erros mais comuns de brasileiros com o First Conditional.',
     ],
     teacherOpening: 'No A2, você já usava "will" para falar do futuro. No B1, você aprende a conectar condição e resultado: "If you study every day, you will improve fast." Essa estrutura — o First Conditional — é essencial para expressar planos, avisos, promessas e consequências reais.',
+    portugueseContrast: [task('Em First Conditional — real possibilities and consequences, observe que a estrutura do inglês difere da ordem natural do português.'), task('Não traduza literalmente; identifique o padrão do inglês antes de produzir.')], 
     whyItMatters: 'First Conditional aparece em conversas sobre o futuro, em persuasão, em debates, em entrevistas e em qualquer momento que você conecte uma condição a um resultado. É a estrutura-base de argumentação em inglês.',
     differenceFromA2: 'No A2: "I will go tomorrow." No B1: "If the weather is good, I will go tomorrow. If it rains, I will stay home." Você passa de afirmações diretas para raciocínio condicional.',
     grammarTable: {
@@ -118,6 +119,7 @@ export const B1_DEEP_OPINIONS_PART1 = Object.freeze([
       'Escolher o condicional certo pelo contexto com segurança.',
     ],
     teacherOpening: 'Você já aprendeu o First Conditional para possibilidades reais. Agora o Zero Conditional: quando a condição for sempre verdadeira — um fato da natureza, uma regra, uma instrução — usamos presente simples nas duas cláusulas.',
+    portugueseContrast: [task('Em Zero Conditional vs First Conditional — facts vs possibilities, observe que a estrutura do inglês difere da ordem natural do português.'), task('Não traduza literalmente; identifique o padrão do inglês antes de produzir.')], 
     whyItMatters: 'Zero Conditional aparece em instruções de trabalho ("If a customer complains, we apologise immediately."), em ciência ("If you heat ice, it melts.") e em hábitos condicionais permanentes.',
     differenceFromA2: 'No A2, você usava "When you are tired, you sleep." No B1, você distingue esse tipo de fato universal de uma possibilidade futura real — e escolhe a estrutura certa.',
     grammarTable: {
@@ -201,6 +203,7 @@ export const B1_DEEP_OPINIONS_PART1 = Object.freeze([
       'Introduzir uma opinião com naturalidade, sem tradução literal do português.',
     ],
     teacherOpening: 'Expressar opiniões é uma das habilidades mais importantes do B1. Mas muitos brasileiros traduzem literalmente: "I have the impression that..." ou "My thought is..." — que soam estranhos em inglês. Esta aula ensina as fórmulas exatas que falantes nativos usam.',
+    portugueseContrast: [task('Em Expressing opinions: I think, I believe, In my view, observe que a estrutura do inglês difere da ordem natural do português.'), task('Não traduza literalmente; identifique o padrão do inglês antes de produzir.')], 
     whyItMatters: 'Em conversas, entrevistas, discussões em grupo e textos de opinião, você precisa dessas frases para soar natural e organizado. Sem elas, sua opinião parece incompleta ou abrupta.',
     differenceFromA2: 'No A2, você dizia: "I like it" ou "It is good." No B1, você formula opiniões mais elaboradas: "I think it\'s a great idea, although I\'m not sure it would work in practice."',
     grammarTable: {

@@ -22,6 +22,7 @@ export const B1_DEEP_TRAVEL_CULTURE_PART1 = Object.freeze([
       'Aplicar comparativos e superlativos em contexto real de viagem e cultura.',
     ],
     teacherOpening: 'Comparativos e superlativos existem desde o A2 — mas no B1, o desafio é usá-los com mais precisão, variedade e em contextos mais complexos. Esta aula consolida as regras básicas e introduz estruturas avançadas que transformam suas comparações em inglês real e fluente.',
+    portugueseContrast: [task('Em Comparatives and superlatives: review and advanced use, observe que a estrutura do inglês difere da ordem natural do português.'), task('Não traduza literalmente; identifique o padrão do inglês antes de produzir.')], 
     whyItMatters: 'Em viagens e conversas culturais, você compara o tempo todo: lugares, preços, culturas, experiências. "Paris was far more expensive than I expected." / "The further south you go, the warmer it gets." / "This hotel is not as comfortable as the last one." Sem essas estruturas, suas comparações ficam limitadas e repetitivas.',
     differenceFromA2: 'No A2: "Rome is bigger than London." / "It was the best trip." No B1: "The further we travelled from the capital, the cheaper everything became." / "The accommodation was nowhere near as luxurious as we had expected." / "Travelling by train turned out to be twice as fast as going by bus." A diferença é nuance, precisão e variedade estrutural.',
     grammarTable: {
@@ -158,6 +159,7 @@ export const B1_DEEP_TRAVEL_CULTURE_PART1 = Object.freeze([
       'Aplicar essas formas em contexto real de planejamento de viagem.',
     ],
     teacherOpening: 'Dois tempos verbais que os brasileiros raramente usam com naturalidade — mas que aparecem o tempo todo em planejamento, conversas sobre itinerários e previsões de viagem. "By the time you arrive, I will have checked in." / "This time tomorrow, we will be flying over the Atlantic." São formas sofisticadas que elevam o seu inglês do B1 para um B1 sólido.',
+    portugueseContrast: [task('Em Future continuous and future perfect, observe que a estrutura do inglês difere da ordem natural do português.'), task('Não traduza literalmente; identifique o padrão do inglês antes de produzir.')], 
     whyItMatters: 'Em contexto de viagem e planejamento, você frequentemente precisa falar sobre o que estará acontecendo num momento futuro ou o que já terá sido concluído. Sem essas formas, suas frases ficam artificialmente simples ou gramaticalmente incorretas.',
     differenceFromA2: 'No A2: "We will arrive tomorrow." / "I am going to book the hotel." No B1: "By the time we arrive, the hotel will have already processed our booking." / "This time next week, we will be relaxing on the beach." A diferença é a precisão temporal e a sofisticação da expressão.',
     grammarTable: {

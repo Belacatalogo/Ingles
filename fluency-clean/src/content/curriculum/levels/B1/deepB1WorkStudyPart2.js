@@ -23,6 +23,7 @@ export const B1_DEEP_WORK_STUDY_PART2 = Object.freeze([
       'Evitar o erro de manter a ordem de pergunta no discurso indireto.',
     ],
     teacherOpening: 'Na aula anterior, você aprendeu a relatar afirmações. Agora vamos relatar perguntas e pedidos — uma das partes mais difíceis do reported speech porque a ordem das palavras muda completamente. "She asked where the meeting was." — não "where was the meeting".',
+    portugueseContrast: [task('Em Reported speech: questions and requests, observe que a estrutura do inglês difere da ordem natural do português.'), task('Não traduza literalmente; identifique o padrão do inglês antes de produzir.')], 
     whyItMatters: 'Relatar perguntas e pedidos é essencial em contextos profissionais: "The client asked whether we could deliver by Friday." / "She told me to send the report immediately." Sem essa estrutura, você usa construções literais que soam estranhas ou incorretas.',
     differenceFromA2: 'No A2: "She said: Where is the manager?" No B1: "She asked where the manager was." A diferença é a eliminação da ordem invertida de pergunta e o uso correto de if/whether para yes/no questions.',
     grammarTable: {

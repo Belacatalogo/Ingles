@@ -22,6 +22,7 @@ export const B2_DEEP_PROFESSIONAL_PART1 = Object.freeze([
       'Distinguir o nível de formalidade de cada estrutura.',
     ],
     teacherOpening: 'In professional contexts, how you ask for something is as important as what you ask. "Send me the report" is direct and can sound rude. "Could you send me the report when you get a chance?" is standard. "I was wondering whether it would be possible to receive the report by end of day?" is formal and shows careful consideration. At B2, you need all three registers.',
+    portugueseContrast: [task('Em Polite requests and indirect questions in professional English, observe que a estrutura do inglês difere da ordem natural do português.'), task('Não traduza literalmente; identifique o padrão do inglês antes de produzir.')], 
     whyItMatters: 'Professional relationships depend on tone. An email that is too direct can damage a working relationship. Being able to calibrate formality — especially in writing — is a key B2 competency that directly affects your professional effectiveness.',
     differenceFromA2: 'A2: "Can you send the report?" B1: "Could you please send the report?" B2: "I was wondering whether it would be possible to receive the report by the end of the week. I appreciate that you are managing several priorities at the moment."',
     grammarTable: {
@@ -94,6 +95,7 @@ export const B2_DEEP_PROFESSIONAL_PART1 = Object.freeze([
       'Reconhecer essas formas em contratos, emails formais e documentos legais/profissionais.',
     ],
     teacherOpening: 'In formal professional and legal English, conditionals often appear without the word "if". Instead of "If you need assistance," a formal email might read: "Should you require assistance, please do not hesitate to contact us." This is not just a stylistic choice — it signals a specific register that is expected in formal correspondence, contracts and business communication.',
+    portugueseContrast: [task('Em Formal conditionals: Should you require, Were you to, Had we known, observe que a estrutura do inglês difere da ordem natural do português.'), task('Não traduza literalmente; identifique o padrão do inglês antes de produzir.')], 
     whyItMatters: 'These forms appear constantly in formal professional documents, contracts, official correspondence and business English at C1 level. At B2, recognising and producing them marks you as a sophisticated communicator in professional contexts.',
     differenceFromA2: 'B1: "If you have any questions, contact me." B2: "Should you have any queries, please do not hesitate to contact our office." The difference is register — formal professional English omits "if" and uses inversion.',
     grammarTable: {
@@ -162,6 +164,7 @@ export const B2_DEEP_PROFESSIONAL_PART1 = Object.freeze([
       'Aplicar corretamente no contexto de emails, relatórios e reuniões profissionais.',
     ],
     teacherOpening: 'Professional English requires precise verb patterns. "We recommend to implement" is wrong — "We recommend implementing" is correct. "We have decided implementing" is wrong — "We have decided to implement" is correct. These patterns matter in professional writing and reports: errors here signal uncertainty in formal English.',
+    portugueseContrast: [task('Em Gerunds vs infinitives in professional English: recommend, suggest, consider, observe que a estrutura do inglês difere da ordem natural do português.'), task('Não traduza literalmente; identifique o padrão do inglês antes de produzir.')], 
     whyItMatters: 'In business writing, the wrong pattern looks careless. "The committee recommends to review" is a clear error visible to any native speaker. Getting these right marks you as a precise, professional communicator.',
     grammarTable: {
       headers: ['Verbo', 'Padrão', 'Exemplo profissional'],

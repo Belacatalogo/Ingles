@@ -21,6 +21,7 @@ export const B2_DEEP_ABSTRACT_DISCUSSION_PART1 = Object.freeze([
       'Usar mixed conditionals para análise, arrependimento e raciocínio hipotético B2.',
     ],
     teacherOpening: 'What if a decision made in the past is still affecting the present? Mixed conditionals connect a hypothetical past to a present consequence — or a hypothetical present state to a past consequence. They require accurate control of tense and express sophisticated "what if" reasoning.',
+    portugueseContrast: [task('Em Mixed conditionals: past cause with present consequence, observe que a estrutura do inglês difere da ordem natural do português.'), task('Não traduza literalmente; identifique o padrão do inglês antes de produzir.')], 
     whyItMatters: 'In professional analysis, academic writing and mature conversation, mixed conditionals let you discuss causation across time: "If the team had communicated better [past], we wouldn\'t be in this situation now [present]." This is the language of strategic reflection and post-mortem thinking.',
     differenceFromA2: '2nd conditional: "If I had more time now, I would help." (hypothetical present) 3rd conditional: "If I had known, I would have helped." (hypothetical past, past consequence) Mixed: "If I had studied harder then [past], I would be in a better position now [present]."',
     grammarTable: {
@@ -79,6 +80,7 @@ export const B2_DEEP_ABSTRACT_DISCUSSION_PART1 = Object.freeze([
       'Distinguir as formas gramaticais e registros de cada estrutura.',
     ],
     teacherOpening: 'Every B2 argument has concession — acknowledging the other side without giving up your position. Knowing the full range of concessive structures allows you to be precise and nuanced: "although" for full clauses, "despite" for noun phrases, "whereas" for parallel contrast. Each has its rhythm and register.',
+    portugueseContrast: [task('Em Concession: although, despite, whereas, for all that, observe que a estrutura do inglês difere da ordem natural do português.'), task('Não traduza literalmente; identifique o padrão do inglês antes de produzir.')], 
     whyItMatters: 'Arguments without concession sound one-sided and unconvincing. Arguments with clumsy concession sound confused. Mastering concession structures is what makes a B2 argument read as sophisticated rather than defensive.',
     grammarTable: {
       headers: ['Estrutura', 'Padrão gramatical', 'Registro', 'Exemplo'],
@@ -144,6 +146,7 @@ export const B2_DEEP_ABSTRACT_DISCUSSION_PART1 = Object.freeze([
       'Reconhecer e usar passiva em textos formais, relatórios, emails e análise acadêmica.',
     ],
     teacherOpening: 'At B2, passive voice goes beyond "is made" and "was built." Professional and academic English requires passive continuous ("is being reviewed"), passive perfect ("has been submitted") and modal passive ("must be considered", "should be addressed"). These signal that you can operate in formal written registers.',
+    portugueseContrast: [task('Em Advanced passive voice: continuous, perfect, and modal passive, observe que a estrutura do inglês difere da ordem natural do português.'), task('Não traduza literalmente; identifique o padrão do inglês antes de produzir.')], 
     whyItMatters: 'In professional reports, academic papers, formal correspondence and policy documents, these passive forms are the standard. "The budget is being reviewed" is standard; "someone is reviewing the budget" sounds odd in formal English. Mastering these forms is essential for professional communication.',
     grammarTable: {
       headers: ['Forma passiva', 'Estrutura', 'Uso', 'Exemplo'],

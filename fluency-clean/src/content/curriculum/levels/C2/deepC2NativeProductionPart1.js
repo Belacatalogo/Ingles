@@ -21,6 +21,7 @@ export const C2_DEEP_NATIVE_PRODUCTION_PART1 = Object.freeze([
       'Develop the habit of thinking in collocations rather than words.',
     ],
     teacherOpening: 'Grammar rules can be learned. Vocabulary can be memorised. But collocation — the way words prefer to go together — can only be internalised through sustained exposure to large amounts of authentic text. At C2, the gap between native and near-native production is almost entirely a collocation gap: "make a decision" not "take a decision"; "raise a question" not "lift a question"; "heavy rain" not "strong rain." This lesson catalogues the most important collocation distinctions for academic and formal registers.',
+    portugueseContrast: [task('Em Grammar: Collocation and idiomatic precision — the last frontier of near-native fluency, observe que a estrutura do inglês difere da ordem natural do português.'), task('Não traduza literalmente; identifique o padrão do inglês antes de produzir.')], 
     grammarTable: {
       headers: ['Verb', 'Strong collocations in academic/formal English', 'Common L2 errors', 'Notes'],
       rows: [
@@ -72,6 +73,7 @@ export const C2_DEEP_NATIVE_PRODUCTION_PART1 = Object.freeze([
       'Achieve the epistemic balance that characterises expert academic prose: precise neither about more nor less than the evidence supports.',
     ],
     teacherOpening: 'Epistemic calibration — saying no more and no less than you know — is one of the most demanding skills in academic writing. This lesson catalogues the full system of English hedging and boosting devices and focuses on the precision of calibration: not "hedge everything" or "state everything confidently," but match the linguistic form to the evidential situation with precision.',
+    portugueseContrast: [task('Em Grammar: The calibration of certainty — hedging, boosting, and epistemic precision at C2, observe que a estrutura do inglês difere da ordem natural do português.'), task('Não traduza literalmente; identifique o padrão do inglês antes de produzir.')], 
     grammarTable: {
       headers: ['Device type', 'Examples', 'Epistemic force', 'Register'],
       rows: [

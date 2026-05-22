@@ -22,6 +22,7 @@ export const B1_DEEP_PROBLEMS_PART1 = Object.freeze([
       'Evitar "would" na cláusula if.',
     ],
     teacherOpening: 'O Second Conditional é a estrutura do conselho, do sonho e do hipotético. Quando você diz "If I had more time, I would learn another language", você está imaginando uma realidade alternativa — não a sua realidade atual. Esta aula vai te ensinar a dominar essa estrutura com precisão.',
+    portugueseContrast: [task('Em Second Conditional: If I were you, I would..., observe que a estrutura do inglês difere da ordem natural do português.'), task('Não traduza literalmente; identifique o padrão do inglês antes de produzir.')], 
     whyItMatters: 'O Second Conditional aparece em conselhos ("If I were you, I would talk to your manager"), em sonhos pessoais, em situações de entrevista e em quase todo texto argumentativo B1+. Sem ele, você não consegue discutir alternativas hipotéticas.',
     differenceFromA2: 'No A2: "What do you want?" / "I want to travel." No B1: "If I had more money, I would travel to Japan every year." A diferença é a capacidade de criar mundos hipotéticos com estrutura gramatical precisa.',
     grammarTable: {
@@ -138,6 +139,7 @@ export const B1_DEEP_PROBLEMS_PART1 = Object.freeze([
       'Evitar erros com "to" após modais.',
     ],
     teacherOpening: 'Quando alguém te conta um problema, você precisa saber como graduar o seu conselho. "You should rest more" é neutro. "You had better see a doctor" é urgente. Esta aula ensina a diferença entre esses três modais de conselho.',
+    portugueseContrast: [task('Em Modal verbs for advice: should, ought to, had better, observe que a estrutura do inglês difere da ordem natural do português.'), task('Não traduza literalmente; identifique o padrão do inglês antes de produzir.')], 
     whyItMatters: 'Dar e pedir conselhos é uma das situações mais frequentes em inglês — trabalho, saúde, relacionamentos, decisões. Sem esses modais, você soa evasivo ou impreciso.',
     differenceFromA2: 'No A2: "Maybe you can try..." ou "Why don\'t you...?" No B1: "You should reconsider that decision." / "You ought to apologise." / "You had better call him before it\'s too late." Cada um com peso e registro diferente.',
     grammarTable: {

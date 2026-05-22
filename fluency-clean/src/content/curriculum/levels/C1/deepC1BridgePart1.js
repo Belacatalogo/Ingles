@@ -21,6 +21,7 @@ export const C1_DEEP_BRIDGE_PART1 = Object.freeze([
       'Understand the discourse function of conditional structures in academic and formal argument.',
     ],
     teacherOpening: 'At B2 you mastered mixed conditionals. At C1, the shift is not about learning new types — it is about fluency, precision and range. C1 users deploy all conditional structures without effort, choose between them for rhetorical effect, and use formal patterns (the subjunctive, "were to") that are vanishingly rare in spoken informal English but common in formal writing and professional speech.',
+    portugueseContrast: [task('Em Advanced conditionals: subjunctive, "were to", and all conditional types at C1, observe que a estrutura do inglês difere da ordem natural do português.'), task('Não traduza literalmente; identifique o padrão do inglês antes de produzir.')], 
     whyItMatters: 'Advanced conditionals appear in formal recommendations, hypothetical argument, academic hedging and policy writing. The subjunctive, in particular, is a marker of formal register: it appears in academic journals, legal documents, professional correspondence and political speech.',
     differenceFromA2: 'B2: "If we had acted sooner, the situation would be different." C1: "Were we to act decisively now, there remains a narrow window for meaningful intervention — a window that is, however, closing rapidly."',
     grammarTable: {
@@ -86,6 +87,7 @@ export const C1_DEEP_BRIDGE_PART1 = Object.freeze([
       'Distinguish between structures that require inversion and those that do not.',
     ],
     teacherOpening: 'B2 introduced "Not only...but also" and "Rarely does". C1 extends this to the full range of negative and restrictive fronting — a key feature of formal academic, journalistic and literary English. These structures do more than show off grammar: they place emphasis at the beginning of the sentence, creating rhetorical contrast and weight.',
+    portugueseContrast: [task('Em Advanced inversion: fronted adverbials and negative/restrictive structures at C1, observe que a estrutura do inglês difere da ordem natural do português.'), task('Não traduza literalmente; identifique o padrão do inglês antes de produzir.')], 
     whyItMatters: 'Negative and restrictive inversion is common in academic and literary English, quality journalism and political speech. At C1 level, you should be able to produce these naturally as a rhetorical choice, not just as a grammar exercise.',
     differenceFromA2: 'B2: "I have never seen such a clear example of policy failure." C1: "Never in my professional experience have I encountered so unambiguous an example of systemic governance failure."',
     grammarTable: {
@@ -147,6 +149,7 @@ export const C1_DEEP_BRIDGE_PART1 = Object.freeze([
       'Use aspect choices to hedge claims or express tentativeness in formal writing.',
     ],
     teacherOpening: 'At B1-B2, aspect is mainly about timelines: simple for completed facts, continuous for ongoing actions. At C1, aspect becomes a rhetorical tool. "The economy has declined" vs "The economy has been declining" — both are grammatically correct, but they say different things: the first emphasises a result; the second emphasises a process. C1 writers make these choices deliberately.',
+    portugueseContrast: [task('Em Complex verb aspect at C1: perfect continuous, stative verbs and aspect for perspective, observe que a estrutura do inglês difere da ordem natural do português.'), task('Não traduza literalmente; identifique o padrão do inglês antes de produzir.')], 
     whyItMatters: 'In academic and formal writing, the choice between simple and continuous aspect shapes how a claim is presented — as a settled fact or an ongoing trend, as complete or still in progress. Understanding this allows you to read formal English with greater precision and write it with greater effect.',
     differenceFromA2: 'B2: "Living standards have fallen." C1: "Living standards have been falling steadily for the past two decades — a trend that, if unaddressed, appears likely to intensify." The continuous framing emphasises the process and opens space for the qualification that follows.',
     grammarTable: {
