@@ -147,7 +147,7 @@ Lucas: At noon, I have lunch.
 Lucas: After work, I go home and rest.
 Lucas: At night, I study English for thirty minutes.
 Lucas: I have dinner at eight, and I go to bed at ten thirty.`,
-    firstListenTasks: [task('Sem transcript: qual é o assunto principal?', 'A rotina diária de Lucas.', 'daily routine'), task('Sem transcript: a rotina é sobre manhã, trabalho e noite?', 'Sim.', 'yes')],
+    firstListenTasks: [task('Sem transcript: qual é o assunto principal?', 'A rotina diária de Lucas.', 'daily routine'), task('Sem transcript: a rotina é sobre manhã, trabalho e noite?', 'Sim, o áudio cobre manhã, trabalho e noite.', 'yes')],
     secondListenTasks: [task('Que horas Lucas acorda?', 'six thirty'), task('Que horas ele vai ao trabalho?', 'eight'), task('O que ele faz à noite?', 'study English'), task('Que horas ele vai para a cama?', 'ten thirty')],
     transcript: `Lucas: My daily routine is simple.
 Lucas: I wake up at six thirty in the morning.

@@ -186,7 +186,7 @@ const B1_GRAMMAR_021 = createGrammarLesson({
   ],
   teacherOpening:
     'Today we look at one of the most important structures for achieving B1 fluency: relative clauses. They allow you to pack more information into a sentence and express complex ideas clearly.',
-  portugueseContrast: [task('Em Relative clauses: defining and non-defining, observe que a estrutura do inglês difere da ordem natural do português.'), task('Não traduza literalmente; identifique o padrão do inglês antes de produzir.')],
+  portugueseContrast: ['Em Relative clauses: defining and non-defining, observe que a estrutura do inglês difere da ordem natural do português.', 'Não traduza literalmente; identifique o padrão do inglês antes de produzir.'],
   whyItMatters:
     'Relative clauses are a marker of B1+ grammar range. Without them, your sentences tend to be short and disconnected. With them, you can express nuanced, complex ideas in a single, well-structured sentence.',
   nextLessonBridge:
@@ -358,7 +358,7 @@ const B1_GRAMMAR_022 = createGrammarLesson({
   ],
   teacherOpening:
     'Today we look at two structures that are essential for sounding natural in English conversation: question tags — which show engagement and seek confirmation — and indirect questions, which make requests sound polite and appropriate.',
-  portugueseContrast: [task('Em Question tags and indirect questions, observe que a estrutura do inglês difere da ordem natural do português.'), task('Não traduza literalmente; identifique o padrão do inglês antes de produzir.')],
+  portugueseContrast: ['Em Question tags and indirect questions, observe que a estrutura do inglês difere da ordem natural do português.', 'Não traduza literalmente; identifique o padrão do inglês antes de produzir.'],
   whyItMatters:
     'Question tags are everywhere in natural spoken English. Without them, conversations can feel abrupt. Indirect questions are essential in professional and formal contexts. Both are tested at B1 level.',
   nextLessonBridge:

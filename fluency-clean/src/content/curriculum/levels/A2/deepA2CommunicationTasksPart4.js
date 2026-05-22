@@ -41,7 +41,7 @@ export const A2_DEEP_COMMUNICATION_TASKS_PART4 = Object.freeze([
       { english: 'Sorry, I can’t help you right now because I’m busy.', translation: 'Desculpa, não posso te ajudar agora porque estou ocupado.', why: 'Resposta negativa com motivo.' }
     ],
     commonBrazilianMistakes: [mistake('Can you to help me?', 'Can you help me?', 'Sem to depois de can.'), mistake('You can help me?', 'Can you help me?', 'Pergunta precisa inverter can + subject.'), mistake('Could you helps me?', 'Could you help me?', 'Verbo base depois de could.'), mistake('Can I to use this?', 'Can I use this?', 'Sem to depois de can.')],
-    controlledPractice: [task('Complete: Can you ___ me?', 'help'), task('Complete: Could you ___ that?', 'repeat'), task('Complete: Can I ___ here?', 'sit'), task('Complete: Could I ___ a question?', 'ask')],
+    controlledPractice: [task('Complete: Can you ___ me?', 'help'), task('Complete: Could you ___ that?', 'repeat'), task('Complete: Can I ___ here?', 'sit'), task('Complete: Could I ___ a question?', 'ask: verbo para fazer uma pergunta.')],
     errorCorrectionPractice: [task('Corrija: Could you to call me?', 'Could you call me?'), task('Corrija: You can repeat?', 'Can you repeat?'), task('Corrija: Can I to pay now?', 'Can I pay now?')],
     transformationPractice: [task('Mais educado: Can you help me?', 'Could you help me?'), task('Permissão: I use your charger?', 'Can I use your charger?'), task('Pedido: repeat that', 'Could you repeat that, please?')],
     translationPractice: [task('Você poderia me ajudar?', 'Could you help me?'), task('Posso sentar aqui?', 'Can I sit here?'), task('Você pode repetir, por favor?', 'Can you repeat that, please?')],

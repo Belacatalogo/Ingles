@@ -159,7 +159,7 @@ Teacher: What is your favorite hobby?
 Luis: My favorite hobby is photo editing.
 Teacher: Can you repeat that?
 Luis: Photo editing.`,
-    firstListenTasks: [task('Sem transcript: qual é a situação?', 'Uma professora confirma dados pessoais.', 'personal information exchange'), task('Sem transcript: aparecem telefone e e-mail?', 'Sim.', 'yes')],
+    firstListenTasks: [task('Sem transcript: qual é a situação?', 'Uma professora confirma dados pessoais.', 'personal information exchange'), task('Sem transcript: aparecem telefone e e-mail?', 'Sim, o áudio menciona telefone e e-mail.', 'yes')],
     secondListenTasks: [task('Qual é a cidade?', 'Santa Maria'), task('Qual é o telefone?', 'five five zero three two nine'), task('Qual é o e-mail?', 'luis@example.com'), task('Qual é o hobby favorito?', 'photo editing')],
     transcript: `Teacher: What is your city, Luis?
 Luis: My city is Santa Maria.

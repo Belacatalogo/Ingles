@@ -168,7 +168,7 @@ Clerk: For here or to go?
 Customer: For here, please.
 Clerk: Okay. A coffee and an egg sandwich.
 Customer: Thank you.`,
-    firstListenTasks: [task('Sem transcript: onde acontece a conversa?', 'Em um café.', 'café'), task('Sem transcript: o cliente pede comida, bebida ou os dois?', 'Os dois.', 'food and drink')],
+    firstListenTasks: [task('Sem transcript: onde acontece a conversa?', 'O diálogo acontece em um café (coffee shop).', 'café'), task('Sem transcript: o cliente pede comida, bebida ou os dois?', 'Ambos os personagens participam do diálogo.', 'food and drink')],
     secondListenTasks: [task('Qual bebida o cliente pede?', 'coffee'), task('Qual comida o cliente pede?', 'an egg sandwich'), task('Ele escolhe for here ou to go?', 'for here')],
     transcript: `Clerk: Good morning. What would you like?
 Customer: Good morning. Can I have a coffee, please?

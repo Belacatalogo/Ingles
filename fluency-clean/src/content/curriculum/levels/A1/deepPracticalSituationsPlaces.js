@@ -208,7 +208,7 @@ Local: You’re welcome.`,
     mentalModel: { title: 'Question mark + full stop', summary: 'Pergunta termina com ?; resposta termina com ponto.', steps: ['Where is the pharmacy?', 'It is next to the supermarket.', 'Where is the bank?', 'It is on Main Street.'] },
     stepByStep: [task('Comece a pergunta com Where.'), task('Use is the + place.'), task('Termine com ?'), task('Comece a resposta com It is.'), task('Use near/next to/on.'), task('Termine com ponto final.')],
     portugueseContrast: [task('Em inglês, a ordem da pergunta é fixa: Where is the...?'), task('Não escreva Where the pharmacy is? no A1.'), task('Use ? no fim da pergunta.'), task('Use It is, não apenas Is.')],
-    guidedDiscovery: [task('Qual frase é pergunta?', 'Where is the pharmacy?'), task('Qual pontuação termina pergunta?', '?'), task('Qual frase responde?', 'It is near the school.')],
+    guidedDiscovery: [task('Qual frase é pergunta?', 'Where is the pharmacy?'), task('Qual pontuação termina pergunta?', '? (question mark) indica pergunta em inglês.'), task('Qual frase responde?', 'It is near the school.')],
     guidedBeforeQuiz: [task('Where is the bank?'), task('It is on Main Street.'), task('Where is the bus stop?'), task('It is next to the park.')],
     writingPurpose: 'Escrever perguntas e respostas simples sobre lugares.',
     modelText: `Where is the pharmacy?

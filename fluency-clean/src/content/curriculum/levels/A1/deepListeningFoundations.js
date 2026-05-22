@@ -42,7 +42,7 @@ Luis: Nice to meet you too. How are you?
 Ana: I am good, thanks. And you?
 Luis: I am fine. Bye, Ana.
 Ana: Bye, Luis.`,
-    firstListenTasks: [task('Sem transcript: escolha a situação geral.', 'Duas pessoas se cumprimentam e se apresentam.', 'greetings and names'), task('Sem transcript: quantas pessoas falam?', 'Duas pessoas.', '2'), task('Sem transcript: você ouviu uma despedida no final?', 'Sim, Bye.', 'yes')],
+    firstListenTasks: [task('Sem transcript: escolha a situação geral.', 'Duas pessoas se cumprimentam e se apresentam.', 'greetings and names'), task('Sem transcript: quantas pessoas falam?', 'Duas pessoas.', '2'), task('Sem transcript: você ouviu uma despedida no final?', 'Sim, Bye é usado como despedida no final do áudio.', 'yes')],
     secondListenTasks: [task('Ouça de novo e identifique o primeiro nome.', 'Ana.'), task('Identifique o segundo nome.', 'Luis.'), task('Qual pergunta sobre estado aparece?', 'How are you?'), task('Qual resposta Ana dá?', 'I am good, thanks.'), task('Qual resposta Luis dá?', 'I am fine.')],
     transcript: `Ana: Hi, my name is Ana.
 Luis: Hello, Ana. My name is Luis.
@@ -55,7 +55,7 @@ Ana: Bye, Luis.`,
     shadowing: [task('Repita junto: Hi, my name is Ana.'), task('Repita junto: My name is Luis.'), task('Repita junto: Nice to meet you.'), task('Repita junto: How are you?'), task('Repita junto: I am good, thanks.'), task('Repita junto: I am fine.')],
     dictationTasks: [task('Complete de ouvido: My name is ___.', 'Ana/Luis'), task('Complete de ouvido: I am good, ___.', 'thanks'), task('Complete de ouvido: Nice to ___ you.', 'meet')],
     pronunciationChunks: [task('How are you?', 'Ouça como bloco: hau-ar-yu.'), task('My name is', 'O som liga name + is.'), task('Nice to meet you', 'Ritmo em quatro batidas.')],
-    listeningComprehension: [q('Who says “my name is Ana”?', 'Ana', 'O primeiro falante se apresenta.', ['Ana','Luis','Teacher']), q('Who says “my name is Luis”?', 'Luis', 'O segundo falante se apresenta.', ['Luis','Ana','Maria']), q('What question does Luis ask?', 'How are you?', 'Ele pergunta estado.', ['How are you?','Where are you from?','What is your phone?']), q('How is Ana?', 'She is good.', 'Ana diz I am good, thanks.', ['She is good.','She is late.','She is from Brazil.']), q('How is Luis?', 'He is fine.', 'Luis diz I am fine.', ['He is fine.','He is Ana.','He is online.']), q('What word ends the dialogue?', 'Bye', 'Os dois dizem Bye.', ['Bye','Hello','Thanks']), q('How many people speak?', 'Two', 'Ana e Luis.', ['Two','Three','One']), q('What is the main situation?', 'They meet and greet each other.', 'É uma apresentação simples.', ['They meet and greet each other.','They buy coffee.','They read a profile.'])],
+    listeningComprehension: [q('Who says “my name is Ana”?', 'Ana', 'O primeiro falante se apresenta.', ['Ana','Luis','Teacher']), q('Who says “my name is Luis”?', 'Luis', 'O segundo falante se apresenta.', ['Luis','Ana','Maria']), q('What question does Luis ask?', 'How are you?', 'Ele pergunta estado.', ['How are you?','Where are you from?','What is your phone?']), q('How is Ana?', 'She is good.', 'Ana diz I am good, thanks.', ['She is good.','She is late.','She is from Brazil.']), q('How is Luis?', 'He is fine.', 'Luis diz I am fine.', ['He is fine.','He is Ana.','He is online.']), q('What word ends the dialogue?', 'Bye', 'Os dois dizem Bye.', ['Bye','Hello','Thanks']), q('How many people speak?', 'Two', 'Os personagens do áudio são Ana e Luis.', ['Two','Three','One']), q('What is the main situation?', 'They meet and greet each other.', 'É uma apresentação simples.', ['They meet and greet each other.','They buy coffee.','They read a profile.'])],
     oralProduction: task('Grave ou fale um mini diálogo de 4 linhas: Hi, my name is... / Hello... / How are you? / I am good, thanks.', 'Use seu nome real ou fictício.'),
     selfAssessment: [task('Consegui ouvir sem transcript primeiro?'), task('Identifiquei os nomes?'), task('Reconheci How are you?'), task('Consegui repetir os chunks?')],
     lessonRecap: ['Listening começa sem transcript.', 'Palavras-chave guiam a escuta.', 'My name is indica que vem um nome.', 'How are you pede resposta de estado.', 'Shadowing ajuda ritmo e reconhecimento.'],
@@ -87,7 +87,7 @@ Teacher: Thank you. Can you spell your last name?
 Student: S-I-L-V-A.
 Teacher: Great. Please repeat your first name.
 Student: Luis.`,
-    firstListenTasks: [task('Sem transcript: qual é a situação?', 'Uma professora pede para soletrar nome e sobrenome.', 'spelling a name'), task('Sem transcript: você ouviu first name ou phone number?', 'First name.', 'first name'), task('Sem transcript: a pessoa soletra sobrenome?', 'Sim.', 'yes')],
+    firstListenTasks: [task('Sem transcript: qual é a situação?', 'Uma professora pede para soletrar nome e sobrenome.', 'spelling a name'), task('Sem transcript: você ouviu first name ou phone number?', 'First name: o áudio pede o primeiro nome.', 'first name'), task('Sem transcript: a pessoa soletra sobrenome?', 'Sim, o áudio confirma essa informação.', 'yes')],
     secondListenTasks: [task('Identifique o primeiro nome.', 'Luis.'), task('Identifique o sobrenome.', 'Silva.'), task('Quais letras formam Luis?', 'L-U-I-S.'), task('Quais letras formam Silva?', 'S-I-L-V-A.'), task('Qual palavra indica pedido educado?', 'Please.')],
     transcript: `Teacher: What is your name?
 Student: My name is Luis Silva.
@@ -133,7 +133,7 @@ Clerk: What is your phone number?
 Student: My phone number is five five zero three two nine.
 Clerk: Can you repeat that?
 Student: Five five zero three two nine.`,
-    firstListenTasks: [task('Sem transcript: qual tipo de informação aparece?', 'Nome, idade e telefone.', 'personal information'), task('Sem transcript: a pessoa fala idade?', 'Sim.', 'yes'), task('Sem transcript: a pessoa repete o telefone?', 'Sim.', 'yes')],
+    firstListenTasks: [task('Sem transcript: qual tipo de informação aparece?', 'Nome, idade e telefone.', 'personal information'), task('Sem transcript: a pessoa fala idade?', 'Sim, o áudio confirma essa informação.', 'yes'), task('Sem transcript: a pessoa repete o telefone?', 'Sim, o áudio confirma essa informação.', 'yes')],
     secondListenTasks: [task('Qual é o nome?', 'Ana.'), task('Qual é a idade?', 'Nineteen years old.'), task('Qual é o telefone?', 'Five five zero three two nine.'), task('Qual número aparece duas vezes no começo?', 'Five.'), task('Qual palavra pede repetição?', 'Repeat.')],
     transcript: `Clerk: What is your name?
 Student: My name is Ana.
@@ -179,8 +179,8 @@ Teacher: What is your city?
 Ana: My city is Recife. I live in Recife.
 Teacher: And Bruno?
 Ana: Bruno is from Brazil too. He lives in Curitiba.`,
-    firstListenTasks: [task('Sem transcript: qual é o tema?', 'Origem, nacionalidade e cidade.', 'country and city'), task('Sem transcript: Ana é de qual país?', 'Brazil.', 'Brazil'), task('Sem transcript: aparecem duas cidades?', 'Sim.', 'yes')],
-    secondListenTasks: [task('Qual país Ana menciona?', 'Brazil.'), task('Qual nacionalidade aparece?', 'Brazilian.'), task('Qual é a cidade de Ana?', 'Recife.'), task('Onde Bruno mora?', 'Curitiba.'), task('Qual palavra indica morar?', 'live/lives in.')],
+    firstListenTasks: [task('Sem transcript: qual é o tema?', 'Origem, nacionalidade e cidade.', 'country and city'), task('Sem transcript: Ana é de qual país?', 'Brazil: o áudio menciona o país de origem.', 'Brazil'), task('Sem transcript: aparecem duas cidades?', 'Sim, o áudio confirma essa informação.', 'yes')],
+    secondListenTasks: [task('Qual país Ana menciona?', 'Brazil: o áudio menciona o país de origem.'), task('Qual nacionalidade aparece?', 'Brazilian.'), task('Qual é a cidade de Ana?', 'Recife.'), task('Onde Bruno mora?', 'Curitiba.'), task('Qual palavra indica morar?', 'live/lives in.')],
     transcript: `Teacher: Where are you from, Ana?
 Ana: I am from Brazil.
 Teacher: Are you Brazilian?
