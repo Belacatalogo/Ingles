@@ -160,6 +160,7 @@ export const C1_DEEP_LITERATURE_PART1 = Object.freeze([
         'Example: "The shift in register that occurs in Act 3 of Hamlet, when the prince\'s philosophical register gives way to the crude punning of his exchange with Polonius, creates a tonal dissonance that several critics have read as evidence of the performance-within-performance structure of the play: the shift is not lapse but calculated destabilisation."'
       ),
     ],
+    recognitionPractice: [{ question: 'Vocabulary: literary and critical analysis vocabulary at C1 — qual vocabulário desta aula significa "to represent or portray something in a specific way; to g..."?', options: ['figure', 'enact', 'subvert'], answer: 'figure', explanation: 'figure = to represent or portray something in a specific way; to g...; vocabulário trabalhado nesta aula.' }, { question: 'Vocabulary: literary and critical analysis vocabulary at C1 — qual opção combina com "figure"?', options: ['to represent or portray something in a specific way; to g...', 'to perform or embody something at the level of form, stru...', 'to undermine or overturn an expected meaning, convention,...'], answer: 'to represent or portray something in a specific way; to g...', explanation: 'figure significa to represent or portray something in a specific way; to g... no contexto desta aula.' }],
   }),
 
   // ─── VOCABULARY-008: Philosophical and conceptual vocabulary ─────────────────

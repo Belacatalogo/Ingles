@@ -168,6 +168,7 @@ export const C1_DEEP_PROFESSIONAL_PART1 = Object.freeze([
         'Example: "The operational team has flagged this issue for escalation, as the resolution requires a decision that falls outside their mandate." / "The escalation has been directed to the relevant director, in line with the established protocol."'
       ),
     ],
+    recognitionPractice: [{ question: 'Vocabulary: advanced professional and business English at C1 — qual vocabulário desta aula significa "the action of reducing the severity, seriousness, or pain..."?', options: ['mitigation', 'procurement', 'attrition'], answer: 'mitigation', explanation: 'mitigation = the action of reducing the severity, seriousness, or pain...; vocabulário trabalhado nesta aula.' }, { question: 'Vocabulary: advanced professional and business English at C1 — qual opção combina com "mitigation"?', options: ['the action of reducing the severity, seriousness, or pain...', 'the action of obtaining or buying goods and services, esp...', 'the process of reducing something'], answer: 'the action of reducing the severity, seriousness, or pain...', explanation: 'mitigation significa the action of reducing the severity, seriousness, or pain... no contexto desta aula.' }],
   }),
 
   // ─── SPEAKING-005: Negotiation and persuasion in professional English ──────────

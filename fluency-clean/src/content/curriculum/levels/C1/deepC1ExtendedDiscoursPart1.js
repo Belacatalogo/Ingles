@@ -283,6 +283,7 @@ export const C1_DEEP_EXTENDED_DISCOURSE_PART1 = Object.freeze([
         '"Acknowledge" is most precise: it is neutral but signals a deliberate admission. "Concede" would also work and carries a slightly more defensive tone. "Accept" is possible but weaker. "Admit" is slightly informal for academic writing.'
       ),
     ],
+    recognitionPractice: [{ question: 'Vocabulary: advanced verbs of reporting, attribution, and stance in academic writing — qual vocabulário desta aula significa "to put forward or assume as a basis for argument, especia..."?', options: ['posit', 'concede', 'dispute'], answer: 'posit', explanation: 'posit = to put forward or assume as a basis for argument, especia...; vocabulário trabalhado nesta aula.' }, { question: 'Vocabulary: advanced verbs of reporting, attribution, and stance in academic writing — qual opção combina com "posit"?', options: ['to put forward or assume as a basis for argument, especia...', 'to acknowledge a point made by an opponent, typically rel...', 'to challenge or contest the validity of a claim, interpre...'], answer: 'to put forward or assume as a basis for argument, especia...', explanation: 'posit significa to put forward or assume as a basis for argument, especia... no contexto desta aula.' }],
   }),
 
   // ─── SPEAKING-003: Extended academic presentation and position defence ─────────
