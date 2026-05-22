@@ -273,6 +273,11 @@
   padding-bottom: calc(var(--bottom-nav-safe-space) + 100px) !important;
 }
 
+/* ── Dev preview buttons: mínimo 32px para toque ────────── */
+.lesson-preview-lab-card button {
+  min-height: 32px !important;
+}
+
 @media (max-width: 360px) {
   :root {
     --bottom-nav-height: 72px;
