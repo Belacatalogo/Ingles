@@ -345,6 +345,7 @@ export const C1_DEEP_BRIDGE_PART1 = Object.freeze([
       },
     ],
     lessonRecap: 'You learned 12 C1 advanced register vocabulary items — albeit, insofar as, hitherto, notwithstanding, inasmuch as, propound, espouse, commensurate, precipitate, predicated on, contingent on, germane — and practised producing them in formal written contexts.',
+    recognitionPractice: [{ question: 'Vocabulary: advanced register — Latinate alternatives, academic precision, formal connectors — qual vocabulário desta aula significa "Although; even though — used to introduce a concession in..."?', options: ['albeit', 'insofar as', 'hitherto'], answer: 'albeit', explanation: 'albeit = Although; even though — used to introduce a concession in...; vocabulário trabalhado nesta aula.' }, { question: 'Vocabulary: advanced register — Latinate alternatives, academic precision, formal connectors — qual opção combina com "albeit"?', options: ['Although; even though — used to introduce a concession in...', 'To the extent that; in the degree that.', 'Until now; up to this point in time — formal and slightly...'], answer: 'Although; even though — used to introduce a concession in...', explanation: 'albeit significa Although; even though — used to introduce a concession in... no contexto desta aula.' }],
     nextLessonBridge: 'Next: C1 collocations and chunks — the high-frequency multi-word expressions that mark fluent C1 production across academic, professional and argumentative discourse.',
   }),
 

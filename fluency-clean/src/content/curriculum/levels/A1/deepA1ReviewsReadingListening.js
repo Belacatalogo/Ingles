@@ -72,10 +72,10 @@ export const A1_DEEP_REVIEWS_READING_LISTENING = Object.freeze([
     pronunciationChunks: [task('My name is', 'Ouça como bloco.'), task('work in the morning', 'Conecte work-in-the.'), task('study English at night', 'Perceba at night no final.'), task('starts at eight', 'Atenção ao som de starts-at.')],
     listeningComprehension: [
       q('What is his name?', 'João', 'My name is João.', '', ['João', 'Ana', 'Ben']),
-      q('Where is he from?', 'Brazil', 'I am from Brazil.', '', ['Brazil', 'Canada', 'Japan']),
-      q('When does he work?', 'in the morning', 'I work in the morning.', '', ['in the morning', 'at night', 'on Sunday']),
-      q('When does his English class start?', 'at eight', 'My English class starts at eight.', '', ['at eight', 'at six', 'at twelve']),
-      q('Why does he like English?', 'because it helps him at work', 'I like English because it helps me at work.', '', ['because it helps him at work', 'because it is easy', 'because it is Sunday'])
+      q('Áudio da aula — where is he from?', 'Brazil', 'I am from Brazil.', '', ['Brazil', 'Canada', 'Japan']),
+      q('Áudio da aula — when does he work?', 'in the morning', 'I work in the morning.', '', ['in the morning', 'at night', 'on Sunday']),
+      q('Áudio da aula — when does his English class start?', 'at eight', 'My English class starts at eight.', '', ['at eight', 'at six', 'at twelve']),
+      q('Áudio da aula — why does he like English?', 'because it helps him at work', 'I like English because it helps me at work.', '', ['because it helps him at work', 'because it is easy', 'because it is Sunday'])
     ],
     oralProduction: task('Grave um áudio parecido sobre você: nome, país, rotina, horário e por que estuda inglês.'),
     selfAssessment: [task('Consegui entender o assunto geral?'), task('Consegui identificar nome/país/horário?'), task('Consegui fazer dictation?'), task('Consegui repetir com shadowing?')],

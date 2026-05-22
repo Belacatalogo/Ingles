@@ -413,6 +413,7 @@ export const B2_DEEP_ACADEMIC_PART1 = Object.freeze([
         instruction: 'Write a paragraph of 80–100 words on a global issue topic. Use at least four different connectors from this lesson — one from each category.',
       },
     ],
+    recognitionPractice: [{ question: 'Advanced paragraph connectors — qual conector de adição é mais forte que furthermore?', options: ['moreover', 'in addition', 'what is more'], answer: 'moreover', explanation: 'Moreover indica que o ponto adicionado reforça o argumento — mais forte que furthermore.' }, { question: 'Advanced paragraph connectors — qual opção combina com "nevertheless"?', options: ['contrast connector', 'addition connector', 'cause/effect connector'], answer: 'contrast connector', explanation: 'Nevertheless é um conector de contraste, equivalente formal a "but/however" com mais ênfase.' }],
     lessonRecap: 'You learned and practised advanced paragraph connectors — addition (furthermore, moreover), contrast (nevertheless, conversely, notwithstanding), cause/effect (consequently, hence, thereby), concession (nonetheless, that said, for all that) — with guidance on precision, position and register.',
     nextLessonBridge: 'Now for the first production task: a 2-minute academic seminar contribution, using reference chains, complex clause structure, hedging and connectors in spoken academic English.',
   }),

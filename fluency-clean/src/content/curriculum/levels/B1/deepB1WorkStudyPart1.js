@@ -319,6 +319,7 @@ export const B1_DEEP_WORK_STUDY_PART1 = Object.freeze([
         'We are slightly behind schedule on the report, but we expect to be back on track by Wednesday. The team is working extra hours to meet the Friday deadline. I will hand in the final version by Thursday evening.'
       ),
     ],
+    recognitionPractice: [{ question: 'Work and professional vocabulary — qual vocabulário desta aula significa "superior imediato / gerente direto"?', options: ['line manager', 'colleague', 'take on'], answer: 'line manager', explanation: 'line manager = superior imediato / gerente direto; vocabulário trabalhado nesta aula.' }, { question: 'Work and professional vocabulary — qual opção combina com "line manager"?', options: ['superior imediato / gerente direto', 'colega de trabalho', 'assumir (responsabilidade, projeto, funcionário)'], answer: 'superior imediato / gerente direto', explanation: 'line manager significa superior imediato / gerente direto no contexto desta aula.' }],
   }),
 
   // ─── SPEAKING-005: Describe your job or studies ───────────────────────────────

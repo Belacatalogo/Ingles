@@ -24,7 +24,7 @@ const GRAMMAR_TOPICS = [
   [8, 'Plural nouns', 'singular noun → plural noun', ['book/books', 'student/students', 'box/boxes', 'city/cities'], ['I have two books.', 'They are students.', 'The boxes are big.', 'The cities are beautiful.']],
   [9, 'This / that / these / those', 'demonstrative + noun', ['this book', 'that phone', 'these students', 'those chairs'], ['This is my book.', 'That is your phone.', 'These are my friends.', 'Those are old chairs.']],
   [10, 'There is / there are', 'there is/are + noun + place', ['there is a table', 'there are two chairs'], ['There is a table in the room.', 'There are three books on the desk.', 'There is a teacher here.', 'There are students in class.']],
-  [11, 'Have / has', 'subject + have/has + noun', ['I have', 'you have', 'he has', 'she has'], ['I have a phone.', 'She has a sister.', 'They have a car.', 'He has a job.']],
+  [11, 'Verb have / has', 'subject + have/has + noun', ['I have', 'you have', 'he has', 'she has'], ['I have a phone.', 'She has a sister.', 'They have a car.', 'He has a job.']],
   [12, 'Simple adjectives', 'subject + be + adjective', ['big', 'small', 'new', 'old', 'beautiful'], ['The house is small.', 'My phone is new.', 'She is happy.', 'They are tired.']],
   [13, 'Basic word order', 'subject + verb + complement', ['I am happy', 'She has a book'], ['I am a student.', 'My brother is at home.', 'We have two chairs.', 'They live in Brazil.']],
   [14, 'Present Simple — I / you / we / they', 'subject + base verb', ['I work', 'you study', 'we live', 'they like'], ['I study English.', 'You work here.', 'We live in Brazil.', 'They like coffee.']],

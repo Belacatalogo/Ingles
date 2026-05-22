@@ -428,6 +428,7 @@ export const C1_DEEP_ADVANCED_GRAMMAR_PART1 = Object.freeze([
         ],
       },
     ],
+    recognitionPractice: [{ question: 'C1 epistemic language — qual expressão indica certeza forte, próxima do absoluto?', options: ['it is virtually certain that', 'on balance, it appears that', 'conceivably'], answer: 'it is virtually certain that', explanation: '"Virtually certain" expressa certeza forte — apropriada para consenso científico ou evidência consolidada.' }, { question: 'C1 epistemic language — qual opção combina com evidentiality marker?', options: ['ostensibly', 'in all probability', 'on balance'], answer: 'ostensibly', explanation: 'Ostensibly é um marcador de evidencialidade — indica que a aparência pode não refletir a realidade.' }],
     lessonRecap: 'You learned and practised C1 epistemic and modal language — strong certainty (in all probability, virtually certain), moderate certainty (the weight of evidence suggests, on balance), tentative (conceivably, consistent with the hypothesis), and evidentiality markers (ostensibly, purportedly, on the available evidence).',
     nextLessonBridge: 'Now the C1.2 Speaking task — argue a complex position on an unseen topic using the full range of C1.2 grammar and vocabulary.',
   }),

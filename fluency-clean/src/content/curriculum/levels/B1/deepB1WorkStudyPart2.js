@@ -401,6 +401,7 @@ The consensus among HR professionals is that hybrid work, done well, requires in
         'I usually start by reviewing my notes from the lectures and doing extra research on the topics I\'m less confident about. I look up any terms I don\'t understand and add them to a vocabulary list. I also find it really useful to read feedback from previous assignments — it helps me understand what the professor expects.'
       ),
     ],
+    recognitionPractice: [{ question: 'Study and academic vocabulary — qual vocabulário desta aula significa "tarefa / trabalho escolar"?', options: ['assignment', 'essay', 'dissertation'], answer: 'assignment', explanation: 'assignment = tarefa / trabalho escolar; vocabulário trabalhado nesta aula de Study and academic vocabulary.' }, { question: 'Study and academic vocabulary — qual opção combina com "assignment"?', options: ['tarefa / trabalho escolar', 'redação / dissertação curta', 'dissertação (projeto final de graduação)'], answer: 'tarefa / trabalho escolar', explanation: 'assignment significa tarefa / trabalho escolar no contexto desta aula.' }],
   }),
 
 ]);

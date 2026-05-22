@@ -283,6 +283,7 @@ export const B2_DEEP_BRIDGE_PART1 = Object.freeze([
     productionTasks: [
       task('Write 3 sentences summarising the main point of a recent article, documentary or class using these verbs.', 'Use at least 3 different verbs from the lesson.'),
     ],
+    recognitionPractice: [{ question: 'Academic discourse verbs: argue, demonstrate, evaluate, imply — qual vocabulário desta aula significa "put forward a reasoned case or claim"?', options: ['argue', 'demonstrate', 'evaluate'], answer: 'argue', explanation: 'argue = put forward a reasoned case or claim; vocabulário trabalhado nesta aula.' }, { question: 'Academic discourse verbs: argue, demonstrate, evaluate, imply — qual opção combina com "argue"?', options: ['put forward a reasoned case or claim', 'show clearly with evidence or example', 'assess carefully and reach a conclusion'], answer: 'put forward a reasoned case or claim', explanation: 'argue significa put forward a reasoned case or claim no contexto desta aula.' }],
   }),
 
   // ─── VOCABULARY-002: Abstract nouns B2 ───────────────────────────────────────

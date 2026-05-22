@@ -290,6 +290,7 @@ export const B1_DEEP_BRIDGE_PART2 = Object.freeze([
       'Adjetivos compostos: thought-provoking, eye-opening, heart-warming.',
       'Intensidade importa: content < pleased < happy < thrilled < overjoyed.',
     ],
+    recognitionPractice: [{ question: 'Feelings, attitudes and reactions — qual vocabulário desta aula significa "sobrecarregado/a"?', options: ['overwhelmed', 'relieved', 'touched'], answer: 'overwhelmed', explanation: 'overwhelmed = sobrecarregado/a; vocabulário trabalhado nesta aula de Feelings, attitudes and reactions.' }, { question: 'Feelings, attitudes and reactions — qual opção combina com "overwhelmed"?', options: ['sobrecarregado/a', 'aliviado/a', 'emocionado/a (positivo)'], answer: 'sobrecarregado/a', explanation: 'overwhelmed significa sobrecarregado/a no contexto desta aula.' }],
     nextLessonBridge: 'Na próxima aula, você vai aprender vocabulário de discourse chunks — expressões de transição e conexão que tornam sua fala ainda mais fluente e natural.',
   }),
 

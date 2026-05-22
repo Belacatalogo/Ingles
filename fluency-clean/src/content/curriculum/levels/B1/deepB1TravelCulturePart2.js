@@ -287,6 +287,7 @@ The most memorable trips are rarely the ones with the longest checklist. They ar
         'If you\'re visiting Morocco, there are a few cultural differences worth being aware of. First, dress codes are important — it is considered respectful to cover your shoulders and knees when visiting mosques or religious sites. Haggling is expected in the souks — it is part of the culture, and not haggling can actually seem rude. Tipping is appreciated but not obligatory; leaving a small amount out of respect for good service is generally the right approach. Finally, be careful not to use your left hand to pass food or accept gifts, as this can cause offence without meaning to.'
       ),
     ],
+    recognitionPractice: [{ question: 'Cultural differences and social customs — qual vocabulário desta aula significa "etiqueta / normas de comportamento social"?', options: ['etiquette', 'custom', 'taboo'], answer: 'etiquette', explanation: 'etiquette = etiqueta / normas de comportamento social; vocabulário trabalhado nesta aula de Cultural differences and social customs.' }, { question: 'Cultural differences and social customs — qual opção combina com "etiquette"?', options: ['etiqueta / normas de comportamento social', 'costume / prática cultural estabelecida', 'tabu / assunto ou comportamento proibido socialmente'], answer: 'etiqueta / normas de comportamento social', explanation: 'etiquette significa etiqueta / normas de comportamento social no contexto desta aula.' }],
   }),
 
 ]);

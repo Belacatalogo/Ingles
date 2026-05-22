@@ -361,6 +361,7 @@ export const B1_DEEP_OPINIONS_PART1 = Object.freeze([
       '"Having said that" e "That said" = contradição após concessão — não usam "but" depois.',
       '"Despite" nunca usa "of" — "despite the cost" não "despite of the cost".',
     ],
+    recognitionPractice: [{ question: 'Opinion and discussion vocabulary — qual vocabulário desta aula significa "Entendo o que você quer dizer"?', options: ['I see what you mean', 'To be fair', 'On the one hand... on the other hand'], answer: 'I see what you mean', explanation: 'I see what you mean = Entendo o que você quer dizer; vocabulário trabalhado nesta aula.' }, { question: 'Opinion and discussion vocabulary — qual opção combina com "I see what you mean"?', options: ['Entendo o que você quer dizer', 'Para ser justo', 'Por um lado... por outro lado'], answer: 'Entendo o que você quer dizer', explanation: 'I see what you mean significa Entendo o que você quer dizer no contexto desta aula.' }],
     nextLessonBridge: 'Na próxima aula de Speaking, você vai usar tudo que aprendeu sobre opiniões, frases de debate e vocabulário de discussão para expressar e defender uma opinião em 90-120 segundos.',
   }),
 

@@ -402,6 +402,7 @@ Of course, not every risk is worth taking. The key is to weigh up the options ca
         'If I had started saving earlier, I would have had enough for a deposit by now. I regret spending so freely in my twenties. On balance, though, those years taught me a lot about what really matters.'
       ),
     ],
+    recognitionPractice: [{ question: 'Decision-making vocabulary — qual vocabulário desta aula significa "analisar/pesar (prós e contras)"?', options: ['weigh up', 'pros and cons', 'make a decision'], answer: 'weigh up', explanation: 'weigh up = analisar/pesar (prós e contras); vocabulário trabalhado nesta aula de Decision-making vocabulary.' }, { question: 'Decision-making vocabulary — qual opção combina com "weigh up"?', options: ['analisar/pesar (prós e contras)', 'vantagens e desvantagens', 'tomar uma decisão'], answer: 'analisar/pesar (prós e contras)', explanation: 'weigh up significa analisar/pesar (prós e contras) no contexto desta aula.' }],
   }),
 
 ]);

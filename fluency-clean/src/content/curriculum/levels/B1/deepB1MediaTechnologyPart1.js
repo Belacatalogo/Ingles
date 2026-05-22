@@ -353,6 +353,7 @@ export const B1_DEEP_MEDIA_TECHNOLOGY_PART1 = Object.freeze([
         'First, always double-check the source before sharing anything — look for the original article and check who wrote it. Avoid scrolling too quickly, because clickbait headlines are designed to make you react without reading. It\'s worth following a range of news sources with different perspectives instead of relying on one feed. Finally, consider stopping to read comments on controversial stories, as they often spread more misinformation than the article itself.'
       ),
     ],
+    recognitionPractice: [{ question: 'Media and technology vocabulary — qual vocabulário desta aula significa "algoritmo — sistema automático que filtra e seleciona conteúdo"?', options: ['algorithm', 'clickbait', 'misinformation'], answer: 'algorithm', explanation: 'algorithm = algoritmo — sistema automático que filtra e seleciona conteúdo; vocabulário trabalhado nesta aula.' }, { question: 'Media and technology vocabulary — qual opção combina com "algorithm"?', options: ['algoritmo — sistema automático que filtra e seleciona conteúdo', 'conteúdo projetado para atrair cliques com títulos enganosos', 'desinformação / informação falsa ou imprecisa (sem intenção obrigatória)'], answer: 'algoritmo — sistema automático que filtra e seleciona conteúdo', explanation: 'algorithm significa algoritmo — sistema automático que filtra e seleciona conteúdo no contexto desta aula.' }],
   }),
 
   // ─── SPEAKING-007: Give an opinion about technology or media ─────────────────
