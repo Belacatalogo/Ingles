@@ -249,6 +249,7 @@ export const B2_DEEP_CULTURE_MEDIA_PART1 = Object.freeze([
     productionTasks: [
       task('Write a short analytical paragraph (60-80 words) about the impact of social media algorithms on public opinion. Use at least 4 words from this lesson.'),
     ],
+    recognitionPractice: [{ question: 'Media and society: bias, agenda, algorithm, representation, viral — qual vocabulário desta aula significa "an inclination towards a particular perspective or opinio..."?', options: ['bias', 'agenda', 'algorithm'], answer: 'bias', explanation: 'bias = an inclination towards a particular perspective or opinio...; vocabulário trabalhado nesta aula.' }, { question: 'Media and society: bias, agenda, algorithm, representation, viral — qual opção combina com "bias"?', options: ['an inclination towards a particular perspective or opinio...', 'a set of underlying goals or priorities influencing action', 'a set of rules a computer follows to perform tasks or mak...'], answer: 'an inclination towards a particular perspective or opinio...', explanation: 'bias significa an inclination towards a particular perspective or opinio... no contexto desta aula.' }],
   }),
 
   // ─── VOCABULARY-012: Cultural language ────────────────────────────────────────
@@ -292,6 +293,7 @@ export const B2_DEEP_CULTURE_MEDIA_PART1 = Object.freeze([
     productionTasks: [
       task('Write a short paragraph (60-80 words) analysing the importance of cultural representation in media. Use: representation, stereotype, identity, and at least one other word from this lesson.'),
     ],
+    recognitionPractice: [{ question: 'Cultural language: heritage, identity, representation, assimilation — qual vocabulário desta aula significa "traditions, culture and history passed down from earlier ..."?', options: ['heritage', 'identity', 'representation'], answer: 'heritage', explanation: 'heritage = traditions, culture and history passed down from earlier ...; vocabulário trabalhado nesta aula.' }, { question: 'Cultural language: heritage, identity, representation, assimilation — qual opção combina com "heritage"?', options: ['traditions, culture and history passed down from earlier ...', 'the characteristics and qualities that define who someone...', 'the way a group of people or type of person is portrayed ...'], answer: 'traditions, culture and history passed down from earlier ...', explanation: 'heritage significa traditions, culture and history passed down from earlier ... no contexto desta aula.' }],
   }),
 
   // ─── SPEAKING-006: Discuss a current affairs or media topic ──────────────────

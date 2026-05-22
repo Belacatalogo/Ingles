@@ -279,6 +279,7 @@ export const B2_DEEP_PROFESSIONAL_PART1 = Object.freeze([
     productionTasks: [
       task('Write a short meeting summary (60-80 words) including: two agenda items, action points for each, and at least two vocabulary items from this lesson.'),
     ],
+    recognitionPractice: [{ question: 'Meetings and negotiations: agenda, action points, facilitate, defer — qual vocabulário desta aula significa "list of items to be discussed in a meeting"?', options: ['agenda', 'action point', 'defer'], answer: 'agenda', explanation: 'agenda = list of items to be discussed in a meeting; vocabulário trabalhado nesta aula.' }, { question: 'Meetings and negotiations: agenda, action points, facilitate, defer — qual opção combina com "agenda"?', options: ['list of items to be discussed in a meeting', 'a specific task assigned during or after a meeting', 'postpone to a later time'], answer: 'list of items to be discussed in a meeting', explanation: 'agenda significa list of items to be discussed in a meeting no contexto desta aula.' }],
   }),
 
   // ─── VOCABULARY-010: Professional email phrases ────────────────────────────────
@@ -329,6 +330,7 @@ export const B2_DEEP_PROFESSIONAL_PART1 = Object.freeze([
     productionTasks: [
       task('Write a professional email (80-100 words) responding to a client who reported a problem with a delivery. Include: a formal opening with reference, an apology, what action is being taken, a request for confirmation, and a formal closing.'),
     ],
+    recognitionPractice: [{ question: 'Professional email phrases: register, openings, closings and transitions — qual vocabulário desta aula significa "following on from (formal reference)"?', options: ['further to', 'pursuant to', 'I trust'], answer: 'further to', explanation: 'further to = following on from (formal reference); vocabulário trabalhado nesta aula.' }, { question: 'Professional email phrases: register, openings, closings and transitions — qual opção combina com "further to"?', options: ['following on from (formal reference)', 'following a rule or agreement (formal/legal)', 'I believe/hope (formal tone)'], answer: 'following on from (formal reference)', explanation: 'further to significa following on from (formal reference) no contexto desta aula.' }],
   }),
 
   // ─── SPEAKING-004: Lead and participate in a business meeting ─────────────────

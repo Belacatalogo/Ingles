@@ -256,6 +256,7 @@ export const B2_DEEP_NARRATIVES_PART1 = Object.freeze([
     productionTasks: [
       task('Write a short narrative paragraph (50-60 words) describing a situation that developed negatively. Use at least 3 narrative verbs from this lesson.'),
     ],
+    recognitionPractice: [{ question: 'Narrative verbs: unfold, emerge, escalate, deteriorate, trigger — qual vocabulário desta aula significa "develop or become known gradually"?', options: ['unfold', 'emerge', 'escalate'], answer: 'unfold', explanation: 'unfold = develop or become known gradually; vocabulário trabalhado nesta aula.' }, { question: 'Narrative verbs: unfold, emerge, escalate, deteriorate, trigger — qual opção combina com "unfold"?', options: ['develop or become known gradually', 'come to light or come out from something', 'increase rapidly or become more serious'], answer: 'develop or become known gradually', explanation: 'unfold significa develop or become known gradually no contexto desta aula.' }],
   }),
 
   // ─── VOCABULARY-005: Storytelling chunks ─────────────────────────────────────
@@ -344,6 +345,7 @@ export const B2_DEEP_NARRATIVES_PART1 = Object.freeze([
     productionTasks: [
       task('Write 3 sentences about a past event — one using an adjective from this lesson, one using an adverb, and one using a narrative chunk like "the irony is that" or "in hindsight".'),
     ],
+    recognitionPractice: [{ question: 'Adjectives and adverbs for narrative impact: devastating, ironic, inevitably — qual vocabulário desta aula significa "causing severe shock, damage or grief"?', options: ['devastating', 'ironic', 'subtle'], answer: 'devastating', explanation: 'devastating = causing severe shock, damage or grief; vocabulário trabalhado nesta aula.' }, { question: 'Adjectives and adverbs for narrative impact: devastating, ironic, inevitably — qual opção combina com "devastating"?', options: ['causing severe shock, damage or grief', 'happening in a way that is the opposite of expected, ofte...', 'not immediately obvious; delicate'], answer: 'causing severe shock, damage or grief', explanation: 'devastating significa causing severe shock, damage or grief no contexto desta aula.' }],
   }),
 
   // ─── READING-002: A Photograph Found in a Drawer ─────────────────────────────

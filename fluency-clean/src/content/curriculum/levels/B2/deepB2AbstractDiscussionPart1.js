@@ -244,6 +244,7 @@ export const B2_DEEP_ABSTRACT_DISCUSSION_PART1 = Object.freeze([
     productionTasks: [
       task('Write 4 qualified claims about a topic you know (work, study, technology, society). Each sentence must use a different qualification marker from this lesson.'),
     ],
+    recognitionPractice: [{ question: 'Qualification language: tend to, appear to, somewhat, arguably — qual vocabulário desta aula significa "it could be argued that this is true — but it is open to ..."?', options: ['arguably', 'tend to', 'appear to'], answer: 'arguably', explanation: 'arguably = it could be argued that this is true — but it is open to ...; vocabulário trabalhado nesta aula.' }, { question: 'Qualification language: tend to, appear to, somewhat, arguably — qual opção combina com "arguably"?', options: ['it could be argued that this is true — but it is open to ...', 'be likely to do something in most cases', 'seem to be the case based on available evidence'], answer: 'it could be argued that this is true — but it is open to ...', explanation: 'arguably significa it could be argued that this is true — but it is open to ... no contexto desta aula.' }],
   }),
 
   // ─── VOCABULARY-008: Abstract verbs B2 ───────────────────────────────────────
@@ -295,6 +296,7 @@ export const B2_DEEP_ABSTRACT_DISCUSSION_PART1 = Object.freeze([
     productionTasks: [
       task('Write a short analytical paragraph (60-80 words) about a claim, study or argument. Use at least 4 abstract verbs from this lesson.'),
     ],
+    recognitionPractice: [{ question: 'Abstract verbs B2: acknowledge, challenge, constitute, undermine — qual vocabulário desta aula significa "accept the truth or existence of something"?', options: ['acknowledge', 'challenge', 'constitute'], answer: 'acknowledge', explanation: 'acknowledge = accept the truth or existence of something; vocabulário trabalhado nesta aula.' }, { question: 'Abstract verbs B2: acknowledge, challenge, constitute, undermine — qual opção combina com "acknowledge"?', options: ['accept the truth or existence of something', 'question or dispute the validity of something', 'be the equivalent of; make up or form'], answer: 'accept the truth or existence of something', explanation: 'acknowledge significa accept the truth or existence of something no contexto desta aula.' }],
   }),
 
   // ─── READING-003: The Price of Progress ──────────────────────────────────────
