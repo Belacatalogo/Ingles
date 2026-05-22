@@ -1,0 +1,102 @@
+name: Quality Director Codex Validate
+
+on:
+  push:
+    branches:
+      - 'codex/**'
+  workflow_dispatch:
+    inputs:
+      audit_mode:
+        description: 'Quality Director audit mode to run'
+        required: false
+        default: smart
+        type: choice
+        options:
+          - smart
+          - exercise
+          - lesson_pillar
+          - navigation_visual
+          - journey
+          - full
+          - all_lessons
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: fluency-clean
+
+jobs:
+  validate:
+    name: Validate Quality Director (${{ github.event.inputs.audit_mode || 'smart' }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: fluency-clean/package.json
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Build app
+        run: npm run build
+
+      - name: Select audit mode
+        shell: bash
+        run: |
+          MODE="${{ github.event.inputs.audit_mode }}"
+          if [ -z "$MODE" ]; then
+            MODE="smart"
+          fi
+          echo "AUDIT_MODE=$MODE" >> "$GITHUB_ENV"
+          echo "Selected audit mode: $MODE"
+
+      - name: Run Quality Director
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "Running audit mode: $AUDIT_MODE"
+
+          if [ "$AUDIT_MODE" = "smart" ]; then
+            npm run test:quality-director:smart
+          elif [ "$AUDIT_MODE" = "exercise" ]; then
+            npx playwright test e2e/quality-director/exercise-quality.audit.spec.js --project="iPhone 13" --project="iPhone SE" --trace=retain-on-failure
+          elif [ "$AUDIT_MODE" = "lesson_pillar" ]; then
+            npx playwright test e2e/quality-director/lesson-quality.audit.spec.js e2e/quality-director/pillar-quality.audit.spec.js --project="iPhone 13" --project="iPhone SE" --trace=retain-on-failure
+          elif [ "$AUDIT_MODE" = "navigation_visual" ]; then
+            npx playwright test e2e/quality-director/navigation.audit.spec.js e2e/quality-director/visual-mobile.audit.spec.js --project="iPhone 13" --project="iPhone SE" --trace=retain-on-failure
+          elif [ "$AUDIT_MODE" = "journey" ]; then
+            npx playwright test e2e/quality-director/student-journey.audit.spec.js e2e/quality-director/real-student-regression.audit.spec.js --project="iPhone 13" --project="iPhone SE" --trace=retain-on-failure
+          elif [ "$AUDIT_MODE" = "full" ]; then
+            npm run test:quality-director -- --project="iPhone 13" --project="iPhone SE" --trace=retain-on-failure
+          elif [ "$AUDIT_MODE" = "all_lessons" ]; then
+            npx playwright test e2e/quality-director/all-lessons-deep.audit.spec.js --project="iPhone 13" --project="iPhone SE" --trace=retain-on-failure
+          else
+            echo "Unknown audit mode: $AUDIT_MODE" >&2
+            exit 1
+          fi
+
+      - name: Upload Quality Director artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-director-codex-results
+          path: |
+            fluency-clean/audit-results/
+            fluency-clean/playwright-report/
+            fluency-clean/test-results/
+            fluency-clean/docs/quality-director/latest/
+          if-no-files-found: warn
+          retention-days: 14
