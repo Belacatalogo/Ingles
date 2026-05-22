@@ -1,8 +1,8 @@
 Status: Precisa revisão
 Nota geral: 0/100
-Relatórios: 26
-Checks: 3270
-Issues únicas: 533 (brutas=1065, agrupadas=532)
-Severidade: P0=0, P1=0, P2=533, P3=0
+Relatórios: 4
+Checks: 1502
+Issues únicas: 504 (brutas=1008, agrupadas=504)
+Severidade: P0=0, P1=0, P2=504, P3=0
 Direção: Sem P0/P1 no relatório atual. Foco em P2/P3 e evolução do próximo bloco.
 Top issues: P2 Exercício · A1-GRAMMAR-001 — Pergunta com baixa conexão lexical com a aula | P2 Exercício · A1-GRAMMAR-001 — Pergunta com baixa conexão lexical com a aula | P2 Exercício · A1-GRAMMAR-001 — Pergunta com baixa conexão lexical com a aula | P2 Exercício · A1-GRAMMAR-001 — Pergunta com baixa conexão lexical com a aula | P2 Exercício · A1-GRAMMAR-001 — Pergunta com baixa conexão lexical com a aula
