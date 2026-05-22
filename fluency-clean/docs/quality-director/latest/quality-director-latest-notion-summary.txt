@@ -1,8 +1,8 @@
 Status: Revisar antes de confiar
 Nota geral: 0/100
-Relatórios: 26
-Checks: 3270
-Issues únicas: 1047 (brutas=2053, agrupadas=1006)
-Severidade: P0=0, P1=22, P2=1025, P3=0
+Relatórios: 4
+Checks: 1502
+Issues únicas: 1977 (brutas=2955, agrupadas=978)
+Severidade: P0=0, P1=21, P2=1956, P3=0
 Direção: Corrigir P1 antes de considerar o sistema confiável para estudo contínuo.
 Top issues: P1 Pilar SPEAKING · B1-SPEAKING-008 — Speaking sem foco de pronúncia/shadowing | P1 Pilar SPEAKING · B1-SPEAKING-009 — Speaking sem foco de pronúncia/shadowing | P1 Pilar SPEAKING · B2-SPEAKING-007 — Speaking sem modelo de fala suficiente | P1 Pilar SPEAKING · B2-SPEAKING-008 — Speaking sem modelo de fala suficiente | P1 Pilar SPEAKING · B2-SPEAKING-009 — Speaking sem modelo de fala suficiente

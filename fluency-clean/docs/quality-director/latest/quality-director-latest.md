@@ -1,6 +1,6 @@
 # Fluency Quality Director — Relatório Executivo Latest
 
-Gerado em: 2026-05-21T23:52:30.538Z
+Gerado em: 2026-05-22T00:47:52.883Z
 
 ## Veredito
 
@@ -10,23 +10,23 @@ Gerado em: 2026-05-21T23:52:30.538Z
 
 ## Resumo geral
 
-- Relatórios consolidados: 26
-- Checks executados: 3270
-- Problemas únicos: 1047
-- Problemas brutos antes de deduplicar: 2053
-- Duplicatas agrupadas: 1006
+- Relatórios consolidados: 4
+- Checks executados: 1502
+- Problemas únicos: 1977
+- Problemas brutos antes de deduplicar: 2955
+- Duplicatas agrupadas: 978
 - P0: 0
-- P1: 22
-- P2: 1025
+- P1: 21
+- P2: 1956
 - P3: 0
 
 ## Notas por área
 
 | Área | Nota | Status | P0 | P1 | P2 | P3 |
 |---|---:|---|---:|---:|---:|---:|
-| Navegação e estabilidade | 54 | Precisa revisão | 0 | 0 | 38 | 0 |
-| Jornada real do aluno | 93 | Revisar antes de confiar | 0 | 1 | 2 | 0 |
-| Exercícios e alternativas | 0 | Precisa revisão | 0 | 0 | 765 | 0 |
+| Navegação e estabilidade | 0 | Precisa revisão | 0 | 0 | 999 | 0 |
+| Jornada real do aluno | 100 | Saudável | 0 | 0 | 0 | 0 |
+| Exercícios e alternativas | 0 | Precisa revisão | 0 | 0 | 737 | 0 |
 | Aulas e pedagogia | 0 | Revisar antes de confiar | 0 | 21 | 220 | 0 |
 | Visual e mobile | 100 | Saudável | 0 | 0 | 0 | 0 |
 | Progresso, XP e mastery | 100 | Saudável | 0 | 0 | 0 | 0 |
@@ -39,31 +39,9 @@ Gerado em: 2026-05-21T23:52:30.538Z
 | Relatório | Projeto | Nota | Checks | Issues únicas | Issues brutas | P0 | P1 | P2 | P3 |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---:|
 |  |  | 100 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| quality-director-a11y-performance | iPhone 13 | 100 | 28 | 0 | 0 | 0 | 0 | 0 | 0 |
-| quality-director-a11y-performance | iPhone SE | 100 | 28 | 0 | 0 | 0 | 0 | 0 | 0 |
-| quality-director-curriculum-consistency | iPhone 13 | 100 | 7 | 0 | 0 | 0 | 0 | 0 | 0 |
-| quality-director-curriculum-consistency | iPhone SE | 100 | 7 | 0 | 0 | 0 | 0 | 0 | 0 |
-| quality-director-empty-states-security | iPhone 13 | 100 | 56 | 0 | 0 | 0 | 0 | 0 | 0 |
-| quality-director-empty-states-security | iPhone SE | 100 | 56 | 0 | 0 | 0 | 0 | 0 | 0 |
-| quality-director-exercise-quality | iPhone 13 | 0 | 501 | 737 | 737 | 0 | 0 | 737 | 0 |
-| quality-director-exercise-quality | iPhone SE | 0 | 501 | 737 | 737 | 0 | 0 | 737 | 0 |
-| quality-director-exploratory-student-audit | iPhone 13 | 77 | 3 | 19 | 19 | 0 | 0 | 19 | 0 |
-| quality-director-exploratory-student-audit | iPhone SE | 77 | 3 | 19 | 19 | 0 | 0 | 19 | 0 |
-| quality-director-lesson-quality | iPhone 13 | 66 | 500 | 28 | 28 | 0 | 0 | 28 | 0 |
-| quality-director-lesson-quality | iPhone SE | 66 | 500 | 28 | 28 | 0 | 0 | 28 | 0 |
-| quality-director-navigation | iPhone 13 | 100 | 13 | 0 | 0 | 0 | 0 | 0 | 0 |
-| quality-director-navigation | iPhone SE | 100 | 13 | 0 | 0 | 0 | 0 | 0 | 0 |
-| quality-director-pillar-quality | iPhone 13 | 0 | 506 | 241 | 241 | 0 | 21 | 220 | 0 |
-| quality-director-pillar-quality | iPhone SE | 0 | 506 | 241 | 241 | 0 | 21 | 220 | 0 |
-| quality-director-progress-mastery | iPhone 13 | 100 | 1 | 0 | 0 | 0 | 0 | 0 | 0 |
-| quality-director-progress-mastery | iPhone SE | 100 | 1 | 0 | 0 | 0 | 0 | 0 | 0 |
-| quality-director-real-student-regression | iPhone 13 | 100 | 3 | 0 | 0 | 0 | 0 | 0 | 0 |
-| quality-director-real-student-regression | iPhone SE | 100 | 3 | 0 | 0 | 0 | 0 | 0 | 0 |
-| quality-director-student-journey | iPhone 13 | 100 | 6 | 0 | 0 | 0 | 0 | 0 | 0 |
-| quality-director-student-journey | iPhone SE | 100 | 6 | 0 | 0 | 0 | 0 | 0 | 0 |
+| quality-director-all-lessons-deep | iPhone 13 | 0 | 751 | 1478 | 1478 | 0 | 21 | 1457 | 0 |
+| quality-director-all-lessons-deep | iPhone SE | 0 | 751 | 1477 | 1477 | 0 | 21 | 1456 | 0 |
 |  |  | 100 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| quality-director-visual-mobile | iPhone 13 | 95 | 11 | 1 | 1 | 0 | 1 | 0 | 0 |
-| quality-director-visual-mobile | iPhone SE | 98 | 11 | 2 | 2 | 0 | 0 | 2 | 0 |
 
 ## Plano de ação
 
@@ -151,7 +129,7 @@ Gerado em: 2026-05-21T23:52:30.538Z
 
 1. **P1 · Pilar SPEAKING · B1-SPEAKING-008 — Speaking sem foco de pronúncia/shadowing**
    - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Relatório: quality-director-all-lessons-deep / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: A aula pode virar apenas escrita lida em voz alta.
    - Evidência: Sem pronúncia em pronunciationTips/pronunciationFocus/shadowingTasks/repeatTasks/fluencyDrills/intonationPractice/stressPractice/minimalPairs/pronunciationChunks/repeatAfterMe.
@@ -159,7 +137,7 @@ Gerado em: 2026-05-21T23:52:30.538Z
 
 2. **P1 · Pilar SPEAKING · B1-SPEAKING-009 — Speaking sem foco de pronúncia/shadowing**
    - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Relatório: quality-director-all-lessons-deep / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: A aula pode virar apenas escrita lida em voz alta.
    - Evidência: Sem pronúncia em pronunciationTips/pronunciationFocus/shadowingTasks/repeatTasks/fluencyDrills/intonationPractice/stressPractice/minimalPairs/pronunciationChunks/repeatAfterMe.
@@ -167,7 +145,7 @@ Gerado em: 2026-05-21T23:52:30.538Z
 
 3. **P1 · Pilar SPEAKING · B2-SPEAKING-007 — Speaking sem modelo de fala suficiente**
    - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Relatório: quality-director-all-lessons-deep / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: O aluno pode ser forçado a produzir sem base linguística.
    - Evidência: Sem modelo em modelPhrases/speakingModel/modelAnswer/exampleDialogue/guidedModel/usefulPhrases/sentenceFrames/dialogue/repeatAfterMe/substitutionDrills/questionAnswerDrills/buildYourAnswer/speakingSituation.
@@ -175,7 +153,7 @@ Gerado em: 2026-05-21T23:52:30.538Z
 
 4. **P1 · Pilar SPEAKING · B2-SPEAKING-008 — Speaking sem modelo de fala suficiente**
    - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Relatório: quality-director-all-lessons-deep / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: O aluno pode ser forçado a produzir sem base linguística.
    - Evidência: Sem modelo em modelPhrases/speakingModel/modelAnswer/exampleDialogue/guidedModel/usefulPhrases/sentenceFrames/dialogue/repeatAfterMe/substitutionDrills/questionAnswerDrills/buildYourAnswer/speakingSituation.
@@ -183,7 +161,7 @@ Gerado em: 2026-05-21T23:52:30.538Z
 
 5. **P1 · Pilar SPEAKING · B2-SPEAKING-009 — Speaking sem modelo de fala suficiente**
    - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Relatório: quality-director-all-lessons-deep / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: O aluno pode ser forçado a produzir sem base linguística.
    - Evidência: Sem modelo em modelPhrases/speakingModel/modelAnswer/exampleDialogue/guidedModel/usefulPhrases/sentenceFrames/dialogue/repeatAfterMe/substitutionDrills/questionAnswerDrills/buildYourAnswer/speakingSituation.
@@ -191,7 +169,7 @@ Gerado em: 2026-05-21T23:52:30.538Z
 
 6. **P1 · Pilar SPEAKING · B2-SPEAKING-010 — Speaking sem modelo de fala suficiente**
    - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Relatório: quality-director-all-lessons-deep / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: O aluno pode ser forçado a produzir sem base linguística.
    - Evidência: Sem modelo em modelPhrases/speakingModel/modelAnswer/exampleDialogue/guidedModel/usefulPhrases/sentenceFrames/dialogue/repeatAfterMe/substitutionDrills/questionAnswerDrills/buildYourAnswer/speakingSituation.
@@ -199,7 +177,7 @@ Gerado em: 2026-05-21T23:52:30.538Z
 
 7. **P1 · Pilar SPEAKING · B2-SPEAKING-011 — Speaking sem modelo de fala suficiente**
    - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Relatório: quality-director-all-lessons-deep / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: O aluno pode ser forçado a produzir sem base linguística.
    - Evidência: Sem modelo em modelPhrases/speakingModel/modelAnswer/exampleDialogue/guidedModel/usefulPhrases/sentenceFrames/dialogue/repeatAfterMe/substitutionDrills/questionAnswerDrills/buildYourAnswer/speakingSituation.
@@ -207,7 +185,7 @@ Gerado em: 2026-05-21T23:52:30.538Z
 
 8. **P1 · Pilar SPEAKING · C1-SPEAKING-001 — Speaking sem modelo de fala suficiente**
    - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Relatório: quality-director-all-lessons-deep / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: O aluno pode ser forçado a produzir sem base linguística.
    - Evidência: Sem modelo em modelPhrases/speakingModel/modelAnswer/exampleDialogue/guidedModel/usefulPhrases/sentenceFrames/dialogue/repeatAfterMe/substitutionDrills/questionAnswerDrills/buildYourAnswer/speakingSituation.
@@ -215,7 +193,7 @@ Gerado em: 2026-05-21T23:52:30.538Z
 
 9. **P1 · Pilar SPEAKING · C1-SPEAKING-002 — Speaking sem modelo de fala suficiente**
    - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Relatório: quality-director-all-lessons-deep / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: O aluno pode ser forçado a produzir sem base linguística.
    - Evidência: Sem modelo em modelPhrases/speakingModel/modelAnswer/exampleDialogue/guidedModel/usefulPhrases/sentenceFrames/dialogue/repeatAfterMe/substitutionDrills/questionAnswerDrills/buildYourAnswer/speakingSituation.
@@ -223,7 +201,7 @@ Gerado em: 2026-05-21T23:52:30.538Z
 
 10. **P1 · Pilar SPEAKING · C1-SPEAKING-003 — Speaking sem modelo de fala suficiente**
    - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Relatório: quality-director-all-lessons-deep / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: O aluno pode ser forçado a produzir sem base linguística.
    - Evidência: Sem modelo em modelPhrases/speakingModel/modelAnswer/exampleDialogue/guidedModel/usefulPhrases/sentenceFrames/dialogue/repeatAfterMe/substitutionDrills/questionAnswerDrills/buildYourAnswer/speakingSituation.
@@ -231,7 +209,7 @@ Gerado em: 2026-05-21T23:52:30.538Z
 
 11. **P1 · Pilar SPEAKING · C1-SPEAKING-004 — Speaking sem modelo de fala suficiente**
    - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Relatório: quality-director-all-lessons-deep / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: O aluno pode ser forçado a produzir sem base linguística.
    - Evidência: Sem modelo em modelPhrases/speakingModel/modelAnswer/exampleDialogue/guidedModel/usefulPhrases/sentenceFrames/dialogue/repeatAfterMe/substitutionDrills/questionAnswerDrills/buildYourAnswer/speakingSituation.
@@ -239,7 +217,7 @@ Gerado em: 2026-05-21T23:52:30.538Z
 
 12. **P1 · Pilar SPEAKING · C1-SPEAKING-005 — Speaking sem modelo de fala suficiente**
    - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Relatório: quality-director-all-lessons-deep / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: O aluno pode ser forçado a produzir sem base linguística.
    - Evidência: Sem modelo em modelPhrases/speakingModel/modelAnswer/exampleDialogue/guidedModel/usefulPhrases/sentenceFrames/dialogue/repeatAfterMe/substitutionDrills/questionAnswerDrills/buildYourAnswer/speakingSituation.
@@ -247,7 +225,7 @@ Gerado em: 2026-05-21T23:52:30.538Z
 
 13. **P1 · Pilar SPEAKING · C1-SPEAKING-006 — Speaking sem modelo de fala suficiente**
    - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Relatório: quality-director-all-lessons-deep / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: O aluno pode ser forçado a produzir sem base linguística.
    - Evidência: Sem modelo em modelPhrases/speakingModel/modelAnswer/exampleDialogue/guidedModel/usefulPhrases/sentenceFrames/dialogue/repeatAfterMe/substitutionDrills/questionAnswerDrills/buildYourAnswer/speakingSituation.
@@ -255,7 +233,7 @@ Gerado em: 2026-05-21T23:52:30.538Z
 
 14. **P1 · Pilar SPEAKING · C1-SPEAKING-007 — Speaking sem modelo de fala suficiente**
    - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Relatório: quality-director-all-lessons-deep / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: O aluno pode ser forçado a produzir sem base linguística.
    - Evidência: Sem modelo em modelPhrases/speakingModel/modelAnswer/exampleDialogue/guidedModel/usefulPhrases/sentenceFrames/dialogue/repeatAfterMe/substitutionDrills/questionAnswerDrills/buildYourAnswer/speakingSituation.
@@ -263,7 +241,7 @@ Gerado em: 2026-05-21T23:52:30.538Z
 
 15. **P1 · Pilar SPEAKING · C1-SPEAKING-008 — Speaking sem modelo de fala suficiente**
    - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Relatório: quality-director-all-lessons-deep / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: O aluno pode ser forçado a produzir sem base linguística.
    - Evidência: Sem modelo em modelPhrases/speakingModel/modelAnswer/exampleDialogue/guidedModel/usefulPhrases/sentenceFrames/dialogue/repeatAfterMe/substitutionDrills/questionAnswerDrills/buildYourAnswer/speakingSituation.
@@ -271,7 +249,7 @@ Gerado em: 2026-05-21T23:52:30.538Z
 
 16. **P1 · Pilar SPEAKING · C2-SPEAKING-001 — Speaking sem modelo de fala suficiente**
    - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Relatório: quality-director-all-lessons-deep / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: O aluno pode ser forçado a produzir sem base linguística.
    - Evidência: Sem modelo em modelPhrases/speakingModel/modelAnswer/exampleDialogue/guidedModel/usefulPhrases/sentenceFrames/dialogue/repeatAfterMe/substitutionDrills/questionAnswerDrills/buildYourAnswer/speakingSituation.
@@ -279,7 +257,7 @@ Gerado em: 2026-05-21T23:52:30.538Z
 
 17. **P1 · Pilar SPEAKING · C2-SPEAKING-002 — Speaking sem modelo de fala suficiente**
    - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Relatório: quality-director-all-lessons-deep / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: O aluno pode ser forçado a produzir sem base linguística.
    - Evidência: Sem modelo em modelPhrases/speakingModel/modelAnswer/exampleDialogue/guidedModel/usefulPhrases/sentenceFrames/dialogue/repeatAfterMe/substitutionDrills/questionAnswerDrills/buildYourAnswer/speakingSituation.
@@ -287,7 +265,7 @@ Gerado em: 2026-05-21T23:52:30.538Z
 
 18. **P1 · Pilar SPEAKING · C2-SPEAKING-003 — Speaking sem modelo de fala suficiente**
    - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Relatório: quality-director-all-lessons-deep / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: O aluno pode ser forçado a produzir sem base linguística.
    - Evidência: Sem modelo em modelPhrases/speakingModel/modelAnswer/exampleDialogue/guidedModel/usefulPhrases/sentenceFrames/dialogue/repeatAfterMe/substitutionDrills/questionAnswerDrills/buildYourAnswer/speakingSituation.
@@ -295,7 +273,7 @@ Gerado em: 2026-05-21T23:52:30.538Z
 
 19. **P1 · Pilar SPEAKING · C2-SPEAKING-003 — Speaking sem tarefa produtiva final**
    - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Relatório: quality-director-all-lessons-deep / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: O aluno pode praticar frases soltas sem produção própria.
    - Evidência: Sem produção em freeSpeaking/speakingTask/productionTask/connectedProduction/roleplay/conversationTask/finalSpeakingTask/recordingTasks/tasks/guidedPractice/prompt.
@@ -303,7 +281,7 @@ Gerado em: 2026-05-21T23:52:30.538Z
 
 20. **P1 · Pilar SPEAKING · C2-SPEAKING-004 — Speaking sem modelo de fala suficiente**
    - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Relatório: quality-director-all-lessons-deep / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: O aluno pode ser forçado a produzir sem base linguística.
    - Evidência: Sem modelo em modelPhrases/speakingModel/modelAnswer/exampleDialogue/guidedModel/usefulPhrases/sentenceFrames/dialogue/repeatAfterMe/substitutionDrills/questionAnswerDrills/buildYourAnswer/speakingSituation.
@@ -311,163 +289,163 @@ Gerado em: 2026-05-21T23:52:30.538Z
 
 21. **P1 · Pilar SPEAKING · C2-SPEAKING-005 — Speaking sem modelo de fala suficiente**
    - Área executiva: Aulas e pedagogia
-   - Relatório: quality-director-pillar-quality / iPhone 13, iPhone SE
+   - Relatório: quality-director-all-lessons-deep / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: O aluno pode ser forçado a produzir sem base linguística.
    - Evidência: Sem modelo em modelPhrases/speakingModel/modelAnswer/exampleDialogue/guidedModel/usefulPhrases/sentenceFrames/dialogue/repeatAfterMe/substitutionDrills/questionAnswerDrills/buildYourAnswer/speakingSituation.
    - Recomendação: Adicionar frases-modelo, mini diálogo ou resposta exemplar antes da produção.
 
-22. **P1 · iPhone 13 · Aula A1-READING-001 · fase-4 — Elemento interativo sobreposto pela bottom nav**
-   - Área executiva: Jornada real do aluno
-   - Relatório: quality-director-visual-mobile / iPhone 13
-   - Ocorrências agrupadas: 1
-   - Impacto: O aluno pode não conseguir tocar em botões ou campos próximos do rodapé.
-   - Evidência: audit-results/screenshots/iphone-13-aula-a1-reading-001-fase-4.png; overlap={"nav":{"x":17,"y":778,"width":356,"height":66},"offenders":[{"tag":"FOOTER","className":"lesson-flow-action-footer","text":"Voltar Você pode avançar. Continuar","rect":{"x":14,"y":754,"width":362,"height":90,"bottom":844},"overlapPx":66,"overlapRatio":0.73}]}
-   - Recomendação: Adicionar padding-bottom/safe-area nas telas com conteúdo rolável ou remover o elemento da faixa fixa inferior.
-
-23. **P2 · Exercício · A1-GRAMMAR-001 — Pergunta com baixa conexão lexical com a aula**
+22. **P2 · Exercício · A1-GRAMMAR-001 — Pergunta com baixa conexão lexical com a aula**
    - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
+   - Relatório: quality-director-all-lessons-deep / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: Pode ser um exercício fora do tema ou genérico demais.
    - Evidência: lesson.errorCorrectionPractice[0]: Corrija: Am tired.
    - Recomendação: Verificar se o exercício cobra algo realmente ensinado nesta aula.
 
-24. **P2 · Exercício · A1-GRAMMAR-001 — Pergunta com baixa conexão lexical com a aula**
+23. **P2 · Exercício · A1-GRAMMAR-001 — Pergunta com baixa conexão lexical com a aula**
    - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
+   - Relatório: quality-director-all-lessons-deep / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: Pode ser um exercício fora do tema ou genérico demais.
    - Evidência: lesson.errorCorrectionPractice[2]: Corrija: Ana is here. He is ready.
    - Recomendação: Verificar se o exercício cobra algo realmente ensinado nesta aula.
 
-25. **P2 · Exercício · A1-GRAMMAR-001 — Pergunta com baixa conexão lexical com a aula**
+24. **P2 · Exercício · A1-GRAMMAR-001 — Pergunta com baixa conexão lexical com a aula**
    - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
+   - Relatório: quality-director-all-lessons-deep / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: Pode ser um exercício fora do tema ou genérico demais.
    - Evidência: lesson.errorCorrectionPractice[4]: Corrija: The book is blue. She is new.
    - Recomendação: Verificar se o exercício cobra algo realmente ensinado nesta aula.
 
-26. **P2 · Exercício · A1-GRAMMAR-001 — Pergunta com baixa conexão lexical com a aula**
+25. **P2 · Exercício · A1-GRAMMAR-001 — Pergunta com baixa conexão lexical com a aula**
    - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
+   - Relatório: quality-director-all-lessons-deep / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: Pode ser um exercício fora do tema ou genérico demais.
    - Evidência: lesson.translationPractice[1]: Traduza: “Ela é minha irmã.”
    - Recomendação: Verificar se o exercício cobra algo realmente ensinado nesta aula.
 
-27. **P2 · Exercício · A1-GRAMMAR-001 — Pergunta com baixa conexão lexical com a aula**
+26. **P2 · Exercício · A1-GRAMMAR-001 — Pergunta com baixa conexão lexical com a aula**
    - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
+   - Relatório: quality-director-all-lessons-deep / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: Pode ser um exercício fora do tema ou genérico demais.
    - Evidência: lesson.guidedPractice[1]: Complete: ___ is Ana.
    - Recomendação: Verificar se o exercício cobra algo realmente ensinado nesta aula.
 
-28. **P2 · Exercício · A1-GRAMMAR-001 — Pergunta com baixa conexão lexical com a aula**
+27. **P2 · Exercício · A1-GRAMMAR-001 — Pergunta com baixa conexão lexical com a aula**
    - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
+   - Relatório: quality-director-all-lessons-deep / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: Pode ser um exercício fora do tema ou genérico demais.
    - Evidência: lesson.guidedPractice[4]: Complete: My mother is here. ___ is happy.
    - Recomendação: Verificar se o exercício cobra algo realmente ensinado nesta aula.
 
-29. **P2 · Exercício · A1-GRAMMAR-001 — Pergunta com baixa conexão lexical com a aula**
+28. **P2 · Exercício · A1-GRAMMAR-001 — Pergunta com baixa conexão lexical com a aula**
    - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
+   - Relatório: quality-director-all-lessons-deep / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: Pode ser um exercício fora do tema ou genérico demais.
    - Evidência: lesson.guidedPractice[6]: Complete: You and I are a team. ___ are ready.
    - Recomendação: Verificar se o exercício cobra algo realmente ensinado nesta aula.
 
-30. **P2 · Exercício · A1-GRAMMAR-001 — Pergunta com baixa conexão lexical com a aula**
+29. **P2 · Exercício · A1-GRAMMAR-001 — Pergunta com baixa conexão lexical com a aula**
    - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
+   - Relatório: quality-director-all-lessons-deep / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: Pode ser um exercício fora do tema ou genérico demais.
    - Evidência: lesson.guidedPractice[7]: Complete: The books are new. ___ are on the table.
    - Recomendação: Verificar se o exercício cobra algo realmente ensinado nesta aula.
 
-31. **P2 · Exercício · A1-GRAMMAR-001 — Feedback genérico demais**
+30. **P2 · Exercício · A1-GRAMMAR-001 — Feedback genérico demais**
    - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
+   - Relatório: quality-director-all-lessons-deep / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: O aluno não entende por que errou ou acertou.
    - Evidência: lesson.transformationPractice[0]: Pedro → he.
    - Recomendação: Explicar a regra, evidência textual ou raciocínio da resposta.
 
-32. **P2 · Exercício · A1-GRAMMAR-001 — Pergunta com baixa conexão lexical com a aula**
+31. **P2 · Exercício · A1-GRAMMAR-001 — Pergunta com baixa conexão lexical com a aula**
    - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
+   - Relatório: quality-director-all-lessons-deep / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: Pode ser um exercício fora do tema ou genérico demais.
    - Evidência: lesson.transformationPractice[0]: Substitua “Pedro”: Pedro is my friend.
    - Recomendação: Verificar se o exercício cobra algo realmente ensinado nesta aula.
 
-33. **P2 · Exercício · A1-GRAMMAR-001 — Pergunta com baixa conexão lexical com a aula**
+32. **P2 · Exercício · A1-GRAMMAR-001 — Pergunta com baixa conexão lexical com a aula**
    - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
+   - Relatório: quality-director-all-lessons-deep / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: Pode ser um exercício fora do tema ou genérico demais.
    - Evidência: lesson.transformationPractice[1]: Substitua “Maria”: Maria is from Brazil.
    - Recomendação: Verificar se o exercício cobra algo realmente ensinado nesta aula.
 
-34. **P2 · Exercício · A1-GRAMMAR-001 — Pergunta com baixa conexão lexical com a aula**
+33. **P2 · Exercício · A1-GRAMMAR-001 — Pergunta com baixa conexão lexical com a aula**
    - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
+   - Relatório: quality-director-all-lessons-deep / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: Pode ser um exercício fora do tema ou genérico demais.
    - Evidência: lesson.transformationPractice[3]: Substitua “my friends”: My friends are here.
    - Recomendação: Verificar se o exercício cobra algo realmente ensinado nesta aula.
 
-35. **P2 · Exercício · A1-GRAMMAR-001 — Pergunta com baixa conexão lexical com a aula**
+34. **P2 · Exercício · A1-GRAMMAR-001 — Pergunta com baixa conexão lexical com a aula**
    - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
+   - Relatório: quality-director-all-lessons-deep / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: Pode ser um exercício fora do tema ou genérico demais.
    - Evidência: lesson.transformationPractice[4]: Substitua “you and I”: You and I are ready.
    - Recomendação: Verificar se o exercício cobra algo realmente ensinado nesta aula.
 
-36. **P2 · Exercício · A1-GRAMMAR-002 — Feedback genérico demais**
+35. **P2 · Exercício · A1-GRAMMAR-002 — Feedback genérico demais**
    - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
+   - Relatório: quality-director-all-lessons-deep / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: O aluno não entende por que errou ou acertou.
    - Evidência: lesson.errorCorrectionPractice[0]: She usa is.
    - Recomendação: Explicar a regra, evidência textual ou raciocínio da resposta.
 
-37. **P2 · Exercício · A1-GRAMMAR-002 — Pergunta com baixa conexão lexical com a aula**
+36. **P2 · Exercício · A1-GRAMMAR-002 — Pergunta com baixa conexão lexical com a aula**
    - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
+   - Relatório: quality-director-all-lessons-deep / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: Pode ser um exercício fora do tema ou genérico demais.
    - Evidência: lesson.errorCorrectionPractice[0]: Corrija: She are here.
    - Recomendação: Verificar se o exercício cobra algo realmente ensinado nesta aula.
 
-38. **P2 · Exercício · A1-GRAMMAR-002 — Pergunta com baixa conexão lexical com a aula**
+37. **P2 · Exercício · A1-GRAMMAR-002 — Pergunta com baixa conexão lexical com a aula**
    - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
+   - Relatório: quality-director-all-lessons-deep / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: Pode ser um exercício fora do tema ou genérico demais.
    - Evidência: lesson.errorCorrectionPractice[3]: Corrija: You is kind.
    - Recomendação: Verificar se o exercício cobra algo realmente ensinado nesta aula.
 
-39. **P2 · Exercício · A1-GRAMMAR-002 — Feedback genérico demais**
+38. **P2 · Exercício · A1-GRAMMAR-002 — Feedback genérico demais**
    - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
+   - Relatório: quality-director-all-lessons-deep / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: O aluno não entende por que errou ou acertou.
    - Evidência: lesson.translationPractice[0]: Use I am.
    - Recomendação: Explicar a regra, evidência textual ou raciocínio da resposta.
 
-40. **P2 · Exercício · A1-GRAMMAR-002 — Pergunta com baixa conexão lexical com a aula**
+39. **P2 · Exercício · A1-GRAMMAR-002 — Pergunta com baixa conexão lexical com a aula**
    - Área executiva: Exercícios e alternativas
-   - Relatório: quality-director-exercise-quality / iPhone 13, iPhone SE
+   - Relatório: quality-director-all-lessons-deep / iPhone 13, iPhone SE
    - Ocorrências agrupadas: 2
    - Impacto: Pode ser um exercício fora do tema ou genérico demais.
    - Evidência: lesson.translationPractice[0]: Traduza: “Eu sou estudante.”
    - Recomendação: Verificar se o exercício cobra algo realmente ensinado nesta aula.
+
+40. **P2 · Exercício · A1-GRAMMAR-002 — Feedback genérico demais**
+   - Área executiva: Exercícios e alternativas
+   - Relatório: quality-director-all-lessons-deep / iPhone 13, iPhone SE
+   - Ocorrências agrupadas: 2
+   - Impacto: O aluno não entende por que errou ou acertou.
+   - Evidência: lesson.translationPractice[1]: Use she is.
+   - Recomendação: Explicar a regra, evidência textual ou raciocínio da resposta.
 
 
 ## Como usar este relatório
