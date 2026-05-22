@@ -5,7 +5,7 @@ import { SpeakExercise } from '../../../practice/components/SpeakExercise.jsx';
 import { generateGeminiAudioBlob } from '../../../services/geminiAudioService.js';
 import { playLearningAudio } from '../../../services/audioPlayback.js';
 import { analyzeStudentAnswer } from '../../../services/studentAnswerAnalysis/index.js';
-import { clean, expectedOf } from '../text/normalize.js';
+import { clean, expectedOf, noteOf, textOf } from '../text/normalize.js';
 import { StudentAnswerFeedbackCard } from '../../../components/ai/StudentAnswerFeedbackCard.jsx';
 
 function ModelAudioButton({ text }) {
@@ -32,14 +32,44 @@ function ModelAudioButton({ text }) {
   );
 }
 
+function promptLabel(phase) {
+  const id = clean(phase?.id).toLowerCase();
+  if (id.includes('repeat')) return 'Fale esta frase';
+  if (id.includes('substitution')) return 'Use este modelo e faça a troca';
+  if (id.includes('qa')) return 'Responda esta pergunta';
+  if (id.includes('build-answer')) return 'Monte sua resposta com este apoio';
+  if (id.includes('recording')) return 'Grave esta tarefa';
+  if (id.includes('free')) return 'Sua tarefa de fala livre';
+  return 'O que falar agora';
+}
+
+function SpeakingPromptCard({ phase, item, prompt, expected }) {
+  const helper = clean(noteOf(item));
+  const modelText = clean(expected || prompt);
+  if (!modelText) return null;
+
+  return (
+    <div className="lesson-phase-model-answer" style={{ marginBottom: '14px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+        <span style={{ display: 'flex', flexDirection: 'column', gap: '5px', flex: 1 }}>
+          <small style={{ textTransform: 'uppercase', letterSpacing: '0.08em', opacity: 0.8 }}>{promptLabel(phase)}</small>
+          <b>{modelText}</b>
+        </span>
+        <ModelAudioButton text={modelText} />
+      </div>
+      {helper ? <small>{helper}</small> : null}
+    </div>
+  );
+}
+
 export function SpeakField({ phase, flow, item = {}, eyebrow = 'Sua vez de falar', instruction, lesson = null }) {
   const [value, setValue] = useState('');
   const [feedback, setFeedback] = useState(null);
   const [aiAnalysis, setAiAnalysis] = useState(null);
   const [aiLoading, setAiLoading] = useState(false);
   const attempted = Boolean(flow?.attempts?.[phase.id]);
-  const prompt = clean(item.prompt || item.text || item.title);
-  const expected = expectedOf(item);
+  const prompt = clean(textOf(item) || phase?.prompt || phase?.description || phase?.title);
+  const expected = clean(expectedOf(item) || (typeof item === 'string' ? item : ''));
 
   function handleSpeak() {
     setFeedback({ ok: true, retryable: false });
@@ -62,9 +92,9 @@ export function SpeakField({ phase, flow, item = {}, eyebrow = 'Sua vez de falar
       const result = await analyzeStudentAnswer({
         lesson,
         pillar: 'speaking',
-        skill: clean(item.title || item.prompt || item.question || 'fala'),
+        skill: clean(item.title || item.prompt || item.question || prompt || 'fala'),
         studentText: value.trim(),
-        expectedAnswer: expected,
+        expectedAnswer: expected || prompt,
         allowAi: true,
       });
       setAiAnalysis(result);
@@ -108,12 +138,13 @@ export function SpeakField({ phase, flow, item = {}, eyebrow = 'Sua vez de falar
   return (
     <PhaseShell
       eyebrow={eyebrow}
-      title={prompt}
+      title={phase?.title || prompt}
       instruction={instruction || 'Fale em voz alta. Se não puder falar agora, escreva o que você diria (mínimo 2 palavras).'}
       feedback={feedbackNode}
       footnote="Use fala real ou fallback escrito para liberar a próxima fase."
     >
       <div className="lesson-phase-speak-wrap">
+        <SpeakingPromptCard phase={phase} item={item} prompt={prompt} expected={expected} />
         <SpeakExercise value={value} feedback={feedback} onSpeak={handleSpeak} onChange={handleChange} />
         <p className="lesson-phase-speak-hint"><Mic size={12} /> Toque em "Falar agora" ou escreva o que falaria (mínimo 2 palavras).</p>
       </div>
