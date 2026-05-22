@@ -523,6 +523,7 @@ const B1_VOCABULARY_017 = createVocabularyLesson({
     },
   ],
   recognitionPractice: [
+    { question: 'Word-building — qual prefixo transforma "happy" em seu oposto?', options: ['un-', 'dis-', 're-'], answer: 'un-', explanation: 'O prefixo un- indica negação/oposto: unhappy, uncomfortable, uncertain.' },
     {
       instruction: 'Complete each word with the correct prefix (un-, dis-, re-, over-, mis-) or suffix (-ful, -less, -ness, -tion, -ment).',
       items: [

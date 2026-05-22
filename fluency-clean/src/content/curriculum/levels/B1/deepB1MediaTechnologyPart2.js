@@ -284,6 +284,7 @@ The solution, most experts agree, is not to blame the individual but to regulate
         'I don\'t volunteer regularly, but I try to be part of the solution in small ways — shopping locally to support the community, donating to food banks occasionally, and standing up for colleagues when I notice unfair treatment at work. I believe participation doesn\'t have to mean grand gestures — even choosing to engage with local elections makes a small difference. The important thing is not to assume that only large organisations can address social problems.'
       ),
     ],
+    recognitionPractice: [{ question: 'Society and community vocabulary — qual vocabulário desta aula significa "desigualdade — diferença de recursos, oportunidades ou direitos"?', options: ['inequality', 'diversity', 'community'], answer: 'inequality', explanation: 'inequality = desigualdade — diferença de recursos, oportunidades ou direitos; vocabulário trabalhado nesta aula de Society and community vocabulary.' }, { question: 'Society and community vocabulary — qual opção combina com "inequality"?', options: ['desigualdade — diferença de recursos, oportunidades ou direitos', 'diversidade — variedade de pessoas, perspectivas e experiências', 'comunidade — grupo de pessoas que compartilham algo (lugar, interesse, identidade)'], answer: 'desigualdade — diferença de recursos, oportunidades ou direitos', explanation: 'inequality significa desigualdade — diferença de recursos, oportunidades ou direitos no contexto desta aula.' }],
   }),
 
 ]);

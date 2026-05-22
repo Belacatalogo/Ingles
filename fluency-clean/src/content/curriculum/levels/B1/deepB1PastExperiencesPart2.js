@@ -97,6 +97,7 @@ export const B1_DEEP_PAST_EXPERIENCES_PART2 = Object.freeze([
       '"Looking back / with hindsight / at the time" = perspectiva temporal — separam B1 do A2.',
       '"Eventually" ≠ "eventualmente" em português — é falso cognato.',
     ],
+    recognitionPractice: [{ question: 'Narrative vocabulary: sequence, surprise and emotion — qual vocabulário desta aula significa "no início, inicialmente"?', options: ['at first', 'gradually', 'eventually'], answer: 'at first', explanation: 'at first = no início, inicialmente; vocabulário trabalhado nesta aula de Narrative vocabulary: sequence, surprise and emotion.' }, { question: 'Narrative vocabulary: sequence, surprise and emotion — qual opção combina com "at first"?', options: ['no início, inicialmente', 'aos poucos, gradualmente', 'eventualmente, no final das contas'], answer: 'no início, inicialmente', explanation: 'at first significa no início, inicialmente no contexto desta aula.' }],
     nextLessonBridge: 'Na próxima aula de Vocabulary, você vai aprender expressões para falar sobre o passado em geral: used to, would, it was the first time — as estruturas que dão profundidade histórica às suas histórias.',
   }),
 

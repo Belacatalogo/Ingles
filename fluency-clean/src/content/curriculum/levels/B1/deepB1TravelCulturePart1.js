@@ -349,6 +349,7 @@ export const B1_DEEP_TRAVEL_CULTURE_PART1 = Object.freeze([
         'On our last trip, we missed our connection in Amsterdam because our first flight was delayed by two hours. We had to wait six hours at the airport for the next available flight. By the time we finally arrived at the hotel, we were completely jet-lagged and exhausted. Fortunately, the accommodation turned out to be far better than expected.'
       ),
     ],
+    recognitionPractice: [{ question: 'Travel and transport vocabulary — qual vocabulário desta aula significa "roteiro / programa detalhado da viagem"?', options: ['itinerary', 'check in / check out', 'set off'], answer: 'itinerary', explanation: 'itinerary = roteiro / programa detalhado da viagem; vocabulário trabalhado nesta aula.' }, { question: 'Travel and transport vocabulary — qual opção combina com "itinerary"?', options: ['roteiro / programa detalhado da viagem', 'fazer check-in / check-out no hotel ou aeroporto', 'partir / iniciar a jornada'], answer: 'roteiro / programa detalhado da viagem', explanation: 'itinerary significa roteiro / programa detalhado da viagem no contexto desta aula.' }],
   }),
 
   // ─── SPEAKING-006: Describe a trip or travel experience ───────────────────────

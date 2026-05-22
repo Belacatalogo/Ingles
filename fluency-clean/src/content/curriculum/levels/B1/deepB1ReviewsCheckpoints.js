@@ -573,6 +573,7 @@ const B1_VOCABULARY_015 = createVocabularyLesson({
     },
   ],
   recognitionPractice: [
+    { question: 'B1 vocabulary review — qual vocabulário desta aula significa "superar dificuldade"?', options: ['overcome', 'ambiguous', 'solidarity'], answer: 'overcome', explanation: 'overcome = superar uma dificuldade ou obstáculo; vocabulário chave nesta revisão B1.' },
     {
       instruction: 'Match each word to its definition.',
       items: [

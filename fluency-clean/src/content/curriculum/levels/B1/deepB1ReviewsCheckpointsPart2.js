@@ -483,6 +483,7 @@ const B1_VOCABULARY_016 = createVocabularyLesson({
       targetPhrases: ['it could be argued that', 'based on the evidence', 'to a certain extent', 'plays a key role in'],
     },
   ],
+    recognitionPractice: [{ question: 'Academic and formal vocabulary for B1 completion — qual vocabulário desta aula significa "important and worthy of notice; having a noticeable effect"?', options: ['significant', 'evidence', 'impact'], answer: 'significant', explanation: 'significant = important and worthy of notice; having a noticeable effect; vocabulário trabalhado nesta aula.' }, { question: 'Academic and formal vocabulary for B1 completion — qual opção combina com "significant"?', options: ['important and worthy of notice; having a noticeable effect', 'facts or information that help prove something is true', 'the strong effect or influence something has on someone or something'], answer: 'important and worthy of notice; having a noticeable effect', explanation: 'significant significa important and worthy of notice; having a noticeable effect no contexto desta aula.' }],
 });
 
 export const B1_DEEP_REVIEWS_CHECKPOINTS_PART2 = Object.freeze([
