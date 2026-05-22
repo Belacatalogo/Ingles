@@ -215,6 +215,14 @@ export const C1_DEEP_LITERATURE_PART1 = Object.freeze([
       'Use literary critical vocabulary from C1.4 in spoken academic discourse.',
     ],
     teacherOpening: 'Literary analysis in a seminar requires a different spoken register from other academic presentations. You are expected to quote — briefly and accurately — and then analyse the quotation rather than just describing it. You are also expected to hold a specific interpretive position and defend it when challenged, acknowledging the alternative reading while explaining why yours is more compelling.',
+    modelPhrases: [
+      'What is particularly striking is that both readings are fully supported by the textual evidence.',
+      'The ambiguity is not a failure of the text to commit; it is the text\'s most distinctive formal achievement.',
+      'I would contend that this is precisely what makes it literarily significant.',
+      'This is the deployment of precision in the service of undecidability.',
+      'The former — structural ambiguity — is an ontological feature of the work; the latter — interpretive ambiguity — is epistemological.',
+      'I want to argue for the statement, but with an important qualification.',
+    ],
     pronunciationFocus: {
       title: 'Pronunciation & shadowing',
       tips: [

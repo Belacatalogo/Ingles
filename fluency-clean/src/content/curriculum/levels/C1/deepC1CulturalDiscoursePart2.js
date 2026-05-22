@@ -22,6 +22,14 @@ export const C1_DEEP_CULTURAL_DISCOURSE_PART2 = Object.freeze([
     ],
     teacherOpening: 'Intellectual discourse is not just about having ideas — it is about the ability to express, develop, and defend them in conversation. This lesson practises the spoken version of academic argument: clear position-taking, precise use of vocabulary, genuine engagement with opposing views, and the ability to think on your feet. The goal is not to win but to demonstrate rigorous, good-faith engagement.',
     prompt: 'Choose ONE of the following positions to defend in an 8–10 minute discussion with your teacher:\n\n(A) "The distinction between high and popular culture was always a class marker rather than an aesthetic judgment."\n(B) "Authenticity, as a cultural value, has been so thoroughly commodified that it has ceased to be meaningful."\n(C) "Democratic societies need shared cultural reference points — but the question of who defines the shared culture is always a political question."\n\nYour teacher will defend a different position or challenge yours.',
+    modelPhrases: [
+      'The distinction between high and popular culture was always a class marker rather than an aesthetic judgment.',
+      'Authenticity, as a cultural value, has been so thoroughly commodified that it has ceased to be meaningful.',
+      'The question of who defines the shared culture is always a political question.',
+      'I would take issue with the premise that cultural gatekeeping serves a purely aesthetic function.',
+      'What I think is at stake here is not merely taste but the distribution of cultural authority.',
+      'On this reading, the concept of authenticity is not lost but transformed — and the transformation itself is the phenomenon that demands analysis.',
+    ],
     pronunciationFocus: {
       title: 'Pronunciation & shadowing',
       tips: [

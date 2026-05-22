@@ -22,6 +22,14 @@ export const C2_DEEP_NATIVE_PRODUCTION_PART2 = Object.freeze([
     ],
     teacherOpening: 'The extended monologue — sustained solo speech on a complex topic — is one of the most demanding speaking tasks at C2. Unlike a seminar discussion, it offers no external structure; you must create the structure and maintain it across 8–10 minutes. Unlike a prepared presentation, it should feel natural and responsive to the listener, not scripted. This lesson practises the skills of expert spoken exposition.',
     prompt: 'Choose ONE topic for an 8–10 minute extended explanation with no notes:\n\n(A) Explain the evidence-based policy debate as you understand it from C2-READING-004 and C2-LISTENING-004, then offer your own evaluation of the argument from Dr Patel\'s final turn: is evidence in policy a lost cause?\n(B) Explain the problem of under-determination in science (from C2-LISTENING-003) as if to a highly intelligent non-specialist. Then explain what you find most and least persuasive about the scientific realist response to it.\n(C) Explain what you now understand by "register" in English — what it is, why it matters, and how your understanding of register has changed over the course of your English learning.',
+    modelPhrases: [
+      'What I want to explain today is why this debate matters — and why the answer is less obvious than it first appears.',
+      'The tension between detail and structure is what distinguishes expert explanation from mere information delivery.',
+      'Let me pause here to make sure the central distinction is clear before I move on to the contested part of the argument.',
+      'To return to the thread I was developing — the question of whether evidence-based policy is genuinely achievable.',
+      'With that foundation, I want to turn to the most difficult aspect of the problem.',
+      'The second dimension of the problem concerns the relationship between evidence and values — and why the two cannot be cleanly separated.',
+    ],
     pronunciationFocus: {
       title: 'Pronunciation & shadowing',
       tips: [

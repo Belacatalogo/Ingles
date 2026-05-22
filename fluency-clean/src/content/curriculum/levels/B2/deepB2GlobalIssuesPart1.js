@@ -506,6 +506,14 @@ export const B2_DEEP_GLOBAL_ISSUES_PART1 = Object.freeze([
       'Maintain a nuanced position — claim, support, concession, restate.',
     ],
     teacherOpening: 'The global issues you read and listen to in this module involve complex, contested debates. At B2 level, you are expected not just to have an opinion, but to build a case: cite evidence, acknowledge counter-arguments, and maintain a nuanced position. Today\'s task puts all of B2.6\'s grammar and vocabulary into spoken production.',
+    modelPhrases: [
+      'The evidence is estimated to demonstrate a significantly higher correlation than previously assumed.',
+      'There is now a near-consensus that climate change disproportionately affects developing nations.',
+      'The premise of this argument rests on the assumption that economic growth can be decoupled from emissions.',
+      'Empirical research consistently shows that sanctions have mixed results at best.',
+      'A nuanced reading of the evidence suggests that the situation is more complex than either side acknowledges.',
+      'On balance, I would argue that multilateral cooperation remains the most viable approach.',
+    ],
     pronunciationFocus: {
       title: 'Pronunciation & shadowing',
       tips: [

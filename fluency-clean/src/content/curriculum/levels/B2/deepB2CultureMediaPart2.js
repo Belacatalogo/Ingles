@@ -246,6 +246,14 @@ These are not abstract philosophical questions. They shape what stories get told
       'Show awareness of multiple perspectives while maintaining a clear personal stance.',
     ],
     teacherOpening: 'The topics in this lesson come directly from what you have read and listened to in B2.5: media bias, cultural identity, social media and representation. A B2 speaker can hold a position, qualify it, concede a counter-argument and return to their view — all in two minutes. Today you practise exactly that structure.',
+    modelPhrases: [
+      'Having said that, I would still maintain that the benefits outweigh the drawbacks.',
+      'The question of whether X constitutes cultural appropriation is far from settled.',
+      'One might argue that representation in media is merely performative — however, the evidence suggests otherwise.',
+      'Whereas older forms of media had clear boundaries, digital content blurs the line between creator and consumer.',
+      'To a certain extent, social media has democratised cultural production.',
+      'I would push back on the assumption that all engagement with unfamiliar cultures is inherently harmful.',
+    ],
     pronunciationFocus: {
       title: 'Pronunciation & shadowing',
       tips: [

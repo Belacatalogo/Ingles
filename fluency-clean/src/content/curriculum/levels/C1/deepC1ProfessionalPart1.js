@@ -181,6 +181,14 @@ export const C1_DEEP_PROFESSIONAL_PART1 = Object.freeze([
       'Maintain formal professional register throughout a simulated negotiation.',
     ],
     teacherOpening: 'Professional negotiation in English requires a specific spoken register: formal enough to signal respect and seriousness, flexible enough to accommodate movement, and precise enough that the terms of any agreement are unambiguous. The grammar of negotiation relies heavily on conditionals (what we will do if...), hedging (our current position is...), and strategic concession (we are prepared to consider X if...).',
+    modelPhrases: [
+      'Were you to accept this structure, we\'d be in a position to commit to phase one delivery by month six.',
+      'I\'m not in a position to offer a reduction on the overall contract value, but I could explore restructuring the payment schedule.',
+      'I wonder if it would be helpful to explore whether a phased delivery model might address your concerns.',
+      'Subject to the agreed protocols being in place by week two, we can proceed on that basis.',
+      'Our current position is that the scope of work is unchanged; however, flexibility on payment structure is possible.',
+      'To confirm: on the basis of the revised terms, you would be prepared to commit to heads of terms by end of next week?',
+    ],
     pronunciationFocus: {
       title: 'Pronunciation & shadowing',
       tips: [

@@ -236,6 +236,14 @@ The practical implication of this taxonomy is straightforward: conflating these 
       'Demonstrate the ability to distinguish main points from examples and qualifications.',
     ],
     teacherOpening: 'Summarising — selecting what is most important and restating it concisely — is one of the hardest academic skills. In spoken academic contexts, you are often asked to summarise what a text said, what a speaker argued, or what a study found. The ability to do this accurately, concisely and in your own words distinguishes a B2 academic speaker from a B1 one.',
+    modelPhrases: [
+      'In other words, what the author is suggesting is that the conventional framing is inadequate.',
+      'That is to say, the argument does not rest on a single piece of evidence but on a convergence of findings.',
+      'To put it another way, the distinction between correlation and causation is crucial here.',
+      'The speaker\'s central argument was, broadly speaking, that policy should be evidence-driven rather than ideologically motivated.',
+      'What this means in practice is that the conclusions are tentative rather than definitive.',
+      'In essence, the lecture challenges the assumption that growth and sustainability are inherently incompatible.',
+    ],
     pronunciationFocus: {
       title: 'Pronunciation & shadowing',
       tips: [

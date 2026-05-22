@@ -123,6 +123,14 @@ Foucault's insight — that knowledge is never simply the discovery of pre-exist
       'Close a contribution in a way that invites further dialogue rather than shutting down the discussion.',
     ],
     teacherOpening: 'The graduate seminar is a distinct genre of academic speech. It is not a lecture (you are not performing to an audience), not a debate (you are not trying to win), and not a tutorial (you are not demonstrating knowledge to a teacher). It is a collaborative intellectual inquiry in which every participant is expected to advance the discussion — not merely to agree with the previous speaker or to demonstrate that they have done the reading. At C2, this requires a specific set of linguistic and intellectual moves: how to enter a discussion already in progress, how to build on what has been said rather than starting from scratch, how to challenge without antagonising, and how to close in a way that keeps the conversation open.',
+    modelPhrases: [
+      'Building on what Professor Chen has just said, I\'d like to push on one aspect of the under-determination thesis.',
+      'There\'s one aspect of that summary I\'d like to push on, which is whether parsimony is genuinely epistemic or merely pragmatic.',
+      'That framing is helpful — I want to add one complication, which is that the success criterion itself may be theory-laden.',
+      'I find that compelling as far as it goes — but I wonder whether it escapes the circularity objection.',
+      'My claim is that extra-evidential criteria are not neutral arbiters but themselves require justification.',
+      'So my position is, essentially, that under-determination is a genuine constraint — but the question I\'m genuinely uncertain about is whether the realist response fully addresses it.',
+    ],
     pronunciationFocus: {
       title: 'Pronunciation & shadowing',
       tips: [
@@ -161,6 +169,10 @@ Foucault's insight — that knowledge is never simply the discovery of pre-exist
       'Closing identified a specific open question and invited further engagement.',
       'Collegial register maintained throughout — challenge without antagonism.',
       'Contribution advanced the discussion rather than merely demonstrating knowledge.',
+    ],
+    freeSpeaking: [
+      { topic: 'Choose any contested philosophical or epistemological question from C2.3 and deliver a 3-minute seminar-style contribution: take a position, support it with one specific reason, acknowledge the strongest counter-argument, and close by identifying the open question you are leaving for others.' },
+      { topic: 'Reflect on a moment in the C2 course where your understanding of a concept genuinely changed. In 2 minutes, explain what you previously thought, what shifted, and why that shift matters intellectually.' },
     ],
   }),
 
