@@ -256,6 +256,12 @@
   }
 }
 
+/* ── Lesson flow action footer ───────────────────────────── */
+/* Impede que o footer sticky da aula fique atrás da bottom nav fixa. */
+.lesson-flow-action-footer {
+  bottom: var(--bottom-nav-safe-space) !important;
+}
+
 @media (max-width: 360px) {
   :root {
     --bottom-nav-height: 72px;
