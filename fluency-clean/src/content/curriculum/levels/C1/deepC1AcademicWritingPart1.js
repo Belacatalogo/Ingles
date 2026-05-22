@@ -487,6 +487,7 @@ const vocabulary010 = createVocabularyLesson({
       ''
     ),
   ],
+    recognitionPractice: [{ question: 'Which verb means to provide evidence for a claim?', options: ['substantiate', 'hypothesise', 'undermine'], answer: 'substantiate', explanation: 'Substantiate means to provide firm evidence supporting a claim or theory.' }, { question: 'Which verb means to argue against difficulty or opposition?', options: ['contend', 'surrender', 'overlook'], answer: 'contend', explanation: 'Contend means to assert a position, especially against disagreement.' }],
 });
 
 // ─── VOCABULARY-011: Evaluative and hedging language in academic argument ─────
@@ -625,6 +626,7 @@ const vocabulary011 = createVocabularyLesson({
       ],
     },
   ],
+  recognitionPractice: [{ question: 'Which adjective means seemingly reasonable but not proven?', options: ['plausible', 'tenuous', 'definitive'], answer: 'plausible', explanation: 'Plausible means believable based on available evidence, but not proven.' }, { question: 'Which adjective describes a very weak connection or argument?', options: ['tenuous', 'compelling', 'plausible'], answer: 'tenuous', explanation: 'Tenuous means very weak or slight, offering little substance.' }],
   productionExercises: [
     task(
       'Rewrite this sentence with a more evaluatively precise vocabulary, specifying your epistemic stance: "Some researchers think that social media is bad for teenagers."',

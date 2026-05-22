@@ -301,6 +301,7 @@ export const B2_DEEP_ACADEMIC_PART1 = Object.freeze([
         ],
       },
     ],
+    recognitionPractice: [{ question: 'Which hedging verb means "based on available evidence"?', options: ['appear to', 'insist on', 'demand that'], answer: 'appear to', explanation: 'Appear to suggests evidence-based observation, less certain than stating "is".' }, { question: 'Which phrase signals a general pattern with exceptions?', options: ['tend to', 'must always', 'never fail to'], answer: 'tend to', explanation: 'Tend to expresses a generalisation while acknowledging possible exceptions.' }],
     practiceExercises: [
       {
         type: 'hedging-spectrum',

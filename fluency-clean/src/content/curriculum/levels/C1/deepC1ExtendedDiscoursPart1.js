@@ -239,6 +239,7 @@ export const C1_DEEP_EXTENDED_DISCOURSE_PART1 = Object.freeze([
         'Example: "The argument rests on the premise that agents act as fully rational utility-maximisers — an assumption that decades of behavioural research have rendered, if not wholly untenable, then at least in need of substantial qualification. The inference that market mechanisms will therefore produce optimal outcomes must be treated with considerable scepticism."'
       ),
     ],
+    recognitionPractice: [{ question: 'Which verb means to argue a position against opposition?', options: ['contend', 'concede', 'withdraw'], answer: 'contend', explanation: 'Contend means to assert or argue, especially in the face of disagreement.' }, { question: 'Which noun means a foundational assumption in an argument?', options: ['premise', 'summary', 'anecdote'], answer: 'premise', explanation: 'A premise is the starting assumption from which a conclusion is drawn.' }],
   }),
 
   // ─── VOCABULARY-006: Advanced verbs of reporting and attribution ──────────────

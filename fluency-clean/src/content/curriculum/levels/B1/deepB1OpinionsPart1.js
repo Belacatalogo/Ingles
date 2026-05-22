@@ -8,6 +8,7 @@ function task(instruction, note = '', expected = '') { return { instruction, not
 function phrase(text, translation = '', note = '') { return { text, translation, note }; }
 function word(w, def, ex = '', note = '') { return { word: w, definition: def, example: ex, note }; }
 function ex(text, translation, why = '', warning = '') { return { text, translation, why, warning }; }
+function q(question, answer, evidence = '', explanation = '', options = []) { return { question, answer, evidence, explanation, options }; }
 
 export const B1_DEEP_OPINIONS_PART1 = Object.freeze([
 
@@ -65,6 +66,7 @@ export const B1_DEEP_OPINIONS_PART1 = Object.freeze([
       { wrong: 'If you study, you improve.', right: 'If you study, you will improve.', why: 'First Conditional precisa de "will" na cláusula resultado. Sem "will" = Zero Conditional (verdade geral).' },
       { wrong: 'Unless you don\'t call her, she won\'t know.', right: 'Unless you call her, she won\'t know.', why: '"Unless" já significa "if not" — nunca use "unless...don\'t".' },
     ],
+    guidedPractice: [q('Qual frase forma o First Conditional corretamente?', 'If you study every day, your English will improve over time.', '', 'If + present simple, will + infinitivo para possibilidade real.', ['If you study every day, your English will improve over time.', 'If you will study every day, your English will improve soon.', 'If you studied every day, your English will improve a lot.']), q('Escolha a frase condicional com consequência correta.', 'If we miss the bus, we will be late for the meeting today.', '', 'If + present simple (miss), will + be para a consequência.', ['If we miss the bus, we will be late for the meeting today.', 'If we will miss the bus, we will be late for the meeting.', 'If we missed the bus, we will be late for the meeting now.'])],
     controlledPractice: [
       task(
         'Complete as frases com a forma correta do verbo entre parênteses:',
@@ -243,6 +245,7 @@ export const B1_DEEP_OPINIONS_PART1 = Object.freeze([
       { wrong: 'I have the impression that prices are rising.', right: 'I get the feeling that / I think prices are rising.', why: '"Have the impression" soa como tradução literal. Em inglês: "I get the feeling that..." ou "It seems to me that...".' },
       { wrong: 'I don\'t think nothing will change.', right: 'I don\'t think anything will change.', why: 'Dupla negativa proibida em inglês. "I don\'t think" já é negativo — use "anything".' },
     ],
+    guidedPractice: [q('Qual frase expressa opinião com I think corretamente?', 'I think online learning is more flexible than classroom learning.', '', 'I think + opinião com comparativo (more flexible than).', ['I think online learning is more flexible than classroom learning.', 'I think online learning is more flexible that classroom learning.', 'I think online learning is flexibler than classroom learning now.']), q('Escolha a frase de opinião com In my view.', 'In my view, the most important skill for the future is adaptability.', '', 'In my view introduz opinião pessoal sobre habilidades futuras.', ['In my view, the most important skill for the future is adaptability.', 'In my view, the more important skill for the future is adaptability.', 'In my views, the most important skill for the future is adaptable.'])],
     controlledPractice: [
       task(
         'Reescreva usando a frase de opinião entre parênteses:',

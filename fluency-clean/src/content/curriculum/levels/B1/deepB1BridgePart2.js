@@ -9,6 +9,7 @@ function vocab(word, meaning, example = '', note = '') { return { word, meaning,
 function phrase(text, translation = '', note = '') { return { text, translation, note }; }
 function mistake(wrong, right, why = '') { return { wrong, right, why }; }
 function ex(text, translation, why = '', warning = '') { return { text, translation, why, warning }; }
+function q(question, answer, evidence = '', explanation = '', options = []) { return { question, answer, evidence, explanation, options }; }
 
 export const B1_DEEP_BRIDGE_PART2 = Object.freeze([
 
@@ -102,6 +103,7 @@ export const B1_DEEP_BRIDGE_PART2 = Object.freeze([
       mistake('We arrived late. Which was bad.', 'We arrived late, which was bad.', 'Comment clause é parte da mesma frase — não use ponto.'),
       mistake('I found it interesting which.', 'I found it interesting, which surprised me.', '"Which" comment clause vem depois da vírgula, não depois do adjetivo.'),
     ],
+    guidedPractice: [q('Qual frase usa relative clause corretamente?', 'I met a colleague who’s been working there for fifteen years.', '', 'Who introduz informação adicional sobre a pessoa (colleague).', ['I met a colleague who’s been working there for fifteen years.', 'I met a colleague which been working there for fifteen years.', 'I met a colleague who’s been work there for fifteen years here.']), q('Escolha a frase com comment clause natural.', 'We visited a town which had been closed, which I found quite moving.', '', 'Which I found funciona como comentário pessoal sobre a experiência.', ['We visited a town which had been closed, which I found quite moving.', 'We visited a town that had been closed, that I found quite moving it.', 'We visited a town which had been closed, what I found quite moving.'])],
     controlledPractice: [
       task('Complete: I have a friend ___ lives in London.', 'who'),
       task('Complete: I bought a bag ___ was 50% off.', 'which'),
