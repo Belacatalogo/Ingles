@@ -6,7 +6,7 @@
   --bottom-nav-height: 78px;
   --bottom-nav-gap: 12px;
   --topbar-safe-space: 108px;
-  --bottom-nav-safe-space: calc(var(--bottom-nav-height) + var(--bottom-nav-gap) + env(safe-area-inset-bottom));
+  --bottom-nav-safe-space: calc(var(--bottom-nav-height) + var(--bottom-nav-gap) + env(safe-area-inset-bottom, 0px));
   --content-safe-viewport: calc(100dvh - var(--topbar-safe-space) - var(--bottom-nav-safe-space));
 }
 
@@ -257,9 +257,20 @@
 }
 
 /* ── Lesson flow action footer ───────────────────────────── */
-/* Impede que o footer sticky da aula fique atrás da bottom nav fixa. */
+/* Impede que o footer sticky da aula fique atrás da bottom nav fixa.
+   Sticky não engata quando o conteúdo cabe na tela sem scroll, por isso
+   fixamos o footer acima da bottom nav e compensamos com padding no shell. */
 .lesson-flow-action-footer {
+  position: fixed !important;
   bottom: var(--bottom-nav-safe-space) !important;
+  left: 10px !important;
+  right: 10px !important;
+  margin-bottom: 0 !important;
+}
+
+/* Compensa o espaço que o footer fixo ocupa fora do fluxo. */
+.lesson-flow-shell {
+  padding-bottom: calc(var(--bottom-nav-safe-space) + 100px) !important;
 }
 
 @media (max-width: 360px) {
