@@ -337,6 +337,7 @@ export const B2_DEEP_GLOBAL_ISSUES_PART1 = Object.freeze([
         collocations: ['austerity measures', 'austerity politics', 'impose/implement austerity', 'austerity vs stimulus'],
       },
     ],
+    recognitionPractice: [{ question: 'Which term describes the system by which a state is managed?', options: ['governance', 'displacement', 'multilateralism'], answer: 'governance', explanation: 'Governance refers to systems and processes of managing organisations or states.' }, { question: 'Which word means being forced to leave one\'s home?', options: ['displacement', 'governance', 'sustainability'], answer: 'displacement', explanation: 'Displacement describes being forced from home by conflict or disaster.' }],
     practiceExercises: [
       {
         type: 'gap-fill',

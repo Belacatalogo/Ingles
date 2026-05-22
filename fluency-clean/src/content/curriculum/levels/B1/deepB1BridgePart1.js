@@ -103,6 +103,7 @@ export const B1_DEEP_BRIDGE_PART1 = Object.freeze([
       mistake('I was tired, so because I slept.', 'I was tired, so I slept.', 'Não misture so e because no mesmo conector.'),
       mistake('I like it, although but it is expensive.', 'I like it, although it is expensive.', 'Nunca although + but.'),
     ],
+    guidedPractice: [q('Qual frase conecta ideias com because e so corretamente?', 'I didn’t sleep well because I was stressed, so I drank extra coffee.', '', 'Because introduz causa; so introduz consequência na mesma sequência.', ['I didn’t sleep well because I was stressed, so I drank extra coffee.', 'I didn’t sleep well so I was stressed, because I drank extra coffee.', 'I didn’t sleep well because I was stressed, because I drank coffee.']), q('Qual alternativa usa although para contraste?', 'I like the new job, although it’s more demanding than the old one.', '', 'Although introduz contraste: gosto do emprego apesar de ser mais exigente.', ['I like the new job, although it’s more demanding than the old one.', 'I like the new job, because it’s more demanding than the old one.', 'I like the new job, so it’s more demanding than the old one here.'])],
     controlledPractice: [
       task('Complete: I didn\'t go to work _______ I was sick.', 'because'),
       task('Complete: It was cold, _______ I wore a jacket.', 'so'),

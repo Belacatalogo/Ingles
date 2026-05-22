@@ -203,6 +203,7 @@ export const C1_DEEP_LITERATURE_PART1 = Object.freeze([
         'Example: "The liberal democratic tradition arrives at an aporia when confronted with the question of majority tyranny: the logic of majority rule, taken to its conclusion, is incompatible with the protection of minority rights — and yet the protection of minority rights, taken to its conclusion, places limits on democratic self-determination. No principle internal to liberal democracy can adjudicate between these two values; the impasse is structural."'
       ),
     ],
+    recognitionPractice: [{ question: 'Which term relates to the nature of being or existence?', options: ['ontological', 'dialectical', 'contingent'], answer: 'ontological', explanation: 'Ontological concerns what kinds of things exist and how they relate.' }, { question: 'Which term describes something dependent on conditions?', options: ['contingent', 'ontological', 'dialectical'], answer: 'contingent', explanation: 'Contingent means dependent on certain conditions being met.' }],
   }),
 
   // ─── SPEAKING-004: Seminar presentation — literary/cultural analysis ──────────

@@ -331,6 +331,7 @@ export const C1_DEEP_ADVANCED_GRAMMAR_PART1 = Object.freeze([
         collocations: ['circumscribe the scope of / circumscribed by / significantly circumscribed / circumscribe authority'],
       },
     ],
+    recognitionPractice: [{ question: 'Which verb means to support or strengthen a position?', options: ['bolster', 'diminish', 'fragment'], answer: 'bolster', explanation: 'Bolster means to reinforce or strengthen, especially an argument or confidence.' }, { question: 'Which verb means to confirm with independent evidence?', options: ['corroborate', 'contradict', 'speculate'], answer: 'corroborate', explanation: 'Corroborate means to provide supporting evidence that confirms a claim.' }],
     practiceExercises: [
       {
         type: 'precision-choice',

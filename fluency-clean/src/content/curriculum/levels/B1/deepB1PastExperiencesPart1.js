@@ -8,6 +8,7 @@ function task(instruction, note = '', expected = '') { return { instruction, not
 function phrase(text, translation = '', note = '') { return { text, translation, note }; }
 function mistake(wrong, right, why = '') { return { wrong, right, why }; }
 function ex(text, translation, why = '', warning = '') { return { text, translation, why, warning }; }
+function q(question, answer, evidence = '', explanation = '', options = []) { return { question, answer, evidence, explanation, options }; }
 
 export const B1_DEEP_PAST_EXPERIENCES_PART1 = Object.freeze([
 
@@ -101,6 +102,7 @@ export const B1_DEEP_PAST_EXPERIENCES_PART1 = Object.freeze([
       mistake('While she cooked, I cleaned.', 'While she was cooking, I was cleaning.', 'While + simultaneous → ambas as ações em Continuous.'),
       mistake('I was walking when was raining.', 'I was walking when it started to rain.', '"It" é necessário como sujeito do verbo rain.'),
     ],
+    guidedPractice: [q('Qual frase usa Past Continuous com when corretamente?', 'I was just leaving the office when my boss called me back.', '', 'Was leaving = ação em progresso; called = evento que interrompeu.', ['I was just leaving the office when my boss called me back.', 'I was just leave the office when my boss called me back here.', 'I just left the office when my boss was calling me back then.']), q('Escolha a frase com while + Past Continuous.', 'While everyone was enjoying the party, she was sitting alone.', '', 'While + Past Continuous em ambas as cláusulas para ações simultâneas.', ['While everyone was enjoying the party, she was sitting alone.', 'While everyone enjoyed the party, she was sit alone there.', 'While everyone was enjoy the party, she was sitting alone.'])],
     controlledPractice: [
       task('Complete: She _______ (sleep) when the alarm went off.', '', 'was sleeping'),
       task('Complete: We _______ (not pay) attention when the teacher explained.', '', 'weren\'t paying'),
@@ -232,6 +234,7 @@ export const B1_DEEP_PAST_EXPERIENCES_PART1 = Object.freeze([
       mistake('I was have a shower when he called.', 'I was having a shower when he called.', '"Have a shower" pode ser Continuous.'),
       mistake('She was seeing the accident.', 'She saw the accident.', 'See (perceiver) = estado → Simple.'),
     ],
+    guidedPractice: [q('Qual frase contrasta Past Simple e Past Continuous?', 'I was about to leave when my colleague knocked on the door.', '', 'Was about to (continuous background) + knocked (simple event).', ['I was about to leave when my colleague knocked on the door.', 'I was about to leave when my colleague was knock on the door.', 'I about to leave when my colleague was knocking on the door.']), q('Escolha a narrativa que combina background e evento.', 'She was living in Berlin when she met her husband there.', '', 'Was living = situação de fundo; met = evento pontual no passado.', ['She was living in Berlin when she met her husband there.', 'She lived in Berlin when she was meeting her husband there.', 'She was live in Berlin when she was met her husband there.'])],
     controlledPractice: [
       task('Choose: "I _______ (sleep) when the alarm _______ (ring)."', '', 'was sleeping / rang'),
       task('Choose: "While we _______ (wait), it _______ (start) to snow."', '', 'were waiting / started'),

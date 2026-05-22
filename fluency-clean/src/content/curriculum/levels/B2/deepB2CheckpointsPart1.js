@@ -163,6 +163,7 @@ export const B2_DEEP_CHECKPOINTS_PART1 = Object.freeze([
         collocations: ['ostensibly designed / arguably the most / consequently... / notwithstanding these challenges'],
       },
     ],
+    recognitionPractice: [{ question: 'Which category includes verbs like argue, demonstrate, evaluate?', options: ['academic discourse verbs', 'hedging expressions', 'narrative vocabulary'], answer: 'academic discourse verbs', explanation: 'These verbs drive argument and analysis in academic writing.' }, { question: 'Which vocabulary set deals with reducing certainty?', options: ['qualification language', 'discourse verbs', 'abstract nouns'], answer: 'qualification language', explanation: 'Qualification language hedges claims and expresses degrees of certainty.' }],
     practiceExercises: [
       {
         type: 'categorised-retrieval',
