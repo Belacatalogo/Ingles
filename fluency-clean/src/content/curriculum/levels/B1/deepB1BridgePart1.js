@@ -435,9 +435,9 @@ Sara: About three months. I'm not great yet, but I enjoy it.`,
     listeningComprehension: [
       q('What did Mark do on Saturday night?', 'He went to a friend\'s birthday dinner and then to a bar, arriving home at midnight.', '"We had dinner at a restaurant downtown, and then we went to a bar afterwards. I didn\'t get home until midnight"'),
       q('Why did Mark rest on Sunday?', 'Because he got home late on Saturday night.', '"I didn\'t get home until midnight, so Sunday I just rested."', 'so indicates consequence.'),
-      q('What did Sara do on Saturday morning?', 'She went to a farmers\' market.', '"I went to a farmers\' market in the morning"'),
-      q('What is Sara\'s personal project?', 'She has been learning to draw.', '"I\'ve been learning to draw. It\'s actually quite relaxing."'),
-      q('How long has Sara been learning to draw?', 'About three months.', '"About three months."'),
+      q('What did Sara do on Saturday morning?', 'She went to a farmers\' market.', '"I went to a farmers\' market in the morning"', 'The audio states she went to a farmers\' market on Saturday morning.'),
+      q('What is Sara\'s personal project?', 'She has been learning to draw.', '"I\'ve been learning to draw. It\'s actually quite relaxing."', 'Sara uses present perfect continuous to describe an ongoing project.'),
+      q('How long has Sara been learning to draw?', 'About three months.', '"About three months."', 'Sara states the duration directly: about three months.'),
     ],
     sequenceTracking: [
       task('List Sara\'s Saturday in order: 1. ___ 2. ___ 3. ___', '', '1. Went to a farmers\' market. 2. Sister visited, they cooked together. 3. Spent the evening catching up.'),
