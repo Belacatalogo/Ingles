@@ -60,21 +60,84 @@ const GRAMMAR_TAGS = {
   27: ['a1', 'grammar', 'checkpoint', 'review', 'gate-prep', 'beginner-foundation'],
 };
 
+const GRAMMAR_PREMIUM_SCAFFOLDS = {
+  7: {
+    rule: 'Use a before a consonant sound and an before a vowel sound, only with one singular countable noun.',
+    positive: 'This is a book. / This is an apple.',
+    negative: 'Do not say “a apple” or “an book”.',
+    guided: 'Say the noun slowly first: apple starts with a vowel sound, so use an apple.',
+  },
+  8: {
+    rule: 'Most plural nouns add -s, but some A1 nouns add -es or change spelling: box → boxes, city → cities.',
+    positive: 'one book → two books; one box → two boxes.',
+    negative: 'Do not use a/an with plural nouns: two books, not “a two books”.',
+    guided: 'Look at the number first. If it is more than one, use a plural noun.',
+  },
+  9: {
+    rule: 'Use this/these for near things and that/those for far things. This/that are singular; these/those are plural.',
+    positive: 'This is my book. / These are my friends.',
+    negative: 'Do not mix plural noun with singular demonstrative: “this books” is not correct.',
+    guided: 'Ask two questions: near or far? one or more than one?',
+  },
+  10: {
+    rule: 'Use there is with one thing and there are with two or more things.',
+    positive: 'There is a table. / There are three books.',
+    negative: 'Do not say “there is three books” when the noun is plural.',
+    guided: 'Find the noun after there is/are. If it is plural, choose there are.',
+  },
+  11: {
+    rule: 'Use have with I/you/we/they and has with he/she/it.',
+    positive: 'I have a phone. / She has a sister.',
+    negative: 'Do not say “I has” or “she have” in A1 possession sentences.',
+    guided: 'Check the subject first. He, she and it use has.',
+  },
+  12: {
+    rule: 'Simple adjectives describe a noun or a person. With be, use subject + am/is/are + adjective.',
+    positive: 'The house is small. / They are tired.',
+    negative: 'Do not omit be: “The house small” is not a complete English sentence.',
+    guided: 'Put the adjective after am/is/are when describing someone or something.',
+  },
+};
+
 function grammarLesson([n, title, pattern, chunks, examples]) {
   const baseExamples = examples.concat(chunks.map((chunk) => `Use ${chunk} in a simple sentence.`));
+  const scaffold = GRAMMAR_PREMIUM_SCAFFOLDS[n] || {
+    rule: `Use the pattern ${pattern} to build short, complete A1 sentences.`,
+    positive: examples[0],
+    negative: 'Do not translate word by word from Portuguese; keep English word order.',
+    guided: 'Find the subject, choose the structure, then complete the sentence.',
+  };
   return createGrammarLesson({
     id: id('GRAMMAR', n), level, order: n, title, status, estimatedMinutes: n >= 25 ? 55 : 45,
     tags: GRAMMAR_TAGS[n],
     prerequisites: prereq('GRAMMAR', n), objectives: [`Entender ${title}.`, 'Usar a estrutura em frases A1 reais.', 'Corrigir erros comuns antes de produzir sozinho.'],
     teacherOpening: `Nesta aula vamos estudar ${title}. O objetivo é transformar a regra em uso prático: reconhecer, completar, corrigir e depois escrever frases próprias.`,
-    conceptExplanation: `O padrão central de ${title} é: ${pattern}. Chunks úteis: ${chunks.join(', ')}.`,
-    lessonRecap: [`Você conclui ${title} quando consegue usar o padrão ${pattern} sem adivinhar.`],
+    conceptExplanation: `${scaffold.rule} O padrão central de ${title} é: ${pattern}. Chunks úteis: ${chunks.join(', ')}. Primeiro reconheça o padrão, depois complete frases curtas, corrija erros comuns e produza frases próprias.`,
+    grammarGoal: `Usar ${title} em frases A1 curtas, corretas e úteis para comunicação real.`,
+    formationGuide: [
+      prod('1. Identifique o sujeito ou o noun principal.', examples[0]),
+      prod(`2. Aplique o padrão da aula: ${pattern}.`, examples[1] || examples[0]),
+      prod('3. Complete a frase com uma informação pequena e clara.', examples[2] || examples[0]),
+      prod('4. Leia em voz alta e confira se não traduziu do português.', examples[3] || examples[0]),
+    ],
+    grammarTable: [
+      { pattern, example: examples[0], translation: 'Modelo principal da aula.' },
+      { pattern: 'positive example', example: scaffold.positive, translation: 'Exemplo correto para repetir.' },
+      { pattern: 'common mistake to avoid', example: scaffold.negative, translation: 'Erro comum que o aluno brasileiro deve evitar.' },
+      { pattern: 'guided step', example: scaffold.guided, translation: 'Passo guiado para decidir a resposta.' },
+    ],
+    whenToUse: [
+      prod(`Use ${title} para montar frases simples sobre pessoas, objetos, lugares ou rotina.`),
+      prod('Use quando precisar falar com clareza em nível A1, sem frase longa.'),
+      prod('Use como bloco de construção antes de escrever ou falar livremente.'),
+    ],
+    lessonRecap: [`Você conclui ${title} quando consegue usar o padrão ${pattern} sem adivinhar.`, scaffold.rule],
     explanationSections: [
       section('Abertura do professor', `Nesta aula vamos estudar ${title}. O objetivo é transformar a regra em uso prático: reconhecer, completar, corrigir e depois escrever frases próprias.`),
       section('Quando usar', `Use ${title} quando precisar falar de informações reais no A1: pessoas, objetos, rotina, lugares, horários, habilidade ou conexão simples entre ideias.`),
       section('Forma principal', `O padrão central é: ${pattern}. Leia o padrão como uma peça de montagem. Primeiro identifique o sujeito, depois a palavra estrutural e depois a informação final.`),
       section('Exemplos guiados', `Veja exemplos curtos e repita em voz alta. Troque apenas uma palavra por vez para não perder a estrutura. Chunks úteis: ${chunks.join(', ')}.`),
-      section('Erro comum de brasileiro', 'Brasileiros costumam traduzir a frase inteira do português. No começo, isso causa ordem errada, falta de verbo auxiliar ou escolha incorreta de pronome. Use blocos prontos e revise devagar.'),
+      section('Erro comum de brasileiro', `${scaffold.negative} Brasileiros costumam traduzir a frase inteira do português. No começo, isso causa ordem errada, falta de verbo auxiliar ou escolha incorreta de pronome. Use blocos prontos e revise devagar.`),
       section('Prática em camadas', 'Primeiro reconheça a forma correta. Depois complete lacunas. Depois corrija erro. Depois transforme a frase. Só no final escreva frases suas.'),
       section('Produção final', 'A produção final deve ter frases pequenas, corretas e úteis. Não tente escrever texto avançado: escreva A1 bem feito.'),
       section('Resumo', `Você conclui esta aula quando consegue explicar ${title} em português simples e usar o padrão ${pattern} sem adivinhar.`),
@@ -86,6 +149,18 @@ function grammarLesson([n, title, pattern, chunks, examples]) {
       mistake('Book on table.', 'The book is on the table.', 'Em inglês A1 normalmente precisamos de sujeito e verbo.'),
       mistake('She not study.', 'She does not study.', 'No present simple negativo use does not + verbo base.'),
       mistake('You can to help me.', 'You can help me.', 'Depois de can, use verbo base sem to.'),
+      mistake(scaffold.negative, scaffold.positive, scaffold.guided),
+    ],
+    controlledPractice: [
+      prod(`${title} — copie o modelo principal e sublinhe a parte estrutural.`, examples[0]),
+      prod(`${title} — complete uma frase curta usando ${chunks[0]}.`, examples[1] || examples[0]),
+      prod(`${title} — troque apenas uma palavra do modelo sem mudar a estrutura.`, examples[2] || examples[0]),
+      prod(`${title} — explique em português por que o modelo está correto.`, scaffold.rule),
+    ],
+    errorCorrectionPractice: [
+      prod(`${title} — corrija uma frase com ordem de português.`, examples[0]),
+      prod(`${title} — corrija a escolha errada de palavra estrutural.`, examples[1] || examples[0]),
+      prod(`${title} — corrija e explique o erro principal.`, scaffold.guided),
     ],
     guidedPractice: [
       q(`Qual exemplo combina com ${title}?`, [examples[0], 'Wrong sentence', 'No answer'], examples[0], 'Use a frase-modelo da aula.'),
