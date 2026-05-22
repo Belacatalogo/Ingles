@@ -203,6 +203,14 @@ export const B2_DEEP_CHECKPOINTS_PART1 = Object.freeze([
       'Achieve a register appropriate to the topic (formal or semi-formal).',
     ],
     teacherOpening: 'This is your B2 Speaking Checkpoint. Three minutes is longer than you have practised in any previous lesson — and that is the point. Sustaining academic and formal spoken English for three minutes requires not just knowing the structures, but having internalised them well enough to deploy them under the pressure of continuous speech. This task prepares you for the B2 Gate speaking assessment.',
+    modelPhrases: [
+      'All things considered, I would argue that the benefits, albeit significant, do not outweigh the risks.',
+      'Were one to examine the evidence more closely, a rather different picture would emerge.',
+      'Notwithstanding the obvious objections, there are compelling reasons to reconsider the conventional view.',
+      'In summation, the argument I have been developing is that complexity demands nuance, not simplification.',
+      'What I find most persuasive about this position is its willingness to engage with counter-evidence.',
+      'The issue is not whether X is desirable, but whether it is achievable given current constraints.',
+    ],
     pronunciationFocus: {
       title: 'Pronunciation & shadowing',
       tips: [

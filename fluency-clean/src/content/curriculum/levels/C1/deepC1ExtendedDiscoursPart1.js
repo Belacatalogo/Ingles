@@ -295,6 +295,14 @@ export const C1_DEEP_EXTENDED_DISCOURSE_PART1 = Object.freeze([
       'Make and recover from a strategic concession in real-time oral argument.',
     ],
     teacherOpening: 'Academic speaking at C1 is not the same as academic writing spoken aloud. Oral discourse requires different signposting (since listeners cannot see paragraph breaks), more explicit marking of argument structure, and the ability to acknowledge counter-arguments while maintaining momentum. The C1 speaking task in this lesson asks you to use the discourse tools from C1.3 in a live spoken context.',
+    modelPhrases: [
+      'What I would contend is that the production of knowledge and the institutional capacity to deploy it are distinct questions.',
+      'The first point concerns governance; the second, which I think is equally important, concerns knowledge production.',
+      'Let me now turn to the objection I anticipated — namely, that universities have in fact shaped the most significant developments of this century.',
+      'The caveat I would enter is that "ill-equipped" should be understood as a claim about governance, not about the quality of knowledge produced.',
+      'That said, I should note that this is not a new tension — it is one that has been recognised for decades.',
+      'To sum up: the claim is broadly, though not unconditionally, supported.',
+    ],
     pronunciationFocus: {
       title: 'Pronunciation & shadowing',
       tips: [

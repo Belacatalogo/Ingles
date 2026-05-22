@@ -596,6 +596,15 @@ const B1_SPEAKING_009 = createSpeakingLesson({
     { phrase: 'I wouldn\'t be who I am today if…', use: 'Mixed conditional for identity reflection' },
     { phrase: 'It was the kind of experience that…', use: 'Defining relative clause for emphasis' },
   ],
+  pronunciationFocus: {
+    title: 'Pronunciation & shadowing',
+    tips: [
+      'Shadow: "I still remember the moment when..." — stress reMEMber and MOMent. Practise the nostalgic opening with slightly slower pacing.',
+      '"If I hadn\'t done that, I would never have discovered..." — chunk: "if I HADn\'t DONE that / I would NEVer have disCOVered..." Stress HADn\'t and NEVer.',
+      '"Looking back, I realise that..." — pause after "back" to signal the reflective shift. Stress reALise.',
+      '"I wouldn\'t be who I am today if..." — link "wouldn\'t-be" smoothly. Stress TODAY and the condition that follows "if".',
+    ],
+  },
   guidedSpeaking: [
     {
       stage: 'Choose your experience (1 minute)',

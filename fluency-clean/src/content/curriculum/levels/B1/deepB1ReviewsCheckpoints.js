@@ -654,6 +654,15 @@ const B1_SPEAKING_008 = createSpeakingLesson({
     { phrase: 'It might be that… / It could be that…', use: 'Modal speculation (B1.7 Grammar-017)' },
     { phrase: 'Despite the challenges, it\'s been completely worthwhile.', use: 'Despite + vocabulary review (B1.8)' },
   ],
+  pronunciationFocus: {
+    title: 'Pronunciation & shadowing',
+    tips: [
+      'Shadow: "To my mind, the most important factor is..." — chunk: "to MY mind / the most imPORtant FACtor / IS..." Stress MY, imPORtant and FACtor.',
+      '"I can see both sides of this issue." — link "both-sides" smoothly. Practise the balanced intonation that signals genuine openness.',
+      '"Although it\'s true that..., we also need to consider..." — pause at the comma. Stress TRUE and conSIDer to mark the two halves.',
+      '"Overall, I would argue that..." — use confident falling intonation on "argue" to signal your final position is coming.',
+    ],
+  },
   guidedSpeaking: [
     {
       stage: 'Preparation (2 minutes)',

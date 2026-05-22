@@ -428,6 +428,14 @@ export const B2_DEEP_ACADEMIC_PART1 = Object.freeze([
       'Demonstrate the signposting language typical of academic spoken discourse.',
     ],
     teacherOpening: 'In an academic seminar, you are expected not just to have an opinion but to present it with the clarity, precision and intellectual honesty of formal academic discourse. This means using cohesion devices so your points connect logically, hedging your claims appropriately, and signposting your structure so the listener can follow. Today\'s task replicates exactly this context.',
+    modelPhrases: [
+      'I would like to argue that the current evidence points in a somewhat different direction.',
+      'Furthermore, the data appear to support the hypothesis that inequality has structural, not merely individual, causes.',
+      'It should be noted that the findings tend to suggest, albeit cautiously, a correlation rather than a causation.',
+      'Consequently, one might conclude that the policy implications are less straightforward than they first appear.',
+      'That said, a more nuanced interpretation would acknowledge the limitations of the available data.',
+      'In the light of these considerations, I would maintain that the issue warrants further investigation.',
+    ],
     pronunciationFocus: {
       title: 'Pronunciation & shadowing',
       tips: [

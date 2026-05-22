@@ -515,6 +515,14 @@ export const C1_DEEP_BRIDGE_PART1 = Object.freeze([
       'Maintain formal register and demonstrate C1 rhetorical organisation throughout.',
     ],
     teacherOpening: 'The key difference between B2 and C1 speaking is not what you know — it is the degree to which what you know has become automatic. A B2 speaker thinks about structures; a C1 speaker thinks about ideas, and the structures come. Today\'s task pushes you toward that C1 fluency: you have three minutes to argue a position using C1 grammar and vocabulary, but the focus is on the argument — not on displaying individual structures.',
+    modelPhrases: [
+      'Were multilateral institutions to be dissolved today, the resulting governance vacuum would be difficult to fill.',
+      'Not only does this undermine the principle of universality, but it also calls into question the legitimacy of existing frameworks.',
+      'The qualification I would enter is that effectiveness and legitimacy are not always aligned.',
+      'Hitherto, the most effective reforms have come from within existing institutions rather than from revolutionary alternatives.',
+      'It is precisely because the stakes are so high that a nuanced rather than a binary position is required.',
+      'On balance, I would argue that reform rather than replacement offers the more viable path forward.',
+    ],
     pronunciationFocus: {
       title: 'Pronunciation & shadowing',
       tips: [

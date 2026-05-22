@@ -442,6 +442,14 @@ export const C1_DEEP_ADVANCED_GRAMMAR_PART1 = Object.freeze([
       'Maintain formal register and precise argument structure throughout.',
     ],
     teacherOpening: 'Today\'s speaking task requires you to argue a position on a complex topic — and to argue it with C1 precision: cleft sentences for emphasis, modal passives for academic distancing, and epistemic language that reflects exactly how confident you are in each claim. The topic is unseen: you will choose from the options below and have 2 minutes to prepare.',
+    modelPhrases: [
+      'It is conceivable that artificial intelligence could bolster, rather than undermine, democratic deliberation.',
+      'What the evidence shows is that the relationship between technology and governance is considerably more complex than popular accounts suggest.',
+      'This claim should be acknowledged as speculative; on the available evidence, the picture remains inconclusive.',
+      'In all probability, the most significant effects will be indirect rather than direct.',
+      'The weight of evidence suggests that institutional design matters more than the technology itself.',
+      'Were one to adopt this position, the implications for policy would be far-reaching.',
+    ],
     pronunciationFocus: {
       title: 'Pronunciation & shadowing',
       tips: [

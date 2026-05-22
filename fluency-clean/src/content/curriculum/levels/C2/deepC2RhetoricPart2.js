@@ -22,6 +22,14 @@ export const C2_DEEP_RHETORIC_PART2 = Object.freeze([
     ],
     teacherOpening: 'The academic presentation is a distinctive genre: more structured than a seminar discussion, more interactive than a written essay. At C2, the expectation is not just correct content but mastery of the genre — a clear opening that orients the audience, a body that moves through an argument rather than delivering information, and a Q&A that engages rather than deflects. The grammar and vocabulary of this course should now be appearing naturally, not inserted.',
     prompt: 'Prepare and deliver a 10–12 minute presentation on ONE of the following:\n\n(A) Critically evaluate Popper\'s "paradox of tolerance" argument. Does it succeed on its own terms? Does its popular application faithfully reflect the original argument?\n(B) What is the relationship between language and register, and why does register matter for intellectual credibility? Use examples from your own language learning.\n(C) Evaluate the claim from C2-READING-001 that the novel performs a unique cognitive function. Is this claim well-founded? What would it take to confirm or disconfirm it?',
+    modelPhrases: [
+      'What Popper\'s paradox reveals is not a logical contradiction but a political dilemma.',
+      'The popular application of this argument does not faithfully reflect the original — and the gap between the two is itself illuminating.',
+      'I want to begin by distinguishing between the strong and weak versions of this claim.',
+      'Let me now address the question that I anticipate is most likely to be raised — namely, whether the paradox can be resolved on its own terms.',
+      'The relationship between language and register is, I would argue, more constitutive than merely decorative.',
+      'What the novel performs — if the claim in the reading is correct — is a cognitive operation that no other genre replicates.',
+    ],
     pronunciationFocus: {
       title: 'Pronunciation & shadowing',
       tips: [
