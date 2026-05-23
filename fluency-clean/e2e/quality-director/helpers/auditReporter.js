@@ -39,6 +39,10 @@ function markdownIssue(issue, index) {
   return `${index + 1}. **${issue.area || 'App'} — ${issue.title}**\n   - Severidade: ${issue.severity || 'P3'}\n   - Impacto: ${issue.impact || 'Pode reduzir a confiança do aluno.'}${evidence}${fileHint}${recommendation}`;
 }
 
+function shouldFailOnP0P1(name) {
+  return name === 'quality-director-real-student-experience';
+}
+
 export class AuditReporter {
   constructor({ name, projectName }) {
     this.name = name;
@@ -101,8 +105,18 @@ export class AuditReporter {
 
     const safeProjectName = (this.projectName || 'default').replace(/[^a-z0-9_-]+/gi, '-').toLowerCase();
     const baseName = `${this.name}-${safeProjectName}`;
-    fs.writeFileSync(path.join(AUDIT_DIR, `${baseName}.json`), JSON.stringify(payload, null, 2));
-    fs.writeFileSync(path.join(AUDIT_DIR, `${baseName}.md`), this.toMarkdown(payload));
+    const jsonPath = path.join(AUDIT_DIR, `${baseName}.json`);
+    const mdPath = path.join(AUDIT_DIR, `${baseName}.md`);
+    fs.writeFileSync(jsonPath, JSON.stringify(payload, null, 2));
+    fs.writeFileSync(mdPath, this.toMarkdown(payload));
+
+    if (shouldFailOnP0P1(this.name) && (payload.summary.p0 > 0 || payload.summary.p1 > 0)) {
+      throw new Error(
+        `${this.name} failed: P0=${payload.summary.p0}, P1=${payload.summary.p1}. ` +
+        `See reports: ${jsonPath} and ${mdPath}`,
+      );
+    }
+
     return payload;
   }
 
