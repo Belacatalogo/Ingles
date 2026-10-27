@@ -1,11 +1,8 @@
 // Fluency Service Worker — offline cache
-const CACHE = "fluency-v53-pillar-players";
+const CACHE = "fluency-v37-reactdom-bundle-fix";
 const STATIC = [
   "./",
   "./index.html",
-  "./pillar-week.js",
-  "./react.js",
-  "./react-dom.js",
   "./bundle.js",
   "./manifest.json",
   "./icon-192.png",
